@@ -1,0 +1,2132 @@
+{
+    "serien": [{
+        "title": "Legion",
+        "genre": ["All", "Action", "Drama", "SciFi"],
+        "rating": {
+            "Animation": 0,
+            "Action": 8,
+            "Drama": 7,
+            "Adventure": 3,
+            "All": 10,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 3,
+            "Mystery": 5,
+            "SciFi": 7,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Mr. Robot",
+        "genre": ["All", "Crime", "Drama", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 8,
+            "Drama": 9,
+            "Adventure": 1,
+            "All": 9,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 2,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 6.5,
+            "Documentary": 0,
+            "Comedy": 3
+        }
+    }, {
+        "title": "Avatar: The Last Airbender",
+        "genre": ["All", "Animation", "Action", "Adventure"],
+        "rating": {
+            "Animation": 5,
+            "Action": 7,
+            "Drama": 3,
+            "Adventure": 8,
+            "All": 10,
+            "Crime": 0,
+            "Fantasy": 5,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Supernatural",
+        "genre": ["All", "Drama", "Horror", "Fantasy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 6.5,
+            "Adventure": 6,
+            "All": 7.5,
+            "Crime": 2,
+            "Fantasy": 6.5,
+            "Horror": 6,
+            "Mystery": 4.5,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 4,
+            "Documentary": 0,
+            "Comedy": 2.5
+        }
+    }, {
+        "title": "Peaky Blinders",
+        "genre": ["All", "Drama", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 6,
+            "Adventure": 1,
+            "All": 7,
+            "Crime": 5.5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 4,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 3,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Mandalorian",
+        "genre": ["All", "Action", "Adventure", "SciFi"],
+        "rating": {
+            "Animation": 0,
+            "Action": 7,
+            "Drama": 5,
+            "Adventure": 5,
+            "All": 8,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 8.5,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Bodyguard",
+        "genre": ["All", "Crime", "Drama", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6.5,
+            "Drama": 6.5,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 5,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Chernobyl",
+        "genre": ["All", "Drama", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 8,
+            "Adventure": 0,
+            "All": 8,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 6.5,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Game of Thrones",
+        "genre": ["All", "Action", "Adventure", "Drama"],
+        "rating": {
+            "Animation": 0,
+            "Action": 7,
+            "Drama": 8.5,
+            "Adventure": 7,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 7,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "The Queen's Gambit",
+        "genre": ["All", "Drama"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 8,
+            "Adventure": 1,
+            "All": 7.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 1
+        }
+    }, {
+        "title": "Godless",
+        "genre": ["All", "Drama"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 3
+        }
+    }, {
+        "title": "Rick and Morty",
+        "genre": ["All", "Comedy", "Animation", "Adventure"],
+        "rating": {
+            "Animation": 5,
+            "Action": 0,
+            "Drama": 3,
+            "Adventure": 7,
+            "All": 8.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 6,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 8
+        }
+    }, {
+        "title": "Altered Carbon",
+        "genre": ["All", "Drama", "Action", "SciFi"],
+        "rating": {
+            "Animation": 0,
+            "Action": 7,
+            "Drama": 6.5,
+            "Adventure": 4,
+            "All": 7,
+            "Crime": 3.5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 7.5,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Mindhunter",
+        "genre": ["All", "Drama", "Crime", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 4,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 8,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 2.5,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 6,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Hunter X Hunter",
+        "genre": ["All", "Animation", "Action", "Adventure"],
+        "rating": {
+            "Animation": 5,
+            "Action": 5,
+            "Drama": 6,
+            "Adventure": 8.5,
+            "All": 8,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5.5
+        }
+    }, {
+        "title": "The Haunting of Hill House",
+        "genre": ["All", "Drama", "Mystery", "Horror"],
+        "rating": {
+            "Animation": 0,
+            "Action": 4,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 8.5,
+            "Mystery": 6.5,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Doom Patrol",
+        "genre": ["All", "Action", "Adventure"],
+        "rating": {
+            "Animation": 0,
+            "Action": 5,
+            "Drama": 5,
+            "Adventure": 5,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 4,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Fleabag",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 8,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 9
+        }
+    }, {
+        "title": "La Casa de Papel",
+        "genre": ["All", "Action", "Crime", "Drama"],
+        "rating": {
+            "Animation": 0,
+            "Action": 8,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 3.5
+        }
+    }, {
+        "title": "After Life",
+        "genre": ["All", "Comedy", "Drama"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 8.5,
+            "Adventure": 0,
+            "All": 7.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 7
+        }
+    }, {
+        "title": "Sherlock",
+        "genre": ["All", "Crime", "Drama", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 8,
+            "Crime": 7,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 8,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 3
+        }
+    }, {
+        "title": "Dark",
+        "genre": ["All", "Crime", "Drama", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 3,
+            "Drama": 6,
+            "Adventure": 3,
+            "All": 7,
+            "Crime": 5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 8.5,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Parks and Recreation",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 1,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 8
+        }
+    }, {
+        "title": "Love, Death & Robots",
+        "genre": ["All", "Animation"],
+        "rating": {
+            "Animation": 5,
+            "Action": 2,
+            "Drama": 2,
+            "Adventure": 1.5,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 2,
+            "Horror": 0,
+            "Mystery": 0.5,
+            "SciFi": 2,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Haikyuu!!",
+        "genre": ["All", "Drama", "Animation", "Comedy"],
+        "rating": {
+            "Animation": 5,
+            "Action": 6.5,
+            "Drama": 6,
+            "Adventure": 4,
+            "All": 7.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 7,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5.5
+        }
+    }, {
+        "title": "Black Mirror",
+        "genre": ["All", "Drama", "SciFi", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 8,
+            "Sport": 0,
+            "Thriller": 6,
+            "Documentary": 0,
+            "Comedy": 3
+        }
+    }, {
+        "title": "The Umbrella Academy",
+        "genre": ["All", "Action", "Adventure", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 7,
+            "Drama": 3,
+            "Adventure": 6,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 3,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "One Punch Man",
+        "genre": ["All", "Animation", "Action", "Comedy"],
+        "rating": {
+            "Animation": 5,
+            "Action": 7,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 8,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 7
+        }
+    }, {
+        "title": "Crashing",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 4,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 7
+        }
+    }, {
+        "title": "Lucifer",
+        "genre": ["All", "Drama", "Fantasy", "Crime", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 4.5,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 7,
+            "Fantasy": 6.5,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "The Boys",
+        "genre": ["All", "Drama", "Action", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 7,
+            "Drama": 6,
+            "Adventure": 2,
+            "All": 8,
+            "Crime": 2,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 3,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "Attack on Titan",
+        "genre": ["All", "Animation", "Action", "Adventure", "Fantasy"],
+        "rating": {
+            "Animation": 5,
+            "Action": 7,
+            "Drama": 2,
+            "Adventure": 6.5,
+            "All": 7.5,
+            "Crime": 0,
+            "Fantasy": 6.5,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 3
+        }
+    }, {
+        "title": "Shameless",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 7.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "Modern Family",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5.5,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 8
+        }
+    }, {
+        "title": "The Witcher",
+        "genre": ["All", "Action", "Fantasy", "Adventure"],
+        "rating": {
+            "Animation": 0,
+            "Action": 7,
+            "Drama": 3,
+            "Adventure": 6.5,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 7,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 4
+        }
+    }, {
+        "title": "Vikings",
+        "genre": ["All", "Action", "Drama", "Adventure"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6.5,
+            "Drama": 5,
+            "Adventure": 7,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 1
+        }
+    }, {
+        "title": "Fullmetal Alchemist: Brotherhood",
+        "genre": ["All", "Action", "Animation", "Adventure"],
+        "rating": {
+            "Animation": 4,
+            "Action": 6,
+            "Drama": 0,
+            "Adventure": 7.5,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 3
+        }
+    }, {
+        "title": "Family Guy",
+        "genre": ["All", "Comedy", "Animation"],
+        "rating": {
+            "Animation": 5,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 7
+        }
+    }, {
+        "title": "What We Do In The Shadows",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 4,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5.5
+        }
+    }, {
+        "title": "Watchmen",
+        "genre": ["All", "Drama", "Action", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 7,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "The Spy",
+        "genre": ["All", "Drama", "History"],
+        "rating": {
+            "Animation": 0,
+            "Action": 4,
+            "Drama": 8,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 2,
+            "Documentary": 0,
+            "Comedy": 0,
+            "History": 5
+        }
+    }, {
+        "title": "When They See Us",
+        "genre": ["All", "Drama", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Breaking Bad",
+        "genre": ["All", "Drama", "Crime", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 4.5,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 6,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Cobra Kai",
+        "genre": ["All", "Drama", "Action", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "My Hero Academia",
+        "genre": ["All", "Animation", "Action", "Adventure"],
+        "rating": {
+            "Animation": 5,
+            "Action": 6,
+            "Drama": 3,
+            "Adventure": 5,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 3.5
+        }
+    }, {
+        "title": "The Sinner",
+        "genre": ["All", "Drama", "Crime", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 2,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 6,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Scrubs",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Maniac",
+        "genre": ["All", "Drama", "Comedy", "SciFi"],
+        "rating": {
+            "Animation": 0,
+            "Action": 2,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 5,
+            "SciFi": 4.5,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Titans",
+        "genre": ["All", "Action", "Adventure", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6.5,
+            "Drama": 3,
+            "Adventure": 5,
+            "All": 6,
+            "Crime": 4,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Lost",
+        "genre": ["All", "Drama", "Fantasy", "Adventure"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 7.5,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 6.5,
+            "Horror": 0,
+            "Mystery": 3,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Unbelievable",
+        "genre": ["All", "Drama", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "The Punisher",
+        "genre": ["All", "Drama", "Action", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 8,
+            "Drama": 5.5,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Brooklyn Nine-Nine",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 4.5,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 7
+        }
+    }, {
+        "title": "Gotham",
+        "genre": ["All", "Drama", "Action", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 5.5,
+            "Drama": 5.5,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "You",
+        "genre": ["All", "Drama", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 4,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 1.5
+        }
+    }, {
+        "title": "Daredevil",
+        "genre": ["All", "Drama", "Action", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 5,
+            "Adventure": 0,
+            "All": 5.5,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Avatar: Legend of Korra",
+        "genre": ["All", "Animation", "Adventure"],
+        "rating": {
+            "Animation": 5,
+            "Action": 4,
+            "Drama": 0,
+            "Adventure": 6.5,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Community",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5.5
+        }
+    }, {
+        "title": "Better Call Saul",
+        "genre": ["All", "Drama", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 2,
+            "Drama": 6.5,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Stranger Things",
+        "genre": ["All", "Action", "Fantasy", "Horror"],
+        "rating": {
+            "Animation": 0,
+            "Action": 5,
+            "Drama": 0,
+            "Adventure": 3,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 7,
+            "Horror": 4,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Formula 1: Drive to Survive",
+        "genre": ["All", "Documentary", "Sport"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 2,
+            "Adventure": 0,
+            "All": 7.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 5,
+            "Thriller": 0,
+            "Documentary": 5,
+            "Comedy": 1
+        }
+    }, {
+        "title": "Truth Seekers",
+        "genre": ["All", "Crime", "Drama", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 3,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 5,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Elite",
+        "genre": ["All", "Drama", "Crime", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 6.5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 4,
+            "Documentary": 0,
+            "Comedy": 1
+        }
+    }, {
+        "title": "Taboo",
+        "genre": ["All", "Drama", "Mystery", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 5,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 5,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Hannibal",
+        "genre": ["All", "Drama", "Crime", "Horror"],
+        "rating": {
+            "Animation": 0,
+            "Action": 3,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 6.5,
+            "Fantasy": 0,
+            "Horror": 5,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Blue Mountain State",
+        "genre": ["All", "Comedy", "Sport"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 5,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 7
+        }
+    }, {
+        "title": "The Office",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Bojack Horseman",
+        "genre": ["All", "Drama", "Comedy", "Animation"],
+        "rating": {
+            "Animation": 5,
+            "Action": 0,
+            "Drama": 7,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "King of Queens",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 3,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Prison Break",
+        "genre": ["All", "Drama", "Action", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 4,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "The Fresh Prince of Bel-Air",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 3,
+            "Adventure": 0,
+            "All": 5.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Skylines",
+        "genre": ["All", "Drama", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "How to Sell Drugs Online (Fast)",
+        "genre": ["All", "Drama", "Comedy", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5,
+            "Adventure": 0,
+            "All": 7,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "The IT Crowd",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 3,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Fringe",
+        "genre": ["All", "Drama", "Mystery", "SciFi"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 8,
+            "SciFi": 7,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Teenage Bounty Hunters",
+        "genre": ["All", "Drama", "Crime", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 7,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "Who is America",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "Star Wars: The Clone Wars",
+        "genre": ["All", "Animation", "Action", "Adventure"],
+        "rating": {
+            "Animation": 4.5,
+            "Action": 6.5,
+            "Drama": 0,
+            "Adventure": 6.5,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "White Collar",
+        "genre": ["All", "Drama", "Comedy", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 6.5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Dead To Me",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Spartacus",
+        "genre": ["All", "Action", "Adventure"],
+        "rating": {
+            "Animation": 0,
+            "Action": 7,
+            "Drama": 0,
+            "Adventure": 5,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Dexter",
+        "genre": ["All", "Drama", "Crime", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6.5,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 7,
+            "Fantasy": 3,
+            "Horror": 0,
+            "Mystery": 4.5,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Sex Education",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Legends of Tomorrow",
+        "genre": ["All", "Drama", "Action", "Adventure"],
+        "rating": {
+            "Animation": 0,
+            "Action": 5.5,
+            "Drama": 0,
+            "Adventure": 5.5,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5.5
+        }
+    }, {
+        "title": "Dark Tourist",
+        "genre": ["All", "Documentary"],
+        "rating": {
+            "Animation": 0,
+            "Action": 1,
+            "Drama": 1,
+            "Adventure": 1,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 5,
+            "Comedy": 3
+        }
+    }, {
+        "title": "Don'T F**k with Cats: Hunting an Internet Killer",
+        "genre": ["All", "Documentary", "Crime", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 4.5,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 5,
+            "Comedy": 0
+        }
+    }, {
+        "title": "iZombie",
+        "genre": ["All", "Drama", "Comedy", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 6,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "Russian Doll",
+        "genre": ["All", "Drama", "Adventure", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5.5,
+            "Adventure": 5,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "13 Reasons Why",
+        "genre": ["All", "Drama", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6.5,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 4,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Limitless",
+        "genre": ["All", "SciFi", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 6,
+            "Sport": 0,
+            "Thriller": 4.5,
+            "Documentary": 0,
+            "Comedy": 3
+        }
+    }, {
+        "title": "Chilling Adventures of Sabrina",
+        "genre": ["All", "Drama", "Fantasy", "Horror"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 0,
+            "Fantasy": 6.5,
+            "Horror": 5,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "American Vandal",
+        "genre": ["All", "Drama", "Comedy", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6.5,
+            "Crime": 4.5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6.5
+        }
+    }, {
+        "title": "Atypical",
+        "genre": ["All", "Drama", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5.5
+        }
+    }, {
+        "title": "How I Met Your Mother",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "Tiger King",
+        "genre": ["All", "Documentary", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 5,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 5,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Jerks",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 3,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 7
+        }
+    }, {
+        "title": "Malcolm in The Middle",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 6
+        }
+    }, {
+        "title": "The Big Bang Theory",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "The Flash",
+        "genre": ["All", "Drama", "Action", "Adventure"],
+        "rating": {
+            "Animation": 0,
+            "Action": 5,
+            "Drama": 4,
+            "Adventure": 5,
+            "All": 7,
+            "Crime": 3,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Arrow",
+        "genre": ["All", "Action", "Adventure", "Crime"],
+        "rating": {
+            "Animation": 0,
+            "Action": 6,
+            "Drama": 0,
+            "Adventure": 4,
+            "All": 6.5,
+            "Crime": 4,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 2
+        }
+    }, {
+        "title": "Assassination Classroom",
+        "genre": ["All", "Animation", "Action", "Comedy"],
+        "rating": {
+            "Animation": 5,
+            "Action": 6,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 6,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Star Wars: Rebels",
+        "genre": ["All", "Animation", "Action", "Adventure"],
+        "rating": {
+            "Animation": 4,
+            "Action": 6,
+            "Drama": 0,
+            "Adventure": 5,
+            "All": 5.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Disenchantment",
+        "genre": ["All", "Animation", "Action", "Adventure"],
+        "rating": {
+            "Animation": 5,
+            "Action": 4,
+            "Drama": 0,
+            "Adventure": 6,
+            "All": 5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 4
+        }
+    }, {
+        "title": "Young Sheldon",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 1,
+            "Adventure": 0,
+            "All": 4.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Two And A Half Men",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 2,
+            "Adventure": 0,
+            "All": 4,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 5
+        }
+    }, {
+        "title": "Riverdale",
+        "genre": ["All", "Drama", "Crime", "Mystery"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 6,
+            "Adventure": 0,
+            "All": 4.5,
+            "Crime": 3,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 4,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Wir sind die Welle",
+        "genre": ["All", "Drama"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5,
+            "Adventure": 0,
+            "All": 4.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "2 Broke Girls",
+        "genre": ["All", "Comedy"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 4,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 4
+        }
+    }, {
+        "title": "The Simpsons",
+        "genre": ["All", "Animation", "Comedy"],
+        "rating": {
+            "Animation": 5,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 3.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 4
+        }
+    }, {
+        "title": "Under the Dome",
+        "genre": ["All", "Drama", "Mystery", "SciFi"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 4,
+            "Adventure": 0,
+            "All": 3.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 3.5,
+            "SciFi": 3.5,
+            "Sport": 0,
+            "Thriller": 0,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Biohackers",
+        "genre": ["All", "Drama", "SciFi", "Thriller"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 5,
+            "Adventure": 0,
+            "All": 3.5,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 3,
+            "Sport": 0,
+            "Thriller": 4,
+            "Documentary": 0,
+            "Comedy": 0
+        }
+    }, {
+        "title": "Hard Knocks",
+        "genre": ["All", "Documentary", "Sport"],
+        "rating": {
+            "Animation": 0,
+            "Action": 0,
+            "Drama": 0,
+            "Adventure": 0,
+            "All": 4,
+            "Crime": 0,
+            "Fantasy": 0,
+            "Horror": 0,
+            "Mystery": 0,
+            "SciFi": 0,
+            "Sport": 5,
+            "Thriller": 0,
+            "Documentary": 5,
+            "Comedy": 0
+        }
+    }]
+}
