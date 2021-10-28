@@ -7,6 +7,7 @@ import API  from "./API.js";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
+import { log } from "async";
 
 const cheerio = require("cheerio");
 
@@ -54,7 +55,7 @@ class App extends Component {
         pruefen = snap.val();
       });
 
-    for (let index = 0; index < serien.length; index++) {
+    for (let index = 0; index <serien.length; index++) {
       fetch(
         "https://api.themoviedb.org/3/tv/" +
           serien[index].id +
@@ -116,15 +117,17 @@ class App extends Component {
 
               if (index == 2) {
                 fetch(
-                  "https://cors.bridged.cc/" +
-                    "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
+                  "https://api.allorigins.win/get?url=https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
+                 
                 )
                   .then((response) => {
-                    return response.text();
+                  
+                    return response.json();
                   })
                   .then((res) => {
-                    const data = cheerio.load(res);
-
+                 
+                    const data = cheerio.load(res.contents);
+           
                     if (data("#netflix").text()) {
                       Firebase.database()
                         .ref("serien/" + index + "/netflix")
@@ -172,15 +175,16 @@ class App extends Component {
                     }
                   });
               } else if (index == 35) {
+                const url ="https://www.werstreamt.es/serie/details/235057/vikings/";
+               
                 fetch(
-                  "https://cors.bridged.cc/" +
-                    "https://www.werstreamt.es/serie/details/235057/vikings/"
+                  `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
                 )
                   .then((response) => {
-                    return response.text();
+                    return response.json();
                   })
                   .then((res) => {
-                    const data = cheerio.load(res);
+                    const data = cheerio.load(res.contents);
 
                     if (data("#netflix").text()) {
                       Firebase.database()
@@ -229,18 +233,21 @@ class App extends Component {
                     }
                   });
               } else {
+               const url ="https://www.werstreamt.es/filme-serien/?q=" +
+               data4.imdb_id +
+               "&action_results=suchen";
+               
                 fetch(
-                  "https://cors.bridged.cc/" +
-                    "https://www.werstreamt.es/filme-serien/?q=" +
-                    data4.imdb_id +
-                    "&action_results=suchen"
+                  `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
                 )
                   .then((response) => {
-                    return response.text();
+                    return response.json();
                   })
                   .then((res) => {
-                    const data = cheerio.load(res);
-
+                  
+                    const data = cheerio.load(res.contents);
+                    
+                   
                     if (data("#netflix").text()) {
                       Firebase.database()
                         .ref("serien/" + index + "/netflix")
@@ -250,8 +257,10 @@ class App extends Component {
                         .ref("serien/" + index + "/netflix")
                         .set({ netflix: false });
                     }
+                  
 
                     if (data("#amazon").text()) {
+                  
                       if (
                         data("#amazon").parent().parent().children()[1]
                           .children[0].children[1].children[3].attribs.class
