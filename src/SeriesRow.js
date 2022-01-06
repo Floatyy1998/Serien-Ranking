@@ -9,13 +9,13 @@ class SeriesRow extends React.Component {
   constructor(props) {
     super(props);
     this.state = { loading: false };
-    //this.inprogress();
+
     Firebase.database()
       .ref("serien")
       .on("value", (snap) => {
         snap.forEach(function (child) {
           ids[child.val().title] = child.val().id;
-          //console.log(child.val().title+" : "+child.val().id);
+
         });
       });
 
@@ -24,18 +24,10 @@ class SeriesRow extends React.Component {
       .on("value", (snap) => {
         pruefen = snap.val();
       });
-    // this.inprogress();
+
   }
 
-  componentDidMount() {
-    // console.log(this.props.serie.poster["poster"]);
-  }
 
-  componentDidUpdate(prevProps) {
-    /*  if (this.props !== prevProps) {
-      this.inprogress();
-    } */
-  }
 
   /*   async inprogress() {
     this.setState((prevState) => ({
@@ -630,7 +622,7 @@ class SeriesRow extends React.Component {
         <span
           className="netflix iconify"
           style={{
-            paddingLeft:"20px",
+            paddingLeft: "20px",
             float: "left",
             width: "114px",
             height: "100%",
@@ -698,7 +690,7 @@ class SeriesRow extends React.Component {
       ></span>);
     }
 
-    
+
 
     if (!this.state.loading) {
       if (x) {
