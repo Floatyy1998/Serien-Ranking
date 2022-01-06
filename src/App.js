@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import "./App.css";
 import SeriesRow from "./SeriesRow.js";
 import Firebase from "firebase";
-import config  from "./config.js";
-import API  from "./API.js";
+import config from "./config.js";
+import API from "./API.js";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
@@ -55,11 +55,11 @@ class App extends Component {
         pruefen = snap.val();
       });
 
-    for (let index = 0; index <serien.length; index++) {
+    for (let index = 0; index < serien.length; index++) {
       fetch(
         "https://api.themoviedb.org/3/tv/" +
-          serien[index].id +
-          "?api_key="+ API.TMDB + "&language=en-US"
+        serien[index].id +
+        "?api_key=" + API.TMDB + "&language=en-US"
       )
         .then(function (response2) {
           return response2.json();
@@ -71,7 +71,7 @@ class App extends Component {
             .set({
               poster: "https://image.tmdb.org/t/p/w780/" + data3.poster_path,
             });
-            console.log("APP.JS 71");
+          console.log("APP.JS 71");
           Firebase.database()
             .ref("serien/" + index + "/production")
             .set({ production: data3.in_production });
@@ -79,8 +79,8 @@ class App extends Component {
         .then((_) => {
           fetch(
             "https://api.themoviedb.org/3/tv/" +
-              serien[index].id +
-              "/external_ids?api_key="+ API.TMDB + "&language=en-US"
+            serien[index].id +
+            "/external_ids?api_key=" + API.TMDB + "&language=en-US"
           )
             .then(function (response3) {
               return response3.json();
@@ -118,16 +118,16 @@ class App extends Component {
               if (index == 2) {
                 fetch(
                   "https://api.allorigins.win/get?url=https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
-                 
+
                 )
                   .then((response) => {
-                  
+
                     return response.json();
                   })
                   .then((res) => {
-                 
+
                     const data = cheerio.load(res.contents);
-           
+
                     if (data("#netflix").text()) {
                       Firebase.database()
                         .ref("serien/" + index + "/netflix")
@@ -136,6 +136,16 @@ class App extends Component {
                       Firebase.database()
                         .ref("serien/" + index + "/netflix")
                         .set({ netflix: false });
+                    }
+
+                    if (data("#disney-plus").text()) {
+                      Firebase.database()
+                        .ref("serien/" + index + "/disneyplus")
+                        .set({ disneyplus: true });
+                    } else {
+                      Firebase.database()
+                        .ref("serien/" + index + "/disneyplus")
+                        .set({ disneyplus: false });
                     }
 
                     if (data("#amazon").text()) {
@@ -175,8 +185,8 @@ class App extends Component {
                     }
                   });
               } else if (index == 35) {
-                const url ="https://www.werstreamt.es/serie/details/235057/vikings/";
-               
+                const url = "https://www.werstreamt.es/serie/details/235057/vikings/";
+
                 fetch(
                   `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
                 )
@@ -194,6 +204,15 @@ class App extends Component {
                       Firebase.database()
                         .ref("serien/" + index + "/netflix")
                         .set({ netflix: false });
+                    }
+                    if (data("#disney-plus").text()) {
+                      Firebase.database()
+                        .ref("serien/" + index + "/disneyplus")
+                        .set({ disneyplus: true });
+                    } else {
+                      Firebase.database()
+                        .ref("serien/" + index + "/disneyplus")
+                        .set({ disneyplus: false });
                     }
 
                     if (data("#amazon").text()) {
@@ -233,10 +252,10 @@ class App extends Component {
                     }
                   });
               } else {
-               const url ="https://www.werstreamt.es/filme-serien/?q=" +
-               data4.imdb_id +
-               "&action_results=suchen";
-               
+                const url = "https://www.werstreamt.es/filme-serien/?q=" +
+                  data4.imdb_id +
+                  "&action_results=suchen";
+
                 fetch(
                   `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
                 )
@@ -244,10 +263,10 @@ class App extends Component {
                     return response.json();
                   })
                   .then((res) => {
-                  
+
                     const data = cheerio.load(res.contents);
-                    
-                   
+
+
                     if (data("#netflix").text()) {
                       Firebase.database()
                         .ref("serien/" + index + "/netflix")
@@ -257,10 +276,19 @@ class App extends Component {
                         .ref("serien/" + index + "/netflix")
                         .set({ netflix: false });
                     }
-                  
+                    if (data("#disney-plus").text()) {
+                      Firebase.database()
+                        .ref("serien/" + index + "/disneyplus")
+                        .set({ disneyplus: true });
+                    } else {
+                      Firebase.database()
+                        .ref("serien/" + index + "/disneyplus")
+                        .set({ disneyplus: false });
+                    }
+
 
                     if (data("#amazon").text()) {
-                  
+
                       if (
                         data("#amazon").parent().parent().children()[1]
                           .children[0].children[1].children[3].attribs.class
@@ -538,8 +566,8 @@ class App extends Component {
             a.title.indexOf(filter) > b.title.indexOf(filter)
               ? 1
               : b.title.indexOf(filter) > a.title.indexOf(filter)
-              ? -1
-              : 0
+                ? -1
+                : 0
           );
         }
 
@@ -732,9 +760,9 @@ class App extends Component {
       alert("Bitte Einloggen!");
     } else {
       fetch(
-        "https://api.themoviedb.org/3/search/tv?api_key="+ API.TMDB + "&query=" +
-          event.target[2].value +
-          "&page=1"
+        "https://api.themoviedb.org/3/search/tv?api_key=" + API.TMDB + "&query=" +
+        event.target[2].value +
+        "&page=1"
       )
         .then(function (response) {
           return response.json();
