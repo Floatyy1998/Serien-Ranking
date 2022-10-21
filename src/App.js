@@ -17,7 +17,9 @@ var pruefen = "";
 var serien = [];
 class App extends Component {
   constructor(props) {
+   
     super(props);
+ 
     console.log(API.TMDB);
     if (!Firebase.apps.length) {
       Firebase.initializeApp(config);
@@ -148,20 +150,24 @@ class App extends Component {
                         .set({ disneyplus: false });
                     }
 
-                    if (data("#amazon").text()) {
+                    if (data("#prime-video").text()) {
+                     
                       if (
-                        data("#amazon").parent().parent().children()[1]
+                        data("#prime-video").parent()
+                        .parent()
+                        .children()[1]
                           .children[0].children[1].children[3].attribs.class
                       ) {
+                        
                         if (
-                          data("#amazon")
+                          data("#prime-video")
                             .parent()
                             .parent()
                             .children()[1]
                             .children[0].children[1].children[3].attribs.class.includes(
                               "flatrate"
                             ) ||
-                          data("#amazon")
+                          data("#prime-video")
                             .parent()
                             .parent()
                             .children()[1]
@@ -1141,6 +1147,7 @@ class App extends Component {
         </div>
       );
     } else {
+      this.laden()
       return (
         <div>
           <div id="mySidenav" class="sidenav">
