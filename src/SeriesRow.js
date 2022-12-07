@@ -1,8 +1,6 @@
 import React from "react";
 import Firebase from "firebase";
-import { red } from "@material-ui/core/colors";
-import { filter } from "cheerio/lib/api/traversing";
-const cheerio = require("cheerio");
+
 var pruefen = "";
 var ids = {};
 class SeriesRow extends React.Component {
@@ -27,63 +25,6 @@ class SeriesRow extends React.Component {
 
   }
 
-
-
-  /*   async inprogress() {
-    this.setState((prevState) => ({
-      loading: true,
-      production: prevState.production,
-      path: prevState.path,
-      imdb: prevState.imdb_id,
-    }));
-    await fetch(
-      "https://api.themoviedb.org/3/tv/" +
-        ids[this.props.serie.title] +
-        "?api_key="+ API.TMDB + "&language=en-US"
-    )
-      .then(function (response2) {
-        return response2.json();
-      })
-      .then((data3) => {
-        this.setState((prevState) => ({
-          loading: prevState.loading,
-          production: data3.in_production,
-          path: data3.poster_path,
-        }));
-      })
-
-      .catch(function (error) {
-        console.log("Error: " + error);
-      });
-
-    await fetch(
-      "https://api.themoviedb.org/3/tv/" +
-        ids[this.props.serie.title] +
-        "/external_ids?api_key="+ API.TMDB + "&language=en-US"
-    )
-      .then(function (response3) {
-        return response3.json();
-      })
-      .then((data4) => {
-        this.setState((prevState) => ({
-          loading: false,
-          production: prevState.production,
-          path: prevState.path,
-          imdb: data4.imdb_id,
-        }));
-
-       /*  this.testing(
-          "https://cors.bridged.cc/" +
-            "https://www.werstreamt.es/filme-serien/?q=" +
-            this.state.imdb +
-            "&action_results=suchen"
-        ); 
-      })
-
-      .catch(function (error) {
-        console.log("Error: " + error);
-      });
-  } */
   addZeroes(num) {
     const dec = num.toString().split(".")[1];
     const len = dec && dec.length > 2 ? dec.length : 2;
@@ -95,29 +36,6 @@ class SeriesRow extends React.Component {
     var inv = 1.0 / step;
     return Math.round(value * inv) / inv;
   }
-
-  /* getRawData(URL) {
-    return fetch(URL).then((response) =>
-      response.text().then((data) => {
-        return data;
-      })
-    );
-  }
-
-  async testing(URL) {
-    const rawDATA = await this.getRawData(URL);
-
-    const data = cheerio.load(rawDATA);
-    if (data("#netflix").text()) {
-      this.setState(() => ({
-        netflix: true,
-      }));
-    } else {
-      this.setState(() => ({
-        netflix: false,
-      }));
-    }
-  } */
 
   getRating(a) {
     let punktea = 0;
