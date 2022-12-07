@@ -119,16 +119,16 @@ class App extends Component {
 
               if (index == 2) {
                 fetch(
-                  "https://api.allorigins.win/get?url=https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
+                  "https://polar-ridge-92998.herokuapp.com/https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
 
                 )
                   .then((response) => {
 
-                    return response.json();
+                    return response.text();
                   })
                   .then((res) => {
 
-                    const data = cheerio.load(res.contents);
+                    const data = cheerio.load(res);
 
                     if (data("#netflix").text()) {
                       Firebase.database()
@@ -196,13 +196,13 @@ class App extends Component {
                 const url = "https://www.werstreamt.es/serie/details/235057/vikings/";
 
                 fetch(
-                  `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-                )
+                  `https://polar-ridge-92998.herokuapp.com/${url}`
+                  )
                   .then((response) => {
-                    return response.json();
+                    return response.text();
                   })
                   .then((res) => {
-                    const data = cheerio.load(res.contents);
+                    const data = cheerio.load(res);
 
                     if (data("#netflix").text()) {
                       Firebase.database()
@@ -265,14 +265,16 @@ class App extends Component {
                   "&action_results=suchen";
 
                 fetch(
-                  `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
+                  `https://polar-ridge-92998.herokuapp.com/${url}`
                 )
                   .then((response) => {
-                    return response.json();
+                    
+                    
+                    return response.text()
                   })
                   .then((res) => {
-
-                    const data = cheerio.load(res.contents);
+                    
+                    const data = cheerio.load(res);
 
 
                     if (data("#netflix").text()) {
