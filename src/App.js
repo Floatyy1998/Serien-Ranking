@@ -8,7 +8,6 @@ import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
 
-
 const cheerio = require("cheerio");
 
 var genre = "All";
@@ -17,9 +16,8 @@ var pruefen = "";
 var serien = [];
 class App extends Component {
   constructor(props) {
-   
     super(props);
- 
+
     console.log(API.TMDB);
     if (!Firebase.apps.length) {
       Firebase.initializeApp(config);
@@ -42,6 +40,112 @@ class App extends Component {
     });
   }
 
+  
+
+ fetching(url, index){
+
+
+  fetch(`https://api.codetabs.com/v1/proxy?quest=${url}`)
+                  .then((response) => {
+                    return response.text();
+                  })
+                  .then((res) => {
+                    let counter =0;
+                    let start = res.indexOf("serie/details/") + 14;
+                    let test = "";
+                    while (counter!=2) {
+                      if (res.charAt(start) == "/") {
+                        counter++
+                      }
+                      test += res.charAt(start);
+                      start++;
+                    }
+
+
+
+                    return test;
+                  })
+                  .then((id) => {
+                    
+                    const url2 = "https://www.werstreamt.es/serie/details/" + id;
+
+                    fetch(`https://api.codetabs.com/v1/proxy?quest=${url2}`)
+                      .then((response) => {
+                        if (response.status==400) {
+
+                         
+                         console.log(id);
+                         
+                        }
+                        return response.text();
+                      })
+                      .then((res) => {
+                        const data = cheerio.load(res);
+
+                        if (data("#netflix").text()) {
+                          Firebase.database()
+                            .ref("serien/" + index + "/netflix")
+                            .set({ netflix: true });
+                        } else {
+                          Firebase.database()
+                            .ref("serien/" + index + "/netflix")
+                            .set({ netflix: false });
+                        }
+                        if (data("#disney-plus").text()) {
+                          Firebase.database()
+                            .ref("serien/" + index + "/disneyplus")
+                            .set({ disneyplus: true });
+                        } else {
+                          Firebase.database()
+                            .ref("serien/" + index + "/disneyplus")
+                            .set({ disneyplus: false });
+                        }
+
+                        if (data("#prime-video").text()) {
+                          if (
+                            data("#prime-video").parent().parent().children()[1]
+                              .children[0].children[1].children[3].attribs.class
+                          ) {
+                            if (
+                              data("#prime-video")
+                                .parent()
+                                .parent()
+                                .children()[1]
+                                .children[0].children[1].children[3].attribs.class.includes(
+                                  "flatrate"
+                                ) ||
+                              data("#prime-video")
+                                .parent()
+                                .parent()
+                                .children()[1]
+                                .children[0].children[1].children[3].attribs.class.includes(
+                                  "free"
+                                )
+                            ) {
+                              Firebase.database()
+                                .ref("serien/" + index + "/prime")
+                                .set({ prime: true });
+                            }
+                          } else {
+                            Firebase.database()
+                              .ref("serien/" + index + "/prime")
+                              .set({ prime: false });
+                          }
+                        } else {
+                          Firebase.database()
+                            .ref("serien/" + index + "/prime")
+                            .set({ prime: false });
+                        }
+                        this.setState({ loading: false });
+                      }).catch(error=>{
+                        
+                        
+                      });
+                      
+                  });
+
+}
+
   scrollDown() {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }
@@ -49,7 +153,11 @@ class App extends Component {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  laden() {
+  Sleep(milliseconds) {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+  }
+
+  async laden() {
     console.log("laden");
     Firebase.database()
       .ref("key")
@@ -58,10 +166,17 @@ class App extends Component {
       });
 
     for (let index = 0; index < serien.length; index++) {
+      if (index > 0 && index % 5 == 0) {
+        console.log("sleep " + index);
+        await this.Sleep(1000);
+        console.log("sleepEnd " + index);
+      }
       fetch(
         "https://api.themoviedb.org/3/tv/" +
-        serien[index].id +
-        "?api_key=" + API.TMDB + "&language=en-US"
+          serien[index].id +
+          "?api_key=" +
+          API.TMDB +
+          "&language=en-US"
       )
         .then(function (response2) {
           return response2.json();
@@ -81,8 +196,10 @@ class App extends Component {
         .then((_) => {
           fetch(
             "https://api.themoviedb.org/3/tv/" +
-            serien[index].id +
-            "/external_ids?api_key=" + API.TMDB + "&language=en-US"
+              serien[index].id +
+              "/external_ids?api_key=" +
+              API.TMDB +
+              "&language=en-US"
           )
             .then(function (response3) {
               return response3.json();
@@ -119,15 +236,12 @@ class App extends Component {
 
               if (index == 2) {
                 fetch(
-                  "https://polar-ridge-92998.herokuapp.com/https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
-
+                  "https://api.codetabs.com/v1/proxy?quest=https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
                 )
                   .then((response) => {
-
                     return response.text();
                   })
                   .then((res) => {
-
                     const data = cheerio.load(res);
 
                     if (data("#netflix").text()) {
@@ -151,16 +265,10 @@ class App extends Component {
                     }
 
                     if (data("#prime-video").text()) {
-                     
                       if (
-                        data("#prime-video").parent()
-                        .parent()
-                        .children()[1]
+                        data("#prime-video").parent().parent().children()[1]
                           .children[0].children[1].children[3].attribs.class
                       ) {
-
-                        
-                        
                         if (
                           data("#prime-video")
                             .parent()
@@ -193,11 +301,10 @@ class App extends Component {
                     }
                   });
               } else if (index == 35) {
-                const url = "https://www.werstreamt.es/serie/details/235057/vikings/";
+                const url =
+                  "https://www.werstreamt.es/serie/details/235057/vikings/";
 
-                fetch(
-                  `https://polar-ridge-92998.herokuapp.com/${url}`
-                  )
+                fetch(`https://api.codetabs.com/v1/proxy?quest=${url}`)
                   .then((response) => {
                     return response.text();
                   })
@@ -260,81 +367,17 @@ class App extends Component {
                     }
                   });
               } else {
-                const url = "https://www.werstreamt.es/filme-serien/?q=" +
-                  data4.imdb_id +
-                  "&action_results=suchen";
+                const url =
+                "https://www.werstreamt.es/filme-serien/?q=" +
+                data4.imdb_id +
+                "&action_results=suchen";
 
-                fetch(
-                  `https://polar-ridge-92998.herokuapp.com/${url}`
-                )
-                  .then((response) => {
-                    
-                    
-                    return response.text()
-                  })
-                  .then((res) => {
-                    
-                    const data = cheerio.load(res);
+                this.fetching(url, index);
 
 
-                    if (data("#netflix").text()) {
-                      Firebase.database()
-                        .ref("serien/" + index + "/netflix")
-                        .set({ netflix: true });
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/netflix")
-                        .set({ netflix: false });
-                    }
-                    if (data("#disney-plus").text()) {
-                      Firebase.database()
-                        .ref("serien/" + index + "/disneyplus")
-                        .set({ disneyplus: true });
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/disneyplus")
-                        .set({ disneyplus: false });
-                    }
+                
 
-
-                    if (data("#prime-video").text()) {
-
-                      if (
-                        data("#prime-video").parent().parent().children()[1]
-                          .children[0].children[1].children[3].attribs.class
-                      ) {
-                        if (
-                          data("#prime-video")
-                            .parent()
-                            .parent()
-                            .children()[1]
-                            .children[0].children[1].children[3].attribs.class.includes(
-                              "flatrate"
-                            ) ||
-                          data("#prime-video")
-                            .parent()
-                            .parent()
-                            .children()[1]
-                            .children[0].children[1].children[3].attribs.class.includes(
-                              "free"
-                            )
-                        ) {
-                          Firebase.database()
-                            .ref("serien/" + index + "/prime")
-                            .set({ prime: true });
-                        }
-                      } else {
-                        Firebase.database()
-                          .ref("serien/" + index + "/prime")
-                          .set({ prime: false });
-                      }
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/prime")
-                        .set({ prime: false });
-                    }
-                    this.setState({ loading: false });
-                  });
+                
               }
             })
 
@@ -576,8 +619,8 @@ class App extends Component {
             a.title.indexOf(filter) > b.title.indexOf(filter)
               ? 1
               : b.title.indexOf(filter) > a.title.indexOf(filter)
-                ? -1
-                : 0
+              ? -1
+              : 0
           );
         }
 
@@ -770,9 +813,11 @@ class App extends Component {
       alert("Bitte Einloggen!");
     } else {
       fetch(
-        "https://api.themoviedb.org/3/search/tv?api_key=" + API.TMDB + "&query=" +
-        event.target[2].value +
-        "&page=1"
+        "https://api.themoviedb.org/3/search/tv?api_key=" +
+          API.TMDB +
+          "&query=" +
+          event.target[2].value +
+          "&page=1"
       )
         .then(function (response) {
           return response.json();
@@ -1151,7 +1196,6 @@ class App extends Component {
         </div>
       );
     } else {
-     
       return (
         <div>
           <div id="mySidenav" class="sidenav">
