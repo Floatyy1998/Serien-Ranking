@@ -7,6 +7,7 @@ import API from "./API.js";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
+import { log } from "async";
 
 const cheerio = require("cheerio");
 
@@ -18,7 +19,9 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    console.log(API.TMDB);
+    //console.log(API.TMDB);
+
+    console.log();
     if (!Firebase.apps.length) {
       Firebase.initializeApp(config);
     } else {
@@ -26,7 +29,7 @@ class App extends Component {
     }
     Firebase.analytics();
 
-    this.state = { loading: true, watching: false };
+    this.state = { loading: true };
   }
   get_serien() {
     alert("Daten werden aktualisiert\nBitte etwas Geduld");
@@ -42,109 +45,8 @@ class App extends Component {
 
   
 
- fetching(url, index){
 
 
-  fetch(`https://api.codetabs.com/v1/proxy?quest=${url}`)
-                  .then((response) => {
-                    return response.text();
-                  })
-                  .then((res) => {
-                    let counter =0;
-                    let start = res.indexOf("serie/details/") + 14;
-                    let test = "";
-                    while (counter!=2) {
-                      if (res.charAt(start) == "/") {
-                        counter++
-                      }
-                      test += res.charAt(start);
-                      start++;
-                    }
-
-
-
-                    return test;
-                  })
-                  .then((id) => {
-                    
-                    const url2 = "https://www.werstreamt.es/serie/details/" + id;
-
-                    fetch(`https://api.codetabs.com/v1/proxy?quest=${url2}`)
-                      .then((response) => {
-                        if (response.status==400) {
-
-                         
-                         console.log(id);
-                         
-                        }
-                        return response.text();
-                      })
-                      .then((res) => {
-                        const data = cheerio.load(res);
-
-                        if (data("#netflix").text()) {
-                          Firebase.database()
-                            .ref("serien/" + index + "/netflix")
-                            .set({ netflix: true });
-                        } else {
-                          Firebase.database()
-                            .ref("serien/" + index + "/netflix")
-                            .set({ netflix: false });
-                        }
-                        if (data("#disney-plus").text()) {
-                          Firebase.database()
-                            .ref("serien/" + index + "/disneyplus")
-                            .set({ disneyplus: true });
-                        } else {
-                          Firebase.database()
-                            .ref("serien/" + index + "/disneyplus")
-                            .set({ disneyplus: false });
-                        }
-
-                        if (data("#prime-video").text()) {
-                          if (
-                            data("#prime-video").parent().parent().children()[1]
-                              .children[0].children[1].children[3].attribs.class
-                          ) {
-                            if (
-                              data("#prime-video")
-                                .parent()
-                                .parent()
-                                .children()[1]
-                                .children[0].children[1].children[3].attribs.class.includes(
-                                  "flatrate"
-                                ) ||
-                              data("#prime-video")
-                                .parent()
-                                .parent()
-                                .children()[1]
-                                .children[0].children[1].children[3].attribs.class.includes(
-                                  "free"
-                                )
-                            ) {
-                              Firebase.database()
-                                .ref("serien/" + index + "/prime")
-                                .set({ prime: true });
-                            }
-                          } else {
-                            Firebase.database()
-                              .ref("serien/" + index + "/prime")
-                              .set({ prime: false });
-                          }
-                        } else {
-                          Firebase.database()
-                            .ref("serien/" + index + "/prime")
-                            .set({ prime: false });
-                        }
-                        this.setState({ loading: false });
-                      }).catch(error=>{
-                        
-                        
-                      });
-                      
-                  });
-
-}
 
   scrollDown() {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -153,9 +55,7 @@ class App extends Component {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  Sleep(milliseconds) {
-    return new Promise((resolve) => setTimeout(resolve, milliseconds));
-  }
+
 
   async laden() {
     console.log("laden");
@@ -166,11 +66,6 @@ class App extends Component {
       });
 
     for (let index = 0; index < serien.length; index++) {
-      if (index > 0 && index % 5 == 0) {
-        console.log("sleep " + index);
-        await this.Sleep(1000);
-        console.log("sleepEnd " + index);
-      }
       fetch(
         "https://api.themoviedb.org/3/tv/" +
           serien[index].id +
@@ -234,151 +129,7 @@ class App extends Component {
                   });
               }
 
-              if (index == 2) {
-                fetch(
-                  "https://api.codetabs.com/v1/proxy?quest=https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
-                )
-                  .then((response) => {
-                    return response.text();
-                  })
-                  .then((res) => {
-                    const data = cheerio.load(res);
-
-                    if (data("#netflix").text()) {
-                      Firebase.database()
-                        .ref("serien/" + index + "/netflix")
-                        .set({ netflix: true });
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/netflix")
-                        .set({ netflix: false });
-                    }
-
-                    if (data("#disney-plus").text()) {
-                      Firebase.database()
-                        .ref("serien/" + index + "/disneyplus")
-                        .set({ disneyplus: true });
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/disneyplus")
-                        .set({ disneyplus: false });
-                    }
-
-                    if (data("#prime-video").text()) {
-                      if (
-                        data("#prime-video").parent().parent().children()[1]
-                          .children[0].children[1].children[3].attribs.class
-                      ) {
-                        if (
-                          data("#prime-video")
-                            .parent()
-                            .parent()
-                            .children()[1]
-                            .children[0].children[1].children[3].attribs.class.includes(
-                              "flatrate"
-                            ) ||
-                          data("#prime-video")
-                            .parent()
-                            .parent()
-                            .children()[1]
-                            .children[0].children[1].children[3].attribs.class.includes(
-                              "free"
-                            )
-                        ) {
-                          Firebase.database()
-                            .ref("serien/" + index + "/prime")
-                            .set({ prime: true });
-                        }
-                      } else {
-                        Firebase.database()
-                          .ref("serien/" + index + "/prime")
-                          .set({ prime: false });
-                      }
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/prime")
-                        .set({ prime: false });
-                    }
-                  });
-              } else if (index == 35) {
-                const url =
-                  "https://www.werstreamt.es/serie/details/235057/vikings/";
-
-                fetch(`https://api.codetabs.com/v1/proxy?quest=${url}`)
-                  .then((response) => {
-                    return response.text();
-                  })
-                  .then((res) => {
-                    const data = cheerio.load(res);
-
-                    if (data("#netflix").text()) {
-                      Firebase.database()
-                        .ref("serien/" + index + "/netflix")
-                        .set({ netflix: true });
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/netflix")
-                        .set({ netflix: false });
-                    }
-                    if (data("#disney-plus").text()) {
-                      Firebase.database()
-                        .ref("serien/" + index + "/disneyplus")
-                        .set({ disneyplus: true });
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/disneyplus")
-                        .set({ disneyplus: false });
-                    }
-
-                    if (data("#prime-video").text()) {
-                      if (
-                        data("#prime-video").parent().parent().children()[1]
-                          .children[0].children[1].children[3].attribs.class
-                      ) {
-                        if (
-                          data("#prime-video")
-                            .parent()
-                            .parent()
-                            .children()[1]
-                            .children[0].children[1].children[3].attribs.class.includes(
-                              "flatrate"
-                            ) ||
-                          data("#prime-video")
-                            .parent()
-                            .parent()
-                            .children()[1]
-                            .children[0].children[1].children[3].attribs.class.includes(
-                              "free"
-                            )
-                        ) {
-                          Firebase.database()
-                            .ref("serien/" + index + "/prime")
-                            .set({ prime: true });
-                        }
-                      } else {
-                        Firebase.database()
-                          .ref("serien/" + index + "/prime")
-                          .set({ prime: false });
-                      }
-                    } else {
-                      Firebase.database()
-                        .ref("serien/" + index + "/prime")
-                        .set({ prime: false });
-                    }
-                  });
-              } else {
-                const url =
-                "https://www.werstreamt.es/filme-serien/?q=" +
-                data4.imdb_id +
-                "&action_results=suchen";
-
-                this.fetching(url, index);
-
-
-                
-
-                
-              }
+              
             })
 
             .catch(function (error) {
@@ -488,8 +239,8 @@ class App extends Component {
       document.getElementById("Header1").style.visibility = "visible";
       document.getElementById("mySidenav").style.width = "0";
       document.getElementById("main").style.marginLeft = "0";
-      document.getElementById("legende1").style.left = "calc(10% + 140px)";
-      document.getElementById("legende2").style.left = "calc(10% + 240px)";
+      document.getElementById("legende1").style.left = "10% ";
+      document.getElementById("legende2").style.left = "calc(10% + 100px)";
     } else {
       if (window.innerWidth <= 860) {
         document.getElementById("Header1").style.visibility = "hidden";
@@ -499,8 +250,8 @@ class App extends Component {
       document.getElementById("main").style.marginLeft = "250px";
       document.getElementById("oben").style.width = "calc(100% - 250px)";
 
-      document.getElementById("legende1").style.left = "calc(10% + 365px)";
-      document.getElementById("legende2").style.left = "calc(10% + 460px)";
+      document.getElementById("legende1").style.left = "calc(10% + 225px)";
+      document.getElementById("legende2").style.left = "calc(10% + 325px)";
     }
   }
 
@@ -692,40 +443,7 @@ class App extends Component {
     this.checkGenre();
   }
 
-  watchlist(event) {
-    event.preventDefault();
 
-    if (Firebase.auth().currentUser == null) {
-      alert("Bitte Einloggen!");
-    } else if (
-      Firebase.auth().currentUser.uid != "83fRTz3YqgMkjz646AJ1GO6I8Kg1"
-    ) {
-      alert("Bitte Einloggen!");
-    } else {
-      let test = Firebase.database()
-        .ref("/serien/")
-        .orderByChild("title")
-        .equalTo(event.target[0].value);
-
-      test
-        .once("value")
-        .then(function (snapshot) {
-          return Object.keys(snapshot.val())[0];
-        })
-        .then(function (zahl) {
-          let test2 = Firebase.database().ref("/serien/" + zahl + "/watching");
-          if (event.target[1].value === "true") {
-            test2.set(true);
-            alert(event.target[0].value + " auf true gesetzt");
-            window.location.reload();
-          } else {
-            test2.set(false);
-            alert(event.target[0].value + " auf false gesetzt");
-            window.location.reload();
-          }
-        });
-    }
-  }
 
   hinzufuegen(event) {
     event.preventDefault();
@@ -789,13 +507,13 @@ class App extends Component {
           ? 0
           : parseFloat(event.target[22].value),
     };
-    var genres = [];
+    var genres = ["All"];
     for (let index = 3; index < 9; index++) {
       if (event.target[index].value !== "") {
         genres.push(event.target[index].value);
       }
 
-      var nmr = event.target[1].value;
+      var nmr = document.getElementsByClassName("padding").length
     }
     var postData = {
       title: event.target[2].value,
@@ -871,128 +589,113 @@ class App extends Component {
       document.getElementById("login").innerHTML = "Login";
     }
   };
-  toggleWatchlist = () => {
-    document.getElementById("hinzufuegen").style.display = "none";
-    document.getElementById("watchlist").style.display = "block";
-  };
+
   toggleHinzufuegen = () => {
-    document.getElementById("watchlist").style.display = "none";
+   
     document.getElementById("hinzufuegen").style.display = "block";
   };
-  toggleWatching = (e) => {
-    if (!e.target.checked) {
-      this.setState((prevState) => ({
-        loading: prevState.loading,
-        watching: false,
-      }));
-    } else {
-      this.setState((prevState) => ({
-        loading: prevState.loading,
-        watching: true,
-      }));
-    }
-  };
+  
 
   render() {
     if (this.state.loading) {
       return (
         <div>
-          <div id="mySidenav" class="sidenav">
+          <div id="mySidenav" className="sidenav" >
             <h3 className="button">Login</h3>
             <h3 className="button">Serie hinzufügen</h3>
-            <h3 className="button">WL hinzufügen/entfrnen</h3>
+         
             <form
               className="hinzufuegen"
               onSubmit={this.hinzufuegen.bind(this)}
               autoComplete="off"
             >
-              <label for="Nr.">Nummer: </label>
-              <input type="text" id="Nr." name="Nr."></input>
+              <label style={{display:"none"}} hmtlfor="Nr.">Nummer: </label>
+              <input style={{display:"none"}} type="text" id="Nr." name="Nr."></input>
               <br></br>
               <br></br>
-              <label for="Title">Title: </label>
+              <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
               <br></br>
               <h3>Genre</h3>
-              <label for="Genre1">Genre1: </label>
+              <label hmtlfor="Genre1">Genre1: </label>
               <input type="text" id="Genre1" name="Genre1"></input>
               <br></br>
               <br></br>
-              <label for="Genre2">Genre2: </label>
+              <label hmtlfor="Genre2">Genre2: </label>
               <input type="text" id="Genre2" name="Genre2"></input>
               <br></br>
               <br></br>
-              <label for="Genre3">Genre3: </label>
+              <label hmtlfor="Genre3">Genre3: </label>
               <input type="text" id="Genre3" name="Genre3"></input>
               <br></br>
               <br></br>
-              <label for="Genre4">Genre4: </label>
+              <label hmtlfor="Genre4">Genre4: </label>
               <input type="text" id="Genre4" name="Genre4"></input>
               <br></br>
               <br></br>
-              <label for="Genre5">Genre5: </label>
+              <label hmtlfor="Genre5">Genre5: </label>
               <input type="text" id="Genre5" name="Genre5"></input>
               <br></br>
               <br></br>
-              <label for="Genre6">Genre6: </label>
+              <label hmtlfor="Genre6">Genre6: </label>
               <input type="text" id="Genre6" name="Genre6"></input>
               <br></br>
               <br></br>
               <h3>Rating</h3>
-              <label for="Action">Action: </label>
+              <label hmtlfor="Action">Action: </label>
               <input type="text" id="Action" name="Action"></input>
               <br></br>
               <br></br>
-              <label for="Adventure">Adventure: </label>
+              <label hmtlfor="Adventure">Adventure: </label>
               <input type="text" id="Adventure" name="Adventure"></input>
               <br></br>
               <br></br>
-              <label for="All">All: </label>
+              <label hmtlfor="All">All: </label>
               <input type="text" id="All" name="All"></input>
               <br></br>
               <br></br>
-              <label for="Animation">Animation: </label>
+              <label hmtlfor="Animation">Animation: </label>
               <input type="text" id="Animation" name="Animation"></input>
               <br></br>
               <br></br>
-              <label for="Comedy">Comedy: </label>
+              <label hmtlfor="Comedy">Comedy: </label>
               <input type="text" id="Comedy" name="Comedy"></input>
               <br></br>
               <br></br>
-              <label for="Crime">Crime: </label>
+              <label hmtlfor="Crime">Crime: </label>
               <input type="text" id="Crime" name="Crime"></input>
               <br></br>
               <br></br>
-              <label for="Documentary">Documentary: </label>
+              <label hmtlfor="Documentary">Documentary: </label>
               <input type="text" id="Documentary" name="Documentary"></input>
               <br></br>
               <br></br>
-              <label for="Drama">Drama: </label>
+              <label hmtlfor="Drama">Drama: </label>
               <input type="text" id="Drama" name="Drama"></input>
               <br></br>
               <br></br>
-              <label for="Fantasy">Fantasy: </label>
+              <label hmtlfor="Fantasy">Fantasy: </label>
               <input type="text" id="Fantasy" name="Fantasy"></input>
               <br></br>
               <br></br>
-              <label for="Horror">Horror: </label>
+              <label hmtlfor="Horror">Horror: </label>
               <input type="text" id="Horror" name="Horror"></input>
               <br></br>
               <br></br>
-              <label for="Mystery">Mystery: </label>
+              <label hmtlfor="Mystery">Mystery: </label>
               <input type="text" id="Mystery" name="Mystery"></input>
               <br></br>
               <br></br>
-              <label for="SciFi">SciFi: </label>
+              <label hmtlfor="SciFi">SciFi: </label>
               <input type="text" id="SciFi" name="SciFi"></input>
               <br></br>
               <br></br>
-              <label for="Sport">Sport: </label>
+              <label hmtlfor="Sport">Sport: </label>
               <input type="text" id="Sport" name="Sport"></input>
               <br></br>
               <br></br>
-              <label for="Thriller">Thriller: </label>
+              <label hmtlfor="Thriller">Thriller: </label>
               <input type="text" id="Thriller" name="Thriller"></input>
               <br></br>
               <br></br>
@@ -1012,16 +715,16 @@ class App extends Component {
                 zIndex: "99",
               }}
             >
-              <div class="row">
+              <div className="row">
                 <input
                   type="checkbox"
                   onClick={this.openNav}
                   id="hamburg"
                 ></input>
-                <label for="hamburg" id="hamburger" class="hamburg">
-                  <span class="line"></span>
-                  <span class="line"></span>
-                  <span class="line"></span>
+                <label hmtlfor="hamburg" id="hamburger" className="hamburg">
+                  <span className="line"></span>
+                  <span className="line"></span>
+                  <span className="line"></span>
                 </label>
               </div>
               <div id="Header">
@@ -1095,9 +798,7 @@ class App extends Component {
                 type="checkbox"
                 id="switch"
               />
-              <label className="testen" for="switch">
-                Watchlist
-              </label>
+             
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
@@ -1108,7 +809,7 @@ class App extends Component {
                     right: "0px",
                     marginBottom: "2px",
                     top: "197px",
-                    left: "calc(10% + 140px)",
+                    left: "10%",
                   }}
                 >
                   <div
@@ -1142,7 +843,7 @@ class App extends Component {
                     position: "absolute",
                     right: "0px",
                     top: "197px",
-                    left: "calc(10% + 240px)",
+                    left: "calc(10% + 100px)",
                   }}
                 >
                   <div
@@ -1179,10 +880,10 @@ class App extends Component {
             </p>
 
             <div className="container">
-              <div class="loader">
-                <div class="inner one"></div>
-                <div class="inner two"></div>
-                <div class="inner three"></div>
+              <div className="loader">
+                <div className="inner one"></div>
+                <div className="inner two"></div>
+                <div className="inner three"></div>
               </div>
             </div>
             <p className="scrollen">
@@ -1198,33 +899,14 @@ class App extends Component {
     } else {
       return (
         <div>
-          <div id="mySidenav" class="sidenav">
+          <div id="mySidenav" className="sidenav">
             <h3 className="button" id="login" onClick={(_) => this.login()}>
               Login
             </h3>
             <h3 className="button" onClick={(_) => this.toggleHinzufuegen()}>
               Serie hinzufügen
             </h3>
-            <h3 className="button" onClick={(_) => this.toggleWatchlist()}>
-              Watchlist
-            </h3>
-            <form
-              className="watchlist"
-              id="watchlist"
-              onSubmit={this.watchlist}
-              autoComplete="off"
-            >
-              <h3>Watchlist</h3>
-              <label for="Title">Title: </label>
-              <input type="text" id="Title" name="Title"></input>
-              <br></br>
-              <br></br>
-              <label for="hinzufügen?">hinzufügen?: </label>
-              <input type="text" id="hinzufügen?" name="hinzufügen?"></input>
-              <br></br>
-              <br></br>
-              <input type="submit" value="hinzufügen/entfernen"></input>
-            </form>
+            
             <form
               className="hinzufuegen"
               id="hinzufuegen"
@@ -1232,7 +914,7 @@ class App extends Component {
               autoComplete="off"
             >
               <h3>Serie hinzufügen</h3>
-              <label style={{ display: "none" }} for="Key">
+              <label style={{ display: "none" }} hmtlfor="Key">
                 Key:{" "}
               </label>
               <input
@@ -1241,94 +923,94 @@ class App extends Component {
                 name="Key"
                 style={{ display: "none" }}
               ></input>
-              <label for="Nr.">Nummer: </label>
-              <input type="text" id="Nr." name="Nr."></input>
+              <label style={{display:"none"}} hmtlfor="Nr.">Nummer: </label>
+              <input style={{display:"none"}} type="text" id="Nr." name="Nr."></input>
               <br></br>
               <br></br>
-              <label for="Title">Title: </label>
+              <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
               <br></br>
               <h3>Genre</h3>
-              <label for="Genre1">Genre1: </label>
+              <label hmtlfor="Genre1">Genre1: </label>
               <input type="text" id="Genre1" name="Genre1"></input>
               <br></br>
               <br></br>
-              <label for="Genre2">Genre2: </label>
+              <label hmtlfor="Genre2">Genre2: </label>
               <input type="text" id="Genre2" name="Genre2"></input>
               <br></br>
               <br></br>
-              <label for="Genre3">Genre3: </label>
+              <label hmtlfor="Genre3">Genre3: </label>
               <input type="text" id="Genre3" name="Genre3"></input>
               <br></br>
               <br></br>
-              <label for="Genre4">Genre4: </label>
+              <label hmtlfor="Genre4">Genre4: </label>
               <input type="text" id="Genre4" name="Genre4"></input>
               <br></br>
               <br></br>
-              <label for="Genre5">Genre5: </label>
+              <label hmtlfor="Genre5">Genre5: </label>
               <input type="text" id="Genre5" name="Genre5"></input>
               <br></br>
               <br></br>
-              <label for="Genre6">Genre6: </label>
+              <label hmtlfor="Genre6">Genre6: </label>
               <input type="text" id="Genre6" name="Genre6"></input>
               <br></br>
               <br></br>
               <h3>Rating</h3>
-              <label for="Action">Action: </label>
+              <label hmtlfor="Action">Action: </label>
               <input type="text" id="Action" name="Action"></input>
               <br></br>
               <br></br>
-              <label for="Adventure">Adventure: </label>
+              <label hmtlfor="Adventure">Adventure: </label>
               <input type="text" id="Adventure" name="Adventure"></input>
               <br></br>
               <br></br>
-              <label for="All">All: </label>
+              <label hmtlfor="All">All: </label>
               <input type="text" id="All" name="All"></input>
               <br></br>
               <br></br>
-              <label for="Animation">Animation: </label>
+              <label hmtlfor="Animation">Animation: </label>
               <input type="text" id="Animation" name="Animation"></input>
               <br></br>
               <br></br>
-              <label for="Comedy">Comedy: </label>
+              <label hmtlfor="Comedy">Comedy: </label>
               <input type="text" id="Comedy" name="Comedy"></input>
               <br></br>
               <br></br>
-              <label for="Crime">Crime: </label>
+              <label hmtlfor="Crime">Crime: </label>
               <input type="text" id="Crime" name="Crime"></input>
               <br></br>
               <br></br>
-              <label for="Documentary">Documentary: </label>
+              <label hmtlfor="Documentary">Documentary: </label>
               <input type="text" id="Documentary" name="Documentary"></input>
               <br></br>
               <br></br>
-              <label for="Drama">Drama: </label>
+              <label hmtlfor="Drama">Drama: </label>
               <input type="text" id="Drama" name="Drama"></input>
               <br></br>
               <br></br>
-              <label for="Fantasy">Fantasy: </label>
+              <label hmtlfor="Fantasy">Fantasy: </label>
               <input type="text" id="Fantasy" name="Fantasy"></input>
               <br></br>
               <br></br>
-              <label for="Horror">Horror: </label>
+              <label hmtlfor="Horror">Horror: </label>
               <input type="text" id="Horror" name="Horror"></input>
               <br></br>
               <br></br>
-              <label for="Mystery">Mystery: </label>
+              <label hmtlfor="Mystery">Mystery: </label>
               <input type="text" id="Mystery" name="Mystery"></input>
               <br></br>
               <br></br>
-              <label for="SciFi">SciFi: </label>
+              <label hmtlfor="SciFi">SciFi: </label>
               <input type="text" id="SciFi" name="SciFi"></input>
               <br></br>
               <br></br>
-              <label for="Sport">Sport: </label>
+              <label hmtlfor="Sport">Sport: </label>
               <input type="text" id="Sport" name="Sport"></input>
               <br></br>
               <br></br>
-              <label for="Thriller">Thriller: </label>
-              <input type="text" id="Thriller" name="Thriller"></input>
+              <label hmtlfor="Thriller">Thriller: </label>
+              <input type="text" value="" id="Thriller" name="Thriller"></input>
               <br></br>
               <br></br>
 
@@ -1347,16 +1029,16 @@ class App extends Component {
                 zIndex: "99",
               }}
             >
-              <div class="row">
+              <div className="row">
                 <input
                   type="checkbox"
                   onClick={this.openNav}
                   id="hamburg"
                 ></input>
-                <label for="hamburg" id="hamburger" class="hamburg">
-                  <span class="line"></span>
-                  <span class="line"></span>
-                  <span class="line"></span>
+                <label hmtlfor="hamburg" id="hamburger" className="hamburg">
+                  <span className="line"></span>
+                  <span className="line"></span>
+                  <span className="line"></span>
                 </label>
               </div>
               <div id="Header">
@@ -1417,7 +1099,7 @@ class App extends Component {
                   style: { color: "#fff" },
                 }}
                 type="search"
-                hintText="gfgfgfgf"
+                hinttext="gfgfgfgf"
                 id="site-search"
                 name="q"
                 label="Serie suchen"
@@ -1429,9 +1111,7 @@ class App extends Component {
                 type="checkbox"
                 id="switch"
               />
-              <label className="testen" for="switch">
-                Watchlist
-              </label>
+             
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
@@ -1442,7 +1122,7 @@ class App extends Component {
                     right: "0px",
                     marginBottom: "2px",
                     top: "197px",
-                    left: "calc(10% + 140px)",
+                    left: "10% ",
                   }}
                 >
                   <div
@@ -1476,7 +1156,7 @@ class App extends Component {
                     position: "absolute",
                     right: "0px",
                     top: "197px",
-                    left: "calc(10% + 240px)",
+                    left: "calc(10% + 100px)",
                   }}
                 >
                   <div

@@ -3,6 +3,7 @@ import Firebase from "firebase";
 
 var pruefen = "";
 var ids = {};
+var key = "test";
 class SeriesRow extends React.Component {
   constructor(props) {
     super(props);
@@ -22,7 +23,7 @@ class SeriesRow extends React.Component {
       .on("value", (snap) => {
         pruefen = snap.val();
       });
-
+    key = this.props.serie.i;
   }
 
   addZeroes(num) {
@@ -117,540 +118,69 @@ class SeriesRow extends React.Component {
 
   render() {
     var x = false;
-    var netflix;
-    var prime;
-    var disneyplus;
+
     var poster;
     var wo;
     var imdb;
+    
 
     try {
       x = this.props.serie.production["production"];
-      netflix = this.props.serie.netflix["netflix"];
-      prime = this.props.serie.prime["prime"];
-      disneyplus = this.props.serie.disneyplus["disneyplus"];
+     
       poster = `url(${this.props.serie.poster["poster"]})`;
       imdb =
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";
       wo = this.props.serie.wo["wo"];
     } catch (error) { console.log(this.props.serie); }
 
-    let testprime;
-    let testnetflix;
-    let testdisneyplus;
-    if (netflix && !prime && !disneyplus) {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-            display: "flex",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-              margin: "auto",
-            }}
-            className="netflix iconify"
-            src="netflix.svg"
-          />
-        </span>
-      );
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="simple-icons:prime"
-          data-inline="false"
-        ></span>
-      );
-      testdisneyplus = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "0",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="mdi-netflix"
-          data-inline="false"
-        ></span>
-      );
-    } else if (!netflix && prime && !disneyplus) {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "0",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="mdi-netflix"
-          data-inline="false"
-        ></span>
-      );
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "114px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "53.72px",
-              height: "100%",
-              color: "#00A8E1",
-              paddingLeft: "18px",
-            }}
-            className="netflix iconify"
-            src="prime-video.svg"
-          />
-        </span>
-      );
-      testdisneyplus = (<span
-        className="netflix iconify"
-        style={{
-          float: "left",
-          width: "0",
-          height: "100%",
-          color: "#E50914",
-          visibility: "hidden",
-        }}
-        data-icon="mdi-netflix"
-        data-inline="false"
-      ></span>);
-    } else if (netflix && prime && disneyplus) {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-            display: "flex",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-              margin: "auto",
-            }}
-            className="netflix iconify"
-            src="netflix.svg"
-          />
-        </span>
-      );
-
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-            }}
-            className="netflix iconify"
-            src="prime-video.svg"
-          />
-        </span>
-      );
-      testdisneyplus = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-            }}
-            className="netflix iconify"
-            src="disney-plus.svg"
-          />
-        </span>
-      );
-    }
-    else if (netflix && prime && !disneyplus) {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-            display: "flex",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-              margin: "auto",
-            }}
-            className="netflix iconify"
-            src="netflix.svg"
-          />
-        </span>
-      );
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-            }}
-            className="netflix iconify"
-            src="prime-video.svg"
-          />
-        </span>
-      );
-      testdisneyplus = (<span
-        className="netflix iconify"
-        style={{
-          float: "left",
-          width: "0",
-          height: "100%",
-          color: "#E50914",
-          visibility: "hidden",
-        }}
-        data-icon="mdi-netflix"
-        data-inline="false"
-      ></span>);
-    }
-    else if (netflix && !prime && disneyplus) {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "0p",
-            height: "100%",
-            color: "#292929",
-            display: "flex",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-              margin: "auto",
-            }}
-            className="netflix iconify"
-            src="netflix.svg"
-          />
-        </span>
-      );
-
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "25px",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="simple-icons:prime"
-          data-inline="false"
-        ></span>
-      );
-      testdisneyplus = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-            }}
-            className="netflix iconify"
-            src="disney-plus.svg"
-          />
-        </span>
-      );
-    }
-    else if (!netflix && prime && disneyplus) {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "0",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="mdi-netflix"
-          data-inline="false"
-        ></span>
-      );
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "72px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "53.72px",
-              height: "100%",
-              color: "#00A8E1",
-              paddingLeft: "18px",
-            }}
-            className="netflix iconify"
-            src="prime-video.svg"
-          />
-        </span>
-      );
-      testdisneyplus = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-            }}
-            className="netflix iconify"
-            src="disney-plus.svg"
-          />
-        </span>
-      );
-    }
-    else if (!netflix && !prime && disneyplus) {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "0",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="mdi-netflix"
-          data-inline="false"
-        ></span>
-      );
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "0px",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="simple-icons:prime"
-          data-inline="false"
-        ></span>
-      );
-      testdisneyplus = (
-        <span
-          className="netflix iconify"
-          style={{
-            paddingLeft: "20px",
-            float: "left",
-            width: "114px",
-            height: "100%",
-            color: "#292929",
-          }}
-        >
-          {" "}
-          <img
-            style={{
-              float: "left",
-              width: "35.72px",
-              height: "100%",
-              color: "#00A8E1",
-            }}
-            className="netflix iconify"
-            src="disney-plus.svg"
-          />
-        </span>
-      );
-    }
 
 
-    else {
-      testnetflix = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="mdi-netflix"
-          data-inline="false"
-        ></span>
-      );
 
-      testprime = (
-        <span
-          className="netflix iconify"
-          style={{
-            float: "left",
-            width: "57px",
-            height: "100%",
-            color: "#E50914",
-            visibility: "hidden",
-          }}
-          data-icon="simple-icons:prime"
-          data-inline="false"
-        ></span>
-      );
 
-      testdisneyplus = (<span
-        className="netflix iconify"
-        style={{
-          float: "left",
-          width: "0",
-          height: "100%",
-          color: "#E50914",
-          visibility: "hidden",
-        }}
-        data-icon="mdi-netflix"
-        data-inline="false"
-      ></span>);
-    }
+
+
 
 
 
     if (!this.state.loading) {
       if (x) {
         return (
-          <li>
+          <li key={key}>
             <div className="polaroid">
-              <p
+              <div
                 className="pposter"
                 style={{
                   backgroundImage: poster,
                 }}
                 onClick={(_) => this.redirect(imdb)}
               >
-                <p
+                <div
                   style={{
-                    paddingTop: "2%",
+
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    paddingTop: "5%",
+                    justifyContent: "right",
                     background: "none",
                     width: "100%",
                     height: "12%",
                   }}
                 >
-                  {testnetflix}
-                  {testprime}
-                  {testdisneyplus}
+
                   <p
                     className="rating"
                     style={{
                       verticalAlign: "text-bottom",
                       float: "left",
-                      width: "115px",
+                      paddingRight: "5%",
                       height: "auto",
                     }}
                   >
                     {this.getRating(this.props.serie)} / 10
                   </p>
-                </p>
-              </p>
+                </div>
+              </div>
 
-              <p className="draußen" style={{ width: "100%" }}>
+              <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
                   <a
                     href={wo}
@@ -681,15 +211,15 @@ class SeriesRow extends React.Component {
                   className="progress"
                   style={{ backgroundColor: "#42d10f" }}
                 ></p>
-              </p>
+              </div>
             </div>
           </li>
         );
       } else {
         return (
-          <li>
+          <li key={key}>
             <div className="polaroid">
-              <p
+              <div
                 className="pposter"
                 style={{
                   backgroundImage: poster,
@@ -697,35 +227,33 @@ class SeriesRow extends React.Component {
                 onClick={(_) => this.redirect(imdb)}
               >
                 {" "}
-                <p
+                <div
                   style={{
-                    paddingTop: "2%",
+
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    paddingTop: "5%",
+                    justifyContent: "right",
                     background: "none",
                     width: "100%",
                     height: "12%",
                   }}
                 >
-                  {testnetflix}
-                  {testprime}
-                  {testdisneyplus}
+
                   <p
                     className="rating"
                     style={{
                       verticalAlign: "text-bottom",
                       float: "left",
-                      width: "115px",
+                      paddingRight: "5%",
                       height: "auto",
                     }}
                   >
                     {this.getRating(this.props.serie)} / 10
                   </p>
-                </p>
-              </p>
+                </div>
+              </div>
 
-              <p className="draußen" style={{ width: "100%" }}>
+              <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
                   <a
                     href={wo}
@@ -756,16 +284,16 @@ class SeriesRow extends React.Component {
                   className="progress"
                   style={{ backgroundColor: "#b103fc" }}
                 ></p>
-              </p>
+              </div>
             </div>
           </li>
         );
       }
     } else {
       return (
-        <li>
+        <li key={key}>
           <div className="polaroid">
-            <div class="lds-ellipsis">
+            <div className="lds-ellipsis">
               <div></div>
               <div></div>
               <div></div>
