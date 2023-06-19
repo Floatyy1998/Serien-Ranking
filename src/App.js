@@ -7,7 +7,9 @@ import API from "./API.js";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
-import { log } from "async";
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 const cheerio = require("cheerio");
 
@@ -43,7 +45,7 @@ class App extends Component {
     });
   }
 
-  
+
 
 
 
@@ -68,10 +70,10 @@ class App extends Component {
     for (let index = 0; index < serien.length; index++) {
       fetch(
         "https://api.themoviedb.org/3/tv/" +
-          serien[index].id +
-          "?api_key=" +
-          API.TMDB +
-          "&language=en-US"
+        serien[index].id +
+        "?api_key=" +
+        API.TMDB +
+        "&language=en-US"
       )
         .then(function (response2) {
           return response2.json();
@@ -91,10 +93,10 @@ class App extends Component {
         .then((_) => {
           fetch(
             "https://api.themoviedb.org/3/tv/" +
-              serien[index].id +
-              "/external_ids?api_key=" +
-              API.TMDB +
-              "&language=en-US"
+            serien[index].id +
+            "/external_ids?api_key=" +
+            API.TMDB +
+            "&language=en-US"
           )
             .then(function (response3) {
               return response3.json();
@@ -129,7 +131,7 @@ class App extends Component {
                   });
               }
 
-              
+
             })
 
             .catch(function (error) {
@@ -230,6 +232,7 @@ class App extends Component {
   }
 
   openNav() {
+    console.log("hi");
     document.getElementById("oben").style.transition = "0.5s";
     document.getElementById("legende1").style.transition = "0.5s";
     document.getElementById("legende2").style.transition = "0.5s";
@@ -370,8 +373,8 @@ class App extends Component {
             a.title.indexOf(filter) > b.title.indexOf(filter)
               ? 1
               : b.title.indexOf(filter) > a.title.indexOf(filter)
-              ? -1
-              : 0
+                ? -1
+                : 0
           );
         }
 
@@ -532,10 +535,10 @@ class App extends Component {
     } else {
       fetch(
         "https://api.themoviedb.org/3/search/tv?api_key=" +
-          API.TMDB +
-          "&query=" +
-          event.target[2].value +
-          "&page=1"
+        API.TMDB +
+        "&query=" +
+        event.target[2].value +
+        "&page=1"
       )
         .then(function (response) {
           return response.json();
@@ -591,10 +594,10 @@ class App extends Component {
   };
 
   toggleHinzufuegen = () => {
-   
+
     document.getElementById("hinzufuegen").style.display = "block";
   };
-  
+
 
   render() {
     if (this.state.loading) {
@@ -603,14 +606,14 @@ class App extends Component {
           <div id="mySidenav" className="sidenav" >
             <h3 className="button">Login</h3>
             <h3 className="button">Serie hinzufügen</h3>
-         
+
             <form
               className="hinzufuegen"
               onSubmit={this.hinzufuegen.bind(this)}
               autoComplete="off"
             >
-              <label style={{display:"none"}} hmtlfor="Nr.">Nummer: </label>
-              <input style={{display:"none"}} type="text" id="Nr." name="Nr."></input>
+              <label style={{ display: "none" }} hmtlfor="Nr.">Nummer: </label>
+              <input style={{ display: "none" }} type="text" id="Nr." name="Nr."></input>
               <br></br>
               <br></br>
               <label hmtlfor="Title">Title: </label>
@@ -721,7 +724,7 @@ class App extends Component {
                   onClick={this.openNav}
                   id="hamburg"
                 ></input>
-                <label hmtlfor="hamburg" id="hamburger" className="hamburg">
+                <label hmtlfor="hamburg" id="hamburger" onClick={this.openNav} className="hamburg">
                   <span className="line"></span>
                   <span className="line"></span>
                   <span className="line"></span>
@@ -798,7 +801,7 @@ class App extends Component {
                 type="checkbox"
                 id="switch"
               />
-             
+
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
@@ -906,7 +909,7 @@ class App extends Component {
             <h3 className="button" onClick={(_) => this.toggleHinzufuegen()}>
               Serie hinzufügen
             </h3>
-            
+
             <form
               className="hinzufuegen"
               id="hinzufuegen"
@@ -923,8 +926,8 @@ class App extends Component {
                 name="Key"
                 style={{ display: "none" }}
               ></input>
-              <label style={{display:"none"}} hmtlfor="Nr.">Nummer: </label>
-              <input style={{display:"none"}} type="text" id="Nr." name="Nr."></input>
+              <label style={{ display: "none" }} hmtlfor="Nr.">Nummer: </label>
+              <input style={{ display: "none" }} type="text" id="Nr." name="Nr."></input>
               <br></br>
               <br></br>
               <label hmtlfor="Title">Title: </label>
@@ -1035,7 +1038,7 @@ class App extends Component {
                   onClick={this.openNav}
                   id="hamburg"
                 ></input>
-                <label hmtlfor="hamburg" id="hamburger" className="hamburg">
+                <label hmtlfor="hamburg" onClick={this.openNav} id="hamburger" className="hamburg">
                   <span className="line"></span>
                   <span className="line"></span>
                   <span className="line"></span>
@@ -1111,7 +1114,7 @@ class App extends Component {
                 type="checkbox"
                 id="switch"
               />
-             
+
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
@@ -1182,6 +1185,35 @@ class App extends Component {
                     laufend
                   </div>
                 </div>
+                <Tooltip
+                  style={{
+                    height: "20px",
+                    width: "20px",
+                    position: "absolute",
+                    right: "0px",
+                    top: "197px",
+                    right: "10%",
+                  }}
+                  title={
+                    <React.Fragment>
+                      <Typography style={{textDecoration:"underline"}}><b>LEGENDE</b></Typography><br></br>
+                      <span style={{color:"#b103fc"}}> <b>beendet:</b> Serie ist beendet.</span><br></br><br></br>
+                      <span style={{color:"#42d10f"}}> <b>laufend:</b> Serie ist noch nicht beendet.</span><br></br><br></br><br></br>
+                      <span>Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.</span><br></br><br></br>
+                      <span>Klicke auf den Titel, um zu erfahren, wo du die Serie schauen kannst.</span><br></br><br></br>
+                    </React.Fragment>
+                  }
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        color: "#aaaaaa",
+                        backgroundColor: "black",
+                      }
+                    }
+                  }}
+                >
+                  <InfoOutlinedIcon></InfoOutlinedIcon>
+                </Tooltip>
               </div>
             </div>
             <p className="scrollen">
