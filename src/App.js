@@ -895,6 +895,7 @@ class App extends Component {
                       sx: {
                         color: "#aaaaaa",
                         backgroundColor: "black",
+                        fontSize: "0.9rem",
                       }
                     }
                   }}
@@ -1237,6 +1238,7 @@ class App extends Component {
                       sx: {
                         color: "#aaaaaa",
                         backgroundColor: "black",
+                        fontSize: "0.9rem",
                       }
                     }
                   }}
