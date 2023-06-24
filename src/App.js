@@ -10,6 +10,8 @@ import SearchIcon from "@material-ui/icons/Search";
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { forEach } from "lodash";
+import { log } from "async";
 
 const cheerio = require("cheerio");
 
@@ -449,78 +451,74 @@ class App extends Component {
 
 
   hinzufuegen(event) {
+     console.log(event);
     event.preventDefault();
     let self = this;
 
     var ratings = {
       Action:
+        event.target[2].value === "" || event.target[2].value === null
+          ? 0
+          : parseFloat(event.target[2].value),
+      Adventure:
+        event.target[3].value === "" || event.target[3].value === null
+          ? 0
+          : parseFloat(event.target[3].value),
+      All:
+        event.target[4].value === "" || event.target[4].value === null
+          ? 0
+          : parseFloat(event.target[4].value),
+      Animation:
+        event.target[5].value === "" || event.target[5].value === null
+          ? 0
+          : parseFloat(event.target[5].value),
+      Comedy:
+        event.target[6].value === "" || event.target[6].value === null
+          ? 0
+          : parseFloat(event.target[6].value),
+      Crime:
+        event.target[7].value === "" || event.target[7].value === null
+          ? 0
+          : parseFloat(event.target[7].value),
+      Documentary:
+        event.target[8].value === "" || event.target[8].value === null
+          ? 0
+          : parseFloat(event.target[8].value),
+      Drama:
         event.target[9].value === "" || event.target[9].value === null
           ? 0
           : parseFloat(event.target[9].value),
-      Adventure:
+      Fantasy:
         event.target[10].value === "" || event.target[10].value === null
           ? 0
           : parseFloat(event.target[10].value),
-      All:
+      Horror:
         event.target[11].value === "" || event.target[11].value === null
           ? 0
           : parseFloat(event.target[11].value),
-      Animation:
+      Mystery:
         event.target[12].value === "" || event.target[12].value === null
           ? 0
           : parseFloat(event.target[12].value),
-      Comedy:
+      SciFi:
         event.target[13].value === "" || event.target[13].value === null
           ? 0
           : parseFloat(event.target[13].value),
-      Crime:
+      Sport:
         event.target[14].value === "" || event.target[14].value === null
           ? 0
           : parseFloat(event.target[14].value),
-      Documentary:
+      Thriller:
         event.target[15].value === "" || event.target[15].value === null
           ? 0
           : parseFloat(event.target[15].value),
-      Drama:
-        event.target[16].value === "" || event.target[16].value === null
-          ? 0
-          : parseFloat(event.target[16].value),
-      Fantasy:
-        event.target[17].value === "" || event.target[17].value === null
-          ? 0
-          : parseFloat(event.target[17].value),
-      Horror:
-        event.target[18].value === "" || event.target[18].value === null
-          ? 0
-          : parseFloat(event.target[18].value),
-      Mystery:
-        event.target[19].value === "" || event.target[19].value === null
-          ? 0
-          : parseFloat(event.target[19].value),
-      SciFi:
-        event.target[20].value === "" || event.target[20].value === null
-          ? 0
-          : parseFloat(event.target[20].value),
-      Sport:
-        event.target[21].value === "" || event.target[21].value === null
-          ? 0
-          : parseFloat(event.target[21].value),
-      Thriller:
-        event.target[22].value === "" || event.target[22].value === null
-          ? 0
-          : parseFloat(event.target[22].value),
     };
+    
+    
     var genres = ["All"];
-    for (let index = 3; index < 9; index++) {
-      if (event.target[index].value !== "") {
-        genres.push(event.target[index].value);
-      }
-
-      var nmr = document.getElementsByClassName("padding").length
-    }
+    var nmr = document.getElementsByClassName("padding").length
     var postData = {
-      title: event.target[2].value,
-      genre: genres,
+      title: event.target[1].value,
       rating: ratings,
     };
     self.setState({ loading: true });
@@ -537,7 +535,7 @@ class App extends Component {
         "https://api.themoviedb.org/3/search/tv?api_key=" +
         API.TMDB +
         "&query=" +
-        event.target[2].value +
+        event.target[1].value +
         "&page=1"
       )
         .then(function (response) {
@@ -548,21 +546,42 @@ class App extends Component {
         })
         .then((daten) => {
           postData["id"] = daten;
+          return daten;
         })
-        .then((_) => {
-          Firebase.database()
-            .ref("serien/" + nmr)
-            .set(postData)
-            .then(() => {
-              for (let j = 0; j < 23; j++) {
-                event.target[j].value = "";
-              }
-
-              self.get_serien();
-              alert("Serie hinzugefügt!");
-            });
-        });
-    }
+        .then((daten) => {
+          console.log("Hallo fdfd " + daten);
+          fetch(
+            "https://api.themoviedb.org/3/tv/" +
+            daten +
+            "?api_key=" +
+            API.TMDB +
+            "&language=en-US"
+          ).then(function (response) {
+            return response.json();
+          }).then((data) => {
+            console.log(data.genres);
+            for(var i = 0; i < data.genres.length; i++){
+              console.log(data.genres[i].name);
+              genres.push(data.genres[i].name)
+            }
+            postData["genre"] = genres;
+          }).then((_) => {
+            console.log("Hallo2");
+            Firebase.database()
+              .ref("serien/" + nmr)
+              .set(postData)
+              .then(() => {
+                for (let j = 0; j < 16; j++) {
+                  event.target[j].value = "";
+                }
+  
+                self.get_serien();
+                alert("Serie hinzugefügt!");
+              });
+          });
+        })
+        
+    } 
   }
   login = () => {
     if (document.getElementById("login").innerHTML == "Login") {
@@ -612,10 +631,7 @@ class App extends Component {
               onSubmit={this.hinzufuegen.bind(this)}
               autoComplete="off"
             >
-              <label style={{ display: "none" }} hmtlfor="Nr.">Nummer: </label>
-              <input style={{ display: "none" }} type="text" id="Nr." name="Nr."></input>
-              <br></br>
-              <br></br>
+              
               <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
@@ -956,39 +972,14 @@ class App extends Component {
                 name="Key"
                 style={{ display: "none" }}
               ></input>
-              <label style={{ display: "none" }} hmtlfor="Nr.">Nummer: </label>
-              <input style={{ display: "none" }} type="text" id="Nr." name="Nr."></input>
+              
               <br></br>
               <br></br>
               <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
               <br></br>
-              <h3>Genre</h3>
-              <label hmtlfor="Genre1">Genre1: </label>
-              <input type="text" id="Genre1" name="Genre1"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre2">Genre2: </label>
-              <input type="text" id="Genre2" name="Genre2"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre3">Genre3: </label>
-              <input type="text" id="Genre3" name="Genre3"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre4">Genre4: </label>
-              <input type="text" id="Genre4" name="Genre4"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre5">Genre5: </label>
-              <input type="text" id="Genre5" name="Genre5"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre6">Genre6: </label>
-              <input type="text" id="Genre6" name="Genre6"></input>
-              <br></br>
-              <br></br>
+              
               <h3>Rating</h3>
               <label hmtlfor="Action">Action: </label>
               <input type="text" id="Action" name="Action"></input>
@@ -1043,7 +1034,7 @@ class App extends Component {
               <br></br>
               <br></br>
               <label hmtlfor="Thriller">Thriller: </label>
-              <input type="text" value="" id="Thriller" name="Thriller"></input>
+              <input type="text" id="Thriller" name="Thriller"></input>
               <br></br>
               <br></br>
 
