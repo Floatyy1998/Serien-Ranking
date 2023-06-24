@@ -1215,8 +1215,8 @@ class App extends Component {
                   title={
                     <React.Fragment>
                       <Typography style={{ textDecoration: "underline" }}><b>LEGENDE</b></Typography><br></br>
-                      <span style={{ color: "#b103fc" }}> <b>beendet:</b> Serie ist beendet.</span><br></br><br></br>
-                      <span style={{ color: "#42d10f" }}> <b>laufend:</b> Serie ist noch nicht beendet.</span><br></br><br></br><br></br>
+                      <span style={{ color: "#b103fc" }}> <b>beendet:</b> Es kommen keine weiteren Folgen.</span><br></br><br></br>
+                      <span style={{ color: "#42d10f" }}> <b>laufend:</b> Es kommen weitere Folgen.</span><br></br><br></br><br></br>
                       <span>Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.</span><br></br><br></br>
                       <span>Klicke auf den Titel, um zu erfahren, wo du die Serie schauen kannst.</span><br></br><br></br>
                     </React.Fragment>
