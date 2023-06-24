@@ -456,7 +456,7 @@ class App extends Component {
     let self = this;
 
     var ratings = {
-      Action:
+      "Action":
         event.target[2].value === "" || event.target[2].value === null
           ? 0
           : parseFloat(event.target[2].value),
@@ -488,7 +488,7 @@ class App extends Component {
         event.target[9].value === "" || event.target[9].value === null
           ? 0
           : parseFloat(event.target[9].value),
-      Fantasy:
+      "Sci-Fi & Fantasy":
         event.target[10].value === "" || event.target[10].value === null
           ? 0
           : parseFloat(event.target[10].value),
@@ -500,18 +500,15 @@ class App extends Component {
         event.target[12].value === "" || event.target[12].value === null
           ? 0
           : parseFloat(event.target[12].value),
-      SciFi:
+     
+      Sport:
         event.target[13].value === "" || event.target[13].value === null
           ? 0
           : parseFloat(event.target[13].value),
-      Sport:
+      Thriller:
         event.target[14].value === "" || event.target[14].value === null
           ? 0
           : parseFloat(event.target[14].value),
-      Thriller:
-        event.target[15].value === "" || event.target[15].value === null
-          ? 0
-          : parseFloat(event.target[15].value),
     };
     
     
@@ -706,8 +703,8 @@ class App extends Component {
               <input type="text" id="Mystery" name="Mystery"></input>
               <br></br>
               <br></br>
-              <label hmtlfor="SciFi">SciFi: </label>
-              <input type="text" id="SciFi" name="SciFi"></input>
+              <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
+              <input type="text" id="Sci-Fi & Fantasy" name="Sci-Fi & Fantasy"></input>
               <br></br>
               <br></br>
               <label hmtlfor="Sport">Sport: </label>
@@ -786,7 +783,7 @@ class App extends Component {
                 <option value="Fantasy">Fantasy</option>
                 <option value="Horror">Horror</option>
                 <option value="Mystery">Mystery</option>
-                <option value="SciFi">SciFi</option>
+                <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
                 <option value="Sport">Sport</option>
                 <option value="Thriller">Thriller</option>
                 <option value="A-Z">A-Z</option>
@@ -1025,8 +1022,8 @@ class App extends Component {
               <input type="text" id="Mystery" name="Mystery"></input>
               <br></br>
               <br></br>
-              <label hmtlfor="SciFi">SciFi: </label>
-              <input type="text" id="SciFi" name="SciFi"></input>
+              <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
+              <input type="text" id="Sci-Fi & Fantasy" name="Sci-Fi & Fantasy"></input>
               <br></br>
               <br></br>
               <label hmtlfor="Sport">Sport: </label>
@@ -1104,7 +1101,7 @@ class App extends Component {
                 <option value="Fantasy">Fantasy</option>
                 <option value="Horror">Horror</option>
                 <option value="Mystery">Mystery</option>
-                <option value="SciFi">SciFi</option>
+                <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
                 <option value="Sport">Sport</option>
                 <option value="Thriller">Thriller</option>
                 <option value="A-Z">A-Z</option>
