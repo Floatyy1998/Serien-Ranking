@@ -451,7 +451,7 @@ class App extends Component {
 
 
   hinzufuegen(event) {
-     console.log(event);
+    console.log(event);
     event.preventDefault();
     let self = this;
 
@@ -500,7 +500,7 @@ class App extends Component {
         event.target[12].value === "" || event.target[12].value === null
           ? 0
           : parseFloat(event.target[12].value),
-     
+
       Sport:
         event.target[13].value === "" || event.target[13].value === null
           ? 0
@@ -510,8 +510,8 @@ class App extends Component {
           ? 0
           : parseFloat(event.target[14].value),
     };
-    
-    
+
+
     var genres = ["All"];
     var nmr = document.getElementsByClassName("padding").length
     var postData = {
@@ -557,7 +557,7 @@ class App extends Component {
             return response.json();
           }).then((data) => {
             console.log(data.genres);
-            for(var i = 0; i < data.genres.length; i++){
+            for (var i = 0; i < data.genres.length; i++) {
               console.log(data.genres[i].name);
               genres.push(data.genres[i].name)
             }
@@ -571,14 +571,14 @@ class App extends Component {
                 for (let j = 0; j < 16; j++) {
                   event.target[j].value = "";
                 }
-  
+
                 self.get_serien();
                 alert("Serie hinzugefügt!");
               });
           });
         })
-        
-    } 
+
+    }
   }
   login = () => {
     if (document.getElementById("login").innerHTML == "Login") {
@@ -628,7 +628,7 @@ class App extends Component {
               onSubmit={this.hinzufuegen.bind(this)}
               autoComplete="off"
             >
-              
+
               <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
@@ -969,14 +969,14 @@ class App extends Component {
                 name="Key"
                 style={{ display: "none" }}
               ></input>
-              
+
               <br></br>
               <br></br>
               <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
               <br></br>
-              
+
               <h3>Rating</h3>
               <label hmtlfor="Action">Action: </label>
               <input type="text" id="Action" name="Action"></input>
