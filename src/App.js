@@ -25,13 +25,18 @@ class App extends Component {
 
     //console.log(API.TMDB);
 
-    console.log();
+
     if (!Firebase.apps.length) {
       Firebase.initializeApp(config);
     } else {
       Firebase.app(); // if already initialized, use that one
     }
     Firebase.analytics();
+
+
+
+
+
 
     this.state = { loading: true };
   }
@@ -81,6 +86,18 @@ class App extends Component {
           return response2.json();
         })
         .then((data3) => {
+          var genres = ["All"];
+
+          for (var i = 0; i < data3.genres.length; i++) {
+            console.log(data3.genres[i].name);
+            genres.push(data3.genres[i].name)
+          }
+          Firebase.database()
+          .ref("serien/" + index + "/genre")
+          .set({
+            genres
+          });
+
           console.log("APP.JS 65");
           Firebase.database()
             .ref("serien/" + index + "/poster")
@@ -134,7 +151,7 @@ class App extends Component {
               }
 
 
-            })
+            }).then((_) => {window.location.reload();})
 
             .catch(function (error) {
               console.log("Error: " + error);
@@ -148,6 +165,7 @@ class App extends Component {
   }
 
   componentDidMount() {
+
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", (snap) => {
@@ -169,11 +187,7 @@ class App extends Component {
     this.checkGenre();
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.watching !== prevState.watching) {
-      this.checkGenre();
-    }
-  }
+
 
   checklogin() {
     if (Firebase.auth().currentUser) {
@@ -182,6 +196,7 @@ class App extends Component {
         .then(
           function () {
             console.log("Signed Out");
+            localStorage.removeItem("konrad.dinges@googlemail.com");
             document.getElementById("login").innerHTML = "Login";
           },
           function (error) {
@@ -202,28 +217,30 @@ class App extends Component {
       genre === "Sport"
     ) {
       Object.entries(a["rating"]).forEach(([key, value]) => {
-        if (a["genre"].includes(key)) {
+        if (a["genre"]["genres"].includes(key)) {
           punktea += value * 3;
         } else {
           punktea += value;
         }
       });
       Object.entries(b["rating"]).forEach(([key, value]) => {
-        if (b["genre"].includes(key)) {
+        if (b["genre"]["genres"].includes(key)) {
           punkteb += value * 3;
         } else {
           punkteb += value;
         }
       });
-      punktea /= Object.keys(a["genre"]).length;
-      punkteb /= Object.keys(b["genre"]).length;
+      punktea /= Object.keys(a["genre"]["genres"]).length;
+      punkteb /= Object.keys(b["genre"]["genres"]).length;
     } else {
       punktea += a["rating"][genre];
       punkteb += b["rating"][genre];
+      console.log(punktea);
 
       punktea /= 2;
 
       punkteb /= 2;
+      console.log(punktea);
     }
 
     if (punktea > punkteb) {
@@ -231,16 +248,51 @@ class App extends Component {
     } else {
       return false;
     }
+
   }
 
   openNav() {
-    console.log("hi");
+
     document.getElementById("oben").style.transition = "0.5s";
     document.getElementById("legende1").style.transition = "0.5s";
     document.getElementById("legende2").style.transition = "0.5s";
+    console.log(Firebase.auth().currentUser);
+    if (!Firebase.auth().currentUser) {
+      console.log("1");
+      if (!localStorage.getItem("konrad.dinges@googlemail.com")) {
+        Firebase.auth()
+          .signOut()
+          .then(
+            function () {
+              console.log("Signed Out");
+              localStorage.removeItem("konrad.dinges@googlemail.com");
+              document.getElementById("login").innerHTML = "Login";
+            },
+            function (error) {
+              console.error("Sign Out Error", error);
+            }
+          );
+      }
+      else {
+        Firebase.auth()
+          .signInWithEmailAndPassword("konrad.dinges@googlemail.com", localStorage.getItem("konrad.dinges@googlemail.com"))
+          .then((userCredential) => {
+            // Signed in
+            console.log("Signed in");
+            document.getElementById("login").innerHTML = "Logout";
+
+            // ...
+          })
+          .catch((error) => {
+            var errorMessage = error.message;
+            alert(errorMessage);
+          });
+      }
+    }
+    else { document.getElementById("login").innerHTML = "Logout"; }
 
     if (document.getElementById("mySidenav").style.width === "250px") {
-      document.getElementById("oben").style.width = "100%";
+      document.getElementById("oben").style.width = "100%"; console.log("hi");
       document.getElementById("Header1").style.visibility = "visible";
       document.getElementById("mySidenav").style.width = "0";
       document.getElementById("main").style.marginLeft = "0";
@@ -325,7 +377,7 @@ class App extends Component {
             this.setState({ rows: seriesRows });
           } else {
             if (
-              serie.genre.includes(genre) &&
+              serie.genre.genres.includes(genre) &&
               serie.title.toLowerCase().includes(filter)
             ) {
               if (filter === "") {
@@ -407,7 +459,7 @@ class App extends Component {
             this.setState({ rows: seriesRows });
           } else {
             if (
-              serie.genre.includes(genre) &&
+              serie.genre.genres.includes(genre) &&
               serie.title.toLowerCase().includes(filter)
             ) {
               if (filter === "") {
@@ -433,7 +485,7 @@ class App extends Component {
           }
         });
         this.setState({ loading: false });
-        this.checklogin();
+
       });
     }
   }
@@ -456,59 +508,64 @@ class App extends Component {
     let self = this;
 
     var ratings = {
-      "Action":
+      "Action & Adventure":
         event.target[2].value === "" || event.target[2].value === null
           ? 0
           : parseFloat(event.target[2].value),
-      Adventure:
+
+      All:
         event.target[3].value === "" || event.target[3].value === null
           ? 0
           : parseFloat(event.target[3].value),
-      All:
+      Animation:
         event.target[4].value === "" || event.target[4].value === null
           ? 0
           : parseFloat(event.target[4].value),
-      Animation:
+      Comedy:
         event.target[5].value === "" || event.target[5].value === null
           ? 0
           : parseFloat(event.target[5].value),
-      Comedy:
+      Crime:
         event.target[6].value === "" || event.target[6].value === null
           ? 0
           : parseFloat(event.target[6].value),
-      Crime:
+      Documentary:
         event.target[7].value === "" || event.target[7].value === null
           ? 0
           : parseFloat(event.target[7].value),
-      Documentary:
+      Drama:
         event.target[8].value === "" || event.target[8].value === null
           ? 0
           : parseFloat(event.target[8].value),
-      Drama:
-        event.target[9].value === "" || event.target[9].value === null
-          ? 0
-          : parseFloat(event.target[9].value),
       "Sci-Fi & Fantasy":
-        event.target[10].value === "" || event.target[10].value === null
-          ? 0
-          : parseFloat(event.target[10].value),
-      Horror:
         event.target[11].value === "" || event.target[11].value === null
           ? 0
           : parseFloat(event.target[11].value),
+      Horror:
+        event.target[9].value === "" || event.target[9].value === null
+          ? 0
+          : parseFloat(event.target[9].value),
       Mystery:
+        event.target[10].value === "" || event.target[10].value === null
+          ? 0
+          : parseFloat(event.target[10].value),
+
+      Sport:
         event.target[12].value === "" || event.target[12].value === null
           ? 0
           : parseFloat(event.target[12].value),
-
-      Sport:
+      Thriller:
         event.target[13].value === "" || event.target[13].value === null
           ? 0
           : parseFloat(event.target[13].value),
-      Thriller:
+      "War & Politics":
         event.target[14].value === "" || event.target[14].value === null
           ? 0
           : parseFloat(event.target[14].value),
+      Western:
+        event.target[15].value === "" || event.target[15].value === null
+          ? 0
+          : parseFloat(event.target[15].value),
     };
 
 
@@ -517,6 +574,7 @@ class App extends Component {
     var postData = {
       title: event.target[1].value,
       rating: ratings,
+      genre:[],
     };
     self.setState({ loading: true });
     if (Firebase.auth().currentUser == null) {
@@ -561,7 +619,7 @@ class App extends Component {
               console.log(data.genres[i].name);
               genres.push(data.genres[i].name)
             }
-            postData["genre"] = genres;
+            postData["genre"]["genres"] = genres;
           }).then((_) => {
             console.log("Hallo2");
             Firebase.database()
@@ -575,7 +633,7 @@ class App extends Component {
                 self.get_serien();
                 alert("Serie hinzugefügt!");
               });
-          });
+          })
         })
 
     }
@@ -595,6 +653,7 @@ class App extends Component {
             .then((userCredential) => {
               // Signed in
               document.getElementById("login").innerHTML = "Logout";
+              localStorage.setItem("konrad.dinges@googlemail.com", passwort);
               // ...
             })
             .catch((error) => {
@@ -659,14 +718,13 @@ class App extends Component {
               <br></br>
               <br></br>
               <h3>Rating</h3>
-              <label hmtlfor="Action">Action: </label>
-              <input type="text" id="Action" name="Action"></input>
               <br></br>
               <br></br>
-              <label hmtlfor="Adventure">Adventure: </label>
-              <input type="text" id="Adventure" name="Adventure"></input>
+              <label hmtlfor="Action & Adventure">Action & Adventure: </label>
+              <input type="text" id="Action & Adventure" name="Action & Adventure"></input>
               <br></br>
               <br></br>
+
               <label hmtlfor="All">All: </label>
               <input type="text" id="All" name="All"></input>
               <br></br>
@@ -691,10 +749,7 @@ class App extends Component {
               <input type="text" id="Drama" name="Drama"></input>
               <br></br>
               <br></br>
-              <label hmtlfor="Fantasy">Fantasy: </label>
-              <input type="text" id="Fantasy" name="Fantasy"></input>
-              <br></br>
-              <br></br>
+
               <label hmtlfor="Horror">Horror: </label>
               <input type="text" id="Horror" name="Horror"></input>
               <br></br>
@@ -715,6 +770,14 @@ class App extends Component {
               <input type="text" id="Thriller" name="Thriller"></input>
               <br></br>
               <br></br>
+              <label hmtlfor="War & Politics">War & Politics: </label>
+              <input type="text" id="War & Politics" name="War & Politics"></input>
+              <br></br>
+              <br></br>
+              <label hmtlfor="Western">Western: </label>
+              <input type="text" id="Western" name="Western"></input>
+              <br></br>
+              <br></br>
 
               <input type="submit" value="Serie hinzufügen"></input>
             </form>
@@ -732,16 +795,7 @@ class App extends Component {
               }}
             >
               <div className="row">
-                <input
-                  type="checkbox"
-                  onClick={this.openNav}
-                  id="hamburg"
-                ></input>
-                <label hmtlfor="hamburg" id="hamburger" onClick={this.openNav} className="hamburg">
-                  <span className="line"></span>
-                  <span className="line"></span>
-                  <span className="line"></span>
-                </label>
+
               </div>
               <div id="Header">
                 <p id="Header1" onClick={this.scrollTop}>
@@ -773,8 +827,7 @@ class App extends Component {
                 onChange={this.categoryHandler.bind(this)}
               >
                 <option value="All">Allgemein</option>
-                <option value="Action">Action</option>
-                <option value="Adventure">Adventure</option>
+                <option value="Action & Adventure">Action & Adventure</option>
                 <option value="Animation">Animation</option>
                 <option value="Comedy">Comedy</option>
                 <option value="Crime">Crime</option>
@@ -786,6 +839,8 @@ class App extends Component {
                 <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
                 <option value="Sport">Sport</option>
                 <option value="Thriller">Thriller</option>
+                <option value="War & Politics">War & Politics</option>
+                <option value="Western">Western</option>
                 <option value="A-Z">A-Z</option>
               </select>
               <TextField
@@ -978,14 +1033,13 @@ class App extends Component {
               <br></br>
 
               <h3>Rating</h3>
-              <label hmtlfor="Action">Action: </label>
-              <input type="text" id="Action" name="Action"></input>
               <br></br>
               <br></br>
-              <label hmtlfor="Adventure">Adventure: </label>
-              <input type="text" id="Adventure" name="Adventure"></input>
+              <label hmtlfor="Action & Adventure">Action & Adventure: </label>
+              <input type="text" id="Action & Adventure" name="Action & Adventure"></input>
               <br></br>
               <br></br>
+
               <label hmtlfor="All">All: </label>
               <input type="text" id="All" name="All"></input>
               <br></br>
@@ -1010,10 +1064,6 @@ class App extends Component {
               <input type="text" id="Drama" name="Drama"></input>
               <br></br>
               <br></br>
-              <label hmtlfor="Fantasy">Fantasy: </label>
-              <input type="text" id="Fantasy" name="Fantasy"></input>
-              <br></br>
-              <br></br>
               <label hmtlfor="Horror">Horror: </label>
               <input type="text" id="Horror" name="Horror"></input>
               <br></br>
@@ -1034,6 +1084,15 @@ class App extends Component {
               <input type="text" id="Thriller" name="Thriller"></input>
               <br></br>
               <br></br>
+              <label hmtlfor="War & Politics">War & Politics: </label>
+              <input type="text" id="War & Politics" name="War & Politics"></input>
+              <br></br>
+              <br></br>
+              <label hmtlfor="Western">Western: </label>
+              <input type="text" id="Western" name="Western"></input>
+              <br></br>
+              <br></br>
+
 
               <input type="submit" value="Serie hinzufügen"></input>
             </form>
@@ -1091,8 +1150,7 @@ class App extends Component {
                 onChange={this.categoryHandler.bind(this)}
               >
                 <option value="All">Allgemein</option>
-                <option value="Action">Action</option>
-                <option value="Adventure">Adventure</option>
+                <option value="Action & Adventure">Action & Adventure</option>
                 <option value="Animation">Animation</option>
                 <option value="Comedy">Comedy</option>
                 <option value="Crime">Crime</option>
@@ -1104,6 +1162,8 @@ class App extends Component {
                 <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
                 <option value="Sport">Sport</option>
                 <option value="Thriller">Thriller</option>
+                <option value="War & Politics">War & Politics</option>
+                <option value="Western">Western</option>
                 <option value="A-Z">A-Z</option>
               </select>
               <TextField

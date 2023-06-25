@@ -39,6 +39,7 @@ class SeriesRow extends React.Component {
   }
 
   getRating(a) {
+    //console.log(a);
     let punktea = 0;
     if (
       this.props.genre === "A-Z" ||
@@ -48,18 +49,20 @@ class SeriesRow extends React.Component {
       this.props.genre === "Sport"
     ) {
       Object.entries(a["rating"]).forEach(([key, value]) => {
-        if (a["genre"].includes(key)) {
+        console.log("fdsfsdfdsfsfsdfsdfsd");
+        if (a["genre"]["genres"].includes(key)) {
           punktea += value * 3;
         } else {
           punktea += value;
         }
       });
-      punktea /= Object.keys(a["genre"]).length;
+      punktea /= Object.keys(a["genre"]["genres"]).length;
       punktea /= 3;
       this.round(punktea, 0, 1);
 
       return this.addZeroes(this.round(punktea, 0.01));
     } else {
+      console.log(this.props.genre);
       punktea += a["rating"][this.props.genre];
 
       this.round(punktea, 0, 1);
@@ -122,11 +125,17 @@ class SeriesRow extends React.Component {
     var poster;
     var wo;
     var imdb;
-    
+    var beschreibung;
 
     try {
       x = this.props.serie.production["production"];
-     
+      
+      
+      if (beschreibung === undefined || beschreibung === "" || beschreibung === null) {
+        beschreibung = "Keine Beschreibung vorhanden";
+      }
+        
+      console.log(beschreibung);
       poster = `url(${this.props.serie.poster["poster"]})`;
       imdb =
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";
@@ -269,7 +278,7 @@ class SeriesRow extends React.Component {
                     {(() => {
                       if (
                         this.props.filter !== "" ||
-                        this.props.genre === "A-Z"
+                        this.props.genres === "A-Z"
                       ) {
                         return;
                       } else {
