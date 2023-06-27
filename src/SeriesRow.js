@@ -46,10 +46,11 @@ class SeriesRow extends React.Component {
       this.props.genre === "All" ||
       this.props.genre === "Animation" ||
       this.props.genre === "Documentary" ||
-      this.props.genre === "Sport"
+      this.props.genre === "Sport" ||
+      this.props.genre === "Zuletzt Hinzugefügt"
     ) {
       Object.entries(a["rating"]).forEach(([key, value]) => {
-        console.log("fdsfsdfdsfsfsdfsdfsd");
+       
         if (a["genre"]["genres"].includes(key)) {
           punktea += value * 3;
         } else {
@@ -135,7 +136,7 @@ class SeriesRow extends React.Component {
         beschreibung = "Keine Beschreibung vorhanden";
       }
         
-      console.log(beschreibung);
+      
       poster = `url(${this.props.serie.poster["poster"]})`;
       imdb =
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";

@@ -47,7 +47,9 @@ class App extends Component {
       snapshot.forEach(function (child) {
         console.log("APP.JS 33");
         serien.push(child.val());
+
       });
+      //  console.log(serien);
       this.laden();
     });
   }
@@ -75,6 +77,7 @@ class App extends Component {
       });
 
     for (let index = 0; index < serien.length; index++) {
+      console.log(serien[index].title);
       fetch(
         "https://api.themoviedb.org/3/tv/" +
         serien[index].id +
@@ -93,10 +96,10 @@ class App extends Component {
             genres.push(data3.genres[i].name)
           }
           Firebase.database()
-          .ref("serien/" + index + "/genre")
-          .set({
-            genres
-          });
+            .ref("serien/" + index + "/genre")
+            .set({
+              genres
+            });
 
           console.log("APP.JS 65");
           Firebase.database()
@@ -151,7 +154,7 @@ class App extends Component {
               }
 
 
-            }).then((_) => {window.location.reload();})
+            }).then((_) => { window.location.reload(); })
 
             .catch(function (error) {
               console.log("Error: " + error);
@@ -320,175 +323,96 @@ class App extends Component {
   }
 
   checkGenre() {
-    if (this.state.watching) {
-      let ref = Firebase.database()
-        .ref("/serien")
-        .orderByChild("watching")
-        .equalTo(true);
-      const series = [];
-      ref.on("value", (snapshot) => {
-        snapshot.forEach(function (child) {
-          console.log("APP.JS 427");
-          series.push(child.val());
-        });
 
-        if (genre === "A-Z") {
-          series.sort((a, b) =>
-            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
-          );
-        } else {
-          series.sort((a, b) =>
-            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
-          );
-          series.sort((a, b) =>
-            this.isbigger(a, b) ? -1 : !this.isbigger(a, b) ? 1 : 0
-          );
-        }
-        if (filter !== "") {
-          series.sort((a, b) =>
-            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
-          );
-        }
+    let ref = Firebase.database().ref("/serien");
 
-        var i = 1;
-        var seriesRows = [];
-        series.forEach((serie) => {
-          if (genre === "A-Z") {
-            if (serie.title.toLowerCase().includes(filter)) {
-              if (filter === "") {
-                const seriesRow = (
-                  <SeriesRow serie={serie} i={i} genre={genre} filter="" />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              } else {
-                const seriesRow = (
-                  <SeriesRow
-                    serie={serie}
-                    i={i}
-                    genre={genre}
-                    filter={filter}
-                  />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              }
+    ref.on("value", (snapshot) => {
+      const series = snapshot.val();
+      console.log(series);
+
+      if (genre === "A-Z") {
+        series.sort((a, b) =>
+          a.title > b.title ? 1 : b.title > a.title ? -1 : 0
+        );
+      } else if (genre === "Zuletzt Hinzugefügt") {
+        series.reverse();
+      }
+      else {
+        series.sort((a, b) =>
+          a.title > b.title ? 1 : b.title > a.title ? -1 : 0
+        );
+        series.sort((a, b) =>
+          this.isbigger(a, b) ? -1 : !this.isbigger(a, b) ? 1 : 0
+        );
+      }
+      if (filter !== "") {
+        series.sort((a, b) =>
+          a.title.indexOf(filter) > b.title.indexOf(filter)
+            ? 1
+            : b.title.indexOf(filter) > a.title.indexOf(filter)
+              ? -1
+              : 0
+        );
+      }
+
+      var i = 1;
+      var seriesRows = [];
+
+      series.forEach((serie) => {
+        if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
+          if (serie.title.toLowerCase().includes(filter)) {
+            if (filter === "") {
+              const seriesRow = (
+                <SeriesRow serie={serie} i={i} genre={genre} filter="" />
+              );
+              seriesRows.push(seriesRow);
+              i++;
+            } else {
+              const seriesRow = (
+                <SeriesRow
+                  serie={serie}
+                  i={i}
+                  genre={genre}
+                  filter={filter}
+                />
+              );
+              seriesRows.push(seriesRow);
+              i++;
             }
-            this.setState({ rows: seriesRows });
-          } else {
-            if (
-              serie.genre.genres.includes(genre) &&
-              serie.title.toLowerCase().includes(filter)
-            ) {
-              if (filter === "") {
-                const seriesRow = (
-                  <SeriesRow serie={serie} i={i} genre={genre} filter="" />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              } else {
-                const seriesRow = (
-                  <SeriesRow
-                    serie={serie}
-                    i={i}
-                    genre={genre}
-                    filter={filter}
-                  />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              }
-            }
-            this.setState({ rows: seriesRows });
           }
-        });
-        this.setState({ loading: false });
-      });
-    } else {
-      let ref = Firebase.database().ref("/serien");
-
-      ref.on("value", (snapshot) => {
-        const series = snapshot.val();
-
-        if (genre === "A-Z") {
-          series.sort((a, b) =>
-            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
-          );
-        } else {
-          series.sort((a, b) =>
-            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
-          );
-          series.sort((a, b) =>
-            this.isbigger(a, b) ? -1 : !this.isbigger(a, b) ? 1 : 0
-          );
-        }
-        if (filter !== "") {
-          series.sort((a, b) =>
-            a.title.indexOf(filter) > b.title.indexOf(filter)
-              ? 1
-              : b.title.indexOf(filter) > a.title.indexOf(filter)
-                ? -1
-                : 0
-          );
-        }
-
-        var i = 1;
-        var seriesRows = [];
-        series.forEach((serie) => {
-          if (genre === "A-Z") {
-            if (serie.title.toLowerCase().includes(filter)) {
-              if (filter === "") {
-                const seriesRow = (
-                  <SeriesRow serie={serie} i={i} genre={genre} filter="" />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              } else {
-                const seriesRow = (
-                  <SeriesRow
-                    serie={serie}
-                    i={i}
-                    genre={genre}
-                    filter={filter}
-                  />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              }
+          this.setState({ rows: seriesRows });
+        }  else {
+          if (
+            serie.genre.genres.includes(genre) &&
+            serie.title.toLowerCase().includes(filter)
+          ) {
+            if (filter === "") {
+              const seriesRow = (
+                <SeriesRow serie={serie} i={i} genre={genre} filter="" />
+              );
+              seriesRows.push(seriesRow);
+              i++;
+            } else {
+              const seriesRow = (
+                <SeriesRow
+                  serie={serie}
+                  i={i}
+                  genre={genre}
+                  filter={filter}
+                />
+              );
+              seriesRows.push(seriesRow);
+              i++;
             }
-            this.setState({ rows: seriesRows });
-          } else {
-            if (
-              serie.genre.genres.includes(genre) &&
-              serie.title.toLowerCase().includes(filter)
-            ) {
-              if (filter === "") {
-                const seriesRow = (
-                  <SeriesRow serie={serie} i={i} genre={genre} filter="" />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              } else {
-                const seriesRow = (
-                  <SeriesRow
-                    serie={serie}
-                    i={i}
-                    genre={genre}
-                    filter={filter}
-                  />
-                );
-                seriesRows.push(seriesRow);
-                i++;
-              }
-            }
-            this.setState({ rows: seriesRows });
           }
-        });
-        this.setState({ loading: false });
-
+          this.setState({ rows: seriesRows });
+        }
       });
-    }
+      this.setState({ loading: false });
+
+    });
   }
+
 
   categoryHandler(event) {
     genre = event.target.value;
@@ -574,7 +498,7 @@ class App extends Component {
     var postData = {
       title: event.target[1].value,
       rating: ratings,
-      genre:[],
+      genre: [],
     };
     self.setState({ loading: true });
     if (Firebase.auth().currentUser == null) {
@@ -842,6 +766,7 @@ class App extends Component {
                 <option value="War & Politics">War & Politics</option>
                 <option value="Western">Western</option>
                 <option value="A-Z">A-Z</option>
+                <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
               </select>
               <TextField
                 style={{ width: "80%", marginTop: "20px" }}
@@ -1165,6 +1090,7 @@ class App extends Component {
                 <option value="War & Politics">War & Politics</option>
                 <option value="Western">Western</option>
                 <option value="A-Z">A-Z</option>
+                <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
               </select>
               <TextField
                 style={{ width: "80%", marginTop: "20px" }}
