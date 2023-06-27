@@ -11,7 +11,7 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { forEach } from "lodash";
-import { log } from "async";
+import { log, series } from "async";
 
 const cheerio = require("cheerio");
 
@@ -23,7 +23,6 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    //console.log(API.TMDB);
 
 
     if (!Firebase.apps.length) {
@@ -45,11 +44,9 @@ class App extends Component {
     let ref = Firebase.database().ref("/serien");
     ref.once("value", (snapshot) => {
       snapshot.forEach(function (child) {
-        console.log("APP.JS 33");
         serien.push(child.val());
 
       });
-      //  console.log(serien);
       this.laden();
     });
   }
@@ -69,7 +66,6 @@ class App extends Component {
 
 
   async laden() {
-    console.log("laden");
     Firebase.database()
       .ref("key")
       .on("value", (snap) => {
@@ -77,7 +73,6 @@ class App extends Component {
       });
 
     for (let index = 0; index < serien.length; index++) {
-      console.log(serien[index].title);
       fetch(
         "https://api.themoviedb.org/3/tv/" +
         serien[index].id +
@@ -92,7 +87,6 @@ class App extends Component {
           var genres = ["All"];
 
           for (var i = 0; i < data3.genres.length; i++) {
-            console.log(data3.genres[i].name);
             genres.push(data3.genres[i].name)
           }
           Firebase.database()
@@ -101,13 +95,11 @@ class App extends Component {
               genres
             });
 
-          console.log("APP.JS 65");
           Firebase.database()
             .ref("serien/" + index + "/poster")
             .set({
               poster: "https://image.tmdb.org/t/p/w780/" + data3.poster_path,
             });
-          console.log("APP.JS 71");
           Firebase.database()
             .ref("serien/" + index + "/production")
             .set({ production: data3.in_production });
@@ -124,13 +116,11 @@ class App extends Component {
               return response3.json();
             })
             .then((data4) => {
-              console.log("APP.JS 86");
               Firebase.database()
                 .ref("serien/" + index + "/imdb")
                 .set({ imdb_id: data4.imdb_id });
 
               if (index == 2) {
-                console.log("APP.JS 92");
                 Firebase.database()
                   .ref("serien/" + index + "/wo")
                   .set({
@@ -157,7 +147,6 @@ class App extends Component {
             }).then((_) => { window.location.reload(); })
 
             .catch(function (error) {
-              console.log("Error: " + error);
             });
         })
 
@@ -172,7 +161,6 @@ class App extends Component {
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", (snap) => {
-        console.log(Math.round((Date.now() - snap.val()) / 1000));
         if (Math.round((Date.now() - snap.val()) / 1000) > 1209600) {
           this.get_serien();
           Firebase.database().ref("timestamp").set({
@@ -198,7 +186,6 @@ class App extends Component {
         .signOut()
         .then(
           function () {
-            console.log("Signed Out");
             localStorage.removeItem("konrad.dinges@googlemail.com");
             document.getElementById("login").innerHTML = "Login";
           },
@@ -238,12 +225,10 @@ class App extends Component {
     } else {
       punktea += a["rating"][genre];
       punkteb += b["rating"][genre];
-      console.log(punktea);
 
       punktea /= 2;
 
       punkteb /= 2;
-      console.log(punktea);
     }
 
     if (punktea > punkteb) {
@@ -259,15 +244,12 @@ class App extends Component {
     document.getElementById("oben").style.transition = "0.5s";
     document.getElementById("legende1").style.transition = "0.5s";
     document.getElementById("legende2").style.transition = "0.5s";
-    console.log(Firebase.auth().currentUser);
     if (!Firebase.auth().currentUser) {
-      console.log("1");
       if (!localStorage.getItem("konrad.dinges@googlemail.com")) {
         Firebase.auth()
           .signOut()
           .then(
             function () {
-              console.log("Signed Out");
               localStorage.removeItem("konrad.dinges@googlemail.com");
               document.getElementById("login").innerHTML = "Login";
             },
@@ -281,7 +263,6 @@ class App extends Component {
           .signInWithEmailAndPassword("konrad.dinges@googlemail.com", localStorage.getItem("konrad.dinges@googlemail.com"))
           .then((userCredential) => {
             // Signed in
-            console.log("Signed in");
             document.getElementById("login").innerHTML = "Logout";
 
             // ...
@@ -295,7 +276,7 @@ class App extends Component {
     else { document.getElementById("login").innerHTML = "Logout"; }
 
     if (document.getElementById("mySidenav").style.width === "250px") {
-      document.getElementById("oben").style.width = "100%"; console.log("hi");
+      document.getElementById("oben").style.width = "100%";
       document.getElementById("Header1").style.visibility = "visible";
       document.getElementById("mySidenav").style.width = "0";
       document.getElementById("main").style.marginLeft = "0";
@@ -328,7 +309,6 @@ class App extends Component {
 
     ref.on("value", (snapshot) => {
       const series = snapshot.val();
-      console.log(series);
 
       if (genre === "A-Z") {
         series.sort((a, b) =>
@@ -381,7 +361,7 @@ class App extends Component {
             }
           }
           this.setState({ rows: seriesRows });
-        }  else {
+        } else {
           if (
             serie.genre.genres.includes(genre) &&
             serie.title.toLowerCase().includes(filter)
@@ -424,11 +404,22 @@ class App extends Component {
     this.checkGenre();
   }
 
+  async getSerienCount() {
+    let ref = Firebase.database().ref("/serien");
+    var length;
+    ref.once("value", (snapshot) => {
+      length = snapshot.val().length;
 
+    });
+    return length;
+  }
 
-  hinzufuegen(event) {
-    console.log(event);
+  async hinzufuegen(event) {
     event.preventDefault();
+    let length = await this.getSerienCount();
+    let nmr = length.toString();
+
+
     let self = this;
 
     var ratings = {
@@ -494,7 +485,7 @@ class App extends Component {
 
 
     var genres = ["All"];
-    var nmr = document.getElementsByClassName("padding").length
+
     var postData = {
       title: event.target[1].value,
       rating: ratings,
@@ -528,7 +519,6 @@ class App extends Component {
           return daten;
         })
         .then((daten) => {
-          console.log("Hallo fdfd " + daten);
           fetch(
             "https://api.themoviedb.org/3/tv/" +
             daten +
@@ -538,14 +528,11 @@ class App extends Component {
           ).then(function (response) {
             return response.json();
           }).then((data) => {
-            console.log(data.genres);
             for (var i = 0; i < data.genres.length; i++) {
-              console.log(data.genres[i].name);
               genres.push(data.genres[i].name)
             }
             postData["genre"]["genres"] = genres;
           }).then((_) => {
-            console.log("Hallo2");
             Firebase.database()
               .ref("serien/" + nmr)
               .set(postData)

@@ -39,7 +39,6 @@ class SeriesRow extends React.Component {
   }
 
   getRating(a) {
-    //console.log(a);
     let punktea = 0;
     if (
       this.props.genre === "A-Z" ||
@@ -50,7 +49,7 @@ class SeriesRow extends React.Component {
       this.props.genre === "Zuletzt Hinzugefügt"
     ) {
       Object.entries(a["rating"]).forEach(([key, value]) => {
-       
+
         if (a["genre"]["genres"].includes(key)) {
           punktea += value * 3;
         } else {
@@ -63,7 +62,6 @@ class SeriesRow extends React.Component {
 
       return this.addZeroes(this.round(punktea, 0.01));
     } else {
-      console.log(this.props.genre);
       punktea += a["rating"][this.props.genre];
 
       this.round(punktea, 0, 1);
@@ -78,13 +76,11 @@ class SeriesRow extends React.Component {
 
   alerte = (e, x) => {
     e.preventDefault();
-    console.log(x);
     let test = Firebase.database()
       .ref("/serien/")
       .orderByChild("title")
       .equalTo(x);
     if (!e.target.checked) {
-      console.log("if");
       var eingabeKey = prompt("Bitte Key eingeben:");
       if (eingabeKey === pruefen) {
         test
@@ -101,7 +97,6 @@ class SeriesRow extends React.Component {
         alert("falscher Key");
       }
     } else {
-      console.log("else");
       eingabeKey = prompt("Bitte Key eingeben:");
       if (eingabeKey === pruefen) {
         test
@@ -130,13 +125,13 @@ class SeriesRow extends React.Component {
 
     try {
       x = this.props.serie.production["production"];
-      
-      
+
+
       if (beschreibung === undefined || beschreibung === "" || beschreibung === null) {
         beschreibung = "Keine Beschreibung vorhanden";
       }
-        
-      
+
+
       poster = `url(${this.props.serie.poster["poster"]})`;
       imdb =
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";
