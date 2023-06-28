@@ -10,10 +10,6 @@ import SearchIcon from "@material-ui/icons/Search";
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { forEach } from "lodash";
-import { log, series } from "async";
-
-const cheerio = require("cheerio");
 
 var genre = "All";
 var filter = "";
@@ -22,21 +18,12 @@ var serien = [];
 class App extends Component {
   constructor(props) {
     super(props);
-
-
-
     if (!Firebase.apps.length) {
       Firebase.initializeApp(config);
     } else {
       Firebase.app(); // if already initialized, use that one
     }
     Firebase.analytics();
-
-
-
-
-
-
     this.state = { loading: true };
   }
   get_serien() {
@@ -51,19 +38,12 @@ class App extends Component {
     });
   }
 
-
-
-
-
-
   scrollDown() {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }
   scrollTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
-
 
   async laden() {
     Firebase.database()
@@ -142,14 +122,12 @@ class App extends Component {
                       "&action_results=suchen",
                   });
               }
-
-
-            }).then((_) => { window.location.reload(); })
-
+            }).then((_) => {
+              window.location.reload();
+            })
             .catch(function (error) {
             });
         })
-
         .catch(function (error) {
           console.log("Error: " + error);
         });
@@ -157,7 +135,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", (snap) => {
@@ -169,16 +146,8 @@ class App extends Component {
         }
       });
 
-    /*    Firebase.database()
-    .ref("timestamp")
-    .set({
-      createdAt: Firebase.database.ServerValue.TIMESTAMP
-    }); */
-    // this.get_serien();
     this.checkGenre();
   }
-
-
 
   checklogin() {
     if (Firebase.auth().currentUser) {
@@ -225,9 +194,7 @@ class App extends Component {
     } else {
       punktea += a["rating"][genre];
       punkteb += b["rating"][genre];
-
       punktea /= 2;
-
       punkteb /= 2;
     }
 
@@ -236,11 +203,9 @@ class App extends Component {
     } else {
       return false;
     }
-
   }
 
   openNav() {
-
     document.getElementById("oben").style.transition = "0.5s";
     document.getElementById("legende1").style.transition = "0.5s";
     document.getElementById("legende2").style.transition = "0.5s";
@@ -262,10 +227,7 @@ class App extends Component {
         Firebase.auth()
           .signInWithEmailAndPassword("konrad.dinges@googlemail.com", localStorage.getItem("konrad.dinges@googlemail.com"))
           .then((userCredential) => {
-            // Signed in
             document.getElementById("login").innerHTML = "Logout";
-
-            // ...
           })
           .catch((error) => {
             var errorMessage = error.message;
@@ -273,7 +235,9 @@ class App extends Component {
           });
       }
     }
-    else { document.getElementById("login").innerHTML = "Logout"; }
+    else {
+      document.getElementById("login").innerHTML = "Logout";
+    }
 
     if (document.getElementById("mySidenav").style.width === "250px") {
       document.getElementById("oben").style.width = "100%";
@@ -286,17 +250,14 @@ class App extends Component {
       if (window.innerWidth <= 860) {
         document.getElementById("Header1").style.visibility = "hidden";
       }
-
       document.getElementById("mySidenav").style.width = "250px";
       document.getElementById("main").style.marginLeft = "250px";
       document.getElementById("oben").style.width = "calc(100% - 250px)";
-
       document.getElementById("legende1").style.left = "calc(10% + 225px)";
       document.getElementById("legende2").style.left = "calc(10% + 325px)";
     }
   }
 
-  /* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
   closeNav() {
     document.getElementById("mySidenav").style.width = "0";
     document.getElementById("main").style.marginLeft = "0";
@@ -304,9 +265,7 @@ class App extends Component {
   }
 
   checkGenre() {
-
     let ref = Firebase.database().ref("/serien");
-
     ref.on("value", (snapshot) => {
       const series = snapshot.val();
 
@@ -389,10 +348,8 @@ class App extends Component {
         }
       });
       this.setState({ loading: false });
-
     });
   }
-
 
   categoryHandler(event) {
     genre = event.target.value;
@@ -418,16 +375,12 @@ class App extends Component {
     event.preventDefault();
     let length = await this.getSerienCount();
     let nmr = length.toString();
-
-
     let self = this;
-
     var ratings = {
       "Action & Adventure":
         event.target[2].value === "" || event.target[2].value === null
           ? 0
           : parseFloat(event.target[2].value),
-
       All:
         event.target[3].value === "" || event.target[3].value === null
           ? 0
@@ -464,7 +417,6 @@ class App extends Component {
         event.target[10].value === "" || event.target[10].value === null
           ? 0
           : parseFloat(event.target[10].value),
-
       Sport:
         event.target[12].value === "" || event.target[12].value === null
           ? 0
@@ -483,9 +435,7 @@ class App extends Component {
           : parseFloat(event.target[15].value),
     };
 
-
     var genres = ["All"];
-
     var postData = {
       title: event.target[1].value,
       rating: ratings,
@@ -540,13 +490,11 @@ class App extends Component {
                 for (let j = 0; j < 16; j++) {
                   event.target[j].value = "";
                 }
-
                 self.get_serien();
                 alert("Serie hinzugefügt!");
               });
           })
         })
-
     }
   }
   login = () => {
@@ -580,10 +528,8 @@ class App extends Component {
   };
 
   toggleHinzufuegen = () => {
-
     document.getElementById("hinzufuegen").style.display = "block";
   };
-
 
   render() {
     if (this.state.loading) {
@@ -592,13 +538,11 @@ class App extends Component {
           <div id="mySidenav" className="sidenav" >
             <h3 className="button">Login</h3>
             <h3 className="button">Serie hinzufügen</h3>
-
             <form
               className="hinzufuegen"
               onSubmit={this.hinzufuegen.bind(this)}
               autoComplete="off"
             >
-
               <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
@@ -635,7 +579,6 @@ class App extends Component {
               <input type="text" id="Action & Adventure" name="Action & Adventure"></input>
               <br></br>
               <br></br>
-
               <label hmtlfor="All">All: </label>
               <input type="text" id="All" name="All"></input>
               <br></br>
@@ -660,7 +603,6 @@ class App extends Component {
               <input type="text" id="Drama" name="Drama"></input>
               <br></br>
               <br></br>
-
               <label hmtlfor="Horror">Horror: </label>
               <input type="text" id="Horror" name="Horror"></input>
               <br></br>
@@ -689,11 +631,9 @@ class App extends Component {
               <input type="text" id="Western" name="Western"></input>
               <br></br>
               <br></br>
-
               <input type="submit" value="Serie hinzufügen"></input>
             </form>
           </div>
-
           <div id="main" key="0">
             <div
               id="oben"
@@ -706,7 +646,6 @@ class App extends Component {
               }}
             >
               <div className="row">
-
               </div>
               <div id="Header">
                 <p id="Header1" onClick={this.scrollTop}>
@@ -781,7 +720,6 @@ class App extends Component {
                 type="checkbox"
                 id="switch"
               />
-
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
@@ -891,7 +829,6 @@ class App extends Component {
                 className="arrow down"
               ></i>
             </p>
-
             <div className="container">
               <div className="loader">
                 <div className="inner one"></div>
@@ -919,7 +856,6 @@ class App extends Component {
             <h3 className="button" onClick={(_) => this.toggleHinzufuegen()}>
               Serie hinzufügen
             </h3>
-
             <form
               className="hinzufuegen"
               id="hinzufuegen"
@@ -936,14 +872,12 @@ class App extends Component {
                 name="Key"
                 style={{ display: "none" }}
               ></input>
-
               <br></br>
               <br></br>
               <label hmtlfor="Title">Title: </label>
               <input type="text" id="Title" name="Title"></input>
               <br></br>
               <br></br>
-
               <h3>Rating</h3>
               <br></br>
               <br></br>
@@ -951,7 +885,6 @@ class App extends Component {
               <input type="text" id="Action & Adventure" name="Action & Adventure"></input>
               <br></br>
               <br></br>
-
               <label hmtlfor="All">All: </label>
               <input type="text" id="All" name="All"></input>
               <br></br>
@@ -1004,12 +937,9 @@ class App extends Component {
               <input type="text" id="Western" name="Western"></input>
               <br></br>
               <br></br>
-
-
               <input type="submit" value="Serie hinzufügen"></input>
             </form>
           </div>
-
           <div id="main" key="0">
             <div
               id="oben"
@@ -1105,7 +1035,6 @@ class App extends Component {
                 type="checkbox"
                 id="switch"
               />
-
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"

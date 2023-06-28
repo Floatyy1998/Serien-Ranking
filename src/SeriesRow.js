@@ -49,7 +49,6 @@ class SeriesRow extends React.Component {
       this.props.genre === "Zuletzt Hinzugefügt"
     ) {
       Object.entries(a["rating"]).forEach(([key, value]) => {
-
         if (a["genre"]["genres"].includes(key)) {
           punktea += value * 3;
         } else {
@@ -59,13 +58,10 @@ class SeriesRow extends React.Component {
       punktea /= Object.keys(a["genre"]["genres"]).length;
       punktea /= 3;
       this.round(punktea, 0, 1);
-
       return this.addZeroes(this.round(punktea, 0.01));
     } else {
       punktea += a["rating"][this.props.genre];
-
       this.round(punktea, 0, 1);
-
       return this.addZeroes(this.round(punktea, 0.01));
     }
   }
@@ -117,7 +113,6 @@ class SeriesRow extends React.Component {
 
   render() {
     var x = false;
-
     var poster;
     var wo;
     var imdb;
@@ -126,25 +121,15 @@ class SeriesRow extends React.Component {
     try {
       x = this.props.serie.production["production"];
 
-
       if (beschreibung === undefined || beschreibung === "" || beschreibung === null) {
         beschreibung = "Keine Beschreibung vorhanden";
       }
-
 
       poster = `url(${this.props.serie.poster["poster"]})`;
       imdb =
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";
       wo = this.props.serie.wo["wo"];
     } catch (error) { console.log(this.props.serie); }
-
-
-
-
-
-
-
-
 
 
     if (!this.state.loading) {
@@ -161,7 +146,6 @@ class SeriesRow extends React.Component {
               >
                 <div
                   style={{
-
                     display: "flex",
                     paddingTop: "5%",
                     justifyContent: "right",
@@ -170,7 +154,6 @@ class SeriesRow extends React.Component {
                     height: "12%",
                   }}
                 >
-
                   <p
                     className="rating"
                     style={{
@@ -184,7 +167,6 @@ class SeriesRow extends React.Component {
                   </p>
                 </div>
               </div>
-
               <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
                   <a
@@ -197,7 +179,6 @@ class SeriesRow extends React.Component {
                       textDecoration: "underline",
                     }}
                   >
-                    {" "}
                     {(() => {
                       if (
                         this.props.filter !== "" ||
@@ -211,7 +192,6 @@ class SeriesRow extends React.Component {
                     {this.props.serie.title}
                   </a>{" "}
                 </p>
-
                 <p
                   className="progress"
                   style={{ backgroundColor: "#42d10f" }}
@@ -234,7 +214,6 @@ class SeriesRow extends React.Component {
                 {" "}
                 <div
                   style={{
-
                     display: "flex",
                     paddingTop: "5%",
                     justifyContent: "right",
@@ -243,7 +222,6 @@ class SeriesRow extends React.Component {
                     height: "12%",
                   }}
                 >
-
                   <p
                     className="rating"
                     style={{
@@ -257,7 +235,6 @@ class SeriesRow extends React.Component {
                   </p>
                 </div>
               </div>
-
               <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
                   <a
@@ -284,7 +261,6 @@ class SeriesRow extends React.Component {
                     {this.props.serie.title}
                   </a>{" "}
                 </p>
-
                 <p
                   className="progress"
                   style={{ backgroundColor: "#b103fc" }}
