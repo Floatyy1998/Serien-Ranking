@@ -2,113 +2,105 @@ import React from "react";
 import Firebase from "firebase";
 
 var pruefen = "";
-var ids = {};
+
 var key = "test";
 class SeriesRow extends React.Component {
+
   constructor(props) {
     super(props);
-    this.state = { loading: false };
+    this.state = { loading: true };
 
-    Firebase.database()
-      .ref("serien")
-      .on("value", (snap) => {
-        snap.forEach(function (child) {
-          ids[child.val().title] = child.val().id;
-
-        });
+    Promise.all([
+      Firebase.database().ref("serien").once("value"),
+      Firebase.database().ref("key").once("value"),
+    ]).then(([serienSnapshot, keySnapshot]) => {
+      const ids = {};
+      serienSnapshot.forEach((child) => {
+        ids[child.val().title] = child.val().id;
       });
-
-    Firebase.database()
-      .ref("key")
-      .on("value", (snap) => {
-        pruefen = snap.val();
-      });
-    key = this.props.serie.i;
+      const pruefen = keySnapshot.val();
+      const key = this.props.serie.i;
+      this.setState({ loading: false, ids, pruefen, key });
+    });
   }
 
   addZeroes(num) {
     const dec = num.toString().split(".")[1];
-    const len = dec && dec.length > 2 ? dec.length : 2;
+    const len = dec?.length > 2 ? dec.length : 2;
     return Number(num).toFixed(len);
   }
 
-  round(value, step) {
-    step || (step = 1.0);
-    var inv = 1.0 / step;
+  round(value, step = 1.0) {
+    const inv = 1.0 / step;
     return Math.round(value * inv) / inv;
   }
 
   getRating(a) {
     let punktea = 0;
-    if (
-      this.props.genre === "A-Z" ||
-      this.props.genre === "All" ||
-      this.props.genre === "Animation" ||
-      this.props.genre === "Documentary" ||
-      this.props.genre === "Sport" ||
-      this.props.genre === "Zuletzt Hinzugefügt"
-    ) {
-      Object.entries(a["rating"]).forEach(([key, value]) => {
 
-        if (a["genre"]["genres"].includes(key)) {
-          punktea += value * 3;
-        } else {
-          punktea += value;
-        }
-      });
-      punktea /= Object.keys(a["genre"]["genres"]).length;
-      punktea /= 3;
-      this.round(punktea, 0, 1);
-
-      return this.addZeroes(this.round(punktea, 0.01));
-    } else {
-      punktea += a["rating"][this.props.genre];
-
-      this.round(punktea, 0, 1);
-
-      return this.addZeroes(this.round(punktea, 0.01));
+    switch (this.props.genre) {
+      case "A-Z":
+      case "All":
+      case "Animation":
+      case "Documentary":
+      case "Sport":
+      case "Zuletzt Hinzugefügt":
+        Object.entries(a["rating"]).forEach(([key, value]) => {
+          if (a["genre"]["genres"].includes(key)) {
+            punktea += value * 3;
+          } else {
+            punktea += value;
+          }
+        });
+        punktea /= Object.keys(a["genre"]["genres"]).length;
+        punktea /= 3;
+        break;
+      default:
+        punktea += a["rating"][this.props.genre];
+        break;
     }
+
+    return this.addZeroes(this.round(punktea, 0.01));
   }
 
   redirect = (link) => {
     window.open(link);
   };
 
-  alerte = (e, x) => {
+  alerte = async (e, x) => {
     e.preventDefault();
-    let test = Firebase.database()
+    const test = Firebase.database()
       .ref("/serien/")
       .orderByChild("title")
       .equalTo(x);
+
     if (!e.target.checked) {
-      var eingabeKey = prompt("Bitte Key eingeben:");
+      const eingabeKey = prompt("Bitte Key eingeben:");
       if (eingabeKey === pruefen) {
-        test
-          .once("value")
-          .then(function (snapshot) {
-            return Object.keys(snapshot.val())[0];
-          })
-          .then(function (key) {
-            let test2 = Firebase.database().ref("/serien/" + key + "/watching");
-            test2.set(false);
-            alert("Perfekt");
-          });
+        try {
+          const snapshot = await test.once("value");
+          const key = Object.keys(snapshot.val())[0];
+          const test2 = Firebase.database().ref(`/serien/${key}/watching`);
+          await test2.set(false);
+          alert("Perfekt");
+        } catch (error) {
+          console.error(error);
+        }
       } else {
         alert("falscher Key");
       }
     } else {
-      eingabeKey = prompt("Bitte Key eingeben:");
+      const eingabeKey = prompt("Bitte Key eingeben:");
       if (eingabeKey === pruefen) {
-        test
-          .once("value")
-          .then(function (snapshot) {
-            return Object.keys(snapshot.val())[0];
-          })
-          .then(function (key) {
-            let test2 = Firebase.database().ref("/serien/" + key + "/watching");
-            test2.set(true);
-            alert("Perfekt");
-          });
+        try {
+          const snapshot = await test.once("value");
+          const key = Object.keys(snapshot.val())[0];
+          const test2 = Firebase.database().ref(`/serien/${key}/watching`);
+          await test2.set(true);
+          alert("Perfekt");
+        } catch (error) {
+          console.error(error);
+        }
       } else {
         alert("falscher Key");
       }
@@ -137,15 +129,6 @@ class SeriesRow extends React.Component {
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";
       wo = this.props.serie.wo["wo"];
     } catch (error) { console.log(this.props.serie); }
-
-
-
-
-
-
-
-
-
 
     if (!this.state.loading) {
       if (x) {

@@ -8,22 +8,19 @@ import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { forEach } from "lodash";
-import { log, series } from "async";
 
-const cheerio = require("cheerio");
+
+
 
 var genre = "All";
 var filter = "";
-var pruefen = "";
+
 var serien = [];
 class App extends Component {
   constructor(props) {
     super(props);
-
-
 
     if (!Firebase.apps.length) {
       Firebase.initializeApp(config);
@@ -32,23 +29,15 @@ class App extends Component {
     }
     Firebase.analytics();
 
-
-
-
-
-
     this.state = { loading: true };
   }
-  get_serien() {
-    alert("Daten werden aktualisiert\nBitte etwas Geduld");
-    let ref = Firebase.database().ref("/serien");
-    ref.once("value", (snapshot) => {
-      snapshot.forEach(function (child) {
-        serien.push(child.val());
 
-      });
-      this.laden();
-    });
+
+  async get_serien() {
+    alert("Daten werden aktualisiert\nBitte etwas Geduld");
+    const snapshot = await Firebase.database().ref("/serien").once("value");
+    serien = snapshot.val();
+    this.laden();
   }
 
 
@@ -66,102 +55,48 @@ class App extends Component {
 
 
   async laden() {
-    Firebase.database()
-      .ref("key")
-      .on("value", (snap) => {
-        pruefen = snap.val();
-      });
-
-    for (let index = 0; index < serien.length; index++) {
-      fetch(
-        "https://api.themoviedb.org/3/tv/" +
-        serien[index].id +
-        "?api_key=" +
-        API.TMDB +
-        "&language=en-US"
-      )
-        .then(function (response2) {
-          return response2.json();
-        })
-        .then((data3) => {
-          var genres = ["All"];
-
-          for (var i = 0; i < data3.genres.length; i++) {
-            genres.push(data3.genres[i].name)
-          }
-          Firebase.database()
-            .ref("serien/" + index + "/genre")
-            .set({
-              genres
-            });
-
-          Firebase.database()
-            .ref("serien/" + index + "/poster")
-            .set({
-              poster: "https://image.tmdb.org/t/p/w780/" + data3.poster_path,
-            });
-          Firebase.database()
-            .ref("serien/" + index + "/production")
-            .set({ production: data3.in_production });
-        })
-        .then((_) => {
-          fetch(
-            "https://api.themoviedb.org/3/tv/" +
-            serien[index].id +
-            "/external_ids?api_key=" +
-            API.TMDB +
-            "&language=en-US"
-          )
-            .then(function (response3) {
-              return response3.json();
-            })
-            .then((data4) => {
-              Firebase.database()
-                .ref("serien/" + index + "/imdb")
-                .set({ imdb_id: data4.imdb_id });
-
-              if (index == 2) {
-                Firebase.database()
-                  .ref("serien/" + index + "/wo")
-                  .set({
-                    wo: "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/",
-                  });
-              } else if (index == 35) {
-                Firebase.database()
-                  .ref("serien/" + index + "/wo")
-                  .set({
-                    wo: "https://www.werstreamt.es/serie/details/235057/vikings/",
-                  });
-              } else {
-                Firebase.database()
-                  .ref("serien/" + index + "/wo")
-                  .set({
-                    wo:
-                      "https://www.werstreamt.es/filme-serien/?q=" +
-                      data4.imdb_id +
-                      "&action_results=suchen",
-                  });
-              }
+    //const keySnap = await Firebase.database().ref("key").once("value");
 
 
-            }).then((_) => { window.location.reload(); })
+    const promises = serien.map(async (serie, index) => {
+      const response2 = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}&language=en-US`
+      );
+      const data3 = await response2.json();
 
-            .catch(function (error) {
-            });
-        })
+      const genres = ["All", ...data3.genres.map((genre) => genre.name)];
+      await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
 
-        .catch(function (error) {
-          console.log("Error: " + error);
-        });
-    }
+      const posterUrl = `https://image.tmdb.org/t/p/w780/${data3.poster_path}`;
+      await Firebase.database().ref(`serien/${index}/poster`).set({ poster: posterUrl });
+
+      await Firebase.database().ref(`serien/${index}/production`).set({ production: data3.in_production });
+
+      const response3 = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
+      );
+      const data4 = await response3.json();
+
+      const woUrl =
+        index === 2
+          ? "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
+          : index === 35
+            ? "https://www.werstreamt.es/serie/details/235057/vikings/"
+            : `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+      await Firebase.database().ref(`serien/${index}/wo`).set({ wo: woUrl });
+
+      return null;
+    });
+
+    await Promise.all(promises);
+    window.location.reload();
   }
 
   componentDidMount() {
-
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", (snap) => {
-        if (Math.round((Date.now() - snap.val()) / 1000) > 1209600) {
+        if (Math.round((Date.now() - snap?.val()) / 1000) > 1209600) {
           this.get_serien();
           Firebase.database().ref("timestamp").set({
             createdAt: Firebase.database.ServerValue.TIMESTAMP,
@@ -169,19 +104,14 @@ class App extends Component {
         }
       });
 
-    /*    Firebase.database()
-    .ref("timestamp")
-    .set({
-      createdAt: Firebase.database.ServerValue.TIMESTAMP
-    }); */
-    // this.get_serien();
     this.checkGenre();
   }
 
 
 
   checklogin() {
-    if (Firebase.auth().currentUser) {
+    const currentUser = Firebase.auth()?.currentUser;
+    if (currentUser) {
       Firebase.auth()
         .signOut()
         .then(
@@ -206,20 +136,14 @@ class App extends Component {
       genre === "Documentary" ||
       genre === "Sport"
     ) {
-      Object.entries(a["rating"]).forEach(([key, value]) => {
-        if (a["genre"]["genres"].includes(key)) {
-          punktea += value * 3;
-        } else {
-          punktea += value;
-        }
-      });
-      Object.entries(b["rating"]).forEach(([key, value]) => {
-        if (b["genre"]["genres"].includes(key)) {
-          punkteb += value * 3;
-        } else {
-          punkteb += value;
-        }
-      });
+      punktea = Object.entries(a["rating"]).reduce((acc, [key, value]) => {
+        const multiplier = a["genre"]["genres"].includes(key) ? 3 : 1;
+        return acc + value * multiplier;
+      }, 0);
+      punkteb = Object.entries(b["rating"]).reduce((acc, [key, value]) => {
+        const multiplier = b["genre"]["genres"].includes(key) ? 3 : 1;
+        return acc + value * multiplier;
+      }, 0);
       punktea /= Object.keys(a["genre"]["genres"]).length;
       punkteb /= Object.keys(b["genre"]["genres"]).length;
     } else {
@@ -231,12 +155,7 @@ class App extends Component {
       punkteb /= 2;
     }
 
-    if (punktea > punkteb) {
-      return true;
-    } else {
-      return false;
-    }
-
+    return punktea > punkteb;
   }
 
   openNav() {
@@ -304,92 +223,49 @@ class App extends Component {
   }
 
   checkGenre() {
-
     let ref = Firebase.database().ref("/serien");
 
     ref.on("value", (snapshot) => {
       const series = snapshot.val();
 
+      let filteredSeries = series.filter((serie) => {
+        if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
+          return serie.title.toLowerCase().includes(filter.toLowerCase());
+        } else {
+          return (
+            serie.genre.genres.includes(genre) &&
+            serie.title.toLowerCase().includes(filter.toLowerCase())
+          );
+        }
+      });
+
       if (genre === "A-Z") {
-        series.sort((a, b) =>
+        filteredSeries.sort((a, b) =>
           a.title > b.title ? 1 : b.title > a.title ? -1 : 0
         );
       } else if (genre === "Zuletzt Hinzugefügt") {
-        series.reverse();
-      }
-      else {
-        series.sort((a, b) =>
+        filteredSeries.reverse();
+      } else {
+        filteredSeries.sort((a, b) =>
           a.title > b.title ? 1 : b.title > a.title ? -1 : 0
         );
-        series.sort((a, b) =>
+        filteredSeries.sort((a, b) =>
           this.isbigger(a, b) ? -1 : !this.isbigger(a, b) ? 1 : 0
-        );
-      }
-      if (filter !== "") {
-        series.sort((a, b) =>
-          a.title.indexOf(filter) > b.title.indexOf(filter)
-            ? 1
-            : b.title.indexOf(filter) > a.title.indexOf(filter)
-              ? -1
-              : 0
         );
       }
 
       var i = 1;
       var seriesRows = [];
 
-      series.forEach((serie) => {
-        if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-          if (serie.title.toLowerCase().includes(filter)) {
-            if (filter === "") {
-              const seriesRow = (
-                <SeriesRow serie={serie} i={i} genre={genre} filter="" />
-              );
-              seriesRows.push(seriesRow);
-              i++;
-            } else {
-              const seriesRow = (
-                <SeriesRow
-                  serie={serie}
-                  i={i}
-                  genre={genre}
-                  filter={filter}
-                />
-              );
-              seriesRows.push(seriesRow);
-              i++;
-            }
-          }
-          this.setState({ rows: seriesRows });
-        } else {
-          if (
-            serie.genre.genres.includes(genre) &&
-            serie.title.toLowerCase().includes(filter)
-          ) {
-            if (filter === "") {
-              const seriesRow = (
-                <SeriesRow serie={serie} i={i} genre={genre} filter="" />
-              );
-              seriesRows.push(seriesRow);
-              i++;
-            } else {
-              const seriesRow = (
-                <SeriesRow
-                  serie={serie}
-                  i={i}
-                  genre={genre}
-                  filter={filter}
-                />
-              );
-              seriesRows.push(seriesRow);
-              i++;
-            }
-          }
-          this.setState({ rows: seriesRows });
-        }
+      filteredSeries.forEach((serie) => {
+        const seriesRow = (
+          <SeriesRow serie={serie} i={i} genre={genre} filter={filter} />
+        );
+        seriesRows.push(seriesRow);
+        i++;
       });
-      this.setState({ loading: false });
 
+      this.setState({ rows: seriesRows, loading: false });
     });
   }
 
@@ -406,157 +282,82 @@ class App extends Component {
 
   async getSerienCount() {
     let ref = Firebase.database().ref("/serien");
-    var length;
-    ref.once("value", (snapshot) => {
-      length = snapshot.val().length;
-
-    });
+    const snapshot = await ref.once("value");
+    const length = snapshot.val().length;
     return length;
   }
 
-  async hinzufuegen(event) {
+  async fetchSeriesData(title) {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1`
+    );
+    const data = await response.json();
+    const id = data.results[0].id;
+    const detailsResponse = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}&language=en-US`
+    );
+    const detailsData = await detailsResponse.json();
+    const genres = detailsData.genres.map((genre) => genre.name);
+    return { id, genres };
+  }
+
+  getRatings(event) {
+    const ratingInputs = Array.from(event.target).slice(2, 16);
+    const ratings = {};
+    ratingInputs.forEach((input) => {
+      const value = input.value === "" || input.value === null ? 0 : parseFloat(input.value);
+      const key = input.name.replace(/-/g, " & ");
+      ratings[key] = value;
+    });
+    return ratings;
+  }
+
+  async addNewSeries(event, self) {
     event.preventDefault();
-    let length = await this.getSerienCount();
-    let nmr = length.toString();
-
-
-    let self = this;
-
-    var ratings = {
-      "Action & Adventure":
-        event.target[2].value === "" || event.target[2].value === null
-          ? 0
-          : parseFloat(event.target[2].value),
-
-      All:
-        event.target[3].value === "" || event.target[3].value === null
-          ? 0
-          : parseFloat(event.target[3].value),
-      Animation:
-        event.target[4].value === "" || event.target[4].value === null
-          ? 0
-          : parseFloat(event.target[4].value),
-      Comedy:
-        event.target[5].value === "" || event.target[5].value === null
-          ? 0
-          : parseFloat(event.target[5].value),
-      Crime:
-        event.target[6].value === "" || event.target[6].value === null
-          ? 0
-          : parseFloat(event.target[6].value),
-      Documentary:
-        event.target[7].value === "" || event.target[7].value === null
-          ? 0
-          : parseFloat(event.target[7].value),
-      Drama:
-        event.target[8].value === "" || event.target[8].value === null
-          ? 0
-          : parseFloat(event.target[8].value),
-      "Sci-Fi & Fantasy":
-        event.target[11].value === "" || event.target[11].value === null
-          ? 0
-          : parseFloat(event.target[11].value),
-      Horror:
-        event.target[9].value === "" || event.target[9].value === null
-          ? 0
-          : parseFloat(event.target[9].value),
-      Mystery:
-        event.target[10].value === "" || event.target[10].value === null
-          ? 0
-          : parseFloat(event.target[10].value),
-
-      Sport:
-        event.target[12].value === "" || event.target[12].value === null
-          ? 0
-          : parseFloat(event.target[12].value),
-      Thriller:
-        event.target[13].value === "" || event.target[13].value === null
-          ? 0
-          : parseFloat(event.target[13].value),
-      "War & Politics":
-        event.target[14].value === "" || event.target[14].value === null
-          ? 0
-          : parseFloat(event.target[14].value),
-      Western:
-        event.target[15].value === "" || event.target[15].value === null
-          ? 0
-          : parseFloat(event.target[15].value),
-    };
-
-
-    var genres = ["All"];
-
-    var postData = {
-      title: event.target[1].value,
+    const title = event.target[1].value;
+    const ratings = this.getRatings(event);
+    const { id, genres } = await this.fetchSeriesData(title);
+    const postData = {
+      title,
       rating: ratings,
-      genre: [],
+      genre: { genres: ["All", ...genres] },
+      id,
     };
     self.setState({ loading: true });
-    if (Firebase.auth().currentUser == null) {
+    const currentUser = Firebase.auth().currentUser;
+    if (currentUser == null || currentUser.uid !== "83fRTz3YqgMkjz646AJ1GO6I8Kg1") {
       alert("Bitte Einloggen!");
-    } else if (nmr === "") {
-      alert("Nummer eingeben!!!");
-    } else if (
-      Firebase.auth().currentUser.uid != "83fRTz3YqgMkjz646AJ1GO6I8Kg1"
-    ) {
-      alert("Bitte Einloggen!");
-    } else {
-      fetch(
-        "https://api.themoviedb.org/3/search/tv?api_key=" +
-        API.TMDB +
-        "&query=" +
-        event.target[1].value +
-        "&page=1"
-      )
-        .then(function (response) {
-          return response.json();
-        })
-        .then((data) => {
-          return data["results"][0].id;
-        })
-        .then((daten) => {
-          postData["id"] = daten;
-          return daten;
-        })
-        .then((daten) => {
-          fetch(
-            "https://api.themoviedb.org/3/tv/" +
-            daten +
-            "?api_key=" +
-            API.TMDB +
-            "&language=en-US"
-          ).then(function (response) {
-            return response.json();
-          }).then((data) => {
-            for (var i = 0; i < data.genres.length; i++) {
-              genres.push(data.genres[i].name)
-            }
-            postData["genre"]["genres"] = genres;
-          }).then((_) => {
-            Firebase.database()
-              .ref("serien/" + nmr)
-              .set(postData)
-              .then(() => {
-                for (let j = 0; j < 16; j++) {
-                  event.target[j].value = "";
-                }
+      return;
+    }
+    const length = await self.getSerienCount();
+    const nmr = length.toString();
+    await Firebase.database()
+      .ref("serien/" + nmr)
+      .set(postData);
+    for (let j = 0; j < 16; j++) {
+      event.target[j].value = "";
+    }
+    self.get_serien();
+    alert("Serie hinzugefügt!");
+  }
 
-                self.get_serien();
-                alert("Serie hinzugefügt!");
-              });
-          })
-        })
-
+  async hinzufuegen(event) {
+    const self = this;
+    try {
+      await this.addNewSeries(event, self);
+    } catch (error) {
+      console.error(error);
+      alert("Fehler beim Hinzufügen der Serie!");
     }
   }
   login = () => {
-    if (document.getElementById("login").innerHTML == "Login") {
+    if (document.getElementById("login").innerHTML === "Login") {
       var email = prompt("email eingeben", "");
-      if (email == null || email == "") {
+      if (email === null || email === "") {
         alert("email muss eingegeben werden");
       } else {
         var passwort = prompt("passwort eingeben", "");
-        if (passwort == null || passwort == "") {
+        if (passwort === null || passwort === "") {
           alert("passwort muss eingegeben werden");
         } else {
           Firebase.auth()
@@ -857,7 +658,7 @@ class App extends Component {
                     height: "20px",
                     width: "20px",
                     position: "absolute",
-                    right: "0px",
+
                     top: "197px",
                     right: "10%",
                   }}
@@ -1181,7 +982,6 @@ class App extends Component {
                     height: "20px",
                     width: "20px",
                     position: "absolute",
-                    right: "0px",
                     top: "197px",
                     right: "10%",
                   }}
