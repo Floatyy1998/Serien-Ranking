@@ -109,7 +109,6 @@ class SeriesRow extends React.Component {
 
   render() {
     var x = false;
-
     var poster;
     var wo;
     var imdb;
@@ -118,11 +117,9 @@ class SeriesRow extends React.Component {
     try {
       x = this.props.serie.production["production"];
 
-
       if (beschreibung === undefined || beschreibung === "" || beschreibung === null) {
         beschreibung = "Keine Beschreibung vorhanden";
       }
-
 
       poster = `url(${this.props.serie.poster["poster"]})`;
       imdb =
@@ -144,7 +141,6 @@ class SeriesRow extends React.Component {
               >
                 <div
                   style={{
-
                     display: "flex",
                     paddingTop: "5%",
                     justifyContent: "right",
@@ -153,7 +149,6 @@ class SeriesRow extends React.Component {
                     height: "12%",
                   }}
                 >
-
                   <p
                     className="rating"
                     style={{
@@ -167,7 +162,6 @@ class SeriesRow extends React.Component {
                   </p>
                 </div>
               </div>
-
               <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
                   <a
@@ -180,7 +174,6 @@ class SeriesRow extends React.Component {
                       textDecoration: "underline",
                     }}
                   >
-                    {" "}
                     {(() => {
                       if (
                         this.props.filter !== "" ||
@@ -194,7 +187,6 @@ class SeriesRow extends React.Component {
                     {this.props.serie.title}
                   </a>{" "}
                 </p>
-
                 <p
                   className="progress"
                   style={{ backgroundColor: "#42d10f" }}
@@ -217,7 +209,6 @@ class SeriesRow extends React.Component {
                 {" "}
                 <div
                   style={{
-
                     display: "flex",
                     paddingTop: "5%",
                     justifyContent: "right",
@@ -226,7 +217,6 @@ class SeriesRow extends React.Component {
                     height: "12%",
                   }}
                 >
-
                   <p
                     className="rating"
                     style={{
@@ -240,7 +230,6 @@ class SeriesRow extends React.Component {
                   </p>
                 </div>
               </div>
-
               <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
                   <a
@@ -267,7 +256,6 @@ class SeriesRow extends React.Component {
                     {this.props.serie.title}
                   </a>{" "}
                 </p>
-
                 <p
                   className="progress"
                   style={{ backgroundColor: "#b103fc" }}
