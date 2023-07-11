@@ -113,9 +113,11 @@ class SeriesRow extends React.Component {
     var wo;
     var imdb;
     var beschreibung;
+    var nextEpisode;
 
     try {
       x = this.props.serie.production["production"];
+      nextEpisode = this.props.serie.nextEpisode["nextEpisode"];
 
       if (beschreibung === undefined || beschreibung === "" || beschreibung === null) {
         beschreibung = "Keine Beschreibung vorhanden";
@@ -127,74 +129,159 @@ class SeriesRow extends React.Component {
       wo = this.props.serie.wo["wo"];
     } catch (error) { console.log(this.props.serie); }
 
+    const today = new Date(nextEpisode);
+    const yyyy = today.getFullYear();
+    let mm = today.getMonth() + 1; // Months start at 0!
+    let dd = today.getDate();
+
+    if (dd < 10) dd = '0' + dd;
+    if (mm < 10) mm = '0' + mm;
+
+    const formattedToday = dd + '.' + mm + '.' + yyyy;
+
     if (!this.state.loading) {
       if (x) {
-        return (
-          <li key={key}>
-            <div className="polaroid">
-              <div
-                className="pposter"
-                style={{
-                  backgroundImage: poster,
-                }}
-                onClick={(_) => this.redirect(imdb)}
-              >
+        if (nextEpisode === undefined || nextEpisode === "" || nextEpisode === null) {
+          return (
+            <li key={key}>
+              <div className="polaroid">
                 <div
+                  className="pposter"
                   style={{
-                    display: "flex",
-                    paddingTop: "5%",
-                    justifyContent: "right",
-                    background: "none",
-                    width: "100%",
-                    height: "12%",
+                    backgroundImage: poster,
                   }}
+                  onClick={(_) => this.redirect(imdb)}
                 >
-                  <p
-                    className="rating"
+                  <div
                     style={{
-                      verticalAlign: "text-bottom",
-                      float: "left",
-                      paddingRight: "5%",
-                      height: "auto",
+                      display: "flex",
+                      paddingTop: "5%",
+                      justifyContent: "right",
+                      background: "none",
+                      width: "100%",
+                      height: "12%",
                     }}
                   >
-                    {this.getRating(this.props.serie)} / 10
+                    <p
+                      className="rating"
+                      style={{
+                        verticalAlign: "text-bottom",
+                        float: "left",
+                        paddingRight: "5%",
+                        height: "auto",
+                      }}
+                    >
+                      {this.getRating(this.props.serie)} / 10
+                    </p>
+                  </div>
+                </div>
+                <div className="draußen" style={{ width: "100%" }}>
+                  <p className="padding">
+                    <a
+                      href={wo}
+                      target="_blank"
+                      style={{
+                        width: "100%",
+                        display: "grid",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      {(() => {
+                        if (
+                          this.props.filter !== "" ||
+                          this.props.genre === "A-Z"
+                        ) {
+                          return;
+                        } else {
+                          return this.props.i + ". ";
+                        }
+                      })()}
+                      {this.props.serie.title}
+                    </a>{" "}
                   </p>
+                  <p
+                    className="progress"
+                    style={{ backgroundColor: "#42d10f" }}
+                  ></p>
                 </div>
               </div>
-              <div className="draußen" style={{ width: "100%" }}>
-                <p className="padding">
-                  <a
-                    href={wo}
-                    target="_blank"
+            </li>
+          );
+        } else {
+          return (
+            <li key={key}>
+              <div className="polaroid">
+                <div
+                  className="pposter"
+                  style={{
+                    backgroundImage: poster,
+                  }}
+                  onClick={(_) => this.redirect(imdb)}
+                >
+                   
+                  <div
                     style={{
+                      display: "flex",
+                      paddingTop: "5%",
+                      justifyContent: "right",
+                      background: "none",
                       width: "100%",
-                      display: "grid",
-                      cursor: "pointer",
-                      textDecoration: "underline",
+                      height: "12%",
                     }}
                   >
-                    {(() => {
-                      if (
-                        this.props.filter !== "" ||
-                        this.props.genre === "A-Z"
-                      ) {
-                        return;
-                      } else {
-                        return this.props.i + ". ";
-                      }
-                    })()}
-                    {this.props.serie.title}
-                  </a>{" "}
-                </p>
-                <p
-                  className="progress"
-                  style={{ backgroundColor: "#42d10f" }}
-                ></p>
+                    
+                    <p
+                      className="rating"
+                      style={{
+                        verticalAlign: "text-bottom",
+                        float: "left",
+                        paddingRight: "5%",
+                        height: "auto",
+                      }}
+                    >
+                      {this.getRating(this.props.serie)} / 10
+                    </p>
+                   
+                  </div>
+                  <p className="nextEpisode">Nächste Episode am:<br></br>{formattedToday}</p>
+                </div>
+                <div className="draußen" style={{ width: "100%" }}>
+                  <p className="padding">
+                    <a
+                      href={wo}
+                      target="_blank"
+                      style={{
+                        width: "100%",
+                        display: "grid",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      {(() => {
+                        if (
+                          this.props.filter !== "" ||
+                          this.props.genre === "A-Z"
+                        ) {
+                          return;
+                        } else {
+                          return this.props.i + ". ";
+                        }
+                      })()}
+                      {this.props.serie.title}
+                    </a>{" "}
+                  </p>
+                  <p
+                    className="progress"
+                    style={{ backgroundColor: "#42d10f" }}
+                  ></p>
+                </div>
               </div>
-            </div>
-          </li>
-        );
+            </li>
+          );
+        }
+
+
       } else {
         return (
           <li key={key}>

@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 
-
+//https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 var genre = "All";
 var filter = "";
@@ -65,6 +65,15 @@ class App extends Component {
 
       await Firebase.database().ref(`serien/${index}/production`).set({ production: data3.in_production });
 
+      if (data3.next_episode_to_air) {
+        await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: data3.next_episode_to_air.air_date });
+      }
+      else{
+        await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
+      }
+
+      
+
       const response3 = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
       );
@@ -89,7 +98,7 @@ class App extends Component {
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", (snap) => {
-        if (Math.round((Date.now() - snap?.val()) / 1000) > 1209600) {
+        if (Math.round((Date.now() - snap?.val()) / 1000) > 604800) {
           this.get_serien();
           Firebase.database().ref("timestamp").set({
             createdAt: Firebase.database.ServerValue.TIMESTAMP,
