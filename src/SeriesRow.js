@@ -35,6 +35,45 @@ class SeriesRow extends React.Component {
     return Math.round(value * inv) / inv;
   }
 
+  getProvider(serie) {
+    try {
+      const provider = serie["provider"]["provider"];
+      const providerList = [];
+
+      Object.entries(provider).forEach(([key, value]) => {
+        if (value) {
+          providerList.push(value);
+        }
+      });
+      var providerSet = [...new Set(providerList)];
+      var providerListShort = providerSet;
+      if (providerList.length > 3) {
+        providerListShort = providerList.slice(0, 3);
+      }
+
+
+
+
+      return providerListShort.map((provider) => (
+        <img
+          key={provider}
+          src={provider}
+          alt={provider}
+          style={{
+            width: "auto",
+            height: "100%",
+            marginLeft: "3%",
+            float: "left",
+            boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5)",
+          }}
+        />
+      ));
+    }
+    catch (error) {
+      return;
+    }
+  }
+
   getRating(a) {
     let punktea = 0;
 
@@ -154,19 +193,20 @@ class SeriesRow extends React.Component {
                 >
                   <div
                     style={{
-                      display: "flex",
+
                       paddingTop: "5%",
-                      justifyContent: "right",
+
                       background: "none",
                       width: "100%",
-                      height: "12%",
+                      height: "14%",
                     }}
                   >
+                    {this.getProvider(this.props.serie)}
                     <p
                       className="rating"
                       style={{
                         verticalAlign: "text-bottom",
-                        float: "left",
+                        float: "right",
                         paddingRight: "5%",
                         height: "auto",
                       }}
@@ -177,14 +217,14 @@ class SeriesRow extends React.Component {
                 </div>
                 <div className="draußen" style={{ width: "100%" }}>
                   <p className="padding">
-                  <p style={{
+                    <p style={{
                       width: "100%",
-                     height: "40%",
+                      height: "40%",
                       display: "grid",
                       cursor: "pointer",
                       textDecoration: "underline",
                     }}></p>
-                    <p
+                    <a
                       href={wo}
                       target="_blank"
                       style={{
@@ -206,7 +246,7 @@ class SeriesRow extends React.Component {
                         }
                       })()}
                       {this.props.serie.title}
-                    </p>{" "}
+                    </a>{" "}
                   </p>
                   <p
                     className="progress"
@@ -227,43 +267,43 @@ class SeriesRow extends React.Component {
                   }}
                   onClick={(_) => this.redirect(imdb)}
                 >
-                   
+
                   <div
                     style={{
-                      display: "flex",
+
                       paddingTop: "5%",
-                      justifyContent: "right",
+
                       background: "none",
                       width: "100%",
-                      height: "12%",
+                      height: "14%",
                     }}
                   >
-                    
+                    {this.getProvider(this.props.serie)}
                     <p
                       className="rating"
                       style={{
                         verticalAlign: "text-bottom",
-                        float: "left",
+                        float: "right",
                         paddingRight: "5%",
                         height: "auto",
                       }}
                     >
                       {this.getRating(this.props.serie)} / 10
                     </p>
-                   
+
                   </div>
                   <p className="nextEpisode">Nächste Episode:<br></br>{formattedToday}</p>
                 </div>
                 <div className="draußen" style={{ width: "100%" }}>
                   <p className="padding">
-                  <p style={{
+                    <p style={{
                       width: "100%",
-                     height: "40%",
+                      height: "40%",
                       display: "grid",
                       cursor: "pointer",
                       textDecoration: "underline",
                     }}></p>
-                    <p
+                    <a
                       href={wo}
                       target="_blank"
                       style={{
@@ -285,7 +325,7 @@ class SeriesRow extends React.Component {
                         }
                       })()}
                       {this.props.serie.title}
-                    </p>{" "}
+                    </a>{" "}
                   </p>
                   <p
                     className="progress"
@@ -312,19 +352,20 @@ class SeriesRow extends React.Component {
                 {" "}
                 <div
                   style={{
-                    display: "flex",
+
                     paddingTop: "5%",
-                    justifyContent: "right",
+
                     background: "none",
                     width: "100%",
-                    height: "12%",
+                    height: "14%",
                   }}
                 >
+                  {this.getProvider(this.props.serie)}
                   <p
                     className="rating"
                     style={{
                       verticalAlign: "text-bottom",
-                      float: "left",
+                      float: "right",
                       paddingRight: "5%",
                       height: "auto",
                     }}
@@ -336,13 +377,13 @@ class SeriesRow extends React.Component {
               <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
                   <p style={{
-                      width: "100%",
-                     height: "40%",
-                      display: "grid",
-                      cursor: "pointer",
-                      textDecoration: "underline",
-                    }}></p>
-                  <p
+                    width: "100%",
+                    height: "40%",
+                    display: "grid",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}></p>
+                  <a
                     href={wo}
                     target="_blank"
                     style={{
@@ -365,7 +406,7 @@ class SeriesRow extends React.Component {
                       }
                     })()}
                     {this.props.serie.title}
-                  </p>{" "}
+                  </a>{" "}
                 </p>
                 <p
                   className="progress"

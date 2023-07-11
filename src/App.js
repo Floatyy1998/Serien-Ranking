@@ -11,7 +11,7 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-
+//provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 var genre = "All";
@@ -34,7 +34,7 @@ class App extends Component {
 
 
   async get_serien() {
-   
+
     const snapshot = await Firebase.database().ref("/serien").once("value");
     serien = snapshot.val();
     this.laden();
@@ -57,6 +57,47 @@ class App extends Component {
       );
       const data3 = await response2.json();
 
+      const provider = await fetch(`https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`);
+
+      const providerData = await provider.json();
+      try {
+        let anbieter = [];
+        for (let i = 0; i < providerData.results.DE.flatrate.length; i++) {
+          switch (providerData.results.DE.flatrate[i].provider_id) {
+            case 337: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`); 
+            break;
+            case 8: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 9: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 283: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 30: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 304: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 350: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 421: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 531: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 178: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 298: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            break;
+            case 354: anbieter.push(`https://image.tmdb.org/t/p/w780/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`);
+            break;
+            
+          }
+        }
+
+        await Firebase.database().ref(`serien/${index}/provider`).set({ provider: anbieter });
+      }
+      catch (error) {
+        await Firebase.database().ref(`serien/${index}/provider`).set({ provider: "" });
+      }
+
       const genres = ["All", ...data3.genres.map((genre) => genre.name)];
       await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
 
@@ -68,11 +109,11 @@ class App extends Component {
       if (data3.next_episode_to_air) {
         await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: data3.next_episode_to_air.air_date });
       }
-      else{
+      else {
         await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
       }
 
-      
+
 
       const response3 = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
@@ -91,7 +132,7 @@ class App extends Component {
     });
 
     await Promise.all(promises);
-    window.location.reload();
+    // window.location.reload();
   }
 
   componentDidMount() {
@@ -650,6 +691,7 @@ class App extends Component {
                       <span style={{ color: "#42d10f" }}> <b>laufend:</b> Es kommen weitere Folgen.</span><br></br><br></br><br></br>
                       <span>Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.</span><br></br><br></br>
                       <span>Klicke auf den Titel, um zu erfahren, wo du die Serie schauen kannst.</span><br></br><br></br>
+                      <span style={{ color: "#00fed7" }}>Daten bereitgestellt von TMDB und JustWatch</span><br></br><br></br>
                     </React.Fragment>
                   }
                   componentsProps={{
@@ -964,6 +1006,7 @@ class App extends Component {
                       <span style={{ color: "#42d10f" }}> <b>laufend:</b> Es kommen weitere Folgen.</span><br></br><br></br><br></br>
                       <span>Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.</span><br></br><br></br>
                       <span>Klicke auf den Titel, um zu erfahren, wo du die Serie schauen kannst.</span><br></br><br></br>
+                      <span style={{ color: "#00fed7" }}>Daten bereitgestellt von TMDB und JustWatch</span><br></br><br></br>
                     </React.Fragment>
                   }
                   componentsProps={{
