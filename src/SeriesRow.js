@@ -177,11 +177,19 @@ class SeriesRow extends React.Component {
                 </div>
                 <div className="draußen" style={{ width: "100%" }}>
                   <p className="padding">
-                    <a
+                  <p style={{
+                      width: "100%",
+                     height: "40%",
+                      display: "grid",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}></p>
+                    <p
                       href={wo}
                       target="_blank"
                       style={{
                         width: "100%",
+                        height: "60%",
                         display: "grid",
                         cursor: "pointer",
                         textDecoration: "underline",
@@ -198,7 +206,7 @@ class SeriesRow extends React.Component {
                         }
                       })()}
                       {this.props.serie.title}
-                    </a>{" "}
+                    </p>{" "}
                   </p>
                   <p
                     className="progress"
@@ -244,15 +252,23 @@ class SeriesRow extends React.Component {
                     </p>
                    
                   </div>
-                  <p className="nextEpisode">Nächste Episode am:<br></br>{formattedToday}</p>
+                  <p className="nextEpisode">Nächste Episode:<br></br>{formattedToday}</p>
                 </div>
                 <div className="draußen" style={{ width: "100%" }}>
                   <p className="padding">
-                    <a
+                  <p style={{
+                      width: "100%",
+                     height: "40%",
+                      display: "grid",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}></p>
+                    <p
                       href={wo}
                       target="_blank"
                       style={{
                         width: "100%",
+                        height: "60%",
                         display: "grid",
                         cursor: "pointer",
                         textDecoration: "underline",
@@ -269,7 +285,7 @@ class SeriesRow extends React.Component {
                         }
                       })()}
                       {this.props.serie.title}
-                    </a>{" "}
+                    </p>{" "}
                   </p>
                   <p
                     className="progress"
@@ -319,11 +335,19 @@ class SeriesRow extends React.Component {
               </div>
               <div className="draußen" style={{ width: "100%" }}>
                 <p className="padding">
-                  <a
+                  <p style={{
+                      width: "100%",
+                     height: "40%",
+                      display: "grid",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}></p>
+                  <p
                     href={wo}
                     target="_blank"
                     style={{
                       width: "100%",
+                      height: "60%",
                       display: "grid",
                       cursor: "pointer",
                       textDecoration: "underline",
@@ -341,7 +365,7 @@ class SeriesRow extends React.Component {
                       }
                     })()}
                     {this.props.serie.title}
-                  </a>{" "}
+                  </p>{" "}
                 </p>
                 <p
                   className="progress"

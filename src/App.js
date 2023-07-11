@@ -34,7 +34,7 @@ class App extends Component {
 
 
   async get_serien() {
-    alert("Daten werden aktualisiert\nBitte etwas Geduld");
+   
     const snapshot = await Firebase.database().ref("/serien").once("value");
     serien = snapshot.val();
     this.laden();
@@ -98,7 +98,7 @@ class App extends Component {
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", (snap) => {
-        if (Math.round((Date.now() - snap?.val()) / 1000) > 604800) {
+        if (Math.round((Date.now() - snap?.val()) / 1000) > 432000) {
           this.get_serien();
           Firebase.database().ref("timestamp").set({
             createdAt: Firebase.database.ServerValue.TIMESTAMP,
