@@ -166,7 +166,7 @@ class SeriesRow extends React.Component {
       imdb =
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";
       wo = this.props.serie.wo["wo"];
-    } catch (error) { console.log(this.props.serie); }
+    } catch (error) {  }
 
     const today = new Date(nextEpisode);
     const yyyy = today.getFullYear();

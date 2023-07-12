@@ -411,11 +411,12 @@ class App extends Component {
     const ratings = {};
     ratingInputs.forEach((input) => {
       const value = input.value === "" || input.value === null ? 0 : parseFloat(input.value);
-      const key = input.name.replace(/-/g, " & ");
+      const key = input.name;
       ratings[key] = value;
     });
     return ratings;
   }
+  //7.343 7.22 7.11
 
   async addNewSeries(event, self) {
     event.preventDefault();
@@ -439,6 +440,18 @@ class App extends Component {
     await Firebase.database()
       .ref("serien/" + nmr)
       .set(postData);
+
+      try{ const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${title}`);
+      const tvMazeData = await tvMazeResponse.json();
+      console.log(tvMazeData);
+      await this.sleep(20000);
+       await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: tvMazeData.id });
+      }
+       catch(error){
+         await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: "" });
+       }
+
+
     for (let j = 0; j < 16; j++) {
       event.target[j].value = "";
     }
