@@ -3,7 +3,7 @@
     "main.css": "/static/css/main.022b4f73.css",
     "main.js": "/static/js/main.5d81e3fd.js",
     "static/js/377.ee810a76.chunk.js": "/static/js/377.ee810a76.chunk.js",
-    "service-worker.js": "./service-worker.js",
+    "service-worker.js": "./Serien-Ranking/service-worker.js",
     "index.html": "/index.html",
     "main.022b4f73.css.map": "/static/css/main.022b4f73.css.map",
     "main.5d81e3fd.js.map": "/static/js/main.5d81e3fd.js.map",
