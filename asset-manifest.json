@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/Serien-Ranking/static/css/main.022b4f73.css",
-    "main.js": "/Serien-Ranking/static/js/main.5d81e3fd.js",
-    "static/js/377.ee810a76.chunk.js": "/Serien-Ranking/static/js/377.ee810a76.chunk.js",
-    "service-worker.js": "/Serien-Ranking/service-worker.js",
-    "index.html": "/Serien-Ranking/index.html",
-    "main.022b4f73.css.map": "/Serien-Ranking/static/css/main.022b4f73.css.map",
-    "main.5d81e3fd.js.map": "/Serien-Ranking/static/js/main.5d81e3fd.js.map",
-    "377.ee810a76.chunk.js.map": "/Serien-Ranking/static/js/377.ee810a76.chunk.js.map"
+    "main.css": "./Serien-Ranking/static/css/main.022b4f73.css",
+    "main.js": "./Serien-Ranking/static/js/main.5d81e3fd.js",
+    "static/js/377.ee810a76.chunk.js": "./Serien-Ranking/static/js/377.ee810a76.chunk.js",
+    "service-worker.js": "./Serien-Ranking/service-worker.js",
+    "index.html": "./Serien-Ranking/index.html",
+    "main.022b4f73.css.map": "./Serien-Ranking/static/css/main.022b4f73.css.map",
+    "main.5d81e3fd.js.map": "./Serien-Ranking/static/js/main.5d81e3fd.js.map",
+    "377.ee810a76.chunk.js.map": "./Serien-Ranking/static/js/377.ee810a76.chunk.js.map"
   },
   "entrypoints": [
-    "Serien-Rankingstatic/css/main.022b4f73.css",
-    "Serien-Rankingstatic/js/main.5d81e3fd.js"
+    "Serien-Ranking/static/css/main.022b4f73.css",
+    "Serien-Ranking/static/js/main.5d81e3fd.js"
   ]
 }
