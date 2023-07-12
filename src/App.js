@@ -19,8 +19,8 @@ var genre = "All";
 var filter = "";
 
 var serien = [];
-Date.prototype.addHours= function(h){
-  this.setHours(this.getHours()+h);
+Date.prototype.addHours = function (h) {
+  this.setHours(this.getHours() + h);
   return this;
 }
 
@@ -52,14 +52,16 @@ class App extends Component {
   scrollTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
   async laden() {
     //const keySnap = await Firebase.database().ref("key").once("value");
 
 
     const promises = serien.map(async (serie, index) => {
       const response2 = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}&language=en-US`
+        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
       );
       const data3 = await response2.json();
 
@@ -104,6 +106,43 @@ class App extends Component {
         await Firebase.database().ref(`serien/${index}/provider`).set({ provider: "" });
       }
 
+      /* try{ const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${serie.title}`);
+      const tvMazeData = await tvMazeResponse.json();
+      console.log(tvMazeData);
+      await this.sleep(20000);
+       await Firebase.database().ref(`serien/${index}/tvMaze`).set({ tvMazeID: tvMazeData.id });
+      }
+       catch(error){
+         await Firebase.database().ref(`serien/${index}/tvMaze`).set({ tvMazeID: "" });
+       } */
+      await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
+
+      if (serie.tvMaze.tvMazeID !== "") {
+        const tvMazeResponse = await fetch(`https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`);
+        const tvMazeData = await tvMazeResponse.json();
+        // console.log(tvMazeData._links.nextepisode.href);
+
+
+        if (tvMazeData._links.nextepisode) {
+          const tvMazeNextEpisodeResponse = await fetch(`${tvMazeData._links.nextepisode.href}`);
+          const tvMazeNextEpisodeData = await tvMazeNextEpisodeResponse.json();
+          // console.log(tvMazeNextEpisodeData.airstamp);
+          await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+
+
+        }
+
+      }
+
+
+
+
+
+
+
+
+
+
       const genres = ["All", ...data3.genres.map((genre) => genre.name)];
       await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
 
@@ -112,12 +151,13 @@ class App extends Component {
 
       await Firebase.database().ref(`serien/${index}/production`).set({ production: data3.in_production });
 
-      if (data3.next_episode_to_air) {
-        await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: data3.next_episode_to_air.air_date });
-      }
-      else {
-        await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
-      }
+      /*   if (data3.next_episode_to_air) {
+          // console.log(serie.title + " " +data3.next_episode_to_air.air_date + " " + new Date(data3.next_episode_to_air.air_date));
+          await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: data3.next_episode_to_air.air_date });
+        }
+        else {
+          await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
+        } */
 
 
 
@@ -125,6 +165,7 @@ class App extends Component {
         `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
       );
       const data4 = await response3.json();
+
 
       const woUrl =
         index === 2
@@ -143,7 +184,7 @@ class App extends Component {
 
   async componentDidMount() {
     console.log(new Date(await this.get_smallest_Date()).addHours(22));
-    if(new Date >= new Date(await this.get_smallest_Date()).addHours(22)){
+    if (new Date >= new Date(await this.get_smallest_Date()).addHours(22)) {
       this.laden()
     }
 
@@ -165,16 +206,16 @@ class App extends Component {
     let dates = [];
     try {
       for (let i = 0; i < serienArray.val().length; i++) {
-        if (serienArray.val()[i].nextEpisode.nextEpisode !=="") {
+        if (serienArray.val()[i].nextEpisode.nextEpisode !== "") {
           dates.push(new Date(serienArray.val()[i].nextEpisode.nextEpisode));
         }
-        
+
       }
     }
     catch (error) {
       console.error(error);
     }
-    return dates.sort(function(a,b){
+    return dates.sort(function (a, b) {
       // Turn your strings into dates, and then subtract them
       // to get a value that is either negative, positive, or zero.
       return a - b
