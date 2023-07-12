@@ -10,6 +10,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { log } from "async";
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
@@ -18,6 +19,11 @@ var genre = "All";
 var filter = "";
 
 var serien = [];
+Date.prototype.addHours= function(h){
+  this.setHours(this.getHours()+h);
+  return this;
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -64,31 +70,31 @@ class App extends Component {
         let anbieter = [];
         for (let i = 0; i < providerData.results.DE.flatrate.length; i++) {
           switch (providerData.results.DE.flatrate[i].provider_id) {
-            case 337: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`); 
-            break;
+            case 337: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+              break;
             case 8: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 9: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 283: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 30: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 304: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 350: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 421: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 531: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 178: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 298: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
-            break;
+              break;
             case 354: anbieter.push(`https://image.tmdb.org/t/p/w780/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`);
-            break;
-            
+              break;
+
           }
         }
 
@@ -135,11 +141,16 @@ class App extends Component {
     // window.location.reload();
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    console.log(new Date(await this.get_smallest_Date()).addHours(22));
+    if(new Date >= new Date(await this.get_smallest_Date()).addHours(22)){
+      this.laden()
+    }
+
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", (snap) => {
-        if (Math.round((Date.now() - snap?.val()) / 1000) > 432000) {
+        if (Math.round((Date.now() - snap?.val()) / 1000) > 6912000) {
           this.get_serien();
           Firebase.database().ref("timestamp").set({
             createdAt: Firebase.database.ServerValue.TIMESTAMP,
@@ -149,6 +160,27 @@ class App extends Component {
 
     this.checkGenre();
   }
+  async get_smallest_Date() {
+    let serienArray = await Firebase.database().ref("/serien").once("value");
+    let dates = [];
+    try {
+      for (let i = 0; i < serienArray.val().length; i++) {
+        if (serienArray.val()[i].nextEpisode.nextEpisode !=="") {
+          dates.push(new Date(serienArray.val()[i].nextEpisode.nextEpisode));
+        }
+        
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
+    return dates.sort(function(a,b){
+      // Turn your strings into dates, and then subtract them
+      // to get a value that is either negative, positive, or zero.
+      return a - b
+    })[0];
+  }
+
 
   checklogin() {
     const currentUser = Firebase.auth()?.currentUser;
