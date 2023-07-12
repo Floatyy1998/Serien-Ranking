@@ -18,7 +18,7 @@
       "sizes": "384x384"
     }
   ],
-  "start_url": "./",
+  "start_url": "./Serien-Ranking",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
