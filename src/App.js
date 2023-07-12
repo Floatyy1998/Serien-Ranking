@@ -70,29 +70,29 @@ class App extends Component {
         let anbieter = [];
         for (let i = 0; i < providerData.results.DE.flatrate.length; i++) {
           switch (providerData.results.DE.flatrate[i].provider_id) {
-            case 337: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 337: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 8: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 8: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 9: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 9: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 283: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 283: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 30: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 30: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 304: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 304: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 350: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 350: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 421: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 421: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 531: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 531: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 178: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 178: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 298: anbieter.push(`https://image.tmdb.org/t/p/w780${providerData.results.DE.flatrate[i].logo_path}`);
+            case 298: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
               break;
-            case 354: anbieter.push(`https://image.tmdb.org/t/p/w780/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`);
+            case 354: anbieter.push(`https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`);
               break;
 
           }
@@ -107,7 +107,7 @@ class App extends Component {
       const genres = ["All", ...data3.genres.map((genre) => genre.name)];
       await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
 
-      const posterUrl = `https://image.tmdb.org/t/p/w780/${data3.poster_path}`;
+      const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
       await Firebase.database().ref(`serien/${index}/poster`).set({ poster: posterUrl });
 
       await Firebase.database().ref(`serien/${index}/production`).set({ production: data3.in_production });
