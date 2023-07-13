@@ -80,7 +80,7 @@ function registerValidSW(swUrl, config) {
                 'tabs for this page are closed. See https://cra.link/PWA.',);
 
               registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-              toast.info('Update available! To update, refresh this tab.', {
+              alert('Update available! To update, refresh this tab.', {
                 toastId: 'appUpdateAvailable',
                 autoClose: false
               });
