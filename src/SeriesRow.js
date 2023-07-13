@@ -166,9 +166,9 @@ class SeriesRow extends React.Component {
       imdb =
         "https://www.imdb.com/title/" + this.props.serie.imdb["imdb_id"] + "/";
       wo = this.props.serie.wo["wo"];
-    } catch (error) {  }
+    } catch (error) { }
 
-    const today = new Date(nextEpisode);
+    const today = new Date();
     const yyyy = today.getFullYear();
     let mm = today.getMonth() + 1; // Months start at 0!
     let dd = today.getDate();
@@ -177,6 +177,22 @@ class SeriesRow extends React.Component {
     if (mm < 10) mm = '0' + mm;
 
     const formattedToday = dd + '.' + mm + '.' + yyyy;
+    var time = new Date(nextEpisode).toLocaleTimeString(navigator.language, { hour: '2-digit', minute: '2-digit' });
+
+    const nextEp = new Date(nextEpisode);
+    const jjjj = nextEp.getFullYear();
+    let monat = nextEp.getMonth() + 1; // Months start at 0!
+    let day = nextEp.getDate();
+
+    if (day < 10) day = '0' + day;
+    if (monat < 10) monat = '0' + monat;
+
+    var formattedNextEp = day + '.' + monat + '.' + jjjj;
+
+    if (formattedNextEp === formattedToday) {
+      formattedNextEp = "Heute";
+     
+    }
 
     if (!this.state.loading) {
       if (x) {
@@ -292,7 +308,9 @@ class SeriesRow extends React.Component {
                     </p>
 
                   </div>
-                  <p className="nextEpisode">Nächste Episode:<br></br>{formattedToday}</p>
+                  <p className="nextEpisode">Nächste Episode:
+                    <br></br>{formattedNextEp}
+                    <br></br>{time}</p>
                 </div>
                 <div className="draußen" style={{ width: "100%" }}>
                   <p className="padding">

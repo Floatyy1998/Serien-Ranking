@@ -183,8 +183,11 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    console.log(new Date(await this.get_smallest_Date()).addHours(22));
-    if (new Date >= new Date(await this.get_smallest_Date()).addHours(22)) {
+    const nextEp = new Date(await this.get_smallest_Date());
+    const deleteDate = new Date(`${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`).addHours(24);
+    console.log(new Date());
+    console.log(deleteDate);
+    if (new Date() >= deleteDate) {
       this.laden()
     }
 
@@ -215,6 +218,9 @@ class App extends Component {
     catch (error) {
       console.error(error);
     }
+
+
+
     return dates.sort(function (a, b) {
       // Turn your strings into dates, and then subtract them
       // to get a value that is either negative, positive, or zero.
@@ -441,15 +447,16 @@ class App extends Component {
       .ref("serien/" + nmr)
       .set(postData);
 
-      try{ const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${title}`);
+    try {
+      const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${title}`);
       const tvMazeData = await tvMazeResponse.json();
       console.log(tvMazeData);
       await this.sleep(20000);
-       await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: tvMazeData.id });
-      }
-       catch(error){
-         await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: "" });
-       }
+      await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: tvMazeData.id });
+    }
+    catch (error) {
+      await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: "" });
+    }
 
 
     for (let j = 0; j < 16; j++) {
