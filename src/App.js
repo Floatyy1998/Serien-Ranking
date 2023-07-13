@@ -453,7 +453,7 @@ class App extends Component {
     try {
       const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${title}`);
       const tvMazeData = await tvMazeResponse.json();
-      console.log(tvMazeData);
+     
       await this.sleep(20000);
       await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: tvMazeData.id });
     }
