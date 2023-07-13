@@ -57,9 +57,10 @@ class App extends Component {
   }
   async laden() {
     //const keySnap = await Firebase.database().ref("key").once("value");
-
+    
 
     const promises = serien.map(async (serie, index) => {
+     
       const response2 = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
       );
@@ -116,11 +117,12 @@ class App extends Component {
          await Firebase.database().ref(`serien/${index}/tvMaze`).set({ tvMazeID: "" });
        } */
       await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
-
+      
       if (serie.tvMaze.tvMazeID !== "") {
+        
         const tvMazeResponse = await fetch(`https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`);
         const tvMazeData = await tvMazeResponse.json();
-        // console.log(tvMazeData._links.nextepisode.href);
+         
 
 
         if (tvMazeData._links.nextepisode) {
@@ -188,7 +190,8 @@ class App extends Component {
     console.log(new Date());
     console.log(deleteDate);
     if (new Date() >= deleteDate) {
-      this.laden()
+      console.log("load");
+     await this.get_serien()
     }
 
     Firebase.database()
