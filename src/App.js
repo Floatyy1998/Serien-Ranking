@@ -1,23 +1,20 @@
 import React, { Component } from "react";
 import "./App.css";
 import SeriesRow from "./SeriesRow.js";
-import Firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
-import 'firebase/compat/auth';
-import 'firebase/compat/analytics';
+import Firebase from "firebase/compat/app";
+import "firebase/compat/database";
+import "firebase/compat/auth";
+import "firebase/compat/analytics";
 import config from "./config.js";
 import API from "./API.js";
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import InputAdornment from '@mui/material/InputAdornment';
-import Input from '@mui/material/Input';
-
-
-
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import InputAdornment from "@mui/material/InputAdornment";
+import Input from "@mui/material/Input";
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
@@ -29,23 +26,18 @@ var serien = [];
 Date.prototype.addHours = function (h) {
   this.setHours(this.getHours() + h);
   return this;
-}
+};
 
 class App extends Component {
   constructor(props) {
     super(props);
 
-   
-      Firebase.initializeApp(config);
-    
- 
+    Firebase.initializeApp(config);
 
     this.state = { loading: true };
   }
 
-
   async get_serien() {
-
     const snapshot = await Firebase.database().ref("/serien").once("value");
     serien = snapshot.val();
     this.laden();
@@ -58,108 +50,120 @@ class App extends Component {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
   async laden() {
     //const keySnap = await Firebase.database().ref("key").once("value");
 
-
     const promises = serien.map(async (serie, index) => {
-
       const response2 = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
       );
       const data3 = await response2.json();
 
-      const provider = await fetch(`https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`);
+      const provider = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+      );
 
       const providerData = await provider.json();
       var anbieter = [];
       try {
-
         for (let i = 0; i < providerData.results.DE.flatrate.length; i++) {
-
           switch (providerData.results.DE.flatrate[i].provider_id) {
-            case 337: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 337:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 8: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 8:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 9: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 9:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 283: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 283:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 30: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 30:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 304: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 304:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 350: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 350:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 421: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 421:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 531: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 531:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 178: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 178:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 298: anbieter.push({
-              id: providerData.results.DE.flatrate[i].provider_id,
-              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
-              name: providerData.results.DE.flatrate[i].provider_name
-            });
+            case 298:
+              anbieter.push({
+                id: providerData.results.DE.flatrate[i].provider_id,
+                logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+                name: providerData.results.DE.flatrate[i].provider_name,
+              });
               break;
-            case 354: anbieter.push({
-              id: 283,
-              logo: "https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg",
-              name: "Crunchyroll"
-            });
+            case 354:
+              anbieter.push({
+                id: 283,
+                logo: "https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg",
+                name: "Crunchyroll",
+              });
               break;
-
           }
         }
 
-        await Firebase.database().ref(`serien/${index}/provider`).set({ provider: anbieter });
-      }
-      catch (error) {
-        await Firebase.database().ref(`serien/${index}/provider`).set({ provider: "" });
+        await Firebase.database()
+          .ref(`serien/${index}/provider`)
+          .set({ provider: anbieter });
+      } catch (error) {
+        await Firebase.database()
+          .ref(`serien/${index}/provider`)
+          .set({ provider: "" });
       }
 
       /* try{ const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${serie.title}`);
@@ -171,42 +175,39 @@ class App extends Component {
        catch(error){
          await Firebase.database().ref(`serien/${index}/tvMaze`).set({ tvMazeID: "" });
        } */
-      await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
+      await Firebase.database()
+        .ref(`serien/${index}/nextEpisode`)
+        .set({ nextEpisode: "" });
 
       if (serie.tvMaze.tvMazeID !== "") {
-
-        const tvMazeResponse = await fetch(`https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`);
+        const tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
+        );
         const tvMazeData = await tvMazeResponse.json();
 
-
-
         if (tvMazeData._links.nextepisode) {
-          const tvMazeNextEpisodeResponse = await fetch(`${tvMazeData._links.nextepisode.href}`);
+          const tvMazeNextEpisodeResponse = await fetch(
+            `${tvMazeData._links.nextepisode.href}`
+          );
           const tvMazeNextEpisodeData = await tvMazeNextEpisodeResponse.json();
           // console.log(tvMazeNextEpisodeData.airstamp);
-          await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
-
-
+          await Firebase.database()
+            .ref(`serien/${index}/nextEpisode`)
+            .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
         }
-
       }
-
-
-
-
-
-
-
-
-
 
       const genres = ["All", ...data3.genres.map((genre) => genre.name)];
       await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
 
       const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
-      await Firebase.database().ref(`serien/${index}/poster`).set({ poster: posterUrl });
+      await Firebase.database()
+        .ref(`serien/${index}/poster`)
+        .set({ poster: posterUrl });
 
-      await Firebase.database().ref(`serien/${index}/production`).set({ production: data3.in_production });
+      await Firebase.database()
+        .ref(`serien/${index}/production`)
+        .set({ production: data3.in_production });
 
       /*   if (data3.next_episode_to_air) {
           // console.log(serie.title + " " +data3.next_episode_to_air.air_date + " " + new Date(data3.next_episode_to_air.air_date));
@@ -216,14 +217,13 @@ class App extends Component {
           await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
         } */
 
-
-
       const response3 = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
       );
       const data4 = await response3.json();
-      await Firebase.database().ref(`serien/${index}/imdb`).set({ imdb_id: data4.imdb_id });
-
+      await Firebase.database()
+        .ref(`serien/${index}/imdb`)
+        .set({ imdb_id: data4.imdb_id });
 
       const woUrl =
         index === 2
@@ -241,23 +241,23 @@ class App extends Component {
   }
 
   async componentDidMount() {
-
     var length;
     if (serien) {
       Object.entries(serien).forEach(([key, value], index) => {
         length = key;
         Firebase.database().ref(`/serien/${key}`).update({ nmr: key });
       });
-
     }
 
     const nextEp = new Date(await this.get_smallest_Date());
-    const deleteDate = new Date(`${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`).addHours(24);
+    const deleteDate = new Date(
+      `${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`
+    ).addHours(24);
     console.log(new Date());
     console.log(deleteDate);
     if (new Date() >= deleteDate) {
       console.log("load");
-      await this.get_serien()
+      await this.get_serien();
     }
 
     Firebase.database()
@@ -281,22 +281,17 @@ class App extends Component {
         if (serienArray.val()[i].nextEpisode.nextEpisode !== "") {
           dates.push(new Date(serienArray.val()[i].nextEpisode.nextEpisode));
         }
-
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
     }
-
-
 
     return dates.sort(function (a, b) {
       // Turn your strings into dates, and then subtract them
       // to get a value that is either negative, positive, or zero.
-      return a - b
+      return a - b;
     })[0];
   }
-
 
   checklogin() {
     const currentUser = Firebase.auth()?.currentUser;
@@ -362,10 +357,12 @@ class App extends Component {
               console.error("Sign Out Error", error);
             }
           );
-      }
-      else {
+      } else {
         Firebase.auth()
-          .signInWithEmailAndPassword("konrad.dinges@googlemail.com", localStorage.getItem("konrad.dinges@googlemail.com"))
+          .signInWithEmailAndPassword(
+            "konrad.dinges@googlemail.com",
+            localStorage.getItem("konrad.dinges@googlemail.com")
+          )
           .then((userCredential) => {
             document.getElementById("login").innerHTML = "Logout";
           })
@@ -374,8 +371,7 @@ class App extends Component {
             alert(errorMessage);
           });
       }
-    }
-    else {
+    } else {
       document.getElementById("login").innerHTML = "Logout";
     }
 
@@ -492,8 +488,10 @@ class App extends Component {
 
     const ratings = {};
     ratingInputs.forEach((input) => {
-
-      const value = input.value === "" || input.value === null ? 0 : parseFloat(input.value);
+      const value =
+        input.value === "" || input.value === null
+          ? 0
+          : parseFloat(input.value);
       const key = input.name;
       ratings[key] = value;
     });
@@ -502,7 +500,6 @@ class App extends Component {
   //7.343 7.22 7.11
 
   async addNewSeries(event, self) {
-
     event.preventDefault();
 
     const length = await this.getSerienCount();
@@ -519,39 +516,41 @@ class App extends Component {
     };
 
     const currentUser = Firebase.auth().currentUser;
-    if (currentUser == null || currentUser.uid !== "83fRTz3YqgMkjz646AJ1GO6I8Kg1") {
+    if (
+      currentUser == null ||
+      currentUser.uid !== "83fRTz3YqgMkjz646AJ1GO6I8Kg1"
+    ) {
       alert("Bitte Einloggen!");
       return;
     }
-
 
     await Firebase.database()
       .ref("serien/" + nmr)
       .set(postData);
 
     try {
-      const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${title}`);
+      const tvMazeResponse = await fetch(
+        `https://api.tvmaze.com/singlesearch/shows?q=${title}`
+      );
       const tvMazeData = await tvMazeResponse.json();
 
       // await this.sleep(20000);
-      await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: tvMazeData.id });
+      await Firebase.database()
+        .ref(`serien/${nmr}/tvMaze`)
+        .set({ tvMazeID: tvMazeData.id });
+    } catch (error) {
+      await Firebase.database()
+        .ref(`serien/${nmr}/tvMaze`)
+        .set({ tvMazeID: "" });
     }
-    catch (error) {
-      await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: "" });
-    }
-
 
     for (let j = 0; j < 16; j++) {
       event.target[j].value = "";
     }
     self.get_serien();
-
-
   }
 
   async hinzufuegen(event) {
-
-
     const self = this;
     try {
       await this.addNewSeries(event, self);
@@ -598,7 +597,7 @@ class App extends Component {
     if (this.state.loading) {
       return (
         <div>
-          <div id="mySidenav" className="sidenav" >
+          <div id="mySidenav" className="sidenav">
             <h3 className="button">Login</h3>
             <h3 className="button">Serie hinzufügen</h3>
             <form
@@ -615,7 +614,11 @@ class App extends Component {
               <br></br>
               <br></br>
               <label hmtlfor="Action & Adventure">Action & Adventure: </label>
-              <input type="text" id="Action & Adventure" name="Action & Adventure"></input>
+              <input
+                type="text"
+                id="Action & Adventure"
+                name="Action & Adventure"
+              ></input>
               <br></br>
               <br></br>
               <label hmtlfor="All">All: </label>
@@ -651,7 +654,11 @@ class App extends Component {
               <br></br>
               <br></br>
               <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
-              <input type="text" id="Sci-Fi & Fantasy" name="Sci-Fi & Fantasy"></input>
+              <input
+                type="text"
+                id="Sci-Fi & Fantasy"
+                name="Sci-Fi & Fantasy"
+              ></input>
               <br></br>
               <br></br>
               <label hmtlfor="Sport">Sport: </label>
@@ -663,7 +670,11 @@ class App extends Component {
               <br></br>
               <br></br>
               <label hmtlfor="War & Politics">War & Politics: </label>
-              <input type="text" id="War & Politics" name="War & Politics"></input>
+              <input
+                type="text"
+                id="War & Politics"
+                name="War & Politics"
+              ></input>
               <br></br>
               <br></br>
               <label hmtlfor="Western">Western: </label>
@@ -684,8 +695,7 @@ class App extends Component {
                 zIndex: "99",
               }}
             >
-              <div className="row">
-              </div>
+              <div className="row"></div>
               <div id="Header">
                 <p id="Header1" onClick={this.scrollTop}>
                   RANKING
@@ -733,8 +743,13 @@ class App extends Component {
                 <option value="A-Z">A-Z</option>
                 <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
               </select>
-              < FormControl style={{ width: "80%",  }} variant="standard">
-                <InputLabel style={{ color: "white", backgroundColor: "black" }} htmlFor="site-search">Serie suchen</InputLabel>
+              <FormControl style={{ width: "80%" }} variant="standard">
+                <InputLabel
+                  style={{ color: "white", backgroundColor: "black" }}
+                  htmlFor="site-search"
+                >
+                  Serie suchen
+                </InputLabel>
                 <Input
                   type="search"
                   id="site-search"
@@ -742,14 +757,13 @@ class App extends Component {
                   label="Serie suchen"
                   onChange={this.filterSerie.bind(this)}
                   autoComplete="off"
-                  startAdornment={<InputAdornment position="start">
-                    <SearchOutlinedIcon style={{ color: "#fff" }} />
-                  </InputAdornment>}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchOutlinedIcon style={{ color: "#fff" }} />
+                    </InputAdornment>
+                  }
                 />
               </FormControl>
-
-            
-
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
@@ -831,12 +845,40 @@ class App extends Component {
                   }}
                   title={
                     <React.Fragment>
-                      <Typography style={{ textDecoration: "underline" }}><b>LEGENDE</b></Typography><br></br>
-                      <span style={{ color: "#b103fc" }}> <b>beendet:</b> Es kommen keine weiteren Folgen.</span><br></br><br></br>
-                      <span style={{ color: "#42d10f" }}> <b>laufend:</b> Es kommen weitere Folgen.</span><br></br><br></br><br></br>
-                      <span>Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.</span><br></br><br></br>
-                      <span>Klicke auf den Titel, um zu erfahren, wo du die Serie schauen kannst.</span><br></br><br></br>
-                      <span style={{ color: "#00fed7" }}>Daten bereitgestellt von TMDB und JustWatch</span><br></br><br></br>
+                      <Typography style={{ textDecoration: "underline" }}>
+                        <b>LEGENDE</b>
+                      </Typography>
+                      <br></br>
+                      <span style={{ color: "#b103fc" }}>
+                        {" "}
+                        <b>beendet:</b> Es kommen keine weiteren Folgen.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <span style={{ color: "#42d10f" }}>
+                        {" "}
+                        <b>laufend:</b> Es kommen weitere Folgen.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <br></br>
+                      <span>
+                        Klicke auf ein Poster, um auf die IMDB-Seite zu
+                        gelangen.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <span>
+                        Klicke auf den Titel, um zu erfahren, wo du die Serie
+                        schauen kannst.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <span style={{ color: "#00fed7" }}>
+                        Daten bereitgestellt von TMDB und JustWatch
+                      </span>
+                      <br></br>
+                      <br></br>
                     </React.Fragment>
                   }
                   componentsProps={{
@@ -845,8 +887,8 @@ class App extends Component {
                         color: "#aaaaaa",
                         backgroundColor: "black",
                         fontSize: "0.9rem",
-                      }
-                    }
+                      },
+                    },
                   }}
                 >
                   <InfoOutlinedIcon></InfoOutlinedIcon>
@@ -875,7 +917,7 @@ class App extends Component {
               ></i>
             </p>
           </div>
-        </div >
+        </div>
       );
     } else {
       return (
@@ -913,7 +955,11 @@ class App extends Component {
               <br></br>
               <br></br>
               <label hmtlfor="Action & Adventure">Action & Adventure: </label>
-              <input type="text" id="Action & Adventure" name="Action & Adventure"></input>
+              <input
+                type="text"
+                id="Action & Adventure"
+                name="Action & Adventure"
+              ></input>
               <br></br>
               <br></br>
               <label hmtlfor="All">All: </label>
@@ -949,7 +995,11 @@ class App extends Component {
               <br></br>
               <br></br>
               <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
-              <input type="text" id="Sci-Fi & Fantasy" name="Sci-Fi & Fantasy"></input>
+              <input
+                type="text"
+                id="Sci-Fi & Fantasy"
+                name="Sci-Fi & Fantasy"
+              ></input>
               <br></br>
               <br></br>
               <label hmtlfor="Sport">Sport: </label>
@@ -961,7 +1011,11 @@ class App extends Component {
               <br></br>
               <br></br>
               <label hmtlfor="War & Politics">War & Politics: </label>
-              <input type="text" id="War & Politics" name="War & Politics"></input>
+              <input
+                type="text"
+                id="War & Politics"
+                name="War & Politics"
+              ></input>
               <br></br>
               <br></br>
               <label hmtlfor="Western">Western: </label>
@@ -988,7 +1042,12 @@ class App extends Component {
                   onClick={this.openNav}
                   id="hamburg"
                 ></input>
-                <label hmtlfor="hamburg" onClick={this.openNav} id="hamburger" className="hamburg">
+                <label
+                  hmtlfor="hamburg"
+                  onClick={this.openNav}
+                  id="hamburger"
+                  className="hamburg"
+                >
                   <span className="line"></span>
                   <span className="line"></span>
                   <span className="line"></span>
@@ -1040,8 +1099,13 @@ class App extends Component {
                 <option value="A-Z">A-Z</option>
                 <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
               </select>
-              < FormControl style={{ width: "80%",  }} variant="standard">
-                <InputLabel style={{ color: "white", backgroundColor: "black" }} htmlFor="site-search">Serie suchen</InputLabel>
+              <FormControl style={{ width: "80%" }} variant="standard">
+                <InputLabel
+                  style={{ color: "white", backgroundColor: "black" }}
+                  htmlFor="site-search"
+                >
+                  Serie suchen
+                </InputLabel>
                 <Input
                   type="search"
                   id="site-search"
@@ -1049,9 +1113,11 @@ class App extends Component {
                   label="Serie suchen"
                   onChange={this.filterSerie.bind(this)}
                   autoComplete="off"
-                  startAdornment={<InputAdornment position="start">
-                    <SearchOutlinedIcon style={{ color: "#fff" }} />
-                  </InputAdornment>}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchOutlinedIcon style={{ color: "#fff" }} />
+                    </InputAdornment>
+                  }
                 />
               </FormControl>
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
@@ -1134,12 +1200,40 @@ class App extends Component {
                   }}
                   title={
                     <React.Fragment>
-                      <Typography style={{ textDecoration: "underline" }}><b>LEGENDE</b></Typography><br></br>
-                      <span style={{ color: "#b103fc" }}> <b>beendet:</b> Es kommen keine weiteren Folgen.</span><br></br><br></br>
-                      <span style={{ color: "#42d10f" }}> <b>laufend:</b> Es kommen weitere Folgen.</span><br></br><br></br><br></br>
-                      <span>Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.</span><br></br><br></br>
-                      <span>Klicke auf den Titel, um zu erfahren, wo du die Serie schauen kannst.</span><br></br><br></br>
-                      <span style={{ color: "#00fed7" }}>Daten bereitgestellt von TMDB und JustWatch</span><br></br><br></br>
+                      <Typography style={{ textDecoration: "underline" }}>
+                        <b>LEGENDE</b>
+                      </Typography>
+                      <br></br>
+                      <span style={{ color: "#b103fc" }}>
+                        {" "}
+                        <b>beendet:</b> Es kommen keine weiteren Folgen.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <span style={{ color: "#42d10f" }}>
+                        {" "}
+                        <b>laufend:</b> Es kommen weitere Folgen.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <br></br>
+                      <span>
+                        Klicke auf ein Poster, um auf die IMDB-Seite zu
+                        gelangen.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <span>
+                        Klicke auf den Titel, um zu erfahren, wo du die Serie
+                        schauen kannst.
+                      </span>
+                      <br></br>
+                      <br></br>
+                      <span style={{ color: "#00fed7" }}>
+                        Daten bereitgestellt von TMDB und JustWatch
+                      </span>
+                      <br></br>
+                      <br></br>
                     </React.Fragment>
                   }
                   componentsProps={{
@@ -1148,8 +1242,8 @@ class App extends Component {
                         color: "#aaaaaa",
                         backgroundColor: "black",
                         fontSize: "0.9rem",
-                      }
-                    }
+                      },
+                    },
                   }}
                 >
                   <InfoOutlinedIcon></InfoOutlinedIcon>

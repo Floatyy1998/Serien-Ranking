@@ -3,39 +3,31 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import CustomDialog from "./Dialog.js";
 
-
-
 var pruefen = "";
 
 var key = "test";
 const SeriesRow = (props) => {
-
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => { setLoading(false) }, [loading]);
-
-
+  useEffect(() => {
+    setLoading(false);
+  }, [loading]);
 
   const handleClose = () => {
-
-
     setOpen(false);
-
-
-
   };
 
   const addZeroes = (num) => {
     const dec = num.toString().split(".")[1];
     const len = dec?.length > 2 ? dec.length : 2;
     return Number(num).toFixed(len);
-  }
+  };
 
   const round = (value, step = 1.0) => {
     const inv = 1.0 / step;
     return Math.round(value * inv) / inv;
-  }
+  };
 
   const getProvider = (serie) => {
     try {
@@ -47,26 +39,20 @@ const SeriesRow = (props) => {
           providerList.push(value);
         }
       });
-      
-      
 
-     // console.log(providerSet);
-      var providerListShort = providerList.filter((value, index, self) =>
-      index === self.findIndex((t) => (
-        t.logo === value.logo && t.name === value.name
-      ))
-    );
+      // console.log(providerSet);
+      var providerListShort = providerList.filter(
+        (value, index, self) =>
+          index ===
+          self.findIndex((t) => t.logo === value.logo && t.name === value.name)
+      );
       if (providerList.length > 3) {
         providerListShort = providerList.slice(0, 3);
       }
-      
-
-
-
 
       return providerListShort.map((provider) => (
         <img
-        title={provider.name + " (Provided by JustWatch)"}
+          title={provider.name + " (Provided by JustWatch)"}
           key={provider.name}
           src={provider.logo}
           alt={"Bild nicht verfügbar"}
@@ -75,15 +61,15 @@ const SeriesRow = (props) => {
             height: "100%",
             marginLeft: "3%",
             float: "left",
-            boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5)",
+            boxShadow:
+              "0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5)",
           }}
         />
       ));
-    }
-    catch (error) {
+    } catch (error) {
       return;
     }
-  }
+  };
 
   const getRating = (a) => {
     let punktea = 0;
@@ -111,13 +97,11 @@ const SeriesRow = (props) => {
     }
 
     return addZeroes(round(punktea, 0.01));
-  }
+  };
 
   const redirect = (link) => {
     window.open(link);
   };
-
-
 
   var nextEpisode = "";
   var inProgress = false;
@@ -127,28 +111,31 @@ const SeriesRow = (props) => {
   try {
     nextEpisode = props.serie.nextEpisode["nextEpisode"];
     inProgress = props.serie.production["production"];
-    poster = `url(${props.serie.poster["poster"]})`
+    poster = `url(${props.serie.poster["poster"]})`;
     wo = props.serie.wo["wo"];
-    imdb = props.serie.imdb.imdb_id
-
-
-
-  }
-  catch (error) {
-
-  }
-
+    imdb = props.serie.imdb.imdb_id;
+  } catch (error) {}
 
   const today = new Date();
-  const formattedToday = today.toLocaleDateString(navigator.language, { day: '2-digit', month: '2-digit', year: 'numeric' });
-  const time = new Date(nextEpisode).toLocaleTimeString(navigator.language, { hour: '2-digit', minute: '2-digit' });
+  const formattedToday = today.toLocaleDateString(navigator.language, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const time = new Date(nextEpisode).toLocaleTimeString(navigator.language, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   const nextEp = new Date(nextEpisode);
-  var formattedNextEp = nextEp.toLocaleDateString(navigator.language, { day: '2-digit', month: '2-digit', year: 'numeric' });
+  var formattedNextEp = nextEp.toLocaleDateString(navigator.language, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
   if (formattedNextEp === formattedToday) {
     formattedNextEp = "Heute";
   }
-
 
   if (loading) {
     return (
@@ -165,12 +152,18 @@ const SeriesRow = (props) => {
     );
   }
 
-  const hasNextEpisode = nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
-
+  const hasNextEpisode =
+    nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
 
   return (
     <>
-      <CustomDialog open={open} close={handleClose} serie={props.serie} nmr={props.serie.nmr} title={props.serie.title} />
+      <CustomDialog
+        open={open}
+        close={handleClose}
+        serie={props.serie}
+        nmr={props.serie.nmr}
+        title={props.serie.title}
+      />
       <li key={key}>
         <div className="polaroid">
           <div
@@ -224,15 +217,12 @@ const SeriesRow = (props) => {
               ></p>
               <a
                 onClick={(_) => {
-                  console.log(localStorage.getItem("konrad.dinges@googlemail.com"));
                   if (localStorage.getItem("konrad.dinges@googlemail.com")) {
-                    setOpen(true)
+                    setOpen(true);
+                  } else {
+                    redirect(wo);
                   }
-                  else{
-                    redirect(wo)
-                  }
-                }
-                }
+                }}
                 target="_blank"
                 style={{
                   width: "100%",
