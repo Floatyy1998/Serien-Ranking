@@ -47,20 +47,29 @@ const SeriesRow = (props) => {
           providerList.push(value);
         }
       });
-      var providerSet = [...new Set(providerList)];
-      var providerListShort = providerSet;
+      
+      
+
+     // console.log(providerSet);
+      var providerListShort = providerList.filter((value, index, self) =>
+      index === self.findIndex((t) => (
+        t.logo === value.logo && t.name === value.name
+      ))
+    );
       if (providerList.length > 3) {
         providerListShort = providerList.slice(0, 3);
       }
+      
 
 
 
 
       return providerListShort.map((provider) => (
         <img
-          key={provider}
-          src={provider}
-          alt={provider}
+        title={provider.name + " (Provided by JustWatch)"}
+          key={provider.name}
+          src={provider.logo}
+          alt={"Bild nicht verfügbar"}
           style={{
             width: "auto",
             height: "100%",

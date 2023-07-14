@@ -71,38 +71,88 @@ class App extends Component {
       const provider = await fetch(`https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`);
 
       const providerData = await provider.json();
+      var anbieter = [];
       try {
-        let anbieter = [];
+
         for (let i = 0; i < providerData.results.DE.flatrate.length; i++) {
+
           switch (providerData.results.DE.flatrate[i].provider_id) {
-            case 337: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 337: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 8: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 8: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 9: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 9: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 283: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 283: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 30: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 30: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 304: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 304: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 350: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 350: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 421: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 421:anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 531: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 531: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 178: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 178: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 298: anbieter.push(`https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`);
+            case 298: anbieter.push({
+              id:providerData.results.DE.flatrate[i].provider_id,
+              logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
+              name: providerData.results.DE.flatrate[i].provider_name
+            });
               break;
-            case 354: anbieter.push(`https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`);
+            case 354: anbieter.push({
+              id:283,
+              logo: "https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg",
+              name: "Crunchyroll"
+            });
               break;
 
           }
         }
-
+        
         await Firebase.database().ref(`serien/${index}/provider`).set({ provider: anbieter });
       }
       catch (error) {
@@ -195,7 +245,7 @@ class App extends Component {
         length = key;
         Firebase.database().ref(`/serien/${key}`).update({ nmr: key });
       });
-      
+
     }
 
     const nextEp = new Date(await this.get_smallest_Date());
