@@ -21,6 +21,7 @@ input[type="checkbox"] {
   background-color: #000;
 }
 
+
 label.testen {
   margin-left: 10%;
   cursor: pointer;
@@ -96,6 +97,7 @@ input[type="text"] {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+  background-color: #000;
   color: #ccc;
 }
 
@@ -452,7 +454,7 @@ h3.button {
   margin: 0;
   padding: 0;
 
-  background-color: #000;
+ 
   text-decoration: none;
 }
 
@@ -836,7 +838,7 @@ a {
     margin: 0;
     padding: 0;
 
-    background-color: #000;
+    
     text-decoration: none;
   }
 

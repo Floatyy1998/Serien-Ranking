@@ -10,7 +10,9 @@ import SearchIcon from "@material-ui/icons/Search";
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { toInteger } from "lodash";
 import { log } from "async";
+
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
@@ -57,10 +59,10 @@ class App extends Component {
   }
   async laden() {
     //const keySnap = await Firebase.database().ref("key").once("value");
-    
+
 
     const promises = serien.map(async (serie, index) => {
-     
+
       const response2 = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
       );
@@ -117,12 +119,12 @@ class App extends Component {
          await Firebase.database().ref(`serien/${index}/tvMaze`).set({ tvMazeID: "" });
        } */
       await Firebase.database().ref(`serien/${index}/nextEpisode`).set({ nextEpisode: "" });
-      
+
       if (serie.tvMaze.tvMazeID !== "") {
-        
+
         const tvMazeResponse = await fetch(`https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`);
         const tvMazeData = await tvMazeResponse.json();
-         
+
 
 
         if (tvMazeData._links.nextepisode) {
@@ -167,6 +169,7 @@ class App extends Component {
         `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
       );
       const data4 = await response3.json();
+      await Firebase.database().ref(`serien/${index}/imdb`).set({ imdb_id: data4.imdb_id });
 
 
       const woUrl =
@@ -185,13 +188,23 @@ class App extends Component {
   }
 
   async componentDidMount() {
+
+    var length;
+    if (serien) {
+      Object.entries(serien).forEach(([key, value], index) => {
+        length = key;
+        Firebase.database().ref(`/serien/${key}`).update({ nmr: key });
+      });
+      
+    }
+
     const nextEp = new Date(await this.get_smallest_Date());
     const deleteDate = new Date(`${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`).addHours(24);
     console.log(new Date());
     console.log(deleteDate);
     if (new Date() >= deleteDate) {
       console.log("load");
-     await this.get_serien()
+      await this.get_serien()
     }
 
     Firebase.database()
@@ -395,9 +408,15 @@ class App extends Component {
   }
 
   async getSerienCount() {
-    let ref = Firebase.database().ref("/serien");
-    const snapshot = await ref.once("value");
-    const length = snapshot.val().length;
+    const snapshot = await Firebase.database().ref("/serien").once("value");
+    const serien = snapshot.val();
+    var length;
+    if (serien) {
+      Object.entries(serien).forEach(([key, value], index) => {
+        length = key;
+      });
+    }
+
     return length;
   }
 
@@ -417,8 +436,10 @@ class App extends Component {
 
   getRatings(event) {
     const ratingInputs = Array.from(event.target).slice(2, 16);
+
     const ratings = {};
     ratingInputs.forEach((input) => {
+
       const value = input.value === "" || input.value === null ? 0 : parseFloat(input.value);
       const key = input.name;
       ratings[key] = value;
@@ -428,24 +449,29 @@ class App extends Component {
   //7.343 7.22 7.11
 
   async addNewSeries(event, self) {
+
     event.preventDefault();
+
+    const length = await this.getSerienCount();
+    const nmr = parseInt(length) + 1;
     const title = event.target[1].value;
     const ratings = this.getRatings(event);
     const { id, genres } = await this.fetchSeriesData(title);
     const postData = {
       title,
+      nmr,
       rating: ratings,
       genre: { genres: ["All", ...genres] },
       id,
     };
-    self.setState({ loading: true });
+
     const currentUser = Firebase.auth().currentUser;
     if (currentUser == null || currentUser.uid !== "83fRTz3YqgMkjz646AJ1GO6I8Kg1") {
       alert("Bitte Einloggen!");
       return;
     }
-    const length = await self.getSerienCount();
-    const nmr = length.toString();
+
+
     await Firebase.database()
       .ref("serien/" + nmr)
       .set(postData);
@@ -453,8 +479,8 @@ class App extends Component {
     try {
       const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${title}`);
       const tvMazeData = await tvMazeResponse.json();
-     
-      await this.sleep(20000);
+
+      // await this.sleep(20000);
       await Firebase.database().ref(`serien/${nmr}/tvMaze`).set({ tvMazeID: tvMazeData.id });
     }
     catch (error) {
@@ -466,10 +492,13 @@ class App extends Component {
       event.target[j].value = "";
     }
     self.get_serien();
-    alert("Serie hinzugefügt!");
+
+
   }
 
   async hinzufuegen(event) {
+
+
     const self = this;
     try {
       await this.addNewSeries(event, self);
@@ -528,31 +557,7 @@ class App extends Component {
               <input type="text" id="Title" name="Title"></input>
               <br></br>
               <br></br>
-              <h3>Genre</h3>
-              <label hmtlfor="Genre1">Genre1: </label>
-              <input type="text" id="Genre1" name="Genre1"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre2">Genre2: </label>
-              <input type="text" id="Genre2" name="Genre2"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre3">Genre3: </label>
-              <input type="text" id="Genre3" name="Genre3"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre4">Genre4: </label>
-              <input type="text" id="Genre4" name="Genre4"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre5">Genre5: </label>
-              <input type="text" id="Genre5" name="Genre5"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Genre6">Genre6: </label>
-              <input type="text" id="Genre6" name="Genre6"></input>
-              <br></br>
-              <br></br>
+
               <h3>Rating</h3>
               <br></br>
               <br></br>
