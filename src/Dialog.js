@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Firebase from "firebase";
+import Firebase from 'firebase/compat/app';
 import {
   Dialog,
   DialogActions,

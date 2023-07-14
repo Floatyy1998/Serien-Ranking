@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import Firebase from "firebase";
+
 import { useState } from "react";
 import CustomDialog from "./Dialog.js";
 
@@ -117,45 +117,7 @@ const SeriesRow = (props) => {
     window.open(link);
   };
 
-  const alerte = async (e, x) => {
-    e.preventDefault();
-    const test = Firebase.database()
-      .ref("/serien/")
-      .orderByChild("title")
-      .equalTo(x);
 
-    if (!e.target.checked) {
-      const eingabeKey = prompt("Bitte Key eingeben:");
-      if (eingabeKey === pruefen) {
-        try {
-          const snapshot = await test.once("value");
-          const key = Object.keys(snapshot.val())[0];
-          const test2 = Firebase.database().ref(`/serien/${key}/watching`);
-          await test2.set(false);
-          alert("Perfekt");
-        } catch (error) {
-          console.error(error);
-        }
-      } else {
-        alert("falscher Key");
-      }
-    } else {
-      const eingabeKey = prompt("Bitte Key eingeben:");
-      if (eingabeKey === pruefen) {
-        try {
-          const snapshot = await test.once("value");
-          const key = Object.keys(snapshot.val())[0];
-          const test2 = Firebase.database().ref(`/serien/${key}/watching`);
-          await test2.set(true);
-          alert("Perfekt");
-        } catch (error) {
-          console.error(error);
-        }
-      } else {
-        alert("falscher Key");
-      }
-    }
-  };
 
   var nextEpisode = "";
   var inProgress = false;

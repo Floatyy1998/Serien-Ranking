@@ -1,17 +1,22 @@
 import React, { Component } from "react";
 import "./App.css";
 import SeriesRow from "./SeriesRow.js";
-import Firebase from "firebase";
+import Firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import 'firebase/compat/auth';
+import 'firebase/compat/analytics';
 import config from "./config.js";
 import API from "./API.js";
-import TextField from "@material-ui/core/TextField";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import SearchIcon from "@material-ui/icons/Search";
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { toInteger } from "lodash";
-import { log } from "async";
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import InputAdornment from '@mui/material/InputAdornment';
+import Input from '@mui/material/Input';
+
+
 
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
@@ -30,12 +35,10 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    if (!Firebase.apps.length) {
+   
       Firebase.initializeApp(config);
-    } else {
-      Firebase.app(); // if already initialized, use that one
-    }
-    Firebase.analytics();
+    
+ 
 
     this.state = { loading: true };
   }
@@ -78,73 +81,73 @@ class App extends Component {
 
           switch (providerData.results.DE.flatrate[i].provider_id) {
             case 337: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 8: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 9: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 283: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 30: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 304: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 350: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
-            case 421:anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+            case 421: anbieter.push({
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 531: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 178: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 298: anbieter.push({
-              id:providerData.results.DE.flatrate[i].provider_id,
+              id: providerData.results.DE.flatrate[i].provider_id,
               logo: `https://image.tmdb.org/t/p/original${providerData.results.DE.flatrate[i].logo_path}`,
               name: providerData.results.DE.flatrate[i].provider_name
             });
               break;
             case 354: anbieter.push({
-              id:283,
+              id: 283,
               logo: "https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg",
               name: "Crunchyroll"
             });
@@ -152,7 +155,7 @@ class App extends Component {
 
           }
         }
-        
+
         await Firebase.database().ref(`serien/${index}/provider`).set({ provider: anbieter });
       }
       catch (error) {
@@ -730,32 +733,23 @@ class App extends Component {
                 <option value="A-Z">A-Z</option>
                 <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
               </select>
-              <TextField
-                style={{ width: "80%", marginTop: "20px" }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <SearchIcon style={{ color: "#fff" }} />
-                    </InputAdornment>
-                  ),
-                }}
-                InputLabelProps={{
-                  shrink: true,
+              < FormControl style={{ width: "80%",  }} variant="standard">
+                <InputLabel style={{ color: "white", backgroundColor: "black" }} htmlFor="site-search">Serie suchen</InputLabel>
+                <Input
+                  type="search"
+                  id="site-search"
+                  name="q"
+                  label="Serie suchen"
+                  onChange={this.filterSerie.bind(this)}
+                  autoComplete="off"
+                  startAdornment={<InputAdornment position="start">
+                    <SearchOutlinedIcon style={{ color: "#fff" }} />
+                  </InputAdornment>}
+                />
+              </FormControl>
 
-                  style: { color: "#fff" },
-                }}
-                type="search"
-                id="site-search"
-                name="q"
-                label="Serie suchen"
-                onChange={this.filterSerie.bind(this)}
-                autoComplete="off"
-              ></TextField>
-              <input
-                onClick={(e) => this.toggleWatching(e)}
-                type="checkbox"
-                id="switch"
-              />
+            
+
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
@@ -881,7 +875,7 @@ class App extends Component {
               ></i>
             </p>
           </div>
-        </div>
+        </div >
       );
     } else {
       return (
@@ -1046,32 +1040,20 @@ class App extends Component {
                 <option value="A-Z">A-Z</option>
                 <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
               </select>
-              <TextField
-                style={{ width: "80%", marginTop: "20px" }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <SearchIcon style={{ color: "#fff" }} />
-                    </InputAdornment>
-                  ),
-                }}
-                InputLabelProps={{
-                  shrink: true,
-                  style: { color: "#fff" },
-                }}
-                type="search"
-                hinttext="gfgfgfgf"
-                id="site-search"
-                name="q"
-                label="Serie suchen"
-                onChange={this.filterSerie.bind(this)}
-                autoComplete="off"
-              ></TextField>
-              <input
-                onClick={(e) => this.toggleWatching(e)}
-                type="checkbox"
-                id="switch"
-              />
+              < FormControl style={{ width: "80%",  }} variant="standard">
+                <InputLabel style={{ color: "white", backgroundColor: "black" }} htmlFor="site-search">Serie suchen</InputLabel>
+                <Input
+                  type="search"
+                  id="site-search"
+                  name="q"
+                  label="Serie suchen"
+                  onChange={this.filterSerie.bind(this)}
+                  autoComplete="off"
+                  startAdornment={<InputAdornment position="start">
+                    <SearchOutlinedIcon style={{ color: "#fff" }} />
+                  </InputAdornment>}
+                />
+              </FormControl>
               <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
                   className="legende"
