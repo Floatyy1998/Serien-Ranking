@@ -50,10 +50,10 @@ const SeriesRow = (props) => {
         providerListShort = providerList.slice(0, 3);
       }
 
-      return providerListShort.map((provider) => (
+      return providerListShort.map((provider,index) => (
         <img
           title={provider.name + " (Provided by JustWatch)"}
-          key={provider.name}
+          key={Date.now() + index}
           src={provider.logo}
           alt={"Bild nicht verfügbar"}
           style={{
@@ -139,7 +139,7 @@ const SeriesRow = (props) => {
 
   if (loading) {
     return (
-      <li key={key}>
+      <li key={Date.now()}>
         <div className="polaroid">
           <div className="lds-ellipsis">
             <div></div>
@@ -164,7 +164,7 @@ const SeriesRow = (props) => {
         nmr={props.serie.nmr}
         title={props.serie.title}
       />
-      <li key={key}>
+      <li key={Date.now()}>
         <div className="polaroid">
           <div
             className="pposter"
@@ -206,7 +206,7 @@ const SeriesRow = (props) => {
           </div>
           <div className="draußen" style={{ width: "100%" }}>
             <p className="padding">
-              <p
+              <span
                 style={{
                   width: "100%",
                   height: "40%",
@@ -214,7 +214,7 @@ const SeriesRow = (props) => {
                   cursor: "pointer",
                   textDecoration: "underline",
                 }}
-              ></p>
+              ></span>
               <a
                 onClick={(_) => {
                   if (localStorage.getItem("konrad.dinges@googlemail.com")) {

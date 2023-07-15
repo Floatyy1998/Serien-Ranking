@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect, useState } from "react";
 import "./App.css";
 import SeriesRow from "./SeriesRow.js";
 import Firebase from "firebase/compat/app";
@@ -23,36 +23,30 @@ var genre = "All";
 var filter = "";
 
 var serien = [];
-Date.prototype.addHours = function (h) {
-  this.setHours(this.getHours() + h);
-  return this;
-};
 
-class App extends Component {
-  constructor(props) {
-    super(props);
+const App = () => {
+  Date.prototype.addHours = function (h) {
+    this.setHours(this.getHours() + h);
+    return this;
+  };
+  Firebase.initializeApp(config);
+  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState([]);
 
-    Firebase.initializeApp(config);
-
-    this.state = { loading: true };
-  }
-
-  async get_serien() {
+  const get_serien = async () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     serien = snapshot.val();
-    this.laden();
-  }
+    laden();
+  };
 
-  scrollDown() {
+  const scrollDown = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-  }
-  scrollTop() {
+  };
+  const scrollTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-  sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-  async laden() {
+  };
+
+  const laden = async () => {
     //const keySnap = await Firebase.database().ref("key").once("value");
 
     const promises = serien.map(async (serie, index) => {
@@ -169,7 +163,7 @@ class App extends Component {
       /* try{ const tvMazeResponse = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${serie.title}`);
       const tvMazeData = await tvMazeResponse.json();
       console.log(tvMazeData);
-      await this.sleep(20000);
+      await sleep(20000);
        await Firebase.database().ref(`serien/${index}/tvMaze`).set({ tvMazeID: tvMazeData.id });
       }
        catch(error){
@@ -238,62 +232,61 @@ class App extends Component {
 
     await Promise.all(promises);
     // window.location.reload();
-  }
+  };
 
-  async componentDidMount() {
-    var length;
-    if (serien) {
-      Object.entries(serien).forEach(([key, value], index) => {
-        length = key;
-        Firebase.database().ref(`/serien/${key}`).update({ nmr: key });
-      });
-    }
-
-    const nextEp = new Date(await this.get_smallest_Date());
-    const deleteDate = new Date(
-      `${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`
-    ).addHours(24);
-    console.log(new Date());
-    console.log(deleteDate);
-    if (new Date() >= deleteDate) {
-      console.log("load");
-      await this.get_serien();
-    }
-
-    Firebase.database()
-      .ref("timestamp/createdAt")
-      .on("value", (snap) => {
-        if (Math.round((Date.now() - snap?.val()) / 1000) > 6912000) {
-          this.get_serien();
-          Firebase.database().ref("timestamp").set({
-            createdAt: Firebase.database.ServerValue.TIMESTAMP,
-          });
-        }
-      });
-
-    this.checkGenre();
-  }
-  async get_smallest_Date() {
-    let serienArray = await Firebase.database().ref("/serien").once("value");
-    let dates = [];
+  async function fetchData() {
     try {
-      for (let i = 0; i < serienArray.val().length; i++) {
-        if (serienArray.val()[i].nextEpisode.nextEpisode !== "") {
-          dates.push(new Date(serienArray.val()[i].nextEpisode.nextEpisode));
+      const snapshot = await Firebase.database().ref("/serien").once("value");
+      const serienArray = snapshot.val();
+      let dates = [];
+      for (let i = 0; i < serienArray.length; i++) {
+        if (serienArray[i].nextEpisode.nextEpisode !== "") {
+          dates.push(new Date(serienArray[i].nextEpisode.nextEpisode));
         }
+      }
+      const date = dates.sort(function (a, b) {
+        return a - b;
+      })[0];
+      const nextEp = new Date(date);
+      const deleteDate = new Date(
+        `${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`
+      ).addHours(24);
+      console.log(new Date());
+      console.log(deleteDate);
+
+      if (new Date() >= deleteDate) {
+        console.log("load");
+        const snapshot = await Firebase.database().ref("/serien").once("value");
+        const serien = snapshot.val();
+        laden(serien);
       }
     } catch (error) {
       console.error(error);
     }
 
-    return dates.sort(function (a, b) {
-      // Turn your strings into dates, and then subtract them
-      // to get a value that is either negative, positive, or zero.
-      return a - b;
-    })[0];
+    Firebase.database().ref("timestamp/createdAt").on("value", async (snap) => {
+      if (Math.round((Date.now() - snap?.val()) / 1000) > 6912000) {
+        try {
+          const snapshot = await Firebase.database().ref("/serien").once("value");
+          const serien = snapshot.val();
+          get_serien(serien);
+          Firebase.database().ref("timestamp").set({
+            createdAt: Firebase.database.ServerValue.TIMESTAMP,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    });
+
+    checkGenre();
   }
 
-  checklogin() {
+  useEffect(() => {
+    fetchData();
+  }, [loading]);
+
+  const checklogin = () => {
     const currentUser = Firebase.auth()?.currentUser;
     if (currentUser) {
       Firebase.auth()
@@ -308,9 +301,9 @@ class App extends Component {
           }
         );
     }
-  }
+  };
 
-  isbigger(a, b) {
+  const isbigger = (a, b) => {
     let punktea = 0;
     let punkteb = 0;
 
@@ -338,9 +331,9 @@ class App extends Component {
     }
 
     return punktea > punkteb;
-  }
+  };
 
-  openNav() {
+  const openNav = () => {
     document.getElementById("oben").style.transition = "0.5s";
     document.getElementById("legende1").style.transition = "0.5s";
     document.getElementById("legende2").style.transition = "0.5s";
@@ -392,15 +385,15 @@ class App extends Component {
       document.getElementById("legende1").style.left = "calc(10% + 225px)";
       document.getElementById("legende2").style.left = "calc(10% + 325px)";
     }
-  }
+  };
 
-  closeNav() {
+  const closeNav = () => {
     document.getElementById("mySidenav").style.width = "0";
     document.getElementById("main").style.marginLeft = "0";
     document.getElementById("hamburger").style.display = "visible";
-  }
+  };
 
-  checkGenre() {
+  const checkGenre = () => {
     let ref = Firebase.database().ref("/serien");
     ref.on("value", (snapshot) => {
       const series = snapshot.val();
@@ -427,7 +420,7 @@ class App extends Component {
           a.title > b.title ? 1 : b.title > a.title ? -1 : 0
         );
         filteredSeries.sort((a, b) =>
-          this.isbigger(a, b) ? -1 : !this.isbigger(a, b) ? 1 : 0
+          isbigger(a, b) ? -1 : !isbigger(a, b) ? 1 : 0
         );
       }
 
@@ -435,28 +428,29 @@ class App extends Component {
       var seriesRows = [];
 
       filteredSeries.forEach((serie) => {
+        let date = Math.floor(Math.random() * 9999999999999999999);
         const seriesRow = (
-          <SeriesRow serie={serie} i={i} genre={genre} filter={filter} />
+          <SeriesRow serie={serie} key={date} i={i} genre={genre} filter={filter} />
         );
         seriesRows.push(seriesRow);
         i++;
       });
-
-      this.setState({ rows: seriesRows, loading: false });
+      setRows(seriesRows);
+      setLoading(false);
     });
-  }
+  };
 
-  categoryHandler(event) {
+  const categoryHandler = (event) => {
     genre = event.target.value;
-    this.checkGenre();
-  }
+    checkGenre();
+  };
 
-  filterSerie(event) {
+  const filterSerie = (event) => {
     filter = event.target.value.toLowerCase();
-    this.checkGenre();
-  }
+    checkGenre();
+  };
 
-  async getSerienCount() {
+  const getSerienCount = async () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
     var length;
@@ -467,9 +461,9 @@ class App extends Component {
     }
 
     return length;
-  }
+  };
 
-  async fetchSeriesData(title) {
+  const fetchSeriesData = async (title) => {
     const response = await fetch(
       `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1`
     );
@@ -481,9 +475,9 @@ class App extends Component {
     const detailsData = await detailsResponse.json();
     const genres = detailsData.genres.map((genre) => genre.name);
     return { id, genres };
-  }
+  };
 
-  getRatings(event) {
+  const getRatings = (event) => {
     const ratingInputs = Array.from(event.target).slice(2, 16);
 
     const ratings = {};
@@ -496,17 +490,17 @@ class App extends Component {
       ratings[key] = value;
     });
     return ratings;
-  }
+  };
   //7.343 7.22 7.11
 
-  async addNewSeries(event, self) {
+  const addNewSeries = async (event, self) => {
     event.preventDefault();
 
-    const length = await this.getSerienCount();
+    const length = await getSerienCount();
     const nmr = parseInt(length) + 1;
     const title = event.target[1].value;
-    const ratings = this.getRatings(event);
-    const { id, genres } = await this.fetchSeriesData(title);
+    const ratings = getRatings(event);
+    const { id, genres } = await fetchSeriesData(title);
     const postData = {
       title,
       nmr,
@@ -534,7 +528,7 @@ class App extends Component {
       );
       const tvMazeData = await tvMazeResponse.json();
 
-      // await this.sleep(20000);
+      // await sleep(20000);
       await Firebase.database()
         .ref(`serien/${nmr}/tvMaze`)
         .set({ tvMazeID: tvMazeData.id });
@@ -548,18 +542,18 @@ class App extends Component {
       event.target[j].value = "";
     }
     self.get_serien();
-  }
+  };
 
-  async hinzufuegen(event) {
+  const hinzufuegen = async (event) => {
     const self = this;
     try {
-      await this.addNewSeries(event, self);
+      await addNewSeries(event, self);
     } catch (error) {
       console.error(error);
       alert("Fehler beim Hinzufügen der Serie!");
     }
-  }
-  login = () => {
+  };
+  const login = () => {
     if (document.getElementById("login").innerHTML === "Login") {
       var email = prompt("email eingeben", "");
       if (email === null || email === "") {
@@ -584,697 +578,689 @@ class App extends Component {
         }
       }
     } else {
-      this.checklogin();
+      checklogin();
       document.getElementById("login").innerHTML = "Login";
     }
   };
 
-  toggleHinzufuegen = () => {
+  const toggleHinzufuegen = () => {
     document.getElementById("hinzufuegen").style.display = "block";
   };
 
-  render() {
-    if (this.state.loading) {
-      return (
-        <div>
-          <div id="mySidenav" className="sidenav">
-            <h3 className="button">Login</h3>
-            <h3 className="button">Serie hinzufügen</h3>
-            <form
-              className="hinzufuegen"
-              onSubmit={this.hinzufuegen.bind(this)}
-              autoComplete="off"
-            >
-              <label hmtlfor="Title">Title: </label>
-              <input type="text" id="Title" name="Title"></input>
-              <br></br>
-              <br></br>
+  if (loading) {
+    return (
+      <div>
+        <div id="mySidenav" className="sidenav">
+          <h3 className="button">Login</h3>
+          <h3 className="button">Serie hinzufügen</h3>
+          <form
+            className="hinzufuegen"
+            onSubmit={hinzufuegen.bind(this)}
+            autoComplete="off"
+          >
+            <label hmtlfor="Title">Title: </label>
+            <input type="text" id="Title" name="Title"></input>
+            <br></br>
+            <br></br>
 
-              <h3>Rating</h3>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Action & Adventure">Action & Adventure: </label>
-              <input
-                type="text"
-                id="Action & Adventure"
-                name="Action & Adventure"
-              ></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="All">All: </label>
-              <input type="text" id="All" name="All"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Animation">Animation: </label>
-              <input type="text" id="Animation" name="Animation"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Comedy">Comedy: </label>
-              <input type="text" id="Comedy" name="Comedy"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Crime">Crime: </label>
-              <input type="text" id="Crime" name="Crime"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Documentary">Documentary: </label>
-              <input type="text" id="Documentary" name="Documentary"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Drama">Drama: </label>
-              <input type="text" id="Drama" name="Drama"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Horror">Horror: </label>
-              <input type="text" id="Horror" name="Horror"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Mystery">Mystery: </label>
-              <input type="text" id="Mystery" name="Mystery"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
-              <input
-                type="text"
-                id="Sci-Fi & Fantasy"
-                name="Sci-Fi & Fantasy"
-              ></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Sport">Sport: </label>
-              <input type="text" id="Sport" name="Sport"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Thriller">Thriller: </label>
-              <input type="text" id="Thriller" name="Thriller"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="War & Politics">War & Politics: </label>
-              <input
-                type="text"
-                id="War & Politics"
-                name="War & Politics"
-              ></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Western">Western: </label>
-              <input type="text" id="Western" name="Western"></input>
-              <br></br>
-              <br></br>
-              <input type="submit" value="Serie hinzufügen"></input>
-            </form>
-          </div>
-          <div id="main" key="0">
+            <h3>Rating</h3>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Action & Adventure">Action & Adventure: </label>
+            <input
+              type="text"
+              id="Action & Adventure"
+              name="Action & Adventure"
+            ></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="All">All: </label>
+            <input type="text" id="All" name="All"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Animation">Animation: </label>
+            <input type="text" id="Animation" name="Animation"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Comedy">Comedy: </label>
+            <input type="text" id="Comedy" name="Comedy"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Crime">Crime: </label>
+            <input type="text" id="Crime" name="Crime"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Documentary">Documentary: </label>
+            <input type="text" id="Documentary" name="Documentary"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Drama">Drama: </label>
+            <input type="text" id="Drama" name="Drama"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Horror">Horror: </label>
+            <input type="text" id="Horror" name="Horror"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Mystery">Mystery: </label>
+            <input type="text" id="Mystery" name="Mystery"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
+            <input
+              type="text"
+              id="Sci-Fi & Fantasy"
+              name="Sci-Fi & Fantasy"
+            ></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Sport">Sport: </label>
+            <input type="text" id="Sport" name="Sport"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Thriller">Thriller: </label>
+            <input type="text" id="Thriller" name="Thriller"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="War & Politics">War & Politics: </label>
+            <input
+              type="text"
+              id="War & Politics"
+              name="War & Politics"
+            ></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Western">Western: </label>
+            <input type="text" id="Western" name="Western"></input>
+            <br></br>
+            <br></br>
+            <input type="submit" value="Serie hinzufügen"></input>
+          </form>
+        </div>
+        <div id="main" key="0">
+          <div
+            id="oben"
+            style={{
+              position: "fixed",
+              top: "0",
+              height: "60px",
+              width: "100%",
+              zIndex: "99",
+            }}
+          >
+            <div className="row"></div>
+            <div id="Header">
+              <p id="Header1" onClick={scrollTop}>
+                RANKING
+              </p>
+            </div>
             <div
-              id="oben"
               style={{
-                position: "fixed",
-                top: "0",
+                background: "#111",
                 height: "60px",
-                width: "100%",
-                zIndex: "99",
+                float: "left",
+                width: "10%",
               }}
+            ></div>
+          </div>
+          <div id="Ueberschrift">
+            {" "}
+            <select
+              style={{
+                display: "block",
+                marginTop: "80px",
+                border: "1px solid #111",
+                marginRight: "auto",
+                marginLeft: "auto",
+                fontSize: "40%",
+              }}
+              size="1"
+              id="mySelect"
+              onChange={categoryHandler.bind(this)}
             >
-              <div className="row"></div>
-              <div id="Header">
-                <p id="Header1" onClick={this.scrollTop}>
-                  RANKING
-                </p>
+              <option value="All">Allgemein</option>
+              <option value="Action & Adventure">Action & Adventure</option>
+              <option value="Animation">Animation</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Crime">Crime</option>
+              <option value="Drama">Drama</option>
+              <option value="Documentary">Documentary</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="Horror">Horror</option>
+              <option value="Mystery">Mystery</option>
+              <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
+              <option value="Sport">Sport</option>
+              <option value="Thriller">Thriller</option>
+              <option value="War & Politics">War & Politics</option>
+              <option value="Western">Western</option>
+              <option value="A-Z">A-Z</option>
+              <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
+            </select>
+            <FormControl style={{ width: "80%" }} variant="standard">
+              <InputLabel
+                style={{ color: "white", backgroundColor: "black" }}
+                htmlFor="site-search"
+              >
+                Serie suchen
+              </InputLabel>
+              <Input
+                type="search"
+                id="site-search"
+                name="q"
+                label="Serie suchen"
+                onChange={filterSerie.bind(this)}
+                autoComplete="off"
+                startAdornment={
+                  <InputAdornment position="start">
+                    <SearchOutlinedIcon style={{ color: "#fff" }} />
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            <div style={{ display: "flex", width: "100%", height: "32px" }}>
+              <div
+                className="legende"
+                id="legende1"
+                style={{
+                  height: "15px",
+                  position: "absolute",
+                  right: "0px",
+                  marginBottom: "2px",
+                  top: "197px",
+                  left: "10%",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: "15px",
+                    background: "rgb(177, 3, 252)",
+                    float: "left",
+                  }}
+                ></div>
+                <div
+                  style={{
+                    height: "100%",
+                    width: "70%",
+                    float: "left",
+                    fontSize: "15px",
+                    textAlign: "left",
+                    paddingLeft: "2%",
+                    color: "rgb(170, 170, 170)",
+                  }}
+                >
+                  {" "}
+                  beendet
+                </div>
               </div>
               <div
+                className="legende"
+                id="legende2"
                 style={{
-                  background: "#111",
-                  height: "60px",
-                  float: "left",
-                  width: "10%",
+                  height: "15px",
+                  position: "absolute",
+                  right: "0px",
+                  top: "197px",
+                  left: "calc(10% + 100px)",
                 }}
-              ></div>
-            </div>
-            <div id="Ueberschrift">
-              {" "}
-              <select
-                style={{
-                  display: "block",
-                  marginTop: "80px",
-                  border: "1px solid #111",
-                  marginRight: "auto",
-                  marginLeft: "auto",
-                  fontSize: "40%",
-                }}
-                size="1"
-                id="mySelect"
-                onChange={this.categoryHandler.bind(this)}
               >
-                <option value="All">Allgemein</option>
-                <option value="Action & Adventure">Action & Adventure</option>
-                <option value="Animation">Animation</option>
-                <option value="Comedy">Comedy</option>
-                <option value="Crime">Crime</option>
-                <option value="Drama">Drama</option>
-                <option value="Documentary">Documentary</option>
-                <option value="Fantasy">Fantasy</option>
-                <option value="Horror">Horror</option>
-                <option value="Mystery">Mystery</option>
-                <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
-                <option value="Sport">Sport</option>
-                <option value="Thriller">Thriller</option>
-                <option value="War & Politics">War & Politics</option>
-                <option value="Western">Western</option>
-                <option value="A-Z">A-Z</option>
-                <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
-              </select>
-              <FormControl style={{ width: "80%" }} variant="standard">
-                <InputLabel
-                  style={{ color: "white", backgroundColor: "black" }}
-                  htmlFor="site-search"
-                >
-                  Serie suchen
-                </InputLabel>
-                <Input
-                  type="search"
-                  id="site-search"
-                  name="q"
-                  label="Serie suchen"
-                  onChange={this.filterSerie.bind(this)}
-                  autoComplete="off"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlinedIcon style={{ color: "#fff" }} />
-                    </InputAdornment>
-                  }
-                />
-              </FormControl>
-              <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
-                  className="legende"
-                  id="legende1"
                   style={{
-                    height: "15px",
-                    position: "absolute",
-                    right: "0px",
-                    marginBottom: "2px",
-                    top: "197px",
-                    left: "10%",
+                    height: "100%",
+                    width: "15px",
+                    background: "rgb(66, 209, 15)",
+                    float: "left",
+                  }}
+                ></div>
+                <div
+                  style={{
+                    height: "100%",
+                    width: "70%",
+                    float: "left",
+                    fontSize: "15px",
+                    textAlign: "left",
+                    paddingLeft: "2%",
+                    color: "rgb(170, 170, 170)",
                   }}
                 >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "15px",
-                      background: "rgb(177, 3, 252)",
-                      float: "left",
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "70%",
-                      float: "left",
-                      fontSize: "15px",
-                      textAlign: "left",
-                      paddingLeft: "2%",
-                      color: "rgb(170, 170, 170)",
-                    }}
-                  >
-                    {" "}
-                    beendet
-                  </div>
+                  {" "}
+                  laufend
                 </div>
-                <div
-                  className="legende"
-                  id="legende2"
-                  style={{
-                    height: "15px",
-                    position: "absolute",
-                    right: "0px",
-                    top: "197px",
-                    left: "calc(10% + 100px)",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "15px",
-                      background: "rgb(66, 209, 15)",
-                      float: "left",
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "70%",
-                      float: "left",
-                      fontSize: "15px",
-                      textAlign: "left",
-                      paddingLeft: "2%",
-                      color: "rgb(170, 170, 170)",
-                    }}
-                  >
-                    {" "}
-                    laufend
-                  </div>
-                </div>
-                <Tooltip
-                  style={{
-                    height: "20px",
-                    width: "20px",
-                    position: "absolute",
+              </div>
+              <Tooltip
+                style={{
+                  height: "20px",
+                  width: "20px",
+                  position: "absolute",
 
-                    top: "197px",
-                    right: "10%",
-                  }}
-                  title={
-                    <React.Fragment>
-                      <Typography style={{ textDecoration: "underline" }}>
-                        <b>LEGENDE</b>
-                      </Typography>
-                      <br></br>
-                      <span style={{ color: "#b103fc" }}>
-                        {" "}
-                        <b>beendet:</b> Es kommen keine weiteren Folgen.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <span style={{ color: "#42d10f" }}>
-                        {" "}
-                        <b>laufend:</b> Es kommen weitere Folgen.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <br></br>
-                      <span>
-                        Klicke auf ein Poster, um auf die IMDB-Seite zu
-                        gelangen.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <span>
-                        Klicke auf den Titel, um zu erfahren, wo du die Serie
-                        schauen kannst.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <span style={{ color: "#00fed7" }}>
-                        Daten bereitgestellt von TMDB und JustWatch
-                      </span>
-                      <br></br>
-                      <br></br>
-                    </React.Fragment>
-                  }
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        color: "#aaaaaa",
-                        backgroundColor: "black",
-                        fontSize: "0.9rem",
-                      },
+                  top: "197px",
+                  right: "10%",
+                }}
+                title={
+                  <React.Fragment>
+                    <Typography style={{ textDecoration: "underline" }}>
+                      <b>LEGENDE</b>
+                    </Typography>
+                    <br></br>
+                    <span style={{ color: "#b103fc" }}>
+                      {" "}
+                      <b>beendet:</b> Es kommen keine weiteren Folgen.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <span style={{ color: "#42d10f" }}>
+                      {" "}
+                      <b>laufend:</b> Es kommen weitere Folgen.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <br></br>
+                    <span>
+                      Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <span>
+                      Klicke auf den Titel, um zu erfahren, wo du die Serie
+                      schauen kannst.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <span style={{ color: "#00fed7" }}>
+                      Daten bereitgestellt von TMDB und JustWatch
+                    </span>
+                    <br></br>
+                    <br></br>
+                  </React.Fragment>
+                }
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      color: "#aaaaaa",
+                      backgroundColor: "black",
+                      fontSize: "0.9rem",
                     },
-                  }}
-                >
-                  <InfoOutlinedIcon></InfoOutlinedIcon>
-                </Tooltip>
-              </div>
+                  },
+                }}
+              >
+                <InfoOutlinedIcon></InfoOutlinedIcon>
+              </Tooltip>
             </div>
-            <p className="scrollen">
-              <i
-                title="Scrolle zum Ende"
-                onClick={this.scrollDown}
-                className="arrow down"
-              ></i>
-            </p>
-            <div className="container">
-              <div className="loader">
-                <div className="inner one"></div>
-                <div className="inner two"></div>
-                <div className="inner three"></div>
-              </div>
-            </div>
-            <p className="scrollen">
-              <i
-                title="Scrolle zum Anfang"
-                onClick={this.scrollTop}
-                className="arrow up"
-              ></i>
-            </p>
           </div>
+          <p className="scrollen">
+            <i
+              title="Scrolle zum Ende"
+              onClick={scrollDown}
+              className="arrow down"
+            ></i>
+          </p>
+          <div className="container">
+            <div className="loader">
+              <div className="inner one"></div>
+              <div className="inner two"></div>
+              <div className="inner three"></div>
+            </div>
+          </div>
+          <p className="scrollen">
+            <i
+              title="Scrolle zum Anfang"
+              onClick={scrollTop}
+              className="arrow up"
+            ></i>
+          </p>
         </div>
-      );
-    } else {
-      return (
-        <div>
-          <div id="mySidenav" className="sidenav">
-            <h3 className="button" id="login" onClick={(_) => this.login()}>
-              Login
-            </h3>
-            <h3 className="button" onClick={(_) => this.toggleHinzufuegen()}>
-              Serie hinzufügen
-            </h3>
-            <form
-              className="hinzufuegen"
-              id="hinzufuegen"
-              onSubmit={this.hinzufuegen.bind(this)}
-              autoComplete="off"
-            >
-              <h3>Serie hinzufügen</h3>
-              <label style={{ display: "none" }} hmtlfor="Key">
-                Key:{" "}
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <div id="mySidenav" className="sidenav">
+          <h3 className="button" id="login" onClick={(_) => login()}>
+            Login
+          </h3>
+          <h3 className="button" onClick={(_) => toggleHinzufuegen()}>
+            Serie hinzufügen
+          </h3>
+          <form
+            className="hinzufuegen"
+            id="hinzufuegen"
+            onSubmit={hinzufuegen.bind(this)}
+            autoComplete="off"
+          >
+            <h3>Serie hinzufügen</h3>
+            <label style={{ display: "none" }} hmtlfor="Key">
+              Key:{" "}
+            </label>
+            <input
+              type="text"
+              id="Key."
+              name="Key"
+              style={{ display: "none" }}
+            ></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Title">Title: </label>
+            <input type="text" id="Title" name="Title"></input>
+            <br></br>
+            <br></br>
+            <h3>Rating</h3>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Action & Adventure">Action & Adventure: </label>
+            <input
+              type="text"
+              id="Action & Adventure"
+              name="Action & Adventure"
+            ></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="All">All: </label>
+            <input type="text" id="All" name="All"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Animation">Animation: </label>
+            <input type="text" id="Animation" name="Animation"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Comedy">Comedy: </label>
+            <input type="text" id="Comedy" name="Comedy"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Crime">Crime: </label>
+            <input type="text" id="Crime" name="Crime"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Documentary">Documentary: </label>
+            <input type="text" id="Documentary" name="Documentary"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Drama">Drama: </label>
+            <input type="text" id="Drama" name="Drama"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Horror">Horror: </label>
+            <input type="text" id="Horror" name="Horror"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Mystery">Mystery: </label>
+            <input type="text" id="Mystery" name="Mystery"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
+            <input
+              type="text"
+              id="Sci-Fi & Fantasy"
+              name="Sci-Fi & Fantasy"
+            ></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Sport">Sport: </label>
+            <input type="text" id="Sport" name="Sport"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Thriller">Thriller: </label>
+            <input type="text" id="Thriller" name="Thriller"></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="War & Politics">War & Politics: </label>
+            <input
+              type="text"
+              id="War & Politics"
+              name="War & Politics"
+            ></input>
+            <br></br>
+            <br></br>
+            <label hmtlfor="Western">Western: </label>
+            <input type="text" id="Western" name="Western"></input>
+            <br></br>
+            <br></br>
+            <input type="submit" value="Serie hinzufügen"></input>
+          </form>
+        </div>
+        <div id="main" key="0">
+          <div
+            id="oben"
+            style={{
+              position: "fixed",
+              top: "0",
+              height: "60px",
+              width: "100%",
+              zIndex: "99",
+            }}
+          >
+            <div className="row">
+              <input type="checkbox" onClick={openNav} id="hamburg"></input>
+              <label
+                hmtlfor="hamburg"
+                onClick={openNav}
+                id="hamburger"
+                className="hamburg"
+              >
+                <span className="line"></span>
+                <span className="line"></span>
+                <span className="line"></span>
               </label>
-              <input
-                type="text"
-                id="Key."
-                name="Key"
-                style={{ display: "none" }}
-              ></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Title">Title: </label>
-              <input type="text" id="Title" name="Title"></input>
-              <br></br>
-              <br></br>
-              <h3>Rating</h3>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Action & Adventure">Action & Adventure: </label>
-              <input
-                type="text"
-                id="Action & Adventure"
-                name="Action & Adventure"
-              ></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="All">All: </label>
-              <input type="text" id="All" name="All"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Animation">Animation: </label>
-              <input type="text" id="Animation" name="Animation"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Comedy">Comedy: </label>
-              <input type="text" id="Comedy" name="Comedy"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Crime">Crime: </label>
-              <input type="text" id="Crime" name="Crime"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Documentary">Documentary: </label>
-              <input type="text" id="Documentary" name="Documentary"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Drama">Drama: </label>
-              <input type="text" id="Drama" name="Drama"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Horror">Horror: </label>
-              <input type="text" id="Horror" name="Horror"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Mystery">Mystery: </label>
-              <input type="text" id="Mystery" name="Mystery"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
-              <input
-                type="text"
-                id="Sci-Fi & Fantasy"
-                name="Sci-Fi & Fantasy"
-              ></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Sport">Sport: </label>
-              <input type="text" id="Sport" name="Sport"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Thriller">Thriller: </label>
-              <input type="text" id="Thriller" name="Thriller"></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="War & Politics">War & Politics: </label>
-              <input
-                type="text"
-                id="War & Politics"
-                name="War & Politics"
-              ></input>
-              <br></br>
-              <br></br>
-              <label hmtlfor="Western">Western: </label>
-              <input type="text" id="Western" name="Western"></input>
-              <br></br>
-              <br></br>
-              <input type="submit" value="Serie hinzufügen"></input>
-            </form>
-          </div>
-          <div id="main" key="0">
+            </div>
+            <div id="Header">
+              <p id="Header1" onClick={scrollTop}>
+                RANKING
+              </p>
+            </div>
             <div
-              id="oben"
               style={{
-                position: "fixed",
-                top: "0",
+                background: "#111",
                 height: "60px",
-                width: "100%",
-                zIndex: "99",
+                float: "left",
+                width: "10%",
               }}
+            ></div>
+          </div>
+          <div id="Ueberschrift">
+            <select
+              style={{
+                display: "block",
+                marginTop: "80px",
+                border: "1px solid #111",
+                marginRight: "auto",
+                marginLeft: "auto",
+                fontSize: "40%",
+              }}
+              size="1"
+              id="mySelect"
+              onChange={categoryHandler.bind(this)}
             >
-              <div className="row">
-                <input
-                  type="checkbox"
-                  onClick={this.openNav}
-                  id="hamburg"
-                ></input>
-                <label
-                  hmtlfor="hamburg"
-                  onClick={this.openNav}
-                  id="hamburger"
-                  className="hamburg"
+              <option value="All">Allgemein</option>
+              <option value="Action & Adventure">Action & Adventure</option>
+              <option value="Animation">Animation</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Crime">Crime</option>
+              <option value="Drama">Drama</option>
+              <option value="Documentary">Documentary</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="Horror">Horror</option>
+              <option value="Mystery">Mystery</option>
+              <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
+              <option value="Sport">Sport</option>
+              <option value="Thriller">Thriller</option>
+              <option value="War & Politics">War & Politics</option>
+              <option value="Western">Western</option>
+              <option value="A-Z">A-Z</option>
+              <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
+            </select>
+            <FormControl style={{ width: "80%" }} variant="standard">
+              <InputLabel
+                style={{ color: "white", backgroundColor: "black" }}
+                htmlFor="site-search"
+              >
+                Serie suchen
+              </InputLabel>
+              <Input
+                type="search"
+                id="site-search"
+                name="q"
+                label="Serie suchen"
+                onChange={filterSerie.bind(this)}
+                autoComplete="off"
+                startAdornment={
+                  <InputAdornment position="start">
+                    <SearchOutlinedIcon style={{ color: "#fff" }} />
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            <div style={{ display: "flex", width: "100%", height: "32px" }}>
+              <div
+                className="legende"
+                id="legende1"
+                style={{
+                  height: "15px",
+                  position: "absolute",
+                  right: "0px",
+                  marginBottom: "2px",
+                  top: "197px",
+                  left: "10% ",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: "15px",
+                    background: "rgb(177, 3, 252)",
+                    float: "left",
+                  }}
+                ></div>
+                <div
+                  style={{
+                    height: "100%",
+                    width: "70%",
+                    float: "left",
+                    fontSize: "15px",
+                    textAlign: "left",
+                    paddingLeft: "2%",
+                    color: "rgb(170, 170, 170)",
+                  }}
                 >
-                  <span className="line"></span>
-                  <span className="line"></span>
-                  <span className="line"></span>
-                </label>
-              </div>
-              <div id="Header">
-                <p id="Header1" onClick={this.scrollTop}>
-                  RANKING
-                </p>
+                  {" "}
+                  beendet
+                </div>
               </div>
               <div
+                className="legende"
+                id="legende2"
                 style={{
-                  background: "#111",
-                  height: "60px",
-                  float: "left",
-                  width: "10%",
+                  height: "15px",
+                  position: "absolute",
+                  right: "0px",
+                  top: "197px",
+                  left: "calc(10% + 100px)",
                 }}
-              ></div>
-            </div>
-            <div id="Ueberschrift">
-              <select
-                style={{
-                  display: "block",
-                  marginTop: "80px",
-                  border: "1px solid #111",
-                  marginRight: "auto",
-                  marginLeft: "auto",
-                  fontSize: "40%",
-                }}
-                size="1"
-                id="mySelect"
-                onChange={this.categoryHandler.bind(this)}
               >
-                <option value="All">Allgemein</option>
-                <option value="Action & Adventure">Action & Adventure</option>
-                <option value="Animation">Animation</option>
-                <option value="Comedy">Comedy</option>
-                <option value="Crime">Crime</option>
-                <option value="Drama">Drama</option>
-                <option value="Documentary">Documentary</option>
-                <option value="Fantasy">Fantasy</option>
-                <option value="Horror">Horror</option>
-                <option value="Mystery">Mystery</option>
-                <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
-                <option value="Sport">Sport</option>
-                <option value="Thriller">Thriller</option>
-                <option value="War & Politics">War & Politics</option>
-                <option value="Western">Western</option>
-                <option value="A-Z">A-Z</option>
-                <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
-              </select>
-              <FormControl style={{ width: "80%" }} variant="standard">
-                <InputLabel
-                  style={{ color: "white", backgroundColor: "black" }}
-                  htmlFor="site-search"
-                >
-                  Serie suchen
-                </InputLabel>
-                <Input
-                  type="search"
-                  id="site-search"
-                  name="q"
-                  label="Serie suchen"
-                  onChange={this.filterSerie.bind(this)}
-                  autoComplete="off"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlinedIcon style={{ color: "#fff" }} />
-                    </InputAdornment>
-                  }
-                />
-              </FormControl>
-              <div style={{ display: "flex", width: "100%", height: "32px" }}>
                 <div
-                  className="legende"
-                  id="legende1"
                   style={{
-                    height: "15px",
-                    position: "absolute",
-                    right: "0px",
-                    marginBottom: "2px",
-                    top: "197px",
-                    left: "10% ",
+                    height: "100%",
+                    width: "15px",
+                    background: "rgb(66, 209, 15)",
+                    float: "left",
                   }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "15px",
-                      background: "rgb(177, 3, 252)",
-                      float: "left",
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "70%",
-                      float: "left",
-                      fontSize: "15px",
-                      textAlign: "left",
-                      paddingLeft: "2%",
-                      color: "rgb(170, 170, 170)",
-                    }}
-                  >
-                    {" "}
-                    beendet
-                  </div>
-                </div>
+                ></div>
                 <div
-                  className="legende"
-                  id="legende2"
                   style={{
-                    height: "15px",
-                    position: "absolute",
-                    right: "0px",
-                    top: "197px",
-                    left: "calc(10% + 100px)",
+                    height: "100%",
+                    width: "70%",
+                    float: "left",
+                    fontSize: "15px",
+                    textAlign: "left",
+                    paddingLeft: "2%",
+                    color: "rgb(170, 170, 170)",
                   }}
                 >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "15px",
-                      background: "rgb(66, 209, 15)",
-                      float: "left",
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "70%",
-                      float: "left",
-                      fontSize: "15px",
-                      textAlign: "left",
-                      paddingLeft: "2%",
-                      color: "rgb(170, 170, 170)",
-                    }}
-                  >
-                    {" "}
-                    laufend
-                  </div>
+                  {" "}
+                  laufend
                 </div>
-                <Tooltip
-                  style={{
-                    height: "20px",
-                    width: "20px",
-                    position: "absolute",
-                    top: "197px",
-                    right: "10%",
-                  }}
-                  title={
-                    <React.Fragment>
-                      <Typography style={{ textDecoration: "underline" }}>
-                        <b>LEGENDE</b>
-                      </Typography>
-                      <br></br>
-                      <span style={{ color: "#b103fc" }}>
-                        {" "}
-                        <b>beendet:</b> Es kommen keine weiteren Folgen.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <span style={{ color: "#42d10f" }}>
-                        {" "}
-                        <b>laufend:</b> Es kommen weitere Folgen.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <br></br>
-                      <span>
-                        Klicke auf ein Poster, um auf die IMDB-Seite zu
-                        gelangen.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <span>
-                        Klicke auf den Titel, um zu erfahren, wo du die Serie
-                        schauen kannst.
-                      </span>
-                      <br></br>
-                      <br></br>
-                      <span style={{ color: "#00fed7" }}>
-                        Daten bereitgestellt von TMDB und JustWatch
-                      </span>
-                      <br></br>
-                      <br></br>
-                    </React.Fragment>
-                  }
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        color: "#aaaaaa",
-                        backgroundColor: "black",
-                        fontSize: "0.9rem",
-                      },
-                    },
-                  }}
-                >
-                  <InfoOutlinedIcon></InfoOutlinedIcon>
-                </Tooltip>
               </div>
+              <Tooltip
+                style={{
+                  height: "20px",
+                  width: "20px",
+                  position: "absolute",
+                  top: "197px",
+                  right: "10%",
+                }}
+                title={
+                  <React.Fragment>
+                    <Typography style={{ textDecoration: "underline" }}>
+                      <b>LEGENDE</b>
+                    </Typography>
+                    <br></br>
+                    <span style={{ color: "#b103fc" }}>
+                      {" "}
+                      <b>beendet:</b> Es kommen keine weiteren Folgen.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <span style={{ color: "#42d10f" }}>
+                      {" "}
+                      <b>laufend:</b> Es kommen weitere Folgen.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <br></br>
+                    <span>
+                      Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <span>
+                      Klicke auf den Titel, um zu erfahren, wo du die Serie
+                      schauen kannst.
+                    </span>
+                    <br></br>
+                    <br></br>
+                    <span style={{ color: "#00fed7" }}>
+                      Daten bereitgestellt von TMDB und JustWatch
+                    </span>
+                    <br></br>
+                    <br></br>
+                  </React.Fragment>
+                }
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      color: "#aaaaaa",
+                      backgroundColor: "black",
+                      fontSize: "0.9rem",
+                    },
+                  },
+                }}
+              >
+                <InfoOutlinedIcon></InfoOutlinedIcon>
+              </Tooltip>
             </div>
-            <p className="scrollen">
-              <i
-                title="Scrolle zum Ende"
-                onClick={this.scrollDown}
-                className="arrow down"
-              ></i>
-            </p>
-
-            <div className="container">
-              <ul className="list" id="serien">
-                {this.state.rows}
-              </ul>
-            </div>
-            <p className="scrollen">
-              <i
-                title="Scrolle zum Anfang"
-                onClick={this.scrollTop}
-                className="arrow up"
-              ></i>
-            </p>
           </div>
+          <p className="scrollen">
+            <i
+              title="Scrolle zum Ende"
+              onClick={scrollDown}
+              className="arrow down"
+            ></i>
+          </p>
+
+          <div className="container">
+            <ul className="list" id="serien">
+              {rows}
+            </ul>
+          </div>
+          <p className="scrollen">
+            <i
+              title="Scrolle zum Anfang"
+              onClick={scrollTop}
+              className="arrow up"
+            ></i>
+          </p>
         </div>
-      );
-    }
+      </div>
+    );
   }
-}
+};
 
 export default App;
