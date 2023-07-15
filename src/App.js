@@ -284,7 +284,7 @@ const App = () => {
 
   useEffect(() => {
     fetchData();
-  }, [loading]);
+  }, []);
 
   const checklogin = () => {
     const currentUser = Firebase.auth()?.currentUser;
