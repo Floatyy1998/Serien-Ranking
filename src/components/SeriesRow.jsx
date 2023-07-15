@@ -1,15 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 import { useState } from "react";
-import CustomDialog from "./Dialog.js";
+import CustomDialog from "./Dialog";
 
 var pruefen = "";
 
 var key = "test";
 const SeriesRow = (props) => {
-  
   const [open, setOpen] = useState(false);
-
 
   const handleClose = () => {
     setOpen(false);
@@ -47,7 +45,7 @@ const SeriesRow = (props) => {
         providerListShort = providerList.slice(0, 3);
       }
 
-      return providerListShort.map((provider,index) => (
+      return providerListShort.map((provider, index) => (
         <img
           title={provider.name + " (Provided by JustWatch)"}
           key={Date.now() + index}
@@ -133,8 +131,6 @@ const SeriesRow = (props) => {
   if (formattedNextEp === formattedToday) {
     formattedNextEp = "Heute";
   }
-
-  
 
   const hasNextEpisode =
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;

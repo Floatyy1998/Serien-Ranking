@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import reportWebVitals from './reportWebVitals';
+import './Styles/index.css';
+import App from './components/App';
+import * as serviceWorkerRegistration from './serviceWorker/serviceWorkerRegistration';
+import reportWebVitals from './serviceWorker/reportWebVitals';
 
 
 
