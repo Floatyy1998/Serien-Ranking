@@ -7,12 +7,9 @@ var pruefen = "";
 
 var key = "test";
 const SeriesRow = (props) => {
-  const [loading, setLoading] = useState(true);
+  
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    setLoading(false);
-  }, [loading]);
 
   const handleClose = () => {
     setOpen(false);
@@ -137,20 +134,7 @@ const SeriesRow = (props) => {
     formattedNextEp = "Heute";
   }
 
-  if (loading) {
-    return (
-      <li key={Date.now()}>
-        <div className="polaroid">
-          <div className="lds-ellipsis">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        </div>
-      </li>
-    );
-  }
+  
 
   const hasNextEpisode =
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;

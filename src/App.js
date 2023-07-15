@@ -493,7 +493,7 @@ const App = () => {
   };
   //7.343 7.22 7.11
 
-  const addNewSeries = async (event, self) => {
+  const addNewSeries = async (event) => {
     event.preventDefault();
 
     const length = await getSerienCount();
@@ -541,13 +541,13 @@ const App = () => {
     for (let j = 0; j < 16; j++) {
       event.target[j].value = "";
     }
-    self.get_serien();
+    get_serien();
   };
 
   const hinzufuegen = async (event) => {
-    const self = this;
+    
     try {
-      await addNewSeries(event, self);
+      await addNewSeries(event);
     } catch (error) {
       console.error(error);
       alert("Fehler beim Hinzufügen der Serie!");
