@@ -3,9 +3,6 @@ import React from "react";
 import { useState } from "react";
 import CustomDialog from "./Dialog";
 
-var pruefen = "";
-
-var key = "test";
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
 
