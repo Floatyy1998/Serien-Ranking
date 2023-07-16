@@ -1,6 +1,7 @@
 import React from "react";
 import Firebase from "firebase/compat/app";
 import API from "../configs/API";
+import Button from "@mui/material/Button";
 
 function SideNav(props) {
   const toggleHinzufuegen = () => {
@@ -131,7 +132,7 @@ function SideNav(props) {
         .then(
           function () {
             localStorage.removeItem("konrad.dinges@googlemail.com");
-            document.getElementById("login").innerHTML = "Login";
+            document.getElementById("login").innerHTML = "LOGIN";
           },
           function (error) {
             console.error("Sign Out Error", error);
@@ -140,7 +141,7 @@ function SideNav(props) {
     }
   };
   const login = () => {
-    if (document.getElementById("login").innerHTML === "Login") {
+    if (document.getElementById("login").innerHTML === "LOGIN") {
       var email = prompt("email eingeben", "");
       if (email === null || email === "") {
         alert("email muss eingegeben werden");
@@ -153,7 +154,7 @@ function SideNav(props) {
             .signInWithEmailAndPassword(email, passwort)
             .then((userCredential) => {
               // Signed in
-              document.getElementById("login").innerHTML = "Logout";
+              document.getElementById("login").innerHTML = "LOGOUT";
               localStorage.setItem("konrad.dinges@googlemail.com", passwort);
               // ...
             })
@@ -165,16 +166,16 @@ function SideNav(props) {
       }
     } else {
       checklogin();
-      document.getElementById("login").innerHTML = "Login";
+      document.getElementById("login").innerHTML = "LOGIN";
     }
   };
   return (
     <div id="mySidenav" className="sidenav">
       <h3 className="button" id="login" onClick={(_) => login()}>
-        Login
+        LOGIN
       </h3>
       <h3 className="button" onClick={(_) => toggleHinzufuegen()}>
-        Serie hinzufügen
+        SERIE HINZUFÜGEN
       </h3>
       <form
         className="hinzufuegen"
@@ -198,7 +199,7 @@ function SideNav(props) {
         <label hmtlfor="Title">Title: </label>
         <input type="text" id="Title" name="Title"></input>
       
-        <input style={{backgroundColor:"#333",color:"#ccc",fontSize:"1.17rem"}} type="submit" value="Serie hinzufügen"></input>
+        <Button style={{fontWeight:"bold",fontFamily: '"Belanosima", sans-serif', height:"30%",width:"100%",backgroundColor:"#333",color:"#ccc",fontSize:"1rem"}} type="submit" value="SERIE HINZUFÜGEN">SERIE HINZUFÜGEN</Button>
       </form>
     </div>
   );

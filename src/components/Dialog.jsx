@@ -10,7 +10,10 @@ import {
   Card,
   CardContent,
   Grid,
+  Chip,
+  Stack
 } from "@mui/material";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const CustomDialog = (props) => {
   const handle_change = async (event) => {
@@ -44,19 +47,25 @@ const CustomDialog = (props) => {
   };
 
   const getGenres = () => {
-    return props.serie.genre.genres.map((genre, index) => (
-      <Grid  key={index} style={{margin:"auto"}} item xs={6}>
-        <Card style={{backgroundColor:"black"}}>
+    /* <Grid key={index} style={{ margin: "auto" }} item xs={6}>
+        <Card style={{ backgroundColor: "black" }}>
           <CardContent
-            sx={{  height: 60 }}
+            sx={{ height: 60 }}
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <Typography color={"rgb(0, 254, 215)"} align="center">
+            <Typography
+              style={{ fontFamily: '"Belanosima", sans-serif' }}
+              color={"rgb(0, 254, 215)"}
+              align="center"
+            >
               {genre}
             </Typography>
           </CardContent>
         </Card>
-      </Grid>
+      </Grid> */
+    return props.serie.genre.genres.map((genre, index) => (
+      <Chip label={genre} color="primary" style={{minHeight:"50px",width:"fit-content",minWidth:"140px",backgroundColor:"#333",color:"rgb(0, 254, 215)",border:"1px solid #00fed7"}} />
+      
     ));
   };
 
@@ -70,13 +79,51 @@ const CustomDialog = (props) => {
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle
-        style={{textAlign:"center", backgroundColor: "#111", color: "#00fed7",paddingBottom:"0" }}
+        style={{
+          textAlign: "center",
+          backgroundColor: "#111",
+          color: "#00fed7",
+          paddingBottom: "0",
+        }}
         id="alert-dialog-title"
       >
-        <p  style={{textAlign: "center",fontSize:"2rem", color: "rgb(0, 254, 215)"}}> {props.title} bearbeiten/löschen</p>
-        <p  style={{textAlign: "center", margin: "2%",fontSize:"1.5rem", color: "#cccccc"}}>Genres</p>
+        <CloseRoundedIcon
+          onClick={_=>props.close()}
+          className="closeDialog"
+          style={{
+            position: "absolute",
+            top: "1vh",
+            right: "1vh",
+            width: "2rem",
+            height: "auto",
+            backgroundColor: "#333",
+          }}
+        />
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "2rem",
+            color: "rgb(0, 254, 215)",
+          }}
+        >
+          {" "}
+          {props.title} bearbeiten/löschen
+        </p>
+        <p
+          style={{
+            textAlign: "center",
+            padding: "2%",
+            fontSize: "1.5rem",
+            color: "#cccccc",
+          }}
+        >
+          Genres
+        </p>
+        <Stack direction="row" useFlexGap flexWrap="wrap" spacing={3} style={{width:"fit-content",margin:"auto"}}>
+        {getGenres()}
+        </Stack>
 
-        <Grid
+        {/* <Grid
           container
           spacing={1}
           direction="row"
@@ -84,26 +131,38 @@ const CustomDialog = (props) => {
           justify="center"
         >
           {getGenres()}
-        </Grid>
-        <p  style={{textAlign: "center", marginTop: "5%",fontSize:"1.5rem", color: "#cccccc"}}>Rating</p>
+        </Grid> */}
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: "3%",
+            fontSize: "1.5rem",
+            color: "#cccccc",
+          }}
+        >
+          Rating
+        </p>
       </DialogTitle>
 
       <DialogContent
         id="alert-dialog-description"
         style={{ backgroundColor: "#111" }}
       >
-        
-
         <form
-          style={{paddingTop:"0", display: "flex", flexDirection: "column", color: "#cccccc" }}
+          style={{
+            paddingTop: "0",
+            display: "flex",
+            flexDirection: "column",
+            color: "#cccccc",
+          }}
           autoComplete="off"
           className="dialogForm"
         >
-          
           <br></br>
           <br></br>
           <label hmtlfor="Action & Adventure">Action & Adventure: </label>
-          <input className="dialoRating"
+          <input
+            className="dialoRating"
             type="text"
             id="Action & Adventure"
             defaultValue={props.serie.rating["Action & Adventure"]}
@@ -229,17 +288,30 @@ const CustomDialog = (props) => {
         </form>
       </DialogContent>
       <DialogActions
-        style={{ color: "#00fed7", backgroundColor: "#111" }}
+        style={{
+          color: "#00fed7",
+          backgroundColor: "#111",
+          justifyContent: "space-around",
+          padding: "3%",
+        }}
         id="dialog-footer"
       >
         <Button
-          style={{ color: "#00fed7", backgroundColor: "#111" }}
+          style={{
+            fontFamily: '"Belanosima", sans-serif',
+            color: "#00fed7",
+            backgroundColor: "#333",
+          }}
           onClick={handleDelete}
         >
           Serie löschen
         </Button>
         <Button
-          style={{ color: "#00fed7", backgroundColor: "#111" }}
+          style={{
+            color: "#00fed7",
+            fontFamily: '"Belanosima", sans-serif',
+            backgroundColor: "#333",
+          }}
           onClick={(event) => {
             handle_change(event);
           }}

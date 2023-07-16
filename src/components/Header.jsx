@@ -1,5 +1,4 @@
 import React from "react";
-import Firebase from "firebase/compat/app";
 
 function Header() {
   const scrollTop = () => {
@@ -9,36 +8,6 @@ function Header() {
     document.getElementById("oben").style.transition = "0.5s";
     document.getElementById("legende1").style.transition = "0.5s";
     document.getElementById("legende2").style.transition = "0.5s";
-    if (!Firebase.auth().currentUser) {
-      if (!localStorage.getItem("konrad.dinges@googlemail.com")) {
-        Firebase.auth()
-          .signOut()
-          .then(
-            function () {
-              localStorage.removeItem("konrad.dinges@googlemail.com");
-              document.getElementById("login").innerHTML = "Login";
-            },
-            function (error) {
-              console.error("Sign Out Error", error);
-            }
-          );
-      } else {
-        Firebase.auth()
-          .signInWithEmailAndPassword(
-            "konrad.dinges@googlemail.com",
-            localStorage.getItem("konrad.dinges@googlemail.com")
-          )
-          .then((userCredential) => {
-            document.getElementById("login").innerHTML = "Logout";
-          })
-          .catch((error) => {
-            var errorMessage = error.message;
-            alert(errorMessage);
-          });
-      }
-    } else {
-      document.getElementById("login").innerHTML = "Logout";
-    }
 
     if (document.getElementById("mySidenav").style.width === "250px") {
       document.getElementById("oben").style.width = "100%";

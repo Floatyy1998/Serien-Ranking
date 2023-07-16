@@ -32,6 +32,36 @@ const App = () => {
   const [serien, setSerien] = useState([]);
 
   useEffect(() => {
+    if (!Firebase.auth().currentUser) {
+      if (!localStorage.getItem("konrad.dinges@googlemail.com")) {
+        Firebase.auth()
+          .signOut()
+          .then(
+            function () {
+              localStorage.removeItem("konrad.dinges@googlemail.com");
+              document.getElementById("login").innerHTML = "LOGIN";
+            },
+            function (error) {
+              console.error("Sign Out Error", error);
+            }
+          );
+      } else {
+        Firebase.auth()
+          .signInWithEmailAndPassword(
+            "konrad.dinges@googlemail.com",
+            localStorage.getItem("konrad.dinges@googlemail.com")
+          )
+          .then((userCredential) => {
+            document.getElementById("login").innerHTML = "LOGOUT";
+          })
+          .catch((error) => {
+            var errorMessage = error.message;
+            alert(errorMessage);
+          });
+      }
+    } else {
+      document.getElementById("login").innerHTML = "Logout";
+    }
     fetchData();
   }, []);
 
@@ -234,8 +264,6 @@ const App = () => {
 
     checkGenre();
   }
-
-
 
   const isbigger = (a, b) => {
     let punktea = 0;
