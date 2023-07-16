@@ -7,6 +7,9 @@ import {
   DialogTitle,
   Typography,
   Button,
+  Card,
+  CardContent,
+  Grid,
 } from "@mui/material";
 
 const CustomDialog = (props) => {
@@ -40,35 +43,67 @@ const CustomDialog = (props) => {
     props.close();
   };
 
+  const getGenres = () => {
+    return props.serie.genre.genres.map((genre, index) => (
+      <Grid  key={index} style={{margin:"auto"}} item xs={6}>
+        <Card style={{backgroundColor:"black"}}>
+          <CardContent
+            sx={{  height: 60 }}
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Typography color={"rgb(0, 254, 215)"} align="center">
+              {genre}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Grid>
+    ));
+  };
+
   return (
     <Dialog
-      fullWidth={false}
-      maxWidth="lg"
+      fullWidth={true}
+      maxWidth="md"
       open={props.open}
       onClose={props.close}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle
-        style={{ backgroundColor: "#111", color: "#00fed7" }}
+        style={{textAlign:"center", backgroundColor: "#111", color: "#00fed7",paddingBottom:"0" }}
         id="alert-dialog-title"
       >
-        {props.title} bearbeiten/löschen
+        <p  style={{textAlign: "center",fontSize:"2rem", color: "rgb(0, 254, 215)"}}> {props.title} bearbeiten/löschen</p>
+        <p  style={{textAlign: "center", margin: "2%",fontSize:"1.5rem", color: "#cccccc"}}>Genres</p>
+
+        <Grid
+          container
+          spacing={1}
+          direction="row"
+          alignItems="center"
+          justify="center"
+        >
+          {getGenres()}
+        </Grid>
+        <p  style={{textAlign: "center", marginTop: "5%",fontSize:"1.5rem", color: "#cccccc"}}>Rating</p>
       </DialogTitle>
 
       <DialogContent
         id="alert-dialog-description"
         style={{ backgroundColor: "#111" }}
       >
+        
+
         <form
-          style={{ display: "flex", flexDirection: "column", color: "#cccccc" }}
+          style={{paddingTop:"0", display: "flex", flexDirection: "column", color: "#cccccc" }}
           autoComplete="off"
+          className="dialogForm"
         >
-          <h3>Rating</h3>
+          
           <br></br>
           <br></br>
           <label hmtlfor="Action & Adventure">Action & Adventure: </label>
-          <input
+          <input className="dialoRating"
             type="text"
             id="Action & Adventure"
             defaultValue={props.serie.rating["Action & Adventure"]}

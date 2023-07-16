@@ -4,7 +4,7 @@ import API from "../configs/API";
 
 function SideNav(props) {
   const toggleHinzufuegen = () => {
-    document.getElementById("hinzufuegen").style.display = "block";
+    document.getElementById("hinzufuegen").classList.toggle("block");
   };
 
   const getRatings = (event) => {
@@ -54,7 +54,22 @@ function SideNav(props) {
     const length = await getSerienCount();
     const nmr = parseInt(length) + 1;
     const title = event.target[1].value;
-    const ratings = getRatings(event);
+    const ratings = {
+      "Action & Adventure": 0,
+      All: 0,
+      Animation: 0,
+      Comedy: 0,
+      Crime: 0,
+      Documentary: 0,
+      Drama: 0,
+      Horror: 0,
+      Mystery: 0,
+      "Sci-Fi & Fantasy": 0,
+      Sport: 0,
+      Thriller: 0,
+      "War & Politics": 0,
+      Western: 0,
+    }; // getRatings(event);
     const { id, genres } = await fetchSeriesData(title);
     const postData = {
       title,
@@ -93,9 +108,10 @@ function SideNav(props) {
         .set({ tvMazeID: "" });
     }
 
-    for (let j = 0; j < 16; j++) {
+    /* for (let j = 0; j < 16; j++) {
       event.target[j].value = "";
-    }
+    } */
+    event.target[1].value = "";
     props.get_serien();
   };
 
@@ -165,6 +181,7 @@ function SideNav(props) {
         id="hinzufuegen"
         onSubmit={hinzufuegen.bind(this)}
         autoComplete="off"
+        style={{padding:"10%"}} 
       >
         <h3>Serie hinzufügen</h3>
         <label style={{ display: "none" }} hmtlfor="Key">
@@ -176,80 +193,12 @@ function SideNav(props) {
           name="Key"
           style={{ display: "none" }}
         ></input>
-        <br></br>
-        <br></br>
+
+
         <label hmtlfor="Title">Title: </label>
         <input type="text" id="Title" name="Title"></input>
-        <br></br>
-        <br></br>
-        <h3>Rating</h3>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Action & Adventure">Action & Adventure: </label>
-        <input
-          type="text"
-          id="Action & Adventure"
-          name="Action & Adventure"
-        ></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="All">All: </label>
-        <input type="text" id="All" name="All"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Animation">Animation: </label>
-        <input type="text" id="Animation" name="Animation"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Comedy">Comedy: </label>
-        <input type="text" id="Comedy" name="Comedy"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Crime">Crime: </label>
-        <input type="text" id="Crime" name="Crime"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Documentary">Documentary: </label>
-        <input type="text" id="Documentary" name="Documentary"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Drama">Drama: </label>
-        <input type="text" id="Drama" name="Drama"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Horror">Horror: </label>
-        <input type="text" id="Horror" name="Horror"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Mystery">Mystery: </label>
-        <input type="text" id="Mystery" name="Mystery"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
-        <input
-          type="text"
-          id="Sci-Fi & Fantasy"
-          name="Sci-Fi & Fantasy"
-        ></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Sport">Sport: </label>
-        <input type="text" id="Sport" name="Sport"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Thriller">Thriller: </label>
-        <input type="text" id="Thriller" name="Thriller"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="War & Politics">War & Politics: </label>
-        <input type="text" id="War & Politics" name="War & Politics"></input>
-        <br></br>
-        <br></br>
-        <label hmtlfor="Western">Western: </label>
-        <input type="text" id="Western" name="Western"></input>
-        <br></br>
-        <br></br>
-        <input type="submit" value="Serie hinzufügen"></input>
+      
+        <input style={{backgroundColor:"#333",color:"#ccc",fontSize:"1.17rem"}} type="submit" value="Serie hinzufügen"></input>
       </form>
     </div>
   );
