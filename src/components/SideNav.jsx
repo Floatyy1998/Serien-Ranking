@@ -8,20 +8,7 @@ function SideNav(props) {
     document.getElementById("hinzufuegen").classList.toggle("block");
   };
 
-  const getRatings = (event) => {
-    const ratingInputs = Array.from(event.target).slice(2, 16);
-
-    const ratings = {};
-    ratingInputs.forEach((input) => {
-      const value =
-        input.value === "" || input.value === null
-          ? 0
-          : parseFloat(input.value);
-      const key = input.name;
-      ratings[key] = value;
-    });
-    return ratings;
-  };
+  
   const getSerienCount = async () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();

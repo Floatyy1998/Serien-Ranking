@@ -11,7 +11,7 @@ import {
   CardContent,
   Grid,
   Chip,
-  Stack
+  Stack,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
@@ -64,8 +64,13 @@ const CustomDialog = (props) => {
         </Card>
       </Grid> */
     return props.serie.genre.genres.map((genre, index) => (
-      <Chip label={genre} color="primary" style={{minHeight:"50px",width:"fit-content",minWidth:"140px",backgroundColor:"#333",color:"rgb(0, 254, 215)",border:"1px solid #00fed7"}} />
-      
+      <Chip
+      key={index}
+        label={genre}
+        color="primary"
+        className="genreChip"
+        
+      />
     ));
   };
 
@@ -88,7 +93,7 @@ const CustomDialog = (props) => {
         id="alert-dialog-title"
       >
         <CloseRoundedIcon
-          onClick={_=>props.close()}
+          onClick={(_) => props.close()}
           className="closeDialog"
           style={{
             position: "absolute",
@@ -100,27 +105,39 @@ const CustomDialog = (props) => {
           }}
         />
         <p
+        id="dialog-title"
           style={{
+            margin: "auto",
             textAlign: "center",
-            fontSize: "2rem",
+          
             color: "rgb(0, 254, 215)",
+          width:"90%"
+            
           }}
         >
           {" "}
           {props.title} bearbeiten/löschen
         </p>
         <p
+        className="dialogTitle"
           style={{
             textAlign: "center",
-            padding: "2%",
-            fontSize: "1.5rem",
+            paddingTop: "2%",
+            paddingBottom: "1%",
+          
             color: "#cccccc",
           }}
         >
           Genres
         </p>
-        <Stack direction="row" useFlexGap flexWrap="wrap" spacing={3} style={{width:"fit-content",margin:"auto"}}>
-        {getGenres()}
+        <Stack
+          direction="row"
+          useFlexGap
+          flexWrap="wrap"
+          spacing={3}
+          style={{ width: "fit-content", margin: "auto" }}
+        >
+          {getGenres()}
         </Stack>
 
         {/* <Grid
@@ -132,11 +149,12 @@ const CustomDialog = (props) => {
         >
           {getGenres()}
         </Grid> */}
-        <p
+        <p className="dialogTitle"
           style={{
+             
             textAlign: "center",
             marginTop: "3%",
-            fontSize: "1.5rem",
+            
             color: "#cccccc",
           }}
         >
@@ -151,6 +169,7 @@ const CustomDialog = (props) => {
         <form
           style={{
             paddingTop: "0",
+            paddingBottom: "0",
             display: "flex",
             flexDirection: "column",
             color: "#cccccc",
@@ -158,8 +177,6 @@ const CustomDialog = (props) => {
           autoComplete="off"
           className="dialogForm"
         >
-          <br></br>
-          <br></br>
           <label hmtlfor="Action & Adventure">Action & Adventure: </label>
           <input
             className="dialoRating"

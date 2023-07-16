@@ -798,6 +798,27 @@ a {
 #Header1:hover {
   cursor: pointer;
 }
+#dialog-title{
+  
+  font-size: 2rem
+}
+.dialogTitle{
+   
+  font-size: 1.5rem
+}
+.genreChip{
+  min-height: 50px !important;
+  width: fit-content !important;
+    min-width: 140px !important;
+    background-color: #333 !important;
+    color: #00fed7 !important;
+    border: 1px solid #00fed7 !important;
+}
+.css-s60a4n-MuiStack-root {
+  display: flex;
+  justify-content: center;
+  gap: 10px !important
+}
 
 @media only screen and (max-width: 860px) {
   :-webkit-scrollbar {
@@ -814,7 +835,33 @@ a {
   ::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.5);
   }
+  #dialog-title{
+    padding-top: 8%;
+    font-size: 1.4rem;
+    font-weight: bold
+  }
+  .dialogTitle{
+   
+    font-size: 1.25rem
+  }
 
+  .css-s60a4n-MuiStack-root {
+    display: flex;
+    justify-content: center;
+    gap: 8px !important
+  }
+  .css-6od3lo-MuiChip-label {
+    padding-left: 5px !important;
+    padding-right: 5px !important
+  }
+  .genreChip{
+    min-height: 40px !important;
+    width: 100px !important;
+    min-width: 100px !important;
+    background-color: #333 !important;
+    color: #00fed7 !important;
+    border: 1px solid #00fed7 !important;
+  }
   .poster {
     background-color: #000;
     background: #000;
