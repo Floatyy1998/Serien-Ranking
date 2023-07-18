@@ -224,11 +224,17 @@ const App = () => {
       const snapshot = await Firebase.database().ref("/serien").once("value");
       const serienArray = snapshot.val();
       let dates = [];
+
       for (let i = 0; i < serienArray.length; i++) {
-        if (serienArray[i].nextEpisode.nextEpisode !== "") {
-          dates.push(new Date(serienArray[i].nextEpisode.nextEpisode));
+        try {
+          if (serienArray[i].nextEpisode.nextEpisode !== "") {
+            dates.push(new Date(serienArray[i].nextEpisode.nextEpisode));
+          }
+        } catch (error) {
+          console.error(error + " ");
         }
       }
+
       const date = dates.sort(function (a, b) {
         return a - b;
       })[0];
@@ -357,16 +363,17 @@ const App = () => {
         <div id="main" key="0">
           <Header />
           <div id="Ueberschrift">
+          <Search
+              search={(e) => {
+                setFilter(e);
+              }}
+            />
             <Select
               setGenre={(e) => {
                 setGenre(e);
               }}
             />
-            <Search
-              search={(e) => {
-                setFilter(e);
-              }}
-            />
+            
             <Legende />
           </div>
           <ScrollDown />
@@ -388,16 +395,17 @@ const App = () => {
         <div id="main" key="0">
           <Header />
           <div id="Ueberschrift">
-            <Select
-              setGenre={(e) => {
-                setGenre(e);
-              }}
-            />
             <Search
               search={(e) => {
                 setFilter(e);
               }}
             />
+            <Select
+              setGenre={(e) => {
+                setGenre(e);
+              }}
+            />
+            
             <Legende />
           </div>
           <ScrollDown />

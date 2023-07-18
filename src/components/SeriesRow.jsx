@@ -51,8 +51,9 @@ const SeriesRow = (props) => {
           style={{
             width: "auto",
             height: "100%",
-            marginLeft: "3%",
+            marginLeft: "5%",
             float: "left",
+            borderRadius: "10px",
             boxShadow:
               "0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5)",
           }}
@@ -142,11 +143,20 @@ const SeriesRow = (props) => {
         title={props.serie.title}
       />
       <li key={Date.now()}>
-        <div className="polaroid">
+        <div
+          className="polaroid"
+          style={{
+            boxShadow: inProgress
+              ? "rgba(66, 210, 15, 0.5) 12px 11px 20px 0px, -5px -5px 20px 0px rgba(255, 255, 255, 0.2)"
+              : "rgba(177, 3, 255, 0.5) 12px 11px 20px 0px, -5px -5px 20px 0px rgba(255, 255, 255, 0.2)",
+          }}
+        >
           <div
             className="pposter"
             style={{
               backgroundImage: poster,
+              borderTopLeftRadius: "30px",
+              borderTopRightRadius: "30px",
             }}
             onClick={(_) => redirect(`https://www.imdb.com/title/${imdb}/`)}
           >
@@ -181,8 +191,20 @@ const SeriesRow = (props) => {
               </p>
             )}
           </div>
-          <div className="draußen" style={{ width: "100%" }}>
-            <p className="padding">
+          <div
+            className="draußen"
+            style={{ borderRadius: "30px", width: "100%" }}
+          >
+            <p
+              className="padding"
+              onClick={(_) => {
+                if (localStorage.getItem("konrad.dinges@googlemail.com")) {
+                  setOpen(true);
+                } else {
+                  redirect(wo);
+                }
+              }}
+            >
               <span
                 style={{
                   width: "100%",
@@ -193,13 +215,6 @@ const SeriesRow = (props) => {
                 }}
               ></span>
               <a
-                onClick={(_) => {
-                  if (localStorage.getItem("konrad.dinges@googlemail.com")) {
-                    setOpen(true);
-                  } else {
-                    redirect(wo);
-                  }
-                }}
                 target="_blank"
                 style={{
                   width: "100%",
@@ -217,14 +232,8 @@ const SeriesRow = (props) => {
                   }
                 })()}
                 {props.serie.title}
-              </a>{" "}
+              </a>
             </p>
-            <p
-              className="progress"
-              style={{
-                backgroundColor: inProgress ? "#42d10f" : "#b103fc",
-              }}
-            ></p>
           </div>
         </div>
       </li>

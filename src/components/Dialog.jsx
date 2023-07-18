@@ -16,6 +16,13 @@ import {
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const CustomDialog = (props) => {
+  const handleFocus = (event) => {
+    console.log(event.target);
+    event.target.style.border = "1px solid #00fed7";
+  };
+  const handleBlur = (event) => {
+    event.target.style.border = "1px solid rgb(204, 204, 204)";
+  };
   const handle_change = async (event) => {
     const snapshot = await Firebase.database()
       .ref(`/serien/${props.nmr}`)
@@ -64,13 +71,7 @@ const CustomDialog = (props) => {
         </Card>
       </Grid> */
     return props.serie.genre.genres.map((genre, index) => (
-      <Chip
-      key={index}
-        label={genre}
-        color="primary"
-        className="genreChip"
-        
-      />
+      <Chip key={index} label={genre} color="primary" className="genreChip" />
     ));
   };
 
@@ -99,32 +100,32 @@ const CustomDialog = (props) => {
             position: "absolute",
             top: "1vh",
             right: "1vh",
+            borderRadius: "10px",
             width: "2rem",
             height: "auto",
             backgroundColor: "#333",
           }}
         />
         <p
-        id="dialog-title"
+          id="dialog-title"
           style={{
             margin: "auto",
             textAlign: "center",
-          
+
             color: "rgb(0, 254, 215)",
-          width:"90%"
-            
+            width: "90%",
           }}
         >
           {" "}
           {props.title} bearbeiten/löschen
         </p>
         <p
-        className="dialogTitle"
+          className="dialogTitle"
           style={{
             textAlign: "center",
             paddingTop: "2%",
             paddingBottom: "1%",
-          
+
             color: "#cccccc",
           }}
         >
@@ -149,12 +150,12 @@ const CustomDialog = (props) => {
         >
           {getGenres()}
         </Grid> */}
-        <p className="dialogTitle"
+        <p
+          className="dialogTitle"
           style={{
-             
             textAlign: "center",
             marginTop: "3%",
-            
+
             color: "#cccccc",
           }}
         >
@@ -179,127 +180,155 @@ const CustomDialog = (props) => {
         >
           <label hmtlfor="Action & Adventure">Action & Adventure: </label>
           <input
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             className="dialoRating"
             type="text"
             id="Action & Adventure"
-            defaultValue={props.serie.rating["Action & Adventure"]}
+            placeholder={props.serie.rating["Action & Adventure"]}
             name="Action & Adventure"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="All">All: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="All"
-            defaultValue={props.serie.rating["All"]}
+            placeholder={props.serie.rating["All"]}
             name="All"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Animation">Animation: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Animation"
-            defaultValue={props.serie.rating["Animation"]}
+            placeholder={props.serie.rating["Animation"]}
             name="Animation"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Comedy">Comedy: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Comedy"
-            defaultValue={props.serie.rating["Comedy"]}
+            placeholder={props.serie.rating["Comedy"]}
             name="Comedy"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Crime">Crime: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Crime"
-            defaultValue={props.serie.rating["Crime"]}
+            placeholder={props.serie.rating["Crime"]}
             name="Crime"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Documentary">Documentary: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Documentary"
-            defaultValue={props.serie.rating["Documentary"]}
+            placeholder={props.serie.rating["Documentary"]}
             name="Documentary"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Drama">Drama: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Drama"
-            defaultValue={props.serie.rating["Drama"]}
+            placeholder={props.serie.rating["Drama"]}
             name="Drama"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Horror">Horror: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Horror"
-            defaultValue={props.serie.rating["Horror"]}
+            placeholder={props.serie.rating["Horror"]}
             name="Horror"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Mystery">Mystery: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Mystery"
-            defaultValue={props.serie.rating["Mystery"]}
+            placeholder={props.serie.rating["Mystery"]}
             name="Mystery"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Sci-Fi & Fantasy"
-            defaultValue={props.serie.rating["Sci-Fi & Fantasy"]}
+            placeholder={props.serie.rating["Sci-Fi & Fantasy"]}
             name="Sci-Fi & Fantasy"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Sport">Sport: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Sport"
-            defaultValue={props.serie.rating["Sport"]}
+            placeholder={props.serie.rating["Sport"]}
             name="Sport"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Thriller">Thriller: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Thriller"
-            defaultValue={props.serie.rating["Thriller"]}
+            placeholder={props.serie.rating["Thriller"]}
             name="Thriller"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="War & Politics">War & Politics: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="War & Politics"
-            defaultValue={props.serie.rating["War & Politics"]}
+            placeholder={props.serie.rating["War & Politics"]}
             name="War & Politics"
           ></input>
           <br></br>
           <br></br>
           <label hmtlfor="Western">Western: </label>
           <input
+           onFocus={handleFocus.bind(this)}
+           onBlur={handleBlur.bind(this)}
             type="text"
             id="Western"
-            defaultValue={props.serie.rating["Western"]}
+            placeholder={props.serie.rating["Western"]}
             name="Western"
           ></input>
         </form>
@@ -317,7 +346,9 @@ const CustomDialog = (props) => {
           style={{
             fontFamily: '"Belanosima", sans-serif',
             color: "#00fed7",
+            borderRadius: "10px",
             backgroundColor: "#333",
+            height: "41px",
           }}
           onClick={handleDelete}
         >
@@ -326,8 +357,10 @@ const CustomDialog = (props) => {
         <Button
           style={{
             color: "#00fed7",
+            borderRadius: "10px",
             fontFamily: '"Belanosima", sans-serif',
             backgroundColor: "#333",
+            height: "41px",
           }}
           onClick={(event) => {
             handle_change(event);

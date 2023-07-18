@@ -15,11 +15,64 @@
 .block {
   display: block;
 }
-.closeDialog:hover{
+.hidden {
+  visibility: hidden !important;
+}
+
+.legende1 {
+  height: 15px;
+  position: absolute;
+  left: calc(90% - 203px);
+  top: 145px;
+}
+
+.legende2 {
+  height: 15px;
+  position: absolute;
+  left: calc(90% - 100px);
+  top: 145px;
+}
+
+.tooltip {
+  top: 143px;
+
+  left: calc(90% - 20px);
+}
+.legende1-offen {
+  left: calc(90% - 178px) !important;
+}
+
+.legende2-offen {
+  left: calc(90% - 75px) !important;
+}
+
+.tooltip-offen {
+  left: calc(90% + 5px) !important;
+}
+.main-offen {
+  margin-left: 250px !important;
+}
+.sidenav-offen {
+  height: fit-content !important;
+}
+.oben-offen {
+  width: calc(100% - 250px) !important;
+}
+.MuiPaper-root {
+  background-color: #111 !important;
+  border-radius: 30px !important;
+}
+.closeDialog:hover {
   cursor: pointer;
   color: red;
 }
-
+label + .css-v4u5dn-MuiInputBase-root-MuiInput-root {
+  margin: auto;
+  width: 98%;
+}
+.Mui-focused {
+  top: 0 !important;
+}
 input[type="checkbox"] {
   height: 0;
   width: 0;
@@ -96,8 +149,9 @@ input[type="text"] {
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
+  outline: none;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 10px;
   box-sizing: border-box;
   background-color: #000;
   color: #ccc;
@@ -107,16 +161,26 @@ input[type="search"]:focus {
   outline: none;
 }
 
+input[type="text"]::placeholder {
+  color: #888;
+}
+
 .MuiFormLabel-root.Mui-focused {
   color: #00fed7 !important;
 }
 
-.MuiInput-underline::before {
-  border-bottom: 2px solid #222 !important;
+.MuiInputBase-root {
+  margin-top: 0 !important;
+  margin: auto;
+  width: 98%;
+}
+
+.MuiFormControl-root::focused {
+  border: 1px solid #00fed7 !important;
 }
 
 .MuiInput-underline:after {
-  border-bottom: 2px solid #00fed7 !important;
+  border-bottom: none !important;
 }
 
 input[type="search"]::-webkit-input-placeholder {
@@ -147,7 +211,7 @@ input[type="submit"]:hover {
 form {
   background-color: #111;
   padding: 6%;
-  display: none;
+  display: block;
 }
 
 label {
@@ -169,7 +233,7 @@ h3.button {
   padding: 14px 20px;
   margin: 8px 0;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -205,9 +269,9 @@ h3.button {
 }
 
 .sidenav {
-  height: 100%;
+  height: 0;
   /* 100% Full-height */
-  width: 0;
+  width: 100%;
   /* 0 width - change this with JavaScript */
   position: fixed;
   /* Stay in place */
@@ -218,13 +282,14 @@ h3.button {
   left: 0;
   background-color: #111;
   /* Black*/
-  overflow-x: hidden;
+
   /* Disable horizontal scroll */
 
   /* Place content 60px from the top */
   transition: 0.5s;
   /* 0.5 second transition effect to slide in the sidenav */
   color: #ccc;
+  overflow: hidden;
 }
 
 /* The navigation menu links */
@@ -469,7 +534,7 @@ li {
   width: 230px;
   height: 420px;
   display: inline-block;
-  margin: 1.5%;
+  margin: 40px;
 }
 
 .container {
@@ -596,6 +661,10 @@ select {
   text-align: center;
   text-decoration: none;
   border: none;
+  cursor: pointer;
+  background: #111
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'><path fill='%23ffffff' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>")
+    right 0.75rem center/8px 10px no-repeat !important;
 }
 
 select:active {
@@ -641,7 +710,7 @@ tr {
   color: #00fed7;
   font-size: 50pt;
 
-  padding-bottom: 2%;
+  padding-bottom: 30px;
 
   text-align: center;
 }
@@ -656,6 +725,7 @@ tr {
 #site-search {
   text-align: center;
   color: white;
+  padding: 9px;
 }
 
 #site-search::placeholder {
@@ -671,7 +741,7 @@ div.polaroid {
   height: 100%;
   width: 100%;
   margin: 0 auto;
-
+  border-radius: 30px;
   background-color: #000;
   box-shadow: 0 4px 8px 0 rgba(255, 255, 255, 0.3),
     0 6px 20px 0 rgba(255, 255, 255, 0.3);
@@ -786,7 +856,7 @@ a {
   margin: auto;
   letter-spacing: 40px;
   background-color: #111;
-
+  visibility: visible;
   text-align: center;
 
   color: #00fed7;
@@ -798,29 +868,27 @@ a {
 #Header1:hover {
   cursor: pointer;
 }
-#dialog-title{
-  
-  font-size: 2rem
+#dialog-title {
+  font-size: 2rem;
 }
-.dialogTitle{
-   
-  font-size: 1.5rem
+.dialogTitle {
+  font-size: 1.5rem;
 }
-.genreChip{
+.genreChip {
   min-height: 50px !important;
   width: fit-content !important;
-    min-width: 140px !important;
-    background-color: #333 !important;
-    color: #00fed7 !important;
-    border: 1px solid #00fed7 !important;
+  min-width: 140px !important;
+  background-color: #333 !important;
+  color: #00fed7 !important;
+  border: 1px solid #00fed7 !important;
 }
-.css-s60a4n-MuiStack-root {
+.MuiStack-root {
   display: flex;
   justify-content: center;
-  gap: 10px !important
+  gap: 10px !important;
 }
 
-@media only screen and (max-width: 860px) {
+@media only screen and (max-width: 1100px) {
   :-webkit-scrollbar {
     width: 18px;
     /* for vertical scrollbars */
@@ -835,26 +903,25 @@ a {
   ::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.5);
   }
-  #dialog-title{
+  #dialog-title {
     padding-top: 8%;
     font-size: 1.4rem;
-    font-weight: bold
+    font-weight: bold;
   }
-  .dialogTitle{
-   
-    font-size: 1.25rem
+  .dialogTitle {
+    font-size: 1.25rem;
   }
 
-  .css-s60a4n-MuiStack-root {
+  .MuiStack-root {
     display: flex;
     justify-content: center;
-    gap: 8px !important
+    gap: 8px !important;
   }
-  .css-6od3lo-MuiChip-label {
+  .MuiChip-label {
     padding-left: 5px !important;
-    padding-right: 5px !important
+    padding-right: 5px !important;
   }
-  .genreChip{
+  .genreChip {
     min-height: 40px !important;
     width: 100px !important;
     min-width: 100px !important;
@@ -899,7 +966,7 @@ a {
     width: 230px;
     height: 420px;
 
-    margin: 5% auto;
+    margin: 40px;
     display: flow-root;
     float: none;
   }
@@ -1074,7 +1141,7 @@ a {
     color: #00fed7;
     font-size: 50pt;
 
-    padding-bottom: 2%;
+    padding-bottom: 30px;
 
     text-align: center;
   }
@@ -1094,10 +1161,10 @@ a {
     height: 100%;
     width: 100%;
     margin: 0 auto;
-
+    border-radius: 30px;
     background-color: #000;
-    box-shadow: 0 4px 8px 0 rgba(255, 255, 255, 0.3),
-      0 6px 20px 0 rgba(255, 255, 255, 0.3);
+    /* box-shadow: 0 4px 8px 0 rgba(255, 255, 255, 0.3),
+      0 6px 20px 0 rgba(255, 255, 255, 0.3) */
   }
 
   div.außen {
@@ -1177,6 +1244,38 @@ a {
   .legende {
     width: fit-content;
   }
+  .legende1 {
+    height: 15px;
+    position: absolute;
+    top: 205px;
+
+    left: calc(50% - 111px);
+  }
+
+  .legende2 {
+    height: 15px;
+    position: absolute;
+    top: 205px;
+
+    left: calc(50% - 5px);
+  }
+
+  .tooltip {
+    top: 203px;
+
+    left: calc(50% + 93px);
+  }
+  .legende1-offen {
+    left: calc(50% + 6px) !important;
+  }
+
+  .legende2-offen {
+    left: calc(50% + 116px) !important;
+  }
+
+  .tooltip-offen {
+    left: calc(50% + 222px) !important;
+  }
 
   #Header {
     height: 60px;
@@ -1195,6 +1294,7 @@ a {
     margin: auto;
     letter-spacing: 5px;
     background-color: #111;
+    visibility: visible;
 
     text-align: center;
 

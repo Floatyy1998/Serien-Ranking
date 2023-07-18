@@ -4,11 +4,14 @@ import API from "../configs/API";
 import Button from "@mui/material/Button";
 
 function SideNav(props) {
-  const toggleHinzufuegen = () => {
-    document.getElementById("hinzufuegen").classList.toggle("block");
+  const handleFocus = (event) => {
+
+    event.target.style.border = "1px solid #00fed7";
+  };
+  const handleBlur = (event) => {
+    event.target.style.border = "1px solid rgb(204, 204, 204)";
   };
 
-  
   const getSerienCount = async () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
@@ -23,6 +26,7 @@ function SideNav(props) {
   };
 
   const fetchSeriesData = async (title) => {
+
     const response = await fetch(
       `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1`
     );
@@ -41,7 +45,7 @@ function SideNav(props) {
 
     const length = await getSerienCount();
     const nmr = parseInt(length) + 1;
-    const title = event.target[1].value;
+    const title = event.target[0].value;
     const ratings = {
       "Action & Adventure": 0,
       All: 0,
@@ -99,7 +103,7 @@ function SideNav(props) {
     /* for (let j = 0; j < 16; j++) {
       event.target[j].value = "";
     } */
-    event.target[1].value = "";
+    event.target[0].value = "";
     props.get_serien();
   };
 
@@ -157,36 +161,60 @@ function SideNav(props) {
     }
   };
   return (
-    <div id="mySidenav" className="sidenav">
-      <h3 className="button" id="login" onClick={(_) => login()}>
+    <div
+      style={{ zIndex: "99", paddingLeft: "10%", paddingRight: "10%" }}
+      id="mySidenav"
+      className="sidenav"
+    >
+      <h3
+        style={{ marginTop: "80px", height: "41px" }}
+        className="button"
+        id="login"
+        onClick={(_) => login()}
+      >
         LOGIN
       </h3>
-      <h3 className="button" onClick={(_) => toggleHinzufuegen()}>
-        SERIE HINZUFÜGEN
-      </h3>
+
       <form
         className="hinzufuegen"
         id="hinzufuegen"
         onSubmit={hinzufuegen.bind(this)}
         autoComplete="off"
-        style={{padding:"10%"}} 
+        style={{ padding: "0", marginTop: "3%", textAlign: "center" }}
       >
-        <h3>Serie hinzufügen</h3>
-        <label style={{ display: "none" }} hmtlfor="Key">
-          Key:{" "}
+        <h3 style={{ margin: "0", marginBottom: "1%", fontSize: "1.5rem" }}>
+          Serie hinzufügen
+        </h3>
+
+        <label style={{ fontSize: "1.2rem" }} hmtlfor="Title">
+          Title:{" "}
         </label>
         <input
+         onFocus={handleFocus.bind(this)}
+         onBlur={handleBlur.bind(this)}
+          style={{ textAlign: "center" }}
           type="text"
-          id="Key."
-          name="Key"
-          style={{ display: "none" }}
+          id="Title"
+          name="Title"
         ></input>
 
-
-        <label hmtlfor="Title">Title: </label>
-        <input type="text" id="Title" name="Title"></input>
-      
-        <Button style={{fontWeight:"bold",fontFamily: '"Belanosima", sans-serif', height:"30%",width:"100%",backgroundColor:"#333",color:"#ccc",fontSize:"1rem"}} type="submit" value="SERIE HINZUFÜGEN">SERIE HINZUFÜGEN</Button>
+        <Button
+          style={{
+            borderRadius: "10px",
+            fontWeight: "bold",
+            fontFamily: '"Belanosima", sans-serif',
+            height: "41px",
+            width: "100%",
+            backgroundColor: "#333",
+            color: "#ccc",
+            fontSize: "1rem",
+            marginBottom:"60px"
+          }}
+          type="submit"
+          value="SERIE HINZUFÜGEN"
+        >
+          SERIE HINZUFÜGEN
+        </Button>
       </form>
     </div>
   );

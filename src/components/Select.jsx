@@ -1,20 +1,23 @@
 import React from "react";
 
 const Select = (props) => {
-    const setGenre = (event) => {
-       
-        
-        props.setGenre(event.target.value);
-      };
+  const setGenre = (event) => {
+    props.setGenre(event.target.value);
+  };
   return (
     <select
       style={{
         display: "block",
-        marginTop: "80px",
-        border: "1px solid #111",
-        marginRight: "auto",
-        marginLeft: "auto",
-        fontSize: "40%",
+       
+        marginBottom: "20px",
+        border: "1px solid #ccc",
+        margin: "auto",
+        borderRadius: "10px",
+        fontSize: "1.5rem",
+        width: "250px",
+        height: "41px",
+        padding: "5px",
+        appearance: "none",
       }}
       size="1"
       id="mySelect"

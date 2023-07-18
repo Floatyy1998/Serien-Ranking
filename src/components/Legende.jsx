@@ -5,18 +5,11 @@ import Typography from "@mui/material/Typography";
 
 const Legende = () => {
   return (
-    <div style={{ display: "flex", width: "100%", height: "32px" }}>
+    <>
       <div
-        className="legende"
+        className="legende legende1"
         id="legende1"
-        style={{
-          height: "15px",
-          position: "absolute",
-          right: "0px",
-          marginBottom: "2px",
-          top: "197px",
-          left: "10%",
-        }}
+        
       >
         <div
           style={{
@@ -42,15 +35,9 @@ const Legende = () => {
         </div>
       </div>
       <div
-        className="legende"
+        className="legende legende2"
         id="legende2"
-        style={{
-          height: "15px",
-          position: "absolute",
-          right: "0px",
-          top: "197px",
-          left: "calc(10% + 100px)",
-        }}
+        
       >
         <div
           style={{
@@ -81,8 +68,7 @@ const Legende = () => {
           width: "20px",
           position: "absolute",
 
-          top: "197px",
-          right: "10%",
+         
         }}
         title={
           <React.Fragment>
@@ -131,9 +117,9 @@ const Legende = () => {
           },
         }}
       >
-        <InfoOutlinedIcon></InfoOutlinedIcon>
+        <InfoOutlinedIcon className="tooltip" id="tooltip"></InfoOutlinedIcon>
       </Tooltip>
-    </div>
+    </>
   );
 };
 export default Legende;
