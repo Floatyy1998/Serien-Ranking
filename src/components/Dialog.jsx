@@ -17,7 +17,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const CustomDialog = (props) => {
   const handleFocus = (event) => {
-    console.log(event.target);
+    
     event.target.style.border = "1px solid #00fed7";
   };
   const handleBlur = (event) => {
@@ -50,7 +50,16 @@ const CustomDialog = (props) => {
   };
   const handleDelete = async () => {
     await Firebase.database().ref(`serien/${props.nmr}/`).remove();
-    props.close();
+    let serien = await Firebase.database().ref(`/serien`).once("value");
+    serien = serien.val();
+    serien = serien.filter(function (element) {
+      return element !== undefined;
+    });
+    serien.forEach((serie, index) => {
+      serie.nmr = index;
+    });
+
+    await Firebase.database().ref(`serien/`).set(serien);
   };
 
   const getGenres = () => {
@@ -192,8 +201,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="All">All: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="All"
             placeholder={props.serie.rating["All"]}
@@ -203,8 +212,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Animation">Animation: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Animation"
             placeholder={props.serie.rating["Animation"]}
@@ -214,8 +223,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Comedy">Comedy: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Comedy"
             placeholder={props.serie.rating["Comedy"]}
@@ -225,8 +234,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Crime">Crime: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Crime"
             placeholder={props.serie.rating["Crime"]}
@@ -236,8 +245,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Documentary">Documentary: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Documentary"
             placeholder={props.serie.rating["Documentary"]}
@@ -247,8 +256,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Drama">Drama: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Drama"
             placeholder={props.serie.rating["Drama"]}
@@ -258,8 +267,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Horror">Horror: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Horror"
             placeholder={props.serie.rating["Horror"]}
@@ -269,8 +278,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Mystery">Mystery: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Mystery"
             placeholder={props.serie.rating["Mystery"]}
@@ -280,8 +289,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Sci-Fi & Fantasy">Sci-Fi & Fantasy: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Sci-Fi & Fantasy"
             placeholder={props.serie.rating["Sci-Fi & Fantasy"]}
@@ -291,8 +300,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Sport">Sport: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Sport"
             placeholder={props.serie.rating["Sport"]}
@@ -302,8 +311,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Thriller">Thriller: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Thriller"
             placeholder={props.serie.rating["Thriller"]}
@@ -313,8 +322,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="War & Politics">War & Politics: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="War & Politics"
             placeholder={props.serie.rating["War & Politics"]}
@@ -324,8 +333,8 @@ const CustomDialog = (props) => {
           <br></br>
           <label hmtlfor="Western">Western: </label>
           <input
-           onFocus={handleFocus.bind(this)}
-           onBlur={handleBlur.bind(this)}
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
             type="text"
             id="Western"
             placeholder={props.serie.rating["Western"]}

@@ -16,6 +16,7 @@ import Legende from "./Legende";
 import ScrollUp from "./ScrollUp";
 import ScrollDown from "./ScrollDown";
 
+
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
@@ -30,6 +31,8 @@ const App = () => {
   const [genre, setGenre] = useState("All");
   const [filter, setFilter] = useState("");
   const [serien, setSerien] = useState([]);
+  
+  
 
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
@@ -363,7 +366,7 @@ const App = () => {
         <div id="main" key="0">
           <Header />
           <div id="Ueberschrift">
-          <Search
+            <Search
               search={(e) => {
                 setFilter(e);
               }}
@@ -373,7 +376,7 @@ const App = () => {
                 setGenre(e);
               }}
             />
-            
+
             <Legende />
           </div>
           <ScrollDown />
@@ -405,7 +408,7 @@ const App = () => {
                 setGenre(e);
               }}
             />
-            
+
             <Legende />
           </div>
           <ScrollDown />
