@@ -17,8 +17,6 @@ import ScrollUp from "./ScrollUp";
 import ScrollDown from "./ScrollDown";
 
 
-//provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
-//https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 const App = () => {
   Date.prototype.addHours = function (h) {
