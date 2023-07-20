@@ -16,8 +16,6 @@ import Legende from "./Legende";
 import ScrollUp from "./ScrollUp";
 import ScrollDown from "./ScrollDown";
 
-
-
 const App = () => {
   Date.prototype.addHours = function (h) {
     this.setHours(this.getHours() + h);
@@ -29,8 +27,6 @@ const App = () => {
   const [genre, setGenre] = useState("All");
   const [filter, setFilter] = useState("");
   const [serien, setSerien] = useState([]);
-  
-  
 
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
@@ -126,9 +122,7 @@ const App = () => {
         logo: `https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`,
       },
     };
-
     const flatrateProviders = providerData.results.DE?.flatrate || [];
-
     const anbieter = flatrateProviders
       .filter((provider) => providers[provider.provider_id])
       .map((provider) => ({
@@ -146,15 +140,12 @@ const App = () => {
         `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
       );
       const data3 = await response2.json();
-
       const provider = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
       );
 
       const providerData = await provider.json();
-
       const anbieter = getProviders(providerData);
-
       try {
         await Firebase.database()
           .ref(`serien/${index}/provider`)
@@ -355,8 +346,6 @@ const App = () => {
     });
   };
 
-  //7.343 7.22 7.11
-
   if (loading) {
     return (
       <div>
@@ -374,7 +363,6 @@ const App = () => {
                 setGenre(e);
               }}
             />
-
             <Legende />
           </div>
           <ScrollDown />
@@ -406,11 +394,9 @@ const App = () => {
                 setGenre(e);
               }}
             />
-
             <Legende />
           </div>
           <ScrollDown />
-
           <div className="container">
             <ul className="list" id="serien">
               {rows}

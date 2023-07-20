@@ -8,7 +8,6 @@ const Select = (props) => {
     <select
       style={{
         display: "block",
-       
         marginBottom: "20px",
         border: "1px solid #ccc",
         margin: "auto",
