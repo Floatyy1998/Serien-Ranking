@@ -72,6 +72,7 @@ const SeriesRow = (props) => {
       case "All":
       case "Animation":
       case "Documentary":
+      case "Neue Episoden":
       case "Sport":
       case "Zuletzt Hinzugefügt":
         Object.entries(a["rating"]).forEach(([key, value]) => {

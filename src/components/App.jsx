@@ -16,7 +16,6 @@ import Legende from "./Legende";
 import ScrollUp from "./ScrollUp";
 import ScrollDown from "./ScrollDown";
 
-
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
@@ -31,8 +30,6 @@ const App = () => {
   const [genre, setGenre] = useState("All");
   const [filter, setFilter] = useState("");
   const [serien, setSerien] = useState([]);
-  
-  
 
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
@@ -175,16 +172,23 @@ const App = () => {
         const tvMazeResponse = await fetch(
           `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
         );
-        const tvMazeData = await tvMazeResponse.json();
+        try {
+          const tvMazeData = await tvMazeResponse.json();
 
-        if (tvMazeData._links.nextepisode) {
-          const tvMazeNextEpisodeResponse = await fetch(
-            `${tvMazeData._links.nextepisode.href}`
-          );
-          const tvMazeNextEpisodeData = await tvMazeNextEpisodeResponse.json();
-          await Firebase.database()
-            .ref(`serien/${index}/nextEpisode`)
-            .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+          if (tvMazeData._links.nextepisode) {
+            const tvMazeNextEpisodeResponse = await fetch(
+              `${tvMazeData._links.nextepisode.href}`
+            );
+            const tvMazeNextEpisodeData =
+              await tvMazeNextEpisodeResponse.json();
+            await Firebase.database()
+              .ref(`serien/${index}/nextEpisode`)
+              .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+          }
+        } catch (error) {
+          console.log(error);
+          await new Promise((r) => setTimeout(r, 2000));
+          this.laden();
         }
       }
 
@@ -280,6 +284,7 @@ const App = () => {
 
     if (
       genre === "All" ||
+      genre === "Neue Episoden" ||
       genre === "Animation" ||
       genre === "Documentary" ||
       genre === "Sport"
@@ -310,7 +315,12 @@ const App = () => {
       const series = snapshot.val();
 
       let filteredSeries = series.filter((serie) => {
-        if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
+        if (genre === "Neue Episoden") {
+          return (
+            serie.nextEpisode.nextEpisode !== "" &&
+            serie.title.toLowerCase().includes(filter.toLowerCase())
+          );
+        } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
           return serie.title.toLowerCase().includes(filter.toLowerCase());
         } else {
           return (
@@ -323,6 +333,14 @@ const App = () => {
       if (genre === "A-Z") {
         filteredSeries.sort((a, b) =>
           a.title > b.title ? 1 : b.title > a.title ? -1 : 0
+        );
+      } else if (genre === "Neue Episoden") {
+        filteredSeries.sort((a, b) =>
+          a.nextEpisode.nextEpisode > b.nextEpisode.nextEpisode
+            ? 1
+            : b.nextEpisode.nextEpisode > a.nextEpisode.nextEpisode
+            ? -1
+            : 0
         );
       } else if (genre === "Zuletzt Hinzugefügt") {
         filteredSeries.reverse();

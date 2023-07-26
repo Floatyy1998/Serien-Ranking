@@ -8,7 +8,7 @@ const Select = (props) => {
     <select
       style={{
         display: "block",
-       
+
         marginBottom: "20px",
         border: "1px solid #ccc",
         margin: "auto",
@@ -24,6 +24,7 @@ const Select = (props) => {
       onChange={setGenre.bind(this)}
     >
       <option value="All">Allgemein</option>
+      <option value="A-Z">A-Z</option>
       <option value="Action & Adventure">Action & Adventure</option>
       <option value="Animation">Animation</option>
       <option value="Comedy">Comedy</option>
@@ -38,7 +39,7 @@ const Select = (props) => {
       <option value="Thriller">Thriller</option>
       <option value="War & Politics">War & Politics</option>
       <option value="Western">Western</option>
-      <option value="A-Z">A-Z</option>
+      <option value="Neue Episoden">Neue Episoden</option>
       <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
     </select>
   );
