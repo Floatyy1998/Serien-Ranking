@@ -17,7 +17,6 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 const CustomDialog = (props) => {
   const handleFocus = (event) => {
-    
     event.target.style.border = "1px solid #00fed7";
   };
   const handleBlur = (event) => {
@@ -63,22 +62,6 @@ const CustomDialog = (props) => {
   };
 
   const getGenres = () => {
-    /* <Grid key={index} style={{ margin: "auto" }} item xs={6}>
-        <Card style={{ backgroundColor: "black" }}>
-          <CardContent
-            sx={{ height: 60 }}
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <Typography
-              style={{ fontFamily: '"Belanosima", sans-serif' }}
-              color={"rgb(0, 254, 215)"}
-              align="center"
-            >
-              {genre}
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid> */
     return props.serie.genre.genres.map((genre, index) => (
       <Chip key={index} label={genre} color="primary" className="genreChip" />
     ));
@@ -120,7 +103,6 @@ const CustomDialog = (props) => {
           style={{
             margin: "auto",
             textAlign: "center",
-
             color: "rgb(0, 254, 215)",
             width: "90%",
           }}
@@ -134,7 +116,6 @@ const CustomDialog = (props) => {
             textAlign: "center",
             paddingTop: "2%",
             paddingBottom: "1%",
-
             color: "#cccccc",
           }}
         >
@@ -149,29 +130,17 @@ const CustomDialog = (props) => {
         >
           {getGenres()}
         </Stack>
-
-        {/* <Grid
-          container
-          spacing={1}
-          direction="row"
-          alignItems="center"
-          justify="center"
-        >
-          {getGenres()}
-        </Grid> */}
         <p
           className="dialogTitle"
           style={{
             textAlign: "center",
             marginTop: "3%",
-
             color: "#cccccc",
           }}
         >
           Rating
         </p>
       </DialogTitle>
-
       <DialogContent
         id="alert-dialog-description"
         style={{ backgroundColor: "#111" }}
@@ -381,5 +350,4 @@ const CustomDialog = (props) => {
     </Dialog>
   );
 };
-
 export default CustomDialog;

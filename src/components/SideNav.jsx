@@ -5,7 +5,6 @@ import Button from "@mui/material/Button";
 
 function SideNav(props) {
   const handleFocus = (event) => {
-
     event.target.style.border = "1px solid #00fed7";
   };
   const handleBlur = (event) => {
@@ -26,7 +25,6 @@ function SideNav(props) {
   };
 
   const fetchSeriesData = async (title) => {
-
     const response = await fetch(
       `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1`
     );
@@ -42,7 +40,6 @@ function SideNav(props) {
 
   const addNewSeries = async (event) => {
     event.preventDefault();
-
     const length = await getSerienCount();
     const nmr = parseInt(length) + 1;
     const title = event.target[0].value;
@@ -70,7 +67,6 @@ function SideNav(props) {
       genre: { genres: ["All", ...genres] },
       id,
     };
-
     const currentUser = Firebase.auth().currentUser;
     if (
       currentUser == null ||
@@ -99,10 +95,6 @@ function SideNav(props) {
         .ref(`serien/${nmr}/tvMaze`)
         .set({ tvMazeID: "" });
     }
-
-    /* for (let j = 0; j < 16; j++) {
-      event.target[j].value = "";
-    } */
     event.target[0].value = "";
     props.get_serien();
   };
@@ -144,10 +136,8 @@ function SideNav(props) {
           Firebase.auth()
             .signInWithEmailAndPassword(email, passwort)
             .then((userCredential) => {
-              // Signed in
               document.getElementById("login").innerHTML = "LOGOUT";
               localStorage.setItem("konrad.dinges@googlemail.com", passwort);
-              // ...
             })
             .catch((error) => {
               var errorMessage = error.message;
@@ -174,7 +164,6 @@ function SideNav(props) {
       >
         LOGIN
       </h3>
-
       <form
         className="hinzufuegen"
         id="hinzufuegen"
@@ -190,14 +179,13 @@ function SideNav(props) {
           Title:{" "}
         </label>
         <input
-         onFocus={handleFocus.bind(this)}
-         onBlur={handleBlur.bind(this)}
+          onFocus={handleFocus.bind(this)}
+          onBlur={handleBlur.bind(this)}
           style={{ textAlign: "center" }}
           type="text"
           id="Title"
           name="Title"
         ></input>
-
         <Button
           style={{
             borderRadius: "10px",
@@ -208,7 +196,7 @@ function SideNav(props) {
             backgroundColor: "#333",
             color: "#ccc",
             fontSize: "1rem",
-            marginBottom:"60px"
+            marginBottom: "60px",
           }}
           type="submit"
           value="SERIE HINZUFÜGEN"

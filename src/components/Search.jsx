@@ -9,9 +9,8 @@ const Search = (props) => {
   const handleFocus = (event) => {
     event.target.parentElement.parentElement.style.border = "1px solid #00fed7";
     document.getElementById("searchIcon").style.color = "#00fed7";
-
-    //event.target.parentElement.parentElement.style.border = "1px solid #00fed7";
   };
+
   const handleBlur = (event) => {
     event.target.parentElement.parentElement.style.border =
       "1px solid rgb(204, 204, 204)";
@@ -21,6 +20,7 @@ const Search = (props) => {
   const search = (event) => {
     props.search(event.target.value);
   };
+
   return (
     <FormControl
       style={{
@@ -28,10 +28,10 @@ const Search = (props) => {
         border: "1px solid #ccc",
         borderRadius: "10px",
         backgroundColor: "#111",
-        margin:"80px auto 20px"
+        margin: "80px auto 20px",
       }}
     >
-      <InputLabel style={{ color: "#ccc",top:"-7px" }} htmlFor="site-search">
+      <InputLabel style={{ color: "#ccc", top: "-7px" }} htmlFor="site-search">
         Serie suchen
       </InputLabel>
       <OutlinedInput

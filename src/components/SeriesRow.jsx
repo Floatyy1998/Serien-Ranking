@@ -1,11 +1,9 @@
 import React from "react";
-
 import { useState } from "react";
 import CustomDialog from "./Dialog";
 
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
-
   const handleClose = () => {
     setOpen(false);
   };
@@ -25,14 +23,12 @@ const SeriesRow = (props) => {
     try {
       const provider = serie["provider"]["provider"];
       const providerList = [];
-
       Object.entries(provider).forEach(([key, value]) => {
         if (value) {
           providerList.push(value);
         }
       });
 
-      // console.log(providerSet);
       var providerListShort = providerList.filter(
         (value, index, self) =>
           index ===
@@ -130,10 +126,8 @@ const SeriesRow = (props) => {
   if (formattedNextEp === formattedToday) {
     formattedNextEp = "Heute";
   }
-
   const hasNextEpisode =
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
-
   return (
     <>
       <CustomDialog

@@ -6,11 +6,7 @@ import Typography from "@mui/material/Typography";
 const Legende = () => {
   return (
     <>
-      <div
-        className="legende legende1"
-        id="legende1"
-        
-      >
+      <div className="legende legende1" id="legende1">
         <div
           style={{
             height: "100%",
@@ -30,15 +26,10 @@ const Legende = () => {
             color: "rgb(170, 170, 170)",
           }}
         >
-          {" "}
           beendet
         </div>
       </div>
-      <div
-        className="legende legende2"
-        id="legende2"
-        
-      >
+      <div className="legende legende2" id="legende2">
         <div
           style={{
             height: "100%",
@@ -58,7 +49,6 @@ const Legende = () => {
             color: "rgb(170, 170, 170)",
           }}
         >
-          {" "}
           laufend
         </div>
       </div>
@@ -67,8 +57,6 @@ const Legende = () => {
           height: "20px",
           width: "20px",
           position: "absolute",
-
-         
         }}
         title={
           <React.Fragment>
@@ -77,13 +65,11 @@ const Legende = () => {
             </Typography>
             <br></br>
             <span style={{ color: "#b103fc" }}>
-              {" "}
               <b>beendet:</b> Es kommen keine weiteren Folgen.
             </span>
             <br></br>
             <br></br>
             <span style={{ color: "#42d10f" }}>
-              {" "}
               <b>laufend:</b> Es kommen weitere Folgen.
             </span>
             <br></br>
