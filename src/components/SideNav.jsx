@@ -169,9 +169,9 @@ function SideNav(props) {
         id="hinzufuegen"
         onSubmit={hinzufuegen.bind(this)}
         autoComplete="off"
-        style={{ padding: "0", marginTop: "3%", textAlign: "center" }}
+        style={{ padding: "0", marginTop: "20px", textAlign: "center" }}
       >
-        <h3 style={{ margin: "0", marginBottom: "1%", fontSize: "1.5rem" }}>
+        <h3 style={{ margin: "0", marginBottom: "9px", fontSize: "1.5rem" }}>
           Serie hinzufügen
         </h3>
 

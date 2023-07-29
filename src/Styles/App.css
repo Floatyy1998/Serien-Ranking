@@ -53,7 +53,10 @@
   margin-left: 250px !important;
 }
 .sidenav-offen {
-  height: fit-content !important;
+  -webkit-transition: all 0.8s ease;
+  -o-transition: all 0.8s ease;
+  transition: all 0.8s ease;
+  height: 355px !important;
 }
 .oben-offen {
   width: calc(100% - 250px) !important;
@@ -269,7 +272,10 @@ h3.button {
 }
 
 .sidenav {
-  height: 0;
+  -webkit-transition: all 0.8s ease;
+  -o-transition: all 0.8s ease;
+  transition: all 0.8s ease;
+  height: 0px;
   /* 100% Full-height */
   width: 100%;
   /* 0 width - change this with JavaScript */
@@ -286,7 +292,7 @@ h3.button {
   /* Disable horizontal scroll */
 
   /* Place content 60px from the top */
-  transition: 0.5s;
+
   /* 0.5 second transition effect to slide in the sidenav */
   color: #ccc;
   overflow: hidden;

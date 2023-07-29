@@ -370,6 +370,10 @@ const App = () => {
     });
   };
 
+  const removeNav = () => {
+    document.getElementById("mySidenav").classList.remove("sidenav-offen");
+  };
+
   if (loading) {
     return (
       <div>
@@ -390,7 +394,12 @@ const App = () => {
             <Legende />
           </div>
           <ScrollDown />
-          <div className="container">
+          <div
+            className="container"
+            onClick={(_) => {
+              removeNav();
+            }}
+          >
             <div className="loader">
               <div className="inner one"></div>
               <div className="inner two"></div>
@@ -421,7 +430,12 @@ const App = () => {
             <Legende />
           </div>
           <ScrollDown />
-          <div className="container">
+          <div
+            className="container"
+            onClick={(_) => {
+              removeNav();
+            }}
+          >
             <ul className="list" id="serien">
               {rows}
             </ul>

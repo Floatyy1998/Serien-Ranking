@@ -5,9 +5,7 @@ function Header() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const toggleNav = () => {
-    document.getElementById("legende1").style.transition = "0.5s";
-    document.getElementById("legende2").style.transition = "0.5s";
-    document.getElementById("tooltip").style.transition = "0.5s";
+    
     document.getElementById("mySidenav").classList.toggle("sidenav-offen");
   };
   return (
