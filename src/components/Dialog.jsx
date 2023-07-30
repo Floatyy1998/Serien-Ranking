@@ -166,7 +166,7 @@ const CustomDialog = (props) => {
             className="dialoRating"
             type="text"
             id="Action & Adventure"
-            placeholder={props.serie.rating["Action & Adventure"]}
+            defaultValue={props.serie.rating["Action & Adventure"]}
             name="Action & Adventure"
           ></input>
           <br></br>
@@ -177,7 +177,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="All"
-            placeholder={props.serie.rating["All"]}
+            defaultValue={props.serie.rating["All"]}
             name="All"
           ></input>
           <br></br>
@@ -188,7 +188,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Animation"
-            placeholder={props.serie.rating["Animation"]}
+            defaultValue={props.serie.rating["Animation"]}
             name="Animation"
           ></input>
           <br></br>
@@ -199,7 +199,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Comedy"
-            placeholder={props.serie.rating["Comedy"]}
+            defaultValue={props.serie.rating["Comedy"]}
             name="Comedy"
           ></input>
           <br></br>
@@ -210,7 +210,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Crime"
-            placeholder={props.serie.rating["Crime"]}
+            defaultValue={props.serie.rating["Crime"]}
             name="Crime"
           ></input>
           <br></br>
@@ -221,7 +221,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Documentary"
-            placeholder={props.serie.rating["Documentary"]}
+            defaultValue={props.serie.rating["Documentary"]}
             name="Documentary"
           ></input>
           <br></br>
@@ -232,7 +232,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Drama"
-            placeholder={props.serie.rating["Drama"]}
+            defaultValue={props.serie.rating["Drama"]}
             name="Drama"
           ></input>
           <br></br>
@@ -243,7 +243,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Horror"
-            placeholder={props.serie.rating["Horror"]}
+            defaultValue={props.serie.rating["Horror"]}
             name="Horror"
           ></input>
           <br></br>
@@ -254,7 +254,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Mystery"
-            placeholder={props.serie.rating["Mystery"]}
+            defaultValue={props.serie.rating["Mystery"]}
             name="Mystery"
           ></input>
           <br></br>
@@ -265,7 +265,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Sci-Fi & Fantasy"
-            placeholder={props.serie.rating["Sci-Fi & Fantasy"]}
+            defaultValue={props.serie.rating["Sci-Fi & Fantasy"]}
             name="Sci-Fi & Fantasy"
           ></input>
           <br></br>
@@ -276,7 +276,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Sport"
-            placeholder={props.serie.rating["Sport"]}
+            defaultValue={props.serie.rating["Sport"]}
             name="Sport"
           ></input>
           <br></br>
@@ -287,7 +287,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Thriller"
-            placeholder={props.serie.rating["Thriller"]}
+            defaultValue={props.serie.rating["Thriller"]}
             name="Thriller"
           ></input>
           <br></br>
@@ -298,7 +298,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="War & Politics"
-            placeholder={props.serie.rating["War & Politics"]}
+            defaultValue={props.serie.rating["War & Politics"]}
             name="War & Politics"
           ></input>
           <br></br>
@@ -309,7 +309,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Western"
-            placeholder={props.serie.rating["Western"]}
+            defaultValue={props.serie.rating["Western"]}
             name="Western"
           ></input>
           <br></br>
@@ -320,7 +320,7 @@ const CustomDialog = (props) => {
             onBlur={handleBlur.bind(this)}
             type="text"
             id="Begründung"
-            placeholder={props.serie.begründung}
+            defaultValue={props.serie.begründung}
             name="Begründung"
           ></input>
         </form>
