@@ -43,6 +43,7 @@ function SideNav(props) {
     const length = await getSerienCount();
     const nmr = parseInt(length) + 1;
     const title = event.target[0].value;
+    const begründung = "";
     const ratings = {
       "Action & Adventure": 0,
       All: 0,
@@ -66,6 +67,7 @@ function SideNav(props) {
       rating: ratings,
       genre: { genres: ["All", ...genres] },
       id,
+      begründung,
     };
     const currentUser = Firebase.auth().currentUser;
     if (

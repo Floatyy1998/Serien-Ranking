@@ -1,15 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import Firebase from "firebase/compat/app";
 import {
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Typography,
   Button,
-  Card,
-  CardContent,
-  Grid,
   Chip,
   Stack,
 } from "@mui/material";
@@ -33,7 +29,13 @@ const CustomDialog = (props) => {
     );
 
     const ratings = {};
+    let begründung = "";
     ratingInputs.forEach((input) => {
+      if (input.name === "Begründung") {
+        begründung = input.value;
+        return;
+      }
+
       const value =
         input.value === "" || input.value === null
           ? 0
@@ -42,6 +44,7 @@ const CustomDialog = (props) => {
       ratings[key] = value;
     });
     serien.rating = ratings;
+    serien.begründung = begründung;
 
     //console.log(serien);
     await Firebase.database().ref(`serien/${props.nmr}/`).update(serien);
@@ -308,6 +311,17 @@ const CustomDialog = (props) => {
             id="Western"
             placeholder={props.serie.rating["Western"]}
             name="Western"
+          ></input>
+          <br></br>
+          <br></br>
+          <label hmtlfor="Begründung">Begründung: </label>
+          <input
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
+            type="text"
+            id="Begründung"
+            placeholder={props.serie.begründung}
+            name="Begründung"
           ></input>
         </form>
       </DialogContent>

@@ -81,6 +81,11 @@ const Legende = () => {
             <br></br>
             <br></br>
             <span>
+              Hover über ein Rating, um die Begründung zu sehen.
+            </span>
+            <br></br>
+            <br></br>
+            <span>
               Klicke auf den Titel, um zu erfahren, wo du die Serie schauen
               kannst.
             </span>

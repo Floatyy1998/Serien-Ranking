@@ -1,6 +1,9 @@
 import React from "react";
 import { useState } from "react";
 import CustomDialog from "./Dialog";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import { Fade, Zoom } from "@mui/material";
 
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
@@ -126,6 +129,11 @@ const SeriesRow = (props) => {
   if (formattedNextEp === formattedToday) {
     formattedNextEp = "Heute";
   }
+  function replaceLineBreaksWithHTML(string) {
+    console.log(string);
+    const reg =/\s*\\n\s*/
+    return string !== undefined ? string.replace("/\n", "<br/>") : "";
+  }
   const hasNextEpisode =
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
   return (
@@ -164,17 +172,56 @@ const SeriesRow = (props) => {
               }}
             >
               {getProvider(props.serie)}
-              <p
-                className="rating"
-                style={{
-                  verticalAlign: "text-bottom",
-                  float: "right",
-                  paddingRight: "5%",
-                  height: "auto",
+              <Tooltip
+                
+                TransitionComponent={Zoom}
+                
+                title={
+                  <React.Fragment>
+                    <Typography
+                      style={{
+                        textDecoration: "underline",
+                        textAlign: "center",
+                      }}
+                    >
+                      <b>BEGRÜNDUNG</b>
+                    </Typography>
+
+                    <Typography
+                      style={{ textAlign: "center", whiteSpace: "pre-line" }}
+                    >
+                      {props.serie.begründung == ""
+                        ? "Keine Begründung vorhanden."
+                        : props.serie.begründung.replaceAll(/\s*\\n\s*/g, "\n")}
+                    </Typography>
+                  </React.Fragment>
+                }
+                arrow
+                placement="left-start"
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      borderRadius: "10px",
+                      width: 200,
+                      color: "#ccc",
+                      backgroundColor: "#111",
+                      fontSize: "0.9rem",
+                    },
+                  },
                 }}
               >
-                {getRating(props.serie)} / 10
-              </p>
+                <p
+                  className="rating"
+                  style={{
+                    verticalAlign: "text-bottom",
+                    float: "right",
+                    paddingRight: "5%",
+                    height: "auto",
+                  }}
+                >
+                  {getRating(props.serie)} / 10
+                </p>
+              </Tooltip>
             </div>
             {hasNextEpisode && (
               <p className="nextEpisode">
@@ -186,6 +233,7 @@ const SeriesRow = (props) => {
               </p>
             )}
           </div>
+
           <div
             className="draußen"
             style={{ borderRadius: "30px", width: "100%" }}
