@@ -197,12 +197,12 @@ const SeriesRow = (props) => {
                   </React.Fragment>
                 }
                 arrow
-                placement="left-start"
+                placement="bottom-end"
                 componentsProps={{
                   tooltip: {
                     sx: {
-                      borderRadius: "10px",
-                      width: 200,
+                      borderRadius: "20px",
+                      width: 230,
                       color: "#ccc",
                       backgroundColor: "#111",
                       fontSize: "0.9rem",
