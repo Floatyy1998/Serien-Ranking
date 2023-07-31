@@ -131,7 +131,7 @@ const SeriesRow = (props) => {
   }
   function replaceLineBreaksWithHTML(string) {
     console.log(string);
-    const reg =/\s*\\n\s*/
+    const reg = /\s*\\n\s*/;
     return string !== undefined ? string.replace("/\n", "<br/>") : "";
   }
   const hasNextEpisode =
@@ -173,9 +173,7 @@ const SeriesRow = (props) => {
             >
               {getProvider(props.serie)}
               <Tooltip
-                
                 TransitionComponent={Zoom}
-                
                 title={
                   <React.Fragment>
                     <Typography
