@@ -86,6 +86,11 @@ const Legende = () => {
             <br></br>
             <br></br>
             <span>
+              Klicke auf ein Rating, um passende Serienvorschläge zu erhalten.
+            </span>
+            <br></br>
+            <br></br>
+            <span>
               Klicke auf den Titel, um zu erfahren, wo du die Serie schauen
               kannst.
             </span>

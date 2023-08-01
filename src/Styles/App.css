@@ -61,10 +61,16 @@
 .oben-offen {
   width: calc(100% - 250px) !important;
 }
-.MuiPaper-root {
-  background-color: #111 !important;
+.MuiDialog-paper {
+  background-color: #111 !important ;
   border-radius: 30px !important;
 }
+.MuiAlert-filled {
+ 
+  border-radius: 30px !important;
+ 
+}
+
 .closeDialog:hover {
   cursor: pointer;
   color: red;

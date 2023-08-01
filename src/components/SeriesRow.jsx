@@ -4,9 +4,15 @@ import CustomDialog from "./Dialog";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { Fade, Zoom } from "@mui/material";
+import RecsDialog from "./RecsDialog";
 
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
+  const [openRecs, setOpenRecs] = useState(false);
+
+  const handleCloseRecs = () => {
+    setOpenRecs(false);
+  };
   const handleClose = () => {
     setOpen(false);
   };
@@ -138,6 +144,7 @@ const SeriesRow = (props) => {
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
   return (
     <>
+      <RecsDialog open={openRecs} close={handleCloseRecs} serie={props.serie} />
       <CustomDialog
         open={open}
         close={handleClose}
@@ -161,7 +168,11 @@ const SeriesRow = (props) => {
               borderTopLeftRadius: "30px",
               borderTopRightRadius: "30px",
             }}
-            onClick={(_) => redirect(`https://www.imdb.com/title/${imdb}/`)}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) {
+                redirect(`https://www.imdb.com/title/${imdb}/`);
+              }
+            }}
           >
             <div
               style={{
@@ -209,12 +220,16 @@ const SeriesRow = (props) => {
                 }}
               >
                 <p
+                  id="rating"
                   className="rating"
                   style={{
                     verticalAlign: "text-bottom",
                     float: "right",
                     paddingRight: "5%",
                     height: "auto",
+                  }}
+                  onClick={() => {
+                    setOpenRecs(true);
                   }}
                 >
                   {getRating(props.serie)} / 10

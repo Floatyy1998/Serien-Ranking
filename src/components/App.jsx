@@ -15,6 +15,9 @@ import Search from "./Search";
 import Legende from "./Legende";
 import ScrollUp from "./ScrollUp";
 import ScrollDown from "./ScrollDown";
+import { Snackbar } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
+
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
@@ -30,7 +33,24 @@ const App = () => {
   const [genre, setGenre] = useState("All");
   const [filter, setFilter] = useState("");
   const [serien, setSerien] = useState([]);
+  const [openStartSnack, setOpenStartSnack] = React.useState(false);
+  const [openEndSnack, setOpenEndSnack] = React.useState(false);
 
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert style={{ borderRadius:"30px"}} elevation={6} ref={ref} variant="filled"  {...props} />;
+  });
+  const handleCloseStartSnack = (event, reason) => {
+    setOpenStartSnack(false);
+    if (reason === 'clickaway') {
+      return;
+    }
+  }
+  const handleCloseEndSnack = (event, reason) => {
+    setOpenEndSnack(false);
+    if (reason === 'clickaway') {
+      return;
+    }
+  }
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
       if (!localStorage.getItem("konrad.dinges@googlemail.com")) {
@@ -138,7 +158,81 @@ const App = () => {
   };
 
   const laden = async () => {
+    setOpenStartSnack(true);
     const promises = serien.map(async (serie, index) => {
+      const rec = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE`
+      );
+      const recData = await rec.json();
+      const rec2 = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE&page=2`
+      );
+      const recData2 = await rec2.json();
+      let recResults = recData.results;
+      recResults = recResults.concat(recData2.results);
+      recResults = recResults.filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t.id === value.id)
+      );
+
+      let ids = [];
+      for (let i = 0; i < serien.length; i++) {
+        ids.push(serien[i].id);
+      }
+      var recs = recResults.filter(function (o1) {
+        if (!ids.includes(o1.id)) {
+          return true;
+        }
+      });
+
+      for (let i = 0; i < recs.length; i++) {
+        const provider = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+        );
+
+        const providerData = await provider.json();
+        const anbieter = getProviders(providerData);
+
+        recs[i].provider = anbieter;
+        const response2 = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API.TMDB}`
+        );
+        const data3 = await response2.json();
+        recs[i].production = data3.in_production;
+
+
+
+
+        const response3 = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
+        );
+        const data4 = await response3.json();
+        recs[i].imdb_id = data4.imdb_id;
+
+        recs[i].wo =`https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+  
+      
+      }
+      try {
+        if (recData.total_results === 0) {
+          await Firebase.database()
+            .ref(`serien/${index}/recommendation`)
+            .set({ recommendations: "" });
+        } else {
+          await Firebase.database()
+            .ref(`serien/${index}/recommendation`)
+            .set({ recommendations: recs });
+        }
+      } catch (error) {
+        await Firebase.database()
+          .ref(`serien/${index}/recommendation`)
+          .set({ recommendations: "" });
+      }
+
+
+
+      
+
       const response2 = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
       );
@@ -180,11 +274,7 @@ const App = () => {
               .ref(`serien/${index}/nextEpisode`)
               .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
           }
-        } catch (error) {
-          console.log(error);
-          await new Promise((r) => setTimeout(r, 2000));
-          this.laden();
-        }
+        } catch (error) {}
       }
 
       const genres = ["All", ...data3.genres.map((genre) => genre.name)];
@@ -219,6 +309,8 @@ const App = () => {
     });
 
     await Promise.all(promises);
+    setOpenStartSnack(false);
+    setOpenEndSnack(true);
   };
 
   async function fetchData() {
@@ -310,19 +402,21 @@ const App = () => {
       const series = snapshot.val();
 
       let filteredSeries = series.filter((serie) => {
-        if (genre === "Neue Episoden") {
-          return (
-            serie.nextEpisode.nextEpisode !== "" &&
-            serie.title.toLowerCase().includes(filter.toLowerCase())
-          );
-        } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-          return serie.title.toLowerCase().includes(filter.toLowerCase());
-        } else {
-          return (
-            serie.genre.genres.includes(genre) &&
-            serie.title.toLowerCase().includes(filter.toLowerCase())
-          );
-        }
+        try {
+          if (genre === "Neue Episoden") {
+            return (
+              serie.nextEpisode.nextEpisode !== "" &&
+              serie.title.toLowerCase().includes(filter.toLowerCase())
+            );
+          } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
+            return serie.title.toLowerCase().includes(filter.toLowerCase());
+          } else {
+            return (
+              serie.genre.genres.includes(genre) &&
+              serie.title.toLowerCase().includes(filter.toLowerCase())
+            );
+          }
+        } catch (error) {}
       });
 
       if (genre === "A-Z") {
@@ -376,6 +470,9 @@ const App = () => {
 
   if (loading) {
     return (
+      <>
+      
+    
       <div>
         <SideNav get_serien={get_serien} />
         <div id="main" key="0">
@@ -409,9 +506,21 @@ const App = () => {
           <ScrollUp />
         </div>
       </div>
+      </>
     );
   } else {
     return (
+      <>
+      <Snackbar open={openStartSnack} autoHideDuration={2000}  >
+      <Alert  severity="warning" sx={{ width: '100%' }}>
+        Daten werden geladen! Bitte warten!
+      </Alert>
+    </Snackbar>
+    <Snackbar open={openEndSnack} autoHideDuration={3000} onClose={handleCloseEndSnack}>
+      <Alert onClose={handleCloseEndSnack} severity="success" sx={{ width: '100%' }}>
+        Daten erfolgreich geladen!
+      </Alert>
+    </Snackbar>
       <div>
         <SideNav get_serien={get_serien} />
         <div id="main" key="0">
@@ -443,6 +552,7 @@ const App = () => {
           <ScrollUp />
         </div>
       </div>
+      </>
     );
   }
 };
