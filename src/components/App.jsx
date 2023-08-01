@@ -18,8 +18,7 @@ import ScrollDown from "./ScrollDown";
 import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 
-
-//provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll;
+//provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 const App = () => {
@@ -37,20 +36,28 @@ const App = () => {
   const [openEndSnack, setOpenEndSnack] = React.useState(false);
 
   const Alert = React.forwardRef(function Alert(props, ref) {
-    return <MuiAlert style={{ borderRadius:"30px"}} elevation={6} ref={ref} variant="filled"  {...props} />;
+    return (
+      <MuiAlert
+        style={{ borderRadius: "30px" }}
+        elevation={6}
+        ref={ref}
+        variant="filled"
+        {...props}
+      />
+    );
   });
   const handleCloseStartSnack = (event, reason) => {
     setOpenStartSnack(false);
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
-  }
+  };
   const handleCloseEndSnack = (event, reason) => {
     setOpenEndSnack(false);
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
-  }
+  };
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
       if (!localStorage.getItem("konrad.dinges@googlemail.com")) {
@@ -160,6 +167,78 @@ const App = () => {
   const laden = async () => {
     setOpenStartSnack(true);
     const promises = serien.map(async (serie, index) => {
+      const response2 = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
+      );
+      const data3 = await response2.json();
+
+      await Firebase.database()
+        .ref(`serien/${index}/nextEpisode`)
+        .set({ nextEpisode: "" });
+
+      if (serie.tvMaze.tvMazeID !== "") {
+        const tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
+        );
+        try {
+          const tvMazeData = await tvMazeResponse.json();
+
+          if (tvMazeData._links.nextepisode) {
+            const tvMazeNextEpisodeResponse = await fetch(
+              `${tvMazeData._links.nextepisode.href}`
+            );
+            const tvMazeNextEpisodeData =
+              await tvMazeNextEpisodeResponse.json();
+            await Firebase.database()
+              .ref(`serien/${index}/nextEpisode`)
+              .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+          }
+        } catch (error) {}
+      }
+
+      const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
+      await Firebase.database()
+        .ref(`serien/${index}/poster`)
+        .set({ poster: posterUrl });
+
+      await Firebase.database()
+        .ref(`serien/${index}/production`)
+        .set({ production: data3.in_production });
+
+      const provider = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+      );
+      const providerData = await provider.json();
+      const anbieter = getProviders(providerData);
+      try {
+        await Firebase.database()
+          .ref(`serien/${index}/provider`)
+          .set({ provider: anbieter });
+      } catch (error) {
+        await Firebase.database()
+          .ref(`serien/${index}/provider`)
+          .set({ provider: "" });
+      }
+
+      const genres = ["All", ...data3.genres.map((genre) => genre.name)];
+      await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
+
+      const response3 = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
+      );
+      const data4 = await response3.json();
+      await Firebase.database()
+        .ref(`serien/${index}/imdb`)
+        .set({ imdb_id: data4.imdb_id });
+
+      const woUrl =
+        index === 2
+          ? "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
+          : index === 35
+          ? "https://www.werstreamt.es/serie/details/235057/vikings/"
+          : `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+      await Firebase.database().ref(`serien/${index}/wo`).set({ wo: woUrl });
+
       const rec = await fetch(
         `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE`
       );
@@ -200,18 +279,15 @@ const App = () => {
         const data3 = await response2.json();
         recs[i].production = data3.in_production;
 
-
-
-
         const response3 = await fetch(
           `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
         );
         const data4 = await response3.json();
         recs[i].imdb_id = data4.imdb_id;
 
-        recs[i].wo =`https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
-  
-      
+        recs[
+          i
+        ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
       }
       try {
         if (recData.total_results === 0) {
@@ -228,82 +304,6 @@ const App = () => {
           .ref(`serien/${index}/recommendation`)
           .set({ recommendations: "" });
       }
-
-
-
-      
-
-      const response2 = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
-      );
-      const data3 = await response2.json();
-      const provider = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
-      );
-
-      const providerData = await provider.json();
-      const anbieter = getProviders(providerData);
-      try {
-        await Firebase.database()
-          .ref(`serien/${index}/provider`)
-          .set({ provider: anbieter });
-      } catch (error) {
-        await Firebase.database()
-          .ref(`serien/${index}/provider`)
-          .set({ provider: "" });
-      }
-
-      await Firebase.database()
-        .ref(`serien/${index}/nextEpisode`)
-        .set({ nextEpisode: "" });
-
-      if (serie.tvMaze.tvMazeID !== "") {
-        const tvMazeResponse = await fetch(
-          `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
-        );
-        try {
-          const tvMazeData = await tvMazeResponse.json();
-
-          if (tvMazeData._links.nextepisode) {
-            const tvMazeNextEpisodeResponse = await fetch(
-              `${tvMazeData._links.nextepisode.href}`
-            );
-            const tvMazeNextEpisodeData =
-              await tvMazeNextEpisodeResponse.json();
-            await Firebase.database()
-              .ref(`serien/${index}/nextEpisode`)
-              .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
-          }
-        } catch (error) {}
-      }
-
-      const genres = ["All", ...data3.genres.map((genre) => genre.name)];
-      await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
-
-      const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
-      await Firebase.database()
-        .ref(`serien/${index}/poster`)
-        .set({ poster: posterUrl });
-
-      await Firebase.database()
-        .ref(`serien/${index}/production`)
-        .set({ production: data3.in_production });
-
-      const response3 = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
-      );
-      const data4 = await response3.json();
-      await Firebase.database()
-        .ref(`serien/${index}/imdb`)
-        .set({ imdb_id: data4.imdb_id });
-
-      const woUrl =
-        index === 2
-          ? "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
-          : index === 35
-          ? "https://www.werstreamt.es/serie/details/235057/vikings/"
-          : `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
-      await Firebase.database().ref(`serien/${index}/wo`).set({ wo: woUrl });
 
       return null;
     });
@@ -471,87 +471,93 @@ const App = () => {
   if (loading) {
     return (
       <>
-      
-    
-      <div>
-        <SideNav get_serien={get_serien} />
-        <div id="main" key="0">
-          <Header />
-          <div id="Ueberschrift">
-            <Search
-              search={(e) => {
-                setFilter(e);
-              }}
-            />
-            <Select
-              setGenre={(e) => {
-                setGenre(e);
-              }}
-            />
-            <Legende />
-          </div>
-          <ScrollDown />
-          <div
-            className="container"
-            onClick={(_) => {
-              removeNav();
-            }}
-          >
-            <div className="loader">
-              <div className="inner one"></div>
-              <div className="inner two"></div>
-              <div className="inner three"></div>
+        <div>
+          <SideNav get_serien={get_serien} />
+          <div id="main" key="0">
+            <Header />
+            <div id="Ueberschrift">
+              <Search
+                search={(e) => {
+                  setFilter(e);
+                }}
+              />
+              <Select
+                setGenre={(e) => {
+                  setGenre(e);
+                }}
+              />
+              <Legende />
             </div>
+            <ScrollDown />
+            <div
+              className="container"
+              onClick={(_) => {
+                removeNav();
+              }}
+            >
+              <div className="loader">
+                <div className="inner one"></div>
+                <div className="inner two"></div>
+                <div className="inner three"></div>
+              </div>
+            </div>
+            <ScrollUp />
           </div>
-          <ScrollUp />
         </div>
-      </div>
       </>
     );
   } else {
     return (
       <>
-      <Snackbar open={openStartSnack} autoHideDuration={2000}  >
-      <Alert  severity="warning" sx={{ width: '100%' }}>
-        Daten werden geladen! Bitte warten!
-      </Alert>
-    </Snackbar>
-    <Snackbar open={openEndSnack} autoHideDuration={3000} onClose={handleCloseEndSnack}>
-      <Alert onClose={handleCloseEndSnack} severity="success" sx={{ width: '100%' }}>
-        Daten erfolgreich geladen!
-      </Alert>
-    </Snackbar>
-      <div>
-        <SideNav get_serien={get_serien} />
-        <div id="main" key="0">
-          <Header />
-          <div id="Ueberschrift">
-            <Search
-              search={(e) => {
-                setFilter(e);
-              }}
-            />
-            <Select
-              setGenre={(e) => {
-                setGenre(e);
-              }}
-            />
-            <Legende />
-          </div>
-          <ScrollDown />
-          <div
-            className="container"
-            onClick={(_) => {
-              removeNav();
-            }}
+        <Snackbar open={openStartSnack} autoHideDuration={2000}>
+          <Alert severity="warning" sx={{ width: "100%" }}>
+            Daten werden geladen! Bitte warten!
+          </Alert>
+        </Snackbar>
+        <Snackbar
+          open={openEndSnack}
+          autoHideDuration={3000}
+          onClose={handleCloseEndSnack}
+        >
+          <Alert
+            onClose={handleCloseEndSnack}
+            severity="success"
+            sx={{ width: "100%" }}
           >
-            <ul className="list" id="serien">
-              {rows}
-            </ul>
+            Daten erfolgreich geladen!
+          </Alert>
+        </Snackbar>
+        <div>
+          <SideNav get_serien={get_serien} />
+          <div id="main" key="0">
+            <Header />
+            <div id="Ueberschrift">
+              <Search
+                search={(e) => {
+                  setFilter(e);
+                }}
+              />
+              <Select
+                setGenre={(e) => {
+                  setGenre(e);
+                }}
+              />
+              <Legende />
+            </div>
+            <ScrollDown />
+            <div
+              className="container"
+              onClick={(_) => {
+                removeNav();
+              }}
+            >
+              <ul className="list" id="serien">
+                {rows}
+              </ul>
+            </div>
+            <ScrollUp />
           </div>
-          <ScrollUp />
         </div>
-      </div>
       </>
     );
   }
