@@ -5,6 +5,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { Fade, Zoom } from "@mui/material";
 import RecsDialog from "./RecsDialog";
+import mail from "../configs/mail";
 
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
@@ -254,7 +255,7 @@ const SeriesRow = (props) => {
             <p
               className="padding"
               onClick={(_) => {
-                if (localStorage.getItem("konrad.dinges@googlemail.com")) {
+                if (localStorage.getItem(mail)) {
                   setOpen(true);
                 } else {
                   redirect(wo);

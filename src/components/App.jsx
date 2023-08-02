@@ -7,6 +7,7 @@ import "firebase/compat/auth";
 import "firebase/compat/analytics";
 import config from "../configs/config";
 import API from "../configs/API";
+import mail from "../configs/mail";
 
 import SideNav from "./SideNav";
 import Header from "./Header";
@@ -17,8 +18,9 @@ import ScrollUp from "./ScrollUp";
 import ScrollDown from "./ScrollDown";
 import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
+import LinearProgressWithLabel from "./LinearProgressWithLabel";
 
-//provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com
+//provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com florian3456@aol.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 const App = () => {
@@ -34,6 +36,13 @@ const App = () => {
   const [serien, setSerien] = useState([]);
   const [openStartSnack, setOpenStartSnack] = React.useState(false);
   const [openEndSnack, setOpenEndSnack] = React.useState(false);
+  const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
+  const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
+  const [user, setUser] = useState(null);
+
+  const [loadSeries, setLoadSeries] = useState(false);
+  const [loadNewDate, setLoadNewDate] = useState(false);
 
   const Alert = React.forwardRef(function Alert(props, ref) {
     return (
@@ -46,26 +55,32 @@ const App = () => {
       />
     );
   });
-  const handleCloseStartSnack = (event, reason) => {
-    setOpenStartSnack(false);
-    if (reason === "clickaway") {
-      return;
-    }
-  };
+
   const handleCloseEndSnack = (event, reason) => {
     setOpenEndSnack(false);
     if (reason === "clickaway") {
       return;
     }
   };
+  const handleCloseSerienSnack = (event, reason) => {
+    setOpenSerienEndSnack(false);
+    if (reason === "clickaway") {
+      return;
+    }
+  };
+  useEffect(() => {
+    get_serien();
+    fetchData();
+  }, []);
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
-      if (!localStorage.getItem("konrad.dinges@googlemail.com")) {
+      if (!localStorage.getItem(mail)) {
         Firebase.auth()
           .signOut()
           .then(
             function () {
-              localStorage.removeItem("konrad.dinges@googlemail.com");
+              localStorage.removeItem(mail);
+              setUser(null);
               document.getElementById("login").innerHTML = "LOGIN";
             },
             function (error) {
@@ -74,11 +89,9 @@ const App = () => {
           );
       } else {
         Firebase.auth()
-          .signInWithEmailAndPassword(
-            "konrad.dinges@googlemail.com",
-            localStorage.getItem("konrad.dinges@googlemail.com")
-          )
+          .signInWithEmailAndPassword(mail, localStorage.getItem(mail))
           .then((userCredential) => {
+            setUser(mail);
             document.getElementById("login").innerHTML = "LOGOUT";
           })
           .catch((error) => {
@@ -87,18 +100,28 @@ const App = () => {
           });
       }
     } else {
-      document.getElementById("login").innerHTML = "Logout";
+      setUser(mail);
+      document.getElementById("login").innerHTML = "LOGOUT";
     }
-    fetchData();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     checkGenre();
   }, [genre, filter]);
 
   useEffect(() => {
-    laden();
-  }, [serien]);
+    if (loadSeries) {
+      laden();
+      setLoadSeries(false);
+    }
+  }, [loadSeries]);
+
+  useEffect(() => {
+    if (loadNewDate) {
+      loadNewDates();
+      setLoadNewDate(false);
+    }
+  }, [loadNewDate]);
 
   const get_serien = async () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
@@ -164,18 +187,8 @@ const App = () => {
     return anbieter;
   };
 
-  const laden = async () => {
-    setOpenStartSnack(true);
+  const loadNewDates = async () => {
     const promises = serien.map(async (serie, index) => {
-      const response2 = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
-      );
-      const data3 = await response2.json();
-
-      await Firebase.database()
-        .ref(`serien/${index}/nextEpisode`)
-        .set({ nextEpisode: "" });
-
       if (serie.tvMaze.tvMazeID !== "") {
         const tvMazeResponse = await fetch(
           `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
@@ -195,122 +208,166 @@ const App = () => {
           }
         } catch (error) {}
       }
-
-      const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
-      await Firebase.database()
-        .ref(`serien/${index}/poster`)
-        .set({ poster: posterUrl });
-
-      await Firebase.database()
-        .ref(`serien/${index}/production`)
-        .set({ production: data3.in_production });
-
-      const provider = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
-      );
-      const providerData = await provider.json();
-      const anbieter = getProviders(providerData);
-      try {
-        await Firebase.database()
-          .ref(`serien/${index}/provider`)
-          .set({ provider: anbieter });
-      } catch (error) {
-        await Firebase.database()
-          .ref(`serien/${index}/provider`)
-          .set({ provider: "" });
-      }
-
-      const genres = ["All", ...data3.genres.map((genre) => genre.name)];
-      await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
-
-      const response3 = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
-      );
-      const data4 = await response3.json();
-      await Firebase.database()
-        .ref(`serien/${index}/imdb`)
-        .set({ imdb_id: data4.imdb_id });
-
-      const woUrl =
-        index === 2
-          ? "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
-          : index === 35
-          ? "https://www.werstreamt.es/serie/details/235057/vikings/"
-          : `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
-      await Firebase.database().ref(`serien/${index}/wo`).set({ wo: woUrl });
-
-      const rec = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE`
-      );
-      const recData = await rec.json();
-      const rec2 = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE&page=2`
-      );
-      const recData2 = await rec2.json();
-      let recResults = recData.results;
-      recResults = recResults.concat(recData2.results);
-      recResults = recResults.filter(
-        (value, index, self) =>
-          index === self.findIndex((t) => t.id === value.id)
-      );
-
-      let ids = [];
-      for (let i = 0; i < serien.length; i++) {
-        ids.push(serien[i].id);
-      }
-      var recs = recResults.filter(function (o1) {
-        if (!ids.includes(o1.id)) {
-          return true;
-        }
-      });
-
-      for (let i = 0; i < recs.length; i++) {
-        const provider = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
-        );
-
-        const providerData = await provider.json();
-        const anbieter = getProviders(providerData);
-
-        recs[i].provider = anbieter;
-        const response2 = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API.TMDB}`
-        );
-        const data3 = await response2.json();
-        recs[i].production = data3.in_production;
-
-        const response3 = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
-        );
-        const data4 = await response3.json();
-        recs[i].imdb_id = data4.imdb_id;
-
-        recs[
-          i
-        ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
-      }
-      try {
-        if (recData.total_results === 0) {
-          await Firebase.database()
-            .ref(`serien/${index}/recommendation`)
-            .set({ recommendations: "" });
-        } else {
-          await Firebase.database()
-            .ref(`serien/${index}/recommendation`)
-            .set({ recommendations: recs });
-        }
-      } catch (error) {
-        await Firebase.database()
-          .ref(`serien/${index}/recommendation`)
-          .set({ recommendations: "" });
-      }
-
       return null;
     });
 
     await Promise.all(promises);
+  };
+
+  const laden = async () => {
+    setOpenStartSnack(true);
+    let count = 0;
+
+    const promises = serien.map((serie, index) =>
+      task(serie, index).then(() => {
+        setProgress((count++ / serien.length) * 100);
+      })
+    );
+
+    await Promise.all(promises);
     setOpenStartSnack(false);
     setOpenEndSnack(true);
+    setProgress(0);
+  };
+
+  const task = async (serie, index) => {
+    const response2 = await fetch(
+      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
+    );
+    const data3 = await response2.json();
+
+    await Firebase.database()
+      .ref(`serien/${index}/nextEpisode`)
+      .set({ nextEpisode: "" });
+
+    if (serie.tvMaze.tvMazeID !== "") {
+      const tvMazeResponse = await fetch(
+        `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
+      );
+      try {
+        const tvMazeData = await tvMazeResponse.json();
+
+        if (tvMazeData._links.nextepisode) {
+          const tvMazeNextEpisodeResponse = await fetch(
+            `${tvMazeData._links.nextepisode.href}`
+          );
+          const tvMazeNextEpisodeData = await tvMazeNextEpisodeResponse.json();
+          await Firebase.database()
+            .ref(`serien/${index}/nextEpisode`)
+            .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+        }
+      } catch (error) {}
+    }
+
+    const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
+    await Firebase.database()
+      .ref(`serien/${index}/poster`)
+      .set({ poster: posterUrl });
+
+    await Firebase.database()
+      .ref(`serien/${index}/production`)
+      .set({ production: data3.in_production });
+
+    const provider = await fetch(
+      `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+    );
+    const providerData = await provider.json();
+    const anbieter = getProviders(providerData);
+    try {
+      await Firebase.database()
+        .ref(`serien/${index}/provider`)
+        .set({ provider: anbieter });
+    } catch (error) {
+      await Firebase.database()
+        .ref(`serien/${index}/provider`)
+        .set({ provider: "" });
+    }
+
+    const genres = ["All", ...data3.genres.map((genre) => genre.name)];
+    await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
+
+    const response3 = await fetch(
+      `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
+    );
+    const data4 = await response3.json();
+    await Firebase.database()
+      .ref(`serien/${index}/imdb`)
+      .set({ imdb_id: data4.imdb_id });
+
+    const woUrl =
+      index === 2
+        ? "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
+        : index === 35
+        ? "https://www.werstreamt.es/serie/details/235057/vikings/"
+        : `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+    await Firebase.database().ref(`serien/${index}/wo`).set({ wo: woUrl });
+
+    const rec = await fetch(
+      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE`
+    );
+    const recData = await rec.json();
+    const rec2 = await fetch(
+      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE&page=2`
+    );
+    const recData2 = await rec2.json();
+    let recResults = recData.results;
+    recResults = recResults.concat(recData2.results);
+    recResults = recResults.filter(
+      (value, index, self) => index === self.findIndex((t) => t.id === value.id)
+    );
+
+    let ids = [];
+    for (let i = 0; i < serien.length; i++) {
+      ids.push(serien[i].id);
+    }
+    var recs = recResults.filter(function (o1) {
+      if (!ids.includes(o1.id)) {
+        return true;
+      }
+    });
+
+    for (let i = 0; i < recs.length; i++) {
+      const provider = await fetch(
+        `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+      );
+
+      const providerData = await provider.json();
+      const anbieter = getProviders(providerData);
+
+      recs[i].provider = anbieter;
+      const response2 = await fetch(
+        `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API.TMDB}`
+      );
+      const data3 = await response2.json();
+      recs[i].production = data3.in_production;
+
+      const response3 = await fetch(
+        `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
+      );
+      const data4 = await response3.json();
+      recs[i].imdb_id = data4.imdb_id;
+
+      recs[
+        i
+      ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+    }
+    try {
+      if (recData.total_results === 0) {
+        await Firebase.database()
+          .ref(`serien/${index}/recommendation`)
+          .set({ recommendations: "" });
+      } else {
+        await Firebase.database()
+          .ref(`serien/${index}/recommendation`)
+          .set({ recommendations: recs });
+      }
+    } catch (error) {
+      await Firebase.database()
+        .ref(`serien/${index}/recommendation`)
+        .set({ recommendations: "" });
+    }
+
+    return null;
   };
 
   async function fetchData() {
@@ -341,7 +398,7 @@ const App = () => {
 
       if (new Date() >= deleteDate) {
         console.log("load");
-        get_serien();
+        setLoadNewDate(true);
       }
     } catch (error) {
       console.error(error);
@@ -352,7 +409,7 @@ const App = () => {
       .on("value", async (snap) => {
         if (Math.round((Date.now() - snap?.val()) / 1000) > 6912000) {
           try {
-            get_serien();
+            setLoadSeries(true);
             Firebase.database().ref("timestamp").set({
               createdAt: Firebase.database.ServerValue.TIMESTAMP,
             });
@@ -472,7 +529,7 @@ const App = () => {
     return (
       <>
         <div>
-          <SideNav get_serien={get_serien} />
+          <SideNav getProviders={getProviders} />
           <div id="main" key="0">
             <Header />
             <div id="Ueberschrift">
@@ -511,7 +568,8 @@ const App = () => {
       <>
         <Snackbar open={openStartSnack} autoHideDuration={2000}>
           <Alert severity="warning" sx={{ width: "100%" }}>
-            Daten werden geladen! Bitte warten!
+            Daten werden geladen!
+            <LinearProgressWithLabel value={progress} />
           </Alert>
         </Snackbar>
         <Snackbar
@@ -527,8 +585,34 @@ const App = () => {
             Daten erfolgreich geladen!
           </Alert>
         </Snackbar>
+
+        <Snackbar open={openSerienSnack} autoHideDuration={2000}>
+          <Alert severity="warning" sx={{ width: "100%" }}>
+            Serie wird hinzugefügt!
+            <LinearProgressWithLabel value={progress} />
+          </Alert>
+        </Snackbar>
+        <Snackbar
+          open={openSerienEndSnack}
+          autoHideDuration={3000}
+          onClose={handleCloseSerienSnack}
+        >
+          <Alert
+            onClose={handleCloseSerienSnack}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            Serie erfolgreich hinzugefügt!
+          </Alert>
+        </Snackbar>
         <div>
-          <SideNav get_serien={get_serien} />
+          <SideNav
+            toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
+            toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
+            setProgress={(wert) => setProgress(wert)}
+            getProviders={getProviders}
+            user={user}
+          />
           <div id="main" key="0">
             <Header />
             <div id="Ueberschrift">

@@ -19,6 +19,20 @@
   visibility: hidden !important;
 }
 
+.MuiLinearProgress-bar{
+  background-color: #000 !important;
+}
+.css-1vooibu-MuiSvgIcon-root{
+  height: 100% !important;
+}
+.css-cpgvjg-MuiSnackbar-root{
+  height: 70px !important;
+  width: 250px !important;
+}
+.MuiIconButton-sizeSmall{
+  height: 100% !important;
+}
+
 .legende1 {
   height: 15px;
   position: absolute;
