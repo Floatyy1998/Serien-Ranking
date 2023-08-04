@@ -3,13 +3,40 @@ import { useState } from "react";
 import CustomDialog from "./Dialog";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import MuiAlert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+import LinearProgressWithLabel from "./LinearProgressWithLabel";
+
 import { Fade, Zoom } from "@mui/material";
 import RecsDialog from "./RecsDialog";
 import mail from "../configs/mail";
 
+
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
   const [openRecs, setOpenRecs] = useState(false);
+  const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
+  const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
+
+  const handleCloseSerienSnack = (event, reason) => {
+    setOpenSerienEndSnack(false);
+    if (reason === "clickaway") {
+      return;
+    }
+  };
+
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return (
+      <MuiAlert
+        style={{ borderRadius: "30px" }}
+        elevation={6}
+        ref={ref}
+        variant="filled"
+        {...props}
+      />
+    );
+  });
 
   const handleCloseRecs = () => {
     setOpenRecs(false);
@@ -73,6 +100,7 @@ const SeriesRow = (props) => {
   const getRating = (a) => {
     let punktea = 0;
 
+   try {
     switch (props.genre) {
       case "A-Z":
       case "All":
@@ -97,6 +125,10 @@ const SeriesRow = (props) => {
     }
 
     return addZeroes(round(punktea, 0.01));
+    }
+    catch (error) {
+     return addZeroes(round(punktea, 0.01));
+    }
   };
 
   const redirect = (link) => {
@@ -145,7 +177,28 @@ const SeriesRow = (props) => {
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
   return (
     <>
-      <RecsDialog open={openRecs} close={handleCloseRecs} serie={props.serie} />
+    <Snackbar open={openSerienSnack} autoHideDuration={2000}>
+          <Alert severity="warning" sx={{ width: "100%" }}>
+            Serie wird hinzugefügt!
+            <LinearProgressWithLabel value={progress} />
+          </Alert>
+        </Snackbar>
+        <Snackbar
+          open={openSerienEndSnack}
+          autoHideDuration={3000}
+          onClose={handleCloseSerienSnack}
+        >
+          <Alert
+            onClose={handleCloseSerienSnack}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            Serie erfolgreich hinzugefügt!
+          </Alert>
+        </Snackbar>
+      <RecsDialog open={openRecs} close={handleCloseRecs} serie={props.serie} toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
+            toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
+            setProgress={(wert) => setProgress(wert)} />
       <CustomDialog
         open={open}
         close={handleClose}

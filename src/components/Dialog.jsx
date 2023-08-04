@@ -65,6 +65,11 @@ const CustomDialog = (props) => {
   };
 
   const getGenres = () => {
+    try {
+      
+    } catch (error) {
+      
+    }
     return props.serie.genre.genres.map((genre, index) => (
       <Chip key={index} label={genre} color="primary" className="genreChip" />
     ));

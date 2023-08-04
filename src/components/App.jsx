@@ -188,6 +188,8 @@ const App = () => {
   };
 
   const loadNewDates = async () => {
+    const snapshot = await Firebase.database().ref("/serien").once("value");
+    const serien = snapshot.val();
     const promises = serien.map(async (serie, index) => {
       if (serie.tvMaze.tvMazeID !== "") {
         const tvMazeResponse = await fetch(
@@ -217,7 +219,8 @@ const App = () => {
   const laden = async () => {
     setOpenStartSnack(true);
     let count = 0;
-
+    const snapshot = await Firebase.database().ref("/serien").once("value");
+    const serien = snapshot.val();
     const promises = serien.map((serie, index) =>
       task(serie, index).then(() => {
         setProgress((count++ / serien.length) * 100);
@@ -231,6 +234,8 @@ const App = () => {
   };
 
   const task = async (serie, index) => {
+    const snapshot = await Firebase.database().ref("/serien").once("value");
+    const serien = snapshot.val();
     const response2 = await fetch(
       `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
     );
@@ -397,7 +402,6 @@ const App = () => {
       console.log(deleteDate);
 
       if (new Date() >= deleteDate) {
-        console.log("load");
         setLoadNewDate(true);
       }
     } catch (error) {
@@ -454,9 +458,14 @@ const App = () => {
   };
 
   const checkGenre = () => {
+    setLoading(true);
     let ref = Firebase.database().ref("/serien");
     ref.on("value", (snapshot) => {
       const series = snapshot.val();
+
+      if (series !== null) {
+        
+    
 
       let filteredSeries = series.filter((serie) => {
         try {
@@ -511,6 +520,9 @@ const App = () => {
             i={i}
             genre={genre}
             filter={filter}
+            toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
+            toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
+            setProgress={(wert) => setProgress(wert)}
           />
         );
         seriesRows.push(seriesRow);
@@ -518,7 +530,11 @@ const App = () => {
       });
       setRows(seriesRows);
       setLoading(false);
+    }
+    
+    setLoading(false);
     });
+    
   };
 
   const removeNav = () => {
@@ -636,7 +652,7 @@ const App = () => {
               }}
             >
               <ul className="list" id="serien">
-                {rows}
+                {rows.length > 0 ? rows : <h1 style={{color:"white"}}>Keine Serien vorhanden!</h1>}
               </ul>
             </div>
             <ScrollUp />
