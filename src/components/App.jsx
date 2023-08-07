@@ -20,6 +20,7 @@ import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import LinearProgressWithLabel from "./LinearProgressWithLabel";
 
+
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com florian3456@aol.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
@@ -69,6 +70,7 @@ const App = () => {
     }
   };
   useEffect(() => {
+    test();
     get_serien();
     fetchData();
   }, []);
@@ -228,6 +230,7 @@ const App = () => {
     );
 
     await Promise.all(promises);
+
     setOpenStartSnack(false);
     setOpenEndSnack(true);
     setProgress(0);
@@ -315,8 +318,31 @@ const App = () => {
       `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE&page=2`
     );
     const recData2 = await rec2.json();
-    let recResults = recData.results;
-    recResults = recResults.concat(recData2.results);
+    let recResult = recData.results;
+    let recResult2 = recData2.results;
+
+    let recResults = [];
+    for (let index = 0; index < recResult.length; index++) {
+      if (
+        recResult[index].poster_path === null ||
+        recResult[index].poster_path === undefined ||
+        recResult[index].poster_path === ""
+      ) {
+        continue;
+      }
+      recResults.push(recResult[index]);
+    }
+    for (let i = 0; i < recResult2.length; i++) {
+      if (
+        recResult2[i].poster_path === null ||
+        recResult2[i].poster_path === undefined ||
+        recResult2[i].poster_path === ""
+      ) {
+        continue;
+      }
+      recResults.push(recResult2[i]);
+    }
+
     recResults = recResults.filter(
       (value, index, self) => index === self.findIndex((t) => t.id === value.id)
     );
@@ -332,29 +358,31 @@ const App = () => {
     });
 
     for (let i = 0; i < recs.length; i++) {
-      const provider = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
-      );
+      try {
+        const provider = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+        );
 
-      const providerData = await provider.json();
-      const anbieter = getProviders(providerData);
+        const providerData = await provider.json();
+        const anbieter = getProviders(providerData);
 
-      recs[i].provider = anbieter;
-      const response2 = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API.TMDB}`
-      );
-      const data3 = await response2.json();
-      recs[i].production = data3.in_production;
+        recs[i].provider = anbieter;
+        const response2 = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API.TMDB}`
+        );
+        const data3 = await response2.json();
+        recs[i].production = data3.in_production;
 
-      const response3 = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
-      );
-      const data4 = await response3.json();
-      recs[i].imdb_id = data4.imdb_id;
+        const response3 = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
+        );
+        const data4 = await response3.json();
+        recs[i].imdb_id = data4.imdb_id;
 
-      recs[
-        i
-      ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+        recs[
+          i
+        ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+      } catch (error) {}
     }
     try {
       if (recData.total_results === 0) {
@@ -464,77 +492,73 @@ const App = () => {
       const series = snapshot.val();
 
       if (series !== null) {
-        
-    
+        let filteredSeries = series.filter((serie) => {
+          try {
+            if (genre === "Neue Episoden") {
+              return (
+                serie.nextEpisode.nextEpisode !== "" &&
+                serie.title.toLowerCase().includes(filter.toLowerCase())
+              );
+            } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
+              return serie.title.toLowerCase().includes(filter.toLowerCase());
+            } else {
+              return (
+                serie.genre.genres.includes(genre) &&
+                serie.title.toLowerCase().includes(filter.toLowerCase())
+              );
+            }
+          } catch (error) {}
+        });
 
-      let filteredSeries = series.filter((serie) => {
-        try {
-          if (genre === "Neue Episoden") {
-            return (
-              serie.nextEpisode.nextEpisode !== "" &&
-              serie.title.toLowerCase().includes(filter.toLowerCase())
-            );
-          } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-            return serie.title.toLowerCase().includes(filter.toLowerCase());
-          } else {
-            return (
-              serie.genre.genres.includes(genre) &&
-              serie.title.toLowerCase().includes(filter.toLowerCase())
-            );
-          }
-        } catch (error) {}
-      });
+        if (genre === "A-Z") {
+          filteredSeries.sort((a, b) =>
+            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
+          );
+        } else if (genre === "Neue Episoden") {
+          filteredSeries.sort((a, b) =>
+            a.nextEpisode.nextEpisode > b.nextEpisode.nextEpisode
+              ? 1
+              : b.nextEpisode.nextEpisode > a.nextEpisode.nextEpisode
+              ? -1
+              : 0
+          );
+        } else if (genre === "Zuletzt Hinzugefügt") {
+          filteredSeries.reverse();
+        } else {
+          filteredSeries.sort((a, b) =>
+            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
+          );
+          filteredSeries.sort((a, b) =>
+            isbigger(a, b) ? -1 : !isbigger(a, b) ? 1 : 0
+          );
+        }
 
-      if (genre === "A-Z") {
-        filteredSeries.sort((a, b) =>
-          a.title > b.title ? 1 : b.title > a.title ? -1 : 0
-        );
-      } else if (genre === "Neue Episoden") {
-        filteredSeries.sort((a, b) =>
-          a.nextEpisode.nextEpisode > b.nextEpisode.nextEpisode
-            ? 1
-            : b.nextEpisode.nextEpisode > a.nextEpisode.nextEpisode
-            ? -1
-            : 0
-        );
-      } else if (genre === "Zuletzt Hinzugefügt") {
-        filteredSeries.reverse();
-      } else {
-        filteredSeries.sort((a, b) =>
-          a.title > b.title ? 1 : b.title > a.title ? -1 : 0
-        );
-        filteredSeries.sort((a, b) =>
-          isbigger(a, b) ? -1 : !isbigger(a, b) ? 1 : 0
-        );
+        var i = 1;
+        var seriesRows = [];
+
+        filteredSeries.forEach((serie) => {
+          let date = Math.floor(Math.random() * 9999999999999999999);
+          const seriesRow = (
+            <SeriesRow
+              serie={serie}
+              key={date}
+              i={i}
+              genre={genre}
+              filter={filter}
+              toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
+              toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
+              setProgress={(wert) => setProgress(wert)}
+            />
+          );
+          seriesRows.push(seriesRow);
+          i++;
+        });
+        setRows(seriesRows);
+        setLoading(false);
       }
 
-      var i = 1;
-      var seriesRows = [];
-
-      filteredSeries.forEach((serie) => {
-        let date = Math.floor(Math.random() * 9999999999999999999);
-        const seriesRow = (
-          <SeriesRow
-            serie={serie}
-            key={date}
-            i={i}
-            genre={genre}
-            filter={filter}
-            toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
-            toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
-            setProgress={(wert) => setProgress(wert)}
-          />
-        );
-        seriesRows.push(seriesRow);
-        i++;
-      });
-      setRows(seriesRows);
       setLoading(false);
-    }
-    
-    setLoading(false);
     });
-    
   };
 
   const removeNav = () => {
@@ -652,7 +676,11 @@ const App = () => {
               }}
             >
               <ul className="list" id="serien">
-                {rows.length > 0 ? rows : <h1 style={{color:"white"}}>Keine Serien vorhanden!</h1>}
+                {rows.length > 0 ? (
+                  rows
+                ) : (
+                  <h1 style={{ color: "white" }}>Keine Serien vorhanden!</h1>
+                )}
               </ul>
             </div>
             <ScrollUp />
