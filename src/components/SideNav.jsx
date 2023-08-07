@@ -39,10 +39,12 @@ function SideNav(props) {
     var recommendations = "";
     var nextEpisode = "";
     const response = await fetch(
-      `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1`
+      `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1&language=de-DE`
     );
     const data = await response.json();
     const id = data.results[0].id;
+    const anzeigeTitel = data.results[0].name;
+    
 
     props.setProgress(15);
     const detailsResponse = await fetch(
@@ -176,6 +178,7 @@ function SideNav(props) {
       anbieter,
       wo,
       recommendations,
+      anzeigeTitel
     };
   };
 
@@ -214,8 +217,10 @@ function SideNav(props) {
       anbieter,
       wo,
       recommendations,
+      anzeigeTitel
     } = await fetchSeriesData(title);
     props.setProgress(100);
+    
 
     const postData = {
       imdb: { imdb_id: imdb_id },
@@ -227,7 +232,7 @@ function SideNav(props) {
       production: { production: production },
       wo: { wo: wo },
 
-      title,
+      title:anzeigeTitel,
       nmr,
       rating: ratings,
       genre: { genres: ["All", ...genres] },
@@ -256,7 +261,8 @@ function SideNav(props) {
       await addNewSeries(event);
     } catch (error) {
       console.error(error);
-      alert("Fehler beim Hinzufügen der Serie!");
+      props.toggleSerienStartSnack(false);
+      props.toggleErrorSnack(true);
     }
   };
   const checklogin = () => {

@@ -35,6 +35,7 @@ const App = () => {
   const [genre, setGenre] = useState("All");
   const [filter, setFilter] = useState("");
   const [serien, setSerien] = useState([]);
+  const [openErrorSnack, setOpenErrorSnack] = React.useState(false);
   const [openStartSnack, setOpenStartSnack] = React.useState(false);
   const [openEndSnack, setOpenEndSnack] = React.useState(false);
   const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
@@ -70,7 +71,6 @@ const App = () => {
     }
   };
   useEffect(() => {
-    test();
     get_serien();
     fetchData();
   }, []);
@@ -512,7 +512,7 @@ const App = () => {
 
         if (genre === "A-Z") {
           filteredSeries.sort((a, b) =>
-            a.title > b.title ? 1 : b.title > a.title ? -1 : 0
+            a.title.toLowerCase() > b.title.toLowerCase() ? 1 : b.title.toLowerCase() > a.title.toLowerCase() ? -1 : 0
           );
         } else if (genre === "Neue Episoden") {
           filteredSeries.sort((a, b) =>
@@ -606,7 +606,13 @@ const App = () => {
   } else {
     return (
       <>
-        <Snackbar open={openStartSnack} autoHideDuration={2000}>
+      <Snackbar open={openErrorSnack} autoHideDuration={3000} onClose={_=>setOpenErrorSnack(false)}>
+          <Alert severity="error" sx={{ width: "100%" }}>
+          Serie nicht gefunden! Bitte überprüfe ob du den Titel richtig geschrieben hast!
+          
+          </Alert>
+        </Snackbar>
+        <Snackbar open={openStartSnack}  onClose={_=>setOpenStartSnack(false)}>
           <Alert severity="warning" sx={{ width: "100%" }}>
             Daten werden geladen!
             <LinearProgressWithLabel value={progress} />
@@ -649,6 +655,7 @@ const App = () => {
           <SideNav
             toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
             toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
+            toggleErrorSnack={(wert) => setOpenErrorSnack(wert)}
             setProgress={(wert) => setProgress(wert)}
             getProviders={getProviders}
             user={user}

@@ -308,16 +308,18 @@ const RecsDialog = (props) => {
       .set(postData);
 
     props.toggleSerienStartSnack(false);
-    props.toggleSerienEndSnack(true);
+   
     props.setProgress(0);
   };
 
   const hinzufuegen = async (event) => {
     try {
       await addNewSeries(event);
+      props.toggleSerienEndSnack(true);
     } catch (error) {
       console.error(error);
-      alert("Fehler beim Hinzufügen der Serie!");
+      props.toggleSerienStartSnack(false);
+      props.toggleErrorSnack(true);
     }
   };
 

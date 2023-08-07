@@ -17,6 +17,7 @@ const SeriesRow = (props) => {
   const [openRecs, setOpenRecs] = useState(false);
   const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
   const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
+  const [openErrorSnack, setOpenErrorSnack] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
 
   const handleCloseSerienSnack = (event, reason) => {
@@ -177,9 +178,15 @@ const SeriesRow = (props) => {
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
   return (
     <>
-    <Snackbar open={openSerienSnack} autoHideDuration={2000}>
+    <Snackbar open={openErrorSnack} autoHideDuration={3000} onClose={_=>setOpenErrorSnack(false)}>
+          <Alert severity="error" sx={{ width: "100%" }}>
+            Serie nicht gefunden!\nBitte überprüfe die Eingabe!
+          
+          </Alert>
+        </Snackbar>
+        <Snackbar open={openSerienSnack} onClose={_=>setOpenSerienSnack(false)}>
           <Alert severity="warning" sx={{ width: "100%" }}>
-            Serie wird hinzugefügt!
+            Daten werden geladen!
             <LinearProgressWithLabel value={progress} />
           </Alert>
         </Snackbar>
@@ -198,6 +205,7 @@ const SeriesRow = (props) => {
         </Snackbar>
       <RecsDialog open={openRecs} close={handleCloseRecs} serie={props.serie} toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
             toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
+            toggleErrorSnack={(wert) => setOpenErrorSnack(wert)}
             setProgress={(wert) => setProgress(wert)} />
       <CustomDialog
         open={open}
