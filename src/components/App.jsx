@@ -20,7 +20,6 @@ import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import LinearProgressWithLabel from "./LinearProgressWithLabel";
 
-
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com florian3456@aol.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
@@ -239,20 +238,24 @@ const App = () => {
   const task = async (serie, index) => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
+    const response = await fetch(
+      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}&language=de-DE`
+    );
+    const data = await response.json();
     const response2 = await fetch(
       `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
     );
     const data3 = await response2.json();
 
-    await Firebase.database()
-      .ref(`serien/${index}/nextEpisode`)
-      .set({ nextEpisode: "" });
+    try {
+      if (serie.tvMaze.tvMazeID !== "") {
+        const tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
+        );
+        await Firebase.database()
+          .ref(`serien/${index}/nextEpisode`)
+          .set({ nextEpisode: "" });
 
-    if (serie.tvMaze.tvMazeID !== "") {
-      const tvMazeResponse = await fetch(
-        `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
-      );
-      try {
         const tvMazeData = await tvMazeResponse.json();
 
         if (tvMazeData._links.nextepisode) {
@@ -264,10 +267,20 @@ const App = () => {
             .ref(`serien/${index}/nextEpisode`)
             .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
         }
-      } catch (error) {}
+      }
+    } catch (error) {
+      
     }
 
-    const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
+    const title = data.name;
+    await Firebase.database().ref(`serien/${index}/title`).set(title);
+    //zufallszahl zwischen 0 und 100
+    const random = Math.floor(Math.random() * 100);
+
+    const posterUrl =
+      random < 50
+        ? `https://image.tmdb.org/t/p/original/${data3.poster_path}`
+        : `https://image.tmdb.org/t/p/original/${data.poster_path}`;
     await Firebase.database()
       .ref(`serien/${index}/poster`)
       .set({ poster: posterUrl });
@@ -512,7 +525,11 @@ const App = () => {
 
         if (genre === "A-Z") {
           filteredSeries.sort((a, b) =>
-            a.title.toLowerCase() > b.title.toLowerCase() ? 1 : b.title.toLowerCase() > a.title.toLowerCase() ? -1 : 0
+            a.title.toLowerCase() > b.title.toLowerCase()
+              ? 1
+              : b.title.toLowerCase() > a.title.toLowerCase()
+              ? -1
+              : 0
           );
         } else if (genre === "Neue Episoden") {
           filteredSeries.sort((a, b) =>
@@ -606,13 +623,20 @@ const App = () => {
   } else {
     return (
       <>
-      <Snackbar open={openErrorSnack} autoHideDuration={3000} onClose={_=>setOpenErrorSnack(false)}>
+        <Snackbar
+          open={openErrorSnack}
+          autoHideDuration={3000}
+          onClose={(_) => setOpenErrorSnack(false)}
+        >
           <Alert severity="error" sx={{ width: "100%" }}>
-          Serie nicht gefunden! Bitte überprüfe ob du den Titel richtig geschrieben hast!
-          
+            Serie nicht gefunden! Bitte überprüfe ob du den Titel richtig
+            geschrieben hast!
           </Alert>
         </Snackbar>
-        <Snackbar open={openStartSnack}  onClose={_=>setOpenStartSnack(false)}>
+        <Snackbar
+          open={openStartSnack}
+          
+        >
           <Alert severity="warning" sx={{ width: "100%" }}>
             Daten werden geladen!
             <LinearProgressWithLabel value={progress} />
