@@ -588,7 +588,7 @@ const App = () => {
         <div>
           <SideNav getProviders={getProviders} />
           <div id="main" key="0">
-            <Header />
+            <Header/>
             <div id="Ueberschrift">
               <Search
                 search={(e) => {
@@ -685,7 +685,7 @@ const App = () => {
             user={user}
           />
           <div id="main" key="0">
-            <Header />
+          <Header user={user} setLoadSeries={(wert)=>{setLoadSeries(wert)}} />
             <div id="Ueberschrift">
               <Search
                 search={(e) => {

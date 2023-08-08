@@ -1,11 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
+import Firebase from "firebase/compat/app";
+import mail from "../configs/mail";
 
-function Header() {
+
+const Header = (props) => {
+  const [user, setUser] = useState(null);
+
+  
+
+
   const scrollTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const toggleNav = () => {
-    
     document.getElementById("mySidenav").classList.toggle("sidenav-offen");
   };
   return (
@@ -44,8 +52,21 @@ function Header() {
           float: "left",
           width: "10%",
         }}
-      ></div>
+      >
+        <CachedOutlinedIcon
+          onClick={(_) => {
+            if (Firebase.auth()?.currentUser) {
+              props.setLoadSeries(true);
+            }
+            else {
+              alert("Bitte anmelden!");
+            }
+          }}
+          titleAccess="Alle Daten neu laden"
+          className="reload"
+        ></CachedOutlinedIcon>
+      </div>
     </div>
   );
-}
+};
 export default Header;

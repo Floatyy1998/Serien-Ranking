@@ -12,6 +12,16 @@
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 1);
 }
+.reload{
+  height: 40px !important;
+  width: 40px !important;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #00fed7;
+  cursor: pointer;
+
+}
 .block {
   display: block;
 }

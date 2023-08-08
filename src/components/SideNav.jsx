@@ -1,16 +1,41 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Firebase from "firebase/compat/app";
 import API from "../configs/API";
 import Button from "@mui/material/Button";
 import mail from "../configs/mail";
 import UserId from "../configs/UserId";
+import LoginDialog from "./LoginDialog";
 
 function SideNav(props) {
-  useEffect(() => {
-    if (props.user) {
-      document.getElementById("login").innerHTML = "LOGOUT";
+  const [open, setOpen] = useState(false);
+
+
+  const handlelogin = () => {
+    if (document.getElementById("login").innerHTML === "LOGIN") {
+     setOpen(true);
+    } else {
+      checklogin();
+      document.getElementById("login").innerHTML = "LOGIN";
     }
-  }, [props.user]);
+  };
+
+
+  const checklogin = () => {
+    const currentUser = Firebase.auth()?.currentUser;
+    if (currentUser) {
+      Firebase.auth()
+        .signOut()
+        .then(
+          function () {
+            localStorage.removeItem(mail);
+            document.getElementById("login").innerHTML = "LOGIN";
+          },
+          function (error) {
+            console.error("Sign Out Error", error);
+          }
+        );
+    }
+  };
 
   const handleFocus = (event) => {
     event.target.style.border = "1px solid #00fed7";
@@ -265,50 +290,10 @@ function SideNav(props) {
       props.toggleErrorSnack(true);
     }
   };
-  const checklogin = () => {
-    const currentUser = Firebase.auth()?.currentUser;
-    if (currentUser) {
-      Firebase.auth()
-        .signOut()
-        .then(
-          function () {
-            localStorage.removeItem(mail);
-            document.getElementById("login").innerHTML = "LOGIN";
-          },
-          function (error) {
-            console.error("Sign Out Error", error);
-          }
-        );
-    }
-  };
-  const login = () => {
-    if (document.getElementById("login").innerHTML === "LOGIN") {
-      var email = prompt("email eingeben", "");
-      if (email === null || email === "") {
-        alert("email muss eingegeben werden");
-      } else {
-        var passwort = prompt("passwort eingeben", "");
-        if (passwort === null || passwort === "") {
-          alert("passwort muss eingegeben werden");
-        } else {
-          Firebase.auth()
-            .signInWithEmailAndPassword(email, passwort)
-            .then((userCredential) => {
-              document.getElementById("login").innerHTML = "LOGOUT";
-              localStorage.setItem(mail, passwort);
-            })
-            .catch((error) => {
-              var errorMessage = error.message;
-              alert(errorMessage);
-            });
-        }
-      }
-    } else {
-      checklogin();
-      document.getElementById("login").innerHTML = "LOGIN";
-    }
-  };
+
   return (
+    <>
+    <LoginDialog open={open} close={(_) => setOpen(false)}></LoginDialog>
     <div
       style={{ zIndex: "99", paddingLeft: "10%", paddingRight: "10%" }}
       id="mySidenav"
@@ -318,7 +303,7 @@ function SideNav(props) {
         style={{ marginTop: "80px", height: "41px" }}
         className="button"
         id="login"
-        onClick={(_) => login()}
+        onClick={(_) => handlelogin()}
       >
         LOGIN
       </h3>
@@ -363,6 +348,7 @@ function SideNav(props) {
         </Button>
       </form>
     </div>
+    </>
   );
 }
 
