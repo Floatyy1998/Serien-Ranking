@@ -9,16 +9,14 @@ import LoginDialog from "./LoginDialog";
 function SideNav(props) {
   const [open, setOpen] = useState(false);
 
-
   const handlelogin = () => {
     if (document.getElementById("login").innerHTML === "LOGIN") {
-     setOpen(true);
+      setOpen(true);
     } else {
       checklogin();
       document.getElementById("login").innerHTML = "LOGIN";
     }
   };
-
 
   const checklogin = () => {
     const currentUser = Firebase.auth()?.currentUser;
@@ -69,7 +67,6 @@ function SideNav(props) {
     const data = await response.json();
     const id = data.results[0].id;
     const anzeigeTitel = data.results[0].name;
-    
 
     props.setProgress(15);
     const detailsResponse = await fetch(
@@ -113,9 +110,18 @@ function SideNav(props) {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}`
     );
     const data3 = await response2.json();
+    const response1 = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}&language=de-DE`
+    );
+    const data1 = await response1.json();
+    const random = Math.floor(Math.random() * 100);
+
     props.setProgress(45);
 
-    const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
+    const posterUrl =
+      random % 2 === 0
+        ? `https://image.tmdb.org/t/p/w500${data3.poster_path}`
+        : `https://image.tmdb.org/t/p/w500${data1.poster_path}`;
     const production = data3.in_production;
 
     const provider = await fetch(
@@ -203,7 +209,7 @@ function SideNav(props) {
       anbieter,
       wo,
       recommendations,
-      anzeigeTitel
+      anzeigeTitel,
     };
   };
 
@@ -242,10 +248,9 @@ function SideNav(props) {
       anbieter,
       wo,
       recommendations,
-      anzeigeTitel
+      anzeigeTitel,
     } = await fetchSeriesData(title);
     props.setProgress(100);
-    
 
     const postData = {
       imdb: { imdb_id: imdb_id },
@@ -257,7 +262,7 @@ function SideNav(props) {
       production: { production: production },
       wo: { wo: wo },
 
-      title:anzeigeTitel,
+      title: anzeigeTitel,
       nmr,
       rating: ratings,
       genre: { genres: ["All", ...genres] },
@@ -293,61 +298,61 @@ function SideNav(props) {
 
   return (
     <>
-    <LoginDialog open={open} close={(_) => setOpen(false)}></LoginDialog>
-    <div
-      style={{ zIndex: "99", paddingLeft: "10%", paddingRight: "10%" }}
-      id="mySidenav"
-      className="sidenav"
-    >
-      <h3
-        style={{ marginTop: "80px", height: "41px" }}
-        className="button"
-        id="login"
-        onClick={(_) => handlelogin()}
+      <LoginDialog open={open} close={(_) => setOpen(false)}></LoginDialog>
+      <div
+        style={{ zIndex: "99", paddingLeft: "10%", paddingRight: "10%" }}
+        id="mySidenav"
+        className="sidenav"
       >
-        LOGIN
-      </h3>
-      <form
-        className="hinzufuegen"
-        id="hinzufuegen"
-        onSubmit={hinzufuegen.bind(this)}
-        autoComplete="off"
-        style={{ padding: "0", marginTop: "20px", textAlign: "center" }}
-      >
-        <h3 style={{ margin: "0", marginBottom: "9px", fontSize: "1.5rem" }}>
-          Serie hinzufügen
-        </h3>
-
-        <label style={{ fontSize: "1.2rem" }} hmtlfor="Title">
-          Title:{" "}
-        </label>
-        <input
-          onFocus={handleFocus.bind(this)}
-          onBlur={handleBlur.bind(this)}
-          style={{ textAlign: "center" }}
-          type="text"
-          id="Title"
-          name="Title"
-        ></input>
-        <Button
-          style={{
-            borderRadius: "10px",
-            fontWeight: "bold",
-            fontFamily: '"Belanosima", sans-serif',
-            height: "41px",
-            width: "100%",
-            backgroundColor: "#333",
-            color: "#ccc",
-            fontSize: "1rem",
-            marginBottom: "60px",
-          }}
-          type="submit"
-          value="SERIE HINZUFÜGEN"
+        <h3
+          style={{ marginTop: "80px", height: "41px" }}
+          className="button"
+          id="login"
+          onClick={(_) => handlelogin()}
         >
-          SERIE HINZUFÜGEN
-        </Button>
-      </form>
-    </div>
+          LOGIN
+        </h3>
+        <form
+          className="hinzufuegen"
+          id="hinzufuegen"
+          onSubmit={hinzufuegen.bind(this)}
+          autoComplete="off"
+          style={{ padding: "0", marginTop: "20px", textAlign: "center" }}
+        >
+          <h3 style={{ margin: "0", marginBottom: "9px", fontSize: "1.5rem" }}>
+            Serie hinzufügen
+          </h3>
+
+          <label style={{ fontSize: "1.2rem" }} hmtlfor="Title">
+            Title:{" "}
+          </label>
+          <input
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
+            style={{ textAlign: "center" }}
+            type="text"
+            id="Title"
+            name="Title"
+          ></input>
+          <Button
+            style={{
+              borderRadius: "10px",
+              fontWeight: "bold",
+              fontFamily: '"Belanosima", sans-serif',
+              height: "41px",
+              width: "100%",
+              backgroundColor: "#333",
+              color: "#ccc",
+              fontSize: "1rem",
+              marginBottom: "60px",
+            }}
+            type="submit"
+            value="SERIE HINZUFÜGEN"
+          >
+            SERIE HINZUFÜGEN
+          </Button>
+        </form>
+      </div>
     </>
   );
 }

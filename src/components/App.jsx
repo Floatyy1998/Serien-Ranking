@@ -223,12 +223,22 @@ const App = () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
     const promises = serien.map((serie, index) =>
-      task(serie, index).then(() => {
+      task(serie, index).then((result) => {
         setProgress((count++ / serien.length) * 100);
+        return Promise.resolve(result);
       })
     );
 
-    await Promise.all(promises);
+    const results = await Promise.all(promises);
+    try {
+      const values = await results;
+
+      console.log(
+        (Math.round((values.filter((x) => x % 2 === 0).length / serien.length) * 100))
+      ); // [resolvedValue1, resolvedValue2]
+    } catch (error) {
+      console.log(error); // rejectReason of any first rejected promise
+    }
 
     setOpenStartSnack(false);
     setOpenEndSnack(true);
@@ -268,9 +278,7 @@ const App = () => {
             .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
         }
       }
-    } catch (error) {
-      
-    }
+    } catch (error) {}
 
     const title = data.name;
     await Firebase.database().ref(`serien/${index}/title`).set(title);
@@ -278,7 +286,7 @@ const App = () => {
     const random = Math.floor(Math.random() * 100);
 
     const posterUrl =
-      random < 50
+      random % 2 === 0
         ? `https://image.tmdb.org/t/p/original/${data3.poster_path}`
         : `https://image.tmdb.org/t/p/original/${data.poster_path}`;
     await Firebase.database()
@@ -413,7 +421,7 @@ const App = () => {
         .set({ recommendations: "" });
     }
 
-    return null;
+    return random;
   };
 
   async function fetchData() {
@@ -588,7 +596,7 @@ const App = () => {
         <div>
           <SideNav getProviders={getProviders} />
           <div id="main" key="0">
-            <Header/>
+            <Header />
             <div id="Ueberschrift">
               <Search
                 search={(e) => {
@@ -633,10 +641,7 @@ const App = () => {
             geschrieben hast!
           </Alert>
         </Snackbar>
-        <Snackbar
-          open={openStartSnack}
-          
-        >
+        <Snackbar open={openStartSnack}>
           <Alert severity="warning" sx={{ width: "100%" }}>
             Daten werden geladen!
             <LinearProgressWithLabel value={progress} />
@@ -685,7 +690,12 @@ const App = () => {
             user={user}
           />
           <div id="main" key="0">
-          <Header user={user} setLoadSeries={(wert)=>{setLoadSeries(wert)}} />
+            <Header
+              user={user}
+              setLoadSeries={(wert) => {
+                setLoadSeries(wert);
+              }}
+            />
             <div id="Ueberschrift">
               <Search
                 search={(e) => {
