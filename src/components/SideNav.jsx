@@ -83,9 +83,9 @@ function SideNav(props) {
       return;
     } else if (
       remake &&
-      serien.filter((serie) => serie.id === data.results[1].id > 0)
+      serien.filter((serie) => serie.id === data.results[1].id).length > 0
     ) {
-      console.log("Serie bereits vorhanden");
+      console.log(serien.filter((serie) => serie.id === data.results[1].id));
       alert(
         "Remake bereits vorhanden...\nJetzt kann ich dir nicht mehr helfen"
       );
