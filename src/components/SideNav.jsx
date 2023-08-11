@@ -61,13 +61,46 @@ function SideNav(props) {
     const serien = snapshot.val();
     var recommendations = "";
     var nextEpisode = "";
+    var remake = false;
+    var title = title;
+    if (title.slice(-3) === "neu") {
+      title = title.slice(0, -4);
+      remake = true;
+    }
+
     const response = await fetch(
       `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1&language=de-DE`
     );
     const data = await response.json();
-    const id = data.results[0].id;
-    const anzeigeTitel = data.results[0].name;
+    if (
+      serien.filter((serie) => serie.id === data.results[0].id).length > 0 &&
+      !remake
+    ) {
+      console.log("Serie bereits vorhanden");
+      alert(
+        'Serie bereits vorhanden.\nWenn Sie versuchen ein Remake hinzuzufügen, fügen Sie bitte ein "neu" hinzu\n\nBeispiel: One Piece neu'
+      );
+      return;
+    } else if (
+      remake &&
+      serien.filter((serie) => serie.id === data.results[1].id > 0)
+    ) {
+      console.log("Serie bereits vorhanden");
+      alert(
+        "Remake bereits vorhanden...\nJetzt kann ich dir nicht mehr helfen"
+      );
+      return;
+    }
+    var id;
+    var anzeigeTitel;
 
+    if (remake) {
+      id = data.results[1].id;
+      anzeigeTitel = data.results[1].name;
+    } else {
+      id = data.results[0].id;
+      anzeigeTitel = data.results[0].name;
+    }
     props.setProgress(15);
     const detailsResponse = await fetch(
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}&language=en-US`
@@ -78,12 +111,23 @@ function SideNav(props) {
 
     props.setProgress(20);
     try {
-      const tvMazeResponse = await fetch(
-        `https://api.tvmaze.com/singlesearch/shows?q=${title}`
-      );
-      props.setProgress(25);
-      const tvMazeData = await tvMazeResponse.json();
-      theMazeId = tvMazeData.id;
+      var tvMazeResponse;
+      var tvMazeData;
+      if (!remake) {
+        tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/singlesearch/shows?q=${title}`
+        );
+        props.setProgress(25);
+        tvMazeData = await tvMazeResponse.json();
+        theMazeId = tvMazeData.id;
+      } else {
+        tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/search/shows?q=${title}`
+        );
+        props.setProgress(25);
+        tvMazeData = await tvMazeResponse.json();
+        theMazeId = tvMazeData[1].show.id;
+      }
     } catch (error) {}
 
     if (theMazeId !== "") {
