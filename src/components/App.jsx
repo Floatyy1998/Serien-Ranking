@@ -284,36 +284,48 @@ const App = () => {
 
     const title = data.name;
     await Firebase.database().ref(`serien/${index}/title`).set(title);
-    const images = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/images?api_key=${API.TMDB}`
-    );
-    const imagesData = await images.json();
-    const imagesList = imagesData.posters
-      .filter((image) => {
-        if (
-          image.vote_average > 5 &&
-          (image.iso_639_1 === null ||
-            image.iso_639_1 === "en" ||
-            image.iso_639_1 === "de" ||
-            image.iso_639_1 === "ja")
-        ) {
-          return true;
-        } else {
-          return false;
-        }
-      })
-      .map((image) => {
-        return `https://image.tmdb.org/t/p/original${image.file_path}`;
-      });
-    //imagesList.map(image=> {return `https://image.tmdb.org/t/p/original${image.file_path}`});
+    var random = 0;
+    try {
+      const images = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}/images?api_key=${API.TMDB}`
+      );
+      const imagesData = await images.json();
+      const imagesList = imagesData.posters
+        .filter((image) => {
+          if (
+            image.vote_average > 5 &&
+            (image.iso_639_1 === null ||
+              image.iso_639_1 === "en" ||
+              image.iso_639_1 === "de" ||
+              image.iso_639_1 === "ja")
+          ) {
+            return true;
+          } else {
+            return false;
+          }
+        })
+        .map((image) => {
+          return `https://image.tmdb.org/t/p/original${image.file_path}`;
+        });
+      //imagesList.map(image=> {return `https://image.tmdb.org/t/p/original${image.file_path}`});
 
-    //zufallszahl zwischen 0 und 100
-    const random = Math.floor(Math.random() * (imagesList.length - 1));
+      //zufallszahl zwischen 0 und 100
+      random = Math.floor(Math.random() * (imagesList.length - 1));
 
-    const posterUrl = imagesList[random];
-    await Firebase.database()
-      .ref(`serien/${index}/poster`)
-      .set({ poster: posterUrl });
+      const posterUrl = imagesList[random];
+      await Firebase.database()
+        .ref(`serien/${index}/poster`)
+        .set({ poster: posterUrl });
+    } catch (error) {
+      random = Math.floor(Math.random() * 100);
+      const posterUrl =
+        random % 2 === 0
+          ? `https://image.tmdb.org/t/p/original${data.poster_path}`
+          : `https://image.tmdb.org/t/p/original${data3.poster_path}`;
+      await Firebase.database()
+        .ref(`serien/${index}/poster`)
+        .set({ poster: posterUrl });
+    }
 
     await Firebase.database()
       .ref(`serien/${index}/production`)
@@ -482,7 +494,8 @@ const App = () => {
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", async (snap) => {
-        if (Math.round((Date.now() - snap?.val()) / 1000) > 6912000) {
+        
+        if (Math.round(Date.now() - snap?.val()) > 604800000) {
           try {
             setLoadSeries(true);
             Firebase.database().ref("timestamp").set({

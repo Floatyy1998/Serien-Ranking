@@ -161,32 +161,41 @@ function SideNav(props) {
 
     props.setProgress(43);
 
- 
-    const images = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API.TMDB}`
-    );
-    const imagesData = await images.json();
-    const imagesList = imagesData.posters
-      .filter((image) => {
-        if (
-          image.vote_average > 0 &&
-          (image.iso_639_1 === null ||
-            image.iso_639_1 === "en" ||
-            image.iso_639_1 === "de" ||
-            image.iso_639_1 === "ja")
-        ) {
-          return true;
-        } else {
-          return false;
-        }
-      })
-      .map((image) => {
-        return `https://image.tmdb.org/t/p/original${image.file_path}`;
-      });
+    var random = Math.floor(Math.random() * 100);
+    var posterUrl =
+      random % 2 === 0
+        ? `https://image.tmdb.org/t/p/original${detailsData.poster_path}`
+        : `https://image.tmdb.org/t/p/original${data1.poster_path}`;
 
-    const random = Math.floor(Math.random() * (imagesList.length - 1));
+    try {
+      const images = await fetch(
+        `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API.TMDB}`
+      );
+      const imagesData = await images.json();
+      const imagesList = imagesData.posters
+        .filter((image) => {
+          if (
+            image.vote_average > 5 &&
+            (image.iso_639_1 === null ||
+              image.iso_639_1 === "en" ||
+              image.iso_639_1 === "de" ||
+              image.iso_639_1 === "ja")
+          ) {
+            return true;
+          } else {
+            return false;
+          }
+        })
+        .map((image) => {
+          return `https://image.tmdb.org/t/p/original${image.file_path}`;
+        });
+      //imagesList.map(image=> {return `https://image.tmdb.org/t/p/original${image.file_path}`});
 
-    const posterUrl = imagesList[random];
+      //zufallszahl zwischen 0 und 100
+      random = Math.floor(Math.random() * (imagesList.length - 1));
+
+      posterUrl = imagesList[random];
+    } catch (error) {}
     const production = data3.in_production;
     props.setProgress(45);
 
