@@ -234,7 +234,9 @@ const App = () => {
       const values = await results;
 
       console.log(
-        (Math.round((values.filter((x) => x % 2 === 0).length / serien.length) * 100))
+        Math.round(
+          (values.filter((x) => x % 2 === 0).length / serien.length) * 100
+        )
       ); // [resolvedValue1, resolvedValue2]
     } catch (error) {
       console.log(error); // rejectReason of any first rejected promise
@@ -282,13 +284,33 @@ const App = () => {
 
     const title = data.name;
     await Firebase.database().ref(`serien/${index}/title`).set(title);
-    //zufallszahl zwischen 0 und 100
-    const random = Math.floor(Math.random() * 100);
+    const images = await fetch(
+      `https://api.themoviedb.org/3/tv/${serie.id}/images?api_key=${API.TMDB}`
+    );
+    const imagesData = await images.json();
+    const imagesList = imagesData.posters
+      .filter((image) => {
+        if (
+          image.vote_average > 5 &&
+          (image.iso_639_1 === null ||
+            image.iso_639_1 === "en" ||
+            image.iso_639_1 === "de" ||
+            image.iso_639_1 === "ja")
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      })
+      .map((image) => {
+        return `https://image.tmdb.org/t/p/original${image.file_path}`;
+      });
+    //imagesList.map(image=> {return `https://image.tmdb.org/t/p/original${image.file_path}`});
 
-    const posterUrl =
-      random % 2 === 0
-        ? `https://image.tmdb.org/t/p/original/${data3.poster_path}`
-        : `https://image.tmdb.org/t/p/original/${data.poster_path}`;
+    //zufallszahl zwischen 0 und 100
+    const random = Math.floor(Math.random() * (imagesList.length - 1));
+
+    const posterUrl = imagesList[random];
     await Firebase.database()
       .ref(`serien/${index}/poster`)
       .set({ poster: posterUrl });

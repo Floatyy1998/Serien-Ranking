@@ -155,10 +155,18 @@ const SeriesRow = (props) => {
     month: "2-digit",
     year: "numeric",
   });
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const formattedTomorrow = tomorrow.toLocaleDateString(navigator.language, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
   const time = new Date(nextEpisode).toLocaleTimeString(navigator.language, {
     hour: "2-digit",
     minute: "2-digit",
   });
+
 
   const nextEp = new Date(nextEpisode);
   var formattedNextEp = nextEp.toLocaleDateString(navigator.language, {
@@ -169,11 +177,10 @@ const SeriesRow = (props) => {
   if (formattedNextEp === formattedToday) {
     formattedNextEp = "Heute";
   }
-  function replaceLineBreaksWithHTML(string) {
-    console.log(string);
-    const reg = /\s*\\n\s*/;
-    return string !== undefined ? string.replace("/\n", "<br/>") : "";
+  if (formattedNextEp === formattedTomorrow) {
+    formattedNextEp = "Morgen";
   }
+
   const hasNextEpisode =
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
   return (

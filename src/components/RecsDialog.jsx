@@ -92,6 +92,14 @@ const RecsDialog = (props) => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     props.setProgress(10);
     const serien = snapshot.val();
+
+    var remake = false;
+    var title = title;
+    if (title.slice(-3) === "neu") {
+      title = title.slice(0, -4);
+      remake = true;
+    }
+
     var recommendations = "";
     var nextEpisode = "";
     const response = await fetch(
@@ -99,6 +107,26 @@ const RecsDialog = (props) => {
     );
     const data = await response.json();
     const id = data.results[0].id;
+
+    if (
+      serien.filter((serie) => serie.id === data.results[0].id).length > 0 &&
+      !remake
+    ) {
+      console.log("Serie bereits vorhanden");
+      alert(
+        'Serie bereits vorhanden.\nWenn Sie versuchen ein Remake hinzuzufügen, fügen Sie bitte ein "neu" hinzu\n\nBeispiel: One Piece neu'
+      );
+      return;
+    } else if (
+      remake &&
+      serien.filter((serie) => serie.id === data.results[1].id).length > 0
+    ) {
+      console.log(serien.filter((serie) => serie.id === data.results[1].id));
+      alert(
+        "Remake bereits vorhanden...\nJetzt kann ich dir nicht mehr helfen"
+      );
+      return;
+    }
 
     props.setProgress(15);
     const detailsResponse = await fetch(
@@ -144,7 +172,36 @@ const RecsDialog = (props) => {
     const data3 = await response2.json();
     props.setProgress(45);
 
-    const posterUrl = `https://image.tmdb.org/t/p/original/${data3.poster_path}`;
+
+    const images = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API.TMDB}`
+    );
+    const imagesData = await images.json();
+    const imagesList = imagesData.posters
+      .filter((image) => {
+        if (
+          image.vote_average > 0 &&
+          (image.iso_639_1 === null ||
+            image.iso_639_1 === "en" ||
+            image.iso_639_1 === "de" ||
+            image.iso_639_1 === "ja")
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      })
+      .map((image) => {
+        return `https://image.tmdb.org/t/p/original${image.file_path}`;
+      });
+
+    const random = Math.floor(Math.random() * (imagesList.length - 1));
+
+    const posterUrl = imagesList[random];
+
+
+
+   
     const production = data3.in_production;
 
     const provider = await fetch(

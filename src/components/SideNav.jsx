@@ -158,15 +158,37 @@ function SideNav(props) {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}&language=de-DE`
     );
     const data1 = await response1.json();
-    const random = Math.floor(Math.random() * 100);
 
-    props.setProgress(45);
+    props.setProgress(43);
 
-    const posterUrl =
-      random % 2 === 0
-        ? `https://image.tmdb.org/t/p/w500${data3.poster_path}`
-        : `https://image.tmdb.org/t/p/w500${data1.poster_path}`;
+ 
+    const images = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API.TMDB}`
+    );
+    const imagesData = await images.json();
+    const imagesList = imagesData.posters
+      .filter((image) => {
+        if (
+          image.vote_average > 0 &&
+          (image.iso_639_1 === null ||
+            image.iso_639_1 === "en" ||
+            image.iso_639_1 === "de" ||
+            image.iso_639_1 === "ja")
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      })
+      .map((image) => {
+        return `https://image.tmdb.org/t/p/original${image.file_path}`;
+      });
+
+    const random = Math.floor(Math.random() * (imagesList.length - 1));
+
+    const posterUrl = imagesList[random];
     const production = data3.in_production;
+    props.setProgress(45);
 
     const provider = await fetch(
       `https://api.themoviedb.org/3/tv/${id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
