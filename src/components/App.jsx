@@ -19,6 +19,7 @@ import ScrollDown from "./ScrollDown";
 import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import LinearProgressWithLabel from "./LinearProgressWithLabel";
+import Bottleneck from "bottleneck";
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com florian3456@aol.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
@@ -28,6 +29,18 @@ const App = () => {
     this.setHours(this.getHours() + h);
     return this;
   };
+
+  const limiter = new Bottleneck({
+    minTime: 100, //minimum time between requests
+    maxConcurrent: 45, //maximum concurrent requests
+  });
+
+  function scheduleRequest(endpoint) {
+    return limiter.schedule(() => {
+      return fetch(endpoint);
+    });
+  }
+
   Firebase.initializeApp(config);
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
@@ -189,27 +202,31 @@ const App = () => {
   };
 
   const loadNewDates = async () => {
+    
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
     const promises = serien.map(async (serie, index) => {
       if (serie.tvMaze.tvMazeID !== "") {
-        const tvMazeResponse = await fetch(
-          `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
-        );
+        let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
+
         try {
-          const tvMazeData = await tvMazeResponse.json();
+          var tvMazeData = await scheduleRequest(endpoint);
+          tvMazeData = await tvMazeData.json();
+          
 
           if (tvMazeData._links.nextepisode) {
-            const tvMazeNextEpisodeResponse = await fetch(
-              `${tvMazeData._links.nextepisode.href}`
-            );
-            const tvMazeNextEpisodeData =
-              await tvMazeNextEpisodeResponse.json();
+            endpoint = `${tvMazeData._links.nextepisode.href}`;
+
+            var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
+            tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
+            
             await Firebase.database()
               .ref(`serien/${index}/nextEpisode`)
               .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
           }
-        } catch (error) {}
+        } catch (error) {
+          console.log(error);
+        }
       }
       return null;
     });
@@ -261,9 +278,9 @@ const App = () => {
 
     try {
       if (serie.tvMaze.tvMazeID !== "") {
-        const tvMazeResponse = await fetch(
-          `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`
-        );
+        let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
+        const tvMazeResponse = await scheduleRequest(endpoint);
+
         await Firebase.database()
           .ref(`serien/${index}/nextEpisode`)
           .set({ nextEpisode: "" });
@@ -271,16 +288,19 @@ const App = () => {
         const tvMazeData = await tvMazeResponse.json();
 
         if (tvMazeData._links.nextepisode) {
-          const tvMazeNextEpisodeResponse = await fetch(
-            `${tvMazeData._links.nextepisode.href}`
-          );
-          const tvMazeNextEpisodeData = await tvMazeNextEpisodeResponse.json();
+          endpoint = `${tvMazeData._links.nextepisode.href}`;
+
+          var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
+          tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
+         
           await Firebase.database()
             .ref(`serien/${index}/nextEpisode`)
             .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
 
     const title = data.name;
     await Firebase.database().ref(`serien/${index}/title`).set(title);
@@ -494,7 +514,6 @@ const App = () => {
     Firebase.database()
       .ref("timestamp/createdAt")
       .on("value", async (snap) => {
-        
         if (Math.round(Date.now() - snap?.val()) > 604800000) {
           try {
             setLoadSeries(true);
