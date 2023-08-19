@@ -242,6 +242,17 @@ const CustomDialog = (props) => {
           ></input>
           <br></br>
           <br></br>
+          <label hmtlfor="Family">Family: </label>
+          <input
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
+            type="text"
+            id="Family"
+            defaultValue={props.serie.rating["Family"]}
+            name="Family"
+          ></input>
+          <br></br>
+          <br></br>
           <label hmtlfor="Horror">Horror: </label>
           <input
             onFocus={handleFocus.bind(this)}
@@ -261,6 +272,17 @@ const CustomDialog = (props) => {
             id="Mystery"
             defaultValue={props.serie.rating["Mystery"]}
             name="Mystery"
+          ></input>
+          <br></br>
+          <br></br>
+          <label hmtlfor="Reality">Reality: </label>
+          <input
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
+            type="text"
+            id="Reality"
+            defaultValue={props.serie.rating["Reality"]}
+            name="Reality"
           ></input>
           <br></br>
           <br></br>

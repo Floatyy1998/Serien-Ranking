@@ -106,6 +106,7 @@ const SeriesRow = (props) => {
       case "A-Z":
       case "All":
       case "Animation":
+      case "Family":
       case "Documentary":
       case "Neue Episoden":
       case "Sport":
