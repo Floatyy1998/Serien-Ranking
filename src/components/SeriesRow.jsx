@@ -9,9 +9,9 @@ import LinearProgressWithLabel from "./LinearProgressWithLabel";
 
 import { Fade, Zoom } from "@mui/material";
 import RecsDialog from "./RecsDialog";
-import mail from "../configs/mail";
 
 
+const mail = process.env.REACT_APP_MAIL;
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
   const [openRecs, setOpenRecs] = useState(false);

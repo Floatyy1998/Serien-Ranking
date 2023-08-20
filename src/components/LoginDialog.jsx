@@ -10,7 +10,11 @@ import {
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import mail from "../configs/mail";
+
+
+const mail = process.env.REACT_APP_MAIL;
+
+
 
 const LoginDialog = (props) => {
 

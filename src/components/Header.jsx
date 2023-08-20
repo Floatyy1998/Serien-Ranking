@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
 import Firebase from "firebase/compat/app";
-import mail from "../configs/mail";
+
 
 
 const Header = (props) => {

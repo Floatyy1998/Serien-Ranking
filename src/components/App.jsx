@@ -5,9 +5,8 @@ import Firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import "firebase/compat/auth";
 import "firebase/compat/analytics";
-import config from "../configs/config";
-import API from "../configs/API";
-import mail from "../configs/mail";
+
+
 
 import SideNav from "./SideNav";
 import Header from "./Header";
@@ -20,6 +19,9 @@ import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import LinearProgressWithLabel from "./LinearProgressWithLabel";
 import Bottleneck from "bottleneck";
+
+const mail = process.env.REACT_APP_MAIL;
+const API = process.env.REACT_APP_API_TMDB;
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com florian3456@aol.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
@@ -40,8 +42,19 @@ const App = () => {
       return fetch(endpoint);
     });
   }
+  const config = {
+    apiKey: process.env.REACT_APP_APIKEY,
+    authDomain: process.env.REACT_APP_AUTHDOMAIN,
+    databaseURL: process.env.REACT_APP_DATABASEURL,
+    projectId: process.env.REACT_APP_PROJECTID,
+    storageBucket: process.env.REACT_APP_STORAGEBUCKET,
+    messagingSenderId: process.env.REACT_APP_MESSAGINGSENDERID,
+    appId: process.env.REACT_APP_APPID,
+    measurementId: process.env.REACT_APP_MEASUREMENTID,
+  };
 
   Firebase.initializeApp(config);
+
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
   const [genre, setGenre] = useState("All");
@@ -83,6 +96,7 @@ const App = () => {
     }
   };
   useEffect(() => {
+
     get_serien();
     fetchData();
   }, []);
@@ -202,7 +216,6 @@ const App = () => {
   };
 
   const loadNewDates = async () => {
-    
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
     const promises = serien.map(async (serie, index) => {
@@ -212,14 +225,13 @@ const App = () => {
         try {
           var tvMazeData = await scheduleRequest(endpoint);
           tvMazeData = await tvMazeData.json();
-          
 
           if (tvMazeData._links.nextepisode) {
             endpoint = `${tvMazeData._links.nextepisode.href}`;
 
             var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
             tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
-            
+
             await Firebase.database()
               .ref(`serien/${index}/nextEpisode`)
               .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
@@ -268,11 +280,11 @@ const App = () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
     const response = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}&language=de-DE`
+      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}&language=de-DE`
     );
     const data = await response.json();
     const response2 = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API.TMDB}`
+      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}`
     );
     const data3 = await response2.json();
 
@@ -292,7 +304,7 @@ const App = () => {
 
           var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
           tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
-         
+
           await Firebase.database()
             .ref(`serien/${index}/nextEpisode`)
             .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
@@ -307,7 +319,7 @@ const App = () => {
     var random = 0;
     try {
       const images = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/images?api_key=${API.TMDB}`
+        `https://api.themoviedb.org/3/tv/${serie.id}/images?api_key=${API}`
       );
       const imagesData = await images.json();
       const imagesList = imagesData.posters
@@ -352,7 +364,7 @@ const App = () => {
       .set({ production: data3.in_production });
 
     const provider = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+      `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API}&language=en-US`
     );
     const providerData = await provider.json();
     const anbieter = getProviders(providerData);
@@ -370,7 +382,7 @@ const App = () => {
     await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
 
     const response3 = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API.TMDB}&language=en-US`
+      `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API}&language=en-US`
     );
     const data4 = await response3.json();
     await Firebase.database()
@@ -386,11 +398,11 @@ const App = () => {
     await Firebase.database().ref(`serien/${index}/wo`).set({ wo: woUrl });
 
     const rec = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE`
+      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API}&language=de-DE`
     );
     const recData = await rec.json();
     const rec2 = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API.TMDB}&language=de-DE&page=2`
+      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API}&language=de-DE&page=2`
     );
     const recData2 = await rec2.json();
     let recResult = recData.results;
@@ -435,7 +447,7 @@ const App = () => {
     for (let i = 0; i < recs.length; i++) {
       try {
         const provider = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
         );
 
         const providerData = await provider.json();
@@ -443,13 +455,13 @@ const App = () => {
 
         recs[i].provider = anbieter;
         const response2 = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API.TMDB}`
+          `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API}`
         );
         const data3 = await response2.json();
         recs[i].production = data3.in_production;
 
         const response3 = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API}&language=en-US`
         );
         const data4 = await response3.json();
         recs[i].imdb_id = data4.imdb_id;

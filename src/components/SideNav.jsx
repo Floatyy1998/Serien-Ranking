@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Firebase from "firebase/compat/app";
-import API from "../configs/API";
+
 import Button from "@mui/material/Button";
-import mail from "../configs/mail";
-import UserId from "../configs/UserId";
+
 import LoginDialog from "./LoginDialog";
+
+const API = process.env.REACT_APP_API_TMDB;
+const mail = process.env.REACT_APP_MAIL;
+const UserId = process.env.REACT_APP_USERID;
 
 function SideNav(props) {
   const [open, setOpen] = useState(false);
@@ -69,7 +72,7 @@ function SideNav(props) {
     }
 
     const response = await fetch(
-      `https://api.themoviedb.org/3/search/tv?api_key=${API.TMDB}&query=${title}&page=1&language=de-DE`
+      `https://api.themoviedb.org/3/search/tv?api_key=${API}&query=${title}&page=1&language=de-DE`
     );
     const data = await response.json();
     if (
@@ -103,7 +106,7 @@ function SideNav(props) {
     }
     props.setProgress(15);
     const detailsResponse = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}&language=en-US`
+      `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=en-US`
     );
     const detailsData = await detailsResponse.json();
     const genres = detailsData.genres.map((genre) => genre.name);
@@ -151,11 +154,11 @@ function SideNav(props) {
     props.setProgress(40);
 
     const response2 = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}`
+      `https://api.themoviedb.org/3/tv/${id}?api_key=${API}`
     );
     const data3 = await response2.json();
     const response1 = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}?api_key=${API.TMDB}&language=de-DE`
+      `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
     );
     const data1 = await response1.json();
 
@@ -169,7 +172,7 @@ function SideNav(props) {
 
     try {
       const images = await fetch(
-        `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API.TMDB}`
+        `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API}`
       );
       const imagesData = await images.json();
       const imagesList = imagesData.posters
@@ -200,7 +203,7 @@ function SideNav(props) {
     props.setProgress(45);
 
     const provider = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+      `https://api.themoviedb.org/3/tv/${id}/season/1/watch/providers?api_key=${API}&language=en-US`
     );
     const providerData = await provider.json();
     const anbieter = props.getProviders(providerData);
@@ -208,7 +211,7 @@ function SideNav(props) {
     props.setProgress(50);
 
     const response3 = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}/external_ids?api_key=${API.TMDB}&language=en-US`
+      `https://api.themoviedb.org/3/tv/${id}/external_ids?api_key=${API}&language=en-US`
     );
     const data4 = await response3.json();
     const imdb_id = data4.imdb_id;
@@ -216,12 +219,12 @@ function SideNav(props) {
 
     props.setProgress(55);
     const rec = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${API.TMDB}&language=de-DE`
+      `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${API}&language=de-DE`
     );
     const recData = await rec.json();
     props.setProgress(60);
     const rec2 = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${API.TMDB}&language=de-DE&page=2`
+      `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${API}&language=de-DE&page=2`
     );
     props.setProgress(65);
     const recData2 = await rec2.json();
@@ -243,7 +246,7 @@ function SideNav(props) {
 
     for (let i = 0; i < recs.length; i++) {
       const provider = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API.TMDB}&language=en-US`
+        `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
       );
       props.setProgress(70 + (i / recs.length) * 30);
 
@@ -252,13 +255,13 @@ function SideNav(props) {
 
       recs[i].provider = anbieter;
       const response2 = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API.TMDB}`
+        `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API}`
       );
       const data3 = await response2.json();
       recs[i].production = data3.in_production;
 
       const response3 = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API.TMDB}&language=en-US`
+        `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API}&language=en-US`
       );
       const data4 = await response3.json();
       recs[i].imdb_id = data4.imdb_id;
