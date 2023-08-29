@@ -205,7 +205,7 @@ const LoginDialog = (props) => {
           <input
             onFocus={handleFocus.bind(this)}
             onBlur={handleBlur.bind(this)}
-            type="text"
+            type="password"
             id="Passwort"
             name="Passwort"
           ></input>

@@ -2,19 +2,19 @@ import React, { useEffect, useState } from "react";
 import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
 import Firebase from "firebase/compat/app";
 
-
-
 const Header = (props) => {
   const [user, setUser] = useState(null);
-
-  
-
 
   const scrollTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const toggleNav = () => {
     document.getElementById("mySidenav").classList.toggle("sidenav-offen");
+    if (
+      document.getElementById("mySidenav").classList.contains("sidenav-offen")
+    ) {
+      document.getElementById("Title").focus();
+    }
   };
   return (
     <div
@@ -57,8 +57,7 @@ const Header = (props) => {
           onClick={(_) => {
             if (Firebase.auth()?.currentUser) {
               props.setLoadSeries(true);
-            }
-            else {
+            } else {
               alert("Bitte anmelden!");
             }
           }}

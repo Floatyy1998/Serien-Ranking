@@ -6,8 +6,6 @@ import "firebase/compat/database";
 import "firebase/compat/auth";
 import "firebase/compat/analytics";
 
-
-
 import SideNav from "./SideNav";
 import Header from "./Header";
 import Select from "./Select";
@@ -96,10 +94,12 @@ const App = () => {
     }
   };
   useEffect(() => {
-
-    get_serien();
-    fetchData();
+    const interval = setInterval(() => {
+      fetchData();
+    }, 600000);
+    return () => clearInterval(interval);
   }, []);
+
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
       if (!localStorage.getItem(mail)) {
@@ -216,10 +216,14 @@ const App = () => {
   };
 
   const loadNewDates = async () => {
+    console.log("loadNewDates");
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
     const promises = serien.map(async (serie, index) => {
       if (serie.tvMaze.tvMazeID !== "") {
+        await Firebase.database()
+          .ref(`serien/${index}/nextEpisode`)
+          .set({ nextEpisode: "" });
         let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
 
         try {
@@ -244,6 +248,7 @@ const App = () => {
     });
 
     await Promise.all(promises);
+    console.log("loadNewDates finished");
   };
 
   const laden = async () => {
