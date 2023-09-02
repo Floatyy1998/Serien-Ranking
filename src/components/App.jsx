@@ -63,6 +63,9 @@ const App = () => {
   const [openEndSnack, setOpenEndSnack] = React.useState(false);
   const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
   const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
+  const [openDatesEndSnack, setOpenDatesEndSnack] = React.useState(false);
+  const [openDateSnack, setOpenDateSnack] = React.useState(false);
+  const [progressDates, setProgressDates] = React.useState(0);
   const [progress, setProgress] = React.useState(0);
   const [user, setUser] = useState(null);
 
@@ -93,12 +96,17 @@ const App = () => {
       return;
     }
   };
+  const handleCloseEndDatesSnack = (event, reason) => {
+    setOpenDatesEndSnack(false);
+    if (reason === "clickaway") {
+      return;
+    }
+  };
   useEffect(() => {
-    const interval = setInterval(() => {
+    if (genre === "Neue Episoden") {
       fetchData();
-    }, 600000);
-    return () => clearInterval(interval);
-  }, []);
+    }
+  }, [genre]);
 
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
@@ -151,10 +159,7 @@ const App = () => {
     }
   }, [loadNewDate]);
 
-  const get_serien = async () => {
-    const snapshot = await Firebase.database().ref("/serien").once("value");
-    setSerien(snapshot.val());
-  };
+  
 
   const getProviders = (providerData) => {
     const providers = {
@@ -216,38 +221,46 @@ const App = () => {
   };
 
   const loadNewDates = async () => {
+    setOpenDateSnack(true);
     console.log("loadNewDates");
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
-    const promises = serien.map(async (serie, index) => {
-      if (serie.tvMaze.tvMazeID !== "") {
-        await Firebase.database()
-          .ref(`serien/${index}/nextEpisode`)
-          .set({ nextEpisode: "" });
-        let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
+    var count = 0;
+    const promises = serien
+      .map(async (serie, index) => {
+        if (serie.tvMaze.tvMazeID !== "") {
+          await Firebase.database()
+            .ref(`serien/${index}/nextEpisode`)
+            .set({ nextEpisode: "" });
+          let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
 
-        try {
-          var tvMazeData = await scheduleRequest(endpoint);
-          tvMazeData = await tvMazeData.json();
+          try {
+            var tvMazeData = await scheduleRequest(endpoint);
+            tvMazeData = await tvMazeData.json();
 
-          if (tvMazeData._links.nextepisode) {
-            endpoint = `${tvMazeData._links.nextepisode.href}`;
+            if (tvMazeData._links.nextepisode) {
+              endpoint = `${tvMazeData._links.nextepisode.href}`;
 
-            var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
-            tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
+              var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
+              tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
 
-            await Firebase.database()
-              .ref(`serien/${index}/nextEpisode`)
-              .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+              await Firebase.database()
+                .ref(`serien/${index}/nextEpisode`)
+                .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+            }
+          } catch (error) {
+            console.log(error);
           }
-        } catch (error) {
-          console.log(error);
         }
-      }
-      return null;
-    });
+        setProgressDates((count++ / serien.length) * 100);
+        return;
+      })
+     
 
     await Promise.all(promises);
+    setOpenDateSnack(false);
+    setProgressDates(0);
+    setOpenDatesEndSnack(true);
     console.log("loadNewDates finished");
   };
 
@@ -718,6 +731,14 @@ const App = () => {
             <LinearProgressWithLabel value={progress} />
           </Alert>
         </Snackbar>
+
+        <Snackbar open={openDateSnack}>
+          <Alert severity="warning" sx={{ width: "100%" }}>
+            Neue Episoden werden geladen!
+            <LinearProgressWithLabel value={progressDates} />
+          </Alert>
+        </Snackbar>
+
         <Snackbar
           open={openEndSnack}
           autoHideDuration={3000}
@@ -731,6 +752,21 @@ const App = () => {
             Daten erfolgreich geladen!
           </Alert>
         </Snackbar>
+
+        <Snackbar
+          open={openDatesEndSnack}
+          autoHideDuration={3000}
+          onClose={handleCloseEndDatesSnack}
+        >
+          <Alert
+            onClose={handleCloseEndDatesSnack}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            Neue Episoden erfolgreich geladen!
+          </Alert>
+        </Snackbar>
+        
 
         <Snackbar open={openSerienSnack} autoHideDuration={2000}>
           <Alert severity="warning" sx={{ width: "100%" }}>
