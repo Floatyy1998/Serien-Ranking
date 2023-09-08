@@ -159,8 +159,6 @@ const App = () => {
     }
   }, [loadNewDate]);
 
-  
-
   const getProviders = (providerData) => {
     const providers = {
       337: {
@@ -226,36 +224,38 @@ const App = () => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
     var count = 0;
-    const promises = serien
-      .map(async (serie, index) => {
-        if (serie.tvMaze.tvMazeID !== "") {
-          await Firebase.database()
-            .ref(`serien/${index}/nextEpisode`)
-            .set({ nextEpisode: "" });
-          let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
+    const promises = serien.map(async (serie, index) => {
+      if (serie.tvMaze.tvMazeID !== "") {
+        let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
 
-          try {
-            var tvMazeData = await scheduleRequest(endpoint);
-            tvMazeData = await tvMazeData.json();
+        try {
+          var tvMazeData = await scheduleRequest(endpoint);
+          tvMazeData = await tvMazeData.json();
 
-            if (tvMazeData._links.nextepisode) {
-              endpoint = `${tvMazeData._links.nextepisode.href}`;
+          if (tvMazeData._links.nextepisode) {
+            endpoint = `${tvMazeData._links.nextepisode.href}`;
 
-              var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
-              tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
+            var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
+            tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
+            await Firebase.database()
+              .ref(`serien/${index}/nextEpisode`)
+              .set({ nextEpisode: "" });
 
-              await Firebase.database()
-                .ref(`serien/${index}/nextEpisode`)
-                .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
-            }
-          } catch (error) {
-            console.log(error);
+            await Firebase.database()
+              .ref(`serien/${index}/nextEpisode`)
+              .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+          } else {
+            await Firebase.database()
+              .ref(`serien/${index}/nextEpisode`)
+              .set({ nextEpisode: "" });
           }
+        } catch (error) {
+          console.log(error);
         }
-        setProgressDates((count++ / serien.length) * 100);
-        return;
-      })
-     
+      }
+      setProgressDates((count++ / serien.length) * 100);
+      return;
+    });
 
     await Promise.all(promises);
     setOpenDateSnack(false);
@@ -766,7 +766,6 @@ const App = () => {
             Neue Episoden erfolgreich geladen!
           </Alert>
         </Snackbar>
-        
 
         <Snackbar open={openSerienSnack} autoHideDuration={2000}>
           <Alert severity="warning" sx={{ width: "100%" }}>
