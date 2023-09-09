@@ -239,15 +239,41 @@ const App = () => {
             tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
             await Firebase.database()
               .ref(`serien/${index}/nextEpisode`)
-              .set({ nextEpisode: "" });
+              .set({ nextEpisode: "", season: "", episode: "", title: "" });
 
-            await Firebase.database()
-              .ref(`serien/${index}/nextEpisode`)
-              .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+            const response = await fetch(
+              `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}&language=de-DE`
+            );
+            const data = await response.json();
+            let title = "";
+
+            if (!data.next_episode_to_air) {
+              title = tvMazeNextEpisodeData.name;
+            } else {
+              if (!String(data.next_episode_to_air.name).includes("Episode")) {
+                title = data.next_episode_to_air.name;
+              } else {
+                if (
+                  tvMazeNextEpisodeData.name === "TBA" ||
+                  tvMazeNextEpisodeData.name === "TBD"
+                ) {
+                  title = data.next_episode_to_air.name;
+                } else {
+                  title = tvMazeNextEpisodeData.name;
+                }
+              }
+            }
+
+            await Firebase.database().ref(`serien/${index}/nextEpisode`).set({
+              nextEpisode: tvMazeNextEpisodeData.airstamp,
+              season: tvMazeNextEpisodeData.season,
+              episode: tvMazeNextEpisodeData.number,
+              title: title,
+            });
           } else {
             await Firebase.database()
               .ref(`serien/${index}/nextEpisode`)
-              .set({ nextEpisode: "" });
+              .set({ nextEpisode: "", season: "", episode: "", title: "" });
           }
         } catch (error) {
           console.log(error);

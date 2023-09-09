@@ -10,7 +10,6 @@ import LinearProgressWithLabel from "./LinearProgressWithLabel";
 import { Fade, Zoom } from "@mui/material";
 import RecsDialog from "./RecsDialog";
 
-
 const mail = process.env.REACT_APP_MAIL;
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
@@ -101,35 +100,34 @@ const SeriesRow = (props) => {
   const getRating = (a) => {
     let punktea = 0;
 
-   try {
-    switch (props.genre) {
-      case "A-Z":
-      case "All":
-      case "Animation":
-      case "Family":
-      case "Documentary":
-      case "Neue Episoden":
-      case "Sport":
-      case "Zuletzt Hinzugefügt":
-        Object.entries(a["rating"]).forEach(([key, value]) => {
-          if (a["genre"]["genres"].includes(key)) {
-            punktea += value * 3;
-          } else {
-            punktea += value;
-          }
-        });
-        punktea /= Object.keys(a["genre"]["genres"]).length;
-        punktea /= 3;
-        break;
-      default:
-        punktea += a["rating"][props.genre];
-        break;
-    }
+    try {
+      switch (props.genre) {
+        case "A-Z":
+        case "All":
+        case "Animation":
+        case "Family":
+        case "Documentary":
+        case "Neue Episoden":
+        case "Sport":
+        case "Zuletzt Hinzugefügt":
+          Object.entries(a["rating"]).forEach(([key, value]) => {
+            if (a["genre"]["genres"].includes(key)) {
+              punktea += value * 3;
+            } else {
+              punktea += value;
+            }
+          });
+          punktea /= Object.keys(a["genre"]["genres"]).length;
+          punktea /= 3;
+          break;
+        default:
+          punktea += a["rating"][props.genre];
+          break;
+      }
 
-    return addZeroes(round(punktea, 0.01));
-    }
-    catch (error) {
-     return addZeroes(round(punktea, 0.01));
+      return addZeroes(round(punktea, 0.01));
+    } catch (error) {
+      return addZeroes(round(punktea, 0.01));
     }
   };
 
@@ -138,12 +136,16 @@ const SeriesRow = (props) => {
   };
 
   var nextEpisode = "";
+  var nextEpisodeCount = "";
+  var nextEpisodeTitle = "";
   var inProgress = false;
   var poster = "";
   var wo = "";
   var imdb = "";
   try {
     nextEpisode = props.serie.nextEpisode["nextEpisode"];
+    nextEpisodeCount = `Staffel ${props.serie.nextEpisode["season"]} Ep. ${props.serie.nextEpisode["episode"]}`;
+    nextEpisodeTitle = props.serie.nextEpisode["title"];
     inProgress = props.serie.production["production"];
     poster = `url(${props.serie.poster["poster"]})`;
     wo = props.serie.wo["wo"];
@@ -168,7 +170,6 @@ const SeriesRow = (props) => {
     minute: "2-digit",
   });
 
-
   const nextEp = new Date(nextEpisode);
   var formattedNextEp = nextEp.toLocaleDateString(navigator.language, {
     day: "2-digit",
@@ -181,40 +182,52 @@ const SeriesRow = (props) => {
   if (formattedNextEp === formattedTomorrow) {
     formattedNextEp = "Morgen";
   }
+  formattedNextEp = `${formattedNextEp} um ${time} Uhr`;
 
   const hasNextEpisode =
     nextEpisode !== undefined && nextEpisode !== "" && nextEpisode !== null;
   return (
     <>
-    <Snackbar open={openErrorSnack} autoHideDuration={3000} onClose={_=>setOpenErrorSnack(false)}>
-          <Alert severity="error" sx={{ width: "100%" }}>
-            Serie nicht gefunden!\nBitte überprüfe die Eingabe!
-          
-          </Alert>
-        </Snackbar>
-        <Snackbar open={openSerienSnack} onClose={_=>setOpenSerienSnack(false)}>
-          <Alert severity="warning" sx={{ width: "100%" }}>
-            Daten werden geladen!
-            <LinearProgressWithLabel value={progress} />
-          </Alert>
-        </Snackbar>
-        <Snackbar
-          open={openSerienEndSnack}
-          autoHideDuration={3000}
+      <Snackbar
+        open={openErrorSnack}
+        autoHideDuration={3000}
+        onClose={(_) => setOpenErrorSnack(false)}
+      >
+        <Alert severity="error" sx={{ width: "100%" }}>
+          Serie nicht gefunden!\nBitte überprüfe die Eingabe!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openSerienSnack}
+        onClose={(_) => setOpenSerienSnack(false)}
+      >
+        <Alert severity="warning" sx={{ width: "100%" }}>
+          Daten werden geladen!
+          <LinearProgressWithLabel value={progress} />
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openSerienEndSnack}
+        autoHideDuration={3000}
+        onClose={handleCloseSerienSnack}
+      >
+        <Alert
           onClose={handleCloseSerienSnack}
+          severity="success"
+          sx={{ width: "100%" }}
         >
-          <Alert
-            onClose={handleCloseSerienSnack}
-            severity="success"
-            sx={{ width: "100%" }}
-          >
-            Serie erfolgreich hinzugefügt!
-          </Alert>
-        </Snackbar>
-      <RecsDialog open={openRecs} close={handleCloseRecs} serie={props.serie} toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
-            toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
-            toggleErrorSnack={(wert) => setOpenErrorSnack(wert)}
-            setProgress={(wert) => setProgress(wert)} />
+          Serie erfolgreich hinzugefügt!
+        </Alert>
+      </Snackbar>
+      <RecsDialog
+        open={openRecs}
+        close={handleCloseRecs}
+        serie={props.serie}
+        toggleSerienStartSnack={(wert) => setOpenSerienSnack(wert)}
+        toggleSerienEndSnack={(wert) => setOpenSerienEndSnack(wert)}
+        toggleErrorSnack={(wert) => setOpenErrorSnack(wert)}
+        setProgress={(wert) => setProgress(wert)}
+      />
       <CustomDialog
         open={open}
         close={handleClose}
@@ -307,13 +320,20 @@ const SeriesRow = (props) => {
               </Tooltip>
             </div>
             {hasNextEpisode && (
-              <p className="nextEpisode">
-                Nächste Episode:
-                <br></br>
-                {formattedNextEp}
-                <br></br>
-                {time}
-              </p>
+              <div className="nextEpisode">
+               <div className="top">
+              
+                <p className="title">{nextEpisodeCount}</p>
+                <p className="title">{formattedNextEp}</p>
+               </div>
+
+                <div className="marginTop">
+                  <div className="bottom">
+                    <p className="title">Titel:</p>
+                    <span className="info" title={nextEpisodeTitle}> {nextEpisodeTitle}</span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
