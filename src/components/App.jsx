@@ -147,8 +147,13 @@ const App = () => {
 
   useEffect(() => {
     if (loadSeries) {
-      laden();
-      setLoadSeries(false);
+      if (genre === "Neue Episoden") {
+        setLoadNewDate(true);
+      } else {
+        laden();
+        setLoadSeries(false);
+        setLoadNewDate(true);
+      }
     }
   }, [loadSeries]);
 

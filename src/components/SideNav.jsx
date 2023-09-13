@@ -4,6 +4,7 @@ import Firebase from "firebase/compat/app";
 import Button from "@mui/material/Button";
 
 import LoginDialog from "./LoginDialog";
+import Bottleneck from "bottleneck";
 
 const API = process.env.REACT_APP_API_TMDB;
 const mail = process.env.REACT_APP_MAIL;
@@ -20,6 +21,17 @@ function SideNav(props) {
       document.getElementById("login").innerHTML = "LOGIN";
     }
   };
+
+  const limiter = new Bottleneck({
+    minTime: 100, //minimum time between requests
+    maxConcurrent: 45, //maximum concurrent requests
+  });
+
+  function scheduleRequest(endpoint) {
+    return limiter.schedule(() => {
+      return fetch(endpoint);
+    });
+  }
 
   const checklogin = () => {
     const currentUser = Firebase.auth()?.currentUser;
@@ -66,6 +78,9 @@ function SideNav(props) {
     var nextEpisode = "";
     var remake = false;
     var title = title;
+    var nextEpisodeTitle = "";
+    var season = "";
+    var episode = "";
     if (title.slice(-3) === "neu") {
       title = title.slice(0, -4);
       remake = true;
@@ -134,20 +149,48 @@ function SideNav(props) {
     } catch (error) {}
 
     if (theMazeId !== "") {
-      const tvMazeResponse = await fetch(
-        `https://api.tvmaze.com/shows/${theMazeId}`
-      );
+      var endpoint = `https://api.tvmaze.com/shows/${theMazeId}`;
+     
       props.setProgress(30);
       try {
-        const tvMazeData = await tvMazeResponse.json();
-        props.setProgress(35);
+        var tvMazeData = await scheduleRequest(endpoint);
+        tvMazeData = await tvMazeData.json();
+        console.log(tvMazeData);
 
         if (tvMazeData._links.nextepisode) {
-          const tvMazeNextEpisodeResponse = await fetch(
-            `${tvMazeData._links.nextepisode.href}`
+          console.log(tvMazeData._links.nextepisode);
+          endpoint = `${tvMazeData._links.nextepisode.href}`;
+          console.log(endpoint);
+
+          var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
+          tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
+          console.log(tvMazeNextEpisodeData);
+          nextEpisode = tvMazeNextEpisodeData.airdate;
+          season = tvMazeNextEpisodeData.season;
+          episode = tvMazeNextEpisodeData.number;
+          console.log(nextEpisode, season, episode);
+
+          const response = await fetch(
+            `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
           );
-          const tvMazeNextEpisodeData = await tvMazeNextEpisodeResponse.json();
-          nextEpisode = tvMazeNextEpisodeData.airstamp;
+          const data = await response.json();
+
+          if (!data.next_episode_to_air) {
+            nextEpisodeTitle = tvMazeNextEpisodeData.name;
+          } else {
+            if (!String(data.next_episode_to_air.name).includes("Episode")) {
+              nextEpisodeTitle = data.next_episode_to_air.name;
+            } else {
+              if (
+                tvMazeNextEpisodeData.name === "TBA" ||
+                tvMazeNextEpisodeData.name === "TBD"
+              ) {
+                nextEpisodeTitle = data.next_episode_to_air.name;
+              } else {
+                nextEpisodeTitle = tvMazeNextEpisodeData.name;
+              }
+            }
+          }
         }
       } catch (error) {}
     }
@@ -288,6 +331,9 @@ function SideNav(props) {
       wo,
       recommendations,
       anzeigeTitel,
+      nextEpisodeTitle,
+      season,
+      episode,
     };
   };
 
@@ -329,12 +375,20 @@ function SideNav(props) {
       wo,
       recommendations,
       anzeigeTitel,
+      nextEpisodeTitle,
+      season,
+      episode,
     } = await fetchSeriesData(title);
     props.setProgress(100);
 
     const postData = {
       imdb: { imdb_id: imdb_id },
-      nextEpisode: { nextEpisode: nextEpisode },
+      nextEpisode: {
+        nextEpisode: nextEpisode,
+        season: season,
+        episode: episode,
+        title: nextEpisodeTitle,
+      },
       poster: { poster: posterUrl },
       provider: { provider: anbieter },
       recommendation: { recommendations: recommendations },
