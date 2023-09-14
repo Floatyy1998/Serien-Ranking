@@ -321,16 +321,18 @@ const SeriesRow = (props) => {
             </div>
             {hasNextEpisode && (
               <div className="nextEpisode">
-               <div className="top">
-              
-                <p className="title">{nextEpisodeCount}</p>
-                <p className="title">{formattedNextEp}</p>
-               </div>
+                <div className="top">
+                  <p className="title">{nextEpisodeCount}</p>
+                  <p className="title">{formattedNextEp}</p>
+                </div>
 
                 <div className="marginTop">
                   <div className="bottom">
                     <p className="title">Titel:</p>
-                    <span className="info" title={nextEpisodeTitle}> {nextEpisodeTitle}</span>
+                    <span className="info" title={nextEpisodeTitle}>
+                      {" "}
+                      {nextEpisodeTitle}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -341,31 +343,18 @@ const SeriesRow = (props) => {
             className="draußen"
             style={{ borderRadius: "30px", width: "100%" }}
           >
-            <p
-              className="padding"
-              onClick={(_) => {
-                if (localStorage.getItem(mail)) {
-                  setOpen(true);
-                } else {
-                  redirect(wo);
-                }
-              }}
-            >
-              <span
-                style={{
-                  width: "100%",
-                  height: "40%",
-                  display: "grid",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              ></span>
+            <p className="padding">
               <a
                 target="_blank"
+                onClick={(_) => {
+                  if (localStorage.getItem(mail)) {
+                    setOpen(true);
+                  } else {
+                    redirect(wo);
+                  }
+                }}
+                title={props.serie.title}
                 style={{
-                  width: "100%",
-                  height: "60%",
-                  display: "grid",
                   cursor: "pointer",
                   textDecoration: "underline",
                 }}
