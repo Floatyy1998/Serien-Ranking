@@ -21,11 +21,10 @@
     "build": "react-scripts build && firebase deploy",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "copy": "xcopy E:\\Programms\\Serien-Ranking\\src\\components E:\\Programms\\Florian-Serien\\src\\components /y && xcopy E:\\Programms\\Serien-Ranking\\src\\components E:\\Programms\\Desiree-Serien\\src\\components /y && xcopy E:\\Programms\\Serien-Ranking\\src\\Styles E:\\Programms\\Florian-Serien\\src\\Styles /y && xcopy E:\\Programms\\Serien-Ranking\\src\\Styles E:\\Programms\\Desiree-Serien\\src\\Styles /y",
+    "copy": "for %D in (E:\\Programms\\Florian-Serien\\src E:\\Programms\\Desiree-Serien\\src) do xcopy E:\\Programms\\Serien-Ranking\\src %D /E /H /C /I /Y ",
     "deploy_all": "cd E:\\Programms\\Florian-Serien && npm run build && cd E:\\Programms\\Desiree-Serien && npm run build",
     "copy_and_deploy": "npm run copy && npm run deploy_all",
     "copy_and_deploy_all": "npm run build && npm run copy_and_deploy"
-
   },
   "eslintConfig": {
     "extends": [

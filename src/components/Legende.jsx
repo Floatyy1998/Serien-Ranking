@@ -65,7 +65,11 @@ const Legende = () => {
             </Typography>
             <br></br>
             <span style={{ color: "#b103fc" }}>
-              <b>beendet:</b> Es kommen keine weiteren Folgen.
+              <b>beendet:</b> Es kommen{" "}
+              <strong>
+                <u style={{ textDecoration: "underline" }}>keine</u>
+              </strong>{" "}
+              weiteren Folgen.
             </span>
             <br></br>
             <br></br>
@@ -80,9 +84,7 @@ const Legende = () => {
             </span>
             <br></br>
             <br></br>
-            <span>
-              Hover über ein Rating, um die Begründung zu sehen.
-            </span>
+            <span>Hover über ein Rating, um die Begründung zu sehen.</span>
             <br></br>
             <br></br>
             <span>

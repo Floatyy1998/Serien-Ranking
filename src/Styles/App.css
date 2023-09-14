@@ -214,6 +214,9 @@ input[type="text"]::placeholder {
 .MuiFormLabel-root.Mui-focused {
   color: #00fed7 !important;
 }
+.MuiInputLabel-shrink{
+  top: 0 !important;
+}
 
 .MuiInputBase-root {
   margin-top: 0 !important;
@@ -915,7 +918,8 @@ p.padding {
 
 p.padding a {
   display: -webkit-box !important;
-  width: 95%;
+  width: fit-content;
+  max-width: 95%;
   margin: auto;
   font-size: 1.2rem;
   position: absolute;
@@ -927,6 +931,8 @@ p.padding a {
   -webkit-box-pack: center;
   text-wrap: balance;
   -webkit-box-align: center;
+  
+ 
 }
 
 a {
