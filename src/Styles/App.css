@@ -861,12 +861,12 @@ div.draußen {
 .nextEpisode .title {
   font-size: 1.3rem;
   color: #00fed7;
-  width: 95%;
+  width: 98%;
 }
 .info {
   font-size: 1.15rem;
   color: #00fed7;
-  width: 95%;
+  width: 98%;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
