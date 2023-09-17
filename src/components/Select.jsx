@@ -32,12 +32,10 @@ const Select = (props) => {
       <option value="Drama">Drama</option>
       <option value="Documentary">Documentary</option>
       <option value="Family">Family</option>
-      <option value="Horror">Horror</option>
+      <option value="Kids">Kids</option>
       <option value="Mystery">Mystery</option>
       <option value="Reality">Reality</option>
       <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
-      <option value="Sport">Sport</option>
-      <option value="Thriller">Thriller</option>
       <option value="War & Politics">War & Politics</option>
       <option value="Western">Western</option>
       <option value="Neue Episoden">Neue Episoden</option>

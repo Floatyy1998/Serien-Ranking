@@ -257,19 +257,20 @@ const CustomDialog = (props) => {
             defaultValue={props.serie.rating["Family"]}
             name="Family"
           ></input>
+           <br></br>
           <br></br>
-          <br></br>
-          <label hmtlfor="Horror">Horror: </label>
+          <label hmtlfor="Kids">Kids: </label>
           <input
             onFocus={handleFocus.bind(this)}
             onBlur={handleBlur.bind(this)}
             type="text"
-            id="Horror"
-            defaultValue={props.serie.rating["Horror"]}
-            name="Horror"
+            id="Kids"
+            defaultValue={props.serie.rating["Kids"]}
+            name="Kids"
           ></input>
           <br></br>
           <br></br>
+         
           <label hmtlfor="Mystery">Mystery: </label>
           <input
             onFocus={handleFocus.bind(this)}
@@ -303,28 +304,7 @@ const CustomDialog = (props) => {
           ></input>
           <br></br>
           <br></br>
-          <label hmtlfor="Sport">Sport: </label>
-          <input
-            onFocus={handleFocus.bind(this)}
-            onBlur={handleBlur.bind(this)}
-            type="text"
-            id="Sport"
-            defaultValue={props.serie.rating["Sport"]}
-            name="Sport"
-          ></input>
-          <br></br>
-          <br></br>
-          <label hmtlfor="Thriller">Thriller: </label>
-          <input
-            onFocus={handleFocus.bind(this)}
-            onBlur={handleBlur.bind(this)}
-            type="text"
-            id="Thriller"
-            defaultValue={props.serie.rating["Thriller"]}
-            name="Thriller"
-          ></input>
-          <br></br>
-          <br></br>
+
           <label hmtlfor="War & Politics">War & Politics: </label>
           <input
             onFocus={handleFocus.bind(this)}

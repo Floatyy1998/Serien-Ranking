@@ -150,7 +150,7 @@ function SideNav(props) {
 
     if (theMazeId !== "") {
       var endpoint = `https://api.tvmaze.com/shows/${theMazeId}`;
-     
+
       props.setProgress(30);
       try {
         var tvMazeData = await scheduleRequest(endpoint);
@@ -354,12 +354,12 @@ function SideNav(props) {
       Documentary: 0,
       Drama: 0,
       Family: 0,
-      Horror: 0,
+
+      Kids: 0,
       Mystery: 0,
       Reality: 0,
       "Sci-Fi & Fantasy": 0,
-      Sport: 0,
-      Thriller: 0,
+
       "War & Politics": 0,
       Western: 0,
     }; // getRatings(event);
