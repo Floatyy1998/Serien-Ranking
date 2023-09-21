@@ -150,7 +150,7 @@ const App = () => {
       } else {
         laden();
         setLoadSeries(false);
-        setLoadNewDate(true);
+       
       }
     }
   }, [loadSeries]);
@@ -570,6 +570,7 @@ const App = () => {
       let dates = [];
 
       for (let i = 0; i < serienArray.length; i++) {
+       
         try {
           if (serienArray[i].nextEpisode.nextEpisode !== "") {
             dates.push(new Date(serienArray[i].nextEpisode.nextEpisode));
