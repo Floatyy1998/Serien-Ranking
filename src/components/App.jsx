@@ -103,9 +103,7 @@ const App = () => {
     }
   };
   useEffect(() => {
-    if (genre === "Neue Episoden") {
-      fetchData();
-    }
+    fetchData();
   }, [genre]);
 
   useEffect(() => {
@@ -342,10 +340,6 @@ const App = () => {
         let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
         const tvMazeResponse = await scheduleRequest(endpoint);
 
-        await Firebase.database()
-          .ref(`serien/${index}/nextEpisode`)
-          .set({ nextEpisode: "" });
-
         const tvMazeData = await tvMazeResponse.json();
 
         if (tvMazeData._links.nextepisode) {
@@ -354,9 +348,39 @@ const App = () => {
           var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
           tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
 
+          const response = await fetch(
+            `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}&language=de-DE`
+          );
+          const data = await response.json();
+          let title = "";
+
+          if (!data.next_episode_to_air) {
+            title = tvMazeNextEpisodeData.name;
+          } else {
+            if (!String(data.next_episode_to_air.name).includes("Episode")) {
+              title = data.next_episode_to_air.name;
+            } else {
+              if (
+                tvMazeNextEpisodeData.name === "TBA" ||
+                tvMazeNextEpisodeData.name === "TBD"
+              ) {
+                title = data.next_episode_to_air.name;
+              } else {
+                title = tvMazeNextEpisodeData.name;
+              }
+            }
+          }
+
+          await Firebase.database().ref(`serien/${index}/nextEpisode`).set({
+            nextEpisode: tvMazeNextEpisodeData.airstamp,
+            season: tvMazeNextEpisodeData.season,
+            episode: tvMazeNextEpisodeData.number,
+            title: title,
+          });
+        } else {
           await Firebase.database()
             .ref(`serien/${index}/nextEpisode`)
-            .set({ nextEpisode: tvMazeNextEpisodeData.airstamp });
+            .set({ nextEpisode: "", season: "", episode: "", title: "" });
         }
       }
     } catch (error) {

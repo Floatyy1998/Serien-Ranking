@@ -125,6 +125,8 @@ function SideNav(props) {
     );
     const detailsData = await detailsResponse.json();
     const genres = detailsData.genres.map((genre) => genre.name);
+    const titleEN = detailsData.name;
+    console.log(titleEN);
     var theMazeId = "";
 
     props.setProgress(20);
@@ -133,14 +135,14 @@ function SideNav(props) {
       var tvMazeData;
       if (!remake) {
         tvMazeResponse = await fetch(
-          `https://api.tvmaze.com/singlesearch/shows?q=${title}`
+          `https://api.tvmaze.com/singlesearch/shows?q=${titleEN}`
         );
         props.setProgress(25);
         tvMazeData = await tvMazeResponse.json();
         theMazeId = tvMazeData.id;
       } else {
         tvMazeResponse = await fetch(
-          `https://api.tvmaze.com/search/shows?q=${title}`
+          `https://api.tvmaze.com/search/shows?q=${titleEN}`
         );
         props.setProgress(25);
         tvMazeData = await tvMazeResponse.json();
