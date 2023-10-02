@@ -206,6 +206,7 @@ function SideNav(props) {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
     );
     const data1 = await response1.json();
+    console.log(data1.overview);
 
     props.setProgress(43);
 
@@ -220,6 +221,7 @@ function SideNav(props) {
         `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API}`
       );
       const imagesData = await images.json();
+      console.log(imagesData.posters);
       const imagesList = imagesData.posters
         .filter((image) => {
           if (
@@ -237,12 +239,16 @@ function SideNav(props) {
         .map((image) => {
           return `https://image.tmdb.org/t/p/original${image.file_path}`;
         });
+
       //imagesList.map(image=> {return `https://image.tmdb.org/t/p/original${image.file_path}`});
 
       //zufallszahl zwischen 0 und 100
       random = Math.floor(Math.random() * (imagesList.length - 1));
 
       posterUrl = imagesList[random];
+      if (posterUrl === undefined) {
+        posterUrl = `https://image.tmdb.org/t/p/original${data1.poster_path}`;
+      }
     } catch (error) {}
     const production = data3.in_production;
     props.setProgress(45);
@@ -336,6 +342,7 @@ function SideNav(props) {
       nextEpisodeTitle,
       season,
       episode,
+      beschreibung: data1.overview,
     };
   };
 
@@ -380,6 +387,7 @@ function SideNav(props) {
       nextEpisodeTitle,
       season,
       episode,
+      beschreibung
     } = await fetchSeriesData(title);
     props.setProgress(100);
 
@@ -404,6 +412,7 @@ function SideNav(props) {
       genre: { genres: ["All", ...genres] },
       id,
       begründung,
+      beschreibung
     };
     const currentUser = Firebase.auth().currentUser;
     if (currentUser == null || currentUser.uid !== UserId) {

@@ -29,13 +29,8 @@ const CustomDialog = (props) => {
     );
 
     const ratings = {};
-    let begründung = "";
-    ratingInputs.forEach((input) => {
-      if (input.name === "Begründung") {
-        begründung = input.value;
-        return;
-      }
 
+    ratingInputs.forEach((input) => {
       const value =
         input.value === "" || input.value === null
           ? 0
@@ -44,7 +39,7 @@ const CustomDialog = (props) => {
       ratings[key] = value;
     });
     serien.rating = ratings;
-    serien.begründung = begründung;
+  
 
     //console.log(serien);
     await Firebase.database().ref(`serien/${props.nmr}/`).update(serien);
@@ -257,7 +252,7 @@ const CustomDialog = (props) => {
             defaultValue={props.serie.rating["Family"]}
             name="Family"
           ></input>
-           <br></br>
+          <br></br>
           <br></br>
           <label hmtlfor="Kids">Kids: </label>
           <input
@@ -270,7 +265,7 @@ const CustomDialog = (props) => {
           ></input>
           <br></br>
           <br></br>
-         
+
           <label hmtlfor="Mystery">Mystery: </label>
           <input
             onFocus={handleFocus.bind(this)}
@@ -324,17 +319,6 @@ const CustomDialog = (props) => {
             id="Western"
             defaultValue={props.serie.rating["Western"]}
             name="Western"
-          ></input>
-          <br></br>
-          <br></br>
-          <label hmtlfor="Begründung">Begründung: </label>
-          <input
-            onFocus={handleFocus.bind(this)}
-            onBlur={handleBlur.bind(this)}
-            type="text"
-            id="Begründung"
-            defaultValue={props.serie.begründung}
-            name="Begründung"
           ></input>
         </form>
       </DialogContent>

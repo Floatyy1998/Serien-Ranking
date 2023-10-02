@@ -276,15 +276,18 @@ const SeriesRow = (props) => {
                         textAlign: "center",
                       }}
                     >
-                      <b>BEGRÜNDUNG</b>
+                      <b>Beschreibung</b>
                     </Typography>
 
                     <Typography
-                      style={{ textAlign: "center", whiteSpace: "pre-line" }}
+                      style={{
+                        textAlign: "center",
+                        whiteSpace: "pre-line",
+                      }}
                     >
-                      {props.serie.begründung == ""
-                        ? "Keine Begründung vorhanden."
-                        : props.serie.begründung.replaceAll(/\s*\\n\s*/g, "\n")}
+                      {props.serie.beschreibung === ""
+                        ? "Keine Beschreibung verfügbar"
+                        : props.serie.beschreibung}
                     </Typography>
                   </React.Fragment>
                 }
@@ -294,7 +297,7 @@ const SeriesRow = (props) => {
                   tooltip: {
                     sx: {
                       borderRadius: "20px",
-                      width: 230,
+
                       color: "#ccc",
                       backgroundColor: "#111",
                       fontSize: "0.9rem",

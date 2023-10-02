@@ -345,6 +345,7 @@ const RecsDialog = (props) => {
       nextEpisodeTitle,
       season,
       episode,
+      beschreibung: data.overview,
     };
   };
 
@@ -393,6 +394,7 @@ const RecsDialog = (props) => {
       nextEpisodeTitle,
       season,
       episode,
+      beschreibung,
     } = await fetchSeriesData(title);
     props.setProgress(100);
 
@@ -417,6 +419,7 @@ const RecsDialog = (props) => {
       genre: { genres: ["All", ...genres] },
       id,
       begründung,
+      beschreibung
     };
     const currentUser = Firebase.auth().currentUser;
     if (currentUser == null || currentUser.uid !== UserId) {

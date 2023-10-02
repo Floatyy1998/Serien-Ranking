@@ -31,7 +31,7 @@ const App = () => {
   };
 
   const limiter = new Bottleneck({
-    minTime: 100, //minimum time between requests
+    minTime: 120, //minimum time between requests
     maxConcurrent: 45, //maximum concurrent requests
   });
 
@@ -149,8 +149,6 @@ const App = () => {
         setLoadNewDate(true);
       } else {
         laden();
-        setLoadSeries(false);
-       
       }
     }
   }, [loadSeries]);
@@ -158,7 +156,6 @@ const App = () => {
   useEffect(() => {
     if (loadNewDate) {
       loadNewDates();
-      setLoadNewDate(false);
     }
   }, [loadNewDate]);
 
@@ -226,6 +223,34 @@ const App = () => {
     console.log("loadNewDates");
     const snapshot = await Firebase.database().ref("/serien").once("value");
     const serien = snapshot.val();
+
+    /* serien.forEach(async (serie, index) => {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}`
+      );
+      const data = await response.json();
+      var titleEN = data.name;
+      if (titleEN === "BLUELOCK") {
+        titleEN = "Blue Lock";
+      }
+      if (titleEN === "ODDTAXI") {
+        titleEN = "Odd Taxi";
+      }
+      let endpoint = `https://api.tvmaze.com/singlesearch/shows?q=${titleEN}`;
+      var tvMazeData = await scheduleRequest(endpoint);
+      tvMazeData = await tvMazeData.json();
+      console.log(serie.title + ": " + tvMazeData.id);
+      if (serie.title === "One Piece") {
+        await Firebase.database().ref(`serien/${index}/tvMaze`).set({
+          tvMazeID: 1505,
+        });
+      } else {
+        await Firebase.database().ref(`serien/${index}/tvMaze`).set({
+          tvMazeID: tvMazeData.id,
+        });
+      }
+    }); */
+
     var count = 0;
     const promises = serien.map(async (serie, index) => {
       if (serie.tvMaze.tvMazeID !== "") {
@@ -240,6 +265,7 @@ const App = () => {
 
             var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
             tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
+
             await Firebase.database()
               .ref(`serien/${index}/nextEpisode`)
               .set({ nextEpisode: "", season: "", episode: "", title: "" });
@@ -291,6 +317,8 @@ const App = () => {
     setProgressDates(0);
     setOpenDatesEndSnack(true);
     console.log("loadNewDates finished");
+    setLoadNewDate(false);
+    setLoadSeries(false);
   };
 
   const laden = async () => {
@@ -321,6 +349,7 @@ const App = () => {
     setOpenStartSnack(false);
     setOpenEndSnack(true);
     setProgress(0);
+    setLoadSeries(false);
   };
 
   const task = async (serie, index) => {
@@ -334,6 +363,9 @@ const App = () => {
       `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}`
     );
     const data3 = await response2.json();
+    await Firebase.database()
+    .ref(`serien/${index}/beschreibung`)
+    .set(data.overview);
 
     try {
       if (serie.tvMaze.tvMazeID !== "") {
@@ -353,6 +385,7 @@ const App = () => {
           );
           const data = await response.json();
           let title = "";
+    
 
           if (!data.next_episode_to_air) {
             title = tvMazeNextEpisodeData.name;
@@ -570,7 +603,6 @@ const App = () => {
       let dates = [];
 
       for (let i = 0; i < serienArray.length; i++) {
-       
         try {
           if (serienArray[i].nextEpisode.nextEpisode !== "") {
             dates.push(new Date(serienArray[i].nextEpisode.nextEpisode));
