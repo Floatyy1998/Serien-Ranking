@@ -56,6 +56,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
   const [genre, setGenre] = useState("All");
+  const [provider, setProvider] = useState("All");
   const [filter, setFilter] = useState("");
   const [serien, setSerien] = useState([]);
   const [openErrorSnack, setOpenErrorSnack] = React.useState(false);
@@ -104,7 +105,7 @@ const App = () => {
   };
   useEffect(() => {
     fetchData();
-  }, [genre]);
+  }, [genre, provider]);
 
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
@@ -141,7 +142,7 @@ const App = () => {
 
   useEffect(() => {
     checkGenre();
-  }, [genre, filter]);
+  }, [genre, filter, provider]);
 
   useEffect(() => {
     if (loadSeries) {
@@ -210,7 +211,11 @@ const App = () => {
         logo: `https://image.tmdb.org/t/p/original/uBE4RMH15mrkuz6vXzuJc7ZLXp1.jpg`,
       },
     };
-    const flatrateProviders = providerData.results.DE?.flatrate || [];
+    const flatrateProviders = [
+      ...(providerData.results.DE?.flatrate || []),
+      ...(providerData.results.DE?.ads || []),
+    ];
+    console.log(flatrateProviders);
     const anbieter = flatrateProviders
       .filter((provider) => providers[provider.provider_id])
       .map((provider) => ({
@@ -368,8 +373,8 @@ const App = () => {
     );
     const data3 = await response2.json();
     await Firebase.database()
-    .ref(`serien/${index}/beschreibung`)
-    .set(data.overview);
+      .ref(`serien/${index}/beschreibung`)
+      .set(data.overview);
 
     try {
       if (serie.tvMaze.tvMazeID !== "") {
@@ -389,7 +394,6 @@ const App = () => {
           );
           const data = await response.json();
           let title = "";
-    
 
           if (!data.next_episode_to_air) {
             title = tvMazeNextEpisodeData.name;
@@ -687,25 +691,65 @@ const App = () => {
     let ref = Firebase.database().ref("/serien");
     ref.on("value", (snapshot) => {
       const series = snapshot.val();
+      let filteredSeries = [];
 
       if (series !== null) {
-        let filteredSeries = series.filter((serie) => {
-          try {
-            if (genre === "Neue Episoden") {
-              return (
-                serie.nextEpisode.nextEpisode !== "" &&
-                serie.title.toLowerCase().includes(filter.toLowerCase())
-              );
-            } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-              return serie.title.toLowerCase().includes(filter.toLowerCase());
-            } else {
-              return (
-                serie.genre.genres.includes(genre) &&
-                serie.title.toLowerCase().includes(filter.toLowerCase())
-              );
-            }
-          } catch (error) {}
-        });
+        if (provider !== "All") {
+          filteredSeries = series.filter((serie) => {
+            try {
+              if (genre === "Neue Episoden") {
+                console.log("Neue Episoden");
+                return (
+                  serie.nextEpisode.nextEpisode !== "" &&
+                  serie.title.toLowerCase().includes(filter.toLowerCase()) &&
+                  serie.provider.provider.some((providers) => {
+                    return providers.name === provider;
+                  })
+                );
+              } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
+                console.log(" A-Z oder Zuletzt Hinzugefügt");
+                return (
+                  serie.title.toLowerCase().includes(filter.toLowerCase()) &&
+                  serie.provider.provider.some((providers) => {
+                    return providers.name === provider;
+                  })
+                );
+              } else {
+                console.log("else");
+                return (
+                  serie.genre.genres.includes(genre) &&
+                  serie.title.toLowerCase().includes(filter.toLowerCase()) &&
+                  serie.provider.provider.some((providers) => {
+                    return providers.name === provider;
+                  })
+                );
+              }
+            } catch (error) {}
+          });
+        } else {
+          filteredSeries = series.filter((serie) => {
+            try {
+              if (genre === "Neue Episoden") {
+                console.log("Neue Episoden");
+                return (
+                  serie.nextEpisode.nextEpisode !== "" &&
+                  serie.title.toLowerCase().includes(filter.toLowerCase())
+                );
+              } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
+                console.log(" A-Z oder Zuletzt Hinzugefügt");
+                return serie.title.toLowerCase().includes(filter.toLowerCase());
+              } else {
+                console.log("else");
+                return (
+                  serie.genre.genres.includes(genre) &&
+                  serie.title.toLowerCase().includes(filter.toLowerCase())
+                );
+              }
+            } catch (error) {}
+          });
+        }
+
+        console.log(filteredSeries);
 
         if (genre === "A-Z") {
           filteredSeries.sort((a, b) =>
@@ -782,6 +826,9 @@ const App = () => {
               <Select
                 setGenre={(e) => {
                   setGenre(e);
+                }}
+                setProvider={(e) => {
+                  setProvider(e);
                 }}
               />
               <Legende />
@@ -903,6 +950,9 @@ const App = () => {
               <Select
                 setGenre={(e) => {
                   setGenre(e);
+                }}
+                setProvider={(e) => {
+                  setProvider(e);
                 }}
               />
               <Legende />

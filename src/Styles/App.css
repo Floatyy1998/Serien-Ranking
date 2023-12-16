@@ -50,18 +50,18 @@
   height: 15px;
   position: absolute;
   left: calc(90% - 203px);
-  top: 145px;
+  top: 130px;
 }
 
 .legende2 {
   height: 15px;
   position: absolute;
   left: calc(90% - 100px);
-  top: 145px;
+  top: 130px;
 }
 
 .tooltip {
-  top: 143px;
+  top: 128px;
 
   left: calc(90% - 20px);
 }
@@ -702,6 +702,7 @@ p.progress {
 p.scrollen {
   margin: 0;
   padding: 0;
+  height: 0;
 }
 
 select {
@@ -1007,7 +1008,7 @@ a {
   gap: 10px !important;
 }
 
-@media only screen and (max-width: 1100px) {
+@media only screen and (max-width: 750px) {
   :-webkit-scrollbar {
     width: 18px;
     /* for vertical scrollbars */
@@ -1389,21 +1390,21 @@ a {
   .legende1 {
     height: 15px;
     position: absolute;
-    top: 205px;
 
-    left: calc(50% - 111px);
+
+    left: calc(50% - 100px);
   }
 
   .legende2 {
     height: 15px;
     position: absolute;
-    top: 205px;
 
-    left: calc(50% - 5px);
+
+    left: calc(50% );
   }
 
   .tooltip {
-    top: 203px;
+
 
     left: calc(50% + 93px);
   }
@@ -1446,6 +1447,10 @@ a {
 
   #Header1:hover {
     cursor: pointer;
+  }
+
+  #selectDiv{
+    flex-direction: column;
   }
 }
 
