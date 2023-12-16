@@ -296,6 +296,7 @@ function SideNav(props) {
     });
 
     for (let i = 0; i < recs.length; i++) {
+      try {
       const provider = await fetch(
         `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
       );
@@ -320,6 +321,11 @@ function SideNav(props) {
       recs[
         i
       ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+     
+        
+      } catch (error) {
+      
+      }
     }
     try {
       if (recData.total_results !== 0) {

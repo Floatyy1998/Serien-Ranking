@@ -1,4 +1,4 @@
 {
     "workbench.startupEditor": "none",
-    "workbench.editor.showTabs": true
+    "workbench.editor.showTabs": "multiple"
 }

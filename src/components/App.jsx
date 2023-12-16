@@ -205,6 +205,10 @@ const App = () => {
         name: "Crunchyroll",
         logo: `https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`,
       },
+      613: {
+        name: "Freevee",
+        logo: `https://image.tmdb.org/t/p/original/uBE4RMH15mrkuz6vXzuJc7ZLXp1.jpg`,
+      },
     };
     const flatrateProviders = providerData.results.DE?.flatrate || [];
     const anbieter = flatrateProviders
@@ -618,7 +622,7 @@ const App = () => {
       const nextEp = new Date(date);
       const deleteDate = new Date(
         `${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`
-      ).addHours(24);
+      ).addHours(23);
       console.log(new Date());
       console.log(deleteDate);
 

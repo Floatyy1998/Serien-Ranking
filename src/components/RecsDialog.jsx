@@ -89,6 +89,10 @@ const RecsDialog = (props) => {
         name: "Crunchyroll",
         logo: `https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`,
       },
+      613: {
+        name: "Freevee",
+        logo: `https://image.tmdb.org/t/p/original/uBE4RMH15mrkuz6vXzuJc7ZLXp1.jpg`,
+      },
     };
     const flatrateProviders = providerData.results.DE?.flatrate || [];
     const anbieter = flatrateProviders
