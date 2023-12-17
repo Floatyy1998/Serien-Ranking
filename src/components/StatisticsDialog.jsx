@@ -255,17 +255,25 @@ const StatisticsDialog = (props) => {
     serien.forEach((serie) => {
       try {
         serie.provider.provider.forEach((provider) => {
-          dataMap.set(provider.name, {
-            count: dataMap.get(provider.name).count + 1,
-            rating:
-              Number(dataMap.get(provider.name).rating) +
-              Number(getRating(serie)),
-          });
+
+          if (getRating(serie) !== "0.00") {
+            dataMap.set(provider.name, {
+              count: dataMap.get(provider.name).count + 1,
+              rating:
+                Number(dataMap.get(provider.name).rating) +
+                Number(getRating(serie)),
+            });
+          }
+   
+          
         });
       } catch (error) {}
     });
+
+
     let dataArray = [];
     dataMap.forEach((value, key) => {
+
       dataArray.push(addZeroes(round(value.rating / value.count, 0.01)));
     });
     setAnbieterChartData2({
@@ -409,7 +417,7 @@ const StatisticsDialog = (props) => {
     serien.forEach((serie) => {
       try {
         serie.genre.genres.forEach((genre) => {
-          if (genre != "All") {
+          if (genre != "All" && getRating(serie) !=="0.00") {
             dataMap.set(genre, {
               count: dataMap.get(genre).count + 1,
               rating:
