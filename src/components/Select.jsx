@@ -2,7 +2,6 @@ import React from "react";
 
 const Select = (props) => {
   const setGenre = (event) => {
-    
     props.setGenre(event.target.value);
   };
   const setProvider = (event) => {
@@ -19,12 +18,12 @@ const Select = (props) => {
       }}
       id="selectDiv"
     >
-      <>
+      <div style={{ display: "flex", flexDirection: "column", margin: "10px" }}>
         <div style={{ fontSize: "1.5rem" }}>GENRE:</div>
         <select
           style={{
             border: "1px solid #ccc",
-            margin: "10px",
+
             borderRadius: "10px",
             fontSize: "1.5rem",
             width: "250px",
@@ -54,13 +53,12 @@ const Select = (props) => {
           <option value="Neue Episoden">Neue Episoden</option>
           <option value="Zuletzt Hinzugefügt">Zuletzt Hinzugefügt</option>
         </select>
-      </>
-      <>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", margin: "10px" }}>
         <div style={{ fontSize: "1.5rem" }}>ANBIETER:</div>
         <select
           style={{
             border: "1px solid #ccc",
-            margin: "10px",
             borderRadius: "10px",
             fontSize: "1.5rem",
             width: "250px",
@@ -85,7 +83,7 @@ const Select = (props) => {
           <option value="RTL+">RTL+</option>
           <option value="WOW">WOW</option>
         </select>
-      </>
+      </div>
     </div>
   );
 };

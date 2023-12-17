@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
+import SsidChartIcon from "@mui/icons-material/SsidChart";
 import Firebase from "firebase/compat/app";
+import StatisticsDialog from "./StatisticsDialog";
 
 const Header = (props) => {
-  const [user, setUser] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const scrollTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -27,6 +33,8 @@ const Header = (props) => {
         zIndex: "99",
       }}
     >
+      {open && <StatisticsDialog open={open}  close={handleClose} />}
+
       <div className="row">
         <input type="checkbox" onClick={toggleNav} id="hamburg"></input>
         <label
@@ -54,6 +62,7 @@ const Header = (props) => {
         }}
       >
         <CachedOutlinedIcon
+        
           onClick={(_) => {
             if (Firebase.auth()?.currentUser) {
               props.setLoadSeries(true);
@@ -64,6 +73,20 @@ const Header = (props) => {
           titleAccess="Alle Daten neu laden"
           className="reload"
         ></CachedOutlinedIcon>
+        <SsidChartIcon
+        id="statistik"
+          style={{
+            color: "#00fed7",
+            position: "absolute",
+            right: "70px",
+            top: "10px",
+            cursor: "pointer",
+            width: "40px",
+            height: "40px",
+          }}
+          titleAccess="Statistiken"
+          onClick={(_) => setOpen(true)}
+        />
       </div>
     </div>
   );
