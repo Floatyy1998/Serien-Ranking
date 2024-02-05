@@ -106,18 +106,10 @@ const RecsDialog = (props) => {
     return anbieter;
   };
 
-  const fetchSeriesData = async (title) => {
+ const fetchSeriesData = async (title) => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     props.setProgress(10);
     const serien = snapshot.val();
-
-    var remake = false;
-    var title = title;
-    if (title.slice(-3) === "neu") {
-      title = title.slice(0, -4);
-      remake = true;
-    }
-
     var recommendations = "";
     var nextEpisode = "";
     var remake = false;
@@ -125,12 +117,15 @@ const RecsDialog = (props) => {
     var nextEpisodeTitle = "";
     var season = "";
     var episode = "";
+    if (title.slice(-3) === "neu") {
+      title = title.slice(0, -4);
+      remake = true;
+    }
+
     const response = await fetch(
-      `https://api.themoviedb.org/3/search/tv?api_key=${API}&query=${title}&page=1`
+      `https://api.themoviedb.org/3/search/tv?api_key=${API}&query=${title}&page=1&language=de-DE`
     );
     const data = await response.json();
-    const id = data.results[0].id;
-
     if (
       serien.filter((serie) => serie.id === data.results[0].id).length > 0 &&
       !remake
@@ -150,28 +145,50 @@ const RecsDialog = (props) => {
       );
       return;
     }
+    var id;
+    var anzeigeTitel;
 
+    if (remake) {
+      id = data.results[1].id;
+      anzeigeTitel = data.results[1].name;
+    } else {
+      id = data.results[0].id;
+      anzeigeTitel = data.results[0].name;
+    }
     props.setProgress(15);
     const detailsResponse = await fetch(
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=en-US`
     );
     const detailsData = await detailsResponse.json();
     const genres = detailsData.genres.map((genre) => genre.name);
+    const titleEN = detailsData.name;
+    console.log(titleEN);
     var theMazeId = "";
 
     props.setProgress(20);
     try {
-      const tvMazeResponse = await fetch(
-        `https://api.tvmaze.com/singlesearch/shows?q=${title}`
-      );
-      props.setProgress(25);
-      const tvMazeData = await tvMazeResponse.json();
-      theMazeId = tvMazeData.id;
+      var tvMazeResponse;
+      var tvMazeData;
+      if (!remake) {
+        tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/singlesearch/shows?q=${titleEN}`
+        );
+        props.setProgress(25);
+        tvMazeData = await tvMazeResponse.json();
+        theMazeId = tvMazeData.id;
+      } else {
+        tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/search/shows?q=${titleEN}`
+        );
+        props.setProgress(25);
+        tvMazeData = await tvMazeResponse.json();
+        theMazeId = tvMazeData[1].show.id;
+      }
     } catch (error) {}
 
     if (theMazeId !== "") {
       var endpoint = `https://api.tvmaze.com/shows/${theMazeId}`;
-     
+
       props.setProgress(30);
       try {
         var tvMazeData = await scheduleRequest(endpoint);
@@ -221,19 +238,26 @@ const RecsDialog = (props) => {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}`
     );
     const data3 = await response2.json();
-    props.setProgress(45);
+    const response1 = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
+    );
+    const data1 = await response1.json();
+    console.log(data1.overview);
+
+    props.setProgress(43);
 
     var random = Math.floor(Math.random() * 100);
     var posterUrl =
       random % 2 === 0
         ? `https://image.tmdb.org/t/p/original${detailsData.poster_path}`
-        : `https://image.tmdb.org/t/p/original${data3.poster_path}`;
+        : `https://image.tmdb.org/t/p/original${data1.poster_path}`;
 
     try {
       const images = await fetch(
         `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API}`
       );
       const imagesData = await images.json();
+      console.log(imagesData.posters);
       const imagesList = imagesData.posters
         .filter((image) => {
           if (
@@ -251,15 +275,19 @@ const RecsDialog = (props) => {
         .map((image) => {
           return `https://image.tmdb.org/t/p/original${image.file_path}`;
         });
+
       //imagesList.map(image=> {return `https://image.tmdb.org/t/p/original${image.file_path}`});
 
       //zufallszahl zwischen 0 und 100
       random = Math.floor(Math.random() * (imagesList.length - 1));
 
       posterUrl = imagesList[random];
+      if (posterUrl === undefined) {
+        posterUrl = `https://image.tmdb.org/t/p/original${data1.poster_path}`;
+      }
     } catch (error) {}
-
     const production = data3.in_production;
+    props.setProgress(45);
 
     const provider = await fetch(
       `https://api.themoviedb.org/3/tv/${id}/season/1/watch/providers?api_key=${API}&language=en-US`
@@ -304,13 +332,14 @@ const RecsDialog = (props) => {
     });
 
     for (let i = 0; i < recs.length; i++) {
+      try {
       const provider = await fetch(
         `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
       );
       props.setProgress(70 + (i / recs.length) * 30);
 
       const providerData = await provider.json();
-      const anbieter = getProviders(providerData);
+      const anbieter = props.getProviders(providerData);
 
       recs[i].provider = anbieter;
       const response2 = await fetch(
@@ -328,6 +357,11 @@ const RecsDialog = (props) => {
       recs[
         i
       ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+     
+        
+      } catch (error) {
+      
+      }
     }
     try {
       if (recData.total_results !== 0) {
@@ -346,10 +380,11 @@ const RecsDialog = (props) => {
       anbieter,
       wo,
       recommendations,
+      anzeigeTitel,
       nextEpisodeTitle,
       season,
       episode,
-      beschreibung: data.overview,
+      beschreibung: data1.overview,
     };
   };
 

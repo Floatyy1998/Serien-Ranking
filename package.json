@@ -23,8 +23,8 @@
     "build": "react-scripts build && firebase deploy",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "copy": "for %D in (E:\\Programms\\Florian-Serien\\src E:\\Programms\\Desiree-Serien\\src) do xcopy E:\\Programms\\Serien-Ranking\\src %D /E /H /C /I /Y ",
-    "deploy_all": "cd E:\\Programms\\Florian-Serien && npm run build && cd E:\\Programms\\Desiree-Serien && npm run build",
+    "copy": "for %D in (F:\\Florian-Serien\\src F:\\Desiree-Serien\\src) do xcopy F:\\Serien-Ranking\\src %D /E /H /C /I /Y ",
+    "deploy_all": "npm run build && cd F:\\Florian-Serien && npm run build && cd F:\\Desiree-Serien && npm run build",
     "copy_and_deploy": "npm run copy && npm run deploy_all",
     "copy_and_deploy_all": "npm run build && npm run copy_and_deploy"
   },
