@@ -79,13 +79,6 @@ function registerValidSW(swUrl, config) {
              
 
               registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-              alert('Update Verfügbar! Seite wird in 2 Sekunden neu geladen', {
-                toastId: 'appUpdateAvailable',
-                autoClose: true
-              });
-              setTimeout(() => {
-                window.location.reload();
-              }, 2000);
 
               // Execute callback
               if (config && config.onUpdate) {
