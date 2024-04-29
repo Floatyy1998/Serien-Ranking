@@ -327,7 +327,7 @@ const StatisticsDialog = (props) => {
       } catch (error) {}
     });
     genre.delete("All");
-    console.log(genre);
+  
 
     let genreArray = Array.from(genre);
 
@@ -340,7 +340,7 @@ const StatisticsDialog = (props) => {
     serien.forEach((serie) => {
       try {
         serie.genre.genres.forEach((genre) => {
-          if (genre != "All") {
+          if (genre !== "All") {
             dataMap.set(genre, dataMap.get(genre) + 1);
           }
         });
@@ -404,7 +404,7 @@ const StatisticsDialog = (props) => {
       } catch (error) {}
     });
     genre.delete("All");
-    console.log(genre);
+   
 
     let genreArray = Array.from(genre);
 
@@ -417,7 +417,7 @@ const StatisticsDialog = (props) => {
     serien.forEach((serie) => {
       try {
         serie.genre.genres.forEach((genre) => {
-          if (genre != "All" && getRating(serie) !=="0.00") {
+          if (genre !== "All" && getRating(serie) !=="0.00") {
             dataMap.set(genre, {
               count: dataMap.get(genre).count + 1,
               rating:

@@ -25,14 +25,10 @@ const API = process.env.REACT_APP_API_TMDB;
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 const App = () => {
-  Date.prototype.addHours = function (h) {
-    this.setHours(this.getHours() + h);
-    return this;
-  };
 
   const limiter = new Bottleneck({
-    minTime: 120, //minimum time between requests
-    maxConcurrent: 45, //maximum concurrent requests
+    minTime: 100, //minimum time between requests
+    maxConcurrent: 75, //maximum concurrent requests
   });
 
   function scheduleRequest(endpoint) {
@@ -58,20 +54,14 @@ const App = () => {
   const [genre, setGenre] = useState("All");
   const [provider, setProvider] = useState("All");
   const [filter, setFilter] = useState("");
-  const [serien, setSerien] = useState([]);
   const [openErrorSnack, setOpenErrorSnack] = React.useState(false);
-  const [openStartSnack, setOpenStartSnack] = React.useState(false);
   const [openEndSnack, setOpenEndSnack] = React.useState(false);
   const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
   const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
-  const [openDatesEndSnack, setOpenDatesEndSnack] = React.useState(false);
-  const [openDateSnack, setOpenDateSnack] = React.useState(false);
-  const [progressDates, setProgressDates] = React.useState(0);
   const [progress, setProgress] = React.useState(0);
   const [user, setUser] = useState(null);
 
-  const [loadSeries, setLoadSeries] = useState(false);
-  const [loadNewDate, setLoadNewDate] = useState(false);
+
 
   const Alert = React.forwardRef(function Alert(props, ref) {
     return (
@@ -85,27 +75,15 @@ const App = () => {
     );
   });
 
-  const handleCloseEndSnack = (event, reason) => {
-    setOpenEndSnack(false);
-    if (reason === "clickaway") {
-      return;
-    }
-  };
+
   const handleCloseSerienSnack = (event, reason) => {
     setOpenSerienEndSnack(false);
     if (reason === "clickaway") {
       return;
     }
   };
-  const handleCloseEndDatesSnack = (event, reason) => {
-    setOpenDatesEndSnack(false);
-    if (reason === "clickaway") {
-      return;
-    }
-  };
-  useEffect(() => {
-    fetchData();
-  }, [genre, provider]);
+
+
 
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
@@ -144,21 +122,9 @@ const App = () => {
     checkGenre();
   }, [genre, filter, provider]);
 
-  useEffect(() => {
-    if (loadSeries) {
-      if (genre === "Neue Episoden") {
-        setLoadNewDate(true);
-      } else {
-        laden();
-      }
-    }
-  }, [loadSeries]);
 
-  useEffect(() => {
-    if (loadNewDate) {
-      loadNewDates();
-    }
-  }, [loadNewDate]);
+
+
 
   const getProviders = (providerData) => {
     const providers = {
@@ -215,7 +181,7 @@ const App = () => {
       ...(providerData.results.DE?.flatrate || []),
       ...(providerData.results.DE?.ads || []),
     ];
-    console.log(flatrateProviders);
+
     const anbieter = flatrateProviders
       .filter((provider) => providers[provider.provider_id])
       .map((provider) => ({
@@ -227,433 +193,8 @@ const App = () => {
     return anbieter;
   };
 
-  const loadNewDates = async () => {
-    setOpenDateSnack(true);
-    console.log("loadNewDates");
-    const snapshot = await Firebase.database().ref("/serien").once("value");
-    const serien = snapshot.val();
 
-    /* serien.forEach(async (serie, index) => {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}`
-      );
-      const data = await response.json();
-      var titleEN = data.name;
-      if (titleEN === "BLUELOCK") {
-        titleEN = "Blue Lock";
-      }
-      if (titleEN === "ODDTAXI") {
-        titleEN = "Odd Taxi";
-      }
-      let endpoint = `https://api.tvmaze.com/singlesearch/shows?q=${titleEN}`;
-      var tvMazeData = await scheduleRequest(endpoint);
-      tvMazeData = await tvMazeData.json();
-      console.log(serie.title + ": " + tvMazeData.id);
-      if (serie.title === "One Piece") {
-        await Firebase.database().ref(`serien/${index}/tvMaze`).set({
-          tvMazeID: 1505,
-        });
-      } else {
-        await Firebase.database().ref(`serien/${index}/tvMaze`).set({
-          tvMazeID: tvMazeData.id,
-        });
-      }
-    }); */
 
-    var count = 0;
-    const promises = serien.map(async (serie, index) => {
-      if (serie.tvMaze.tvMazeID !== "") {
-        let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
-
-        try {
-          var tvMazeData = await scheduleRequest(endpoint);
-          tvMazeData = await tvMazeData.json();
-
-          if (tvMazeData._links.nextepisode) {
-            endpoint = `${tvMazeData._links.nextepisode.href}`;
-
-            var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
-            tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
-
-            await Firebase.database()
-              .ref(`serien/${index}/nextEpisode`)
-              .set({ nextEpisode: "", season: "", episode: "", title: "" });
-
-            const response = await fetch(
-              `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}&language=de-DE`
-            );
-            const data = await response.json();
-            let title = "";
-
-            if (!data.next_episode_to_air) {
-              title = tvMazeNextEpisodeData.name;
-            } else {
-              if (!String(data.next_episode_to_air.name).includes("Episode")) {
-                title = data.next_episode_to_air.name;
-              } else {
-                if (
-                  tvMazeNextEpisodeData.name === "TBA" ||
-                  tvMazeNextEpisodeData.name === "TBD"
-                ) {
-                  title = data.next_episode_to_air.name;
-                } else {
-                  title = tvMazeNextEpisodeData.name;
-                }
-              }
-            }
-
-            await Firebase.database().ref(`serien/${index}/nextEpisode`).set({
-              nextEpisode: tvMazeNextEpisodeData.airstamp,
-              season: tvMazeNextEpisodeData.season,
-              episode: tvMazeNextEpisodeData.number,
-              title: title,
-            });
-          } else {
-            await Firebase.database()
-              .ref(`serien/${index}/nextEpisode`)
-              .set({ nextEpisode: "", season: "", episode: "", title: "" });
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      setProgressDates((count++ / serien.length) * 100);
-      return;
-    });
-
-    await Promise.all(promises);
-    setOpenDateSnack(false);
-    setProgressDates(0);
-    setOpenDatesEndSnack(true);
-    console.log("loadNewDates finished");
-    setLoadNewDate(false);
-    setLoadSeries(false);
-  };
-
-  const laden = async () => {
-    setOpenStartSnack(true);
-    let count = 0;
-    const snapshot = await Firebase.database().ref("/serien").once("value");
-    const serien = snapshot.val();
-    const promises = serien.map((serie, index) =>
-      task(serie, index).then((result) => {
-        setProgress((count++ / serien.length) * 100);
-        return Promise.resolve(result);
-      })
-    );
-
-    const results = await Promise.all(promises);
-    try {
-      const values = await results;
-
-      console.log(
-        Math.round(
-          (values.filter((x) => x % 2 === 0).length / serien.length) * 100
-        )
-      ); // [resolvedValue1, resolvedValue2]
-    } catch (error) {
-      console.log(error); // rejectReason of any first rejected promise
-    }
-
-    setOpenStartSnack(false);
-    setOpenEndSnack(true);
-    setProgress(0);
-    setLoadSeries(false);
-  };
-
-  const task = async (serie, index) => {
-    const snapshot = await Firebase.database().ref("/serien").once("value");
-    const serien = snapshot.val();
-    const response = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}&language=de-DE`
-    );
-    const data = await response.json();
-    const response2 = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}`
-    );
-    const data3 = await response2.json();
-    await Firebase.database()
-      .ref(`serien/${index}/beschreibung`)
-      .set(data.overview);
-
-    try {
-      if (serie.tvMaze.tvMazeID !== "") {
-        let endpoint = `https://api.tvmaze.com/shows/${serie.tvMaze.tvMazeID}`;
-        const tvMazeResponse = await scheduleRequest(endpoint);
-
-        const tvMazeData = await tvMazeResponse.json();
-
-        if (tvMazeData._links.nextepisode) {
-          endpoint = `${tvMazeData._links.nextepisode.href}`;
-
-          var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
-          tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
-
-          const response = await fetch(
-            `https://api.themoviedb.org/3/tv/${serie.id}?api_key=${API}&language=de-DE`
-          );
-          const data = await response.json();
-          let title = "";
-
-          if (!data.next_episode_to_air) {
-            title = tvMazeNextEpisodeData.name;
-          } else {
-            if (!String(data.next_episode_to_air.name).includes("Episode")) {
-              title = data.next_episode_to_air.name;
-            } else {
-              if (
-                tvMazeNextEpisodeData.name === "TBA" ||
-                tvMazeNextEpisodeData.name === "TBD"
-              ) {
-                title = data.next_episode_to_air.name;
-              } else {
-                title = tvMazeNextEpisodeData.name;
-              }
-            }
-          }
-
-          await Firebase.database().ref(`serien/${index}/nextEpisode`).set({
-            nextEpisode: tvMazeNextEpisodeData.airstamp,
-            season: tvMazeNextEpisodeData.season,
-            episode: tvMazeNextEpisodeData.number,
-            title: title,
-          });
-        } else {
-          await Firebase.database()
-            .ref(`serien/${index}/nextEpisode`)
-            .set({ nextEpisode: "", season: "", episode: "", title: "" });
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
-
-    const title = data.name;
-    await Firebase.database().ref(`serien/${index}/title`).set(title);
-    var random = 0;
-    try {
-      const images = await fetch(
-        `https://api.themoviedb.org/3/tv/${serie.id}/images?api_key=${API}`
-      );
-      const imagesData = await images.json();
-      const imagesList = imagesData.posters
-        .filter((image) => {
-          if (
-            image.vote_average > 5 &&
-            (image.iso_639_1 === null ||
-              image.iso_639_1 === "en" ||
-              image.iso_639_1 === "de" ||
-              image.iso_639_1 === "ja")
-          ) {
-            return true;
-          } else {
-            return false;
-          }
-        })
-        .map((image) => {
-          return `https://image.tmdb.org/t/p/original${image.file_path}`;
-        });
-      //imagesList.map(image=> {return `https://image.tmdb.org/t/p/original${image.file_path}`});
-
-      //zufallszahl zwischen 0 und 100
-      random = Math.floor(Math.random() * (imagesList.length - 1));
-
-      const posterUrl = imagesList[random];
-      await Firebase.database()
-        .ref(`serien/${index}/poster`)
-        .set({ poster: posterUrl });
-    } catch (error) {
-      random = Math.floor(Math.random() * 100);
-      const posterUrl =
-        random % 2 === 0
-          ? `https://image.tmdb.org/t/p/original${data.poster_path}`
-          : `https://image.tmdb.org/t/p/original${data3.poster_path}`;
-      await Firebase.database()
-        .ref(`serien/${index}/poster`)
-        .set({ poster: posterUrl });
-    }
-
-    await Firebase.database()
-      .ref(`serien/${index}/production`)
-      .set({ production: data3.in_production });
-
-    const provider = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/season/1/watch/providers?api_key=${API}&language=en-US`
-    );
-    const providerData = await provider.json();
-    const anbieter = getProviders(providerData);
-    try {
-      await Firebase.database()
-        .ref(`serien/${index}/provider`)
-        .set({ provider: anbieter });
-    } catch (error) {
-      await Firebase.database()
-        .ref(`serien/${index}/provider`)
-        .set({ provider: "" });
-    }
-
-    const genres = ["All", ...data3.genres.map((genre) => genre.name)];
-    await Firebase.database().ref(`serien/${index}/genre`).set({ genres });
-
-    const response3 = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/external_ids?api_key=${API}&language=en-US`
-    );
-    const data4 = await response3.json();
-    await Firebase.database()
-      .ref(`serien/${index}/imdb`)
-      .set({ imdb_id: data4.imdb_id });
-
-    const woUrl =
-      index === 2
-        ? "https://www.werstreamt.es/serie/details/232578/avatar-der-herr-der-elemente/"
-        : index === 35
-        ? "https://www.werstreamt.es/serie/details/235057/vikings/"
-        : `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
-    await Firebase.database().ref(`serien/${index}/wo`).set({ wo: woUrl });
-
-    const rec = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API}&language=de-DE`
-    );
-    const recData = await rec.json();
-    const rec2 = await fetch(
-      `https://api.themoviedb.org/3/tv/${serie.id}/recommendations?api_key=${API}&language=de-DE&page=2`
-    );
-    const recData2 = await rec2.json();
-    let recResult = recData.results;
-    let recResult2 = recData2.results;
-
-    let recResults = [];
-    for (let index = 0; index < recResult.length; index++) {
-      if (
-        recResult[index].poster_path === null ||
-        recResult[index].poster_path === undefined ||
-        recResult[index].poster_path === ""
-      ) {
-        continue;
-      }
-      recResults.push(recResult[index]);
-    }
-    for (let i = 0; i < recResult2.length; i++) {
-      if (
-        recResult2[i].poster_path === null ||
-        recResult2[i].poster_path === undefined ||
-        recResult2[i].poster_path === ""
-      ) {
-        continue;
-      }
-      recResults.push(recResult2[i]);
-    }
-
-    recResults = recResults.filter(
-      (value, index, self) => index === self.findIndex((t) => t.id === value.id)
-    );
-
-    let ids = [];
-    for (let i = 0; i < serien.length; i++) {
-      ids.push(serien[i].id);
-    }
-    var recs = recResults.filter(function (o1) {
-      if (!ids.includes(o1.id)) {
-        return true;
-      }
-    });
-
-    for (let i = 0; i < recs.length; i++) {
-      try {
-        const provider = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
-        );
-
-        const providerData = await provider.json();
-        const anbieter = getProviders(providerData);
-
-        recs[i].provider = anbieter;
-        const response2 = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API}`
-        );
-        const data3 = await response2.json();
-        recs[i].production = data3.in_production;
-
-        const response3 = await fetch(
-          `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API}&language=en-US`
-        );
-        const data4 = await response3.json();
-        recs[i].imdb_id = data4.imdb_id;
-
-        recs[
-          i
-        ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
-      } catch (error) {}
-    }
-    try {
-      if (recData.total_results === 0) {
-        await Firebase.database()
-          .ref(`serien/${index}/recommendation`)
-          .set({ recommendations: "" });
-      } else {
-        await Firebase.database()
-          .ref(`serien/${index}/recommendation`)
-          .set({ recommendations: recs });
-      }
-    } catch (error) {
-      await Firebase.database()
-        .ref(`serien/${index}/recommendation`)
-        .set({ recommendations: "" });
-    }
-
-    return random;
-  };
-
-  async function fetchData() {
-    try {
-      const snapshot = await Firebase.database().ref("/serien").once("value");
-      const serienArray = snapshot.val();
-      let dates = [];
-
-      for (let i = 0; i < serienArray.length; i++) {
-        try {
-          if (serienArray[i].nextEpisode.nextEpisode !== "") {
-            dates.push(new Date(serienArray[i].nextEpisode.nextEpisode));
-          }
-        } catch (error) {
-          console.error(error + " ");
-        }
-      }
-
-      const date = dates.sort(function (a, b) {
-        return a - b;
-      })[0];
-      const nextEp = new Date(date);
-      const deleteDate = new Date(
-        `${nextEp.getFullYear()}-${nextEp.getMonth() + 1}-${nextEp.getDate()}`
-      ).addHours(23);
-      console.log(new Date());
-      console.log(deleteDate);
-
-      if (new Date() >= deleteDate) {
-        setLoadNewDate(true);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-
-    Firebase.database()
-      .ref("timestamp/createdAt")
-      .on("value", async (snap) => {
-        if (Math.round(Date.now() - snap?.val()) > 604800000) {
-          try {
-            setLoadSeries(true);
-            Firebase.database().ref("timestamp").set({
-              createdAt: Firebase.database.ServerValue.TIMESTAMP,
-            });
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      });
-
-    checkGenre();
-  }
 
   const isbigger = (a, b) => {
     let punktea = 0;
@@ -698,7 +239,7 @@ const App = () => {
           filteredSeries = series.filter((serie) => {
             try {
               if (genre === "Neue Episoden") {
-                console.log("Neue Episoden");
+           
                 return (
                   serie.nextEpisode.nextEpisode !== "" &&
                   serie.title.toLowerCase().includes(filter.toLowerCase()) &&
@@ -707,7 +248,7 @@ const App = () => {
                   })
                 );
               } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-                console.log(" A-Z oder Zuletzt Hinzugefügt");
+              
                 return (
                   serie.title.toLowerCase().includes(filter.toLowerCase()) &&
                   serie.provider.provider.some((providers) => {
@@ -715,7 +256,7 @@ const App = () => {
                   })
                 );
               } else {
-                console.log("else");
+             
                 return (
                   serie.genre.genres.includes(genre) &&
                   serie.title.toLowerCase().includes(filter.toLowerCase()) &&
@@ -730,16 +271,16 @@ const App = () => {
           filteredSeries = series.filter((serie) => {
             try {
               if (genre === "Neue Episoden") {
-                console.log("Neue Episoden");
+            
                 return (
                   serie.nextEpisode.nextEpisode !== "" &&
                   serie.title.toLowerCase().includes(filter.toLowerCase())
                 );
               } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-                console.log(" A-Z oder Zuletzt Hinzugefügt");
+               
                 return serie.title.toLowerCase().includes(filter.toLowerCase());
               } else {
-                console.log("else");
+             
                 return (
                   serie.genre.genres.includes(genre) &&
                   serie.title.toLowerCase().includes(filter.toLowerCase())
@@ -749,7 +290,7 @@ const App = () => {
           });
         }
 
-        console.log(filteredSeries);
+        
 
         if (genre === "A-Z") {
           filteredSeries.sort((a, b) =>
@@ -865,48 +406,6 @@ const App = () => {
             geschrieben hast!
           </Alert>
         </Snackbar>
-        <Snackbar open={openStartSnack}>
-          <Alert severity="warning" sx={{ width: "100%" }}>
-            Daten werden geladen!
-            <LinearProgressWithLabel value={progress} />
-          </Alert>
-        </Snackbar>
-
-        <Snackbar open={openDateSnack}>
-          <Alert severity="warning" sx={{ width: "100%" }}>
-            Neue Episoden werden geladen!
-            <LinearProgressWithLabel value={progressDates} />
-          </Alert>
-        </Snackbar>
-
-        <Snackbar
-          open={openEndSnack}
-          autoHideDuration={3000}
-          onClose={handleCloseEndSnack}
-        >
-          <Alert
-            onClose={handleCloseEndSnack}
-            severity="success"
-            sx={{ width: "100%" }}
-          >
-            Daten erfolgreich geladen!
-          </Alert>
-        </Snackbar>
-
-        <Snackbar
-          open={openDatesEndSnack}
-          autoHideDuration={3000}
-          onClose={handleCloseEndDatesSnack}
-        >
-          <Alert
-            onClose={handleCloseEndDatesSnack}
-            severity="success"
-            sx={{ width: "100%" }}
-          >
-            Neue Episoden erfolgreich geladen!
-          </Alert>
-        </Snackbar>
-
         <Snackbar open={openSerienSnack} autoHideDuration={2000}>
           <Alert severity="warning" sx={{ width: "100%" }}>
             Serie wird hinzugefügt!
@@ -938,9 +437,6 @@ const App = () => {
           <div id="main" key="0">
             <Header
               user={user}
-              setLoadSeries={(wert) => {
-                setLoadSeries(wert);
-              }}
             />
             <div id="Ueberschrift">
               <Search

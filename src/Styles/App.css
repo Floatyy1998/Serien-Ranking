@@ -290,7 +290,7 @@ h3.button {
   height: 60px;
   float: left;
   background-color: #111;
-  width: 10%;
+  
 }
 
 .line {
@@ -958,7 +958,7 @@ a {
 
 #Header {
   float: left;
-  width: 80%;
+  width: calc(100% - 95px);
   height: 60px;
 
   background-color: #111;

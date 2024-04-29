@@ -24,7 +24,7 @@ function SideNav(props) {
 
   const limiter = new Bottleneck({
     minTime: 100, //minimum time between requests
-    maxConcurrent: 45, //maximum concurrent requests
+    maxConcurrent: 75, //maximum concurrent requests
   });
 
   function scheduleRequest(endpoint) {
@@ -77,7 +77,6 @@ function SideNav(props) {
     var recommendations = "";
     var nextEpisode = "";
     var remake = false;
-    var title = title;
     var nextEpisodeTitle = "";
     var season = "";
     var episode = "";
@@ -103,7 +102,7 @@ function SideNav(props) {
       remake &&
       serien.filter((serie) => serie.id === data.results[1].id).length > 0
     ) {
-      console.log(serien.filter((serie) => serie.id === data.results[1].id));
+     
       alert(
         "Remake bereits vorhanden...\nJetzt kann ich dir nicht mehr helfen"
       );
@@ -124,9 +123,11 @@ function SideNav(props) {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=en-US`
     );
     const detailsData = await detailsResponse.json();
+    console.log(detailsData);
     const genres = detailsData.genres.map((genre) => genre.name);
     const titleEN = detailsData.name;
-    console.log(titleEN);
+    const titleOrginal=detailsData.original_name;
+  
     var theMazeId = "";
 
     props.setProgress(20);
@@ -148,29 +149,45 @@ function SideNav(props) {
         tvMazeData = await tvMazeResponse.json();
         theMazeId = tvMazeData[1].show.id;
       }
-    } catch (error) {}
+    } catch (error) {
+      if (!remake) {
+        tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/singlesearch/shows?q=${titleOrginal}`
+        );
+        props.setProgress(25);
+        tvMazeData = await tvMazeResponse.json();
+        theMazeId = tvMazeData.id;
+      } else {
+        tvMazeResponse = await fetch(
+          `https://api.tvmaze.com/search/shows?q=${titleOrginal}`
+        );
+        props.setProgress(25);
+        tvMazeData = await tvMazeResponse.json();
+        theMazeId = tvMazeData[1].show.id;
+      }
+    }
 
     if (theMazeId !== "") {
       var endpoint = `https://api.tvmaze.com/shows/${theMazeId}`;
 
       props.setProgress(30);
       try {
-        var tvMazeData = await scheduleRequest(endpoint);
-        tvMazeData = await tvMazeData.json();
-        console.log(tvMazeData);
+        var tvMazeData2 = await scheduleRequest(endpoint);
+        tvMazeData = await tvMazeData2.json();
+        
 
         if (tvMazeData._links.nextepisode) {
-          console.log(tvMazeData._links.nextepisode);
+      
           endpoint = `${tvMazeData._links.nextepisode.href}`;
-          console.log(endpoint);
+     
 
           var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
           tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
-          console.log(tvMazeNextEpisodeData);
+        
           nextEpisode = tvMazeNextEpisodeData.airdate;
           season = tvMazeNextEpisodeData.season;
           episode = tvMazeNextEpisodeData.number;
-          console.log(nextEpisode, season, episode);
+         
 
           const response = await fetch(
             `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
@@ -206,7 +223,7 @@ function SideNav(props) {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
     );
     const data1 = await response1.json();
-    console.log(data1.overview);
+  
 
     props.setProgress(43);
 
@@ -221,7 +238,7 @@ function SideNav(props) {
         `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API}`
       );
       const imagesData = await images.json();
-      console.log(imagesData.posters);
+    
       const imagesList = imagesData.posters
         .filter((image) => {
           if (

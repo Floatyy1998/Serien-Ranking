@@ -13,7 +13,6 @@ import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import Firebase from "firebase/compat/app";
 
 import "../Styles/App.css";
-import { Add } from "@mui/icons-material";
 
 const API = process.env.REACT_APP_API_TMDB;
 const UserId = process.env.REACT_APP_USERID;
@@ -34,7 +33,7 @@ const RecsDialog = (props) => {
 
   const limiter = new Bottleneck({
     minTime: 100, //minimum time between requests
-    maxConcurrent: 45, //maximum concurrent requests
+    maxConcurrent: 75, //maximum concurrent requests
   });
 
   function scheduleRequest(endpoint) {
@@ -139,7 +138,7 @@ const RecsDialog = (props) => {
       remake &&
       serien.filter((serie) => serie.id === data.results[1].id).length > 0
     ) {
-      console.log(serien.filter((serie) => serie.id === data.results[1].id));
+    
       alert(
         "Remake bereits vorhanden...\nJetzt kann ich dir nicht mehr helfen"
       );
@@ -162,7 +161,7 @@ const RecsDialog = (props) => {
     const detailsData = await detailsResponse.json();
     const genres = detailsData.genres.map((genre) => genre.name);
     const titleEN = detailsData.name;
-    console.log(titleEN);
+  
     var theMazeId = "";
 
     props.setProgress(20);
@@ -191,22 +190,22 @@ const RecsDialog = (props) => {
 
       props.setProgress(30);
       try {
-        var tvMazeData = await scheduleRequest(endpoint);
-        tvMazeData = await tvMazeData.json();
-        console.log(tvMazeData);
+        var tvMazeData2 = await scheduleRequest(endpoint);
+        tvMazeData = await tvMazeData2.json();
+      
 
         if (tvMazeData._links.nextepisode) {
-          console.log(tvMazeData._links.nextepisode);
+       
           endpoint = `${tvMazeData._links.nextepisode.href}`;
-          console.log(endpoint);
+      
 
           var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
           tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
-          console.log(tvMazeNextEpisodeData);
+        
           nextEpisode = tvMazeNextEpisodeData.airdate;
           season = tvMazeNextEpisodeData.season;
           episode = tvMazeNextEpisodeData.number;
-          console.log(nextEpisode, season, episode);
+        
 
           const response = await fetch(
             `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
@@ -242,7 +241,7 @@ const RecsDialog = (props) => {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
     );
     const data1 = await response1.json();
-    console.log(data1.overview);
+   
 
     props.setProgress(43);
 
@@ -257,7 +256,7 @@ const RecsDialog = (props) => {
         `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API}`
       );
       const imagesData = await images.json();
-      console.log(imagesData.posters);
+  
       const imagesList = imagesData.posters
         .filter((image) => {
           if (
@@ -289,7 +288,7 @@ const RecsDialog = (props) => {
     const production = data3.in_production;
     props.setProgress(45);
 
-    const provider = await fetch(
+    const provider = await scheduleRequest(
       `https://api.themoviedb.org/3/tv/${id}/season/1/watch/providers?api_key=${API}&language=en-US`
     );
     const providerData = await provider.json();
@@ -333,7 +332,7 @@ const RecsDialog = (props) => {
 
     for (let i = 0; i < recs.length; i++) {
       try {
-      const provider = await fetch(
+      const provider = await scheduleRequest(
         `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
       );
       props.setProgress(70 + (i / recs.length) * 30);

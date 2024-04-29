@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
+import React, { useState } from "react";
+
 import SsidChartIcon from "@mui/icons-material/SsidChart";
-import Firebase from "firebase/compat/app";
+
 import StatisticsDialog from "./StatisticsDialog";
 
 const Header = (props) => {
@@ -58,27 +58,14 @@ const Header = (props) => {
           background: "#111",
           height: "60px",
           float: "left",
-          width: "10%",
+          width: "45px",
         }}
       >
-        <CachedOutlinedIcon
-        
-          onClick={(_) => {
-            if (Firebase.auth()?.currentUser) {
-              props.setLoadSeries(true);
-            } else {
-              alert("Bitte anmelden!");
-            }
-          }}
-          titleAccess="Alle Daten neu laden"
-          className="reload"
-        ></CachedOutlinedIcon>
         <SsidChartIcon
         id="statistik"
           style={{
             color: "#00fed7",
             position: "absolute",
-            right: "70px",
             top: "10px",
             cursor: "pointer",
             width: "40px",

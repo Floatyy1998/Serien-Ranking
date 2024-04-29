@@ -1,4 +1,6 @@
 {
     "workbench.startupEditor": "none",
-    "workbench.editor.showTabs": "multiple"
+    "workbench.editor.showTabs": "multiple",
+    "editor.fontFamily": "Fira Code",
+"editor.fontLigatures": true,
 }

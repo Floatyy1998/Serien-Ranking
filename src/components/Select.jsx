@@ -5,7 +5,7 @@ const Select = (props) => {
     props.setGenre(event.target.value);
   };
   const setProvider = (event) => {
-    console.log(event.target.value);
+  
     props.setProvider(event.target.value);
   };
   return (
