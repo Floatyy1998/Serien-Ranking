@@ -917,7 +917,7 @@ p.padding {
   justify-content: center;
 }
 
-p.padding a {
+p.padding span {
   display: -webkit-box !important;
   width: fit-content;
   max-width: 95%;

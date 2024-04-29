@@ -12,7 +12,7 @@ import {
   BarElement,
   LinearScale,
 } from "chart.js";
-import { Bar, Doughnut, Pie } from "react-chartjs-2";
+import { Bar, Doughnut } from "react-chartjs-2";
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -24,7 +24,6 @@ ChartJS.register(
 );
 
 const StatisticsDialog = (props) => {
-  const [loading, setLoading] = React.useState(true);
   const [anbieterChartData, setAnbieterChartData] = React.useState({
     labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
     datasets: [
@@ -163,6 +162,7 @@ const StatisticsDialog = (props) => {
 
     // setChartData(getData());
     //  setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.open]);
 
   const getAnbieterChartData = async () => {
@@ -255,7 +255,6 @@ const StatisticsDialog = (props) => {
     serien.forEach((serie) => {
       try {
         serie.provider.provider.forEach((provider) => {
-
           if (getRating(serie) !== "0.00") {
             dataMap.set(provider.name, {
               count: dataMap.get(provider.name).count + 1,
@@ -264,16 +263,12 @@ const StatisticsDialog = (props) => {
                 Number(getRating(serie)),
             });
           }
-   
-          
         });
       } catch (error) {}
     });
 
-
     let dataArray = [];
     dataMap.forEach((value, key) => {
-
       dataArray.push(addZeroes(round(value.rating / value.count, 0.01)));
     });
     setAnbieterChartData2({
@@ -327,7 +322,6 @@ const StatisticsDialog = (props) => {
       } catch (error) {}
     });
     genre.delete("All");
-  
 
     let genreArray = Array.from(genre);
 
@@ -404,7 +398,6 @@ const StatisticsDialog = (props) => {
       } catch (error) {}
     });
     genre.delete("All");
-   
 
     let genreArray = Array.from(genre);
 
@@ -417,7 +410,7 @@ const StatisticsDialog = (props) => {
     serien.forEach((serie) => {
       try {
         serie.genre.genres.forEach((genre) => {
-          if (genre !== "All" && getRating(serie) !=="0.00") {
+          if (genre !== "All" && getRating(serie) !== "0.00") {
             dataMap.set(genre, {
               count: dataMap.get(genre).count + 1,
               rating:

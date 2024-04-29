@@ -7,7 +7,7 @@ import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import LinearProgressWithLabel from "./LinearProgressWithLabel";
 
-import { Fade, Zoom } from "@mui/material";
+import { Zoom } from "@mui/material";
 import RecsDialog from "./RecsDialog";
 
 const mail = process.env.REACT_APP_MAIL;
@@ -347,7 +347,7 @@ const SeriesRow = (props) => {
             style={{ borderRadius: "30px", width: "100%" }}
           >
             <p className="padding">
-              <a
+              <span
                 target="_blank"
                 onClick={(_) => {
                   if (localStorage.getItem(mail)) {
@@ -370,7 +370,7 @@ const SeriesRow = (props) => {
                   }
                 })()}
                 {props.serie.title}
-              </a>
+              </span>
             </p>
           </div>
         </div>

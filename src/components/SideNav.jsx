@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Firebase from "firebase/compat/app";
 
 import Button from "@mui/material/Button";
@@ -306,9 +306,10 @@ function SideNav(props) {
       ids.push(serien[i].id);
     }
     var recs = recResults.filter(function (o1) {
-      if (!ids.includes(o1.id)) {
-        return true;
-      }
+      
+        return !ids.includes(o1.id);
+ 
+
     });
 
     for (let i = 0; i < recs.length; i++) {

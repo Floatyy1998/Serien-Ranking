@@ -16,26 +16,18 @@ import ScrollDown from "./ScrollDown";
 import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import LinearProgressWithLabel from "./LinearProgressWithLabel";
-import Bottleneck from "bottleneck";
+
 
 const mail = process.env.REACT_APP_MAIL;
-const API = process.env.REACT_APP_API_TMDB;
+
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com florian3456@aol.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 const App = () => {
 
-  const limiter = new Bottleneck({
-    minTime: 100, //minimum time between requests
-    maxConcurrent: 75, //maximum concurrent requests
-  });
+ 
 
-  function scheduleRequest(endpoint) {
-    return limiter.schedule(() => {
-      return fetch(endpoint);
-    });
-  }
   const config = {
     apiKey: process.env.REACT_APP_APIKEY,
     authDomain: process.env.REACT_APP_AUTHDOMAIN,
@@ -55,7 +47,6 @@ const App = () => {
   const [provider, setProvider] = useState("All");
   const [filter, setFilter] = useState("");
   const [openErrorSnack, setOpenErrorSnack] = React.useState(false);
-  const [openEndSnack, setOpenEndSnack] = React.useState(false);
   const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
   const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
@@ -120,6 +111,7 @@ const App = () => {
 
   useEffect(() => {
     checkGenre();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [genre, filter, provider]);
 
 
@@ -266,6 +258,7 @@ const App = () => {
                 );
               }
             } catch (error) {}
+            return null;
           });
         } else {
           filteredSeries = series.filter((serie) => {
@@ -286,7 +279,9 @@ const App = () => {
                   serie.title.toLowerCase().includes(filter.toLowerCase())
                 );
               }
+              
             } catch (error) {}
+            return null;
           });
         }
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Dialog } from "@mui/material";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -105,14 +105,13 @@ const RecsDialog = (props) => {
     return anbieter;
   };
 
- const fetchSeriesData = async (title) => {
+  const fetchSeriesData = async (title) => {
     const snapshot = await Firebase.database().ref("/serien").once("value");
     props.setProgress(10);
     const serien = snapshot.val();
     var recommendations = "";
     var nextEpisode = "";
     var remake = false;
-    var title = title;
     var nextEpisodeTitle = "";
     var season = "";
     var episode = "";
@@ -138,7 +137,6 @@ const RecsDialog = (props) => {
       remake &&
       serien.filter((serie) => serie.id === data.results[1].id).length > 0
     ) {
-    
       alert(
         "Remake bereits vorhanden...\nJetzt kann ich dir nicht mehr helfen"
       );
@@ -161,7 +159,7 @@ const RecsDialog = (props) => {
     const detailsData = await detailsResponse.json();
     const genres = detailsData.genres.map((genre) => genre.name);
     const titleEN = detailsData.name;
-  
+
     var theMazeId = "";
 
     props.setProgress(20);
@@ -192,20 +190,16 @@ const RecsDialog = (props) => {
       try {
         var tvMazeData2 = await scheduleRequest(endpoint);
         tvMazeData = await tvMazeData2.json();
-      
 
         if (tvMazeData._links.nextepisode) {
-       
           endpoint = `${tvMazeData._links.nextepisode.href}`;
-      
 
           var tvMazeNextEpisodeData = await scheduleRequest(endpoint);
           tvMazeNextEpisodeData = await tvMazeNextEpisodeData.json();
-        
+
           nextEpisode = tvMazeNextEpisodeData.airdate;
           season = tvMazeNextEpisodeData.season;
           episode = tvMazeNextEpisodeData.number;
-        
 
           const response = await fetch(
             `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
@@ -241,7 +235,6 @@ const RecsDialog = (props) => {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=de-DE`
     );
     const data1 = await response1.json();
-   
 
     props.setProgress(43);
 
@@ -256,7 +249,7 @@ const RecsDialog = (props) => {
         `https://api.themoviedb.org/3/tv/${id}/images?api_key=${API}`
       );
       const imagesData = await images.json();
-  
+
       const imagesList = imagesData.posters
         .filter((image) => {
           if (
@@ -325,42 +318,36 @@ const RecsDialog = (props) => {
       ids.push(serien[i].id);
     }
     var recs = recResults.filter(function (o1) {
-      if (!ids.includes(o1.id)) {
-        return true;
-      }
+      return !ids.includes(o1.id);
     });
 
     for (let i = 0; i < recs.length; i++) {
       try {
-      const provider = await scheduleRequest(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
-      );
-      props.setProgress(70 + (i / recs.length) * 30);
+        const provider = await scheduleRequest(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/season/1/watch/providers?api_key=${API}&language=en-US`
+        );
+        props.setProgress(70 + (i / recs.length) * 30);
 
-      const providerData = await provider.json();
-      const anbieter = props.getProviders(providerData);
+        const providerData = await provider.json();
+        const anbieter = props.getProviders(providerData);
 
-      recs[i].provider = anbieter;
-      const response2 = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API}`
-      );
-      const data3 = await response2.json();
-      recs[i].production = data3.in_production;
+        recs[i].provider = anbieter;
+        const response2 = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}?api_key=${API}`
+        );
+        const data3 = await response2.json();
+        recs[i].production = data3.in_production;
 
-      const response3 = await fetch(
-        `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API}&language=en-US`
-      );
-      const data4 = await response3.json();
-      recs[i].imdb_id = data4.imdb_id;
+        const response3 = await fetch(
+          `https://api.themoviedb.org/3/tv/${recs[i].id}/external_ids?api_key=${API}&language=en-US`
+        );
+        const data4 = await response3.json();
+        recs[i].imdb_id = data4.imdb_id;
 
-      recs[
-        i
-      ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
-     
-        
-      } catch (error) {
-      
-      }
+        recs[
+          i
+        ].wo = `https://www.werstreamt.es/filme-serien/?q=${data4.imdb_id}&action_results=suchen`;
+      } catch (error) {}
     }
     try {
       if (recData.total_results !== 0) {
@@ -408,12 +395,12 @@ const RecsDialog = (props) => {
       Documentary: 0,
       Drama: 0,
       Family: 0,
-     
-      Kids:0,
+
+      Kids: 0,
       Mystery: 0,
       Reality: 0,
       "Sci-Fi & Fantasy": 0,
-      
+
       "War & Politics": 0,
       Western: 0,
     }; // getRatings(event);
@@ -428,7 +415,6 @@ const RecsDialog = (props) => {
       anbieter,
       wo,
       recommendations,
-      anzeigeTitel,
       nextEpisodeTitle,
       season,
       episode,
@@ -457,7 +443,7 @@ const RecsDialog = (props) => {
       genre: { genres: ["All", ...genres] },
       id,
       begründung,
-      beschreibung
+      beschreibung,
     };
     const currentUser = Firebase.auth().currentUser;
     if (currentUser == null || currentUser.uid !== UserId) {
@@ -656,7 +642,7 @@ const RecsDialog = (props) => {
                       textDecoration: "underline",
                     }}
                   ></span>
-                  <a
+                  <span
                     target="_blank"
                     style={{
                       width: "100%",
@@ -667,7 +653,7 @@ const RecsDialog = (props) => {
                     }}
                   >
                     {rec.name}
-                  </a>
+                  </span>
                 </p>
               </div>
             </div>
