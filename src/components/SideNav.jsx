@@ -123,7 +123,6 @@ function SideNav(props) {
       `https://api.themoviedb.org/3/tv/${id}?api_key=${API}&language=en-US`
     );
     const detailsData = await detailsResponse.json();
-    console.log(detailsData);
     const genres = detailsData.genres.map((genre) => genre.name);
     const titleEN = detailsData.name;
     const titleOrginal=detailsData.original_name;
