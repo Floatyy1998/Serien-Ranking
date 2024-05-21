@@ -299,7 +299,17 @@ const CustomDialog = (props) => {
           ></input>
           <br></br>
           <br></br>
-
+          <label hmtlfor="Talk">Talk: </label>
+          <input
+            onFocus={handleFocus.bind(this)}
+            onBlur={handleBlur.bind(this)}
+            type="text"
+            id="Talk"
+            defaultValue={props.serie.rating["Talk"]}
+            name="Talk"
+          ></input>
+          <br />
+          <br />
           <label hmtlfor="War & Politics">War & Politics: </label>
           <input
             onFocus={handleFocus.bind(this)}

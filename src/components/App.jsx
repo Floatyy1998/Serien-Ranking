@@ -1,33 +1,27 @@
-import React, { useEffect, useState } from "react";
-import "../Styles/App.css";
-import SeriesRow from "./SeriesRow";
-import Firebase from "firebase/compat/app";
-import "firebase/compat/database";
-import "firebase/compat/auth";
-import "firebase/compat/analytics";
+import React, { useEffect, useState } from 'react';
+import '../Styles/App.css';
+import SeriesRow from './SeriesRow';
+import Firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import 'firebase/compat/auth';
+import 'firebase/compat/analytics';
 
-import SideNav from "./SideNav";
-import Header from "./Header";
-import Select from "./Select";
-import Search from "./Search";
-import Legende from "./Legende";
-import ScrollUp from "./ScrollUp";
-import ScrollDown from "./ScrollDown";
-import { Snackbar } from "@mui/material";
-import MuiAlert from "@mui/material/Alert";
-import LinearProgressWithLabel from "./LinearProgressWithLabel";
-
+import SideNav from './SideNav';
+import Header from './Header';
+import Select from './Select';
+import Search from './Search';
+import Legende from './Legende';
+import ScrollUp from './ScrollUp';
+import ScrollDown from './ScrollDown';
+import { Snackbar } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
 
 const mail = process.env.REACT_APP_MAIL;
-
 
 //provider mapping 337:Disney Plus; 8:Netflix; 9:Amazon Prime Video;  283:Crunchyroll; ros.desiree.97@gmail.com florian3456@aol.com
 //https://api.themoviedb.org/3/tv/246/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd request um provider zu bekommen
 
 const App = () => {
-
- 
-
   const config = {
     apiKey: process.env.REACT_APP_APIKEY,
     authDomain: process.env.REACT_APP_AUTHDOMAIN,
@@ -43,21 +37,19 @@ const App = () => {
 
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
-  const [genre, setGenre] = useState("All");
-  const [provider, setProvider] = useState("All");
-  const [filter, setFilter] = useState("");
+  const [genre, setGenre] = useState('All');
+  const [provider, setProvider] = useState('All');
+  const [filter, setFilter] = useState('');
   const [openErrorSnack, setOpenErrorSnack] = React.useState(false);
   const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
   const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
-  const [progress, setProgress] = React.useState(0);
+  const [, setProgress] = React.useState(0);
   const [user, setUser] = useState(null);
-
-
 
   const Alert = React.forwardRef(function Alert(props, ref) {
     return (
       <MuiAlert
-        style={{ borderRadius: "30px" }}
+        style={{ borderRadius: '30px' }}
         elevation={6}
         ref={ref}
         variant="filled"
@@ -66,15 +58,12 @@ const App = () => {
     );
   });
 
-
   const handleCloseSerienSnack = (event, reason) => {
     setOpenSerienEndSnack(false);
-    if (reason === "clickaway") {
+    if (reason === 'clickaway') {
       return;
     }
   };
-
-
 
   useEffect(() => {
     if (!Firebase.auth().currentUser) {
@@ -85,10 +74,10 @@ const App = () => {
             function () {
               localStorage.removeItem(mail);
               setUser(null);
-              document.getElementById("login").innerHTML = "LOGIN";
+              document.getElementById('login').innerHTML = 'LOGIN';
             },
             function (error) {
-              console.error("Sign Out Error", error);
+              console.error('Sign Out Error', error);
             }
           );
       } else {
@@ -96,7 +85,7 @@ const App = () => {
           .signInWithEmailAndPassword(mail, localStorage.getItem(mail))
           .then((userCredential) => {
             setUser(mail);
-            document.getElementById("login").innerHTML = "LOGOUT";
+            document.getElementById('login').innerHTML = 'LOGOUT';
           })
           .catch((error) => {
             var errorMessage = error.message;
@@ -105,67 +94,63 @@ const App = () => {
       }
     } else {
       setUser(mail);
-      document.getElementById("login").innerHTML = "LOGOUT";
+      document.getElementById('login').innerHTML = 'LOGOUT';
     }
   }, [user]);
 
   useEffect(() => {
     checkGenre();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [genre, filter, provider]);
-
-
-
-
 
   const getProviders = (providerData) => {
     const providers = {
       337: {
-        name: "Disney Plus",
+        name: 'Disney Plus',
         logo: `https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg`,
       },
       8: {
-        name: "Netflix",
+        name: 'Netflix',
         logo: `https://image.tmdb.org/t/p/original/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg`,
       },
       9: {
-        name: "Amazon Prime Video",
+        name: 'Amazon Prime Video',
         logo: `https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg`,
       },
       283: {
-        name: "Crunchyroll",
+        name: 'Crunchyroll',
         logo: `https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`,
       },
       30: {
-        name: "WOW",
+        name: 'WOW',
         logo: `https://image.tmdb.org/t/p/original/1WESsDFMs3cJc2TeT3nnzwIffGv.jpg`,
       },
       350: {
-        name: "Apple TV Plus",
+        name: 'Apple TV Plus',
         logo: `https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg`,
       },
       421: {
-        name: "Joyn Plus",
+        name: 'Joyn Plus',
         logo: `https://image.tmdb.org/t/p/original/2joD3S2goOB6lmepX35A8dmaqgM.jpg`,
       },
       531: {
-        name: "Paramount Plus",
+        name: 'Paramount Plus',
         logo: `https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg`,
       },
       178: {
-        name: "MagentaTV",
+        name: 'MagentaTV',
         logo: `https://image.tmdb.org/t/p/original/uULoezj2skPc6amfwru72UPjYXV.jpg`,
       },
       298: {
-        name: "RTL+",
+        name: 'RTL+',
         logo: `https://image.tmdb.org/t/p/original/3hI22hp7YDZXyrmXVqDGnVivNTI.jpg`,
       },
       354: {
-        name: "Crunchyroll",
+        name: 'Crunchyroll',
         logo: `https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`,
       },
       613: {
-        name: "Freevee",
+        name: 'Freevee',
         logo: `https://image.tmdb.org/t/p/original/uBE4RMH15mrkuz6vXzuJc7ZLXp1.jpg`,
       },
     };
@@ -185,33 +170,30 @@ const App = () => {
     return anbieter;
   };
 
-
-
-
   const isbigger = (a, b) => {
     let punktea = 0;
     let punkteb = 0;
 
     if (
-      genre === "All" ||
-      genre === "Neue Episoden" ||
-      genre === "Animation" ||
-      genre === "Documentary" ||
-      genre === "Sport"
+      genre === 'All' ||
+      genre === 'Neue Episoden' ||
+      genre === 'Animation' ||
+      genre === 'Documentary' ||
+      genre === 'Sport'
     ) {
-      punktea = Object.entries(a["rating"]).reduce((acc, [key, value]) => {
-        const multiplier = a["genre"]["genres"].includes(key) ? 3 : 1;
+      punktea = Object.entries(a['rating']).reduce((acc, [key, value]) => {
+        const multiplier = a['genre']['genres'].includes(key) ? 3 : 1;
         return acc + value * multiplier;
       }, 0);
-      punkteb = Object.entries(b["rating"]).reduce((acc, [key, value]) => {
-        const multiplier = b["genre"]["genres"].includes(key) ? 3 : 1;
+      punkteb = Object.entries(b['rating']).reduce((acc, [key, value]) => {
+        const multiplier = b['genre']['genres'].includes(key) ? 3 : 1;
         return acc + value * multiplier;
       }, 0);
-      punktea /= Object.keys(a["genre"]["genres"]).length;
-      punkteb /= Object.keys(b["genre"]["genres"]).length;
+      punktea /= Object.keys(a['genre']['genres']).length;
+      punkteb /= Object.keys(b['genre']['genres']).length;
     } else {
-      punktea += a["rating"][genre];
-      punkteb += b["rating"][genre];
+      punktea += a['rating'][genre];
+      punkteb += b['rating'][genre];
       punktea /= 2;
       punkteb /= 2;
     }
@@ -221,26 +203,24 @@ const App = () => {
 
   const checkGenre = () => {
     setLoading(true);
-    let ref = Firebase.database().ref("/serien");
-    ref.on("value", (snapshot) => {
+    let ref = Firebase.database().ref('/serien');
+    ref.on('value', (snapshot) => {
       const series = snapshot.val();
       let filteredSeries = [];
 
       if (series !== null) {
-        if (provider !== "All") {
+        if (provider !== 'All') {
           filteredSeries = series.filter((serie) => {
             try {
-              if (genre === "Neue Episoden") {
-           
+              if (genre === 'Neue Episoden') {
                 return (
-                  serie.nextEpisode.nextEpisode !== "" &&
+                  serie.nextEpisode.nextEpisode !== '' &&
                   serie.title.toLowerCase().includes(filter.toLowerCase()) &&
                   serie.provider.provider.some((providers) => {
                     return providers.name === provider;
                   })
                 );
-              } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-              
+              } else if (genre === 'A-Z' || genre === 'Zuletzt Hinzugefügt') {
                 return (
                   serie.title.toLowerCase().includes(filter.toLowerCase()) &&
                   serie.provider.provider.some((providers) => {
@@ -248,7 +228,6 @@ const App = () => {
                   })
                 );
               } else {
-             
                 return (
                   serie.genre.genres.includes(genre) &&
                   serie.title.toLowerCase().includes(filter.toLowerCase()) &&
@@ -263,31 +242,25 @@ const App = () => {
         } else {
           filteredSeries = series.filter((serie) => {
             try {
-              if (genre === "Neue Episoden") {
-            
+              if (genre === 'Neue Episoden') {
                 return (
-                  serie.nextEpisode.nextEpisode !== "" &&
+                  serie.nextEpisode.nextEpisode !== '' &&
                   serie.title.toLowerCase().includes(filter.toLowerCase())
                 );
-              } else if (genre === "A-Z" || genre === "Zuletzt Hinzugefügt") {
-               
+              } else if (genre === 'A-Z' || genre === 'Zuletzt Hinzugefügt') {
                 return serie.title.toLowerCase().includes(filter.toLowerCase());
               } else {
-             
                 return (
                   serie.genre.genres.includes(genre) &&
                   serie.title.toLowerCase().includes(filter.toLowerCase())
                 );
               }
-              
             } catch (error) {}
             return null;
           });
         }
 
-        
-
-        if (genre === "A-Z") {
+        if (genre === 'A-Z') {
           filteredSeries.sort((a, b) =>
             a.title.toLowerCase() > b.title.toLowerCase()
               ? 1
@@ -295,7 +268,7 @@ const App = () => {
               ? -1
               : 0
           );
-        } else if (genre === "Neue Episoden") {
+        } else if (genre === 'Neue Episoden') {
           filteredSeries.sort((a, b) =>
             a.nextEpisode.nextEpisode > b.nextEpisode.nextEpisode
               ? 1
@@ -303,7 +276,7 @@ const App = () => {
               ? -1
               : 0
           );
-        } else if (genre === "Zuletzt Hinzugefügt") {
+        } else if (genre === 'Zuletzt Hinzugefügt') {
           filteredSeries.reverse();
         } else {
           filteredSeries.sort((a, b) =>
@@ -316,7 +289,6 @@ const App = () => {
 
         var i = 1;
         var seriesRows = [];
-
         filteredSeries.forEach((serie) => {
           let date = Math.floor(Math.random() * 9999999999999999999);
           const seriesRow = (
@@ -334,6 +306,7 @@ const App = () => {
           seriesRows.push(seriesRow);
           i++;
         });
+
         setRows(seriesRows);
         setLoading(false);
       }
@@ -343,9 +316,8 @@ const App = () => {
   };
 
   const removeNav = () => {
-    document.getElementById("mySidenav").classList.remove("sidenav-offen");
+    document.getElementById('mySidenav').classList.remove('sidenav-offen');
   };
-
 
   if (loading) {
     return (
@@ -396,15 +368,14 @@ const App = () => {
           autoHideDuration={3000}
           onClose={(_) => setOpenErrorSnack(false)}
         >
-          <Alert severity="error" sx={{ width: "100%" }}>
+          <Alert severity="error" sx={{ width: '100%' }}>
             Serie nicht gefunden! Bitte überprüfe ob du den Titel richtig
             geschrieben hast!
           </Alert>
         </Snackbar>
         <Snackbar open={openSerienSnack} autoHideDuration={2000}>
-          <Alert severity="warning" sx={{ width: "100%" }}>
+          <Alert severity="warning" sx={{ width: '100%' }}>
             Serie wird hinzugefügt!
-            <LinearProgressWithLabel value={progress} />
           </Alert>
         </Snackbar>
         <Snackbar
@@ -415,7 +386,7 @@ const App = () => {
           <Alert
             onClose={handleCloseSerienSnack}
             severity="success"
-            sx={{ width: "100%" }}
+            sx={{ width: '100%' }}
           >
             Serie erfolgreich hinzugefügt!
           </Alert>
@@ -430,9 +401,7 @@ const App = () => {
             user={user}
           />
           <div id="main" key="0">
-            <Header
-              user={user}
-            />
+            <Header user={user} />
             <div id="Ueberschrift">
               <Search
                 search={(e) => {
@@ -460,7 +429,7 @@ const App = () => {
                 {rows.length > 0 ? (
                   rows
                 ) : (
-                  <h1 style={{ color: "white" }}>Keine Serien vorhanden!</h1>
+                  <h1 style={{ color: 'white' }}>Keine Serien vorhanden!</h1>
                 )}
               </ul>
             </div>

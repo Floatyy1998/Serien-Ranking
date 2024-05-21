@@ -5,19 +5,20 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import MuiAlert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import LinearProgressWithLabel from "./LinearProgressWithLabel";
 
 import { Zoom } from "@mui/material";
 import RecsDialog from "./RecsDialog";
+import EpisodeDialog from "./EpisodeDialog";
 
 const mail = process.env.REACT_APP_MAIL;
 const SeriesRow = (props) => {
   const [open, setOpen] = useState(false);
   const [openRecs, setOpenRecs] = useState(false);
-  const [openSerienSnack, setOpenSerienSnack] = React.useState(false);
+  const [openEpisodes, setOpenEpisodes] = useState(false);
+  const [, setOpenSerienSnack] = React.useState(false);
   const [openSerienEndSnack, setOpenSerienEndSnack] = React.useState(false);
   const [openErrorSnack, setOpenErrorSnack] = React.useState(false);
-  const [progress, setProgress] = React.useState(0);
+  const [, setProgress] = React.useState(0);
 
   const handleCloseSerienSnack = (event, reason) => {
     setOpenSerienEndSnack(false);
@@ -40,6 +41,9 @@ const SeriesRow = (props) => {
 
   const handleCloseRecs = () => {
     setOpenRecs(false);
+  };
+  const handleCloseEpisodes = () => {
+    setOpenEpisodes(false);
   };
   const handleClose = () => {
     setOpen(false);
@@ -198,15 +202,6 @@ const SeriesRow = (props) => {
         </Alert>
       </Snackbar>
       <Snackbar
-        open={openSerienSnack}
-        onClose={(_) => setOpenSerienSnack(false)}
-      >
-        <Alert severity="warning" sx={{ width: "100%" }}>
-          Daten werden geladen!
-          <LinearProgressWithLabel value={progress} />
-        </Alert>
-      </Snackbar>
-      <Snackbar
         open={openSerienEndSnack}
         autoHideDuration={3000}
         onClose={handleCloseSerienSnack}
@@ -228,6 +223,12 @@ const SeriesRow = (props) => {
         toggleErrorSnack={(wert) => setOpenErrorSnack(wert)}
         setProgress={(wert) => setProgress(wert)}
       />
+      <EpisodeDialog
+        open={openEpisodes}
+        close={handleCloseEpisodes}
+        serie={props.serie}
+      />
+
       <CustomDialog
         open={open}
         close={handleClose}
@@ -323,7 +324,12 @@ const SeriesRow = (props) => {
               </Tooltip>
             </div>
             {hasNextEpisode && (
-              <div className="nextEpisode">
+              <div
+                className="nextEpisode"
+                onClick={async (event) => {
+                  setOpenEpisodes(true);
+                }}
+              >
                 <div className="top">
                   <p className="title">{nextEpisodeCount}</p>
                   <p className="title">{formattedNextEp}</p>

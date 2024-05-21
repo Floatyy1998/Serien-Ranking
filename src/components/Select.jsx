@@ -48,6 +48,7 @@ const Select = (props) => {
           <option value="Mystery">Mystery</option>
           <option value="Reality">Reality</option>
           <option value="Sci-Fi & Fantasy">Sci-Fi & Fantasy</option>
+          <option value="Talk">Talk</option>
           <option value="War & Politics">War & Politics</option>
           <option value="Western">Western</option>
           <option value="Neue Episoden">Neue Episoden</option>
