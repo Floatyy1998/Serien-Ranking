@@ -232,10 +232,18 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           setSnackbarSeverity('success');
           setSnackbarOpen(true);
         } else {
-          throw new Error('Fehler beim Hinzufügen der Serie.');
+          const msgJson = await res.json();
+
+          if (msgJson.error !== 'Serie bereits vorhanden') {
+            throw new Error('Fehler beim Hinzufügen der Serie.');
+          }
+          setSnackbarMessage('Serie bereits vorhanden');
+          setSnackbarSeverity('error');
+          setSnackbarOpen(true);
         }
       } catch (error) {
         console.error('Error sending data to server, saving offline:', error);
+
         await saveOfflineData(seriesData);
         setSnackbarMessage(
           'Serie wird offline gespeichert und synchronisiert, wenn die Verbindung wiederhergestellt ist.'
