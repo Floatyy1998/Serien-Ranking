@@ -115,7 +115,9 @@ const SeriesWatchedDialog = ({
               padding='16px'
               textAlign='center'
             >
-              <Typography variant='h4'>Hurra! Alle Folgen gesehen!</Typography>
+              <Typography variant='h4'>
+                Hurra! Alle Episoden gesehen!
+              </Typography>
             </Box>
           </>
         )}
