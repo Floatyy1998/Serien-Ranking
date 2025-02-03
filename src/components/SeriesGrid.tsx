@@ -108,6 +108,7 @@ export const SeriesGrid = ({
         (selectedGenre === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
         selectedGenre === 'Zuletzt Hinzugefügt' ||
+        (selectedGenre === 'Watchlist' && series.watchlist) ||
         series.genre.genres.includes(selectedGenre);
       const matchesProvider =
         selectedProvider === 'All' ||

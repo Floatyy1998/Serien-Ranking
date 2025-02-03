@@ -1,3 +1,4 @@
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -361,6 +362,25 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     setOpenWatchedDialog(false);
   };
 
+  const handleWatchlistToggle = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!user) {
+      setSnackbarMessage(
+        'Bitte melden Sie sich an, um die Watchlist zu ändern.'
+      );
+      setSnackbarSeverity('warning');
+      setSnackbarOpen(true);
+      return;
+    }
+    const ref = firebase.database().ref(`/serien/${series.nmr}/watchlist`);
+    const newWatchlistStatus = !series.watchlist;
+    try {
+      await ref.set(newWatchlistStatus);
+    } catch (error) {
+      console.error('Error updating watchlist status:', error);
+    }
+  };
+
   const uniqueSeasons = series?.seasons?.filter(
     (season, index, self) =>
       index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
@@ -448,6 +468,18 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               </Typography>
             </Box>
           </Tooltip>
+          <Box
+            className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
+            onClick={handleWatchlistToggle}
+          >
+            <BookmarkIcon
+              sx={{
+                color: series.watchlist ? '#22c55e' : '#9e9e9e',
+                width: '24px',
+                height: '24px',
+              }}
+            />
+          </Box>
         </Box>
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={series.title} arrow>

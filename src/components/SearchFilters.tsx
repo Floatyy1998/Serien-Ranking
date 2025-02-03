@@ -75,6 +75,7 @@ export const SearchFilters = ({
           <MenuItem value='Ohne Bewertung'>Ohne Bewertung</MenuItem>
           <MenuItem value='Neue Episoden'>Neue Episoden</MenuItem>
           <MenuItem value='Zuletzt Hinzugefügt'>Zuletzt Hinzugefügt</MenuItem>
+          <MenuItem value='Watchlist'>Watchlist</MenuItem>
         </Select>
       </FormControl>
       <FormControl className='md:w-[250px]'>

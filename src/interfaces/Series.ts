@@ -72,4 +72,5 @@ export interface Series {
   wo: {
     wo: string;
   };
+  watchlist?: boolean;
 }

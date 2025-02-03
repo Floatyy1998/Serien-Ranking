@@ -1,5 +1,5 @@
-const CACHE_NAME = 'static-cache-v3.0.4'; // Erhöhen Sie die Cache-Version
-const DATA_CACHE_NAME = 'data-cache-v2.0.4'; // Erhöhen Sie die Cache-Version
+const CACHE_NAME = 'static-cache-v3.0.5'; // Erhöhen Sie die Cache-Version
+const DATA_CACHE_NAME = 'data-cache-v2.0.5'; // Erhöhen Sie die Cache-Version
 
 const FILES_TO_CACHE = [
   './',
