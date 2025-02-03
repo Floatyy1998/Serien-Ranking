@@ -36,11 +36,9 @@ import 'firebase/compat/auth';
 import { BarChartIcon, MenuIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
-import { Offline } from 'react-detect-offline';
 import { useAuth } from '../App';
 import notFound from '../assets/notFound.jpg';
 import { Series } from '../interfaces/Series';
-import { clearOfflineData, getOfflineData, saveOfflineData } from '../utils/db';
 import { calculateOverallRating } from '../utils/rating';
 
 Chart.register(
@@ -242,55 +240,13 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           setSnackbarOpen(true);
         }
       } catch (error) {
-        console.error('Error sending data to server, saving offline:', error);
-
-        await saveOfflineData(seriesData);
-        setSnackbarMessage(
-          'Serie wird offline gespeichert und synchronisiert, wenn die Verbindung wiederhergestellt ist.'
-        );
-        setSnackbarSeverity('warning');
+        console.error('Error sending data to server:', error);
+        setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
+        setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
     }
   };
-
-  const syncData = async () => {
-    const offlineData = await getOfflineData();
-    if (offlineData.length > 0) {
-      for (const data of offlineData) {
-        try {
-          const res = await fetch('https://serienapi.konrad-dinges.de/add', {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            credentials: 'same-origin',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify(data.data),
-          });
-
-          if (res.ok) {
-            await clearOfflineData();
-          } else {
-            throw new Error('Error sending offline data to server');
-          }
-        } catch (error) {
-          console.error('Error sending offline data to server:', error);
-        }
-      }
-      await clearOfflineData();
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('online', syncData);
-    return () => {
-      window.removeEventListener('online', syncData);
-    };
-  }, []);
 
   const fetchStats = () => {
     const genres: {
@@ -483,20 +439,6 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         </Toolbar>
       </AppBar>
       <Toolbar /> {/* Platzhalter für den fixierten Header */}
-      <Offline>
-        <Box
-          sx={{
-            backgroundColor: 'red',
-            color: 'white',
-            padding: '10px',
-            textAlign: 'center',
-          }}
-        >
-          Sie sind offline. Serien können nicht hinzugefügt werden, aber
-          Rating-Änderungen werden gecached und nach erneuter Verbindung
-          ausgeführt.
-        </Box>
-      </Offline>
       <Drawer anchor='top' open={isNavOpen} onClose={() => setIsNavOpen(false)}>
         <List
           sx={{

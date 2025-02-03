@@ -4,7 +4,6 @@ import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
 import { Series } from '../interfaces/Series';
-import { getData, saveData } from '../utils/db';
 import { calculateOverallRating } from '../utils/rating';
 import { SeriesCard } from './SeriesCard';
 
@@ -32,60 +31,15 @@ export const SeriesGrid = ({
             const seriesArray = Object.values(data) as Series[];
             setSeriesList(seriesArray);
             setLoading(false);
-            // Speichern Sie die Daten in IndexedDB
-            await saveData({ id: 'series', data: seriesArray });
           });
           return () => ref.off(); // Entfernen Sie den Listener, wenn die Komponente unmountet
         } catch (error) {
           console.error('Fehler beim Abrufen der Daten:', error);
         }
-      } else {
-        // Wenn offline, versuchen Sie, die Daten aus IndexedDB abzurufen
-        const cachedData = await getData('series');
-        if (cachedData) {
-          setSeriesList(cachedData.data as Series[]);
-          setLoading(false);
-        }
       }
     };
 
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    const handleOnline = async () => {
-      const ref = firebase.database().ref('/serien');
-      ref.on('value', async (snapshot) => {
-        const data = snapshot.val();
-        const seriesArray = Object.values(data) as Series[];
-        setSeriesList(seriesArray);
-        setLoading(false);
-        // Speichern Sie die Daten in IndexedDB
-        await saveData({ id: 'series', data: seriesArray });
-      });
-    };
-
-    const handleOffline = async () => {
-      const cachedData = await getData('series');
-      if (cachedData) {
-        setSeriesList(cachedData.data as Series[]);
-        setLoading(false);
-      }
-    };
-
-    if (navigator.onLine) {
-      handleOnline();
-    } else {
-      handleOffline();
-    }
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
   }, []);
 
   if (loading) {

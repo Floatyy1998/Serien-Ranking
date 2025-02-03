@@ -12,14 +12,9 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useAuth } from '../App'; // Assuming you have an AuthContext
 import { Series } from '../interfaces/Series';
-import {
-  clearOfflineRatings,
-  getOfflineRatings,
-  saveOfflineRating,
-} from '../utils/db';
 import { calculateOverallRating } from '../utils/rating';
 import LoadingCard from './LoadingCard';
 
@@ -166,48 +161,20 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         setOpen(false);
       } catch (error) {
         console.error('Error updating ratings online:', error);
-        await saveOfflineRating({ id: series.nmr, ratings });
-        setSnackbarMessage(
-          'Sie sind offline. Rating-Änderungen werden gecached und nach erneuter Verbindung ausgeführt.'
-        );
-        setSnackbarSeverity('warning');
+        setSnackbarMessage('Fehler beim Aktualisieren der Bewertungen.');
+        setSnackbarSeverity('error');
         setSnackbarOpen(true);
         setOpen(false);
       }
     } else {
-      await saveOfflineRating({ id: series.nmr, ratings: updatedRatings });
       setSnackbarMessage(
-        'Sie sind offline. Rating-Änderungen werden gecached und nach erneuter Verbindung ausgeführt.'
+        'Sie sind offline. Rating-Änderungen können nicht durchgeführt werden.'
       );
       setSnackbarSeverity('warning');
       setSnackbarOpen(true);
       setOpen(false);
     }
   };
-
-  const syncRatings = async () => {
-    const offlineRatings = await getOfflineRatings();
-    if (offlineRatings.length > 0) {
-      for (const ratingData of offlineRatings) {
-        try {
-          const ref = firebase
-            .database()
-            .ref(`/serien/${ratingData.id}/rating`);
-          await ref.set(ratingData.ratings);
-        } catch (error) {
-          console.error('Error sending offline rating to server:', error);
-        }
-      }
-      await clearOfflineRatings();
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('online', syncRatings);
-    return () => {
-      window.removeEventListener('online', syncRatings);
-    };
-  }, []);
 
   const handleChipClick = (genre: string) => {
     const input = document.getElementById(`rating-input-${genre}`);
@@ -468,18 +435,20 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               </Typography>
             </Box>
           </Tooltip>
-          <Box
-            className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
-            onClick={handleWatchlistToggle}
-          >
-            <BookmarkIcon
-              sx={{
-                color: series.watchlist ? '#22c55e' : '#9e9e9e',
-                width: '24px',
-                height: '24px',
-              }}
-            />
-          </Box>
+          <Tooltip title='Zur Watchlist hinzufügen' arrow>
+            <Box
+              className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
+              onClick={handleWatchlistToggle}
+            >
+              <BookmarkIcon
+                sx={{
+                  color: series.watchlist ? '#22c55e' : '#9e9e9e',
+                  width: '24px',
+                  height: '24px',
+                }}
+              />
+            </Box>
+          </Tooltip>
         </Box>
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={series.title} arrow>
