@@ -1,15 +1,5 @@
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Alert,
-  DialogContentText,
-  Snackbar,
-  useTheme,
-} from '@mui/material';
+import { Alert, Snackbar, useTheme } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useState } from 'react';
@@ -17,6 +7,9 @@ import { useAuth } from '../App'; // Assuming you have an AuthContext
 import { Series } from '../interfaces/Series';
 import { calculateOverallRating } from '../utils/rating';
 import LoadingCard from './LoadingCard';
+import SeriesDialog from './SeriesDialog';
+import SeriesEpisodesDialog from './SeriesEpisodesDialog';
+import SeriesWatchedDialog from './SeriesWatchedDialog';
 
 const Dialog = lazy(() => import('@mui/material/Dialog'));
 const DialogActions = lazy(() => import('@mui/material/DialogActions'));
@@ -477,222 +470,30 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
           </Tooltip>
         </CardContent>
       </Card>
-      <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle variant='h2'>
-          {series.title} bearbeiten/löschen
-        </DialogTitle>
-        <DialogContent>
-          <Typography className='m-3' variant='h3'>
-            Genre
-          </Typography>
-          <Box className='flex flex-wrap gap-2 mb-4 justify-center'>
-            {series.genre.genres.map((g) => (
-              <Chip
-                key={g}
-                label={g}
-                onClick={() => handleChipClick(g)}
-                sx={{
-                  fontSize: '1rem',
-                  borderRadius: theme.shape.borderRadius,
-                }}
-              />
-            ))}
-          </Box>
-          <Typography variant='h3'>Rating</Typography>
-          {allGenres.map((g) => (
-            <TextField
-              key={g}
-              id={`rating-input-${g}`}
-              label={g}
-              type='number'
-              value={ratings[g] === 0 ? '' : ratings[g]}
-              onChange={(e) => handleRatingChange(e, g)}
-              fullWidth
-              margin='normal'
-              inputMode='decimal'
-            />
-          ))}
-        </DialogContent>
-        <DialogActions className='flex justify-between'>
-          <Button onClick={handleDeleteSeries} variant='outlined' color='error'>
-            Serie löschen
-          </Button>
-          <Button
-            onClick={handleUpdateRatings}
-            variant='outlined'
-            color='primary'
-          >
-            Rating ändern
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={openEpisodes} onClose={handleCloseEpisodes} fullWidth>
-        <DialogTitle variant='h2' className='bg-[#090909]'>
-          Kommende Episoden von {series.title}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            <ul id='serienRecs'>
-              {Array.isArray(series.nextEpisode.nextEpisodes) &&
-                series.nextEpisode.nextEpisodes.map((episode) => (
-                  <>
-                    <li
-                      key={episode.id}
-                      className='episodes flex gap-3 items-center p-3'
-                    >
-                      <img
-                        className='episodeBild w-[92px]'
-                        src={series.poster.poster}
-                        alt={episode.name}
-                      />
-                      <div className='episodeBox flex flex-col gap-5'>
-                        <Chip
-                          className='text-white'
-                          sx={{
-                            height: 'fit-content !important',
-                            width: 'fit-content !important',
-                            borderRadius: '50px !important',
-                            fontSize: '.8rem !important',
-                            minWidth: 'fit-content !important',
-                            minHeight: 'fit-content !important',
-                          }}
-                          label={series.title}
-                        ></Chip>
-                        <Typography variant='body2' className='text-white'>
-                          S{episode.season} | E{episode.number}
-                        </Typography>
-                        <Typography variant='body2' className='text-white'>
-                          {episode.name}
-                        </Typography>
-                      </div>
-                      <div className='flex flex-col items-end ml-auto'>
-                        <Typography variant='body2' className='text-white'>
-                          {new Date(episode.airstamp).toLocaleDateString()} |{' '}
-                          {new Date(episode.airstamp).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </Typography>
-                      </div>
-                    </li>
-                    <Divider></Divider>
-                  </>
-                ))}
-            </ul>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseEpisodes}
-            variant='outlined'
-            color='primary'
-          >
-            Schließen
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
+      <SeriesDialog
+        open={open}
+        onClose={handleClose}
+        series={series}
+        allGenres={allGenres}
+        ratings={ratings}
+        setRatings={setRatings}
+        handleDeleteSeries={handleDeleteSeries}
+        handleUpdateRatings={handleUpdateRatings}
+      />
+      <SeriesEpisodesDialog
+        open={openEpisodes}
+        onClose={handleCloseEpisodes}
+        series={series}
+      />
+      <SeriesWatchedDialog
         open={openWatchedDialog}
         onClose={handleCloseWatchedDialog}
-        fullWidth
-      >
-        <DialogTitle variant='h2'>
-          Gesehene Episoden von {series.title}
-        </DialogTitle>
-        <DialogContent>
-          {uniqueSeasons?.map((season) => (
-            <Accordion
-              key={season.seasonNumber}
-              sx={{
-                marginBottom: '20px',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                boxShadow:
-                  '#00fed7 3px 3px 4px 0px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px',
-                backgroundColor: '#1a1a1a',
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{
-                  backgroundColor: '#1f1f1f',
-                  textAlign: 'center',
-                }}
-              >
-                <Typography variant='h4' textAlign={'center'} margin={'auto'}>
-                  Staffel {season.seasonNumber + 1}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                sx={{
-                  borderRadius: '8px',
-                  backgroundColor: '#1a1a1a',
-                }}
-              >
-                {season.episodes &&
-                  season.episodes.map((episode, episodeIndex) => (
-                    <Box
-                      key={episode.id}
-                      display='flex'
-                      alignItems='center'
-                      justifyContent='space-between'
-                      sx={{
-                        backgroundColor:
-                          episodeIndex % 2 === 0
-                            ? theme.palette.action.hover
-                            : 'inherit',
-                        padding: '8px',
-                        borderRadius: '4px',
-                        marginBottom: '4px',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant='h5'>
-                          {episodeIndex + 1}. {episode.name}
-                        </Typography>
-                        <Typography
-                          textAlign={'left'}
-                          marginLeft={'16px'}
-                          variant='body2'
-                          color='textSecondary'
-                        >
-                          {formatDateWithLeadingZeros(
-                            new Date(episode.air_date)
-                          )}
-                        </Typography>
-                      </Box>
-                      <CheckCircleIcon
-                        onClick={() =>
-                          handleWatchedToggleWithConfirmation(
-                            season.seasonNumber,
-                            episode.id
-                          )
-                        }
-                        sx={{
-                          cursor: 'pointer',
-                          width: '30px',
-                          height: '30px',
-                          color: episode.watched
-                            ? theme.palette.success.main
-                            : theme.palette.action.disabled,
-                        }}
-                      />
-                    </Box>
-                  ))}
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseWatchedDialog}
-            variant='outlined'
-            color='primary'
-          >
-            Schließen
-          </Button>
-        </DialogActions>
-      </Dialog>
+        series={series}
+        user={user}
+        handleWatchedToggleWithConfirmation={
+          handleWatchedToggleWithConfirmation
+        }
+      />
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
