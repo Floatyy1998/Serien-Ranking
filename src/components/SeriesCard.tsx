@@ -228,22 +228,23 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
     if (episodeIndex === -1) return;
 
+    const episode = season.episodes[episodeIndex];
     const previousEpisodesUnwatched = season.episodes
       .slice(0, episodeIndex)
-      .some((episode) => !episode.watched);
+      .some((e) => !e.watched);
 
-    if (previousEpisodesUnwatched) {
+    if (!episode.watched && previousEpisodesUnwatched) {
       const confirm = window.confirm(
         'Es gibt vorherige Episoden, die nicht als gesehen markiert sind. Möchten Sie alle vorherigen Episoden auch als gesehen markieren?'
       );
       if (confirm) {
         await handleWatchedToggle(seasonNumber, episodeId);
       } else {
-        const updatedEpisodes = season.episodes.map((episode) => {
-          if (episode.id === episodeId) {
-            return { ...episode, watched: !episode.watched };
+        const updatedEpisodes = season.episodes.map((e) => {
+          if (e.id === episodeId) {
+            return { ...e, watched: !e.watched };
           }
-          return episode;
+          return e;
         });
 
         const updatedSeasons = series.seasons.map((s) => {
@@ -263,11 +264,11 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         }
       }
     } else {
-      const updatedEpisodes = season.episodes.map((episode) => {
-        if (episode.id === episodeId) {
-          return { ...episode, watched: !episode.watched };
+      const updatedEpisodes = season.episodes.map((e) => {
+        if (e.id === episodeId) {
+          return { ...e, watched: !e.watched };
         }
-        return episode;
+        return e;
       });
 
       const updatedSeasons = series.seasons.map((s) => {

@@ -13,6 +13,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import Confetti from 'react-confetti';
 import { Series } from '../interfaces/Series';
 
 interface SeriesWatchedDialogProps {
@@ -46,12 +47,66 @@ const SeriesWatchedDialog = ({
       index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
   );
 
+  const getNextUnwatchedEpisode = () => {
+    for (const season of series.seasons) {
+      for (let i = 0; i < season.episodes.length; i++) {
+        const episode = season.episodes[i];
+        if (!episode.watched) {
+          return {
+            seasonNumber: season.seasonNumber,
+            episodeNumber: i + 1,
+            ...episode,
+          };
+        }
+      }
+    }
+    return null;
+  };
+
+  const nextUnwatchedEpisode = getNextUnwatchedEpisode();
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle variant='h2'>
         Gesehene Episoden von {series.title}
       </DialogTitle>
       <DialogContent>
+        {nextUnwatchedEpisode ? (
+          <Box
+            border={'1px solid #00fed7'}
+            borderRadius={'8px'}
+            marginBottom='20px'
+          >
+            <Typography variant='h4'>
+              Nächste Folge: S{nextUnwatchedEpisode.seasonNumber + 1} E
+              {nextUnwatchedEpisode.episodeNumber} - {nextUnwatchedEpisode.name}
+            </Typography>
+            <Typography variant='h5' color='textSecondary'>
+              Erscheinungsdatum:{' '}
+              {formatDateWithLeadingZeros(
+                new Date(nextUnwatchedEpisode.air_date)
+              )}
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            <Confetti
+              style={{ width: '100%', height: '100%', position: 'absolute' }}
+              recycle={false}
+              numberOfPieces={1000}
+              gravity={0.2}
+            />
+            <Box
+              border={'1px solid #00fed7'}
+              borderRadius={'8px'}
+              marginBottom='20px'
+              padding='16px'
+              textAlign='center'
+            >
+              <Typography variant='h4'>Hurra! Alle Folgen gesehen!</Typography>
+            </Box>
+          </>
+        )}
         {uniqueSeasons?.map((season) => (
           <Accordion
             key={season.seasonNumber}
