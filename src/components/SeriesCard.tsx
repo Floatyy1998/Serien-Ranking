@@ -1,7 +1,18 @@
-import { Alert, DialogContentText, Snackbar, useTheme } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  DialogContentText,
+  Snackbar,
+  useTheme,
+} from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { useAuth } from '../App'; // Assuming you have an AuthContext
 import { Series } from '../interfaces/Series';
 import {
   clearOfflineRatings,
@@ -35,6 +46,8 @@ interface SeriesCardProps {
 export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const shadowColor = !series.production.production ? '#a855f7' : '#22c55e';
   const theme = useTheme();
+  const auth = useAuth(); // Assuming useAuth provides currentUser
+  const user = auth?.user;
 
   const uniqueProviders = series.provider
     ? Array.from(new Set(series.provider.provider.map((p) => p.name))).map(
@@ -50,6 +63,13 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   tomorrow.setDate(today.getDate() + 1);
 
   const formatDate = (date: Date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
+  const formatDateWithLeadingZeros = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -86,6 +106,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('warning');
+  const [openWatchedDialog, setOpenWatchedDialog] = useState(false);
 
   const allGenres = [
     'All',
@@ -206,10 +227,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
 
   const handlePosterClick = () => {
     if (genre !== 'Neue Episoden') {
-      window.open(
-        `https://www.imdb.com/title/${series.imdb.imdb_id}`,
-        '_blank'
-      );
+      window.open(`${series.wo.wo}`, '_blank');
     } else {
       setOpenEpisodes(true);
     }
@@ -220,13 +238,133 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   };
 
   const handleTitleClick = () => {
-    window.open(`${series.wo.wo}`, '_blank');
+    setOpenWatchedDialog(true);
   };
 
   const handleRatingClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     handleClickOpen();
   };
+
+  const handleWatchedToggle = async (
+    seasonNumber: number,
+    episodeId: number
+  ) => {
+    const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
+    if (!season) return;
+
+    const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
+    if (episodeIndex === -1) return;
+
+    const updatedEpisodes = season.episodes.map((episode, index) => {
+      if (index <= episodeIndex) {
+        return { ...episode, watched: true };
+      }
+      return episode;
+    });
+
+    const updatedSeasons = series.seasons.map((s) => {
+      if (s.seasonNumber === seasonNumber) {
+        return { ...s, episodes: updatedEpisodes };
+      }
+      return s;
+    });
+
+    try {
+      await firebase
+        .database()
+        .ref(`/serien/${series.nmr}/seasons`)
+        .set(updatedSeasons);
+    } catch (error) {
+      console.error('Error updating watched status:', error);
+    }
+  };
+
+  const handleWatchedToggleWithConfirmation = async (
+    seasonNumber: number,
+    episodeId: number
+  ) => {
+    if (!user) {
+      setSnackbarMessage('Bitte melden Sie sich an, um den Status zu ändern.');
+      setSnackbarSeverity('warning');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
+    if (!season) return;
+
+    const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
+    if (episodeIndex === -1) return;
+
+    const previousEpisodesUnwatched = season.episodes
+      .slice(0, episodeIndex)
+      .some((episode) => !episode.watched);
+
+    if (previousEpisodesUnwatched) {
+      const confirm = window.confirm(
+        'Es gibt vorherige Episoden, die nicht als gesehen markiert sind. Möchten Sie alle vorherigen Episoden auch als gesehen markieren?'
+      );
+      if (confirm) {
+        await handleWatchedToggle(seasonNumber, episodeId);
+      } else {
+        const updatedEpisodes = season.episodes.map((episode) => {
+          if (episode.id === episodeId) {
+            return { ...episode, watched: !episode.watched };
+          }
+          return episode;
+        });
+
+        const updatedSeasons = series.seasons.map((s) => {
+          if (s.seasonNumber === seasonNumber) {
+            return { ...s, episodes: updatedEpisodes };
+          }
+          return s;
+        });
+
+        try {
+          await firebase
+            .database()
+            .ref(`/serien/${series.nmr}/seasons`)
+            .set(updatedSeasons);
+        } catch (error) {
+          console.error('Error updating watched status:', error);
+        }
+      }
+    } else {
+      const updatedEpisodes = season.episodes.map((episode) => {
+        if (episode.id === episodeId) {
+          return { ...episode, watched: !episode.watched };
+        }
+        return episode;
+      });
+
+      const updatedSeasons = series.seasons.map((s) => {
+        if (s.seasonNumber === seasonNumber) {
+          return { ...s, episodes: updatedEpisodes };
+        }
+        return s;
+      });
+
+      try {
+        await firebase
+          .database()
+          .ref(`/serien/${series.nmr}/seasons`)
+          .set(updatedSeasons);
+      } catch (error) {
+        console.error('Error updating watched status:', error);
+      }
+    }
+  };
+
+  const handleCloseWatchedDialog = () => {
+    setOpenWatchedDialog(false);
+  };
+
+  const uniqueSeasons = series?.seasons?.filter(
+    (season, index, self) =>
+      index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
+  );
 
   return (
     <Suspense fallback={<LoadingCard />}>
@@ -239,7 +377,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
           },
         }}
       >
-        <Box className='relative aspect-[2/3]' onClick={handlePosterClick}>
+        <Box className='relative aspect-2/3' onClick={handlePosterClick}>
           <CardMedia
             sx={{
               height: '100%',
@@ -253,7 +391,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               {uniqueProviders.map((provider) => (
                 <Box
                   key={provider?.id}
-                  className='bg-black/50 backdrop-blur-sm rounded-lg p-1 w-9 h-9'
+                  className='bg-black/50 backdrop-blur-xs rounded-lg p-1 w-9 h-9'
                 >
                   <img
                     src={provider?.logo}
@@ -267,7 +405,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
           {typeof series.nextEpisode.episode === 'number' && (
             <>
               <Box
-                className='absolute top-20 left-0 w-full bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 text-center'
+                className='absolute top-20 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
                 sx={{ height: '50px', cursor: 'pointer' }}
                 onClick={() => setOpenEpisodes(true)}
               >
@@ -279,7 +417,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                 </Typography>
               </Box>
               <Box
-                className='absolute bottom-20 left-0 w-full bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 text-center flex items-center justify-center'
+                className='absolute bottom-20 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center flex items-center justify-center'
                 sx={{ height: '70px', cursor: 'pointer' }}
                 onClick={() => setOpenEpisodes(true)}
               >
@@ -302,7 +440,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
           )}
           <Tooltip title={series.beschreibung} arrow>
             <Box
-              className='absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 cursor-pointer '
+              className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 cursor-pointer '
               onClick={handleRatingClick}
             >
               <Typography variant='body1' className='text-white'>
@@ -311,7 +449,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
             </Box>
           </Tooltip>
         </Box>
-        <CardContent className='flex-grow flex items-center justify-center '>
+        <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={series.title} arrow>
             <Typography
               variant='h4' // Increased size
@@ -445,6 +583,108 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         <DialogActions>
           <Button
             onClick={handleCloseEpisodes}
+            variant='outlined'
+            color='primary'
+          >
+            Schließen
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openWatchedDialog}
+        onClose={handleCloseWatchedDialog}
+        fullWidth
+      >
+        <DialogTitle variant='h2'>
+          Gesehene Episoden von {series.title}
+        </DialogTitle>
+        <DialogContent>
+          {uniqueSeasons?.map((season) => (
+            <Accordion
+              key={season.seasonNumber}
+              sx={{
+                marginBottom: '20px',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                boxShadow:
+                  '#00fed7 3px 3px 4px 0px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px',
+                backgroundColor: '#1a1a1a',
+              }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{
+                  backgroundColor: '#1f1f1f',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant='h4' textAlign={'center'} margin={'auto'}>
+                  Staffel {season.seasonNumber + 1}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails
+                sx={{
+                  borderRadius: '8px',
+                  backgroundColor: '#1a1a1a',
+                }}
+              >
+                {season.episodes &&
+                  season.episodes.map((episode, episodeIndex) => (
+                    <Box
+                      key={episode.id}
+                      display='flex'
+                      alignItems='center'
+                      justifyContent='space-between'
+                      sx={{
+                        backgroundColor:
+                          episodeIndex % 2 === 0
+                            ? theme.palette.action.hover
+                            : 'inherit',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      <Box>
+                        <Typography variant='h5'>
+                          {episodeIndex + 1}. {episode.name}
+                        </Typography>
+                        <Typography
+                          textAlign={'left'}
+                          marginLeft={'16px'}
+                          variant='body2'
+                          color='textSecondary'
+                        >
+                          {formatDateWithLeadingZeros(
+                            new Date(episode.air_date)
+                          )}
+                        </Typography>
+                      </Box>
+                      <CheckCircleIcon
+                        onClick={() =>
+                          handleWatchedToggleWithConfirmation(
+                            season.seasonNumber,
+                            episode.id
+                          )
+                        }
+                        sx={{
+                          cursor: 'pointer',
+                          width: '30px',
+                          height: '30px',
+                          color: episode.watched
+                            ? theme.palette.success.main
+                            : theme.palette.action.disabled,
+                        }}
+                      />
+                    </Box>
+                  ))}
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseWatchedDialog}
             variant='outlined'
             color='primary'
           >

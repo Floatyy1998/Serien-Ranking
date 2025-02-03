@@ -1,5 +1,5 @@
-const CACHE_NAME = 'static-cache-v2';
-const DATA_CACHE_NAME = 'data-cache-v1';
+const CACHE_NAME = 'static-cache-v3.0.3'; // Erhöhen Sie die Cache-Version
+const DATA_CACHE_NAME = 'data-cache-v2.0.3'; // Erhöhen Sie die Cache-Version
 
 const FILES_TO_CACHE = [
   './',
@@ -21,10 +21,8 @@ const FILES_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Install event');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Service Worker: Caching files');
       return cache.addAll(FILES_TO_CACHE);
     })
   );
@@ -32,7 +30,6 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activate event');
   const currentCaches = [CACHE_NAME, DATA_CACHE_NAME];
   event.waitUntil(
     caches
@@ -45,7 +42,6 @@ self.addEventListener('activate', (event) => {
       .then((cachesToDelete) => {
         return Promise.all(
           cachesToDelete.map((cacheToDelete) => {
-            console.log(`Service Worker: Deleting cache ${cacheToDelete}`);
             return caches.delete(cacheToDelete);
           })
         );
@@ -55,24 +51,17 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  console.log(`Service Worker: Fetch event for ${event.request.url}`);
   if (event.request.url.includes('/api/')) {
     event.respondWith(
       caches.open(DATA_CACHE_NAME).then((cache) => {
         return fetch(event.request)
           .then((response) => {
             if (response.status === 200) {
-              console.log(
-                `Service Worker: Caching new data for ${event.request.url}`
-              );
               cache.put(event.request.url, response.clone());
             }
             return response;
           })
           .catch(() => {
-            console.log(
-              `Service Worker: Fetch failed, returning cached data for ${event.request.url}`
-            );
             return cache.match(event.request);
           });
       })
@@ -83,16 +72,10 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
-        console.log(
-          `Service Worker: Returning cached data for ${event.request.url}`
-        );
         return response;
       }
-      console.log(`Service Worker: Fetching new data for ${event.request.url}`);
+
       return fetch(event.request).catch(() => {
-        console.log(
-          `Service Worker: Fetch failed, returning cached index.html`
-        );
         return caches.match('./index.html');
       });
     })

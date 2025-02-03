@@ -11,15 +11,12 @@ const LoadingCard = () => {
       }}
     >
       <Box
-        className='relative aspect-[2/3]'
         sx={{
-          height: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          textAlign: 'center',
+          margin: 'auto',
         }}
       >
-        <InfinitySpin color='#00fed7'></InfinitySpin>{' '}
+        <InfinitySpin color='#00fed7'></InfinitySpin>
       </Box>
     </Card>
   );
