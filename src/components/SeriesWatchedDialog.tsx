@@ -30,7 +30,6 @@ const SeriesWatchedDialog = ({
   open,
   onClose,
   series,
-  user,
   handleWatchedToggleWithConfirmation,
 }: SeriesWatchedDialogProps) => {
   const theme = useTheme();

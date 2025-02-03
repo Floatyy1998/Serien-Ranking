@@ -1,5 +1,5 @@
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-import { Alert, Snackbar, useTheme } from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useState } from 'react';
@@ -11,20 +11,13 @@ import SeriesDialog from './SeriesDialog';
 import SeriesEpisodesDialog from './SeriesEpisodesDialog';
 import SeriesWatchedDialog from './SeriesWatchedDialog';
 
-const Dialog = lazy(() => import('@mui/material/Dialog'));
-const DialogActions = lazy(() => import('@mui/material/DialogActions'));
-const DialogContent = lazy(() => import('@mui/material/DialogContent'));
-const DialogTitle = lazy(() => import('@mui/material/DialogTitle'));
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
 const Typography = lazy(() => import('@mui/material/Typography'));
 const Box = lazy(() => import('@mui/material/Box'));
-const Button = lazy(() => import('@mui/material/Button'));
+
 const Card = lazy(() => import('@mui/material/Card'));
 const CardContent = lazy(() => import('@mui/material/CardContent'));
 const CardMedia = lazy(() => import('@mui/material/CardMedia'));
-const Chip = lazy(() => import('@mui/material/Chip'));
-const Divider = lazy(() => import('@mui/material/Divider'));
-const TextField = lazy(() => import('@mui/material/TextField'));
 
 interface SeriesCardProps {
   series: Series;
@@ -34,7 +27,6 @@ interface SeriesCardProps {
 
 export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const shadowColor = !series.production.production ? '#a855f7' : '#22c55e';
-  const theme = useTheme();
   const auth = useAuth(); // Assuming useAuth provides currentUser
   const user = auth?.user;
 
@@ -52,13 +44,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   tomorrow.setDate(today.getDate() + 1);
 
   const formatDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
-
-  const formatDateWithLeadingZeros = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -128,14 +113,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     setOpen(false);
   };
 
-  const handleRatingChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    genre: string
-  ) => {
-    const value = event.target.value;
-    setRatings({ ...ratings, [genre]: value === '' ? '' : parseFloat(value) });
-  };
-
   const handleDeleteSeries = () => {
     const ref = firebase.database().ref(`/serien/${series.nmr}`);
     ref.remove();
@@ -166,13 +143,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       setSnackbarSeverity('warning');
       setSnackbarOpen(true);
       setOpen(false);
-    }
-  };
-
-  const handleChipClick = (genre: string) => {
-    const input = document.getElementById(`rating-input-${genre}`);
-    if (input) {
-      input.focus();
     }
   };
 
@@ -340,11 +310,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       console.error('Error updating watchlist status:', error);
     }
   };
-
-  const uniqueSeasons = series?.seasons?.filter(
-    (season, index, self) =>
-      index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
-  );
 
   return (
     <Suspense fallback={<LoadingCard />}>
