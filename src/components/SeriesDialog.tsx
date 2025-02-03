@@ -1,3 +1,4 @@
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Box,
   Button,
@@ -6,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   TextField,
   Typography,
   useTheme,
@@ -52,7 +54,21 @@ const SeriesDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle variant='h2'>{series.title} bearbeiten/löschen</DialogTitle>
+      <DialogTitle variant='h2'>
+        {series.title} bearbeiten/löschen
+        <IconButton
+          aria-label='close'
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'red',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         <Typography className='m-3' variant='h3'>
           Genre

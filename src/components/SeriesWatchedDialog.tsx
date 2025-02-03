@@ -1,15 +1,15 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -69,6 +69,18 @@ const SeriesWatchedDialog = ({
     <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle variant='h2'>
         Gesehene Episoden von {series.title}
+        <IconButton
+          aria-label='close'
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'red',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
       <DialogContent>
         {nextUnwatchedEpisode ? (
@@ -188,11 +200,6 @@ const SeriesWatchedDialog = ({
           </Accordion>
         ))}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant='outlined' color='primary'>
-          Schließen
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };

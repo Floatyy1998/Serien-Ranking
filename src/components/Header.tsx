@@ -1,3 +1,4 @@
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Alert,
   AppBar,
@@ -521,7 +522,21 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         </List>
       </Drawer>
       <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
-        <DialogTitle>Login</DialogTitle>
+        <DialogTitle>
+          Login
+          <IconButton
+            aria-label='close'
+            onClick={() => setLoginDialogOpen(false)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: 'red',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
           <TextField
             margin='dense'
@@ -544,13 +559,24 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           <Button variant='outlined' onClick={handleLogin}>
             Login
           </Button>
-          <Button variant='outlined' onClick={() => setLoginDialogOpen(false)}>
-            Schließen
-          </Button>
         </DialogActions>
       </Dialog>
       <Dialog open={statsDialogOpen} onClose={handleStatsClose} fullWidth>
-        <DialogTitle variant='h2'>Statistiken</DialogTitle>
+        <DialogTitle variant='h2'>
+          Statistiken
+          <IconButton
+            aria-label='close'
+            onClick={handleStatsClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: 'red',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <DialogContent dividers>
           {statsData && (
             <>

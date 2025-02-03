@@ -1,5 +1,14 @@
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-import { Alert, Snackbar } from '@mui/material';
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+} from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useState } from 'react';
@@ -81,6 +90,10 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     'success' | 'error' | 'warning'
   >('warning');
   const [openWatchedDialog, setOpenWatchedDialog] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmDialogCallback, setConfirmDialogCallback] = useState<
+    (() => void) | null
+  >(null);
 
   const allGenres = [
     'All',
@@ -211,6 +224,23 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     }
   };
 
+  const handleConfirmDialogOpen = (callback: () => void) => {
+    setConfirmDialogCallback(() => callback);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirmDialogClose = () => {
+    setConfirmDialogOpen(false);
+    setConfirmDialogCallback(null);
+  };
+
+  const handleConfirmDialogConfirm = () => {
+    if (confirmDialogCallback) {
+      confirmDialogCallback();
+    }
+    handleConfirmDialogClose();
+  };
+
   const handleWatchedToggleWithConfirmation = async (
     seasonNumber: number,
     episodeId: number
@@ -234,35 +264,9 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       .some((e) => !e.watched);
 
     if (!episode.watched && previousEpisodesUnwatched) {
-      const confirm = window.confirm(
-        'Es gibt vorherige Episoden, die nicht als gesehen markiert sind. Möchten Sie alle vorherigen Episoden auch als gesehen markieren?'
-      );
-      if (confirm) {
+      handleConfirmDialogOpen(async () => {
         await handleWatchedToggle(seasonNumber, episodeId);
-      } else {
-        const updatedEpisodes = season.episodes.map((e) => {
-          if (e.id === episodeId) {
-            return { ...e, watched: !e.watched };
-          }
-          return e;
-        });
-
-        const updatedSeasons = series.seasons.map((s) => {
-          if (s.seasonNumber === seasonNumber) {
-            return { ...s, episodes: updatedEpisodes };
-          }
-          return s;
-        });
-
-        try {
-          await firebase
-            .database()
-            .ref(`/serien/${series.nmr}/seasons`)
-            .set(updatedSeasons);
-        } catch (error) {
-          console.error('Error updating watched status:', error);
-        }
-      }
+      });
     } else {
       const updatedEpisodes = season.episodes.map((e) => {
         if (e.id === episodeId) {
@@ -469,6 +473,27 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
+        <DialogTitle>Bestätigung</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Es gibt vorherige Episoden, die nicht als gesehen markiert sind.
+            Möchten Sie alle vorherigen Episoden auch als gesehen markieren?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmDialogClose} color='primary'>
+            Abbrechen
+          </Button>
+          <Button
+            onClick={handleConfirmDialogConfirm}
+            color='primary'
+            autoFocus
+          >
+            Bestätigen
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Suspense>
   );
 };

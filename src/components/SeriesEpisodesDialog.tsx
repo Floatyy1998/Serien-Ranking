@@ -1,12 +1,12 @@
+import CloseIcon from '@mui/icons-material/Close';
 import {
-  Button,
   Chip,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Divider,
+  IconButton,
   Typography,
 } from '@mui/material';
 import { Series } from '../interfaces/Series';
@@ -26,6 +26,18 @@ const SeriesEpisodesDialog = ({
     <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle variant='h2' className='bg-[#090909]'>
         Kommende Episoden von {series.title}
+        <IconButton
+          aria-label='close'
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'red',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -78,11 +90,6 @@ const SeriesEpisodesDialog = ({
           </ul>
         </DialogContentText>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant='outlined' color='primary'>
-          Schließen
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 };
