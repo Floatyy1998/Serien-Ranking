@@ -34,9 +34,11 @@ import {
 } from 'chart.js';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import 'firebase/compat/database'; // Fügen Sie diesen Import hinzu
 import { BarChartIcon, MenuIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import notFound from '../assets/notFound.jpg';
 import { Series } from '../interfaces/Series';
@@ -96,8 +98,9 @@ interface StatsData {
   };
 }
 
-export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
+export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const auth = useAuth();
+  const { user, setUser } = auth || {};
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -114,23 +117,29 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('success');
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
 
   useEffect(() => {
-    const ref = firebase.database().ref('/serien');
-    ref.on('value', (snapshot) => {
-      const data = snapshot.val();
-      setSeriesList(Object.values(data));
-    });
-  }, []);
+    if (user) {
+      const ref = firebase.database().ref(`${user.uid}/serien`);
+      ref.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) {
+          return;
+        }
+        setSeriesList(Object.values(data));
+      });
+    }
+  }, [user]);
 
   if (!auth) {
     return null; // or handle the error appropriately
   }
-  const { user, setUser } = auth;
   function secondsToString(minutes: number) {
     let value = minutes;
 
@@ -152,44 +161,50 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     }
     return result;
   }
-  const handleLogin = () => {
+  const handleLogin = useCallback(() => {
     firebase
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        setUser(userCredential.user);
+        if (setUser) {
+          setUser(userCredential.user);
+        }
         setLoginDialogOpen(false);
+        setIsNavOpen(false); // Drawer schließen
       })
       .catch((error) => {
         alert(error.message);
       });
-  };
+  }, [email, password, setUser, setIsNavOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     firebase
       .auth()
       .signOut()
       .then(() => {
-        setUser(null);
+        if (setUser) {
+          setUser(null);
+        }
+        setIsNavOpen(false); // Drawer schließen
       });
-  };
+  }, [setUser, setIsNavOpen]);
 
-  const handleSearchChange = async (
-    _event: React.ChangeEvent<unknown>,
-    value: string
-  ) => {
-    setSearchValue(value);
-    if (value.length >= 3) {
-      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-      const response = await fetch(
-        `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${value}`
-      );
-      const data = await response.json();
-      setOptions(data.results || []);
-    }
-  };
+  const handleSearchChange = useCallback(
+    async (_event: React.ChangeEvent<unknown>, value: string) => {
+      setSearchValue(value);
+      if (value.length >= 3) {
+        const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+        const response = await fetch(
+          `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${value}`
+        );
+        const data = await response.json();
+        setOptions(data.results || []);
+      }
+    },
+    []
+  );
 
-  const handleAddSeries = async () => {
+  const handleAddSeries = useCallback(async () => {
     if (!user) {
       setSnackbarMessage(
         'Bitte loggen Sie sich ein, um eine Serie hinzuzufügen.'
@@ -209,11 +224,12 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         data: {
           user: import.meta.env.VITE_USER,
           id: selectedSeries.id,
+          uuid: user.uid,
         },
       };
 
       try {
-        const res = await fetch('https://serienapi.konrad-dinges.de/add', {
+        const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
           method: 'POST',
           mode: 'cors',
           cache: 'no-cache',
@@ -247,7 +263,11 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         setSnackbarOpen(true);
       }
     }
-  };
+  }, [user, selectedSeries]);
+
+  const memoizedSeriesList = useMemo(() => {
+    return seriesList.slice(0, 100); // Begrenzen Sie die Anzahl der gerenderten Serien auf 100
+  }, [seriesList]);
 
   const fetchStats = () => {
     const genres: {
@@ -285,7 +305,7 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       dataMap.set(label, { count: 0, rating: 0 });
     });
 
-    seriesList.forEach((series) => {
+    memoizedSeriesList.forEach((series) => {
       // Genres
       series.genre.genres.forEach((genre) => {
         if (genre !== 'All' && calculateOverallRating(series) !== '0.00') {
@@ -352,14 +372,14 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     });
   };
 
-  const handleStatsOpen = () => {
+  const handleStatsOpen = useCallback(() => {
     fetchStats();
     setStatsDialogOpen(true);
-  };
+  }, [fetchStats]);
 
-  const handleStatsClose = () => {
+  const handleStatsClose = useCallback(() => {
     setStatsDialogOpen(false);
-  };
+  }, []);
 
   const genreColors = [
     '#FF6384',
@@ -397,22 +417,28 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     '#FF9F40',
   ];
 
-  const handleTitleClick = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const handleTitleClick = useCallback(() => {
+    if (location.pathname === '/login' || location.pathname === '/register') {
+      navigate('/');
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location, navigate]);
 
   return (
     <>
       <AppBar position='fixed' color='default' elevation={1}>
         <Toolbar>
-          <IconButton
-            edge='start'
-            color='inherit'
-            aria-label='menu'
-            onClick={() => setIsNavOpen(true)}
-          >
-            <MenuIcon />
-          </IconButton>
+          {user && (
+            <IconButton
+              edge='start'
+              color='inherit'
+              aria-label='menu'
+              onClick={() => setIsNavOpen(true)}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
           <Typography
             variant='h1'
             component='h1'
@@ -424,103 +450,123 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
               justifyContent: 'center',
               fontSize: 'xxx-large',
               letterSpacing: { xs: 'normal', sm: '20px' }, // Remove letter spacing on mobile
-              cursor: 'pointer', // Add cursor pointer
             }}
-            onClick={handleTitleClick}
           >
-            RANKING
+            <span style={{ cursor: 'pointer' }} onClick={handleTitleClick}>
+              TV-RANK
+            </span>
           </Typography>
-          <IconButton
-            color='inherit'
-            aria-label='statistics'
-            onClick={handleStatsOpen}
-          >
-            <BarChartIcon />
-          </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {user ? (
+              <>
+                <IconButton
+                  color='inherit'
+                  aria-label='statistics'
+                  onClick={handleStatsOpen}
+                >
+                  <BarChartIcon />
+                </IconButton>
+              </>
+            ) : (
+              ''
+            )}
+          </Box>
         </Toolbar>
       </AppBar>
       <Toolbar /> {/* Platzhalter für den fixierten Header */}
-      <Drawer anchor='top' open={isNavOpen} onClose={() => setIsNavOpen(false)}>
-        <List
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
+      {user && (
+        <Drawer
+          anchor='top'
+          open={isNavOpen}
+          onClose={() => setIsNavOpen(false)}
         >
-          <ListItem sx={{ width: '100%', justifyContent: 'center' }}>
-            <Button
-              onClick={user ? handleLogout : () => setLoginDialogOpen(true)}
-              sx={{ fontSize: '1.2rem' }}
-              variant='outlined'
-            >
-              {user ? 'Logout' : 'Login'}
-            </Button>
-          </ListItem>
-          <ListItem
+          <List
             sx={{
-              width: '100%',
-              justifyContent: 'center',
-              flexDirection: isMobile ? 'column' : 'row',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
             }}
           >
-            <Autocomplete
-              onChange={(_event, newValue) => setSelectedSeries(newValue)}
-              onInputChange={handleSearchChange}
-              options={options}
-              getOptionLabel={(option) => option.name}
-              className='w-full'
-              itemProp='name'
-              renderOption={(props, option) => (
-                <li
-                  // Schlüssel direkt übergeben
-                  {...props}
-                  key={option.id}
-                  style={{ display: 'flex', alignItems: 'center' }}
-                >
-                  <img
-                    src={
-                      option.poster_path
-                        ? `https://image.tmdb.org/t/p/w92${option.poster_path}`
-                        : notFound
-                    }
-                    alt={option.name}
-                    style={{ marginRight: 10, width: 92 }}
-                  />
-                  <div style={{ flexGrow: 1 }}>
-                    <div>{option.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'gray' }}>
-                      {option.original_name}
-                    </div>
-                  </div>
-                  <div style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>
-                    {new Date(option.first_air_date).getFullYear()}
-                  </div>
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label='Serie hinzufügen'
-                  variant='outlined'
-                  type='search'
-                />
-              )}
-            />
-            <Button
-              onClick={handleAddSeries}
-              variant='outlined'
+            <ListItem
               sx={{
-                marginLeft: isMobile ? '0' : '10px',
-                marginTop: isMobile ? '10px' : '0',
-                fontSize: '1.2rem',
+                width: '100%',
+                justifyContent: 'center',
+                flexDirection: isMobile ? 'column' : 'row',
               }}
             >
-              Hinzufügen
-            </Button>
-          </ListItem>
-        </List>
-      </Drawer>
+              <Autocomplete
+                onChange={(_event, newValue) => setSelectedSeries(newValue)}
+                onInputChange={handleSearchChange}
+                options={options}
+                getOptionLabel={(option) => option.name}
+                className='w-full'
+                itemProp='name'
+                renderOption={(props, option) => (
+                  <li
+                    // Schlüssel direkt übergeben
+                    {...props}
+                    key={option.id}
+                    style={{ display: 'flex', alignItems: 'center' }}
+                  >
+                    <img
+                      src={
+                        option.poster_path
+                          ? `https://image.tmdb.org/t/p/w92${option.poster_path}`
+                          : notFound
+                      }
+                      alt={option.name}
+                      style={{ marginRight: 10, width: 92 }}
+                    />
+                    <div style={{ flexGrow: 1 }}>
+                      <div>{option.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'gray' }}>
+                        {option.original_name}
+                      </div>
+                    </div>
+                    <div style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>
+                      {new Date(option.first_air_date).getFullYear()}
+                    </div>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label='Serie hinzufügen'
+                    variant='outlined'
+                    type='search'
+                  />
+                )}
+              />
+              <Button
+                onClick={handleAddSeries}
+                variant='outlined'
+                sx={{
+                  marginLeft: isMobile ? '0' : '10px',
+                  marginTop: isMobile ? '10px' : '0',
+                  fontSize: '1.2rem',
+                }}
+              >
+                Hinzufügen
+              </Button>
+            </ListItem>
+            <ListItem
+              sx={{
+                width: '100%',
+                justifyContent: 'center',
+                flexDirection: isMobile ? 'column' : 'row',
+              }}
+            >
+              <Button
+                onClick={handleLogout}
+                sx={{ marginLeft: '20px' }}
+                variant='outlined'
+              >
+                Logout
+              </Button>
+            </ListItem>
+          </List>
+        </Drawer>
+      )}
       <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
         <DialogTitle>
           Login
@@ -585,28 +631,36 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                   border: '1px solid rgb(0, 254, 215)',
                   padding: '10px',
                   borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  justifyContent: 'space-around',
+                  mb: 10,
                 }}
-                className='flex mb-10 justify-around'
               >
                 <Box>
                   <Typography variant='h4'>Geschaute Serien</Typography>
-                  <Typography sx={{ color: '#fff' }} variant='body1'>
+                  <Typography
+                    style={{ color: theme.palette.text.secondary }}
+                    variant='body1'
+                  >
                     {statsData.userStats.seriesRated}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography sx={{ color: '#fff' }} variant='h4'>
-                    Geschaute Episoden
-                  </Typography>
-                  <Typography variant='body1'>
+                  <Typography variant='h4'>Geschaute Episoden</Typography>
+                  <Typography
+                    style={{ color: theme.palette.text.secondary }}
+                    variant='body1'
+                  >
                     {statsData.userStats.episodesWatched}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography sx={{ color: '#fff' }} variant='h4'>
-                    Geschaute Zeit
-                  </Typography>
-                  <Typography variant='body1'>
+                  <Typography variant='h4'>Geschaute Zeit</Typography>
+                  <Typography
+                    style={{ color: theme.palette.text.secondary }}
+                    variant='body1'
+                  >
                     {statsData.userStats.watchtime}
                   </Typography>
                 </Box>
@@ -848,11 +902,6 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
             </>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button variant='outlined' onClick={handleStatsClose}>
-            Schließen
-          </Button>
-        </DialogActions>
       </Dialog>
       <Snackbar
         open={snackbarOpen}
@@ -865,5 +914,5 @@ export const Header = ({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       </Snackbar>
     </>
   );
-};
+});
 export default Header;

@@ -5,24 +5,34 @@ import {
   Suspense,
   createContext,
   lazy,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from 'react-router-dom';
 import { theme } from './theme';
 
 const Header = lazy(() => import('./components/Header'));
 const Legend = lazy(() => import('./components/Legend'));
 const SearchFilters = lazy(() => import('./components/SearchFilters'));
 const SeriesGrid = lazy(() => import('./components/SeriesGrid'));
+const LoginPage = lazy(() => import('./components/LoginPage'));
+const RegisterPage = lazy(() => import('./components/RegisterPage'));
+const StartPage = lazy(() => import('./components/StartPage'));
 
 export const AuthContext = createContext<{
   user: Firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<Firebase.User | null>>;
 } | null>(null);
 
-const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<Firebase.User | null>(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
 
@@ -61,7 +71,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (!firebaseInitialized) {
-    return null; // or a loading spinner
+    return (
+      <Box className='flex justify-center items-center '>
+        <InfinitySpin color='#00fed7'></InfinitySpin>
+      </Box>
+    );
   }
 
   return (
@@ -80,40 +94,74 @@ export function App() {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedProvider, setSelectedProvider] = useState('All');
 
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchValue(value);
+  }, []);
+
+  const handleGenreChange = useCallback((value: string) => {
+    setSelectedGenre(value);
+  }, []);
+
+  const handleProviderChange = useCallback((value: string) => {
+    setSelectedProvider(value);
+  }, []);
+
   return (
     <AuthProvider>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <div className='min-h-screen w-full bg-[#090909]'>
-          <Suspense
-            fallback={
-              <Box className='flex justify-center items-center min-h-screen'>
-                <InfinitySpin color='#00fed7'></InfinitySpin>
-              </Box>
-            }
-          >
-            <Header
-              isNavOpen={isNavOpen}
-              setIsNavOpen={setIsNavOpen}
-              setIsStatsOpen={setIsStatsOpen}
-            />
-            <main className='w-full px-4 py-6'>
-              <div className='max-w-[1400px] mx-auto'>
-                <SearchFilters
-                  onSearchChange={setSearchValue}
-                  onGenreChange={setSelectedGenre}
-                  onProviderChange={setSelectedProvider}
-                />
-                <Legend />
-              </div>
-              <SeriesGrid
-                searchValue={searchValue}
-                selectedGenre={selectedGenre}
-                selectedProvider={selectedProvider}
+        <Router>
+          <div className=' w-full '>
+            <Suspense
+              fallback={
+                <Box className='flex justify-center items-center '>
+                  <InfinitySpin color='#00fed7'></InfinitySpin>
+                </Box>
+              }
+            >
+              <Header
+                isNavOpen={isNavOpen}
+                setIsNavOpen={setIsNavOpen}
+                setIsStatsOpen={setIsStatsOpen}
               />
-            </main>
-          </Suspense>
-        </div>
+              <main className='w-full px-4 py-6'>
+                <div className=' mx-auto'>
+                  <Routes>
+                    <Route path='/login' element={<LoginPage />} />
+                    <Route path='/register' element={<RegisterPage />} />
+                    <Route
+                      path='/'
+                      element={
+                        <AuthContext.Consumer>
+                          {(auth) =>
+                            auth?.user ? (
+                              <>
+                                <SearchFilters
+                                  onSearchChange={handleSearchChange}
+                                  onGenreChange={handleGenreChange}
+                                  onProviderChange={handleProviderChange}
+                                />
+                                <Legend />
+                                <SeriesGrid
+                                  searchValue={searchValue}
+                                  selectedGenre={selectedGenre}
+                                  selectedProvider={selectedProvider}
+                                />
+                              </>
+                            ) : (
+                              <StartPage />
+                            )
+                          }
+                        </AuthContext.Consumer>
+                      }
+                    />
+                    <Route path='*' element={<Navigate to='/' />} />
+                  </Routes>
+                </div>
+              </main>
+            </Suspense>
+          </div>
+        </Router>
       </ThemeProvider>
     </AuthProvider>
   );

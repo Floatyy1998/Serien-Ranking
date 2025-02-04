@@ -127,13 +127,15 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   };
 
   const handleDeleteSeries = () => {
-    const ref = firebase.database().ref(`/serien/${series.nmr}`);
+    const ref = firebase.database().ref(`${user?.uid}/serien/${series.nmr}`);
     ref.remove();
     setOpen(false);
   };
 
   const handleUpdateRatings = async () => {
-    const ref = firebase.database().ref(`/serien/${series.nmr}/rating`);
+    const ref = firebase
+      .database()
+      .ref(`${user?.uid}/serien/${series.nmr}/rating`);
     const updatedRatings = Object.fromEntries(
       Object.entries(ratings).map(([k, value]) => [k, value === '' ? 0 : value])
     );
@@ -217,7 +219,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     try {
       await firebase
         .database()
-        .ref(`/serien/${series.nmr}/seasons`)
+        .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
         .set(updatedSeasons);
     } catch (error) {
       console.error('Error updating watched status:', error);
@@ -285,7 +287,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       try {
         await firebase
           .database()
-          .ref(`/serien/${series.nmr}/seasons`)
+          .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
           .set(updatedSeasons);
       } catch (error) {
         console.error('Error updating watched status:', error);
@@ -307,7 +309,9 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       setSnackbarOpen(true);
       return;
     }
-    const ref = firebase.database().ref(`/serien/${series.nmr}/watchlist`);
+    const ref = firebase
+      .database()
+      .ref(`${user?.uid}/serien/${series.nmr}/watchlist`);
     const newWatchlistStatus = !series.watchlist;
     try {
       await ref.set(newWatchlistStatus);
