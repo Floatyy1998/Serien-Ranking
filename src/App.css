@@ -1,3 +1,3 @@
-body {
-  font-family: 'Belanosima', sans-serif;
+.MuiAccordionSummary-root.Mui-expanded {
+  border-bottom-right-radius: 'none !important';
 }

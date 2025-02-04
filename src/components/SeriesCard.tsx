@@ -210,6 +210,12 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     });
 
     const updatedSeasons = series.seasons.map((s) => {
+      if (s.seasonNumber < seasonNumber) {
+        return {
+          ...s,
+          episodes: s.episodes.map((e) => ({ ...e, watched: true })),
+        };
+      }
       if (s.seasonNumber === seasonNumber) {
         return { ...s, episodes: updatedEpisodes };
       }
@@ -256,6 +262,32 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
 
     const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
     if (!season) return;
+
+    if (episodeId === -1) {
+      // Toggle entire season
+      const allWatched = season.episodes.every((e) => e.watched);
+      const updatedEpisodes = season.episodes.map((e) => ({
+        ...e,
+        watched: !allWatched,
+      }));
+
+      const updatedSeasons = series.seasons.map((s) => {
+        if (s.seasonNumber === seasonNumber) {
+          return { ...s, episodes: updatedEpisodes };
+        }
+        return s;
+      });
+
+      try {
+        await firebase
+          .database()
+          .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
+          .set(updatedSeasons);
+      } catch (error) {
+        console.error('Error updating watched status:', error);
+      }
+      return;
+    }
 
     const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
     if (episodeIndex === -1) return;

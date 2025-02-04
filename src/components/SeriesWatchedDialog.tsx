@@ -1,6 +1,3 @@
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CloseIcon from '@mui/icons-material/Close';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   AccordionDetails,
@@ -10,10 +7,9 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  Typography,
-  useTheme,
 } from '@mui/material';
-import { memo } from 'react';
+import { Check, ChevronDown, X } from 'lucide-react';
+import { memo, useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../interfaces/Series';
 
@@ -35,7 +31,13 @@ const SeriesWatchedDialog = memo(
     series,
     handleWatchedToggleWithConfirmation,
   }: SeriesWatchedDialogProps) => {
-    const theme = useTheme();
+    const [expanded, setExpanded] = useState<number | false>(false);
+
+    const handleAccordionChange =
+      (seasonNumber: number) =>
+      (_event: React.SyntheticEvent, isExpanded: boolean) => {
+        setExpanded(isExpanded ? seasonNumber : false);
+      };
 
     const formatDateWithLeadingZeros = (date: Date) => {
       const day = String(date.getDate()).padStart(2, '0');
@@ -71,40 +73,62 @@ const SeriesWatchedDialog = memo(
     const nextUnwatchedEpisode = getNextUnwatchedEpisode();
 
     return (
-      <Dialog open={open} onClose={onClose} fullWidth>
-        <DialogTitle variant='h2'>
-          Gesehene Episoden von {series.title}
-          <IconButton
-            aria-label='close'
-            onClick={onClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: 'red',
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullWidth
+        slotProps={{ paper: { sx: { m: 2 } } }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 3,
+            pb: 2,
+          }}
+        >
+          <span
+            style={{
+              color: '#00fed7',
+              fontSize: '1.25rem',
+              fontWeight: 500,
             }}
           >
-            <CloseIcon />
+            Gesehene Episoden von {series.title}
+          </span>
+          <IconButton
+            onClick={onClose}
+            sx={{
+              color: 'red',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                bgcolor: 'rgba(0, 254, 215, 0.08)',
+                transform: 'scale(1.05)',
+              },
+            }}
+          >
+            <X size={20} />
           </IconButton>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent
+          sx={{
+            p: 3,
+          }}
+        >
           {nextUnwatchedEpisode ? (
-            <Box
-              border={'1px solid #00fed7'}
-              borderRadius={'8px'}
-              marginBottom='20px'
-            >
-              <Typography variant='h4'>
+            <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
+              <div className='font-medium text-[#00fed7]'>
                 Nächste Folge: S{nextUnwatchedEpisode.seasonNumber + 1} E
                 {nextUnwatchedEpisode.episodeNumber} -{' '}
                 {nextUnwatchedEpisode.name}
-              </Typography>
-              <Typography variant='h5' color='textSecondary'>
+              </div>
+              <div className='mt-1 text-xs text-gray-400'>
                 Erscheinungsdatum:{' '}
                 {formatDateWithLeadingZeros(
                   new Date(nextUnwatchedEpisode.air_date)
                 )}
-              </Typography>
+              </div>
             </Box>
           ) : (
             <>
@@ -112,103 +136,112 @@ const SeriesWatchedDialog = memo(
                 style={{ width: '100%', height: '100%', position: 'absolute' }}
                 recycle={false}
                 numberOfPieces={1000}
-                gravity={0.2}
+                gravity={2}
               />
-              <Box
-                border={'1px solid #00fed7'}
-                borderRadius={'8px'}
-                marginBottom='20px'
-                padding='16px'
-                textAlign='center'
-              >
-                <Typography variant='h4'>
-                  Hurra! Alle Episoden gesehen!
-                </Typography>
+              <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
+                <div className='font-medium text-[#00fed7]'>
+                  Glückwunsch! Du hast alle Episoden gesehen.
+                </div>
               </Box>
             </>
           )}
-          {uniqueSeasons?.map((season) => (
-            <Accordion
-              key={season.seasonNumber}
-              sx={{
-                marginBottom: '20px',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                boxShadow:
-                  '#00fed7 3px 3px 4px 0px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px',
-                backgroundColor: '#1a1a1a',
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{
-                  backgroundColor: '#1f1f1f',
-                  textAlign: 'center',
-                }}
-              >
-                <Typography variant='h4' textAlign={'center'} margin={'auto'}>
-                  Staffel {season.seasonNumber + 1}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                sx={{
-                  borderRadius: '8px',
-                  backgroundColor: '#1a1a1a',
-                }}
-              >
-                {season.episodes &&
-                  season.episodes.map((episode, episodeIndex) => (
-                    <Box
-                      key={episode.id}
-                      display='flex'
-                      alignItems='center'
-                      justifyContent='space-between'
-                      sx={{
-                        backgroundColor:
-                          episodeIndex % 2 === 0
-                            ? theme.palette.action.hover
-                            : 'inherit',
-                        padding: '8px',
-                        borderRadius: '4px',
-                        marginBottom: '4px',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant='h5'>
-                          {episodeIndex + 1}. {episode.name}
-                        </Typography>
-                        <Typography
-                          textAlign={'left'}
-                          marginLeft={'16px'}
-                          variant='body2'
-                          color='textSecondary'
-                        >
-                          {formatDateWithLeadingZeros(
-                            new Date(episode.air_date)
-                          )}
-                        </Typography>
-                      </Box>
-                      <CheckCircleIcon
-                        onClick={() =>
-                          handleWatchedToggleWithConfirmation(
-                            season.seasonNumber,
-                            episode.id
-                          )
-                        }
-                        sx={{
-                          cursor: 'pointer',
-                          width: '30px',
-                          height: '30px',
-                          color: episode.watched
-                            ? theme.palette.success.main
-                            : theme.palette.action.disabled,
+          <div className='space-y-2'>
+            {uniqueSeasons?.map((season) => {
+              const allWatched = season.episodes.every(
+                (episode) => episode.watched
+              );
+              return (
+                <Accordion
+                  key={season.seasonNumber}
+                  expanded={expanded === season.seasonNumber}
+                  onChange={handleAccordionChange(season.seasonNumber)}
+                >
+                  <AccordionSummary
+                    expandIcon={
+                      <ChevronDown
+                        size={20}
+                        style={{
+                          color: '#00fed7',
+                          transition: 'transform 0.2s ease-in-out',
                         }}
                       />
-                    </Box>
-                  ))}
-              </AccordionDetails>
-            </Accordion>
-          ))}
+                    }
+                    sx={{
+                      backgroundColor: '#1f1f1f',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div className='flex items-center gap-3'>
+                      <span className='text-lg font-medium'>
+                        Staffel {season.seasonNumber + 1}
+                      </span>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleWatchedToggleWithConfirmation(
+                            season.seasonNumber,
+                            -1
+                          );
+                        }}
+                        style={{
+                          color: allWatched
+                            ? '#00fed7'
+                            : 'rgba(0, 254, 215, 0.3)',
+                          transition: 'all 0.2s ease-in-out',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Check size={18} />
+                      </div>
+                    </div>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {season.episodes.map((episode, index) => (
+                      <div
+                        key={episode.id}
+                        className='group flex items-center justify-between border-b border-[#00fed7]/5 p-4 last:border-0 hover:bg-[#00fed7]/[0.02]'
+                      >
+                        <div className='flex items-center space-x-4'>
+                          <span className='text-sm font-medium text-[#00fed7]'>
+                            {index + 1}.
+                          </span>
+                          <span className='font-medium text-gray-300 group-hover:text-[#00fed7]/90'>
+                            {episode.name}
+                          </span>
+                          <span className='text-sm text-gray-500'>
+                            {formatDateWithLeadingZeros(
+                              new Date(episode.air_date)
+                            )}
+                          </span>
+                        </div>
+                        <div
+                          onClick={() =>
+                            handleWatchedToggleWithConfirmation(
+                              season.seasonNumber,
+                              episode.id
+                            )
+                          }
+                          style={{
+                            color: episode.watched
+                              ? '#00fed7'
+                              : 'rgba(255, 255, 255, 0.3)', // Grau, wenn nicht watched
+                            transition: 'all 0.2s ease-in-out',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Check size={18} />
+                        </div>
+                      </div>
+                    ))}
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
+          </div>
         </DialogContent>
       </Dialog>
     );

@@ -452,7 +452,10 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
               letterSpacing: { xs: 'normal', sm: '20px' }, // Remove letter spacing on mobile
             }}
           >
-            <span style={{ cursor: 'pointer' }} onClick={handleTitleClick}>
+            <span
+              style={{ cursor: 'pointer', fontWeight: 'bold' }}
+              onClick={handleTitleClick}
+            >
               TV-RANK
             </span>
           </Typography>

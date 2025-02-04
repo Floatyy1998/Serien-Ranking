@@ -37,7 +37,7 @@ export const Legend = () => {
                 <strong>
                   <u style={{ textDecoration: 'underline' }}>keine</u>
                 </strong>{' '}
-                weiteren Folgen.
+                weiteren Episoden.
               </span>
               <br></br>
               <br></br>
@@ -46,23 +46,36 @@ export const Legend = () => {
               </span>
               <br></br>
               <br></br>
-              <br></br>
               <span>
-                Klicke auf ein Poster, um auf die IMDB-Seite zu gelangen.
-              </span>
-              <br></br>
-              <br></br>
-              <span>Hover über ein Rating, um die Begründung zu sehen.</span>
-              <br></br>
-              <br></br>
-              <span>
-                Klicke auf ein Rating, um passende Serienvorschläge zu erhalten.
-              </span>
-              <br></br>
-              <br></br>
-              <span>
-                Klicke auf den Titel, um zu erfahren, wo du die Serie schauen
+                Klicke auf ein Poster, , um zu erfahren, wo du die Serie schauen
                 kannst.
+              </span>
+
+              <br></br>
+              <br></br>
+              <span>Klicke auf ein Rating, um das Rating anzupassen.</span>
+              <br></br>
+              <br></br>
+              <span>
+                Klicke auf den Titel, um geschaute Episoden zu markieren.
+              </span>
+              <br></br>
+              <br></br>
+              <span>
+                Klicke auf das Bookmark-Symbol, um die Serie auf deiner
+                Watchlist zu speichern.
+              </span>
+              <br></br>
+              <br></br>
+              <span>
+                Nutze die Suchleiste, um nach Serien zu suchen und Filter, um
+                Ergebnisse einzugrenzen.
+              </span>
+              <br></br>
+              <br></br>
+              <span>
+                Klicke auf das Statistik-Symbol, um detaillierte Statistiken zu
+                deinen Serien zu sehen.
               </span>
               <br></br>
               <br></br>

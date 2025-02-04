@@ -17,7 +17,6 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: 'Belanosima, Arial, sans-serif',
     h1: {
       fontSize: '2rem ',
     },
@@ -76,31 +75,56 @@ export const theme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#000',
-          textAlign: 'center',
-          width: '80% !important',
-          maxWidth: '1400px',
+          backgroundColor: '#0C0C0C',
+          backgroundImage: 'none',
+          maxWidth: 'fit-content',
+          boxShadow: '0 25px 50px -12px rgba(0, 254, 215, 0.15)',
+          border: '1px solid rgba(0, 254, 215, 0.05)',
         },
       },
     },
-    MuiDialogTitle: {
+    MuiAccordion: {
       styleOverrides: {
         root: {
-          textAlign: 'center',
+          backgroundColor: 'rgba(0, 254, 215, 0.02)',
+          border: '1px solid rgba(0, 254, 215, 0.08)',
+          borderRadius: '12px ',
+          '&:before': {
+            display: 'none',
+          },
+          '&.Mui-expanded': {
+            margin: '8px 0',
+          },
+          transition: 'all 0.2s ease-in-out',
         },
       },
     },
-    MuiDialogContent: {
+    MuiAccordionSummary: {
       styleOverrides: {
         root: {
-          textAlign: 'center',
+          color: '#00fed7',
+          padding: '0 24px',
+          minHeight: '56px',
+          transition: 'all 0.2s ease-in-out',
+          borderTopLeftRadius: '8px',
+          borderTopRightRadius: '8px',
+          borderBottomLeftRadius: '8px', // Hinzugefügt
+          borderBottomRightRadius: '8px', // Hinzugefügt
+          '&.Mui-expanded': {
+            borderBottomLeftRadius: '0px',
+            borderBottomRightRadius: '0px',
+          },
         },
       },
     },
-    MuiDialogActions: {
+    MuiAccordionDetails: {
       styleOverrides: {
         root: {
-          justifyContent: 'space-around',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          borderTop: '1px solid rgba(0, 254, 215, 0.08)',
+          padding: 0,
+          borderBottomLeftRadius: '12px',
+          borderBottomRightRadius: '12px',
         },
       },
     },
