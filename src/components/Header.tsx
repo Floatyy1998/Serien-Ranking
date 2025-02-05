@@ -433,7 +433,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       const expirationTime = Date.now() + linkDuration * 60 * 60 * 1000; // Gültigkeitsdauer in Millisekunden
       await shareRef.set({
         userId: user.uid,
-        seriesList,
         createdAt: firebase.database.ServerValue.TIMESTAMP,
         expiresAt: expirationTime,
       });

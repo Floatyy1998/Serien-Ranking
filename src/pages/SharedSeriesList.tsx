@@ -24,8 +24,19 @@ const SharedSeriesList = () => {
         const snapshot = await shareRef.once('value');
         const data = snapshot.val();
         if (data) {
-          setSeriesList(data.seriesList);
-          setLinkValid(Date.now() < data.expiresAt);
+          console.log(`${data.userId}/serien`);
+
+          const userSeriesRef = firebase
+            .database()
+            .ref(`${data.userId}/serien`);
+          const userSeriesSnapshot = await userSeriesRef.once('value');
+          const userSeriesData = userSeriesSnapshot.val();
+          if (userSeriesData) {
+            setSeriesList(userSeriesData);
+            setLinkValid(Date.now() < data.expiresAt);
+          } else {
+            throw new Error('Fehler beim Abrufen der Serienliste.');
+          }
         } else {
           throw new Error('Fehler beim Abrufen der Serienliste.');
         }

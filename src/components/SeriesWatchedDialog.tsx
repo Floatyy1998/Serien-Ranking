@@ -193,7 +193,7 @@ const SeriesWatchedDialog = memo(
                         style={{
                           color: allWatched
                             ? '#00fed7'
-                            : 'rgba(0, 254, 215, 0.3)',
+                            : 'rgba(255, 255, 255, 0.3)', // Grau, wenn nicht watched
                           transition: 'all 0.2s ease-in-out',
                           cursor: isReadOnly ? 'default' : 'pointer',
                           display: 'flex',
