@@ -53,7 +53,12 @@ const SeriesDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='sm'
+      sx={{ textAlign: 'center !important' }}
+    >
       <DialogTitle variant='h2'>
         {series.title} bearbeiten/löschen
         <IconButton
@@ -101,7 +106,10 @@ const SeriesDialog = ({
           />
         ))}
       </DialogContent>
-      <DialogActions className='flex justify-between'>
+      <DialogActions
+        sx={{ display: 'flex', justifyContent: 'space-around' }}
+        className='flex justify-between'
+      >
         <Button onClick={handleDeleteSeries} variant='outlined' color='error'>
           Serie löschen
         </Button>

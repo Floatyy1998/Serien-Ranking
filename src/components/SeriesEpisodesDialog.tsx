@@ -23,7 +23,12 @@ const SeriesEpisodesDialog = ({
   series,
 }: SeriesEpisodesDialogProps) => {
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
+    <Dialog
+      sx={{ textAlign: 'center !important' }}
+      open={open}
+      onClose={onClose}
+      fullWidth
+    >
       <DialogTitle variant='h2' className='bg-[#090909]'>
         Kommende Episoden von {series.title}
         <IconButton

@@ -1,3 +1,4 @@
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Accordion,
   AccordionDetails,
@@ -8,7 +9,7 @@ import {
   DialogTitle,
   IconButton,
 } from '@mui/material';
-import { Check, ChevronDown, X } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { memo, useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../interfaces/Series';
@@ -81,11 +82,10 @@ const SeriesWatchedDialog = memo(
       >
         <DialogTitle
           sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
             alignItems: 'center',
             p: 3,
             pb: 2,
+            textAlign: 'center',
           }}
         >
           <span
@@ -98,17 +98,16 @@ const SeriesWatchedDialog = memo(
             Gesehene Episoden von {series.title}
           </span>
           <IconButton
+            aria-label='close'
             onClick={onClose}
             sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
               color: 'red',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                bgcolor: 'rgba(0, 254, 215, 0.08)',
-                transform: 'scale(1.05)',
-              },
             }}
           >
-            <X size={20} />
+            <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent
@@ -139,7 +138,10 @@ const SeriesWatchedDialog = memo(
                 gravity={2}
               />
               <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
-                <div className='font-medium text-[#00fed7]'>
+                <div
+                  style={{ textDecoration: 'underline' }}
+                  className='font-medium text-[#00fed7]'
+                >
                   Glückwunsch! Du hast alle Episoden gesehen.
                 </div>
               </Box>

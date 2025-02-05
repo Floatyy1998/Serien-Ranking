@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   Drawer,
@@ -570,47 +569,12 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           </List>
         </Drawer>
       )}
-      <Dialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)}>
-        <DialogTitle>
-          Login
-          <IconButton
-            aria-label='close'
-            onClick={() => setLoginDialogOpen(false)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: 'red',
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            margin='dense'
-            label='Email'
-            type='email'
-            fullWidth
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            margin='dense'
-            label='Password'
-            type='password'
-            fullWidth
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button variant='outlined' onClick={handleLogin}>
-            Login
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={statsDialogOpen} onClose={handleStatsClose} fullWidth>
+      <Dialog
+        sx={{ textAlign: 'center !important' }}
+        open={statsDialogOpen}
+        onClose={handleStatsClose}
+        fullWidth
+      >
         <DialogTitle variant='h2'>
           Statistiken
           <IconButton
