@@ -212,6 +212,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
 
       try {
         const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
+          // const res = await fetch(`http://localhost:3000/add`, {
           method: 'POST',
           mode: 'cors',
           cache: 'no-cache',
