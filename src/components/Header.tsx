@@ -100,9 +100,7 @@ interface StatsData {
 export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const auth = useAuth();
   const { user, setUser } = auth || {};
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
   const [, setSearchValue] = useState('');
   const [options, setOptions] = useState<Serien[]>([]);
   const [selectedSeries, setSelectedSeries] = useState<Serien | null>(null);
@@ -160,21 +158,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     }
     return result;
   }
-  const handleLogin = useCallback(() => {
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        if (setUser) {
-          setUser(userCredential.user);
-        }
-        setLoginDialogOpen(false);
-        setIsNavOpen(false); // Drawer schließen
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
-  }, [email, password, setUser, setIsNavOpen]);
 
   const handleLogout = useCallback(() => {
     firebase

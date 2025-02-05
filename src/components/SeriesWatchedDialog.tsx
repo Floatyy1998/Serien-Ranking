@@ -93,6 +93,7 @@ const SeriesWatchedDialog = memo(
               color: '#00fed7',
               fontSize: '1.25rem',
               fontWeight: 500,
+              marginRight: '20px',
             }}
           >
             Gesehene Episoden von {series.title}
