@@ -150,7 +150,7 @@ const SeriesWatchedDialog = memo(
           )}
           <div className='space-y-2'>
             {uniqueSeasons?.map((season) => {
-              const allWatched = season.episodes.every(
+              const allWatched = season.episodes?.every(
                 (episode) => episode.watched
               );
               return (
@@ -201,7 +201,7 @@ const SeriesWatchedDialog = memo(
                     </div>
                   </AccordionSummary>
                   <AccordionDetails>
-                    {season.episodes.map((episode, index) => (
+                    {season.episodes?.map((episode, index) => (
                       <div
                         key={episode.id}
                         className='group flex items-center justify-between border-b border-[#00fed7]/5 p-4 last:border-0 hover:bg-[#00fed7]/[0.02]'

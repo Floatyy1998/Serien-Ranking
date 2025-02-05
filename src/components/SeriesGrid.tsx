@@ -64,7 +64,10 @@ export const SeriesGrid = memo(
             series.genre.genres.includes(selectedGenre);
           const matchesProvider =
             selectedProvider === 'All' ||
-            series.provider?.provider.some((p) => p.name === selectedProvider);
+            (series.provider?.provider &&
+              series.provider.provider.some(
+                (p) => p.name === selectedProvider
+              ));
           const matches = matchesSearch && matchesGenre && matchesProvider;
           return matches;
         })

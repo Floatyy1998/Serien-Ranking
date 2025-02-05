@@ -80,6 +80,12 @@ export const theme = createTheme({
           maxWidth: '50%',
           boxShadow: '0 25px 50px -12px rgba(0, 254, 215, 0.15)',
           border: '1px solid rgba(0, 254, 215, 0.05)',
+          '@media (max-width: 600px)': {
+            maxWidth: '100%',
+          },
+          '@media (max-width: 2000px) and (min-width: 601px)': {
+            maxWidth: '75%',
+          },
         },
       },
     },
