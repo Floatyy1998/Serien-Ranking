@@ -81,7 +81,15 @@ const SeriesEpisodesDialog = ({
                     </div>
                     <div className='flex flex-col items-end ml-auto'>
                       <Typography variant='body2' className='text-white'>
-                        {new Date(episode.airstamp).toLocaleDateString()} |{' '}
+                        {new Date(episode.airstamp).toLocaleDateString(
+                          'de-DE',
+                          {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          }
+                        )}{' '}
+                        |{' '}
                         {new Date(episode.airstamp).toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit',

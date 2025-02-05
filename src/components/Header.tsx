@@ -229,6 +229,10 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           setSnackbarMessage('Serie hinzugefügt!');
           setSnackbarSeverity('success');
           setSnackbarOpen(true);
+          setOptions((prevOptions) =>
+            prevOptions.filter((option) => option.id !== selectedSeries.id)
+          );
+          setIsNavOpen(false); // Drawer schließen
         } else {
           const msgJson = await res.json();
 
