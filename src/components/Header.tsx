@@ -34,7 +34,7 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database'; // Fügen Sie diesen Import hinzu
-import { BarChartIcon, MenuIcon } from 'lucide-react';
+import { BarChartIcon, MenuIcon, ShareIcon } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -42,6 +42,7 @@ import { useAuth } from '../App';
 import notFound from '../assets/notFound.jpg';
 import { Series } from '../interfaces/Series';
 import { calculateOverallRating } from '../utils/rating';
+import SharedLinksDialog from './SharedLinksDialog'; // Importieren Sie den neuen Dialog
 
 Chart.register(
   CategoryScale,
@@ -100,6 +101,9 @@ interface StatsData {
 export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const auth = useAuth();
   const { user, setUser } = auth || {};
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isSharedListPage = location.pathname.startsWith('/shared-list');
 
   const [, setSearchValue] = useState('');
   const [options, setOptions] = useState<Serien[]>([]);
@@ -114,8 +118,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('success');
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [linkDuration, setLinkDuration] = useState<number>(24); // Standardmäßig 24 Stunden
+  const [linksDialogOpen, setLinksDialogOpen] = useState(false);
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -412,11 +417,56 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     }
   }, [location, navigate]);
 
+  const handleGenerateShareLink = async () => {
+    if (!user) {
+      setSnackbarMessage(
+        'Bitte loggen Sie sich ein, um einen Link zu generieren.'
+      );
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      const shareRef = firebase.database().ref('sharedLists').push();
+      const expirationTime = Date.now() + linkDuration * 60 * 60 * 1000; // Gültigkeitsdauer in Millisekunden
+      await shareRef.set({
+        userId: user.uid,
+        seriesList,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        expiresAt: expirationTime,
+      });
+
+      const link = `${window.location.origin}/shared-list/${shareRef.key}`;
+      setShareLink(link);
+      setSnackbarMessage('Link erfolgreich generiert!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error generating share link:', error);
+      setSnackbarMessage('Fehler beim Generieren des Links.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleLinksDialogOpen = () => {
+    setLinksDialogOpen(true);
+  };
+
+  const handleLinksDialogClose = () => {
+    setLinksDialogOpen(false);
+  };
+
+  const handleBackToHome = () => {
+    navigate('/');
+  };
+
   return (
     <>
       <AppBar position='fixed' color='default' elevation={1}>
         <Toolbar>
-          {user && (
+          {user && !isSharedListPage && (
             <IconButton
               edge='start'
               color='inherit'
@@ -447,24 +497,39 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
             </span>
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {user ? (
-              <>
-                <IconButton
-                  color='inherit'
-                  aria-label='statistics'
-                  onClick={handleStatsOpen}
-                >
-                  <BarChartIcon />
-                </IconButton>
-              </>
+            {isSharedListPage ? (
+              <Button
+                variant='outlined'
+                color='inherit'
+                onClick={handleBackToHome}
+              >
+                Zu meiner Liste
+              </Button>
             ) : (
-              ''
+              user && (
+                <>
+                  <IconButton
+                    color='inherit'
+                    aria-label='statistics'
+                    onClick={handleStatsOpen}
+                  >
+                    <BarChartIcon />
+                  </IconButton>
+                  <IconButton
+                    color='inherit'
+                    aria-label='links'
+                    onClick={handleLinksDialogOpen}
+                  >
+                    <ShareIcon />
+                  </IconButton>
+                </>
+              )
             )}
           </Box>
         </Toolbar>
       </AppBar>
       <Toolbar /> {/* Platzhalter für den fixierten Header */}
-      {user && (
+      {user && !isSharedListPage && (
         <Drawer
           anchor='top'
           open={isNavOpen}
@@ -867,6 +932,14 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      <SharedLinksDialog
+        open={linksDialogOpen}
+        onClose={handleLinksDialogClose}
+        handleGenerateShareLink={handleGenerateShareLink}
+        linkDuration={linkDuration}
+        setLinkDuration={setLinkDuration}
+        shareLink={null}
+      />
     </>
   );
 });

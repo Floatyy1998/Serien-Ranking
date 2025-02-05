@@ -23,6 +23,7 @@ interface SeriesWatchedDialogProps {
     seasonNumber: number,
     episodeId: number
   ) => void;
+  isReadOnly?: boolean;
 }
 
 const SeriesWatchedDialog = memo(
@@ -31,6 +32,7 @@ const SeriesWatchedDialog = memo(
     onClose,
     series,
     handleWatchedToggleWithConfirmation,
+    isReadOnly = false,
   }: SeriesWatchedDialogProps) => {
     const [expanded, setExpanded] = useState<number | false>(false);
 
@@ -180,18 +182,20 @@ const SeriesWatchedDialog = memo(
                       </span>
                       <div
                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleWatchedToggleWithConfirmation(
-                            season.seasonNumber,
-                            -1
-                          );
+                          if (!isReadOnly) {
+                            e.stopPropagation();
+                            handleWatchedToggleWithConfirmation(
+                              season.seasonNumber,
+                              -1
+                            );
+                          }
                         }}
                         style={{
                           color: allWatched
                             ? '#00fed7'
                             : 'rgba(0, 254, 215, 0.3)',
                           transition: 'all 0.2s ease-in-out',
-                          cursor: 'pointer',
+                          cursor: isReadOnly ? 'default' : 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                         }}
@@ -220,18 +224,20 @@ const SeriesWatchedDialog = memo(
                           </span>
                         </div>
                         <div
-                          onClick={() =>
-                            handleWatchedToggleWithConfirmation(
-                              season.seasonNumber,
-                              episode.id
-                            )
-                          }
+                          onClick={() => {
+                            if (!isReadOnly) {
+                              handleWatchedToggleWithConfirmation(
+                                season.seasonNumber,
+                                episode.id
+                              );
+                            }
+                          }}
                           style={{
                             color: episode.watched
                               ? '#00fed7'
                               : 'rgba(255, 255, 255, 0.3)', // Grau, wenn nicht watched
                             transition: 'all 0.2s ease-in-out',
-                            cursor: 'pointer',
+                            cursor: isReadOnly ? 'default' : 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                           }}

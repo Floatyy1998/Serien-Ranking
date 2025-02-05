@@ -17,6 +17,8 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom';
+
+import SharedSeriesList from './pages/SharedSeriesList';
 import { theme } from './theme';
 
 const Header = lazy(() => import('./components/Header'));
@@ -155,6 +157,10 @@ export function App() {
                         </AuthContext.Consumer>
                       }
                     />
+                    <Route
+                      path='/shared-list/:linkId'
+                      element={<SharedSeriesList />}
+                    />
                     <Route path='*' element={<Navigate to='/' />} />
                   </Routes>
                 </div>
@@ -166,3 +172,5 @@ export function App() {
     </AuthProvider>
   );
 }
+
+export default App;

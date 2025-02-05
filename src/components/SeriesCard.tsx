@@ -12,6 +12,7 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../App'; // Assuming you have an AuthContext
 import { Series } from '../interfaces/Series';
 import { calculateOverallRating } from '../utils/rating';
@@ -38,6 +39,8 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const shadowColor = !series.production.production ? '#a855f7' : '#22c55e';
   const auth = useAuth(); // Assuming useAuth provides currentUser
   const user = auth?.user;
+  const location = useLocation();
+  const isSharedListPage = location.pathname.startsWith('/shared-list');
 
   const uniqueProviders = series.provider
     ? Array.from(new Set(series.provider.provider.map((p) => p.name))).map(
@@ -173,7 +176,10 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
 
   const handlePosterClick = () => {
     if (genre !== 'Neue Episoden') {
-      window.open(`${series.wo.wo}`, '_blank');
+      window.open(
+        `https://watchradar.konrad-dinges.de?query=${series.title}`,
+        '_blank'
+      );
     } else {
       setOpenEpisodes(true);
     }
@@ -332,23 +338,25 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   };
 
   const handleWatchlistToggle = async (event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (!user) {
-      setSnackbarMessage(
-        'Bitte melden Sie sich an, um die Watchlist zu ändern.'
-      );
-      setSnackbarSeverity('warning');
-      setSnackbarOpen(true);
-      return;
-    }
-    const ref = firebase
-      .database()
-      .ref(`${user?.uid}/serien/${series.nmr}/watchlist`);
-    const newWatchlistStatus = !series.watchlist;
-    try {
-      await ref.set(newWatchlistStatus);
-    } catch (error) {
-      console.error('Error updating watchlist status:', error);
+    if (!isSharedListPage) {
+      event.stopPropagation();
+      if (!user) {
+        setSnackbarMessage(
+          'Bitte melden Sie sich an, um die Watchlist zu ändern.'
+        );
+        setSnackbarSeverity('warning');
+        setSnackbarOpen(true);
+        return;
+      }
+      const ref = firebase
+        .database()
+        .ref(`${user?.uid}/serien/${series.nmr}/watchlist`);
+      const newWatchlistStatus = !series.watchlist;
+      try {
+        await ref.set(newWatchlistStatus);
+      } catch (error) {
+        console.error('Error updating watchlist status:', error);
+      }
     }
   };
 
@@ -434,20 +442,22 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               </Typography>
             </Box>
           </Tooltip>
-          <Tooltip title='Zur Watchlist hinzufügen' arrow>
-            <Box
-              className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
-              onClick={handleWatchlistToggle}
-            >
-              <BookmarkIcon
-                sx={{
-                  color: series.watchlist ? '#22c55e' : '#9e9e9e',
-                  width: '24px',
-                  height: '24px',
-                }}
-              />
-            </Box>
-          </Tooltip>
+          {!isSharedListPage && (
+            <Tooltip title='Zur Watchlist hinzufügen' arrow>
+              <Box
+                className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
+                onClick={handleWatchlistToggle}
+              >
+                <BookmarkIcon
+                  sx={{
+                    color: series.watchlist ? '#22c55e' : '#9e9e9e',
+                    width: '24px',
+                    height: '24px',
+                  }}
+                />
+              </Box>
+            </Tooltip>
+          )}
         </Box>
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={series.title} arrow>
@@ -485,6 +495,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         setRatings={setRatings}
         handleDeleteSeries={handleDeleteSeries}
         handleUpdateRatings={handleUpdateRatings}
+        isReadOnly={isSharedListPage}
       />
       <SeriesEpisodesDialog
         open={openEpisodes}
@@ -499,6 +510,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         handleWatchedToggleWithConfirmation={
           handleWatchedToggleWithConfirmation
         }
+        isReadOnly={isSharedListPage}
       />
       <Snackbar
         open={snackbarOpen}

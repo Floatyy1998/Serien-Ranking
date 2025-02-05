@@ -23,6 +23,7 @@ interface SeriesDialogProps {
   setRatings: (ratings: { [key: string]: number | string }) => void;
   handleDeleteSeries: () => void;
   handleUpdateRatings: () => void;
+  isReadOnly?: boolean;
 }
 
 const SeriesDialog = ({
@@ -34,6 +35,7 @@ const SeriesDialog = ({
   setRatings,
   handleDeleteSeries,
   handleUpdateRatings,
+  isReadOnly = false,
 }: SeriesDialogProps) => {
   const theme = useTheme();
 
@@ -103,24 +105,27 @@ const SeriesDialog = ({
             fullWidth
             margin='normal'
             inputMode='decimal'
+            disabled={isReadOnly}
           />
         ))}
       </DialogContent>
-      <DialogActions
-        sx={{ display: 'flex', justifyContent: 'space-around' }}
-        className='flex justify-between'
-      >
-        <Button onClick={handleDeleteSeries} variant='outlined' color='error'>
-          Serie löschen
-        </Button>
-        <Button
-          onClick={handleUpdateRatings}
-          variant='outlined'
-          color='primary'
+      {!isReadOnly && (
+        <DialogActions
+          sx={{ display: 'flex', justifyContent: 'space-around' }}
+          className='flex justify-between'
         >
-          Rating ändern
-        </Button>
-      </DialogActions>
+          <Button onClick={handleDeleteSeries} variant='outlined' color='error'>
+            Serie löschen
+          </Button>
+          <Button
+            onClick={handleUpdateRatings}
+            variant='outlined'
+            color='primary'
+          >
+            Rating ändern
+          </Button>
+        </DialogActions>
+      )}
     </Dialog>
   );
 };
