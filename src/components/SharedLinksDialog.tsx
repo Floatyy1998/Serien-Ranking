@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
 import {
+  Alert,
   Button,
   Checkbox,
   Dialog,
@@ -46,6 +47,9 @@ const SharedLinksDialog = ({
   const [sharedLinks, setSharedLinks] = useState<SharedLink[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    'success' | 'error' | 'warning'
+  >('success');
   const [isEndless, setIsEndless] = useState(false);
 
   useEffect(() => {
@@ -85,11 +89,13 @@ const SharedLinksDialog = ({
     navigator.clipboard.writeText(link).then(
       () => {
         setSnackbarMessage('Link in die Zwischenablage kopiert!');
+        setSnackbarSeverity('success');
         setSnackbarOpen(true);
       },
       (err) => {
         console.error('Error copying link to clipboard:', err);
         setSnackbarMessage('Fehler beim Kopieren des Links.');
+        setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
     );
@@ -191,10 +197,13 @@ const SharedLinksDialog = ({
         </div>
         <Snackbar
           open={snackbarOpen}
-          autoHideDuration={3000}
+          autoHideDuration={6000}
           onClose={handleSnackbarClose}
-          message={snackbarMessage}
-        />
+        >
+          <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </DialogContent>
     </Dialog>
   );

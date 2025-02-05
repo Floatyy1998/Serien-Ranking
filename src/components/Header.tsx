@@ -13,6 +13,7 @@ import {
   IconButton,
   List,
   ListItem,
+  Tooltip as MuiTooltip,
   Snackbar,
   TextField,
   Toolbar,
@@ -118,7 +119,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('success');
-  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [, setShareLink] = useState<string | null>(null);
   const [linkDuration, setLinkDuration] = useState<number>(24); // Standardmäßig 24 Stunden
   const [linksDialogOpen, setLinksDialogOpen] = useState(false);
 
@@ -508,20 +509,24 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
             ) : (
               user && (
                 <>
-                  <IconButton
-                    color='inherit'
-                    aria-label='statistics'
-                    onClick={handleStatsOpen}
-                  >
-                    <BarChartIcon />
-                  </IconButton>
-                  <IconButton
-                    color='inherit'
-                    aria-label='links'
-                    onClick={handleLinksDialogOpen}
-                  >
-                    <ShareIcon />
-                  </IconButton>
+                  <MuiTooltip title='Statistiken anzeigen'>
+                    <IconButton
+                      color='inherit'
+                      aria-label='statistics'
+                      onClick={handleStatsOpen}
+                    >
+                      <BarChartIcon />
+                    </IconButton>
+                  </MuiTooltip>
+                  <MuiTooltip title='Link teilen'>
+                    <IconButton
+                      color='inherit'
+                      aria-label='links'
+                      onClick={handleLinksDialogOpen}
+                    >
+                      <ShareIcon />
+                    </IconButton>
+                  </MuiTooltip>
                 </>
               )
             )}

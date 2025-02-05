@@ -1,5 +1,8 @@
-import { SelectChangeEvent } from '@mui/material';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import { SelectChangeEvent, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,6 +21,7 @@ export const SearchFilters = memo(
     const [searchValue, setSearchValue] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('All');
     const [selectedProvider, setSelectedProvider] = useState('All');
+    const [isWatchlist, setIsWatchlist] = useState(false);
 
     const handleSearchChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +49,11 @@ export const SearchFilters = memo(
       },
       [onProviderChange]
     );
+
+    const handleWatchlistToggle = useCallback(() => {
+      setIsWatchlist((prev) => !prev);
+      onGenreChange(isWatchlist ? 'All' : 'Watchlist');
+    }, [isWatchlist, onGenreChange]);
 
     return (
       <Box className='flex flex-col gap-4 md:flex-row md:items-center mb-6 max max-w-[1400px] m-auto'>
@@ -81,7 +90,6 @@ export const SearchFilters = memo(
             <MenuItem value='Ohne Bewertung'>Ohne Bewertung</MenuItem>
             <MenuItem value='Neue Episoden'>Neue Episoden</MenuItem>
             <MenuItem value='Zuletzt Hinzugefügt'>Zuletzt Hinzugefügt</MenuItem>
-            <MenuItem value='Watchlist'>Watchlist</MenuItem>
           </Select>
         </FormControl>
         <FormControl className='md:w-[250px]'>
@@ -106,6 +114,23 @@ export const SearchFilters = memo(
             <MenuItem value='WOW'>WOW</MenuItem>
           </Select>
         </FormControl>
+        <Tooltip
+          title={isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'}
+        >
+          <Button
+            variant={isWatchlist ? 'contained' : 'outlined'}
+            onClick={handleWatchlistToggle}
+            sx={{
+              margin: 'auto',
+              borderRadius: '0.5rem',
+              width: 48,
+              height: 48,
+              minWidth: 48,
+            }}
+          >
+            {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+          </Button>
+        </Tooltip>
       </Box>
     );
   }
