@@ -212,7 +212,7 @@ export const SearchFilters = memo(
           value={searchValue}
           onChange={handleSearchChange}
         />
-        <FormControl className='md:w-[250px]'>
+        <FormControl className='md:w-[250px]' disabled={isWatchlist}>
           <InputLabel id='genre-label'>Genre</InputLabel>
           <Select
             labelId='genre-label'
@@ -240,7 +240,7 @@ export const SearchFilters = memo(
             <MenuItem value='Zuletzt Hinzugefügt'>Zuletzt Hinzugefügt</MenuItem>
           </Select>
         </FormControl>
-        <FormControl className='md:w-[250px]'>
+        <FormControl className='md:w-[250px]' disabled={isWatchlist}>
           <InputLabel id='provider-label'>Provider</InputLabel>
           <Select
             labelId='provider-label'
