@@ -9,6 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
   SelectChangeEvent,
   Tooltip,
@@ -309,45 +310,86 @@ export const SearchFilters = memo(
             </IconButton>
           </DialogTitle>
           <DialogContent>
-            <Box className='flex justify-end mb-4'>
-              <Tooltip title='Nach Name sortieren'>
-                <Button
-                  onClick={() => toggleSortOption('name')}
-                  sx={{ color: '#00fed7', minWidth: '120px' }}
-                  endIcon={
-                    sortOption.startsWith('name') ? (
-                      sortOption === 'name-asc' ? (
-                        <ArrowUpwardIcon />
-                      ) : (
-                        <ArrowDownwardIcon />
-                      )
-                    ) : (
-                      <ArrowDownwardIcon style={{ visibility: 'hidden' }} />
-                    )
-                  }
-                >
-                  Name
-                </Button>
-              </Tooltip>
-              <Tooltip title='Nach Datum sortieren'>
-                <Button
-                  onClick={() => toggleSortOption('date')}
-                  sx={{ color: '#00fed7', minWidth: '120px' }}
-                  endIcon={
-                    sortOption.startsWith('date') ? (
-                      sortOption === 'date-asc' ? (
-                        <ArrowUpwardIcon />
-                      ) : (
-                        <ArrowDownwardIcon />
-                      )
-                    ) : (
-                      <ArrowDownwardIcon style={{ visibility: 'hidden' }} />
-                    )
-                  }
-                >
-                  Datum
-                </Button>
-              </Tooltip>
+            <Box className='flex flex-col mb-4'>
+              <Divider />
+              <Box className='flex justify-between items-center mb-2 mt-2'>
+                <span className='text-gray-400'>Filter:</span>
+                <Box className='flex items-center'>
+                  <Tooltip title='Nach Name sortieren'>
+                    <Button
+                      onClick={() => toggleSortOption('name')}
+                      sx={{
+                        color: '#00fed7',
+                        minWidth: '80px',
+                        fontSize: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'normal !important',
+                        justifyContent: 'center',
+                        // Schrift etwas nach unten verschieben
+                      }}
+                      endIcon={
+                        sortOption.startsWith('name') ? (
+                          sortOption === 'name-asc' ? (
+                            <ArrowUpwardIcon
+                              fontSize='small'
+                              style={{ width: '16px' }}
+                            />
+                          ) : (
+                            <ArrowDownwardIcon
+                              fontSize='small'
+                              style={{ width: '16px' }}
+                            />
+                          )
+                        ) : (
+                          <ArrowDownwardIcon
+                            style={{ visibility: 'hidden', width: '16px' }}
+                            fontSize='small'
+                          />
+                        )
+                      }
+                    >
+                      Name
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title='Nach Datum sortieren'>
+                    <Button
+                      onClick={() => toggleSortOption('date')}
+                      sx={{
+                        color: '#00fed7',
+                        minWidth: '80px',
+                        fontSize: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'normal !important',
+                        justifyContent: 'center',
+                        // Schrift etwas nach unten verschieben
+                      }}
+                      endIcon={
+                        sortOption.startsWith('date') ? (
+                          sortOption === 'date-asc' ? (
+                            <ArrowUpwardIcon
+                              fontSize='small'
+                              style={{ width: '16px' }}
+                            />
+                          ) : (
+                            <ArrowDownwardIcon
+                              fontSize='small'
+                              style={{ width: '16px' }}
+                            />
+                          )
+                        ) : (
+                          <ArrowDownwardIcon
+                            style={{ visibility: 'hidden', width: '16px' }}
+                            fontSize='small'
+                          />
+                        )
+                      }
+                    >
+                      Datum
+                    </Button>
+                  </Tooltip>
+                </Box>
+              </Box>
+              <Divider />
             </Box>
             {sortedWatchlistSeries.map((series) => {
               const nextUnwatchedEpisode = getNextUnwatchedEpisode(series);
