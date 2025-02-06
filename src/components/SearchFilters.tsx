@@ -213,8 +213,9 @@ export const SearchFilters = memo(
           onChange={handleSearchChange}
         />
         <FormControl className='md:w-[250px]'>
-          <InputLabel>Genre</InputLabel>
+          <InputLabel id='genre-label'>Genre</InputLabel>
           <Select
+            labelId='genre-label'
             label='Genre'
             value={selectedGenre}
             onChange={handleGenreChange}
@@ -240,8 +241,9 @@ export const SearchFilters = memo(
           </Select>
         </FormControl>
         <FormControl className='md:w-[250px]'>
-          <InputLabel>Provider</InputLabel>
+          <InputLabel id='provider-label'>Provider</InputLabel>
           <Select
+            labelId='provider-label'
             label='Provider'
             value={selectedProvider}
             onChange={handleProviderChange}
@@ -275,6 +277,10 @@ export const SearchFilters = memo(
                 height: 48,
                 minWidth: 48,
               }}
+              aria-label={
+                isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
+              }
+              role='button'
             >
               {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
             </Button>
@@ -290,6 +296,8 @@ export const SearchFilters = memo(
                 height: 48,
                 minWidth: 48,
               }}
+              aria-label='Als nächstes schauen'
+              role='button'
             >
               <ListIcon />
             </Button>

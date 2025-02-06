@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "copy": "for %D in (F:\\Programme\\SerienFlo\\src F:\\Programme\\SerienDesiree\\src F:\\Programme\\SerienMick\\src) do xcopy F:\\Programme\\Serien\\src %D /E /H /C /I /Y ",
     "deploy_all": "npm run build && cd F:\\Programme\\SerienFlo && npm run build && cd F:\\Programme\\SerienDesiree && npm run build && cd F:\\Programme\\SerienMick && npm run build",
-    "copy_and_deploy": "npm run copy && npm run deploy_all"
+    "copy_and_deploy": "npm run copy && npm run deploy_all",
+    "generate-sitemap": "node generate-sitemap.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -28,10 +29,12 @@
     "react-confetti": "^6.2.2",
     "react-detect-offline": "^2.4.5",
     "react-dom": "^19.0.0",
+    "react-helmet": "^6.1.0",
     "react-loader-spinner": "^6.1.6",
     "react-router-dom": "^7.1.5",
     "react-swipeable": "^7.0.2",
-    "react-window": "^1.8.11"
+    "react-window": "^1.8.11",
+    "sitemap-generator": "^7.5.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.3",

@@ -403,7 +403,11 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                 sx={{ height: '50px', cursor: 'pointer' }}
                 onClick={() => setOpenEpisodes(true)}
               >
-                <Typography variant='h5' className=' text-center'>
+                <Typography
+                  variant='body2'
+                  className='text-center'
+                  sx={{ fontSize: '1rem' }}
+                >
                   Staffel {series.nextEpisode.season} Episode{' '}
                   {series.nextEpisode.episode}
                   <br></br>
@@ -416,7 +420,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                 onClick={() => setOpenEpisodes(true)}
               >
                 <Typography
-                  variant='h5'
+                  variant='body2'
                   className=' text-center'
                   sx={{
                     display: '-webkit-box',
@@ -424,6 +428,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                     WebkitLineClamp: 3,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
+                    fontSize: '1rem',
                   }}
                 >
                   Titel: <br></br>
@@ -436,6 +441,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
             <Box
               className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 cursor-pointer '
               onClick={handleRatingClick}
+              aria-label='Bewertung anzeigen'
             >
               <Typography variant='body1' className='text-white'>
                 {rating}
@@ -447,6 +453,8 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               <Box
                 className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
                 onClick={handleWatchlistToggle}
+                aria-label='Zur Watchlist hinzufügen'
+                role='button'
               >
                 <BookmarkIcon
                   sx={{
@@ -462,7 +470,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={series.title} arrow>
             <Typography
-              variant='h4' // Increased size
+              variant='body1' // Geänderte Größe
               className='text-white text-center cursor-pointer'
               sx={{
                 maxWidth: '100%',
@@ -477,6 +485,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                 textDecoration: 'underline',
                 alignItems: 'center',
                 justifyContent: 'center',
+                fontSize: '1.2rem',
               }}
               onClick={handleTitleClick}
             >

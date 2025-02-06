@@ -472,8 +472,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
             <IconButton
               edge='start'
               color='inherit'
-              aria-label='menu'
+              aria-label='Menü öffnen'
               onClick={() => setIsNavOpen(true)}
+              role='button'
             >
               <MenuIcon />
             </IconButton>
@@ -504,6 +505,8 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                 variant='outlined'
                 color='inherit'
                 onClick={handleBackToHome}
+                aria-label='Zu meiner Liste'
+                role='button'
               >
                 Zu meiner Liste
               </Button>
@@ -513,8 +516,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                   <MuiTooltip title='Statistiken anzeigen'>
                     <IconButton
                       color='inherit'
-                      aria-label='statistics'
+                      aria-label='Statistiken anzeigen'
                       onClick={handleStatsOpen}
+                      role='button'
                     >
                       <BarChartIcon />
                     </IconButton>
@@ -522,8 +526,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                   <MuiTooltip title='Link teilen'>
                     <IconButton
                       color='inherit'
-                      aria-label='links'
+                      aria-label='Link teilen'
                       onClick={handleLinksDialogOpen}
+                      role='button'
                     >
                       <ShareIcon />
                     </IconButton>
@@ -606,6 +611,8 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                   marginTop: isMobile ? '10px' : '0',
                   fontSize: '1.2rem',
                 }}
+                aria-label='Serie hinzufügen'
+                role='button'
               >
                 Hinzufügen
               </Button>
@@ -621,6 +628,8 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                 onClick={handleLogout}
                 sx={{ marginLeft: '20px' }}
                 variant='outlined'
+                aria-label='Logout'
+                role='button'
               >
                 Logout
               </Button>
@@ -645,6 +654,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
               top: 8,
               color: 'red',
             }}
+            role='button'
           >
             <CloseIcon />
           </IconButton>

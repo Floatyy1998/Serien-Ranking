@@ -37,7 +37,7 @@ const StartPage = () => {
         }}
         className='text-center mb-16 mt-8'
       >
-        <h2 className='text-3xl font-semibold mb-4'>Willkommen bei TV-RANK</h2>
+        <h1 className='text-3xl font-semibold mb-4'>Willkommen bei TV-RANK</h1>
         <p className='text-gray-400 text-lg'>
           Entdecke, bewerte und verwalte deine Lieblingsserien.
         </p>
@@ -69,6 +69,7 @@ const StartPage = () => {
             <Link
               to='/login'
               className='block bg-[#00fed7] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[#00fed7]/90 transition-colors'
+              aria-label='Login'
             >
               LOGIN
             </Link>
@@ -84,6 +85,7 @@ const StartPage = () => {
             <Link
               to='/register'
               className='block border-2 border-[#00fed7] text-[#00fed7] px-8 py-3 rounded-lg font-semibold hover:bg-[#00fed7]/10 transition-colors'
+              aria-label='Registrieren'
             >
               REGISTRIEREN
             </Link>
@@ -91,7 +93,7 @@ const StartPage = () => {
         </div>
       </motion.div>
       <div className='max-w-5xl w-full'>
-        <motion.h3
+        <motion.h2
           initial={{
             opacity: 0,
           }}
@@ -101,7 +103,7 @@ const StartPage = () => {
           className='text-[#00fed7] text-xl font-semibold mb-8 text-center'
         >
           Unsere Funktionen
-        </motion.h3>
+        </motion.h2>
         <motion.div
           variants={container}
           initial='hidden'
@@ -134,9 +136,9 @@ const StartPage = () => {
               className='bg-gray-900/30 p-6 rounded-xl text-center hover:bg-gray-900/40 transition-colors'
             >
               {feature.icon}
-              <h4 className='text-[#00fed7] font-medium mb-2'>
+              <h3 className='text-[#00fed7] font-medium mb-2'>
                 {feature.title}
-              </h4>
+              </h3>
               <p className='text-gray-400'>{feature.description}</p>
             </motion.div>
           ))}

@@ -11,8 +11,10 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { Helmet } from 'react-helmet';
 import { InfinitySpin } from 'react-loader-spinner';
 import {
+  Link,
   Navigate,
   Route,
   BrowserRouter as Router,
@@ -111,6 +113,30 @@ export function App() {
 
   return (
     <AuthProvider>
+      <Helmet>
+        <title>
+          TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien
+        </title>
+        <meta
+          name='description'
+          content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+        />
+        <meta
+          name='keywords'
+          content='Serien, TV, Bewertung, Watchlist, TV-RANK'
+        />
+        <meta
+          property='og:title'
+          content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
+        />
+        <meta
+          property='og:description'
+          content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+        />
+        <meta property='og:image' content='/favicon.ico' />
+        <meta property='og:url' content='https://tv-rank.de' />
+        <meta name='twitter:card' content='summary_large_image' />
+      </Helmet>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
@@ -129,6 +155,10 @@ export function App() {
               />
               <main className='w-full px-4 py-6'>
                 <div className=' mx-auto'>
+                  <Link to='/' className='mb-12' aria-label='Zur Startseite'>
+                    {/* Fügen Sie hier ein Logo oder einen Text hinzu, um den Link erkennbar zu machen */}
+                    <span className='sr-only'>Zur Startseite</span>
+                  </Link>
                   <Routes>
                     <Route path='/login' element={<LoginPage />} />
                     <Route path='/register' element={<RegisterPage />} />

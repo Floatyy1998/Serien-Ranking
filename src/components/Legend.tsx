@@ -10,7 +10,7 @@ export const Legend = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Box className='flex items-center gap-6 mb-4 max-w-[1400px] mx-auto justify-center md:justify-start sm:justify-center'>
-        <Typography variant='subtitle2' className='text-gray-400'>
+        <Typography variant='body2' className='text-gray-400'>
           Serien Status:
         </Typography>
         <div className='flex items-center gap-2'>
@@ -89,7 +89,7 @@ export const Legend = () => {
           arrow
           placement='bottom'
         >
-          <IconButton size='small' className='text-gray-400'>
+          <IconButton size='small' className='text-gray-400' aria-label='info'>
             <Info size={16} />
           </IconButton>
         </Tooltip>
