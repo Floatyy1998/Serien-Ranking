@@ -36,7 +36,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database'; // Fügen Sie diesen Import hinzu
 import { BarChartIcon, MenuIcon, ShareIcon } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -257,10 +257,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       }
     }
   }, [user, selectedSeries]);
-
-  const memoizedSeriesList = useMemo(() => {
-    return seriesList.slice(0, 100); // Begrenzen Sie die Anzahl der gerenderten Serien auf 100
-  }, [seriesList]);
 
   const fetchStats = () => {
     const genres: {
