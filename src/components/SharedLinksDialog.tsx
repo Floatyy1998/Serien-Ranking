@@ -112,89 +112,182 @@ const SharedLinksDialog = ({
     handleGenerateShareLink();
   };
 
+  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setLinkDuration(0);
+    } else {
+      setLinkDuration(Number(value));
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
-      <DialogTitle className='flex justify-between items-center border-b'>
-        <span>Share-Links verwalten</span>
-        <IconButton onClick={onClose} size='small'>
-          <CloseIcon className='h-5 w-5' />
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='md'
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '8px',
+        },
+      }}
+    >
+      <DialogTitle textAlign={'center'} fontSize={24} fontWeight={600}>
+        Shared Links Verwalten
+        <IconButton
+          aria-label='close'
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'red',
+          }}
+        >
+          <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <div className='py-4'>
-          <div className='flex flex-col gap-4 mb-6 sm:flex-row'>
-            <TextField
-              label='Gültigkeitsdauer (Stunden)'
-              type='number'
-              value={isEndless ? '' : linkDuration}
-              onChange={(e) => setLinkDuration(Number(e.target.value))}
-              size='small'
-              className='w-full sm:w-48'
-              disabled={isEndless}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isEndless}
-                  onChange={(e) => {
-                    setIsEndless(e.target.checked);
-                    if (e.target.checked) {
-                      setLinkDuration(100 * 365 * 24); // 100 Jahre in Stunden
-                    }
-                  }}
-                />
-              }
-              label='Endlos gültig'
-            />
-            <Button
-              variant='contained'
-              style={{
-                backgroundColor: '#00C8B3',
-                color: 'white',
-              }}
-              onClick={handleGenerateLink}
-            >
-              LINK GENERIEREN
-            </Button>
-          </div>
-          <List className='rounded-lg'>
-            {sharedLinks.map((link) => (
-              <ListItem
-                key={link.key}
-                className='border-b last:border-b-0 flex flex-col sm:flex-row'
-              >
-                <ListItemText
-                  primary={
-                    <span
-                      onClick={() => handleCopyToClipboard(link.link)}
-                      style={{ cursor: 'pointer', color: '#00C8B3' }}
-                    >
-                      {link.link}
-                    </span>
+      <DialogContent
+        sx={{
+          p: 3,
+          '&.MuiDialogContent-root': {
+            padding: '24px',
+          },
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: '16px',
+            alignItems: 'center',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <TextField
+            label='Gültigkeitsdauer (Stunden)'
+            type='number'
+            value={isEndless ? '' : linkDuration || ''}
+            onChange={handleDurationChange}
+            sx={{
+              width: {
+                xs: '100%',
+                md: 200,
+              },
+              '& .MuiInputLabel-root': {
+                backgroundColor: 'rgba(0, 254, 215, 0.02) !important', // Darker input background
+                color: '#D1D5DB',
+              },
+              '& .MuiOutlinedInput-root': {
+                color: '#D1D5DB',
+                '& fieldset': {
+                  borderColor: '#374151',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#4B5563',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#10B981',
+                },
+              },
+              '& .MuiInputBase-input': {
+                color: '#D1D5DB',
+              },
+            }}
+            disabled={isEndless}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isEndless}
+                onChange={(e) => {
+                  setIsEndless(e.target.checked);
+                  if (e.target.checked) {
+                    setLinkDuration(100 * 365 * 24); // 100 Jahre in Stunden
+                  } else {
+                    setLinkDuration(24); // Zurücksetzen auf 24 Stunden
                   }
-                  secondary={`Gültig bis: ${new Date(
-                    link.expiresAt
-                  ).toLocaleString()}`}
-                  slotProps={{
-                    primary: {
-                      className: 'break-all',
-                    },
-                  }}
-                />
-                <Button
-                  variant='outlined'
-                  color='error'
-                  size='small'
-                  onClick={() => handleDeleteLink(link.key)}
-                  className='mt-2 sm:mt-0'
-                >
-                  LÖSCHEN
-                </Button>
-              </ListItem>
-            ))}
-          </List>
-          <div className='flex justify-end mt-6'></div>
+                }}
+                sx={{
+                  '& .MuiCheckbox-root': {
+                    color: '#6B7280',
+                  },
+                  '& .MuiCheckbox-root.Mui-checked': {
+                    color: '#10B981',
+                  },
+                }}
+              />
+            }
+            label='Endlos gültig'
+            sx={{
+              color: '#D1D5DB',
+            }}
+          />
+          <Button
+            variant='contained'
+            onClick={handleGenerateLink}
+            sx={{
+              whiteSpace: 'nowrap',
+              textTransform: 'uppercase',
+              fontWeight: 'medium',
+              color: '#000',
+            }}
+          >
+            Link Generieren
+          </Button>
         </div>
+        <List
+          sx={{
+            mt: 2,
+          }}
+        >
+          {sharedLinks.map((link) => (
+            <ListItem
+              className='bg-black/40'
+              key={link.key}
+              sx={{
+                mb: 1,
+                borderRadius: 1,
+                padding: '12px 16px',
+              }}
+            >
+              <ListItemText
+                primary={
+                  <span
+                    onClick={() => handleCopyToClipboard(link.link)}
+                    style={{ cursor: 'pointer', color: '#00fed7' }}
+                    className='hover:underline'
+                  >
+                    {link.link}
+                  </span>
+                }
+                secondary={`Gültig bis: ${new Date(
+                  link.expiresAt
+                ).toLocaleString()}`}
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    color: '#D1D5DB',
+                  },
+                  '& .MuiListItemText-secondary': {
+                    color: '#9CA3AF',
+                  },
+                }}
+              />
+              <Button
+                variant='outlined'
+                color='error'
+                size='small'
+                onClick={() => handleDeleteLink(link.key)}
+                sx={{
+                  color: '#EF4444',
+                }}
+              >
+                LÖSCHEN
+              </Button>
+            </ListItem>
+          ))}
+        </List>
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={6000}
