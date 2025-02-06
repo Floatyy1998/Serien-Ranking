@@ -40,7 +40,9 @@ export const AuthContext = createContext<{
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<Firebase.User | null>(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
-
+  window.addEventListener('vite:preloadError', () => {
+    window.location.reload(); // for example, refresh the page
+  });
   useEffect(() => {
     const config = {
       apiKey: process.env.VITE_APIKEY,

@@ -20,12 +20,13 @@ const SharedSeriesList = () => {
   useEffect(() => {
     const fetchSeriesList = async () => {
       try {
-        const shareRef = firebase.database().ref(`sharedLists/${linkId}`);
+        const shareRef = firebase
+          .database()
+          .ref(`sharedLists/${linkId}`)
+          .orderByChild('userId');
         const snapshot = await shareRef.once('value');
         const data = snapshot.val();
         if (data) {
-          console.log(`${data.userId}/serien`);
-
           const userSeriesRef = firebase
             .database()
             .ref(`${data.userId}/serien`);
