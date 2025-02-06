@@ -261,38 +261,40 @@ export const SearchFilters = memo(
             <MenuItem value='WOW'>WOW</MenuItem>
           </Select>
         </FormControl>
-        <Tooltip
-          title={isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'}
-        >
-          <Button
-            variant={isWatchlist ? 'contained' : 'outlined'}
-            onClick={handleWatchlistToggle}
-            sx={{
-              margin: 'auto',
-              borderRadius: '0.5rem',
-              width: 48,
-              height: 48,
-              minWidth: 48,
-            }}
+        <Box className='flex gap-3'>
+          <Tooltip
+            title={isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'}
           >
-            {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-          </Button>
-        </Tooltip>
-        <Tooltip title='Als nächstes schauen'>
-          <Button
-            variant='outlined'
-            onClick={handleDialogOpen}
-            sx={{
-              margin: 'auto',
-              borderRadius: '0.5rem',
-              width: 48,
-              height: 48,
-              minWidth: 48,
-            }}
-          >
-            <ListIcon />
-          </Button>
-        </Tooltip>
+            <Button
+              variant={isWatchlist ? 'contained' : 'outlined'}
+              onClick={handleWatchlistToggle}
+              sx={{
+                margin: 'auto',
+                borderRadius: '0.5rem',
+                width: 48,
+                height: 48,
+                minWidth: 48,
+              }}
+            >
+              {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+            </Button>
+          </Tooltip>
+          <Tooltip title='Als nächstes schauen'>
+            <Button
+              variant='outlined'
+              onClick={handleDialogOpen}
+              sx={{
+                margin: 'auto',
+                borderRadius: '0.5rem',
+                width: 48,
+                height: 48,
+                minWidth: 48,
+              }}
+            >
+              <ListIcon />
+            </Button>
+          </Tooltip>
+        </Box>
         <Dialog open={dialogOpen} onClose={handleDialogClose} fullWidth>
           <DialogTitle variant='h1' textAlign={'center'}>
             Weiterschauen

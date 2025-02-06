@@ -9,7 +9,7 @@ const Typography = lazy(() => import('@mui/material/Typography'));
 export const Legend = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <Box className='flex items-center gap-6 mb-4 max-w-[1400px] mx-auto'>
+      <Box className='flex items-center gap-6 mb-4 max-w-[1400px] mx-auto justify-center md:justify-start sm:justify-center'>
         <Typography variant='subtitle2' className='text-gray-400'>
           Serien Status:
         </Typography>
