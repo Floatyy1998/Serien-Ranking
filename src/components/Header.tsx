@@ -298,7 +298,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       dataMap.set(label, { count: 0, rating: 0 });
     });
 
-    memoizedSeriesList.forEach((series) => {
+    seriesList.forEach((series) => {
       // Genres
       series.genre.genres.forEach((genre) => {
         if (genre !== 'All' && calculateOverallRating(series) !== '0.00') {
@@ -313,7 +313,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       });
 
       // Providers
-
       series.provider?.provider.forEach((provider) => {
         if (calculateOverallRating(series) !== '0.00') {
           if (!providers[provider.name]) {
@@ -338,14 +337,21 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       });
 
       // User Stats
-
       if (calculateOverallRating(series) !== '0.00') {
-        watchtime += series.watchtime;
-        episodesWatched += series.episodeCount;
-        if (Object.keys(series.rating).length > 0) {
-          seriesRated += 1;
-        }
+        seriesRated += 1;
       }
+      episodesWatched += series.seasons.reduce((count, season) => {
+        return (
+          count + season.episodes.filter((episode) => episode.watched).length
+        );
+      }, 0);
+      watchtime += series.seasons.reduce((time, season) => {
+        return (
+          time +
+          season.episodes.filter((episode) => episode.watched).length *
+            series.episodeRuntime
+        );
+      }, 0);
     });
 
     setStatsData({
