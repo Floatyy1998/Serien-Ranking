@@ -3,6 +3,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import LoadingCard from '../components/LoadingCard';
 import SearchFilters from '../components/SearchFilters';
 import { SeriesCard } from '../components/SeriesCard';
 import { Series } from '../interfaces/Series';
@@ -92,11 +93,17 @@ const SharedSeriesList = () => {
   });
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return <LoadingCard />;
   }
 
   if (!linkValid) {
-    return <Typography>Dieser Link ist ungültig oder abgelaufen.</Typography>;
+    return (
+      <Typography
+        sx={{ margin: 'auto', fontSize: '2rem', textAlign: 'center' }}
+      >
+        Dieser Link ist ungültig oder abgelaufen.
+      </Typography>
+    );
   }
 
   return (
