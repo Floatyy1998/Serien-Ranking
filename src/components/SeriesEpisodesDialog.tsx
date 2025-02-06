@@ -46,12 +46,16 @@ const SeriesEpisodesDialog = ({
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          <ul id='serienRecs' key={series.id}>
+          <ul
+            id='serienRecs'
+            key={`${series.id * Math.random() + Date.now()}`}
+            className='p-0'
+          >
             {Array.isArray(series.nextEpisode.nextEpisodes) &&
               series.nextEpisode.nextEpisodes.map((episode) => (
                 <>
                   <li
-                    key={episode.id} // Hinzugefügter key-Prop
+                    key={`${series.id * Math.random() + Date.now()}`} // Hinzugefügter key-Prop
                     className='episodes flex gap-3 items-center p-3'
                   >
                     <img
