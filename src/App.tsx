@@ -1,7 +1,5 @@
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
-import Firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/database';
+import Firebase from 'firebase/compat/app'; // Hinzugefügter Import für Firebase
 import {
   Suspense,
   createContext,
@@ -20,10 +18,10 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom';
-
 import SharedSeriesList from './pages/SharedSeriesList';
 import { theme } from './theme';
 
+// Lazy-Imports für Komponenten
 const Header = lazy(() => import('./components/layout/Header'));
 const Legend = lazy(() => import('./components/common/Legend'));
 const SearchFilters = lazy(() => import('./components/filters/SearchFilters'));
@@ -35,58 +33,38 @@ const StartPage = lazy(() => import('./pages/StartPage'));
 export const AuthContext = createContext<{
   user: Firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<Firebase.User | null>>;
+  authStateResolved: boolean;
 } | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<Firebase.User | null>(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
-  window.addEventListener('vite:preloadError', () => {
-    window.location.reload(); // for example, refresh the page
-  });
+  const [authStateResolved, setAuthStateResolved] = useState(false);
+
   useEffect(() => {
-    const config = {
-      apiKey: process.env.VITE_APIKEY,
-      authDomain: process.env.VITE_AUTHDOMAIN,
-      databaseURL: process.env.VITE_DATABASEURL,
-      projectId: process.env.VITE_PROJECTID,
-      storageBucket: process.env.VITE_STORAGEBUCKET,
-      messagingSenderId: process.env.VITE_MESSAGINGSENDERID,
-      appId: process.env.VITE_APPID,
-      measurementId: process.env.VITE_MEASUREMENTID,
-    };
-
-    if (!Firebase.apps.length) {
-      Firebase.initializeApp(config);
-    }
-
-    Firebase.auth().setPersistence(Firebase.auth.Auth.Persistence.LOCAL);
-    Firebase.auth().onAuthStateChanged((user) => {
-      setUser(user);
-      if (user) {
-        localStorage.setItem('user', JSON.stringify(user));
-      } else {
-        localStorage.removeItem('user');
-      }
+    // Dynamischer Import der Firebase-Initialisierung
+    import('./firebase/initFirebase').then((module) => {
+      module.initFirebase();
+      // Initialisiere Firebase Auth und höre auf Auth-Statusänderungen
+      Firebase.auth().onAuthStateChanged((user) => {
+        setUser(user);
+        setAuthStateResolved(true);
+        // ... ggf. LocalStorage-Handling ...
+      });
+      setFirebaseInitialized(true);
     });
-
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-
-    setFirebaseInitialized(true);
   }, []);
 
-  if (!firebaseInitialized) {
+  if (!firebaseInitialized || !authStateResolved) {
     return (
       <Box className='flex justify-center items-center '>
-        <InfinitySpin color='#00fed7'></InfinitySpin>
+        <InfinitySpin color='#00fed7' />
       </Box>
     );
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, authStateResolved }}>
       {children}
     </AuthContext.Provider>
   );
