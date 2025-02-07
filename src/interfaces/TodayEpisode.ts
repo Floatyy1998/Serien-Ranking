@@ -4,4 +4,6 @@ export interface TodayEpisode {
   episodeTitle: string;
   releaseTime: string;
   poster: string;
+  seasonNumber: number;
+  episodeNumber: number;
 }

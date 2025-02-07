@@ -136,7 +136,9 @@ export const SeriesGrid = memo(
                   hour: '2-digit',
                   minute: '2-digit',
                 }),
-                poster: series.poster.poster, // hinzugefügt
+                poster: series.poster.poster,
+                seasonNumber: series.nextEpisode.season, // hinzugefügt
+                episodeNumber: series.nextEpisode.episode, // hinzugefügt
               });
             }
           }
