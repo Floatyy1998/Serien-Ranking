@@ -1,4 +1,5 @@
-import { Button, Typography } from '@mui/material';
+import { Button, Card, CardContent, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import React, { useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     const user = firebase.auth().currentUser;
@@ -25,6 +27,25 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
       navigate('/login');
     }
   }, [navigate]);
+
+  // Neuer useEffect – periodisch alle 5 Sekunden prüfen, ob die Email verifiziert wurde
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    if (!isVerified) {
+      intervalId = setInterval(() => {
+        const user = firebase.auth().currentUser;
+        if (user) {
+          user.reload().then(() => {
+            if (user.emailVerified) {
+              setIsVerified(true);
+              clearInterval(intervalId);
+            }
+          });
+        }
+      }, 5000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isVerified]);
 
   const resendVerification = () => {
     const user = firebase.auth().currentUser;
@@ -46,23 +67,36 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
 
   if (!isVerified) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <Typography variant='h6' gutterBottom>
-          Email nicht verifiziert
-        </Typography>
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={resendVerification}
-        >
-          Hier klicken um Link erneut zu senden
-        </Button>
-        {message && (
-          <Typography variant='body2' style={{ marginTop: '10px' }}>
-            {message}
+      <Card
+        style={{
+          margin: '20px',
+          padding: '20px',
+          textAlign: 'center',
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
+        <CardContent>
+          <Typography variant='h5' gutterBottom>
+            Email nicht verifiziert
           </Typography>
-        )}
-      </div>
+          <Typography variant='body1' gutterBottom>
+            Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den
+            Verifizierungslink.
+          </Typography>
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={resendVerification}
+          >
+            Link erneut senden
+          </Button>
+          {message && (
+            <Typography variant='body2' style={{ marginTop: '10px' }}>
+              {message}
+            </Typography>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
