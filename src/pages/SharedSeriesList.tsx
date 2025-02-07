@@ -3,9 +3,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import LoadingCard from '../components/LoadingCard';
-import SearchFilters from '../components/SearchFilters';
-import { SeriesCard } from '../components/SeriesCard';
+import LoadingCard from '../components/common/LoadingCard';
+import SearchFilters from '../components/filters/SearchFilters';
+import { SeriesCard } from '../components/series/SeriesCard';
 import { Series } from '../interfaces/Series';
 import { calculateOverallRating } from '../utils/rating';
 

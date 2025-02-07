@@ -9,7 +9,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import { Series } from '../interfaces/Series';
+import { Series } from '../../interfaces/Series';
 
 interface SeriesEpisodesDialogProps {
   open: boolean;

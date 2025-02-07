@@ -17,7 +17,7 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../App';
+import { useAuth } from '../../App';
 
 interface SharedLink {
   key: string;

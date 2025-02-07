@@ -3,9 +3,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
-import { useAuth } from '../App';
-import { Series } from '../interfaces/Series';
-import { calculateOverallRating } from '../utils/rating';
+import { useAuth } from '../../App';
+import { Series } from '../../interfaces/Series';
+import { calculateOverallRating } from '../../utils/rating';
 import { SeriesCard } from './SeriesCard';
 
 interface SeriesGridProps {

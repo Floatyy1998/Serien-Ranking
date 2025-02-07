@@ -12,7 +12,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { Series } from '../interfaces/Series';
+import { Series } from '../../interfaces/Series';
 
 interface SeriesDialogProps {
   open: boolean;

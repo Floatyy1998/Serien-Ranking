@@ -1,15 +1,10 @@
-import CloseIcon from '@mui/icons-material/Close';
 import {
   Alert,
   AppBar,
   Autocomplete,
   Box,
   Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Drawer,
-  Grid2 as Grid,
   IconButton,
   List,
   ListItem,
@@ -37,13 +32,13 @@ import 'firebase/compat/auth';
 import 'firebase/compat/database'; // Fügen Sie diesen Import hinzu
 import { BarChartIcon, MenuIcon, ShareIcon } from 'lucide-react';
 import { memo, useCallback, useEffect, useState } from 'react';
-import { Bar, Doughnut } from 'react-chartjs-2';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../App';
-import notFound from '../assets/notFound.jpg';
-import { Series } from '../interfaces/Series';
-import { calculateOverallRating } from '../utils/rating';
-import SharedLinksDialog from './SharedLinksDialog'; // Importieren Sie den neuen Dialog
+import { useAuth } from '../../App';
+import notFound from '../../assets/notFound.jpg';
+import { Series } from '../../interfaces/Series';
+import { calculateOverallRating } from '../../utils/rating';
+import SharedLinksDialog from '../dialogs/SharedLinksDialog'; // Importieren Sie den neuen Dialog
+import StatsDialog from '../dialogs/StatsDialog';
 
 Chart.register(
   CategoryScale,
@@ -376,42 +371,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     setStatsDialogOpen(false);
   }, []);
 
-  const genreColors = [
-    '#FF6384',
-    '#36A2EB',
-    '#FFCE56',
-    '#4BC0C0',
-    '#9966FF',
-    '#FF9F40',
-    '#FF6384',
-    '#36A2EB',
-    '#FFCE56',
-    '#4BC0C0',
-    '#9966FF',
-    '#FF9F40',
-    '#FF6384',
-    '#36A2EB',
-    '#FFCE56',
-    '#4BC0C0',
-    '#9966FF',
-    '#FF9F40',
-  ];
-
-  const providerColors = [
-    '#FF6384',
-    '#36A2EB',
-    '#FFCE56',
-    '#4BC0C0',
-    '#9966FF',
-    '#FF9F40',
-    '#FF6384',
-    '#36A2EB',
-    '#FFCE56',
-    '#4BC0C0',
-    '#9966FF',
-    '#FF9F40',
-  ];
-
   const handleTitleClick = useCallback(() => {
     if (location.pathname === '/login' || location.pathname === '/register') {
       navigate('/');
@@ -637,308 +596,12 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           </List>
         </Drawer>
       )}
-      <Dialog
-        sx={{ textAlign: 'center !important' }}
+      <StatsDialog
         open={statsDialogOpen}
         onClose={handleStatsClose}
-        fullWidth
-      >
-        <DialogTitle variant='h2'>
-          Statistiken
-          <IconButton
-            aria-label='close'
-            onClick={handleStatsClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: 'red',
-            }}
-            role='button'
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {statsData && (
-            <>
-              <Box
-                sx={{
-                  border: '1px solid rgb(0, 254, 215)',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  justifyContent: 'space-around',
-                  mb: 10,
-                }}
-              >
-                <Box>
-                  <Typography variant='h4'>Geschaute Serien</Typography>
-                  <Typography
-                    style={{ color: theme.palette.text.secondary }}
-                    variant='body1'
-                  >
-                    {statsData.userStats.seriesRated}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant='h4'>Geschaute Episoden</Typography>
-                  <Typography
-                    style={{ color: theme.palette.text.secondary }}
-                    variant='body1'
-                  >
-                    {statsData.userStats.episodesWatched}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant='h4'>Geschaute Zeit</Typography>
-                  <Typography
-                    style={{ color: theme.palette.text.secondary }}
-                    variant='body1'
-                  >
-                    {statsData.userStats.watchtime}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Grid container spacing={2} columns={2}>
-                <Grid size={{ xs: 2, lg: 1 }}>
-                  <Typography variant='h4'>
-                    Anzahl der Serien pro Genre
-                  </Typography>
-                  <Box
-                    sx={{
-                      overflow: 'auto',
-                      height: '580px', // Erhöhte Höhe
-                      border: '1px solid rgb(0, 254, 215)',
-                      padding: '10px',
-                      width: '100%',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    <Doughnut
-                      data={{
-                        labels: statsData.genres.map((genre) => genre.name),
-                        datasets: [
-                          {
-                            label: 'Häufigkeit',
-                            data: statsData.genres.map((genre) => genre.count),
-                            backgroundColor: genreColors,
-                            hoverBackgroundColor: genreColors,
-                          },
-                        ],
-                      }}
-                      options={{
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                              color: 'white',
-                            },
-                          },
-
-                          tooltip: {
-                            callbacks: {
-                              label: function (context) {
-                                return `${context.label}: ${Number(
-                                  context.raw
-                                )}`;
-                              },
-                            },
-                          },
-                        },
-                      }}
-                    />
-                  </Box>
-                </Grid>
-                <Grid size={{ xs: 2, lg: 1 }}>
-                  <Typography variant='h4'>
-                    Durchschnittliche Bewertung der Genres
-                  </Typography>
-                  <Box
-                    sx={{
-                      overflow: 'auto',
-                      height: '580px', // Erhöhte Höhe
-                      border: '1px solid rgb(0, 254, 215)',
-                      padding: '10px',
-                      width: '100%',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    <Bar
-                      data={{
-                        labels: statsData.genres.map((genre) => genre.name),
-                        datasets: [
-                          {
-                            label: 'Durchschnittliche Bewertung',
-                            data: statsData.genres.map(
-                              (genre) => genre.averageRating
-                            ),
-                            backgroundColor: genreColors,
-                            borderColor: genreColors,
-                          },
-                        ],
-                      }}
-                      options={{
-                        maintainAspectRatio: false,
-                        scales: {
-                          y: {
-                            ticks: {
-                              color: 'white',
-                            },
-                          },
-                          x: {
-                            ticks: {
-                              color: 'white',
-                            },
-                          },
-                        },
-                        plugins: {
-                          legend: {
-                            display: false,
-                            position: 'top',
-                          },
-                          tooltip: {
-                            callbacks: {
-                              label: function (context) {
-                                return `${context.label}: ${Number(
-                                  context.raw
-                                ).toFixed(2)}`;
-                              },
-                            },
-                          },
-                        },
-                      }}
-                    />
-                  </Box>
-                </Grid>
-                <Grid size={{ xs: 2, lg: 1 }}>
-                  <Typography variant='h4'>
-                    {' '}
-                    Anzahl der Serien Pro Anbieter
-                  </Typography>
-                  <Box
-                    sx={{
-                      overflow: 'auto',
-                      height: '580px', // Erhöhte Höhe
-                      border: '1px solid rgb(0, 254, 215)',
-                      padding: '10px',
-                      width: '100%',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    <Doughnut
-                      data={{
-                        labels: statsData.providers.map(
-                          (provider) => provider.name
-                        ),
-                        datasets: [
-                          {
-                            label: 'Häufigkeit',
-                            data: statsData.providers.map(
-                              (provider) => provider.count
-                            ),
-                            backgroundColor: providerColors,
-                            hoverBackgroundColor: providerColors,
-                          },
-                        ],
-                      }}
-                      options={{
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                              color: 'white',
-                            },
-                          },
-                          tooltip: {
-                            callbacks: {
-                              label: function (context) {
-                                return `${context.label}: ${Number(
-                                  context.raw
-                                )}`;
-                              },
-                            },
-                          },
-                        },
-                      }}
-                    />
-                  </Box>
-                </Grid>
-                <Grid size={{ xs: 2, lg: 1 }}>
-                  <Typography variant='h4'>
-                    Durchschnittliche Bewertung der Anbieter
-                  </Typography>
-                  <Box
-                    sx={{
-                      overflow: 'auto',
-                      height: '580px', // Erhöhte Höhe
-                      border: '1px solid rgb(0, 254, 215)',
-                      padding: '10px',
-                      width: '100%',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    <Bar
-                      data={{
-                        labels: statsData.providers.map(
-                          (provider) => provider.name
-                        ),
-                        datasets: [
-                          {
-                            label: 'Durchschnittliche Bewertung',
-                            data: statsData.providers.map(
-                              (provider) => provider.averageRating
-                            ),
-                            backgroundColor: providerColors,
-                            borderColor: providerColors,
-                          },
-                        ],
-                      }}
-                      options={{
-                        maintainAspectRatio: false,
-                        scales: {
-                          y: {
-                            ticks: {
-                              color: 'white',
-                            },
-                          },
-                          x: {
-                            ticks: {
-                              color: 'white',
-                            },
-                          },
-                        },
-
-                        plugins: {
-                          legend: {
-                            display: false,
-                            position: 'top',
-                          },
-                          tooltip: {
-                            callbacks: {
-                              label: function (context) {
-                                return `${context.label}: ${Number(
-                                  context.raw
-                                ).toFixed(2)}`;
-                              },
-                            },
-                          },
-                        },
-                      }}
-                    />
-                  </Box>
-                </Grid>
-              </Grid>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        statsData={statsData}
+        isMobile={isMobile}
+      />
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={snackbarSeverity === 'warning' ? null : 6000}

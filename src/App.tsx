@@ -24,13 +24,13 @@ import {
 import SharedSeriesList from './pages/SharedSeriesList';
 import { theme } from './theme';
 
-const Header = lazy(() => import('./components/Header'));
-const Legend = lazy(() => import('./components/Legend'));
-const SearchFilters = lazy(() => import('./components/SearchFilters'));
-const SeriesGrid = lazy(() => import('./components/SeriesGrid'));
-const LoginPage = lazy(() => import('./components/LoginPage'));
-const RegisterPage = lazy(() => import('./components/RegisterPage'));
-const StartPage = lazy(() => import('./components/StartPage'));
+const Header = lazy(() => import('./components/layout/Header'));
+const Legend = lazy(() => import('./components/common/Legend'));
+const SearchFilters = lazy(() => import('./components/filters/SearchFilters'));
+const SeriesGrid = lazy(() => import('./components/series/SeriesGrid'));
+const LoginPage = lazy(() => import('./components/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
+const StartPage = lazy(() => import('./pages/StartPage'));
 
 export const AuthContext = createContext<{
   user: Firebase.User | null;

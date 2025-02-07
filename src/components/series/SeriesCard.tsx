@@ -13,13 +13,13 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../App'; // Assuming you have an AuthContext
-import { Series } from '../interfaces/Series';
-import { calculateOverallRating } from '../utils/rating';
-import LoadingCard from './LoadingCard';
-import SeriesDialog from './SeriesDialog';
-import SeriesEpisodesDialog from './SeriesEpisodesDialog';
-import SeriesWatchedDialog from './SeriesWatchedDialog';
+import { useAuth } from '../../App'; // Assuming you have an AuthContext
+import { Series } from '../../interfaces/Series';
+import { calculateOverallRating } from '../../utils/rating';
+import LoadingCard from '../common/LoadingCard';
+import SeriesDialog from '../dialogs/SeriesDialog';
+import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
+import SeriesWatchedDialog from '../dialogs/SeriesWatchedDialog';
 
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
 const Typography = lazy(() => import('@mui/material/Typography'));

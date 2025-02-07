@@ -12,7 +12,7 @@ import {
 import { Check, ChevronDown } from 'lucide-react';
 import { memo, useState } from 'react';
 import Confetti from 'react-confetti';
-import { Series } from '../interfaces/Series';
+import { Series } from '../../interfaces/Series';
 
 interface SeriesWatchedDialogProps {
   open: boolean;
