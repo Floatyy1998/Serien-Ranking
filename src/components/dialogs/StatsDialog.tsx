@@ -67,7 +67,9 @@ const StatsDialog = ({
       onClose={onClose}
       fullWidth
     >
-      <DialogTitle variant='h2'>
+      <DialogTitle
+        sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+      >
         Statistiken
         <IconButton
           aria-label='close'
@@ -78,7 +80,6 @@ const StatsDialog = ({
             top: 8,
             color: 'red',
           }}
-          role='button'
         >
           <CloseIcon />
         </IconButton>

@@ -18,6 +18,8 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom';
+
+import { VerifiedRoute } from './components/auth/VerifiedRoute';
 import SharedSeriesList from './pages/SharedSeriesList';
 import { theme } from './theme';
 
@@ -57,7 +59,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   if (!firebaseInitialized || !authStateResolved) {
     return (
-      <Box className='flex justify-center items-center '>
+      <Box
+        sx={{ width: '100vw', height: '100vh', backgroundColor: '#000' }}
+        className='flex justify-center items-center '
+      >
         <InfinitySpin color='#00fed7' />
       </Box>
     );
@@ -148,19 +153,21 @@ export function App() {
                         <AuthContext.Consumer>
                           {(auth) =>
                             auth?.user ? (
-                              <>
-                                <SearchFilters
-                                  onSearchChange={handleSearchChange}
-                                  onGenreChange={handleGenreChange}
-                                  onProviderChange={handleProviderChange}
-                                />
-                                <Legend />
-                                <SeriesGrid
-                                  searchValue={searchValue}
-                                  selectedGenre={selectedGenre}
-                                  selectedProvider={selectedProvider}
-                                />
-                              </>
+                              <VerifiedRoute>
+                                <>
+                                  <SearchFilters
+                                    onSearchChange={handleSearchChange}
+                                    onGenreChange={handleGenreChange}
+                                    onProviderChange={handleProviderChange}
+                                  />
+                                  <Legend />
+                                  <SeriesGrid
+                                    searchValue={searchValue}
+                                    selectedGenre={selectedGenre}
+                                    selectedProvider={selectedProvider}
+                                  />
+                                </>
+                              </VerifiedRoute>
                             ) : (
                               <StartPage />
                             )

@@ -31,7 +31,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database'; // Fügen Sie diesen Import hinzu
 import { BarChartIcon, MenuIcon, ShareIcon } from 'lucide-react';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
@@ -117,6 +117,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const [, setShareLink] = useState<string | null>(null);
   const [linkDuration, setLinkDuration] = useState<number>(24); // Standardmäßig 24 Stunden
   const [linksDialogOpen, setLinksDialogOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null); // Neuer Ref für den Input
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -423,6 +424,11 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     navigate('/');
   };
 
+  const handleDrawerClose = () => {
+    setIsNavOpen(false);
+    inputRef.current?.blur(); // Fokus entfernen
+  };
+
   return (
     <>
       <AppBar position='fixed' color='default' elevation={1}>
@@ -503,7 +509,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         <Drawer
           anchor='top'
           open={isNavOpen}
-          onClose={() => setIsNavOpen(false)}
+          onClose={handleDrawerClose} // Angepasster Handler
         >
           <List
             sx={{
@@ -559,6 +565,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                     label='Serie hinzufügen'
                     variant='outlined'
                     type='search'
+                    inputRef={inputRef} // Ref an das Input übergeben
                   />
                 )}
               />

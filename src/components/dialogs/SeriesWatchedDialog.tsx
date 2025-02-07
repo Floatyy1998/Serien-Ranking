@@ -83,23 +83,9 @@ const SeriesWatchedDialog = memo(
         slotProps={{ paper: { sx: { m: 2 } } }}
       >
         <DialogTitle
-          sx={{
-            alignItems: 'center',
-            p: 3,
-            pb: 2,
-            textAlign: 'center',
-          }}
+          sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
         >
-          <span
-            style={{
-              color: '#00fed7',
-              fontSize: '1.25rem',
-              fontWeight: 500,
-              marginRight: '20px',
-            }}
-          >
-            Gesehene Episoden von {series.title}
-          </span>
+          Gesehene Episoden von {series.title}
           <IconButton
             aria-label='close'
             onClick={onClose}

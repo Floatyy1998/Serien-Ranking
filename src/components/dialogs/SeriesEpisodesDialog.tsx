@@ -9,6 +9,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
+import React from 'react';
 import { Series } from '../../interfaces/Series';
 
 interface SeriesEpisodesDialogProps {
@@ -29,7 +30,9 @@ const SeriesEpisodesDialog = ({
       onClose={onClose}
       fullWidth
     >
-      <DialogTitle variant='h2' className='bg-[#090909]'>
+      <DialogTitle
+        sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+      >
         Kommende Episoden von {series.title}
         <IconButton
           aria-label='close'
@@ -46,18 +49,13 @@ const SeriesEpisodesDialog = ({
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          <ul
-            id='serienRecs'
-            key={`${series.id * Math.random() + Date.now()}`}
-            className='p-0'
-          >
+          <ul id='serienRecs' className='p-0'>
             {Array.isArray(series.nextEpisode.nextEpisodes) &&
               series.nextEpisode.nextEpisodes.map((episode) => (
-                <>
-                  <li
-                    key={`${series.id * Math.random() + Date.now()}`} // Hinzugefügter key-Prop
-                    className='episodes flex gap-3 items-center p-3'
-                  >
+                <React.Fragment
+                  key={`${series.id}-${episode.season}-${episode.number}-${episode.airstamp}`}
+                >
+                  <li className='episodes flex gap-3 items-center p-3'>
                     <img
                       className='episodeBild w-[92px]'
                       src={series.poster.poster}
@@ -102,7 +100,7 @@ const SeriesEpisodesDialog = ({
                     </div>
                   </li>
                   <Divider></Divider>
-                </>
+                </React.Fragment>
               ))}
           </ul>
         </DialogContentText>

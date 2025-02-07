@@ -133,7 +133,9 @@ const SharedLinksDialog = ({
         },
       }}
     >
-      <DialogTitle textAlign={'center'} fontSize={24} fontWeight={600}>
+      <DialogTitle
+        sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+      >
         Shared Links Verwalten
         <IconButton
           aria-label='close'

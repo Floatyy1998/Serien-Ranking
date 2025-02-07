@@ -94,8 +94,10 @@ const WatchlistDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle variant='h1' textAlign={'center'}>
+    <Dialog open={open} onClose={onClose} fullWidth container={document.body}>
+      <DialogTitle
+        sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+      >
         Weiterschauen
         <IconButton
           aria-label='close'

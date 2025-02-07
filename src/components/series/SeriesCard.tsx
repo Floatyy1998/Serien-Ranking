@@ -531,7 +531,11 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         </Alert>
       </Snackbar>
       <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
-        <DialogTitle>Bestätigung</DialogTitle>
+        <DialogTitle
+          sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+        >
+          Bestätigung
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             Es gibt vorherige Episoden, die nicht als gesehen markiert sind.

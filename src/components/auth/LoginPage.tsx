@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material';
+import { Snackbar, TextField } from '@mui/material';
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
@@ -11,7 +11,11 @@ import { initFirebase } from '../../firebase/initFirebase';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [snackbarMsg, setSnackbarMsg] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
+
+  const handleCloseSnackbar = () => setOpenSnackbar(false);
 
   const handleLogin = () => {
     // Sicherstellen, dass Firebase initialisiert ist
@@ -25,7 +29,28 @@ const LoginPage = () => {
         navigate('/');
       })
       .catch((error) => {
-        alert(error.message);
+        setSnackbarMsg(error.message);
+        setOpenSnackbar(true);
+      });
+  };
+
+  const handleForgotPassword = () => {
+    if (!email) {
+      setSnackbarMsg('Bitte geben Sie Ihre E-Mail-Adresse ein.');
+      setOpenSnackbar(true);
+      return;
+    }
+    Firebase.auth()
+      .sendPasswordResetEmail(email)
+      .then(() => {
+        setSnackbarMsg(
+          'Passwort-Zurücksetzungslink wurde an Ihre E-Mail-Adresse gesendet.'
+        );
+        setOpenSnackbar(true);
+      })
+      .catch((error) => {
+        setSnackbarMsg(error.message);
+        setOpenSnackbar(true);
       });
   };
 
@@ -67,6 +92,21 @@ const LoginPage = () => {
           Registrieren
         </Link>
       </p>
+      <p className='mt-2 text-center'>
+        <button
+          type='button'
+          onClick={handleForgotPassword}
+          className='text-[#00fed7] hover:underline'
+        >
+          Passwort vergessen?
+        </button>
+      </p>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMsg}
+      />
     </AuthLayout>
   );
 };

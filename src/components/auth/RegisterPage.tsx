@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material';
+import { Snackbar, TextField } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
@@ -12,6 +12,8 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [snackbarMsg, setSnackbarMsg] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
@@ -20,8 +22,13 @@ const RegisterPage = () => {
   };
 
   const validatePassword = (password: string) => {
-    return password.length >= 6;
+    // Passwort muss mindestens 8 Zeichen, sowie Groß-, Kleinbuchstaben, Ziffer und Sonderzeichen enthalten
+    const re =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return re.test(password);
   };
+
+  const handleCloseSnackbar = () => setOpenSnackbar(false);
 
   const handleRegister = () => {
     if (!validateEmail(email)) {
@@ -29,7 +36,9 @@ const RegisterPage = () => {
       return;
     }
     if (!validatePassword(password)) {
-      setPasswordError('Das Passwort muss mindestens 6 Zeichen lang sein.');
+      setPasswordError(
+        'Das Passwort muss mindestens 8 Zeichen lang sein und Groß-, Kleinbuchstaben, Ziffern sowie Sonderzeichen enthalten.'
+      );
       return;
     }
     if (password !== confirmPassword) {
@@ -40,11 +49,16 @@ const RegisterPage = () => {
     firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
-      .then(() => {
+      .then((userCredential) => {
+        // Sende Bestätigungsmail
+        userCredential.user?.sendEmailVerification();
+        setSnackbarMsg('Bestätigungsmail wurde gesendet.');
+        setOpenSnackbar(true);
         navigate('/');
       })
       .catch((error) => {
-        alert(error.message);
+        setSnackbarMsg(error.message);
+        setOpenSnackbar(true);
       });
   };
 
@@ -114,6 +128,12 @@ const RegisterPage = () => {
           Login
         </Link>
       </p>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMsg}
+      />
     </AuthLayout>
   );
 };

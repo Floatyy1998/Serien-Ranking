@@ -1,11 +1,12 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import LoadingCard from '../components/common/LoadingCard';
 import SearchFilters from '../components/filters/SearchFilters';
 import { SeriesCard } from '../components/series/SeriesCard';
+import { useDebounce } from '../hooks/useDebounce';
 import { Series } from '../interfaces/Series';
 import { calculateOverallRating } from '../utils/rating';
 
@@ -17,6 +18,8 @@ const SharedSeriesList = () => {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedProvider, setSelectedProvider] = useState('All');
   const [linkValid, setLinkValid] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(20);
+  const debouncedSearchValue = useDebounce(searchValue, 300);
 
   useEffect(() => {
     const fetchSeriesList = async () => {
@@ -65,32 +68,74 @@ const SharedSeriesList = () => {
     setSelectedProvider(value);
   };
 
-  const filteredSeries = seriesList.filter((series) => {
-    const matchesSearch = series.title
-      .toLowerCase()
-      .includes(searchValue.toLowerCase());
-    const matchesGenre =
-      selectedGenre === 'All' ||
-      (selectedGenre === 'Neue Episoden' &&
-        typeof series.nextEpisode.episode === 'number') ||
-      (selectedGenre === 'Ohne Bewertung' &&
-        calculateOverallRating(series) === '0.00') ||
-      selectedGenre === 'Zuletzt Hinzugefügt' ||
-      (selectedGenre === 'Watchlist' && series.watchlist) ||
-      series.genre.genres.includes(selectedGenre);
-    const matchesProvider =
-      selectedProvider === 'All' ||
-      (series.provider?.provider &&
-        series.provider.provider.some((p) => p.name === selectedProvider));
-    return matchesSearch && matchesGenre && matchesProvider;
-  });
+  // Filterung und Sortierung mit useMemo und debouncedSearchValue
+  const sortedSeries = useMemo(() => {
+    const filtered = seriesList.filter((series) => {
+      const matchesSearch = series.title
+        .toLowerCase()
+        .includes(debouncedSearchValue.toLowerCase());
+      const matchesGenre =
+        selectedGenre === 'All' ||
+        (selectedGenre === 'Neue Episoden' &&
+          typeof series.nextEpisode.episode === 'number') ||
+        (selectedGenre === 'Ohne Bewertung' &&
+          calculateOverallRating(series) === '0.00') ||
+        selectedGenre === 'Zuletzt Hinzugefügt' ||
+        (selectedGenre === 'Watchlist' && series.watchlist) ||
+        series.genre.genres.includes(selectedGenre);
+      const matchesProvider =
+        selectedProvider === 'All' ||
+        (series.provider?.provider &&
+          series.provider.provider.some((p) => p.name === selectedProvider));
+      return matchesSearch && matchesGenre && matchesProvider;
+    });
+    return filtered.sort((a, b) => {
+      return (
+        parseFloat(calculateOverallRating(b)) -
+        parseFloat(calculateOverallRating(a))
+      );
+    });
+  }, [seriesList, debouncedSearchValue, selectedGenre, selectedProvider]);
 
-  const sortedSeries = filteredSeries.sort((a, b) => {
-    return (
-      parseFloat(calculateOverallRating(b)) -
-      parseFloat(calculateOverallRating(a))
-    );
-  });
+  // Berechne visibleCount basierend auf der Fensterbreite
+  useEffect(() => {
+    const cardWidth = 230;
+    const gap = 75;
+    let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+    if (columns < 1) columns = 1;
+    const base = 20;
+    let initialVisible = Math.ceil(base / columns) * columns;
+    if (initialVisible > sortedSeries.length) {
+      initialVisible = sortedSeries.length;
+    }
+    setVisibleCount(initialVisible);
+  }, [debouncedSearchValue, selectedGenre, selectedProvider, sortedSeries]);
+
+  // Scroll-Listener zum inkrementellen Laden
+  const handleWindowScroll = useCallback(() => {
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const fullHeight = document.body.offsetHeight;
+    if (
+      scrollTop + windowHeight >= fullHeight - 1000 &&
+      visibleCount < sortedSeries.length
+    ) {
+      const cardWidth = 230;
+      const gap = 75;
+      let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+      if (columns < 1) columns = 1;
+      const remainder = visibleCount % columns;
+      const itemsToAdd = remainder === 0 ? columns : columns - remainder;
+      setVisibleCount((prev) =>
+        Math.min(prev + itemsToAdd, sortedSeries.length)
+      );
+    }
+  }, [sortedSeries.length, visibleCount]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleWindowScroll);
+    return () => window.removeEventListener('scroll', handleWindowScroll);
+  }, [handleWindowScroll]);
 
   if (loading) {
     return <LoadingCard />;
@@ -114,7 +159,7 @@ const SharedSeriesList = () => {
         onProviderChange={handleProviderChange}
       />
       <Box className='flex-row flex flex-wrap justify-center gap-20'>
-        {sortedSeries.map((series, index) => (
+        {sortedSeries.slice(0, visibleCount).map((series, index) => (
           <Box key={`${series.id}-${index}`} className='w-[230px]'>
             <SeriesCard series={series} genre='All' index={index + 1} />
           </Box>

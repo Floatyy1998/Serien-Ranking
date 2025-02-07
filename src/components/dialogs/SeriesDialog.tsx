@@ -61,7 +61,9 @@ const SeriesDialog = ({
       maxWidth='sm'
       sx={{ textAlign: 'center !important' }}
     >
-      <DialogTitle variant='h2'>
+      <DialogTitle
+        sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+      >
         {series.title} bearbeiten/löschen
         <IconButton
           aria-label='close'
@@ -77,8 +79,8 @@ const SeriesDialog = ({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Typography className='m-3' variant='h3'>
-          Genre
+        <Typography className='m-3' sx={{ fontSize: '1.4rem' }}>
+          Genre:
         </Typography>
         <Box className='flex flex-wrap gap-2 mb-4 justify-center'>
           {series.genre.genres.map((g) => (
@@ -93,7 +95,7 @@ const SeriesDialog = ({
             />
           ))}
         </Box>
-        <Typography variant='h3'>Rating</Typography>
+        <Typography sx={{ fontSize: '1.4rem' }}>Rating:</Typography>
         {allGenres.map((g) => (
           <TextField
             key={g}

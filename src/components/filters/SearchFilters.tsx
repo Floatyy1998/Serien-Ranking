@@ -12,6 +12,7 @@ import Firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
+import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
 import WatchlistDialog from '../dialogs/WatchlistDialog';
 
@@ -30,6 +31,8 @@ export const SearchFilters = memo(
     const [dialogOpen, setDialogOpen] = useState(false);
     const [watchlistSeries, setWatchlistSeries] = useState<Series[]>([]);
     const [sortOption] = useState('date-desc');
+
+    const debouncedSearchValue = useDebounce(searchValue, 300);
 
     const authContext = useAuth();
     const user = authContext?.user;
@@ -51,13 +54,16 @@ export const SearchFilters = memo(
       fetchWatchlistSeries();
     }, [user]);
 
+    useEffect(() => {
+      onSearchChange(debouncedSearchValue);
+    }, [debouncedSearchValue, onSearchChange]);
+
     const handleSearchChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchValue(value);
-        onSearchChange(value);
       },
-      [onSearchChange]
+      []
     );
 
     const handleGenreChange = useCallback(
