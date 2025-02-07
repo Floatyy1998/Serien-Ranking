@@ -14,6 +14,7 @@ import 'firebase/compat/database';
 import { lazy, Suspense, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../App'; // Assuming you have an AuthContext
+import notFound from '../../assets/notFound.jpg';
 import { Series } from '../../interfaces/Series';
 import { calculateOverallRating } from '../../utils/rating';
 import LoadingCard from '../common/LoadingCard';
@@ -412,7 +413,13 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               objectFit: 'cover',
               cursor: 'pointer',
             }}
-            image={series.poster.poster}
+            image={
+              series.poster.poster.substring(
+                series.poster.poster.length - 4
+              ) !== 'null'
+                ? series.poster.poster
+                : notFound
+            }
           />
           {uniqueProviders.length > 0 && (
             <Box className='absolute top-2 left-2 flex gap-1'>

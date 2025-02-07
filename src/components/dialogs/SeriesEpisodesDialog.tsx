@@ -1,15 +1,15 @@
 import CloseIcon from '@mui/icons-material/Close';
 import {
-  Chip,
+  Box,
   Dialog,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
   IconButton,
-  Typography,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
-import React from 'react';
 import { Series } from '../../interfaces/Series';
 
 interface SeriesEpisodesDialogProps {
@@ -49,60 +49,51 @@ const SeriesEpisodesDialog = ({
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          <ul id='serienRecs' className='p-0'>
+          <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {Array.isArray(series.nextEpisode.nextEpisodes) &&
               series.nextEpisode.nextEpisodes.map((episode) => (
-                <React.Fragment
+                <ListItem
                   key={`${series.id}-${episode.season}-${episode.number}-${episode.airstamp}`}
+                  sx={{
+                    border: '1px solid rgba(0,254,215,0.125)',
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    borderRadius: 2,
+                    p: 3,
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                 >
-                  <li className='episodes flex gap-3 items-center p-3'>
-                    <img
-                      className='episodeBild w-[92px]'
-                      src={series.poster.poster}
-                      alt={episode.name}
+                  <Box
+                    component='img'
+                    src={series.poster.poster}
+                    alt={episode.name}
+                    sx={{
+                      width: 60,
+                      height: 90,
+                      borderRadius: 1,
+                      marginRight: 2,
+                    }}
+                  />
+                  <Box>
+                    <ListItemText
+                      primary={series.title}
+                      secondary={`Staffel ${episode.season}, Ep. ${episode.number}: ${episode.name}`}
                     />
-                    <div className='episodeBox flex flex-col gap-5'>
-                      <Chip
-                        className='text-white'
-                        sx={{
-                          height: 'fit-content !important',
-                          width: 'fit-content !important',
-                          borderRadius: '50px !important',
-                          fontSize: '.8rem !important',
-                          minWidth: 'fit-content !important',
-                          minHeight: 'fit-content !important',
-                        }}
-                        label={series.title}
-                      ></Chip>
-                      <Typography variant='body2' className='text-white'>
-                        S{episode.season} | E{episode.number}
-                      </Typography>
-                      <Typography variant='body2' className='text-white'>
-                        {episode.name}
-                      </Typography>
-                    </div>
-                    <div className='flex flex-col items-end ml-auto'>
-                      <Typography variant='body2' className='text-white'>
-                        {new Date(episode.airstamp).toLocaleDateString(
-                          'de-DE',
-                          {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          }
-                        )}{' '}
-                        |{' '}
-                        {new Date(episode.airstamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </Typography>
-                    </div>
-                  </li>
-                  <Divider></Divider>
-                </React.Fragment>
+                    <Box
+                      component='span'
+                      sx={{ fontSize: '0.8rem', color: 'gray' }}
+                    >
+                      Uhrzeit:{' '}
+                      {new Date(episode.airstamp).toLocaleTimeString('de-DE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Box>
+                  </Box>
+                </ListItem>
               ))}
-          </ul>
+          </List>
         </DialogContentText>
       </DialogContent>
     </Dialog>

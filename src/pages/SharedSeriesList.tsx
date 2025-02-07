@@ -2,8 +2,8 @@ import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { InfinitySpin } from 'react-loader-spinner';
 import { useParams } from 'react-router-dom';
-import LoadingCard from '../components/common/LoadingCard';
 import SearchFilters from '../components/filters/SearchFilters';
 import { SeriesCard } from '../components/series/SeriesCard';
 import { useDebounce } from '../hooks/useDebounce';
@@ -89,12 +89,29 @@ const SharedSeriesList = () => {
           series.provider.provider.some((p) => p.name === selectedProvider));
       return matchesSearch && matchesGenre && matchesProvider;
     });
-    return filtered.sort((a, b) => {
-      return (
-        parseFloat(calculateOverallRating(b)) -
-        parseFloat(calculateOverallRating(a))
-      );
-    });
+
+    if (selectedGenre === 'Neue Episoden') {
+      return filtered.sort((a, b) => {
+        // Sortierung nach Datum der nächsten Episode (neueste zuerst)
+        const dateA = new Date(
+          a.nextEpisode.nextEpisodes[0].airstamp
+        ).getTime();
+        const dateB = new Date(
+          b.nextEpisode.nextEpisodes[0].airstamp
+        ).getTime();
+        return dateA - dateB;
+      });
+    } else if (selectedGenre === 'Zuletzt Hinzugefügt') {
+      // Unsotrte Liste von hinten nach vorne (umgekehrte Reihenfolge)
+      return filtered.reverse();
+    } else {
+      return filtered.sort((a, b) => {
+        return (
+          parseFloat(calculateOverallRating(b)) -
+          parseFloat(calculateOverallRating(a))
+        );
+      });
+    }
   }, [seriesList, debouncedSearchValue, selectedGenre, selectedProvider]);
 
   // Berechne visibleCount basierend auf der Fensterbreite
@@ -138,7 +155,14 @@ const SharedSeriesList = () => {
   }, [handleWindowScroll]);
 
   if (loading) {
-    return <LoadingCard />;
+    return (
+      <Box
+        sx={{ width: '90vw', height: '80vh', backgroundColor: '#000' }}
+        className='flex justify-center items-center '
+      >
+        <InfinitySpin color='#00fed7' />
+      </Box>
+    );
   }
 
   if (!linkValid) {
