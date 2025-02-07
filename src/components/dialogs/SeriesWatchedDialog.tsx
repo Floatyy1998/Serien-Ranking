@@ -4,7 +4,9 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -21,8 +23,10 @@ interface SeriesWatchedDialogProps {
   user: any;
   handleWatchedToggleWithConfirmation: (
     seasonNumber: number,
-    episodeId: number
+    episodeId: number,
+    forceWatched?: boolean
   ) => void;
+  handleBatchWatchedToggle?: (confirmSeason: number) => void;
   isReadOnly?: boolean;
 }
 
@@ -32,9 +36,12 @@ const SeriesWatchedDialog = memo(
     onClose,
     series,
     handleWatchedToggleWithConfirmation,
+    handleBatchWatchedToggle,
     isReadOnly = false,
   }: SeriesWatchedDialogProps) => {
     const [expanded, setExpanded] = useState<number | false>(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmSeason, setConfirmSeason] = useState<number | null>(null);
 
     const handleAccordionChange =
       (seasonNumber: number) =>
@@ -74,6 +81,41 @@ const SeriesWatchedDialog = memo(
     };
 
     const nextUnwatchedEpisode = getNextUnwatchedEpisode();
+
+    const handleConfirmYes = () => {
+      if (confirmSeason !== null && handleBatchWatchedToggle) {
+        handleBatchWatchedToggle(confirmSeason);
+      }
+      setConfirmOpen(false);
+      setConfirmSeason(null);
+    };
+
+    const handleConfirmNo = () => {
+      if (confirmSeason !== null) {
+        handleWatchedToggleWithConfirmation(confirmSeason, -1, true);
+      }
+      setConfirmOpen(false);
+      setConfirmSeason(null);
+    };
+
+    const handleSeasonClick = (seasonNumber: number, allWatched: boolean) => {
+      if (!isReadOnly) {
+        if (!allWatched) {
+          const allPreviousWatched = uniqueSeasons
+            ?.filter((s) => s.seasonNumber < seasonNumber)
+            .every((s) => s.episodes.every((e) => e.watched));
+
+          if (allPreviousWatched) {
+            handleWatchedToggleWithConfirmation(seasonNumber, -1, true);
+          } else {
+            setConfirmSeason(seasonNumber);
+            setConfirmOpen(true);
+          }
+        } else {
+          handleWatchedToggleWithConfirmation(seasonNumber, -1);
+        }
+      }
+    };
 
     return (
       <Dialog
@@ -168,13 +210,8 @@ const SeriesWatchedDialog = memo(
                       </span>
                       <div
                         onClick={(e) => {
-                          if (!isReadOnly) {
-                            e.stopPropagation();
-                            handleWatchedToggleWithConfirmation(
-                              season.seasonNumber,
-                              -1
-                            );
-                          }
+                          e.stopPropagation();
+                          handleSeasonClick(season.seasonNumber, allWatched);
                         }}
                         style={{
                           color: allWatched
@@ -237,6 +274,25 @@ const SeriesWatchedDialog = memo(
               );
             })}
           </div>
+          {confirmOpen && (
+            <Dialog
+              open={confirmOpen}
+              onClose={() => {
+                setConfirmOpen(false);
+                setConfirmSeason(null);
+              }}
+            >
+              <DialogTitle>Staffel bestätigen</DialogTitle>
+              <DialogContent>
+                Möchten Sie diese Staffel und alle vorherigen als gesehen
+                markieren?
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleConfirmNo}>Nur diese Staffel</Button>
+                <Button onClick={handleConfirmYes}>Ja, alle</Button>
+              </DialogActions>
+            </Dialog>
+          )}
         </DialogContent>
       </Dialog>
     );

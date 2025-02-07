@@ -257,7 +257,8 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
 
   const handleWatchedToggleWithConfirmation = async (
     seasonNumber: number,
-    episodeId: number
+    episodeId: number,
+    forceWatched: boolean = false
   ) => {
     if (!user) {
       setSnackbarMessage('Bitte melden Sie sich an, um den Status zu ändern.');
@@ -270,12 +271,18 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     if (!season) return;
 
     if (episodeId === -1) {
-      // Toggle entire season
-      const allWatched = season.episodes.every((e) => e.watched);
-      const updatedEpisodes = season.episodes.map((e) => ({
-        ...e,
-        watched: !allWatched,
-      }));
+      // Für die gesamte Staffel:
+      let updatedEpisodes;
+      if (forceWatched) {
+        // Setze alle Episoden auf watched=true
+        updatedEpisodes = season.episodes.map((e) => ({ ...e, watched: true }));
+      } else {
+        const allWatched = season.episodes.every((e) => e.watched);
+        updatedEpisodes = season.episodes.map((e) => ({
+          ...e,
+          watched: !allWatched,
+        }));
+      }
 
       const updatedSeasons = series.seasons.map((s) => {
         if (s.seasonNumber === seasonNumber) {
@@ -357,6 +364,33 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       } catch (error) {
         console.error('Error updating watchlist status:', error);
       }
+    }
+  };
+
+  // Neue Funktion für das Batch‑Update aller Staffeln bis zu einer bestimmten Staffel:
+  const handleBatchWatchedToggle = async (confirmSeason: number) => {
+    if (!user) {
+      setSnackbarMessage('Bitte melden Sie sich an, um den Status zu ändern.');
+      setSnackbarSeverity('warning');
+      setSnackbarOpen(true);
+      return;
+    }
+    const updatedSeasons = series.seasons.map((s) => {
+      if (s.seasonNumber <= confirmSeason) {
+        return {
+          ...s,
+          episodes: s.episodes.map((e) => ({ ...e, watched: true })),
+        };
+      }
+      return s;
+    });
+    try {
+      await firebase
+        .database()
+        .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
+        .set(updatedSeasons);
+    } catch (error) {
+      console.error('Error updating watched status in batch:', error);
     }
   };
 
@@ -519,6 +553,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         handleWatchedToggleWithConfirmation={
           handleWatchedToggleWithConfirmation
         }
+        handleBatchWatchedToggle={handleBatchWatchedToggle} // neuer Prop
         isReadOnly={isSharedListPage}
       />
       <Snackbar
