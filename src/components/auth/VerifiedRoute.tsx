@@ -1,5 +1,4 @@
-import { Button, Card, CardContent, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Alert, Button, Card, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import React, { useEffect, useState } from 'react';
@@ -13,8 +12,8 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [snackOpen, setSnackOpen] = useState<boolean>(false);
   const navigate = useNavigate();
-  const theme = useTheme();
 
   useEffect(() => {
     const user = firebase.auth().currentUser;
@@ -54,51 +53,113 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
         .sendEmailVerification()
         .then(() => {
           setMessage('Verifizierungslink wurde erneut gesendet.');
+          setSnackOpen(true);
         })
         .catch((error) => {
           setMessage(error.message);
+          setSnackOpen(true);
         });
     }
   };
 
+  const handleSnackClose = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === 'clickaway') return;
+    setSnackOpen(false);
+  };
+
   if (loading) {
-    return <div>Lade...</div>;
+    return (
+      <>
+        <div>Lade...</div>
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackClose}
+        >
+          <Alert
+            onClose={handleSnackClose}
+            severity={message.includes('Fehler') ? 'error' : 'success'}
+            sx={{ width: '100%' }}
+          >
+            {message}
+          </Alert>
+        </Snackbar>
+      </>
+    );
   }
 
   if (!isVerified) {
     return (
-      <Card
-        style={{
-          margin: '20px',
-          padding: '20px',
-          textAlign: 'center',
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        <CardContent>
-          <Typography variant='h5' gutterBottom>
-            Email nicht verifiziert
-          </Typography>
-          <Typography variant='body1' gutterBottom>
-            Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den
-            Verifizierungslink.
-          </Typography>
-          <Button
-            variant='contained'
-            color='primary'
-            onClick={resendVerification}
+      <>
+        <div
+          style={{ height: 'calc(100vh - 120px)' }}
+          className='w-full bg-black flex items-center justify-center p-4'
+        >
+          <Card
+            sx={{
+              maxWidth: 512,
+              width: '100%',
+              background: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 0 20px rgba(0, 254, 215, 0.15)',
+              border: '1px solid rgba(0, 254, 215, 0.1)',
+            }}
           >
-            Link erneut senden
-          </Button>
-          {message && (
-            <Typography variant='body2' style={{ marginTop: '10px' }}>
-              {message}
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
+            <main className='p-8 text-center'>
+              <h1 className='text-[#00fed7] text-4xl mb-8'>
+                Email nicht verifiziert
+              </h1>
+              <p className='text-[#00fed7] text-lg mb-12 leading-relaxed'>
+                Es sieht so aus, als ob Ihre Email noch nicht verifiziert wurde.
+                Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den
+                Verifizierungslink.
+              </p>
+              <Button
+                variant='contained'
+                onClick={() => resendVerification()}
+                className='bg-[#00fed7] text-black font-medium px-8 py-3 rounded-lg hover:bg-[#00d4b4] transition-colors'
+              >
+                LINK ERNEUT SENDEN
+              </Button>
+            </main>
+          </Card>
+        </div>
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackClose}
+        >
+          <Alert
+            onClose={handleSnackClose}
+            severity={message.includes('Fehler') ? 'error' : 'success'}
+            sx={{ width: '100%' }}
+          >
+            {message}
+          </Alert>
+        </Snackbar>
+      </>
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackClose}
+      >
+        <Alert
+          onClose={handleSnackClose}
+          severity={message.includes('Fehler') ? 'error' : 'success'}
+          sx={{ width: '100%' }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
+    </>
+  );
 };

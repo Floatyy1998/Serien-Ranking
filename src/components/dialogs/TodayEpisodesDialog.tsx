@@ -9,7 +9,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 
 interface TodayEpisodesDialogProps {
@@ -23,6 +23,22 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
   onClose,
   episodes,
 }) => {
+  const [shouldShow, setShouldShow] = useState(false);
+
+  useEffect(() => {
+    const now = new Date();
+    const hours = now.getHours();
+    if (hours >= 7) {
+      setShouldShow(true);
+    } else {
+      setShouldShow(false);
+    }
+  }, [open]);
+
+  if (!shouldShow) {
+    return null;
+  }
+
   return (
     <>
       {/* CSS-Keyframes für den animierten RGB-Schatten */}

@@ -179,7 +179,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       if (value.length >= 3) {
         const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
         const response = await fetch(
-          `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${value}`
+          `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${value}&language=de-DE`
         );
         const data = await response.json();
         setOptions(data.results || []);
