@@ -1,15 +1,17 @@
 import CloseIcon from '@mui/icons-material/Close';
 import {
   Box,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
   List,
   ListItem,
   ListItemText,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 
 interface TodayEpisodesDialogProps {
@@ -23,21 +25,24 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
   onClose,
   episodes,
 }) => {
-  const [shouldShow, setShouldShow] = useState(false);
+  const [dontShowToday, setDontShowToday] = useState(false);
 
-  useEffect(() => {
-    const now = new Date();
-    const hours = now.getHours();
-    if (hours >= 7) {
-      setShouldShow(true);
-    } else {
-      setShouldShow(false);
+  const handleDialogClose = () => {
+    // Wenn Checkbox aktiviert, speichere Timestamp für nächsten Tag um 7 Uhr
+    if (dontShowToday) {
+      const now = new Date();
+      const nextDaySeven = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1,
+        7,
+        0,
+        0
+      );
+      localStorage.setItem('todayDontShow', nextDaySeven.getTime().toString());
     }
-  }, [open]);
-
-  if (!shouldShow) {
-    return null;
-  }
+    onClose();
+  };
 
   return (
     <>
@@ -54,7 +59,7 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
       </style>
       <Dialog
         open={open}
-        onClose={onClose}
+        onClose={handleDialogClose}
         fullWidth
         slotProps={{
           paper: {
@@ -72,7 +77,7 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           Hurra! Heute gibt es neue Folgen!
           <IconButton
             aria-label='close'
-            onClick={onClose}
+            onClick={handleDialogClose}
             sx={{
               position: 'absolute',
               right: 8,
@@ -125,6 +130,17 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
               </ListItem>
             ))}
           </List>
+          <Box sx={{ mt: 2 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={dontShowToday}
+                  onChange={(e) => setDontShowToday(e.target.checked)}
+                />
+              }
+              label='Heute nicht mehr anzeigen'
+            />
+          </Box>
         </DialogContent>
       </Dialog>
     </>

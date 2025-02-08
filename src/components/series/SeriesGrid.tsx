@@ -113,21 +113,24 @@ export const SeriesGrid = memo(
       fetchData();
     }, [user?.uid]);
 
-    // Neuer useEffect: Überprüfung auf heutige Folgen (nur einmal pro Tag)
+    // Ersetzter useEffect zur Überprüfung auf heutige Folgen:
     useEffect(() => {
       if (!seriesList.length || !user) return;
 
-      const today = new Date();
-      const isSameDay = (d1: Date, d2: Date) =>
-        d1.getFullYear() === d2.getFullYear() &&
-        d1.getMonth() === d2.getMonth() &&
-        d1.getDate() === d2.getDate();
+      const now = Date.now();
+      const storedHideUntil = localStorage.getItem('todayDontShow');
+      // Nur anzeigen, wenn kein Hide-Timestamp vorhanden ist oder dieser bereits überschritten wurde.
+      if (storedHideUntil && now < parseInt(storedHideUntil)) return;
 
       const episodesToday: TodayEpisode[] = seriesList.reduce<TodayEpisode[]>(
         (acc, series) => {
           if (series.nextEpisode && series.nextEpisode.nextEpisode) {
             const episodeDate = new Date(series.nextEpisode.nextEpisode);
-            if (isSameDay(today, episodeDate)) {
+            if (
+              new Date().getFullYear() === episodeDate.getFullYear() &&
+              new Date().getMonth() === episodeDate.getMonth() &&
+              new Date().getDate() === episodeDate.getDate()
+            ) {
               acc.push({
                 id: series.id,
                 seriesTitle: series.title,
@@ -137,8 +140,8 @@ export const SeriesGrid = memo(
                   minute: '2-digit',
                 }),
                 poster: series.poster.poster,
-                seasonNumber: series.nextEpisode.season, // hinzugefügt
-                episodeNumber: series.nextEpisode.episode, // hinzugefügt
+                seasonNumber: series.nextEpisode.season,
+                episodeNumber: series.nextEpisode.episode,
               });
             }
           }
@@ -148,20 +151,16 @@ export const SeriesGrid = memo(
       );
 
       if (episodesToday.length > 0) {
-        const todayKey = today.toISOString().split('T')[0];
-        const popupShown = localStorage.getItem('todayPopupShown');
-        if (popupShown !== todayKey) {
-          setTimeout(() => {
-            setTodayEpisodes(episodesToday);
-            setShowTodayDialog(true);
-          }, 1000); // 1 Sekunde Delay
-        }
+        setTimeout(() => {
+          setTodayEpisodes(episodesToday);
+          setShowTodayDialog(true);
+        }, 1000);
       }
     }, [seriesList, user]);
 
+    // Aktualisierte handleDialogClose: Entferne das Setzen des alten Flags.
     const handleDialogClose = () => {
-      const todayKey = new Date().toISOString().split('T')[0];
-      localStorage.setItem('todayPopupShown', todayKey);
+      // ...kein localStorage-Schreibzugriff hier mehr...
       setShowTodayDialog(false);
     };
 
