@@ -57,7 +57,7 @@ export const Legend = () => {
               <br></br>
               <br></br>
               <span>
-                Klicke auf den Titel, um geschaute Episoden zu markieren.
+                Klicke auf den Titel, um gehsehene Episoden zu markieren.
               </span>
               <br></br>
               <br></br>

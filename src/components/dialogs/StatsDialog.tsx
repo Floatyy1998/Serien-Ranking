@@ -92,19 +92,19 @@ const StatsDialog = ({
               }}
             >
               <Box>
-                <Typography variant='h4'>Geschaute Serien</Typography>
+                <Typography variant='h4'>Gesehene Serien</Typography>
                 <Typography style={{ color: 'white' }} variant='body1'>
                   {statsData.userStats.seriesRated}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant='h4'>Geschaute Episoden</Typography>
+                <Typography variant='h4'>Gesehene Episoden</Typography>
                 <Typography style={{ color: 'white' }} variant='body1'>
                   {statsData.userStats.episodesWatched}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant='h4'>Geschaute Zeit</Typography>
+                <Typography variant='h4'>Verbrachte Zeit</Typography>
                 <Typography style={{ color: 'white' }} variant='body1'>
                   {statsData.userStats.watchtime}
                 </Typography>
