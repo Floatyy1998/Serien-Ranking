@@ -84,10 +84,26 @@ export const SearchFilters = memo(
       [onProviderChange]
     );
 
+    // Geänderte Toggle-Logik: Beim Deaktivieren der Watchlist werden sowohl Provider als auch Genre zurückgesetzt
     const handleWatchlistToggle = useCallback(() => {
-      setIsWatchlist((prev) => !prev);
-      onGenreChange(isWatchlist ? 'All' : 'Watchlist');
-    }, [isWatchlist, onGenreChange]);
+      setIsWatchlist((prev) => {
+        const newState = !prev;
+        if (prev) {
+          // Watchlist wird deaktiviert
+          setSelectedProvider('All');
+          setSelectedGenre('All');
+          onProviderChange('All');
+          onGenreChange('All');
+        } else {
+          // Watchlist wird aktiviert
+          setSelectedGenre('All');
+          setSelectedProvider('All');
+          onGenreChange('Watchlist');
+          onProviderChange('All');
+        }
+        return newState;
+      });
+    }, [onGenreChange, onProviderChange]);
 
     const handleDialogOpen = () => {
       setDialogOpen(true);
