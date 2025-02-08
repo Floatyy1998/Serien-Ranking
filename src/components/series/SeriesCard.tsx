@@ -574,7 +574,13 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       </Snackbar>
       <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
         <DialogTitle
-          sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+          sx={{
+            textAlign: 'center',
+            position: 'relative',
+            fontSize: '1.5rem',
+            paddingLeft: 6,
+            paddingRight: 6,
+          }}
         >
           Bestätigung
         </DialogTitle>

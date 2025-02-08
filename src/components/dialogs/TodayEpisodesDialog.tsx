@@ -72,9 +72,15 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
         }}
       >
         <DialogTitle
-          sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+          sx={{
+            textAlign: 'center',
+            position: 'relative',
+            fontSize: '1.5rem',
+            paddingLeft: 6,
+            paddingRight: 6,
+          }}
         >
-          Neuer Tag, neue Folgen – du weißt, was zu tun ist!
+          Neuer Tag, neue Folgen!
           <IconButton
             aria-label='close'
             onClick={handleDialogClose}

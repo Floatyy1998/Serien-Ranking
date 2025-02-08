@@ -62,7 +62,13 @@ const SeriesDialog = ({
       sx={{ textAlign: 'center !important' }}
     >
       <DialogTitle
-        sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+        sx={{
+          textAlign: 'center',
+          position: 'relative',
+          fontSize: '1.5rem',
+          paddingLeft: 6,
+          paddingRight: 6,
+        }}
       >
         {series.title} bearbeiten/löschen
         <IconButton

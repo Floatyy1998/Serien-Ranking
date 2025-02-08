@@ -125,7 +125,13 @@ const SeriesWatchedDialog = memo(
         slotProps={{ paper: { sx: { m: 2 } } }}
       >
         <DialogTitle
-          sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+          sx={{
+            textAlign: 'center',
+            position: 'relative',
+            fontSize: '1.5rem',
+            paddingLeft: 6,
+            paddingRight: 6,
+          }}
         >
           Gesehene Episoden von {series.title}
           <IconButton

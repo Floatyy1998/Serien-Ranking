@@ -31,7 +31,13 @@ const SeriesEpisodesDialog = ({
       fullWidth
     >
       <DialogTitle
-        sx={{ textAlign: 'center', position: 'relative', fontSize: '1.5rem' }}
+        sx={{
+          textAlign: 'center',
+          position: 'relative',
+          fontSize: '1.5rem',
+          paddingLeft: 6,
+          paddingRight: 6,
+        }}
       >
         Kommende Episoden von {series.title}
         <IconButton
