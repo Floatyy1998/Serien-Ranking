@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   IconButton,
 } from '@mui/material';
@@ -288,14 +289,20 @@ const SeriesWatchedDialog = memo(
                 setConfirmSeason(null);
               }}
             >
-              <DialogTitle>Staffel bestätigen</DialogTitle>
+              <DialogTitle>Bestätigung</DialogTitle>
               <DialogContent>
-                Möchten Sie diese Staffel und alle vorherigen als gesehen
-                markieren?
+                <DialogContentText>
+                  Möchten Sie diese Staffel und alle vorherigen als gesehen
+                  markieren?
+                </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleConfirmNo}>Nur diese Staffel</Button>
-                <Button onClick={handleConfirmYes}>Ja, alle</Button>
+                <Button color='primary' onClick={handleConfirmNo}>
+                  Nur diese Staffel
+                </Button>
+                <Button autoFocus onClick={handleConfirmYes}>
+                  Ja, alle
+                </Button>
               </DialogActions>
             </Dialog>
           )}

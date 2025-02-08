@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
 import { useAuth } from '../../App';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -30,6 +30,8 @@ export const SeriesGrid = memo(
     const [visibleCount, setVisibleCount] = useState(20);
     const [showTodayDialog, setShowTodayDialog] = useState(false);
     const [todayEpisodes, setTodayEpisodes] = useState<TodayEpisode[]>([]);
+    // Ref, um zu prüfen, ob der Dialog bereits angezeigt wurde
+    const dialogShown = useRef(false);
 
     // Verschobene useMemo-Deklaration: filteredSeries wird hier definiert
     const filteredSeries = useMemo(() => {
@@ -113,9 +115,9 @@ export const SeriesGrid = memo(
       fetchData();
     }, [user?.uid]);
 
-    // Ersetzter useEffect zur Überprüfung auf heutige Folgen:
+    // Angepasster useEffect zur Überprüfung auf heutige Folgen:
     useEffect(() => {
-      if (!seriesList.length || !user) return;
+      if (!seriesList.length || !user || dialogShown.current) return;
 
       const now = Date.now();
       const storedHideUntil = localStorage.getItem('todayDontShow');
@@ -154,9 +156,16 @@ export const SeriesGrid = memo(
         setTimeout(() => {
           setTodayEpisodes(episodesToday);
           setShowTodayDialog(true);
+          dialogShown.current = true;
         }, 1000);
       }
-    }, [seriesList, user]);
+    }, [
+      seriesList,
+      user,
+      debouncedSearchValue,
+      selectedGenre,
+      selectedProvider,
+    ]);
 
     // Aktualisierte handleDialogClose: Entferne das Setzen des alten Flags.
     const handleDialogClose = () => {

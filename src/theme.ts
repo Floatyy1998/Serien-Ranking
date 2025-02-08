@@ -155,5 +155,22 @@ export const theme = createTheme({
         },
       },
     },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          textAlign: 'center',
+          position: 'relative',
+          fontSize: '1.5rem',
+          paddingLeft: '48px', // entspricht 6 * 8px
+          paddingRight: '48px',
+          '& .closeButton': {
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'red',
+          },
+        },
+      },
+    },
   },
 });

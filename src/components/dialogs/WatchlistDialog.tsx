@@ -95,25 +95,12 @@ const WatchlistDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth container={document.body}>
-      <DialogTitle
-        sx={{
-          textAlign: 'center',
-          position: 'relative',
-          fontSize: '1.5rem',
-          paddingLeft: 6,
-          paddingRight: 6,
-        }}
-      >
+      <DialogTitle>
         Weiterschauen
         <IconButton
           aria-label='close'
           onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: 'red',
-          }}
+          className='closeButton'
         >
           <CloseIcon />
         </IconButton>

@@ -64,32 +64,18 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
         slotProps={{
           paper: {
             sx: {
-              position: 'relative',
               borderRadius: 2,
               animation: 'rgbShadow 3s linear infinite',
             },
           },
         }}
       >
-        <DialogTitle
-          sx={{
-            textAlign: 'center',
-            position: 'relative',
-            fontSize: '1.5rem',
-            paddingLeft: 6,
-            paddingRight: 6,
-          }}
-        >
+        <DialogTitle>
           Neuer Tag, neue Folgen!
           <IconButton
             aria-label='close'
             onClick={handleDialogClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: 'red',
-            }}
+            className='closeButton'
           >
             <CloseIcon />
           </IconButton>
