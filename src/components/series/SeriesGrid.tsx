@@ -141,6 +141,7 @@ export const SeriesGrid = memo(
                   hour: '2-digit',
                   minute: '2-digit',
                 }),
+                releaseTimestamp: episodeDate.getTime(), // NEUE EIGENSCHAFT
                 poster: series.poster.poster,
                 seasonNumber: series.nextEpisode.season,
                 episodeNumber: series.nextEpisode.episode,

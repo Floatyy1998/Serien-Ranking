@@ -27,6 +27,11 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
 }) => {
   const [dontShowToday, setDontShowToday] = useState(false);
 
+  // Sortiere episodes aufsteigend nach releaseTimestamp (früheste Zeit oben)
+  const sortedEpisodes = [...episodes].sort(
+    (a, b) => (a.releaseTimestamp || 0) - (b.releaseTimestamp || 0)
+  );
+
   const handleDialogClose = () => {
     // Wenn Checkbox aktiviert, speichere Timestamp für nächsten Tag um 7 Uhr
     if (dontShowToday) {
@@ -82,7 +87,7 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
         </DialogTitle>
         <DialogContent dividers>
           <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {episodes.map((ep) => (
+            {sortedEpisodes.map((ep) => (
               <ListItem
                 key={ep.id}
                 sx={{
