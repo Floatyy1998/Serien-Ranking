@@ -22,7 +22,7 @@ export const SeriesGrid = memo(
     const { seriesList, loading } = useSeriesList();
     const auth = useAuth();
     const user = auth?.user;
-
+    const isSharedListPage = location.pathname.startsWith('/shared-list');
     const debouncedSearchValue = useDebounce(searchValue, 300);
 
     // Neuer State für inkrementelles Rendering
@@ -128,7 +128,7 @@ export const SeriesGrid = memo(
         []
       );
 
-      if (episodesToday.length > 0) {
+      if (episodesToday.length > 0 && !isSharedListPage) {
         setTimeout(() => {
           setTodayEpisodes(episodesToday);
           setShowTodayDialog(true);

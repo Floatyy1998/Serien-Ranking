@@ -34,7 +34,7 @@ export const SearchFilters = memo(
     const [sortOption] = useState('date-desc');
     const { seriesList } = useSeriesList();
     const debouncedSearchValue = useDebounce(searchValue, 300);
-
+    const isSharedListPage = location.pathname.startsWith('/shared-list');
     const authContext = useAuth();
     const user = authContext?.user;
 
@@ -44,14 +44,13 @@ export const SearchFilters = memo(
           const watchlistSeries = seriesList.filter(
             (series) => series.watchlist
           );
-          console.log(watchlistSeries);
 
           setWatchlistSeries(watchlistSeries);
         }
       };
 
       fetchWatchlistSeries();
-    }, [user]);
+    }, [user, seriesList]);
 
     useEffect(() => {
       onSearchChange(debouncedSearchValue);
@@ -256,46 +255,51 @@ export const SearchFilters = memo(
             <MenuItem value='WOW'>WOW</MenuItem>
           </Select>
         </FormControl>
-        <Box className='flex gap-3'>
-          <Tooltip
-            title={isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'}
-          >
-            <Button
-              variant={isWatchlist ? 'contained' : 'outlined'}
-              onClick={handleWatchlistToggle}
-              sx={{
-                margin: 'auto',
-                borderRadius: '0.5rem',
-                width: 48,
-                height: 48,
-                minWidth: 48,
-              }}
-              aria-label={
+        {!isSharedListPage && (
+          <Box className='flex gap-3'>
+            <Tooltip
+              title={
                 isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
               }
-              role='button'
             >
-              {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-            </Button>
-          </Tooltip>
-          <Tooltip title='Als nächstes schauen'>
-            <Button
-              variant='outlined'
-              onClick={handleDialogOpen}
-              sx={{
-                margin: 'auto',
-                borderRadius: '0.5rem',
-                width: 48,
-                height: 48,
-                minWidth: 48,
-              }}
-              aria-label='Als nächstes schauen'
-              role='button'
-            >
-              <ListIcon />
-            </Button>
-          </Tooltip>
-        </Box>
+              <Button
+                variant={isWatchlist ? 'contained' : 'outlined'}
+                onClick={handleWatchlistToggle}
+                sx={{
+                  margin: 'auto',
+                  borderRadius: '0.5rem',
+                  width: 48,
+                  height: 48,
+                  minWidth: 48,
+                }}
+                aria-label={
+                  isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
+                }
+                role='button'
+              >
+                {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+              </Button>
+            </Tooltip>
+
+            <Tooltip title='Als nächstes schauen'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogOpen}
+                sx={{
+                  margin: 'auto',
+                  borderRadius: '0.5rem',
+                  width: 48,
+                  height: 48,
+                  minWidth: 48,
+                }}
+                aria-label='Als nächstes schauen'
+                role='button'
+              >
+                <ListIcon />
+              </Button>
+            </Tooltip>
+          </Box>
+        )}
         <WatchlistDialog
           open={dialogOpen}
           onClose={handleDialogClose}
