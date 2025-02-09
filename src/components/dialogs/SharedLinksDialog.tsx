@@ -241,9 +241,7 @@ const SharedLinksDialog = ({
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
-          centered
-          variant='scrollable' // Ermöglicht Scrollen auf kleinen Geräten
-          scrollButtons='auto' // Zeigt bei Bedarf Scroll-Buttons an
+          variant='fullWidth' // geändert von "scrollable" zu "fullWidth"
         >
           <Tab label='Meine Links' />
           <Tab label='Externe Links' />
