@@ -285,7 +285,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 'xxx-large',
+              fontSize: { xs: '2rem', sm: '3em' },
               letterSpacing: { xs: 'normal', sm: '20px' }, // Remove letter spacing on mobile
             }}
           >

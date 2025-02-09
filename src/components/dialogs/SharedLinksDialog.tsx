@@ -1,6 +1,9 @@
+import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Alert,
+  Box,
   Button,
   Checkbox,
   Dialog,
@@ -13,6 +16,7 @@ import {
   ListItemText,
   Snackbar,
   TextField,
+  Typography,
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -34,6 +38,12 @@ interface SharedLinksDialogProps {
   setLinkDuration: (duration: number) => void;
 }
 
+interface ExternalSavedLink {
+  key: string;
+  name: string;
+  link: string;
+}
+
 const SharedLinksDialog = ({
   open,
   onClose,
@@ -51,6 +61,12 @@ const SharedLinksDialog = ({
     'success' | 'error' | 'warning'
   >('success');
   const [isEndless, setIsEndless] = useState(false);
+  // Neue States für externe Shared Lists
+  const [externalSharedLists, setExternalSharedLists] = useState<
+    ExternalSavedLink[]
+  >([]);
+  const [externalName, setExternalName] = useState('');
+  const [externalLink, setExternalLink] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -68,6 +84,26 @@ const SharedLinksDialog = ({
             expiresAt: data[key].expiresAt,
           }));
           setSharedLinks(links);
+        }
+      });
+      return () => ref.off();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      const ref = firebase.database().ref(`${user.uid}/savedLists`);
+      ref.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const lists = Object.keys(data).map((key) => ({
+            key,
+            name: data[key].name,
+            link: data[key].link,
+          }));
+          setExternalSharedLists(lists);
+        } else {
+          setExternalSharedLists([]);
         }
       });
       return () => ref.off();
@@ -118,6 +154,31 @@ const SharedLinksDialog = ({
       setLinkDuration(0);
     } else {
       setLinkDuration(Number(value));
+    }
+  };
+
+  const handleSaveExternalLink = () => {
+    if (user && externalName && externalLink) {
+      const ref = firebase.database().ref(`${user.uid}/savedLists`).push();
+      ref
+        .set({
+          name: externalName,
+          link: externalLink,
+        })
+        .then(() => {
+          setExternalName('');
+          setExternalLink('');
+        });
+    }
+  };
+
+  const handleDeleteExternalLink = async (key: string) => {
+    if (user) {
+      try {
+        await firebase.database().ref(`${user.uid}/savedLists/${key}`).remove();
+      } catch (error) {
+        console.error('Error deleting external link:', error);
+      }
     }
   };
 
@@ -219,6 +280,7 @@ const SharedLinksDialog = ({
               color: '#D1D5DB',
             }}
           />
+          {/* Button zum Link generieren */}
           <Button
             variant='contained'
             onClick={handleGenerateLink}
@@ -229,60 +291,153 @@ const SharedLinksDialog = ({
               color: '#000',
             }}
           >
-            Link Generieren
+            <AddIcon /> {/* Icon statt Text */}
           </Button>
         </div>
-        <List
-          sx={{
-            mt: 2,
+        {/* Bestehende Links in scrollbarem Container */}
+        <div
+          style={{
+            maxHeight: '200px',
+            overflowY: 'auto',
+            marginBottom: '16px',
           }}
         >
-          {sharedLinks.map((link) => (
-            <ListItem
-              className='bg-black/40'
-              key={link.key}
-              sx={{
-                mb: 1,
-                borderRadius: 1,
-                padding: '12px 16px',
-              }}
-            >
-              <ListItemText
-                primary={
-                  <span
-                    onClick={() => handleCopyToClipboard(link.link)}
-                    style={{ cursor: 'pointer', color: '#00fed7' }}
-                    className='hover:underline'
-                  >
-                    {link.link}
-                  </span>
-                }
-                secondary={`Gültig bis: ${new Date(
-                  link.expiresAt
-                ).toLocaleString()}`}
+          <List sx={{ mt: 2 }}>
+            {sharedLinks.map((link) => (
+              <ListItem
+                className='bg-black/40'
+                key={link.key}
                 sx={{
-                  '& .MuiListItemText-primary': {
-                    color: '#D1D5DB',
-                  },
-                  '& .MuiListItemText-secondary': {
-                    color: '#9CA3AF',
-                  },
-                }}
-              />
-              <Button
-                variant='outlined'
-                color='error'
-                size='small'
-                onClick={() => handleDeleteLink(link.key)}
-                sx={{
-                  color: '#EF4444',
+                  mb: 1,
+                  borderRadius: 1,
+                  padding: '12px 16px',
                 }}
               >
-                LÖSCHEN
-              </Button>
-            </ListItem>
-          ))}
-        </List>
+                <ListItemText
+                  primary={
+                    <span
+                      onClick={() => handleCopyToClipboard(link.link)}
+                      style={{ cursor: 'pointer', color: '#00fed7' }}
+                      className='hover:underline'
+                    >
+                      {link.link}
+                    </span>
+                  }
+                  secondary={`Gültig bis: ${new Date(
+                    link.expiresAt
+                  ).toLocaleString()}`}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      color: '#D1D5DB',
+                    },
+                    '& .MuiListItemText-secondary': {
+                      color: '#9CA3AF',
+                    },
+                  }}
+                />
+                <Button
+                  variant='outlined'
+                  color='error'
+                  size='small'
+                  onClick={() => handleDeleteLink(link.key)}
+                  sx={{
+                    color: '#EF4444',
+                  }}
+                >
+                  <DeleteIcon /> {/* Icon statt "LÖSCHEN" */}
+                </Button>
+              </ListItem>
+            ))}
+          </List>
+        </div>
+
+        {/* Neuer Bereich: Externe Shared Lists erfassen */}
+        <div style={{ marginTop: '24px' }}>
+          <Typography variant='h6' sx={{ mb: 2 }}>
+            Gespeicherte Listen
+          </Typography>
+          {/* Ersetzen Sie den Container durch einen Box-Container */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' }, // Auf kleinen Geräten untereinander
+              gap: '8px',
+              mb: '16px',
+            }}
+          >
+            <TextField
+              label='Name'
+              value={externalName}
+              onChange={(e) => setExternalName(e.target.value)}
+              size='small'
+              sx={{ flex: { xs: '1 0 auto', md: '1 1 200px' } }}
+            />
+            <TextField
+              label='Link'
+              value={externalLink}
+              onChange={(e) => setExternalLink(e.target.value)}
+              size='small'
+              sx={{ flex: { xs: '1 0 auto', md: '1 1 200px' } }}
+            />
+            <Button
+              variant='contained'
+              onClick={handleSaveExternalLink}
+              sx={{
+                alignSelf: { xs: 'center', md: 'auto' },
+                width: 'auto', // Button hat nun gleiche Breite wie bei nebeneinander Anordnung
+              }}
+            >
+              <AddIcon />
+            </Button>
+          </Box>
+          {/* Externe Links in scrollbarem Container */}
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <List>
+              {externalSharedLists.map((item) => (
+                <ListItem
+                  // Änderung: Nutzung eines anklickbaren Listenelements via <a>
+                  component='a'
+                  href={item.link}
+                  target='_blank'
+                  key={item.key}
+                  sx={{
+                    mb: 1,
+                    borderRadius: 1,
+                    padding: '12px 16px',
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <ListItemText
+                    primary={item.name}
+                    secondary={item.link}
+                    sx={{
+                      '& .MuiListItemText-primary': { color: '#D1D5DB' },
+                      '& .MuiListItemText-secondary': {
+                        color: '#00fed7',
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  />
+                  <Button
+                    variant='outlined'
+                    color='error'
+                    size='small'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDeleteExternalLink(item.key);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </ListItem>
+              ))}
+            </List>
+          </div>
+        </div>
+
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={6000}
