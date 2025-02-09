@@ -15,6 +15,8 @@ import {
   ListItem,
   ListItemText,
   Snackbar,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material';
@@ -22,6 +24,20 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
+
+// Neuer TabPanel-Wrapper
+const TabPanel = (props: {
+  children: React.ReactNode;
+  value: number;
+  index: number;
+}) => {
+  const { children, value, index, ...other } = props;
+  return (
+    <div role='tabpanel' hidden={value !== index} {...other}>
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    </div>
+  );
+};
 
 interface SharedLink {
   key: string;
@@ -61,12 +77,16 @@ const SharedLinksDialog = ({
     'success' | 'error' | 'warning'
   >('success');
   const [isEndless, setIsEndless] = useState(false);
-  // Neue States für externe Shared Lists
   const [externalSharedLists, setExternalSharedLists] = useState<
     ExternalSavedLink[]
   >([]);
   const [externalName, setExternalName] = useState('');
   const [externalLink, setExternalLink] = useState('');
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
 
   useEffect(() => {
     if (user) {
@@ -101,7 +121,11 @@ const SharedLinksDialog = ({
             name: data[key].name,
             link: data[key].link,
           }));
-          setExternalSharedLists(lists);
+          // Sortiere die Listen alphabetisch nach dem Namen
+          const sortedLists = lists.sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
+          setExternalSharedLists(sortedLists);
         } else {
           setExternalSharedLists([]);
         }
@@ -191,6 +215,7 @@ const SharedLinksDialog = ({
       PaperProps={{
         sx: {
           borderRadius: '8px',
+          height: '600px', // Feste Höhe für den Dialog
         },
       }}
     >
@@ -212,147 +237,162 @@ const SharedLinksDialog = ({
           },
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            gap: '16px',
-            alignItems: 'center',
-            marginBottom: '24px',
-            flexWrap: 'wrap',
-          }}
+        {/* Tab-Navigation */}
+        <Tabs
+          value={tabIndex}
+          onChange={handleTabChange}
+          centered
+          variant='scrollable' // Ermöglicht Scrollen auf kleinen Geräten
+          scrollButtons='auto' // Zeigt bei Bedarf Scroll-Buttons an
         >
-          <TextField
-            label='Gültigkeitsdauer (Stunden)'
-            type='number'
-            value={isEndless ? '' : linkDuration || ''}
-            onChange={handleDurationChange}
-            sx={{
-              width: {
-                xs: '100%',
-                md: 200,
-              },
-              '& .MuiInputLabel-root': {
-                backgroundColor: 'rgba(0, 254, 215, 0.02) !important', // Darker input background
-                color: '#D1D5DB',
-              },
-              '& .MuiOutlinedInput-root': {
-                color: '#D1D5DB',
-                '& fieldset': {
-                  borderColor: '#374151',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#4B5563',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#10B981',
-                },
-              },
-              '& .MuiInputBase-input': {
-                color: '#D1D5DB',
-              },
-            }}
-            disabled={isEndless}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isEndless}
-                onChange={(e) => {
-                  setIsEndless(e.target.checked);
-                  if (e.target.checked) {
-                    setLinkDuration(100 * 365 * 24); // 100 Jahre in Stunden
-                  } else {
-                    setLinkDuration(24); // Zurücksetzen auf 24 Stunden
-                  }
-                }}
-                sx={{
-                  '& .MuiCheckbox-root': {
-                    color: '#6B7280',
-                  },
-                  '& .MuiCheckbox-root.Mui-checked': {
-                    color: '#10B981',
-                  },
-                }}
-              />
-            }
-            label='Endlos gültig'
-            sx={{
-              color: '#D1D5DB',
-            }}
-          />
-          {/* Button zum Link generieren */}
-          <Button
-            variant='contained'
-            onClick={handleGenerateLink}
-            sx={{
-              whiteSpace: 'nowrap',
-              textTransform: 'uppercase',
-              fontWeight: 'medium',
-              color: '#000',
+          <Tab label='Meine Links' />
+          <Tab label='Externe Links' />
+        </Tabs>
+
+        {/* Tab 0: Generieren und Anzeigen der eigenen Shared Links */}
+        <TabPanel value={tabIndex} index={0}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '16px',
+              alignItems: 'center',
+              marginBottom: '24px',
+              flexWrap: 'wrap',
             }}
           >
-            <AddIcon /> {/* Icon statt Text */}
-          </Button>
-        </div>
-        {/* Bestehende Links in scrollbarem Container */}
-        <div
-          style={{
-            maxHeight: '200px',
-            overflowY: 'auto',
-            marginBottom: '16px',
-          }}
-        >
-          <List sx={{ mt: 2 }}>
-            {sharedLinks.map((link) => (
-              <ListItem
-                className='bg-black/40'
-                key={link.key}
-                sx={{
-                  mb: 1,
-                  borderRadius: 1,
-                  padding: '12px 16px',
-                }}
-              >
-                <ListItemText
-                  primary={
-                    <span
-                      onClick={() => handleCopyToClipboard(link.link)}
-                      style={{ cursor: 'pointer', color: '#00fed7' }}
-                      className='hover:underline'
-                    >
-                      {link.link}
-                    </span>
-                  }
-                  secondary={`Gültig bis: ${new Date(
-                    link.expiresAt
-                  ).toLocaleString()}`}
+            <TextField
+              label='Gültigkeitsdauer (Stunden)'
+              type='number'
+              value={isEndless ? '' : linkDuration || ''}
+              onChange={handleDurationChange}
+              sx={{
+                width: {
+                  xs: '100%',
+                  md: 200,
+                },
+                '& .MuiInputLabel-root': {
+                  backgroundColor: 'rgba(0, 254, 215, 0.02) !important', // Darker input background
+                  color: '#D1D5DB',
+                },
+                '& .MuiOutlinedInput-root': {
+                  color: '#D1D5DB',
+                  '& fieldset': {
+                    borderColor: '#374151',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#4B5563',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#10B981',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: '#D1D5DB',
+                },
+              }}
+              disabled={isEndless}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isEndless}
+                  onChange={(e) => {
+                    setIsEndless(e.target.checked);
+                    if (e.target.checked) {
+                      setLinkDuration(100 * 365 * 24); // 100 Jahre in Stunden
+                    } else {
+                      setLinkDuration(24); // Zurücksetzen auf 24 Stunden
+                    }
+                  }}
                   sx={{
-                    '& .MuiListItemText-primary': {
-                      color: '#D1D5DB',
+                    '& .MuiCheckbox-root': {
+                      color: '#6B7280',
                     },
-                    '& .MuiListItemText-secondary': {
-                      color: '#9CA3AF',
+                    '& .MuiCheckbox-root.Mui-checked': {
+                      color: '#10B981',
                     },
                   }}
                 />
-                <Button
-                  variant='outlined'
-                  color='error'
-                  size='small'
-                  onClick={() => handleDeleteLink(link.key)}
+              }
+              label='Endlos gültig'
+              sx={{
+                color: '#D1D5DB',
+              }}
+            />
+            {/* Button zum Link generieren */}
+            <Button
+              variant='contained'
+              onClick={handleGenerateLink}
+              sx={{
+                whiteSpace: 'nowrap',
+                textTransform: 'uppercase',
+                fontWeight: 'medium',
+                color: '#000',
+              }}
+            >
+              <AddIcon /> {/* Icon statt Text */}
+            </Button>
+          </div>
+          {/* Bestehende Links in scrollbarem Container */}
+          <div
+            style={{
+              maxHeight: '300px',
+              overflowY: 'auto',
+              marginBottom: '16px',
+            }}
+          >
+            <List sx={{ mt: 2 }}>
+              {sharedLinks.map((link) => (
+                <ListItem
+                  className='bg-black/40'
+                  key={link.key}
                   sx={{
-                    color: '#EF4444',
+                    mb: 1,
+                    borderRadius: 1,
+                    padding: '12px 16px',
                   }}
                 >
-                  <DeleteIcon /> {/* Icon statt "LÖSCHEN" */}
-                </Button>
-              </ListItem>
-            ))}
-          </List>
-        </div>
+                  <ListItemText
+                    primary={
+                      <span
+                        onClick={() => handleCopyToClipboard(link.link)}
+                        style={{ cursor: 'pointer', color: '#00fed7' }}
+                        className='hover:underline'
+                      >
+                        {link.link}
+                      </span>
+                    }
+                    secondary={`Gültig bis: ${new Date(
+                      link.expiresAt
+                    ).toLocaleString()}`}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: '#D1D5DB',
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: '#9CA3AF',
+                      },
+                    }}
+                  />
+                  <Button
+                    variant='outlined'
+                    color='error'
+                    size='small'
+                    onClick={() => handleDeleteLink(link.key)}
+                    sx={{
+                      color: '#EF4444',
+                    }}
+                  >
+                    <DeleteIcon /> {/* Icon statt "LÖSCHEN" */}
+                  </Button>
+                </ListItem>
+              ))}
+            </List>
+          </div>
+        </TabPanel>
 
-        {/* Neuer Bereich: Externe Shared Lists erfassen */}
-        <div style={{ marginTop: '24px' }}>
+        {/* Tab 1: Hinzufügen und Anzeigen externer Shared Lists */}
+        <TabPanel value={tabIndex} index={1}>
           <Typography variant='h6' sx={{ mb: 2 }}>
             Gespeicherte Listen
           </Typography>
@@ -391,7 +431,7 @@ const SharedLinksDialog = ({
             </Button>
           </Box>
           {/* Externe Links in scrollbarem Container */}
-          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <List>
               {externalSharedLists.map((item) => (
                 <ListItem
@@ -436,7 +476,7 @@ const SharedLinksDialog = ({
               ))}
             </List>
           </div>
-        </div>
+        </TabPanel>
 
         <Snackbar
           open={snackbarOpen}
