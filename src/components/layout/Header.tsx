@@ -31,12 +31,10 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database'; // Fügen Sie diesen Import hinzu
 import { BarChartIcon, MenuIcon, ShareIcon } from 'lucide-react';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
-import { Series } from '../../interfaces/Series';
-import { calculateOverallRating } from '../../utils/rating';
 import SharedLinksDialog from '../dialogs/SharedLinksDialog'; // Importieren Sie den neuen Dialog
 import StatsDialog from '../dialogs/StatsDialog';
 
@@ -74,26 +72,6 @@ interface Serien {
   vote_count: number;
 }
 
-interface StatsData {
-  genres: {
-    name: string;
-    count: number;
-    totalRating: number;
-    averageRating: number;
-  }[];
-  providers: {
-    name: string;
-    count: number;
-    totalRating: number;
-    averageRating: number;
-  }[];
-  userStats: {
-    watchtime: string[];
-    episodesWatched: number;
-    seriesRated: number;
-  };
-}
-
 export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const auth = useAuth();
   const { user, setUser } = auth || {};
@@ -105,8 +83,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const [options, setOptions] = useState<Serien[]>([]);
   const [selectedSeries, setSelectedSeries] = useState<Serien | null>(null);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
-  const [statsData, setStatsData] = useState<StatsData | null>(null);
-  const [seriesList, setSeriesList] = useState<Series[]>([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -123,42 +99,8 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     setSnackbarOpen(false);
   };
 
-  useEffect(() => {
-    if (user) {
-      const ref = firebase.database().ref(`${user.uid}/serien`);
-      ref.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) {
-          return;
-        }
-        setSeriesList(Object.values(data));
-      });
-    }
-  }, [user]);
-
   if (!auth) {
     return null; // or handle the error appropriately
-  }
-  function secondsToString(minutes: number) {
-    let value = minutes;
-
-    const units: { [key: string]: number } = {
-      Jahre: 24 * 60 * 365,
-      Monate: 24 * 60 * 30,
-      Tage: 24 * 60,
-      Stunden: 60,
-      Minuten: 1,
-    };
-
-    const result = [];
-
-    for (const name in units) {
-      const p = Math.floor(value / units[name as keyof typeof units]);
-      if (p > 0) result.push(p + ' ' + name + ' ');
-
-      value %= units[name];
-    }
-    return result;
   }
 
   const handleLogout = useCallback(() => {
@@ -254,119 +196,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     }
   }, [user, selectedSeries]);
 
-  const fetchStats = () => {
-    const genres: {
-      [key: string]: {
-        count: number;
-        totalRating: number;
-        averageRating: number;
-      };
-    } = {};
-    const providers: {
-      [key: string]: {
-        count: number;
-        totalRating: number;
-        averageRating: number;
-      };
-    } = {};
-    let watchtime = 0;
-    let seriesRated = 0;
-    let episodesWatched = 0;
-    const labels = new Set();
-    seriesList.forEach((serie) => {
-      try {
-        serie.provider?.provider.forEach((provider) => {
-          labels.add(provider.name);
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    });
-    const labelArray = Array.from(labels);
-
-    const dataMap = new Map();
-
-    labelArray.forEach((label) => {
-      dataMap.set(label, { count: 0, rating: 0 });
-    });
-
-    seriesList.forEach((series) => {
-      // Genres
-      series.genre.genres.forEach((genre) => {
-        if (genre !== 'All' && calculateOverallRating(series) !== '0.00') {
-          if (!genres[genre]) {
-            genres[genre] = { count: 0, totalRating: 0, averageRating: 0 };
-          }
-          genres[genre].count += 1;
-          genres[genre].totalRating += series.rating[genre] || 0;
-          genres[genre].averageRating =
-            genres[genre].totalRating / genres[genre].count;
-        }
-      });
-
-      // Providers
-      series.provider?.provider.forEach((provider) => {
-        if (calculateOverallRating(series) !== '0.00') {
-          if (!providers[provider.name]) {
-            providers[provider.name] = {
-              count: 0,
-              totalRating: 0,
-              averageRating: 0,
-            };
-          }
-          dataMap.set(provider.name, {
-            count: dataMap.get(provider.name).count + 1,
-            rating:
-              dataMap.get(provider.name).rating +
-              Number(calculateOverallRating(series)),
-          });
-
-          providers[provider.name].averageRating =
-            dataMap.get(provider.name).rating /
-            dataMap.get(provider.name).count;
-          providers[provider.name].count = dataMap.get(provider.name).count;
-        }
-      });
-
-      // User Stats
-      if (calculateOverallRating(series) !== '0.00') {
-        seriesRated += 1;
-      }
-      episodesWatched += series.seasons.reduce((count, season) => {
-        return (
-          count + season.episodes.filter((episode) => episode.watched).length
-        );
-      }, 0);
-      watchtime += series.seasons.reduce((time, season) => {
-        return (
-          time +
-          season.episodes.filter((episode) => episode.watched).length *
-            series.episodeRuntime
-        );
-      }, 0);
-    });
-
-    setStatsData({
-      genres: Object.keys(genres).map((key) => ({
-        name: key,
-        ...genres[key],
-      })),
-      providers: Object.keys(providers).map((key) => ({
-        name: key,
-        ...providers[key],
-      })),
-      userStats: {
-        watchtime: secondsToString(watchtime),
-        episodesWatched,
-        seriesRated,
-      },
-    });
-  };
-
   const handleStatsOpen = useCallback(() => {
-    fetchStats();
     setStatsDialogOpen(true);
-  }, [fetchStats]);
+  }, []);
 
   const handleStatsClose = useCallback(() => {
     setStatsDialogOpen(false);
@@ -606,7 +438,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       <StatsDialog
         open={statsDialogOpen}
         onClose={handleStatsClose}
-        statsData={statsData}
         isMobile={isMobile}
       />
       <Snackbar

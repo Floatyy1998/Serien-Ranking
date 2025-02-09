@@ -9,21 +9,17 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Bar, Doughnut } from 'react-chartjs-2';
-import { StatsData } from '../../interfaces/StatsData';
+import { useStats } from '../../contexts/StatsProvider';
 
 interface StatsDialogProps {
   open: boolean;
   onClose: () => void;
-  statsData: StatsData | null;
   isMobile: boolean;
 }
 
-const StatsDialog = ({
-  open,
-  onClose,
-  statsData,
-  isMobile,
-}: StatsDialogProps) => {
+const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
+  const { statsData } = useStats();
+
   const genreColors = [
     '#FF6384',
     '#36A2EB',
@@ -106,7 +102,7 @@ const StatsDialog = ({
               <Box>
                 <Typography variant='h4'>Verbrachte Zeit</Typography>
                 <Typography style={{ color: 'white' }} variant='body1'>
-                  {statsData.userStats.watchtime}
+                  {statsData.userStats.watchtime.join(' ')}
                 </Typography>
               </Box>
             </Box>

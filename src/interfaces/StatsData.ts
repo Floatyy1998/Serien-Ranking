@@ -15,5 +15,6 @@ export interface StatsData {
     watchtime: string[];
     episodesWatched: number;
     seriesRated: number;
+    watchtimeTotal: number;
   };
 }

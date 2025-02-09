@@ -12,6 +12,7 @@ import Firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
+import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
 import WatchlistDialog from '../dialogs/WatchlistDialog';
@@ -31,7 +32,7 @@ export const SearchFilters = memo(
     const [dialogOpen, setDialogOpen] = useState(false);
     const [watchlistSeries, setWatchlistSeries] = useState<Series[]>([]);
     const [sortOption] = useState('date-desc');
-
+    const { seriesList } = useSeriesList();
     const debouncedSearchValue = useDebounce(searchValue, 300);
 
     const authContext = useAuth();
@@ -40,14 +41,10 @@ export const SearchFilters = memo(
     useEffect(() => {
       const fetchWatchlistSeries = async () => {
         if (user) {
-          const userSeriesRef = Firebase.database().ref(`${user.uid}/serien`);
-          userSeriesRef.on('value', (snapshot) => {
-            const seriesData: { [key: string]: Series } = snapshot.val();
-            const watchlistSeries = Object.values(seriesData).filter(
-              (series) => series.watchlist
-            );
-            setWatchlistSeries(watchlistSeries);
-          });
+          const watchlistSeries = Object.values(seriesList).filter(
+            (series) => series.watchlist
+          );
+          setWatchlistSeries(watchlistSeries);
         }
       };
 
@@ -62,8 +59,9 @@ export const SearchFilters = memo(
       (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchValue(value);
+        onSearchChange(value);
       },
-      []
+      [onSearchChange]
     );
 
     const handleGenreChange = useCallback(

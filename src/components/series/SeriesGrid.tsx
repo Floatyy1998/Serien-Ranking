@@ -1,11 +1,11 @@
 import { Box, Typography } from '@mui/material';
-import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
 import { useAuth } from '../../App';
+import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { useStats } from '../../contexts/StatsProvider';
 import { useDebounce } from '../../hooks/useDebounce';
-import { Series } from '../../interfaces/Series';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 import { calculateOverallRating } from '../../utils/rating';
 import TodayEpisodesDialog from '../dialogs/TodayEpisodesDialog';
@@ -19,8 +19,7 @@ interface SeriesGridProps {
 
 export const SeriesGrid = memo(
   ({ searchValue, selectedGenre, selectedProvider }: SeriesGridProps) => {
-    const [seriesList, setSeriesList] = useState<Series[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { seriesList, loading } = useSeriesList();
     const auth = useAuth();
     const user = auth?.user;
 
@@ -30,6 +29,8 @@ export const SeriesGrid = memo(
     const [visibleCount, setVisibleCount] = useState(20);
     const [showTodayDialog, setShowTodayDialog] = useState(false);
     const [todayEpisodes, setTodayEpisodes] = useState<TodayEpisode[]>([]);
+    // Nutzen Sie stattdessen den globalen Zustand:
+    const { statsData } = useStats();
     // Ref, um zu prüfen, ob der Dialog bereits angezeigt wurde
     const dialogShown = useRef(false);
 
@@ -88,32 +89,6 @@ export const SeriesGrid = memo(
       }
       setVisibleCount(initialVisible);
     }, [debouncedSearchValue, selectedGenre, selectedProvider, filteredSeries]);
-
-    useEffect(() => {
-      const fetchData = async () => {
-        if (navigator.onLine) {
-          try {
-            const ref = firebase.database().ref(`${user?.uid}/serien`);
-            ref.on('value', async (snapshot) => {
-              const data = snapshot.val();
-              if (!data) {
-                setLoading(false);
-                return;
-              }
-
-              const seriesArray = Object.values(data) as Series[];
-              setSeriesList(seriesArray);
-              setLoading(false);
-            });
-            return () => ref.off(); // Entfernen Sie den Listener, wenn die Komponente unmountet
-          } catch (error) {
-            console.error('Fehler beim Abrufen der Daten:', error);
-          }
-        }
-      };
-
-      fetchData();
-    }, [user?.uid]);
 
     // Angepasster useEffect zur Überprüfung auf heutige Folgen:
     useEffect(() => {
@@ -248,6 +223,7 @@ export const SeriesGrid = memo(
           open={showTodayDialog}
           onClose={handleDialogClose}
           episodes={todayEpisodes}
+          userStats={statsData?.userStats} // Übergabe der globalen User-Stats
         />
       </>
     );

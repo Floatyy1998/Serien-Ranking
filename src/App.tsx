@@ -20,6 +20,8 @@ import {
 } from 'react-router-dom';
 
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
+import { SeriesListProvider } from './contexts/SeriesListProvider';
+import { StatsProvider } from './contexts/StatsProvider';
 import SharedSeriesList from './pages/SharedSeriesList';
 import { theme } from './theme';
 
@@ -98,95 +100,103 @@ export function App() {
 
   return (
     <AuthProvider>
-      <Helmet>
-        <title>
-          TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien
-        </title>
-        <meta
-          name='description'
-          content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-        />
-        <meta
-          name='keywords'
-          content='Serien, TV, Bewertung, Watchlist, TV-RANK'
-        />
-        <meta
-          property='og:title'
-          content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
-        />
-        <meta
-          property='og:description'
-          content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-        />
-        <meta property='og:image' content='/favicon.ico' />
-        <meta property='og:url' content='https://tv-rank.de' />
-        <meta name='twitter:card' content='summary_large_image' />
-      </Helmet>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Router>
-          <div className=' w-full '>
-            <Suspense
-              fallback={
-                <Box className='flex justify-center items-center '>
-                  <InfinitySpin color='#00fed7'></InfinitySpin>
-                </Box>
-              }
-            >
-              <Header
-                isNavOpen={isNavOpen}
-                setIsNavOpen={setIsNavOpen}
-                setIsStatsOpen={setIsStatsOpen}
-              />
-              <main className='w-full px-4 py-6'>
-                <div className=' mx-auto'>
-                  <Link to='/' className='mb-12' aria-label='Zur Startseite'>
-                    {/* Fügen Sie hier ein Logo oder einen Text hinzu, um den Link erkennbar zu machen */}
-                    <span className='sr-only'>Zur Startseite</span>
-                  </Link>
-                  <Routes>
-                    <Route path='/login' element={<LoginPage />} />
-                    <Route path='/register' element={<RegisterPage />} />
-                    <Route
-                      path='/'
-                      element={
-                        <AuthContext.Consumer>
-                          {(auth) =>
-                            auth?.user ? (
-                              <VerifiedRoute>
-                                <>
-                                  <SearchFilters
-                                    onSearchChange={handleSearchChange}
-                                    onGenreChange={handleGenreChange}
-                                    onProviderChange={handleProviderChange}
-                                  />
-                                  <Legend />
-                                  <SeriesGrid
-                                    searchValue={searchValue}
-                                    selectedGenre={selectedGenre}
-                                    selectedProvider={selectedProvider}
-                                  />
-                                </>
-                              </VerifiedRoute>
-                            ) : (
-                              <StartPage />
-                            )
+      <SeriesListProvider>
+        <StatsProvider>
+          <Helmet>
+            <title>
+              TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien
+            </title>
+            <meta
+              name='description'
+              content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+            />
+            <meta
+              name='keywords'
+              content='Serien, TV, Bewertung, Watchlist, TV-RANK'
+            />
+            <meta
+              property='og:title'
+              content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
+            />
+            <meta
+              property='og:description'
+              content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+            />
+            <meta property='og:image' content='/favicon.ico' />
+            <meta property='og:url' content='https://tv-rank.de' />
+            <meta name='twitter:card' content='summary_large_image' />
+          </Helmet>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Router>
+              <div className=' w-full '>
+                <Suspense
+                  fallback={
+                    <Box className='flex justify-center items-center '>
+                      <InfinitySpin color='#00fed7'></InfinitySpin>
+                    </Box>
+                  }
+                >
+                  <Header
+                    isNavOpen={isNavOpen}
+                    setIsNavOpen={setIsNavOpen}
+                    setIsStatsOpen={setIsStatsOpen}
+                  />
+                  <main className='w-full px-4 py-6'>
+                    <div className=' mx-auto'>
+                      <Link
+                        to='/'
+                        className='mb-12'
+                        aria-label='Zur Startseite'
+                      >
+                        {/* Fügen Sie hier ein Logo oder einen Text hinzu, um den Link erkennbar zu machen */}
+                        <span className='sr-only'>Zur Startseite</span>
+                      </Link>
+                      <Routes>
+                        <Route path='/login' element={<LoginPage />} />
+                        <Route path='/register' element={<RegisterPage />} />
+                        <Route
+                          path='/'
+                          element={
+                            <AuthContext.Consumer>
+                              {(auth) =>
+                                auth?.user ? (
+                                  <VerifiedRoute>
+                                    <>
+                                      <SearchFilters
+                                        onSearchChange={handleSearchChange}
+                                        onGenreChange={handleGenreChange}
+                                        onProviderChange={handleProviderChange}
+                                      />
+                                      <Legend />
+                                      <SeriesGrid
+                                        searchValue={searchValue}
+                                        selectedGenre={selectedGenre}
+                                        selectedProvider={selectedProvider}
+                                      />
+                                    </>
+                                  </VerifiedRoute>
+                                ) : (
+                                  <StartPage />
+                                )
+                              }
+                            </AuthContext.Consumer>
                           }
-                        </AuthContext.Consumer>
-                      }
-                    />
-                    <Route
-                      path='/shared-list/:linkId'
-                      element={<SharedSeriesList />}
-                    />
-                    <Route path='*' element={<Navigate to='/' />} />
-                  </Routes>
-                </div>
-              </main>
-            </Suspense>
-          </div>
-        </Router>
-      </ThemeProvider>
+                        />
+                        <Route
+                          path='/shared-list/:linkId'
+                          element={<SharedSeriesList />}
+                        />
+                        <Route path='*' element={<Navigate to='/' />} />
+                      </Routes>
+                    </div>
+                  </main>
+                </Suspense>
+              </div>
+            </Router>
+          </ThemeProvider>
+        </StatsProvider>
+      </SeriesListProvider>
     </AuthProvider>
   );
 }
