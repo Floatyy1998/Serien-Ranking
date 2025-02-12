@@ -455,7 +455,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         handleGenerateShareLink={handleGenerateShareLink}
         linkDuration={linkDuration}
         setLinkDuration={setLinkDuration}
-        shareLink={null}
       />
     </>
   );

@@ -16,6 +16,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { memo, useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../interfaces/Series';
+import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
 
 interface SeriesWatchedDialogProps {
   open: boolean;
@@ -154,19 +155,7 @@ const SeriesWatchedDialog = memo(
           }}
         >
           {nextUnwatchedEpisode ? (
-            <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
-              <div className='font-medium text-[#00fed7]'>
-                Nächste Folge: S{nextUnwatchedEpisode.seasonNumber + 1} E
-                {nextUnwatchedEpisode.episodeNumber} -{' '}
-                {nextUnwatchedEpisode.name}
-              </div>
-              <div className='mt-1 text-xs text-gray-400'>
-                Erscheinungsdatum:{' '}
-                {formatDateWithLeadingZeros(
-                  new Date(nextUnwatchedEpisode.air_date)
-                )}
-              </div>
-            </Box>
+            <NextEpisodeDisplay episode={nextUnwatchedEpisode} />
           ) : (
             <>
               <Confetti

@@ -12,8 +12,8 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import React from 'react';
 import { Series } from '../../interfaces/Series';
-
 interface SeriesDialogProps {
   open: boolean;
   onClose: () => void;

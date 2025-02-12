@@ -15,7 +15,7 @@ import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
-import WatchlistDialog from '../dialogs/WatchlistDialog';
+import WatchlistDialog from '../dialogs/Watchlist/WatchlistDialog';
 
 interface SearchFiltersProps {
   onSearchChange: (value: string) => void;

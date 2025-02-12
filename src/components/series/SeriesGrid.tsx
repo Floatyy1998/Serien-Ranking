@@ -3,7 +3,7 @@ import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
 import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { useSeriesList } from '../../contexts/SeriesListProvider'; // neuer Hook
 import { useStats } from '../../contexts/StatsProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
@@ -20,6 +20,7 @@ interface SeriesGridProps {
 export const SeriesGrid = memo(
   ({ searchValue, selectedGenre, selectedProvider }: SeriesGridProps) => {
     const { seriesList, loading } = useSeriesList();
+
     const auth = useAuth();
     const user = auth?.user;
     const isSharedListPage = location.pathname.startsWith('/shared-list');

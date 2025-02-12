@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
+import '../../styles/animations.css';
 
 interface TodayEpisodesDialogProps {
   open: boolean;
@@ -201,17 +202,6 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
 
   return (
     <>
-      {/* CSS-Keyframes für den animierten RGB-Schatten */}
-      <style>
-        {`
-          @keyframes rgbShadow {
-            0% { box-shadow: 0 0 20px rgba(255,0,0,0.8); }
-            33% { box-shadow: 0 0 20px rgba(0,255,0,0.8); }
-            66% { box-shadow: 0 0 20px rgba(0,0,255,0.8); }
-            100% { box-shadow: 0 0 20px rgba(255,0,0,0.8); }
-          }
-        `}
-      </style>
       <Dialog
         open={open}
         onClose={handleDialogClose}

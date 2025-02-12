@@ -11,11 +11,12 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../App'; // Assuming you have an AuthContext
 import notFound from '../../assets/notFound.jpg';
 import { Series } from '../../interfaces/Series';
+import '../../styles/animations.css';
 import { calculateOverallRating } from '../../utils/rating';
 import LoadingCard from '../common/LoadingCard';
 import SeriesDialog from '../dialogs/SeriesDialog';
@@ -398,7 +399,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   return (
     <Suspense fallback={<LoadingCard />}>
       <Card
-        className='h-full transition-shadow duration-300 flex flex-col'
+        className='h-full transition-shadow duration-300 flex flex-col series-card hover:animate-rgbShadow'
         sx={{
           boxShadow: ` ${shadowColor} 8px 8px 20px 0px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px;`,
           '&:hover': {
