@@ -29,15 +29,14 @@ import {
 } from 'chart.js';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import 'firebase/compat/database'; // Fügen Sie diesen Import hinzu
+import 'firebase/compat/database';
 import { BarChartIcon, MenuIcon, ShareIcon } from 'lucide-react';
 import { memo, useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
-import SharedLinksDialog from '../dialogs/SharedLinksDialog'; // Importieren Sie den neuen Dialog
+import SharedLinksDialog from '../dialogs/SharedLinksDialog';
 import StatsDialog from '../dialogs/StatsDialog';
-
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -48,13 +47,11 @@ Chart.register(
   Legend,
   Tooltip
 );
-
 interface HeaderProps {
   isNavOpen: boolean;
   setIsNavOpen: (open: boolean) => void;
   setIsStatsOpen: (open: boolean) => void;
 }
-
 interface Serien {
   adult: boolean;
   backdrop_path: string;
@@ -71,14 +68,12 @@ interface Serien {
   vote_average: number;
   vote_count: number;
 }
-
 export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const auth = useAuth();
   const { user, setUser } = auth || {};
   const location = useLocation();
   const navigate = useNavigate();
   const isSharedListPage = location.pathname.startsWith('/shared-list');
-
   const [, setSearchValue] = useState('');
   const [options, setOptions] = useState<Serien[]>([]);
   const [selectedSeries, setSelectedSeries] = useState<Serien | null>(null);
@@ -91,18 +86,15 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     'success' | 'error' | 'warning'
   >('success');
   const [, setShareLink] = useState<string | null>(null);
-  const [linkDuration, setLinkDuration] = useState<number>(24); // Standardmäßig 24 Stunden
+  const [linkDuration, setLinkDuration] = useState<number>(24);
   const [linksDialogOpen, setLinksDialogOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null); // Neuer Ref für den Input
-
+  const inputRef = useRef<HTMLInputElement>(null);
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
-
   if (!auth) {
-    return null; // or handle the error appropriately
+    return null;
   }
-
   const handleLogout = useCallback(() => {
     firebase
       .auth()
@@ -111,10 +103,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         if (setUser) {
           setUser(null);
         }
-        setIsNavOpen(false); // Drawer schließen
+        setIsNavOpen(false);
       });
   }, [setUser, setIsNavOpen]);
-
   const handleSearchChange = useCallback(
     async (_event: React.ChangeEvent<unknown>, value: string) => {
       setSearchValue(value);
@@ -129,7 +120,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
     },
     []
   );
-
   const handleAddSeries = useCallback(async () => {
     if (!user) {
       setSnackbarMessage(
@@ -139,12 +129,10 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       setSnackbarOpen(true);
       return;
     }
-
     if (selectedSeries) {
       setSnackbarMessage('Serie wird hinzugefügt');
       setSnackbarSeverity('warning');
       setSnackbarOpen(true);
-
       const seriesData = {
         id: selectedSeries.id.toString(),
         data: {
@@ -153,10 +141,8 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           uuid: user.uid,
         },
       };
-
       try {
         const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
-          // const res = await fetch(`http://localhost:3000/add`, {
           method: 'POST',
           mode: 'cors',
           cache: 'no-cache',
@@ -168,7 +154,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           referrerPolicy: 'no-referrer',
           body: JSON.stringify(seriesData.data),
         });
-
         if (res.ok) {
           setSnackbarMessage('Serie hinzugefügt!');
           setSnackbarSeverity('success');
@@ -176,10 +161,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           setOptions((prevOptions) =>
             prevOptions.filter((option) => option.id !== selectedSeries.id)
           );
-          setIsNavOpen(false); // Drawer schließen
+          setIsNavOpen(false);
         } else {
           const msgJson = await res.json();
-
           if (msgJson.error !== 'Serie bereits vorhanden') {
             throw new Error('Fehler beim Hinzufügen der Serie.');
           }
@@ -195,15 +179,12 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       }
     }
   }, [user, selectedSeries]);
-
   const handleStatsOpen = useCallback(() => {
     setStatsDialogOpen(true);
   }, []);
-
   const handleStatsClose = useCallback(() => {
     setStatsDialogOpen(false);
   }, []);
-
   const handleTitleClick = useCallback(() => {
     if (location.pathname === '/login' || location.pathname === '/register') {
       navigate('/');
@@ -211,7 +192,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location, navigate]);
-
   const handleGenerateShareLink = async () => {
     if (!user) {
       setSnackbarMessage(
@@ -221,16 +201,14 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       setSnackbarOpen(true);
       return;
     }
-
     try {
       const shareRef = firebase.database().ref('sharedLists').push();
-      const expirationTime = Date.now() + linkDuration * 60 * 60 * 1000; // Gültigkeitsdauer in Millisekunden
+      const expirationTime = Date.now() + linkDuration * 60 * 60 * 1000;
       await shareRef.set({
         userId: user.uid,
         createdAt: firebase.database.ServerValue.TIMESTAMP,
         expiresAt: expirationTime,
       });
-
       const link = `${window.location.origin}/shared-list/${shareRef.key}`;
       setShareLink(link);
       setSnackbarMessage('Link erfolgreich generiert!');
@@ -243,24 +221,19 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
       setSnackbarOpen(true);
     }
   };
-
   const handleLinksDialogOpen = () => {
     setLinksDialogOpen(true);
   };
-
   const handleLinksDialogClose = () => {
     setLinksDialogOpen(false);
   };
-
   const handleBackToHome = () => {
     navigate('/');
   };
-
   const handleDrawerClose = () => {
     setIsNavOpen(false);
-    inputRef.current?.blur(); // Fokus entfernen
+    inputRef.current?.blur();
   };
-
   return (
     <>
       <AppBar position='fixed' color='default' elevation={1}>
@@ -286,7 +259,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: { xs: '2rem', sm: '3em' },
-              letterSpacing: { xs: 'normal', sm: '20px' }, // Remove letter spacing on mobile
+              letterSpacing: { xs: 'normal', sm: '20px' },
             }}
           >
             <span
@@ -336,13 +309,9 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           </Box>
         </Toolbar>
       </AppBar>
-      <Toolbar /> {/* Platzhalter für den fixierten Header */}
+      <Toolbar /> {}
       {user && !isSharedListPage && (
-        <Drawer
-          anchor='top'
-          open={isNavOpen}
-          onClose={handleDrawerClose} // Angepasster Handler
-        >
+        <Drawer anchor='top' open={isNavOpen} onClose={handleDrawerClose}>
           <List
             sx={{
               display: 'flex',
@@ -366,7 +335,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                 itemProp='name'
                 renderOption={(props, option) => (
                   <li
-                    // Schlüssel direkt übergeben
                     {...props}
                     key={option.id}
                     style={{ display: 'flex', alignItems: 'center' }}
@@ -397,7 +365,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
                     label='Serie hinzufügen'
                     variant='outlined'
                     type='search'
-                    inputRef={inputRef} // Ref an das Input übergeben
+                    inputRef={inputRef}
                   />
                 )}
               />

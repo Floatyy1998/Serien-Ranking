@@ -1,6 +1,5 @@
 import { createTheme } from '@mui/material/styles';
-import './global.css'; // Importieren Sie die CSS-Datei
-
+import './global.css';
 export const theme = createTheme({
   palette: {
     mode: 'dark',
@@ -114,8 +113,8 @@ export const theme = createTheme({
           transition: 'all 0.2s ease-in-out',
           borderTopLeftRadius: '8px',
           borderTopRightRadius: '8px',
-          borderBottomLeftRadius: '8px', // Hinzugefügt
-          borderBottomRightRadius: '8px', // Hinzugefügt
+          borderBottomLeftRadius: '8px',
+          borderBottomRightRadius: '8px',
           '&.Mui-expanded': {
             borderBottomLeftRadius: '0px',
             borderBottomRightRadius: '0px',
@@ -142,7 +141,6 @@ export const theme = createTheme({
         },
       },
     },
-
     MuiChip: {
       styleOverrides: {
         root: {
@@ -161,7 +159,7 @@ export const theme = createTheme({
           textAlign: 'center',
           position: 'relative',
           fontSize: '1.5rem',
-          paddingLeft: '48px', // entspricht 6 * 8px
+          paddingLeft: '48px',
           paddingRight: '48px',
           '& .closeButton': {
             position: 'absolute',

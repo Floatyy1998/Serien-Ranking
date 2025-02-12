@@ -1,11 +1,9 @@
 import { Info } from 'lucide-react';
 import { lazy, Suspense } from 'react';
-
 const Box = lazy(() => import('@mui/material/Box'));
 const IconButton = lazy(() => import('@mui/material/IconButton'));
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
 const Typography = lazy(() => import('@mui/material/Typography'));
-
 export const Legend = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -50,7 +48,6 @@ export const Legend = () => {
                 Klicke auf ein Poster, , um zu erfahren, wo du die Serie schauen
                 kannst.
               </span>
-
               <br></br>
               <br></br>
               <span>Klicke auf ein Rating, um das Rating anzupassen.</span>

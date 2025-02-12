@@ -3,26 +3,21 @@ import 'firebase/compat/database';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '../App';
 import { Series } from '../interfaces/Series';
-
-// Neues Interface für SharedLink
 interface SharedLink {
   key: string;
   link: string;
   expiresAt: number;
 }
-
 interface SeriesListContextType {
   seriesList: Series[];
   loading: boolean;
-  sharedLinks: SharedLink[]; // Neuer Zustand
+  sharedLinks: SharedLink[];
 }
-
 export const SeriesListContext = createContext<SeriesListContextType>({
   seriesList: [],
   loading: true,
   sharedLinks: [],
 });
-
 export const SeriesListProvider = ({
   children,
 }: {
@@ -32,7 +27,6 @@ export const SeriesListProvider = ({
   const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [loading, setLoading] = useState(true);
   const [sharedLinks, setSharedLinks] = useState<SharedLink[]>([]);
-
   useEffect(() => {
     if (!user) return;
     const ref = firebase.database().ref(`${user.uid}/serien`);
@@ -43,8 +37,6 @@ export const SeriesListProvider = ({
     });
     return () => ref.off();
   }, [user]);
-
-  // Neuer Effekt: Abruf der SharedLists nur, wenn der Pfad "/shared-list" ist
   useEffect(() => {
     if (user && window.location.pathname === '/shared-list') {
       const ref = firebase
@@ -70,12 +62,10 @@ export const SeriesListProvider = ({
       setSharedLinks([]);
     }
   }, [user]);
-
   return (
     <SeriesListContext.Provider value={{ seriesList, loading, sharedLinks }}>
       {children}
     </SeriesListContext.Provider>
   );
 };
-
 export const useSeriesList = () => useContext(SeriesListContext);

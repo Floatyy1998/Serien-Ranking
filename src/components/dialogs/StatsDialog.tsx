@@ -10,16 +10,13 @@ import {
 import Grid from '@mui/material/Grid';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useStats } from '../../contexts/StatsProvider';
-
 interface StatsDialogProps {
   open: boolean;
   onClose: () => void;
   isMobile: boolean;
 }
-
 const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
   const { statsData } = useStats();
-
   const genreColors = [
     '#FF6384',
     '#36A2EB',
@@ -40,7 +37,6 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
     '#9966FF',
     '#FF9F40',
   ];
-
   const providerColors = [
     '#FF6384',
     '#36A2EB',
@@ -55,7 +51,6 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
     '#9966FF',
     '#FF9F40',
   ];
-
   return (
     <Dialog
       sx={{ textAlign: 'center !important' }}
@@ -106,7 +101,6 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                 </Typography>
               </Box>
             </Box>
-
             <Grid container spacing={2} columns={2}>
               <Grid item xs={12} lg={6}>
                 <Typography variant='h4'>
@@ -115,7 +109,7 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                 <Box
                   sx={{
                     overflow: 'auto',
-                    height: '580px', // Erhöhte Höhe
+                    height: '580px',
                     border: '1px solid rgb(0, 254, 215)',
                     padding: '10px',
                     width: '100%',
@@ -144,7 +138,6 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                             color: 'white',
                           },
                         },
-
                         tooltip: {
                           callbacks: {
                             label: function (context) {
@@ -164,7 +157,7 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                 <Box
                   sx={{
                     overflow: 'auto',
-                    height: '580px', // Erhöhte Höhe
+                    height: '580px',
                     border: '1px solid rgb(0, 254, 215)',
                     padding: '10px',
                     width: '100%',
@@ -226,7 +219,7 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                 <Box
                   sx={{
                     overflow: 'auto',
-                    height: '580px', // Erhöhte Höhe
+                    height: '580px',
                     border: '1px solid rgb(0, 254, 215)',
                     padding: '10px',
                     width: '100%',
@@ -278,7 +271,7 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                 <Box
                   sx={{
                     overflow: 'auto',
-                    height: '580px', // Erhöhte Höhe
+                    height: '580px',
                     border: '1px solid rgb(0, 254, 215)',
                     padding: '10px',
                     width: '100%',
@@ -315,7 +308,6 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                           },
                         },
                       },
-
                       plugins: {
                         legend: {
                           display: false,
@@ -342,5 +334,4 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
     </Dialog>
   );
 };
-
 export default StatsDialog;

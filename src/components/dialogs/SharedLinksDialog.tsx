@@ -16,28 +16,23 @@ import { useAuth } from '../../App';
 import ExternalSharedLinks from './links/ExternalSharedLinks';
 import MySharedLinks from './links/MySharedLinks';
 import { TabPanel } from './shared/SharedDialogComponents';
-
 interface SharedLink {
   key: string;
   link: string;
   expiresAt: number;
 }
-
 interface SharedLinksDialogProps {
   open: boolean;
   onClose: () => void;
   handleGenerateShareLink: () => void;
-  // shareLink wird nicht mehr benötigt
   linkDuration: number;
   setLinkDuration: (duration: number) => void;
 }
-
 interface ExternalSavedLink {
   key: string;
   name: string;
   link: string;
 }
-
 const SharedLinksDialog = ({
   open,
   onClose,
@@ -60,9 +55,6 @@ const SharedLinksDialog = ({
   const [externalName, setExternalName] = useState('');
   const [externalLink, setExternalLink] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
-
-  // ...existing code für useEffect etc...
-
   useEffect(() => {
     if (user) {
       const ref = firebase
@@ -84,7 +76,6 @@ const SharedLinksDialog = ({
       return () => ref.off();
     }
   }, [user]);
-
   useEffect(() => {
     if (user) {
       const ref = firebase.database().ref(`${user.uid}/savedLists`);
@@ -107,7 +98,6 @@ const SharedLinksDialog = ({
       return () => ref.off();
     }
   }, [user]);
-
   const handleDeleteLink = async (key: string) => {
     try {
       await firebase.database().ref(`sharedLists/${key}`).remove();
@@ -116,7 +106,6 @@ const SharedLinksDialog = ({
       console.error('Error deleting link:', error);
     }
   };
-
   const handleCopyToClipboard = (link: string) => {
     navigator.clipboard.writeText(link).then(
       () => {
@@ -132,23 +121,19 @@ const SharedLinksDialog = ({
       }
     );
   };
-
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
-
   const handleGenerateLink = () => {
     if (isEndless) {
-      setLinkDuration(100 * 365 * 24); // 100 Jahre in Stunden
+      setLinkDuration(100 * 365 * 24);
     }
     handleGenerateShareLink();
   };
-
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLinkDuration(value === '' ? 0 : Number(value));
   };
-
   const handleSaveExternalLink = () => {
     if (user && externalName && externalLink) {
       const ref = firebase.database().ref(`${user.uid}/savedLists`).push();
@@ -158,7 +143,6 @@ const SharedLinksDialog = ({
       });
     }
   };
-
   const handleDeleteExternalLink = async (key: string) => {
     if (user) {
       try {
@@ -168,11 +152,9 @@ const SharedLinksDialog = ({
       }
     }
   };
-
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
-
   return (
     <Dialog
       open={open}
@@ -200,7 +182,6 @@ const SharedLinksDialog = ({
           <Tab label='Meine Links' />
           <Tab label='Externe Links' />
         </Tabs>
-
         <TabPanel value={tabIndex} index={0}>
           <MySharedLinks
             linkDuration={linkDuration}
@@ -214,7 +195,6 @@ const SharedLinksDialog = ({
             handleDeleteLink={handleDeleteLink}
           />
         </TabPanel>
-
         <TabPanel value={tabIndex} index={1}>
           <ExternalSharedLinks
             externalSharedLists={externalSharedLists}
@@ -226,7 +206,6 @@ const SharedLinksDialog = ({
             handleDeleteExternalLink={handleDeleteExternalLink}
           />
         </TabPanel>
-
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={6000}
@@ -240,5 +219,4 @@ const SharedLinksDialog = ({
     </Dialog>
   );
 };
-
 export default SharedLinksDialog;

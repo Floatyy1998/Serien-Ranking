@@ -15,7 +15,6 @@ import { Series } from '../../../interfaces/Series';
 import { DialogHeader } from '../shared/SharedDialogComponents';
 import SeriesListItem from './SeriesListItem';
 import WatchlistFilter from './WatchlistFilter';
-
 interface WatchlistDialogProps {
   open: boolean;
   onClose: () => void;
@@ -28,7 +27,6 @@ interface WatchlistDialogProps {
   ) => void;
   setWatchlistSeries: React.Dispatch<React.SetStateAction<Series[]>>;
 }
-
 const WatchlistDialog = ({
   open,
   onClose,
@@ -36,7 +34,6 @@ const WatchlistDialog = ({
   handleWatchedToggleWithConfirmation,
   setWatchlistSeries,
 }: WatchlistDialogProps) => {
-  // ...existing code...
   const [filterInput, setFilterInput] = useState('');
   const [customOrderActive, setCustomOrderActive] = useState(
     localStorage.getItem('customOrderActive') === 'true'
@@ -47,11 +44,9 @@ const WatchlistDialog = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showFilter, setShowFilter] = useState(!isMobile);
-
   useEffect(() => {
     localStorage.setItem('customOrderActive', customOrderActive.toString());
   }, [customOrderActive]);
-
   const toggleSort = (field: string) => {
     if (customOrderActive) {
       setCustomOrderActive(false);
@@ -63,8 +58,6 @@ const WatchlistDialog = ({
       setSortOption(`${field}-asc`);
     }
   };
-
-  // ...existing code for sort & filtering...
   useEffect(() => {
     if (!customOrderActive) {
       const [field, order] = sortOption.split('-');
@@ -89,7 +82,6 @@ const WatchlistDialog = ({
       setFilteredSeries(sorted);
     }
   }, [sortedWatchlistSeries, customOrderActive, sortOption]);
-
   useEffect(() => {
     if (customOrderActive && user) {
       const orderRef = firebase.database().ref(`${user.uid}/watchlistOrder`);
@@ -111,13 +103,11 @@ const WatchlistDialog = ({
       });
     }
   }, [customOrderActive, sortedWatchlistSeries, user]);
-
   const displayedSeries = filteredSeries.filter((series) =>
     filterInput
       ? series.title.toLowerCase().includes(filterInput.toLowerCase())
       : true
   );
-
   const moveItem = (from: number, to: number) => {
     if (!customOrderActive) {
       setCustomOrderActive(true);
@@ -132,17 +122,7 @@ const WatchlistDialog = ({
     }
     setWatchlistSeries(updated);
   };
-
-  const formatDateWithLeadingZeros = (date: Date) => {
-    // ...existing code...
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
-
   const getNextUnwatchedEpisode = (series: Series) => {
-    // ...existing code...
     for (const season of series.seasons) {
       for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
@@ -157,7 +137,6 @@ const WatchlistDialog = ({
     }
     return null;
   };
-
   const updateSeriesInDialog = (
     seriesId: number,
     seasonNumber: number,
@@ -185,7 +164,6 @@ const WatchlistDialog = ({
       )
     );
   };
-
   return (
     <Dialog open={open} onClose={onClose} fullWidth container={document.body}>
       <DialogHeader title='Weiterschauen' onClose={onClose} />
@@ -229,7 +207,6 @@ const WatchlistDialog = ({
                     draggable={true}
                     moveItem={moveItem}
                     nextUnwatchedEpisode={nextEpisode}
-                    formatDate={formatDateWithLeadingZeros}
                     onWatchedToggle={() => {
                       handleWatchedToggleWithConfirmation(
                         nextEpisode!.seasonNumber,
@@ -257,7 +234,6 @@ const WatchlistDialog = ({
                   key={series.id}
                   series={series}
                   nextUnwatchedEpisode={nextEpisode}
-                  formatDate={formatDateWithLeadingZeros}
                   onWatchedToggle={() => {
                     if (nextEpisode) {
                       handleWatchedToggleWithConfirmation(
@@ -282,5 +258,4 @@ const WatchlistDialog = ({
     </Dialog>
   );
 };
-
 export default WatchlistDialog;

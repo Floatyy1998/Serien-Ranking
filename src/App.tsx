@@ -1,5 +1,5 @@
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
-import Firebase from 'firebase/compat/app'; // Hinzugefügter Import für Firebase
+import Firebase from 'firebase/compat/app';
 import {
   Suspense,
   createContext,
@@ -18,14 +18,11 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom';
-
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
 import { SeriesListProvider } from './contexts/SeriesListProvider';
 import { StatsProvider } from './contexts/StatsProvider';
 import SharedSeriesList from './pages/SharedSeriesList';
 import { theme } from './theme';
-
-// Lazy-Imports für Komponenten
 const Header = lazy(() => import('./components/layout/Header'));
 const Legend = lazy(() => import('./components/common/Legend'));
 const SearchFilters = lazy(() => import('./components/filters/SearchFilters'));
@@ -34,32 +31,25 @@ const LoginPage = lazy(() => import('./components/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
 const StartPage = lazy(() => import('./pages/StartPage'));
 const DuckFacts = lazy(() => import('./components/DuckFacts'));
-
 export const AuthContext = createContext<{
   user: Firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<Firebase.User | null>>;
   authStateResolved: boolean;
 } | null>(null);
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<Firebase.User | null>(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
   const [authStateResolved, setAuthStateResolved] = useState(false);
-
   useEffect(() => {
-    // Dynamischer Import der Firebase-Initialisierung
     import('./firebase/initFirebase').then((module) => {
       module.initFirebase();
-      // Initialisiere Firebase Auth und höre auf Auth-Statusänderungen
       Firebase.auth().onAuthStateChanged((user) => {
         setUser(user);
         setAuthStateResolved(true);
-        // ... ggf. LocalStorage-Handling ...
       });
       setFirebaseInitialized(true);
     });
   }, []);
-
   if (!firebaseInitialized || !authStateResolved) {
     return (
       <Box
@@ -70,35 +60,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       </Box>
     );
   }
-
   return (
     <AuthContext.Provider value={{ user, setUser, authStateResolved }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
 export const useAuth = () => useContext(AuthContext);
-
 export function App() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [, setIsStatsOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedProvider, setSelectedProvider] = useState('All');
-
   const handleSearchChange = useCallback((value: string) => {
     setSearchValue(value);
   }, []);
-
   const handleGenreChange = useCallback((value: string) => {
     setSelectedGenre(value);
   }, []);
-
   const handleProviderChange = useCallback((value: string) => {
     setSelectedProvider(value);
   }, []);
-
   return (
     <AuthProvider>
       <SeriesListProvider>
@@ -150,7 +133,7 @@ export function App() {
                         className='mb-12'
                         aria-label='Zur Startseite'
                       >
-                        {/* Fügen Sie hier ein Logo oder einen Text hinzu, um den Link erkennbar zu machen */}
+                        {}
                         <span className='sr-only'>Zur Startseite</span>
                       </Link>
                       <Routes>
@@ -202,5 +185,4 @@ export function App() {
     </AuthProvider>
   );
 }
-
 export default App;

@@ -9,7 +9,6 @@ import { SeriesCard } from '../components/series/SeriesCard';
 import { useDebounce } from '../hooks/useDebounce';
 import { Series } from '../interfaces/Series';
 import { calculateOverallRating } from '../utils/rating';
-
 const SharedSeriesList = () => {
   const { linkId } = useParams<{ linkId: string }>();
   const [seriesList, setSeriesList] = useState<Series[]>([]);
@@ -20,7 +19,6 @@ const SharedSeriesList = () => {
   const [linkValid, setLinkValid] = useState(true);
   const [visibleCount, setVisibleCount] = useState(20);
   const debouncedSearchValue = useDebounce(searchValue, 300);
-
   useEffect(() => {
     const fetchSeriesList = async () => {
       try {
@@ -52,23 +50,17 @@ const SharedSeriesList = () => {
         setLoading(false);
       }
     };
-
     fetchSeriesList();
   }, [linkId]);
-
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
   };
-
   const handleGenreChange = (value: string) => {
     setSelectedGenre(value);
   };
-
   const handleProviderChange = (value: string) => {
     setSelectedProvider(value);
   };
-
-  // Filterung und Sortierung mit useMemo und debouncedSearchValue
   const sortedSeries = useMemo(() => {
     const filtered = seriesList.filter((series) => {
       const matchesSearch = series.title
@@ -89,10 +81,8 @@ const SharedSeriesList = () => {
           series.provider.provider.some((p) => p.name === selectedProvider));
       return matchesSearch && matchesGenre && matchesProvider;
     });
-
     if (selectedGenre === 'Neue Episoden') {
       return filtered.sort((a, b) => {
-        // Sortierung nach Datum der nächsten Episode (neueste zuerst)
         const dateA = new Date(
           a.nextEpisode.nextEpisodes[0].airstamp
         ).getTime();
@@ -102,7 +92,6 @@ const SharedSeriesList = () => {
         return dateA - dateB;
       });
     } else if (selectedGenre === 'Zuletzt Hinzugefügt') {
-      // Unsotrte Liste von hinten nach vorne (umgekehrte Reihenfolge)
       return filtered.reverse();
     } else {
       return filtered.sort((a, b) => {
@@ -113,8 +102,6 @@ const SharedSeriesList = () => {
       });
     }
   }, [seriesList, debouncedSearchValue, selectedGenre, selectedProvider]);
-
-  // Berechne visibleCount basierend auf der Fensterbreite
   useEffect(() => {
     const cardWidth = 230;
     const gap = 75;
@@ -127,8 +114,6 @@ const SharedSeriesList = () => {
     }
     setVisibleCount(initialVisible);
   }, [debouncedSearchValue, selectedGenre, selectedProvider, sortedSeries]);
-
-  // Scroll-Listener zum inkrementellen Laden
   const handleWindowScroll = useCallback(() => {
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
@@ -148,12 +133,10 @@ const SharedSeriesList = () => {
       );
     }
   }, [sortedSeries.length, visibleCount]);
-
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);
     return () => window.removeEventListener('scroll', handleWindowScroll);
   }, [handleWindowScroll]);
-
   if (loading) {
     return (
       <Box
@@ -164,7 +147,6 @@ const SharedSeriesList = () => {
       </Box>
     );
   }
-
   if (!linkValid) {
     return (
       <Typography
@@ -174,7 +156,6 @@ const SharedSeriesList = () => {
       </Typography>
     );
   }
-
   return (
     <Box>
       <SearchFilters
@@ -192,5 +173,4 @@ const SharedSeriesList = () => {
     </Box>
   );
 };
-
 export default SharedSeriesList;

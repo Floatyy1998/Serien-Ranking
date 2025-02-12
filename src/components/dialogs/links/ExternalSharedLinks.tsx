@@ -9,13 +9,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-
 interface ExternalSavedLink {
   key: string;
   name: string;
   link: string;
 }
-
 interface ExternalSharedLinksProps {
   externalSharedLists: ExternalSavedLink[];
   externalName: string;
@@ -25,7 +23,6 @@ interface ExternalSharedLinksProps {
   handleSaveExternalLink: () => void;
   handleDeleteExternalLink: (key: string) => void;
 }
-
 const ExternalSharedLinks = ({
   externalSharedLists,
   externalName,
@@ -117,5 +114,4 @@ const ExternalSharedLinks = ({
     </>
   );
 };
-
 export default ExternalSharedLinks;

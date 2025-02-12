@@ -3,18 +3,15 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 interface VerifiedRouteProps {
   children: React.ReactNode;
 }
-
 export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [snackOpen, setSnackOpen] = useState<boolean>(false);
   const navigate = useNavigate();
-
   useEffect(() => {
     const user = firebase.auth().currentUser;
     if (user) {
@@ -26,8 +23,6 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
       navigate('/login');
     }
   }, [navigate]);
-
-  // Neuer useEffect – periodisch alle 5 Sekunden prüfen, ob die Email verifiziert wurde
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     if (!isVerified) {
@@ -45,7 +40,6 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
     }
     return () => clearInterval(intervalId);
   }, [isVerified]);
-
   const resendVerification = () => {
     const user = firebase.auth().currentUser;
     if (user) {
@@ -61,7 +55,6 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
         });
     }
   };
-
   const handleSnackClose = (
     _event?: React.SyntheticEvent | Event,
     reason?: string
@@ -69,7 +62,6 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
     if (reason === 'clickaway') return;
     setSnackOpen(false);
   };
-
   if (loading) {
     return (
       <>
@@ -90,7 +82,6 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
       </>
     );
   }
-
   if (!isVerified) {
     return (
       <>
@@ -143,7 +134,6 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
       </>
     );
   }
-
   return (
     <>
       {children}

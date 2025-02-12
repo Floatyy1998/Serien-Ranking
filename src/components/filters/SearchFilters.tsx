@@ -16,13 +16,11 @@ import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
 import WatchlistDialog from '../dialogs/Watchlist/WatchlistDialog';
-
 interface SearchFiltersProps {
   onSearchChange: (value: string) => void;
   onGenreChange: (value: string) => void;
   onProviderChange: (value: string) => void;
 }
-
 export const SearchFilters = memo(
   ({ onSearchChange, onGenreChange, onProviderChange }: SearchFiltersProps) => {
     const [searchValue, setSearchValue] = useState('');
@@ -37,25 +35,20 @@ export const SearchFilters = memo(
     const isSharedListPage = location.pathname.startsWith('/shared-list');
     const authContext = useAuth();
     const user = authContext?.user;
-
     useEffect(() => {
       const fetchWatchlistSeries = async () => {
         if (user) {
           const watchlistSeries = seriesList.filter(
             (series) => series.watchlist
           );
-
           setWatchlistSeries(watchlistSeries);
         }
       };
-
       fetchWatchlistSeries();
     }, [user, seriesList]);
-
     useEffect(() => {
       onSearchChange(debouncedSearchValue);
     }, [debouncedSearchValue, onSearchChange]);
-
     const handleSearchChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -64,7 +57,6 @@ export const SearchFilters = memo(
       },
       [onSearchChange]
     );
-
     const handleGenreChange = useCallback(
       (event: SelectChangeEvent<unknown>) => {
         const value = event.target.value as string;
@@ -73,7 +65,6 @@ export const SearchFilters = memo(
       },
       [onGenreChange]
     );
-
     const handleProviderChange = useCallback(
       (event: SelectChangeEvent<unknown>) => {
         const value = event.target.value as string;
@@ -82,19 +73,15 @@ export const SearchFilters = memo(
       },
       [onProviderChange]
     );
-
-    // Geänderte Toggle-Logik: Beim Deaktivieren der Watchlist werden sowohl Provider als auch Genre zurückgesetzt
     const handleWatchlistToggle = useCallback(() => {
       setIsWatchlist((prev) => {
         const newState = !prev;
         if (prev) {
-          // Watchlist wird deaktiviert
           setSelectedProvider('All');
           setSelectedGenre('All');
           onProviderChange('All');
           onGenreChange('All');
         } else {
-          // Watchlist wird aktiviert
           setSelectedGenre('All');
           setSelectedProvider('All');
           onGenreChange('Watchlist');
@@ -103,15 +90,12 @@ export const SearchFilters = memo(
         return newState;
       });
     }, [onGenreChange, onProviderChange]);
-
     const handleDialogOpen = () => {
       setDialogOpen(true);
     };
-
     const handleDialogClose = () => {
       setDialogOpen(false);
     };
-
     const handleWatchedToggleWithConfirmation = useCallback(
       (
         seasonNumber: number,
@@ -128,7 +112,6 @@ export const SearchFilters = memo(
             episodeRef.update({ watched: !episode.watched });
           });
         }
-
         setWatchlistSeries((prevSeries) =>
           prevSeries.map((series) =>
             series.id === seriesId
@@ -153,7 +136,6 @@ export const SearchFilters = memo(
       },
       [user]
     );
-
     const getNextUnwatchedEpisode = (series: Series) => {
       for (const season of series.seasons) {
         for (let i = 0; i < season.episodes.length; i++) {
@@ -169,16 +151,13 @@ export const SearchFilters = memo(
       }
       return null;
     };
-
     const filteredWatchlistSeries = watchlistSeries.filter((series) => {
       const nextEpisode = getNextUnwatchedEpisode(series);
       return nextEpisode && new Date(nextEpisode.air_date) <= new Date();
     });
-
     const sortedWatchlistSeries = [...filteredWatchlistSeries].sort((a, b) => {
       const [sortField, sortOrder] = sortOption.split('-');
       const orderMultiplier = sortOrder === 'asc' ? 1 : -1;
-
       if (sortField === 'name') {
         return a.title.localeCompare(b.title) * orderMultiplier;
       } else if (sortField === 'date') {
@@ -193,7 +172,6 @@ export const SearchFilters = memo(
       }
       return 0;
     });
-
     return (
       <Box className='flex flex-col gap-4 md:flex-row md:items-center mb-6 max max-w-[1400px] m-auto'>
         <TextField
@@ -280,7 +258,6 @@ export const SearchFilters = memo(
                 {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
               </Button>
             </Tooltip>
-
             <Tooltip title='Als nächstes schauen'>
               <Button
                 variant='outlined'

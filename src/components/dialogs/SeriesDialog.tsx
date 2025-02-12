@@ -25,7 +25,6 @@ interface SeriesDialogProps {
   handleUpdateRatings: () => void;
   isReadOnly?: boolean;
 }
-
 const SeriesDialog = ({
   open,
   onClose,
@@ -38,14 +37,12 @@ const SeriesDialog = ({
   isReadOnly = false,
 }: SeriesDialogProps) => {
   const theme = useTheme();
-
   const handleChipClick = (genre: string) => {
     const input = document.getElementById(`rating-input-${genre}`);
     if (input) {
       input.focus();
     }
   };
-
   const handleRatingChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     genre: string
@@ -53,7 +50,6 @@ const SeriesDialog = ({
     const value = event.target.value;
     setRatings({ ...ratings, [genre]: value === '' ? '' : parseFloat(value) });
   };
-
   return (
     <Dialog
       open={open}
@@ -124,5 +120,4 @@ const SeriesDialog = ({
     </Dialog>
   );
 };
-
 export default SeriesDialog;

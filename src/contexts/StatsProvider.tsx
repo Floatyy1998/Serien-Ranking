@@ -4,22 +4,17 @@ import { useAuth } from '../App';
 import { StatsData } from '../interfaces/StatsData';
 import { calculateOverallRating } from '../utils/rating';
 import { useSeriesList } from './SeriesListProvider';
-
 interface StatsContextType {
   statsData: StatsData | null;
 }
-
 export const StatsContext = createContext<StatsContextType>({
   statsData: null,
 });
-
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth()!;
   const [, setSeriesList] = useState<any[]>([]);
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const { seriesList } = useSeriesList();
-
-  // Hilfsfunktion zur Formatierung der Watchtime
   function secondsToString(minutes: number) {
     let value = minutes;
     const units: { [key: string]: number } = {
@@ -37,8 +32,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     }
     return result;
   }
-
-  // Berechne Statistiken anhand der Serienliste
   const computeStats = (seriesList: any[]): StatsData => {
     const genres: {
       [key: string]: {
@@ -57,7 +50,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     let watchtime = 0;
     let seriesRated = 0;
     let episodesWatched = 0;
-
     seriesList.forEach((series) => {
       const ratingStr = calculateOverallRating(series);
       const rating = parseFloat(ratingStr);
@@ -81,7 +73,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
               series.episodeRuntime,
           0
         ) || 0;
-
       series.genre?.genres?.forEach((genre: string) => {
         if (genre !== 'All') {
           if (!genres[genre]) {
@@ -103,7 +94,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
         providers[provider.name].totalRating += rating;
       });
     });
-
     Object.keys(genres).forEach((key) => {
       genres[key].averageRating =
         genres[key].count > 0 ? genres[key].totalRating / genres[key].count : 0;
@@ -114,7 +104,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
           ? providers[key].totalRating / providers[key].count
           : 0;
     });
-
     return {
       genres: Object.keys(genres).map((key) => ({ name: key, ...genres[key] })),
       providers: Object.keys(providers).map((key) => ({
@@ -129,7 +118,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       },
     };
   };
-
   useEffect(() => {
     if (user) {
       if (seriesList) {
@@ -139,12 +127,10 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
   }, [user, seriesList]);
-
   return (
     <StatsContext.Provider value={{ statsData }}>
       {children}
     </StatsContext.Provider>
   );
 };
-
 export const useStats = () => useContext(StatsContext);

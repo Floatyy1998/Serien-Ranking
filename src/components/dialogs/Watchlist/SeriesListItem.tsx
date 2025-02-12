@@ -2,8 +2,8 @@ import { Box, IconButton } from '@mui/material';
 import { Check } from 'lucide-react';
 import React from 'react';
 import { Series } from '../../../interfaces/Series';
+import { getFormattedDate } from '../../../utils/date.utils';
 import { DraggableSeriesItem } from './DraggableSeriesItem';
-
 interface SeriesListItemProps {
   series: Series;
   index?: number;
@@ -15,17 +15,14 @@ interface SeriesListItemProps {
     air_date: string;
     name: string;
   } | null;
-  formatDate: (date: Date) => string;
   onWatchedToggle: () => void;
 }
-
 const SeriesListItem: React.FC<SeriesListItemProps> = ({
   series,
   index = 0,
   draggable = false,
   moveItem,
   nextUnwatchedEpisode,
-  formatDate,
   onWatchedToggle,
 }) => {
   const content = (
@@ -49,7 +46,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
             </div>
             <div className='mt-1 text-xs text-gray-400'>
               Erscheinungsdatum:{' '}
-              {formatDate(new Date(nextUnwatchedEpisode.air_date))}
+              {getFormattedDate(nextUnwatchedEpisode.air_date)}
             </div>
           </>
         ) : (
@@ -65,7 +62,6 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
       )}
     </Box>
   );
-
   return draggable && moveItem ? (
     <DraggableSeriesItem series={series} index={index} moveItem={moveItem}>
       {content}
@@ -74,5 +70,4 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
     content
   );
 };
-
 export default SeriesListItem;

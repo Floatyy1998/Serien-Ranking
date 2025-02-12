@@ -13,58 +13,44 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, { lazy, Suspense, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../../App'; // Assuming you have an AuthContext
+import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
+import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
 import LoadingCard from '../common/LoadingCard';
 import SeriesDialog from '../dialogs/SeriesDialog';
 import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
 import SeriesWatchedDialog from '../dialogs/SeriesWatchedDialog';
-
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
 const Typography = lazy(() => import('@mui/material/Typography'));
 const Box = lazy(() => import('@mui/material/Box'));
-
 const Card = lazy(() => import('@mui/material/Card'));
 const CardContent = lazy(() => import('@mui/material/CardContent'));
 const CardMedia = lazy(() => import('@mui/material/CardMedia'));
-
 interface SeriesCardProps {
   series: Series;
   genre: string;
   index: number;
 }
-
 export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const shadowColor = !series.production.production ? '#a855f7' : '#22c55e';
-  const auth = useAuth(); // Assuming useAuth provides currentUser
+  const auth = useAuth();
   const user = auth?.user;
   const location = useLocation();
   const isSharedListPage = location.pathname.startsWith('/shared-list');
-
   const uniqueProviders = series.provider
     ? Array.from(new Set(series.provider.provider.map((p) => p.name))).map(
         (name) => series.provider?.provider.find((p) => p.name === name)
       )
     : [];
-
   const rating = calculateOverallRating(series);
-
   const nextEpisodeDate = new Date(series.nextEpisode.nextEpisode);
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-
-  const formatDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
-
-  let dateString = formatDate(nextEpisodeDate);
+  let dateString = getFormattedDate(series.nextEpisode.nextEpisode);
   if (
     nextEpisodeDate.getDate() === today.getDate() &&
     nextEpisodeDate.getMonth() === today.getMonth() &&
@@ -78,12 +64,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   ) {
     dateString = 'Morgen';
   }
-
-  const timeString = nextEpisodeDate.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
+  const timeString = getFormattedTime(series.nextEpisode.nextEpisode);
   const [open, setOpen] = useState(false);
   const [ratings, setRatings] = useState<{ [key: string]: number | string }>(
     {}
@@ -99,7 +80,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const [confirmDialogCallback, setConfirmDialogCallback] = useState<
     (() => void) | null
   >(null);
-
   const allGenres = [
     'All',
     'Action & Adventure',
@@ -117,7 +97,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     'War & Politics',
     'Western',
   ];
-
   const handleClickOpen = () => {
     setOpen(true);
     const initialRatings: { [key: string]: number } = {};
@@ -126,17 +105,14 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     });
     setRatings(initialRatings);
   };
-
   const handleClose = () => {
     setOpen(false);
   };
-
   const handleDeleteSeries = () => {
     const ref = firebase.database().ref(`${user?.uid}/serien/${series.nmr}`);
     ref.remove();
     setOpen(false);
   };
-
   const handleUpdateRatings = async () => {
     const ref = firebase
       .database()
@@ -144,7 +120,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     const updatedRatings = Object.fromEntries(
       Object.entries(ratings).map(([k, value]) => [k, value === '' ? 0 : value])
     );
-
     if (navigator.onLine) {
       try {
         await ref.set(updatedRatings);
@@ -165,17 +140,14 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       setOpen(false);
     }
   };
-
   const handleCloseEpisodes = () => {
     setOpenEpisodes(false);
   };
-
   const shouldNumber = ![
     'Zuletzt Hinzugefügt',
     'Ohne Bewertung',
     'Neue Episoden',
   ].includes(genre);
-
   const handlePosterClick = () => {
     if (genre !== 'Neue Episoden') {
       window.open(
@@ -186,37 +158,30 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       setOpenEpisodes(true);
     }
   };
-
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
-
   const handleTitleClick = () => {
     setOpenWatchedDialog(true);
   };
-
   const handleRatingClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     handleClickOpen();
   };
-
   const handleWatchedToggle = async (
     seasonNumber: number,
     episodeId: number
   ) => {
     const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
     if (!season) return;
-
     const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
     if (episodeIndex === -1) return;
-
     const updatedEpisodes = season.episodes.map((episode, index) => {
       if (index <= episodeIndex) {
         return { ...episode, watched: true };
       }
       return episode;
     });
-
     const updatedSeasons = series.seasons.map((s) => {
       if (s.seasonNumber < seasonNumber) {
         return {
@@ -229,7 +194,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       }
       return s;
     });
-
     try {
       await firebase
         .database()
@@ -239,24 +203,20 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       console.error('Error updating watched status:', error);
     }
   };
-
   const handleConfirmDialogOpen = (callback: () => void) => {
     setConfirmDialogCallback(() => callback);
     setConfirmDialogOpen(true);
   };
-
   const handleConfirmDialogClose = () => {
     setConfirmDialogOpen(false);
     setConfirmDialogCallback(null);
   };
-
   const handleConfirmDialogConfirm = () => {
     if (confirmDialogCallback) {
       confirmDialogCallback();
     }
     handleConfirmDialogClose();
   };
-
   const handleWatchedToggleWithConfirmation = async (
     seasonNumber: number,
     episodeId: number,
@@ -268,15 +228,11 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       setSnackbarOpen(true);
       return;
     }
-
     const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
     if (!season) return;
-
     if (episodeId === -1) {
-      // Für die gesamte Staffel:
       let updatedEpisodes;
       if (forceWatched) {
-        // Setze alle Episoden auf watched=true
         updatedEpisodes = season.episodes.map((e) => ({ ...e, watched: true }));
       } else {
         const allWatched = season.episodes.every((e) => e.watched);
@@ -285,14 +241,12 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
           watched: !allWatched,
         }));
       }
-
       const updatedSeasons = series.seasons.map((s) => {
         if (s.seasonNumber === seasonNumber) {
           return { ...s, episodes: updatedEpisodes };
         }
         return s;
       });
-
       try {
         await firebase
           .database()
@@ -303,15 +257,12 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       }
       return;
     }
-
     const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
     if (episodeIndex === -1) return;
-
     const episode = season.episodes[episodeIndex];
     const previousEpisodesUnwatched = season.episodes
       .slice(0, episodeIndex)
       .some((e) => !e.watched);
-
     if (!episode.watched && previousEpisodesUnwatched) {
       handleConfirmDialogOpen(async () => {
         await handleWatchedToggle(seasonNumber, episodeId);
@@ -323,14 +274,12 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         }
         return e;
       });
-
       const updatedSeasons = series.seasons.map((s) => {
         if (s.seasonNumber === seasonNumber) {
           return { ...s, episodes: updatedEpisodes };
         }
         return s;
       });
-
       try {
         await firebase
           .database()
@@ -341,11 +290,9 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       }
     }
   };
-
   const handleCloseWatchedDialog = () => {
     setOpenWatchedDialog(false);
   };
-
   const handleWatchlistToggle = async (event: React.MouseEvent) => {
     if (!isSharedListPage) {
       event.stopPropagation();
@@ -368,8 +315,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       }
     }
   };
-
-  // Neue Funktion für das Batch‑Update aller Staffeln bis zu einer bestimmten Staffel:
   const handleBatchWatchedToggle = async (confirmSeason: number) => {
     if (!user) {
       setSnackbarMessage('Bitte melden Sie sich an, um den Status zu ändern.');
@@ -395,7 +340,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       console.error('Error updating watched status in batch:', error);
     }
   };
-
   return (
     <Suspense fallback={<LoadingCard />}>
       <Card
@@ -512,7 +456,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={series.title} arrow>
             <Typography
-              variant='body1' // Geänderte Größe
+              variant='body1'
               className='text-white text-center cursor-pointer'
               sx={{
                 maxWidth: '100%',
@@ -561,7 +505,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         handleWatchedToggleWithConfirmation={
           handleWatchedToggleWithConfirmation
         }
-        handleBatchWatchedToggle={handleBatchWatchedToggle} // neuer Prop
+        handleBatchWatchedToggle={handleBatchWatchedToggle}
         isReadOnly={isSharedListPage}
       />
       <Snackbar

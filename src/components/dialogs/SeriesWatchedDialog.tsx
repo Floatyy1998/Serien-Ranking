@@ -16,8 +16,8 @@ import { Check, ChevronDown } from 'lucide-react';
 import { memo, useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../interfaces/Series';
+import { getFormattedDate } from '../../utils/date.utils';
 import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
-
 interface SeriesWatchedDialogProps {
   open: boolean;
   onClose: () => void;
@@ -31,7 +31,6 @@ interface SeriesWatchedDialogProps {
   handleBatchWatchedToggle?: (confirmSeason: number) => void;
   isReadOnly?: boolean;
 }
-
 const SeriesWatchedDialog = memo(
   ({
     open,
@@ -44,25 +43,15 @@ const SeriesWatchedDialog = memo(
     const [expanded, setExpanded] = useState<number | false>(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmSeason, setConfirmSeason] = useState<number | null>(null);
-
     const handleAccordionChange =
       (seasonNumber: number) =>
       (_event: React.SyntheticEvent, isExpanded: boolean) => {
         setExpanded(isExpanded ? seasonNumber : false);
       };
-
-    const formatDateWithLeadingZeros = (date: Date) => {
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}.${month}.${year}`;
-    };
-
     const uniqueSeasons = series?.seasons?.filter(
       (season, index, self) =>
         index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
     );
-
     const getNextUnwatchedEpisode = () => {
       if (!series.seasons || series.seasons.length === 0) {
         return null;
@@ -81,9 +70,7 @@ const SeriesWatchedDialog = memo(
       }
       return null;
     };
-
     const nextUnwatchedEpisode = getNextUnwatchedEpisode();
-
     const handleConfirmYes = () => {
       if (confirmSeason !== null && handleBatchWatchedToggle) {
         handleBatchWatchedToggle(confirmSeason);
@@ -91,7 +78,6 @@ const SeriesWatchedDialog = memo(
       setConfirmOpen(false);
       setConfirmSeason(null);
     };
-
     const handleConfirmNo = () => {
       if (confirmSeason !== null) {
         handleWatchedToggleWithConfirmation(confirmSeason, -1, true);
@@ -99,14 +85,12 @@ const SeriesWatchedDialog = memo(
       setConfirmOpen(false);
       setConfirmSeason(null);
     };
-
     const handleSeasonClick = (seasonNumber: number, allWatched: boolean) => {
       if (!isReadOnly) {
         if (!allWatched) {
           const allPreviousWatched = uniqueSeasons
             ?.filter((s) => s.seasonNumber < seasonNumber)
             .every((s) => s.episodes.every((e) => e.watched));
-
           if (allPreviousWatched) {
             handleWatchedToggleWithConfirmation(seasonNumber, -1, true);
           } else {
@@ -118,7 +102,6 @@ const SeriesWatchedDialog = memo(
         }
       }
     };
-
     return (
       <Dialog
         open={open}
@@ -212,7 +195,7 @@ const SeriesWatchedDialog = memo(
                         style={{
                           color: allWatched
                             ? '#00fed7'
-                            : 'rgba(255, 255, 255, 0.3)', // Grau, wenn nicht watched
+                            : 'rgba(255, 255, 255, 0.3)',
                           transition: 'all 0.2s ease-in-out',
                           cursor: isReadOnly ? 'default' : 'pointer',
                           display: 'flex',
@@ -237,9 +220,7 @@ const SeriesWatchedDialog = memo(
                             {episode.name}
                           </span>
                           <span className='text-sm text-gray-500'>
-                            {formatDateWithLeadingZeros(
-                              new Date(episode.air_date)
-                            )}
+                            {getFormattedDate(episode.air_date)}
                           </span>
                         </div>
                         <div
@@ -254,7 +235,7 @@ const SeriesWatchedDialog = memo(
                           style={{
                             color: episode.watched
                               ? '#00fed7'
-                              : 'rgba(255, 255, 255, 0.3)', // Grau, wenn nicht watched
+                              : 'rgba(255, 255, 255, 0.3)',
                             transition: 'all 0.2s ease-in-out',
                             cursor: isReadOnly ? 'default' : 'pointer',
                             display: 'flex',
@@ -300,5 +281,4 @@ const SeriesWatchedDialog = memo(
     );
   }
 );
-
 export default SeriesWatchedDialog;

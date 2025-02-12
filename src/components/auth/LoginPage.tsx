@@ -4,25 +4,19 @@ import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthLayout } from './Authlayout';
-// Optionaler: Importiere initFirebase, falls notwendig
 import { initFirebase } from '../../firebase/initFirebase';
-
+import { AuthLayout } from './Authlayout';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
-
   const handleCloseSnackbar = () => setOpenSnackbar(false);
-
   const handleLogin = () => {
-    // Sicherstellen, dass Firebase initialisiert ist
     if (!Firebase.apps.length) {
       initFirebase();
     }
-
     Firebase.auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
@@ -33,7 +27,6 @@ const LoginPage = () => {
         setOpenSnackbar(true);
       });
   };
-
   const handleForgotPassword = () => {
     if (!email) {
       setSnackbarMsg('Bitte geben Sie Ihre E-Mail-Adresse ein.');
@@ -53,7 +46,6 @@ const LoginPage = () => {
         setOpenSnackbar(true);
       });
   };
-
   return (
     <AuthLayout title='Login'>
       <form className='space-y-4' onSubmit={(e) => e.preventDefault()}>
@@ -110,5 +102,4 @@ const LoginPage = () => {
     </AuthLayout>
   );
 };
-
 export default LoginPage;

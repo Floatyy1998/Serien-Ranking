@@ -17,7 +17,6 @@ import {
 import React, { useEffect, useState } from 'react';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 import '../../styles/animations.css';
-
 interface TodayEpisodesDialogProps {
   open: boolean;
   onClose: () => void;
@@ -26,10 +25,9 @@ interface TodayEpisodesDialogProps {
     watchtime: string[];
     episodesWatched: number;
     seriesRated: number;
-    watchtimeTotal: number; // neu hinzugefügt (in Minuten)
+    watchtimeTotal: number;
   };
 }
-
 const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
   open,
   onClose,
@@ -38,7 +36,6 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
 }) => {
   const [dontShowToday, setDontShowToday] = useState(false);
   const [funFact, setFunFact] = useState<React.ReactNode>(null);
-
   useEffect(() => {
     if (open && userStats && userStats.watchtimeTotal) {
       const totalHours = userStats.watchtimeTotal / 60;
@@ -49,7 +46,6 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
       const booksRead = Math.floor(totalHours / 6);
       const marsTrip = (totalHours / 6570).toFixed(2);
       const totalKM = totalHours * 5;
-
       const funFacts = [
         <>
           🐋 Du hast{' '}
@@ -172,19 +168,14 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           Podcast-Episoden aufnehmen können.
         </>,
       ];
-
       const randomIndex = Math.floor(Math.random() * funFacts.length);
       setFunFact(funFacts[randomIndex]);
     }
   }, [open, userStats]);
-
-  // Sortiere episodes aufsteigend nach releaseTimestamp (früheste Zeit oben)
   const sortedEpisodes = [...episodes].sort(
     (a, b) => (a.releaseTimestamp || 0) - (b.releaseTimestamp || 0)
   );
-
   const handleDialogClose = () => {
-    // Wenn Checkbox aktiviert, speichere Timestamp für nächsten Tag um 7 Uhr
     if (dontShowToday) {
       const now = new Date();
       const nextDaySeven = new Date(
@@ -199,7 +190,6 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
     }
     onClose();
   };
-
   return (
     <>
       <Dialog
@@ -231,7 +221,6 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
               <ListItem
                 key={ep.id}
                 sx={{
-                  // Angepasst an das Design vom WatchlistDialog
                   border: '1px solid rgba(0,254,215,0.125)',
                   backgroundColor: 'rgba(0,0,0,0.4)',
                   borderRadius: 2,
@@ -278,7 +267,7 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
               label='Auf diesem Gerät heute nicht mehr anzeigen'
             />
           </Box>
-          {/* Anzeige des Funfacts unter einem Divider, anstatt der Statistiken */}
+          {}
           {userStats && (
             <>
               <Divider />
@@ -288,7 +277,6 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
                   mt: 4,
                   p: 2,
                   borderRadius: 2,
-
                   boxShadow: 3,
                 }}
               >
@@ -317,5 +305,4 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
     </>
   );
 };
-
 export default TodayEpisodesDialog;

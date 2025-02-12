@@ -2,7 +2,6 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { Box, Button, Divider, TextField, Tooltip } from '@mui/material';
 import React from 'react';
-
 interface FilterProps {
   filterInput: string;
   setFilterInput: (val: string) => void;
@@ -11,7 +10,6 @@ interface FilterProps {
   sortOption: string;
   toggleSort: (field: string) => void;
 }
-
 const WatchlistFilter: React.FC<FilterProps> = ({
   filterInput,
   setFilterInput,
@@ -100,5 +98,4 @@ const WatchlistFilter: React.FC<FilterProps> = ({
     </Box>
   );
 };
-
 export default WatchlistFilter;

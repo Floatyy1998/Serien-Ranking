@@ -10,13 +10,11 @@ import {
   TextField,
 } from '@mui/material';
 import React from 'react';
-
 interface SharedLink {
   key: string;
   link: string;
   expiresAt: number;
 }
-
 interface MySharedLinksProps {
   linkDuration: number;
   isEndless: boolean;
@@ -28,7 +26,6 @@ interface MySharedLinksProps {
   handleCopyToClipboard: (link: string) => void;
   handleDeleteLink: (key: string) => void;
 }
-
 const MySharedLinks = ({
   linkDuration,
   isEndless,
@@ -150,5 +147,4 @@ const MySharedLinks = ({
     </>
   );
 };
-
 export default MySharedLinks;

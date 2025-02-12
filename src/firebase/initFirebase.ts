@@ -1,6 +1,5 @@
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-
 export const initFirebase = () => {
   const config = {
     apiKey: process.env.VITE_APIKEY,
@@ -12,7 +11,6 @@ export const initFirebase = () => {
     appId: process.env.VITE_APPID,
     measurementId: process.env.VITE_MEASUREMENTID,
   };
-
   if (!Firebase.apps.length) {
     Firebase.initializeApp(config);
   }

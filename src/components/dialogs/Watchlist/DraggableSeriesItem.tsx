@@ -1,19 +1,16 @@
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-
 interface DragItem {
   index: number;
   id: number;
   type: string;
 }
-
 interface DraggableSeriesItemProps {
   series: any;
   index: number;
   moveItem: (from: number, to: number) => void;
   children: React.ReactNode;
 }
-
 export const DraggableSeriesItem = ({
   series,
   index,

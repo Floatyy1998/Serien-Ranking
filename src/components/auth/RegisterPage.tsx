@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from './Authlayout';
-
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,21 +14,16 @@ const RegisterPage = () => {
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
-
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
-
   const validatePassword = (password: string) => {
-    // Passwort muss mindestens 8 Zeichen, sowie Groß-, Kleinbuchstaben, Ziffer und Sonderzeichen enthalten
     const re =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
     return re.test(password);
   };
-
   const handleCloseSnackbar = () => setOpenSnackbar(false);
-
   const handleRegister = () => {
     if (!validateEmail(email)) {
       setEmailError('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
@@ -45,12 +39,10 @@ const RegisterPage = () => {
       setPasswordError('Die Passwörter stimmen nicht überein.');
       return;
     }
-
     firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        // Sende Bestätigungsmail
         userCredential.user?.sendEmailVerification();
         setSnackbarMsg('Bestätigungsmail wurde gesendet.');
         setOpenSnackbar(true);
@@ -61,7 +53,6 @@ const RegisterPage = () => {
         setOpenSnackbar(true);
       });
   };
-
   return (
     <AuthLayout title='Registrieren'>
       <form className='space-y-4' onSubmit={(e) => e.preventDefault()}>
@@ -137,5 +128,4 @@ const RegisterPage = () => {
     </AuthLayout>
   );
 };
-
 export default RegisterPage;

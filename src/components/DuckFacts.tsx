@@ -2,7 +2,6 @@ import { Box, Button, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Duck from '../assets/duck.png';
 import quack from '../assets/duck_quack.mp3';
-
 const duckFacts = [
   'Enten können Farben besser sehen als Menschen.',
   'Die meisten Enten nisten in hohem Gras und in der Nähe von Wasser.',
@@ -14,7 +13,6 @@ const duckFacts = [
   'Enten können sich unter Wasser bis zu 10 Sekunden lang halten.',
   'Enten sind sozial und bilden enge Familienbande.',
   'Ein Entenquaken kann in freier Natur sehr laut sein.',
-  // Zusätzliche Fakten
   'Enten haben einen sehr guten Orientierungssinn und finden oft zu ihrem Ursprungsort zurück.',
   'Die Vielzahl der unterschiedlichen Entenarten zeigt eine große Vielfalt in Größe und Farbe.',
   'Enten haben spezielle Drüsen, die ihre Federn ölen und dadurch wasserdicht machen.',
@@ -26,12 +24,9 @@ const duckFacts = [
   'Enten nutzen oft das gleiche Brutgebiet Jahr für Jahr.',
   'Viele Entenarten kommunizieren mit einem komplexen Lautsystem.',
 ];
-
 export const DuckFacts = () => {
   const [fact, setFact] = useState<string>('');
-
   useEffect(() => {
-    // Wähle zufällig einen Fact aus und spiele den Quack-Sound beim ersten Benutzerklick
     const randomFact = duckFacts[Math.floor(Math.random() * duckFacts.length)];
     setFact(randomFact);
     const audio = new Audio(quack);
@@ -43,13 +38,9 @@ export const DuckFacts = () => {
     };
     document.addEventListener('click', playAudio);
   }, []);
-
-  // Neuer Button-Handler: Zeige einen weiteren Fakt an und spiele den Quack
   const handleNewFact = (e: React.MouseEvent) => {
-    // Verhindere, dass der globale Klicklistener ebenfalls reagiert
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
-
     const newFact = duckFacts[Math.floor(Math.random() * duckFacts.length)];
     setFact(newFact);
     const audio = new Audio(quack);
@@ -57,10 +48,9 @@ export const DuckFacts = () => {
       .play()
       .catch((error) => console.error('Audio playback failed:', error));
   };
-
   return (
     <>
-      {/* CSS-Keyframes für die Animation der Ente (von rechts nach links) */}
+      {}
       <style>
         {`
           @keyframes duckRun {
@@ -69,7 +59,7 @@ export const DuckFacts = () => {
           }
         `}
       </style>
-      {/* Globaler Cursor-Style auf Ente */}
+      {}
       <style>
         {`
           body { 
@@ -77,7 +67,7 @@ export const DuckFacts = () => {
           }
         `}
       </style>
-      {/* Animierte Ente */}
+      {}
       <Box
         sx={{
           position: 'fixed',
@@ -89,8 +79,7 @@ export const DuckFacts = () => {
       >
         <img src={Duck} alt='Duck' style={{ width: '100px' }} />
       </Box>
-
-      {/* DuckFacts Content */}
+      {}
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant='h4' gutterBottom>
           Duck Facts
@@ -103,5 +92,4 @@ export const DuckFacts = () => {
     </>
   );
 };
-
 export default DuckFacts;

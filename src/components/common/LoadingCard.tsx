@@ -1,6 +1,5 @@
 import { Box, Card } from '@mui/material';
 import { InfinitySpin } from 'react-loader-spinner';
-
 const LoadingCard = () => {
   return (
     <Card
@@ -21,5 +20,4 @@ const LoadingCard = () => {
     </Card>
   );
 };
-
 export default LoadingCard;

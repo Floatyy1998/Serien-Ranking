@@ -1,7 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, DialogTitle, IconButton } from '@mui/material';
 import React from 'react';
-
 export const DialogHeader = ({
   title,
   onClose,
@@ -20,7 +19,6 @@ export const DialogHeader = ({
     </IconButton>
   </DialogTitle>
 );
-
 export const TabPanel = (props: {
   children: React.ReactNode;
   value: number;
@@ -33,7 +31,6 @@ export const TabPanel = (props: {
     </div>
   );
 };
-
 export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
   const formatDate = (date: Date) => {
     const d = new Date(date);

@@ -11,12 +11,12 @@ import {
   ListItemText,
 } from '@mui/material';
 import { Series } from '../../interfaces/Series';
+import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 interface SeriesEpisodesDialogProps {
   open: boolean;
   onClose: () => void;
   series: Series;
 }
-
 const SeriesEpisodesDialog = ({
   open,
   onClose,
@@ -89,11 +89,8 @@ const SeriesEpisodesDialog = ({
                       component='span'
                       sx={{ fontSize: '0.8rem', color: 'gray' }}
                     >
-                      Uhrzeit:{' '}
-                      {new Date(episode.airstamp).toLocaleTimeString('de-DE', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {getFormattedDate(episode.airstamp)} |{' '}
+                      {getFormattedTime(episode.airstamp)}
                     </Box>
                   </Box>
                 </ListItem>
@@ -104,5 +101,4 @@ const SeriesEpisodesDialog = ({
     </Dialog>
   );
 };
-
 export default SeriesEpisodesDialog;
