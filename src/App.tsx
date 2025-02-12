@@ -33,6 +33,7 @@ const SeriesGrid = lazy(() => import('./components/series/SeriesGrid'));
 const LoginPage = lazy(() => import('./components/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
 const StartPage = lazy(() => import('./pages/StartPage'));
+const DuckFacts = lazy(() => import('./components/DuckFacts'));
 
 export const AuthContext = createContext<{
   user: Firebase.User | null;
@@ -187,6 +188,7 @@ export function App() {
                           path='/shared-list/:linkId'
                           element={<SharedSeriesList />}
                         />
+                        <Route path='/duckfacts' element={<DuckFacts />} />
                         <Route path='*' element={<Navigate to='/' />} />
                       </Routes>
                     </div>
