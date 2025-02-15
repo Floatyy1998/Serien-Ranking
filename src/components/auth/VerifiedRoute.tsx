@@ -1,7 +1,9 @@
 import { Alert, Button, Card, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import { Box } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { InfinitySpin } from 'react-loader-spinner';
 import { useNavigate } from 'react-router-dom';
 interface VerifiedRouteProps {
   children: React.ReactNode;
@@ -64,22 +66,9 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   };
   if (loading) {
     return (
-      <>
-        <div>Lade...</div>
-        <Snackbar
-          open={snackOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackClose}
-        >
-          <Alert
-            onClose={handleSnackClose}
-            severity={message.includes('Fehler') ? 'error' : 'success'}
-            sx={{ width: '100%' }}
-          >
-            {message}
-          </Alert>
-        </Snackbar>
-      </>
+      <Box className='flex justify-center items-center'>
+        <InfinitySpin color='#00fed7' />
+      </Box>
     );
   }
   if (!isVerified) {

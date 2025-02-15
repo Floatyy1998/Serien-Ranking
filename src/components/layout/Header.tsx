@@ -155,6 +155,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           body: JSON.stringify(seriesData.data),
         });
         if (res.ok) {
+          // Die Serienliste wird automatisch durch den Firebase Listener im SeriesListProvider aktualisiert
           setSnackbarMessage('Serie hinzugefügt!');
           setSnackbarSeverity('success');
           setSnackbarOpen(true);

@@ -28,14 +28,24 @@ export const SeriesListProvider = ({
   const [loading, setLoading] = useState(true);
   const [sharedLinks, setSharedLinks] = useState<SharedLink[]>([]);
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      // Bei Logout: Liste leeren
+      setSeriesList([]);
+      setSharedLinks([]);
+      setLoading(false);
+      return;
+    }
+    // Beim Login: Firebase Listener setzen für automatische Aktualisierung
+    setLoading(true);
     const ref = firebase.database().ref(`${user.uid}/serien`);
     ref.on('value', (snapshot) => {
       const data = snapshot.val();
       setSeriesList(data ? (Object.values(data) as Series[]) : []);
       setLoading(false);
     });
-    return () => ref.off();
+    return () => {
+      ref.off();
+    };
   }, [user]);
   useEffect(() => {
     if (user && window.location.pathname === '/shared-list') {

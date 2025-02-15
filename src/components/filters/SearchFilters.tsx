@@ -35,6 +35,17 @@ export const SearchFilters = memo(
     const isSharedListPage = location.pathname.startsWith('/shared-list');
     const authContext = useAuth();
     const user = authContext?.user;
+
+    // Reset lokale Filterstates, wenn sich der Benutzer ändert
+    useEffect(() => {
+      setSearchValue('');
+      setSelectedGenre('All');
+      setSelectedProvider('All');
+      onSearchChange('');
+      onGenreChange('All');
+      onProviderChange('All');
+    }, [user, onSearchChange, onGenreChange, onProviderChange]);
+
     useEffect(() => {
       const fetchWatchlistSeries = async () => {
         if (user) {
