@@ -171,6 +171,7 @@ const WatchlistDialog = ({
         sx={{
           minHeight: '80vh',
           overflowY: 'auto',
+          p: isMobile ? '0px 12px' : '20px 24px',
         }}
       >
         {(!isMobile || showFilter) && (
