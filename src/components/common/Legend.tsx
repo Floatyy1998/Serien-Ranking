@@ -1,13 +1,20 @@
 import { Info } from 'lucide-react';
 import { lazy, Suspense } from 'react';
+import { InfinitySpin } from 'react-loader-spinner';
 const Box = lazy(() => import('@mui/material/Box'));
 const IconButton = lazy(() => import('@mui/material/IconButton'));
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
 const Typography = lazy(() => import('@mui/material/Typography'));
 export const Legend = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Box className='flex items-center gap-6 mb-4 max-w-[1400px] mx-auto justify-center md:justify-start sm:justify-center'>
+    <Suspense
+      fallback={
+        <Box className='flex justify-center items-center'>
+          <InfinitySpin color='#00fed7' />
+        </Box>
+      }
+    >
+      <Box className='flex items-center gap-6 max-w-[1400px] mx-auto justify-center md:justify-start sm:justify-center'>
         <Typography variant='body2' className='text-gray-400'>
           Serien Status:
         </Typography>

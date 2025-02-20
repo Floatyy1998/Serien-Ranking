@@ -1,26 +1,36 @@
+import AddIcon from '@mui/icons-material/Add';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ListIcon from '@mui/icons-material/List';
-import { Box, SelectChangeEvent, Tooltip } from '@mui/material';
-import Button from '@mui/material/Button';
+import {
+  Box,
+  Button,
+  Divider,
+  SelectChangeEvent,
+  TextField,
+  Tooltip,
+} from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
+import { genreMenuItems, providerMenuItems } from '../../constants/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
+import AddSeriesDialog from '../dialogs/AddSeriesDialog';
 import WatchlistDialog from '../dialogs/Watchlist/WatchlistDialog';
+
 interface SearchFiltersProps {
   onSearchChange: (value: string) => void;
   onGenreChange: (value: string) => void;
   onProviderChange: (value: string) => void;
 }
+
 export const SearchFilters = memo(
   ({ onSearchChange, onGenreChange, onProviderChange }: SearchFiltersProps) => {
     const [searchValue, setSearchValue] = useState('');
@@ -35,6 +45,7 @@ export const SearchFilters = memo(
     const isSharedListPage = location.pathname.startsWith('/shared-list');
     const authContext = useAuth();
     const user = authContext?.user;
+    const [dialogAddOpen, setDialogAddOpen] = useState(false);
 
     // Reset lokale Filterstates, wenn sich der Benutzer ändert
     useEffect(() => {
@@ -57,9 +68,11 @@ export const SearchFilters = memo(
       };
       fetchWatchlistSeries();
     }, [user, seriesList]);
+
     useEffect(() => {
       onSearchChange(debouncedSearchValue);
     }, [debouncedSearchValue, onSearchChange]);
+
     const handleSearchChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -68,6 +81,7 @@ export const SearchFilters = memo(
       },
       [onSearchChange]
     );
+
     const handleGenreChange = useCallback(
       (event: SelectChangeEvent<unknown>) => {
         const value = event.target.value as string;
@@ -76,6 +90,7 @@ export const SearchFilters = memo(
       },
       [onGenreChange]
     );
+
     const handleProviderChange = useCallback(
       (event: SelectChangeEvent<unknown>) => {
         const value = event.target.value as string;
@@ -84,6 +99,7 @@ export const SearchFilters = memo(
       },
       [onProviderChange]
     );
+
     const handleWatchlistToggle = useCallback(() => {
       setIsWatchlist((prev) => {
         const newState = !prev;
@@ -101,12 +117,15 @@ export const SearchFilters = memo(
         return newState;
       });
     }, [onGenreChange, onProviderChange]);
+
     const handleDialogOpen = () => {
       setDialogOpen(true);
     };
+
     const handleDialogClose = () => {
       setDialogOpen(false);
     };
+
     const handleWatchedToggleWithConfirmation = useCallback(
       (
         seasonNumber: number,
@@ -147,6 +166,7 @@ export const SearchFilters = memo(
       },
       [user]
     );
+
     const getNextUnwatchedEpisode = (series: Series) => {
       for (const season of series.seasons) {
         for (let i = 0; i < season.episodes.length; i++) {
@@ -162,10 +182,12 @@ export const SearchFilters = memo(
       }
       return null;
     };
+
     const filteredWatchlistSeries = watchlistSeries.filter((series) => {
       const nextEpisode = getNextUnwatchedEpisode(series);
       return nextEpisode && new Date(nextEpisode.air_date) <= new Date();
     });
+
     const sortedWatchlistSeries = [...filteredWatchlistSeries].sort((a, b) => {
       const [sortField, sortOrder] = sortOption.split('-');
       const orderMultiplier = sortOrder === 'asc' ? 1 : -1;
@@ -183,16 +205,45 @@ export const SearchFilters = memo(
       }
       return 0;
     });
+
     return (
-      <Box className='flex flex-col gap-4 md:flex-row md:items-center mb-6 max max-w-[1400px] m-auto'>
-        <TextField
-          label='Suchen'
-          variant='outlined'
-          className='flex-1'
-          type='search'
-          value={searchValue}
-          onChange={handleSearchChange}
-        />
+      <Box className='flex flex-col gap-4 md:flex-row md:items-center justify-center mb-6 max-w-[1400px] m-auto'>
+        <Box className='flex items-center justify-center gap-2 w-full max-w-md'>
+          <TextField
+            label='Suchen'
+            variant='outlined'
+            className='flex-1'
+            type='search'
+            value={searchValue}
+            onChange={handleSearchChange}
+            fullWidth
+          />
+          {!isSharedListPage && (
+            <>
+              <Tooltip title='Serie hinzufügen'>
+                <Button
+                  variant='outlined'
+                  onClick={() => setDialogAddOpen(true)}
+                  sx={{
+                    minWidth: 56,
+                    width: 56,
+                    height: 56,
+                    borderRadius: '0.5rem',
+                  }}
+                  aria-label='Serie hinzufügen'
+                  role='button'
+                >
+                  <AddIcon />
+                </Button>
+              </Tooltip>
+              <Divider
+                orientation='vertical'
+                flexItem
+                sx={{ ml: 1, display: { xs: 'none', md: 'block' } }}
+              />
+            </>
+          )}
+        </Box>
         <FormControl className='md:w-[250px]' disabled={isWatchlist}>
           <InputLabel id='genre-label'>Genre</InputLabel>
           <Select
@@ -201,24 +252,11 @@ export const SearchFilters = memo(
             value={selectedGenre}
             onChange={handleGenreChange}
           >
-            <MenuItem value='All'>All</MenuItem>
-            <MenuItem value='Action & Adventure'>Action & Adventure</MenuItem>
-            <MenuItem value='Animation'>Animation</MenuItem>
-            <MenuItem value='Comedy'>Comedy</MenuItem>
-            <MenuItem value='Crime'>Crime</MenuItem>
-            <MenuItem value='Drama'>Drama</MenuItem>
-            <MenuItem value='Documentary'>Documentary</MenuItem>
-            <MenuItem value='Family'>Family</MenuItem>
-            <MenuItem value='Kids'>Kids</MenuItem>
-            <MenuItem value='Mystery'>Mystery</MenuItem>
-            <MenuItem value='Reality'>Reality</MenuItem>
-            <MenuItem value='Sci-Fi & Fantasy'>Sci-Fi & Fantasy</MenuItem>
-            <MenuItem value='Talk'>Talk</MenuItem>
-            <MenuItem value='War & Politics'>War & Politics</MenuItem>
-            <MenuItem value='Western'>Western</MenuItem>
-            <MenuItem value='Ohne Bewertung'>Ohne Bewertung</MenuItem>
-            <MenuItem value='Neue Episoden'>Neue Episoden</MenuItem>
-            <MenuItem value='Zuletzt Hinzugefügt'>Zuletzt Hinzugefügt</MenuItem>
+            {genreMenuItems.map((item) => (
+              <MenuItem key={item.value} value={item.value}>
+                {item.label}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <FormControl className='md:w-[250px]' disabled={isWatchlist}>
@@ -229,64 +267,63 @@ export const SearchFilters = memo(
             value={selectedProvider}
             onChange={handleProviderChange}
           >
-            <MenuItem value='All'>Alle</MenuItem>
-            <MenuItem value='Amazon Prime Video'>Prime Video</MenuItem>
-            <MenuItem value='Animation Digital Network'>ADN</MenuItem>
-            <MenuItem value='Apple TV Plus'>AppleTV+</MenuItem>
-            <MenuItem value='Crunchyroll'>Crunchyroll</MenuItem>
-            <MenuItem value='Disney Plus'>Disney+</MenuItem>
-            <MenuItem value='Freevee'>Freevee</MenuItem>
-            <MenuItem value='Joyn Plus'>Joyn+</MenuItem>
-            <MenuItem value='MagentaTV'>MagentaTV</MenuItem>
-            <MenuItem value='Netflix'>Netflix</MenuItem>
-            <MenuItem value='Paramount Plus'>Paramount+</MenuItem>
-            <MenuItem value='RTL+'>RTL+</MenuItem>
-            <MenuItem value='WOW'>WOW</MenuItem>
+            {providerMenuItems.map((item) => (
+              <MenuItem key={item.value} value={item.value}>
+                {item.label}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         {!isSharedListPage && (
-          <Box className='flex gap-3'>
-            <Tooltip
-              title={
-                isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
-              }
-            >
-              <Button
-                variant={isWatchlist ? 'contained' : 'outlined'}
-                onClick={handleWatchlistToggle}
-                sx={{
-                  margin: 'auto',
-                  borderRadius: '0.5rem',
-                  width: 48,
-                  height: 48,
-                  minWidth: 48,
-                }}
-                aria-label={
+          <>
+            <Divider
+              orientation='vertical'
+              flexItem
+              sx={{ display: { xs: 'none', md: 'block' } }}
+            />
+            <Box className='flex gap-3'>
+              <Tooltip
+                title={
                   isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
                 }
-                role='button'
               >
-                {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-              </Button>
-            </Tooltip>
-            <Tooltip title='Als nächstes schauen'>
-              <Button
-                variant='outlined'
-                onClick={handleDialogOpen}
-                sx={{
-                  margin: 'auto',
-                  borderRadius: '0.5rem',
-                  width: 48,
-                  height: 48,
-                  minWidth: 48,
-                }}
-                aria-label='Als nächstes schauen'
-                role='button'
-              >
-                <ListIcon />
-              </Button>
-            </Tooltip>
-          </Box>
+                <Button
+                  variant={isWatchlist ? 'contained' : 'outlined'}
+                  onClick={handleWatchlistToggle}
+                  sx={{
+                    margin: 'auto',
+                    borderRadius: '0.5rem',
+                    width: 56,
+                    height: 56,
+                    minWidth: 56,
+                  }}
+                  aria-label={
+                    isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
+                  }
+                  role='button'
+                >
+                  {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                </Button>
+              </Tooltip>
+              <Tooltip title='Als nächstes schauen'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogOpen}
+                  sx={{
+                    margin: 'auto',
+                    borderRadius: '0.5rem',
+                    width: 56,
+                    height: 56,
+                    minWidth: 56,
+                  }}
+                  aria-label='Als nächstes schauen'
+                  role='button'
+                >
+                  <ListIcon />
+                </Button>
+              </Tooltip>
+            </Box>
+          </>
         )}
         <WatchlistDialog
           open={dialogOpen}
@@ -297,8 +334,13 @@ export const SearchFilters = memo(
           }
           setWatchlistSeries={setWatchlistSeries}
         />
+        <AddSeriesDialog
+          open={dialogAddOpen}
+          onClose={() => setDialogAddOpen(false)}
+        />
       </Box>
     );
   }
 );
+
 export default SearchFilters;

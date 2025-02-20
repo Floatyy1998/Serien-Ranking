@@ -1,0 +1,17 @@
+export const allGenres = [
+  'All',
+  'Action & Adventure',
+  'Animation',
+  'Comedy',
+  'Crime',
+  'Drama',
+  'Documentary',
+  'Family',
+  'Kids',
+  'Mystery',
+  'Reality',
+  'Sci-Fi & Fantasy',
+  'Talk',
+  'War & Politics',
+  'Western',
+];

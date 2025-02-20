@@ -13,6 +13,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, { lazy, Suspense, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { allGenres } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
 import { Series } from '../../interfaces/Series';
@@ -80,23 +81,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const [confirmDialogCallback, setConfirmDialogCallback] = useState<
     (() => void) | null
   >(null);
-  const allGenres = [
-    'All',
-    'Action & Adventure',
-    'Animation',
-    'Comedy',
-    'Crime',
-    'Drama',
-    'Documentary',
-    'Family',
-    'Kids',
-    'Mystery',
-    'Reality',
-    'Sci-Fi & Fantasy',
-    'Talk',
-    'War & Politics',
-    'Western',
-  ];
   const handleClickOpen = () => {
     setOpen(true);
     const initialRatings: { [key: string]: number } = {};

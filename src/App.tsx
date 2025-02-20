@@ -68,7 +68,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 export const useAuth = () => useContext(AuthContext);
 export function App() {
-  const [isNavOpen, setIsNavOpen] = useState(false);
   const [, setIsStatsOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
@@ -121,11 +120,7 @@ export function App() {
                     </Box>
                   }
                 >
-                  <Header
-                    isNavOpen={isNavOpen}
-                    setIsNavOpen={setIsNavOpen}
-                    setIsStatsOpen={setIsStatsOpen}
-                  />
+                  <Header setIsStatsOpen={setIsStatsOpen} />
                   <main className='w-full px-4 py-6'>
                     <div className=' mx-auto'>
                       <Link
@@ -146,7 +141,8 @@ export function App() {
                               {(auth) =>
                                 auth?.user ? (
                                   <VerifiedRoute>
-                                    <>
+                                    <div className='flex flex-col gap-4 items-start'>
+                                      {/* Suchfilter und Legende untereinander, linksbündig */}
                                       <SearchFilters
                                         onSearchChange={handleSearchChange}
                                         onGenreChange={handleGenreChange}
@@ -158,7 +154,7 @@ export function App() {
                                         selectedGenre={selectedGenre}
                                         selectedProvider={selectedProvider}
                                       />
-                                    </>
+                                    </div>
                                   </VerifiedRoute>
                                 ) : (
                                   <StartPage />

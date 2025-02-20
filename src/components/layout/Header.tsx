@@ -1,16 +1,11 @@
 import {
   Alert,
   AppBar,
-  Autocomplete,
   Box,
   Button,
-  Drawer,
   IconButton,
-  List,
-  ListItem,
   Tooltip as MuiTooltip,
   Snackbar,
-  TextField,
   Toolbar,
   Typography,
 } from '@mui/material';
@@ -30,11 +25,10 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
-import { BarChartIcon, MenuIcon, ShareIcon } from 'lucide-react';
-import { memo, useCallback, useRef, useState } from 'react';
+import { BarChartIcon, ShareIcon } from 'lucide-react';
+import { memo, useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
-import notFound from '../../assets/notFound.jpg';
 import SharedLinksDialog from '../dialogs/SharedLinksDialog';
 import StatsDialog from '../dialogs/StatsDialog';
 Chart.register(
@@ -48,35 +42,14 @@ Chart.register(
   Tooltip
 );
 interface HeaderProps {
-  isNavOpen: boolean;
-  setIsNavOpen: (open: boolean) => void;
   setIsStatsOpen: (open: boolean) => void;
 }
-interface Serien {
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: number[];
-  id: number;
-  origin_country: string[];
-  original_language: string;
-  original_name: string;
-  overview: string;
-  popularity: number;
-  poster_path: string;
-  first_air_date: string;
-  name: string;
-  vote_average: number;
-  vote_count: number;
-}
-export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
+export const Header = memo(({ setIsStatsOpen }: HeaderProps) => {
   const auth = useAuth();
   const { user, setUser } = auth || {};
   const location = useLocation();
   const navigate = useNavigate();
   const isSharedListPage = location.pathname.startsWith('/shared-list');
-  const [, setSearchValue] = useState('');
-  const [options, setOptions] = useState<Serien[]>([]);
-  const [selectedSeries, setSelectedSeries] = useState<Serien | null>(null);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -88,7 +61,6 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const [, setShareLink] = useState<string | null>(null);
   const [linkDuration, setLinkDuration] = useState<number>(24);
   const [linksDialogOpen, setLinksDialogOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
@@ -103,86 +75,12 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
         if (setUser) {
           setUser(null);
         }
-        setIsNavOpen(false);
       });
-  }, [setUser, setIsNavOpen]);
-  const handleSearchChange = useCallback(
-    async (_event: React.ChangeEvent<unknown>, value: string) => {
-      setSearchValue(value);
-      if (value.length >= 3) {
-        const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-        const response = await fetch(
-          `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${value}&language=de-DE`
-        );
-        const data = await response.json();
-        setOptions(data.results || []);
-      }
-    },
-    []
-  );
-  const handleAddSeries = useCallback(async () => {
-    if (!user) {
-      setSnackbarMessage(
-        'Bitte loggen Sie sich ein, um eine Serie hinzuzufügen.'
-      );
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-    if (selectedSeries) {
-      setSnackbarMessage('Serie wird hinzugefügt');
-      setSnackbarSeverity('warning');
-      setSnackbarOpen(true);
-      const seriesData = {
-        id: selectedSeries.id.toString(),
-        data: {
-          user: import.meta.env.VITE_USER,
-          id: selectedSeries.id,
-          uuid: user.uid,
-        },
-      };
-      try {
-        const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-cache',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          redirect: 'follow',
-          referrerPolicy: 'no-referrer',
-          body: JSON.stringify(seriesData.data),
-        });
-        if (res.ok) {
-          // Die Serienliste wird automatisch durch den Firebase Listener im SeriesListProvider aktualisiert
-          setSnackbarMessage('Serie hinzugefügt!');
-          setSnackbarSeverity('success');
-          setSnackbarOpen(true);
-          setOptions((prevOptions) =>
-            prevOptions.filter((option) => option.id !== selectedSeries.id)
-          );
-          setIsNavOpen(false);
-        } else {
-          const msgJson = await res.json();
-          if (msgJson.error !== 'Serie bereits vorhanden') {
-            throw new Error('Fehler beim Hinzufügen der Serie.');
-          }
-          setSnackbarMessage('Serie bereits vorhanden');
-          setSnackbarSeverity('error');
-          setSnackbarOpen(true);
-        }
-      } catch (error) {
-        console.error('Error sending data to server:', error);
-        setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-      }
-    }
-  }, [user, selectedSeries]);
+  }, [setUser]);
   const handleStatsOpen = useCallback(() => {
     setStatsDialogOpen(true);
-  }, []);
+    setIsStatsOpen(true);
+  }, [setIsStatsOpen]);
   const handleStatsClose = useCallback(() => {
     setStatsDialogOpen(false);
   }, []);
@@ -231,24 +129,24 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
   const handleBackToHome = () => {
     navigate('/');
   };
-  const handleDrawerClose = () => {
-    setIsNavOpen(false);
-    inputRef.current?.blur();
-  };
   return (
     <>
-      <AppBar position='fixed' color='default' elevation={1}>
+      <AppBar
+        style={{ backgroundColor: '#090909' }}
+        position='fixed'
+        color='default'
+        elevation={1}
+      >
         <Toolbar>
           {user && !isSharedListPage && (
-            <IconButton
-              edge='start'
-              color='inherit'
-              aria-label='Menü öffnen'
-              onClick={() => setIsNavOpen(true)}
+            <Button
+              onClick={handleLogout}
+              variant='outlined'
+              aria-label='Logout'
               role='button'
             >
-              <MenuIcon />
-            </IconButton>
+              Logout
+            </Button>
           )}
           <Typography
             variant='h1'
@@ -310,100 +208,7 @@ export const Header = memo(({ isNavOpen, setIsNavOpen }: HeaderProps) => {
           </Box>
         </Toolbar>
       </AppBar>
-      <Toolbar /> {}
-      {user && !isSharedListPage && (
-        <Drawer anchor='top' open={isNavOpen} onClose={handleDrawerClose}>
-          <List
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <ListItem
-              sx={{
-                width: '100%',
-                justifyContent: 'center',
-                flexDirection: isMobile ? 'column' : 'row',
-              }}
-            >
-              <Autocomplete
-                onChange={(_event, newValue) => setSelectedSeries(newValue)}
-                onInputChange={handleSearchChange}
-                options={options}
-                getOptionLabel={(option) => option.name}
-                className='w-full'
-                itemProp='name'
-                renderOption={(props, option) => (
-                  <li
-                    {...props}
-                    key={option.id}
-                    style={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <img
-                      src={
-                        option.poster_path
-                          ? `https://image.tmdb.org/t/p/w92${option.poster_path}`
-                          : notFound
-                      }
-                      alt={option.name}
-                      style={{ marginRight: 10, width: 92 }}
-                    />
-                    <div style={{ flexGrow: 1 }}>
-                      <div>{option.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'gray' }}>
-                        {option.original_name}
-                      </div>
-                    </div>
-                    <div style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>
-                      {new Date(option.first_air_date).getFullYear()}
-                    </div>
-                  </li>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label='Serie hinzufügen'
-                    variant='outlined'
-                    type='search'
-                    inputRef={inputRef}
-                  />
-                )}
-              />
-              <Button
-                onClick={handleAddSeries}
-                variant='outlined'
-                sx={{
-                  marginLeft: isMobile ? '0' : '10px',
-                  marginTop: isMobile ? '10px' : '0',
-                  fontSize: '1.2rem',
-                }}
-                aria-label='Serie hinzufügen'
-                role='button'
-              >
-                Hinzufügen
-              </Button>
-            </ListItem>
-            <ListItem
-              sx={{
-                width: '100%',
-                justifyContent: 'center',
-                flexDirection: isMobile ? 'column' : 'row',
-              }}
-            >
-              <Button
-                onClick={handleLogout}
-                sx={{ marginLeft: '20px' }}
-                variant='outlined'
-                aria-label='Logout'
-                role='button'
-              >
-                Logout
-              </Button>
-            </ListItem>
-          </List>
-        </Drawer>
-      )}
+      <Toolbar />
       <StatsDialog
         open={statsDialogOpen}
         onClose={handleStatsClose}
