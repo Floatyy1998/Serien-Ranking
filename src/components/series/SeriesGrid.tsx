@@ -150,14 +150,14 @@ export const SeriesGrid = memo(
     }, [handleWindowScroll]);
     if (loading) {
       return (
-        <Box className='flex justify-center items-center'>
+        <Box className='flex justify-center items-center w-full h-full'>
           <InfinitySpin color='#00fed7' />
         </Box>
       );
     }
     if (filteredSeries.length === 0 && selectedGenre === 'All') {
       return (
-        <Box className='flex justify-center items-center'>
+        <Box className='flex justify-center items-center w-full h-full'>
           <Typography variant='h2' className='text-center'>
             Noch keine Serien vorhanden. Füge eine Serie über das Menü hinzu.
           </Typography>
