@@ -358,7 +358,7 @@ export const SearchFilters = memo(
               flexItem
               sx={{ display: { xs: 'none', md: 'block' } }}
             />
-            <Box className='flex gap-3'>
+            <Box className='flex gap-3 justify-center md:justify-start'>
               <Tooltip
                 title={
                   isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
