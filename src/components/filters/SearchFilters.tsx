@@ -368,11 +368,20 @@ export const SearchFilters = memo(
                   variant={isWatchlist ? 'contained' : 'outlined'}
                   onClick={handleWatchlistToggle}
                   sx={{
-                    margin: 'auto',
-                    borderRadius: '0.5rem',
                     width: 56,
                     height: 56,
-                    minWidth: 56,
+                    borderRadius: '0.5rem',
+                    overflow: 'hidden',
+                    transition: 'width 0.3s ease',
+                    justifyContent: 'flex-start',
+                    pl: '19px',
+                    '@media (min-width:900px)': {
+                      '&:hover': { width: 150 },
+                      '&:hover .text-wrapper': {
+                        opacity: 1,
+                        transition: 'opacity 0.5s ease',
+                      },
+                    },
                   }}
                   aria-label={
                     isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
@@ -380,6 +389,20 @@ export const SearchFilters = memo(
                   role='button'
                 >
                   {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                  <Box
+                    component='span'
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                      '@media (min-width:900px)': {
+                        '&:hover, button:hover &': { opacity: 1 },
+                      },
+                    }}
+                    className='text-wrapper'
+                  >
+                    {isWatchlist ? 'Ausblenden' : 'Anzeigen'}
+                  </Box>
                 </Button>
               </Tooltip>
               <Tooltip title='Als nächstes schauen'>
@@ -387,16 +410,39 @@ export const SearchFilters = memo(
                   variant='outlined'
                   onClick={handleDialogOpen}
                   sx={{
-                    margin: 'auto',
-                    borderRadius: '0.5rem',
                     width: 56,
                     height: 56,
-                    minWidth: 56,
+                    borderRadius: '0.5rem',
+                    overflow: 'hidden',
+                    transition: 'width 0.3s ease',
+                    justifyContent: 'flex-start',
+                    pl: '19px',
+                    '@media (min-width:900px)': {
+                      '&:hover': { width: 150 },
+                      '&:hover .text-wrapper': {
+                        opacity: 1,
+                        transition: 'opacity 0.5s ease',
+                      },
+                    },
                   }}
                   aria-label='Als nächstes schauen'
                   role='button'
                 >
                   <ListIcon />
+                  <Box
+                    component='span'
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                      '@media (min-width:900px)': {
+                        '&:hover, button:hover &': { opacity: 1 },
+                      },
+                    }}
+                    className='text-wrapper'
+                  >
+                    Nächstes
+                  </Box>
                 </Button>
               </Tooltip>
             </Box>
