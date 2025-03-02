@@ -9,14 +9,21 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Bar, Doughnut } from 'react-chartjs-2';
+import { useLocation } from 'react-router-dom';
 import { useStats } from '../../contexts/StatsProvider';
+
 interface StatsDialogProps {
   open: boolean;
   onClose: () => void;
   isMobile: boolean;
 }
+
 const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
-  const { statsData } = useStats();
+  const { seriesStatsData, movieStatsData } = useStats();
+  const location = useLocation();
+  const isMoviesPage = location.pathname === '/movies';
+  const statsData = isMoviesPage ? movieStatsData : seriesStatsData;
+
   const genreColors = [
     '#FF6384',
     '#36A2EB',
@@ -51,6 +58,7 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
     '#9966FF',
     '#FF9F40',
   ];
+
   return (
     <Dialog
       sx={{ textAlign: 'center !important' }}
@@ -83,7 +91,9 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
               }}
             >
               <Box>
-                <Typography variant='h4'>Gesehene Serien</Typography>
+                <Typography variant='h4'>
+                  Gesehene {isMoviesPage ? 'Filme' : 'Serien'}
+                </Typography>
                 <Typography style={{ color: 'white' }} variant='body1'>
                   {statsData.userStats.seriesRated}
                 </Typography>
@@ -104,7 +114,7 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
             <Grid container spacing={2} columns={2}>
               <Grid item xs={12} lg={6}>
                 <Typography variant='h4'>
-                  Anzahl der Serien pro Genre
+                  Anzahl der {isMoviesPage ? 'Filme' : 'Serien'} pro Genre
                 </Typography>
                 <Box
                   sx={{
@@ -213,8 +223,7 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
               </Grid>
               <Grid item xs={12} lg={6}>
                 <Typography variant='h4'>
-                  {' '}
-                  Anzahl der Serien Pro Anbieter
+                  Anzahl der {isMoviesPage ? 'Filme' : 'Serien'} pro Anbieter
                 </Typography>
                 <Box
                   sx={{
@@ -334,4 +343,5 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
     </Dialog>
   );
 };
+
 export default StatsDialog;

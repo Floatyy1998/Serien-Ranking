@@ -38,7 +38,7 @@ const StartPage = () => {
       >
         <h1 className='text-3xl font-semibold mb-4'>Willkommen bei TV-RANK</h1>
         <p className='text-gray-400 text-lg'>
-          Entdecke, bewerte und verwalte deine Lieblingsserien.
+          Entdecke, bewerte und verwalte deine Lieblingsserien und -filme.
         </p>
       </motion.div>
       <motion.div
@@ -53,8 +53,8 @@ const StartPage = () => {
         className='bg-gray-900/50 rounded-xl p-8 max-w-2xl w-full mb-12 backdrop-blur-sm'
       >
         <p className='text-center text-lg mb-6'>
-          Mit TV-RANK findest du neue Serien, führst deine Watchlist und
-          verpasst keine Folge mehr.
+          Mit TV-RANK findest du neue Serien und Filme, führst deine Watchlist
+          und verpasst keine Folge oder keinen Film mehr.
         </p>
         <div className='flex gap-4 justify-center'>
           <motion.div
@@ -114,13 +114,13 @@ const StartPage = () => {
               icon: <Star className='w-8 h-8 text-[#00fed7] mx-auto mb-4' />,
               title: 'Bewertungen',
               description:
-                'Bewerte deine Lieblingsserien und teile deine Meinung.',
+                'Bewerte deine Lieblingsserien und -filme und teile deine Meinung.',
             },
             {
               icon: <Tv className='w-8 h-8 text-[#00fed7] mx-auto mb-4' />,
               title: 'Entdeckungen',
               description:
-                'Finde neue Serien, die perfekt zu deinem Geschmack passen. (Coming Soon...)',
+                'Finde neue Serien und Filme, die perfekt zu deinem Geschmack passen.',
             },
             {
               icon: <List className='w-8 h-8 text-[#00fed7] mx-auto mb-4' />,

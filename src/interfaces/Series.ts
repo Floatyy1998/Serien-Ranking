@@ -38,6 +38,12 @@ export interface Series {
     title: string;
   };
   nmr: number;
+  origin_country: string[];
+  original_language: string;
+  original_name: string;
+  popularity: number;
+  vote_average: number;
+  vote_count: number;
   poster: {
     poster: string;
   };
@@ -73,4 +79,5 @@ export interface Series {
     wo: string;
   };
   watchlist?: boolean;
+  release_date: string;
 }

@@ -26,7 +26,7 @@ export const SeriesGrid = memo(
     const [visibleCount, setVisibleCount] = useState(20);
     const [showTodayDialog, setShowTodayDialog] = useState(false);
     const [todayEpisodes, setTodayEpisodes] = useState<TodayEpisode[]>([]);
-    const { statsData } = useStats();
+    const { seriesStatsData } = useStats();
     const dialogShown = useRef(false);
     const filteredSeries = useMemo(() => {
       return seriesList
@@ -192,7 +192,7 @@ export const SeriesGrid = memo(
           open={showTodayDialog}
           onClose={handleDialogClose}
           episodes={todayEpisodes}
-          userStats={statsData?.userStats}
+          userStats={seriesStatsData?.userStats}
         />
       </>
     );

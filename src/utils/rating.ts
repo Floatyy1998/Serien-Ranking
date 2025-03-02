@@ -1,10 +1,11 @@
+import { Movie } from '../interfaces/Movie';
 import { Series } from '../interfaces/Series';
 const addZeroes = (num: number) => num.toFixed(2);
 const round = (num: number, precision: number) => {
   const factor = 1 / precision;
   return Math.round(num * factor) / factor;
 };
-export const calculateOverallRating = (series: Series) => {
+export const calculateOverallRating = (series: Series | Movie) => {
   let totalRating = 0;
   let genreCount = 0;
   try {

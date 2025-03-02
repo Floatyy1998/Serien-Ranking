@@ -2,6 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ListIcon from '@mui/icons-material/List';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
@@ -16,13 +17,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { genreMenuItems, providerMenuItems } from '../../constants/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
 import AddSeriesDialog from '../dialogs/AddSeriesDialog';
+import DiscoverSeriesDialog from '../dialogs/DiscoverSeriesDialog';
 import WatchlistDialog from '../dialogs/Watchlist/WatchlistDialog';
 interface SearchFiltersProps {
   onSearchChange: (value: string) => void;
@@ -36,6 +38,7 @@ export const SearchFilters = memo(
     const [selectedProvider, setSelectedProvider] = useState('All');
     const [isWatchlist, setIsWatchlist] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [dialogDiscoverOpen, setDialogDiscoverOpen] = useState(false);
     const [watchlistSeries, setWatchlistSeries] = useState<Series[]>([]);
     const [sortOption] = useState('date-desc');
     const { seriesList } = useSeriesList();
@@ -44,6 +47,8 @@ export const SearchFilters = memo(
     const authContext = useAuth();
     const user = authContext?.user;
     const [dialogAddOpen, setDialogAddOpen] = useState(false);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const addSeriesInputRef = useRef<HTMLInputElement>(null);
 
     // Reset lokale Filterstates, wenn sich der Benutzer ändert
     useEffect(() => {
@@ -112,6 +117,22 @@ export const SearchFilters = memo(
     }, [onGenreChange, onProviderChange]);
     const handleDialogOpen = () => {
       setDialogOpen(true);
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 100);
+    };
+    const handleDialogAddOpen = () => {
+      setDialogAddOpen(true);
+      setTimeout(() => {
+        if (addSeriesInputRef.current) {
+          addSeriesInputRef.current.focus();
+        }
+      }, 100);
+    };
+    const handleDialogDiscoverOpen = () => {
+      setDialogDiscoverOpen(true);
     };
     const handleDialogClose = () => {
       setDialogOpen(false);
@@ -204,6 +225,7 @@ export const SearchFilters = memo(
               value={searchValue}
               onChange={handleSearchChange}
               fullWidth
+              inputRef={searchInputRef}
             />
           </Box>
           {!isSharedListPage && (
@@ -211,7 +233,7 @@ export const SearchFilters = memo(
               <Tooltip title='Serie hinzufügen'>
                 <Button
                   variant='outlined'
-                  onClick={() => setDialogAddOpen(true)}
+                  onClick={handleDialogAddOpen}
                   sx={{
                     width: 56,
                     height: 56,
@@ -255,6 +277,48 @@ export const SearchFilters = memo(
                 sx={{ ml: 1, display: { xs: 'none', md: 'block' } }}
               />
             </Box>
+          )}
+          {!isSharedListPage && (
+            <Tooltip title='Serien entdecken'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogDiscoverOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 150 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Serien entdecken'
+                role='button'
+              >
+                <SearchIcon />
+                <Box
+                  component='span'
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    '@media (min-width:900px)': {
+                      '&:hover, button:hover &': { opacity: 1 },
+                    },
+                  }}
+                  className='text-wrapper'
+                >
+                  Entdecken
+                </Box>
+              </Button>
+            </Tooltip>
           )}
         </Box>
         <FormControl className='md:w-[250px]' disabled={isWatchlist}>
@@ -350,6 +414,11 @@ export const SearchFilters = memo(
         <AddSeriesDialog
           open={dialogAddOpen}
           onClose={() => setDialogAddOpen(false)}
+          inputRef={addSeriesInputRef}
+        />
+        <DiscoverSeriesDialog
+          open={dialogDiscoverOpen}
+          onClose={() => setDialogDiscoverOpen(false)}
         />
       </Box>
     );

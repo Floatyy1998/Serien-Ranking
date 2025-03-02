@@ -1,4 +1,4 @@
-import { Box, CssBaseline, ThemeProvider } from '@mui/material';
+import { Box, Button, CssBaseline, ThemeProvider, styled } from '@mui/material';
 import Firebase from 'firebase/compat/app';
 import {
   Suspense,
@@ -17,8 +17,12 @@ import {
   Route,
   BrowserRouter as Router,
   Routes,
+  useLocation,
+  useNavigate,
 } from 'react-router-dom';
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
+import MovieSearchFilters from './components/filters/MovieSearchFilters';
+import { MovieListProvider } from './contexts/MovieListProvider';
 import { SeriesListProvider } from './contexts/SeriesListProvider';
 import { StatsProvider } from './contexts/StatsProvider';
 import SharedSeriesList from './pages/SharedSeriesList';
@@ -27,6 +31,7 @@ const Header = lazy(() => import('./components/layout/Header'));
 const Legend = lazy(() => import('./components/common/Legend'));
 const SearchFilters = lazy(() => import('./components/filters/SearchFilters'));
 const SeriesGrid = lazy(() => import('./components/series/SeriesGrid'));
+const MovieGrid = lazy(() => import('./components/movies/MovieGrid'));
 const LoginPage = lazy(() => import('./components/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
 const StartPage = lazy(() => import('./pages/StartPage'));
@@ -68,6 +73,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 export const useAuth = () => useContext(AuthContext);
 export function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+}
+
+const NavBar = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  backgroundColor: theme.palette.background.paper,
+  padding: theme.spacing(1),
+}));
+
+const NavButton = styled(Button)(({ theme }) => ({
+  textTransform: 'none',
+  fontWeight: theme.typography.fontWeightRegular,
+  fontSize: theme.typography.pxToRem(15),
+  margin: theme.spacing(1),
+  color: 'rgba(255, 255, 255, 0.7)',
+  '&.active': {
+    color: '#fff',
+    borderBottom: `2px solid ${theme.palette.primary.main}`,
+  },
+}));
+
+function AppContent() {
   const [, setIsStatsOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
@@ -81,54 +113,89 @@ export function App() {
   const handleProviderChange = useCallback((value: string) => {
     setSelectedProvider(value);
   }, []);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const handleNavClick = (path: string) => {
+    navigate(path);
+  };
+
+  const showNavBar =
+    !location.pathname.startsWith('/shared-list') &&
+    location.pathname !== '/duckfacts';
+
   return (
     <AuthProvider>
       <SeriesListProvider>
-        <StatsProvider>
-          <Helmet>
-            <title>
-              TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien
-            </title>
-            <meta
-              name='description'
-              content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-            />
-            <meta
-              name='keywords'
-              content='Serien, TV, Bewertung, Watchlist, TV-RANK'
-            />
-            <meta
-              property='og:title'
-              content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
-            />
-            <meta
-              property='og:description'
-              content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-            />
-            <meta property='og:image' content='/favicon.ico' />
-            <meta property='og:url' content='https://tv-rank.de' />
-            <meta name='twitter:card' content='summary_large_image' />
-          </Helmet>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Router>
-              <div className=' w-full '>
+        <MovieListProvider>
+          <StatsProvider>
+            <Helmet>
+              <title>
+                TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien
+              </title>
+              <meta
+                name='description'
+                content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+              />
+              <meta
+                name='keywords'
+                content='Serien, TV, Bewertung, Watchlist, TV-RANK'
+              />
+              <meta
+                property='og:title'
+                content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
+              />
+              <meta
+                property='og:description'
+                content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+              />
+              <meta property='og:image' content='/favicon.ico' />
+              <meta property='og:url' content='https://tv-rank.de' />
+              <meta name='twitter:card' content='summary_large_image' />
+            </Helmet>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <div className='w-full'>
                 <Suspense
                   fallback={
-                    <Box className='flex justify-center items-center '>
+                    <Box className='flex justify-center items-center'>
                       <InfinitySpin color='#00fed7'></InfinitySpin>
                     </Box>
                   }
                 >
                   <Header setIsStatsOpen={setIsStatsOpen} />
+                  <AuthContext.Consumer>
+                    {(auth) =>
+                      auth?.user &&
+                      showNavBar && (
+                        <NavBar>
+                          <NavButton
+                            className={
+                              location.pathname === '/' ? 'active' : ''
+                            }
+                            onClick={() => handleNavClick('/')}
+                          >
+                            Serien
+                          </NavButton>
+                          <NavButton
+                            className={
+                              location.pathname === '/movies' ? 'active' : ''
+                            }
+                            onClick={() => handleNavClick('/movies')}
+                          >
+                            Filme
+                          </NavButton>
+                        </NavBar>
+                      )
+                    }
+                  </AuthContext.Consumer>
                   <main className='w-full px-4 py-6'>
-                    <div className=' mx-auto'>
+                    <div className='mx-auto'>
                       <Link
                         to='/'
                         className='mb-12'
                         aria-label='Zur Startseite'
                       >
-                        {}
                         <span className='sr-only'>Zur Startseite</span>
                       </Link>
                       <Routes>
@@ -168,17 +235,46 @@ export function App() {
                           element={<SharedSeriesList />}
                         />
                         <Route path='/duckfacts' element={<DuckFacts />} />
+                        <Route
+                          path='/movies'
+                          element={
+                            <AuthContext.Consumer>
+                              {(auth) =>
+                                auth?.user ? (
+                                  <VerifiedRoute>
+                                    <div className='flex flex-col gap-4 items-start'>
+                                      <MovieSearchFilters
+                                        onSearchChange={handleSearchChange}
+                                        onGenreChange={handleGenreChange}
+                                        onProviderChange={handleProviderChange}
+                                      />
+
+                                      <MovieGrid
+                                        searchValue={searchValue}
+                                        selectedGenre={selectedGenre}
+                                        selectedProvider={selectedProvider}
+                                      />
+                                    </div>
+                                  </VerifiedRoute>
+                                ) : (
+                                  <StartPage />
+                                )
+                              }
+                            </AuthContext.Consumer>
+                          }
+                        />
                         <Route path='*' element={<Navigate to='/' />} />
                       </Routes>
                     </div>
                   </main>
                 </Suspense>
               </div>
-            </Router>
-          </ThemeProvider>
-        </StatsProvider>
+            </ThemeProvider>
+          </StatsProvider>
+        </MovieListProvider>
       </SeriesListProvider>
     </AuthProvider>
   );
 }
+
 export default App;

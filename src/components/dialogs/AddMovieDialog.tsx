@@ -1,5 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search'; // Neuer Import
+import SearchIcon from '@mui/icons-material/Search';
 import {
   Alert,
   Autocomplete,
@@ -16,142 +16,46 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
-import { DialogHeader } from './shared/SharedDialogComponents'; // Neuer Import
+import { DialogHeader } from './shared/SharedDialogComponents';
 
-export interface Serien {
+export interface Filme {
   adult: boolean;
   backdrop_path: string;
   genre_ids: number[];
   id: number;
-  origin_country: string[];
   original_language: string;
-  original_name: string;
+  original_title: string;
   overview: string;
   popularity: number;
   poster_path: string;
-  first_air_date: string;
-  name: string;
+  release_date: string;
+  title: string;
   vote_average: number;
   vote_count: number;
 }
 
-interface AddSeriesDialogProps {
+interface AddMovieDialogProps {
   open: boolean;
   onClose: () => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
-const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
+const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
   open,
   onClose,
   inputRef,
 }) => {
   const auth = useAuth();
   const { user } = auth || {};
-  const [searchValue, setSearchValue] = useState(''); // Änderung: searchValue auslesen
-  const [options, setOptions] = useState<Serien[]>([]);
-  const [selectedSeries, setSelectedSeries] = useState<Serien | null>(null);
+  const [searchValue, setSearchValue] = useState('');
+  const [options, setOptions] = useState<Filme[]>([]);
+  const [selectedMovie, setSelectedMovie] = useState<Filme | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('success');
   const [keepOpen, setKeepOpen] = useState(false);
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
-  const handleSearchChange = useCallback(
-    async (_event: React.ChangeEvent<unknown>, value: string) => {
-      setSearchValue(value); // Speicherung des eingegebenen Werts
-      if (selectedSeries && value !== selectedSeries.name) {
-        setSelectedSeries(null);
-      }
-      if (value.length >= 3) {
-        const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-        const response = await fetch(
-          `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${value}&language=de-DE`
-        );
-        const data = await response.json();
-        setOptions(data.results || []);
-      } else {
-        setOptions([]); // Optionen leeren, wenn weniger als 3 Zeichen
-      }
-    },
-    [selectedSeries]
-  );
-
-  const handleAddSeries = useCallback(async () => {
-    if (!user || !selectedSeries) {
-      setSnackbarMessage(
-        'Bitte loggen Sie sich ein, um eine Serie hinzuzufügen.'
-      );
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      onClose();
-      return;
-    }
-    setSnackbarMessage('Serie wird hinzugefügt');
-    setSnackbarSeverity('warning');
-    setSnackbarOpen(true);
-    const seriesData = {
-      id: selectedSeries.id.toString(),
-      data: {
-        user: import.meta.env.VITE_USER,
-        id: selectedSeries.id,
-        uuid: user.uid,
-      },
-    };
-    try {
-      const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(seriesData.data),
-      });
-      if (res.ok) {
-        setSnackbarMessage('Serie hinzugefügt!');
-        setSnackbarSeverity('success');
-        setSnackbarOpen(true);
-        setSearchValue('');
-        setOptions([]);
-        setSelectedSeries(null);
-        const inputElement = document.getElementById(
-          'series-search-input'
-        ) as HTMLInputElement;
-        if (inputElement) {
-          inputElement.value = '';
-          inputElement.focus();
-        }
-        if (!keepOpen) {
-          onClose();
-        }
-      } else {
-        const msgJson = await res.json();
-        if (msgJson.error !== 'Serie bereits vorhanden') {
-          throw new Error('Fehler beim Hinzufügen der Serie.');
-        }
-        setSnackbarMessage('Serie bereits vorhanden');
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-      }
-    } catch (error) {
-      console.error('Error sending data to server:', error);
-      setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
-  }, [user, selectedSeries, onClose, keepOpen]);
-
-  // Neue Funktion zum Schließen des Dialogs
-  const handleDialogClose = () => {
-    setSearchValue('');
-    setOptions([]);
-    onClose();
-  };
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -159,22 +63,114 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
     }
   }, [open, inputRef]);
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleSearchChange = useCallback(
+    async (_event: React.ChangeEvent<unknown>, value: string) => {
+      setSearchValue(value);
+      if (selectedMovie && value !== selectedMovie.title) {
+        setSelectedMovie(null);
+      }
+      if (value.length >= 3) {
+        const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+        const response = await fetch(
+          `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${value}&language=de-DE`
+        );
+        const data = await response.json();
+        setOptions(data.results || []);
+      } else {
+        setOptions([]);
+      }
+    },
+    [selectedMovie]
+  );
+
+  const handleAddMovie = useCallback(async () => {
+    if (!user || !selectedMovie) {
+      setSnackbarMessage(
+        'Bitte loggen Sie sich ein, um einen Film hinzuzufügen.'
+      );
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      onClose();
+      return;
+    }
+    setSnackbarMessage('Film wird hinzugefügt');
+    setSnackbarSeverity('warning');
+    setSnackbarOpen(true);
+    const movieData = {
+      id: selectedMovie.id.toString(),
+      data: {
+        user: import.meta.env.VITE_USER,
+        id: selectedMovie.id,
+        uuid: user.uid,
+      },
+    };
+    try {
+      const res = await fetch(`https://serienapi.konrad-dinges.de/addMovie`, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(movieData.data),
+      });
+      if (res.ok) {
+        setSnackbarMessage('Film hinzugefügt!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+
+        if (!keepOpen) {
+          onClose();
+        }
+      } else {
+        const msgJson = await res.json();
+        if (msgJson.error !== 'Film bereits vorhanden') {
+          throw new Error('Fehler beim Hinzufügen des Films.');
+        }
+        setSnackbarMessage('Film bereits vorhanden');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error('Error sending data to server:', error);
+      setSnackbarMessage('Fehler beim Hinzufügen des Films.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setSearchValue('');
+      setSelectedMovie(null);
+
+      setOptions([]);
+    }
+  }, [user, selectedMovie, onClose, keepOpen]);
+
+  const handleDialogClose = () => {
+    setSearchValue('');
+    setOptions([]);
+    onClose();
+  };
+
   return (
     <>
       <Dialog open={open} onClose={handleDialogClose} fullWidth>
-        <DialogHeader title='Serie hinzufügen' onClose={handleDialogClose} />
+        <DialogHeader title='Film hinzufügen' onClose={handleDialogClose} />
         <DialogContent dividers>
           <Autocomplete
-            open={searchValue.length >= 3 && !selectedSeries} // Options öffnen nur bei >= 3 Zeichen und keine Serie ausgewählt
-            popupIcon={<SearchIcon />} // Neue Eigenschaft
+            open={searchValue.length >= 3 && !selectedMovie}
+            popupIcon={<SearchIcon />}
             sx={{
-              '& .MuiAutocomplete-popupIndicatorOpen': { transform: 'none' }, // Kein Drehen der Lupe
+              '& .MuiAutocomplete-popupIndicatorOpen': { transform: 'none' },
             }}
-            noOptionsText='keine Treffer' // Neue Eigenschaft
-            onChange={(_event, newValue) => setSelectedSeries(newValue)}
+            noOptionsText='keine Treffer'
+            onChange={(_event, newValue) => setSelectedMovie(newValue)}
             onInputChange={handleSearchChange}
             options={options}
-            getOptionLabel={(option) => option.name}
+            getOptionLabel={(option) => option.title}
             className='w-full'
             itemProp='name'
             renderOption={(props, option) => (
@@ -189,28 +185,28 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                       ? `https://image.tmdb.org/t/p/w92${option.poster_path}`
                       : notFound
                   }
-                  alt={option.name}
+                  alt={option.title}
                   style={{ marginRight: 10, width: 92 }}
                 />
                 <div style={{ flexGrow: 1 }}>
-                  <div>{option.name}</div>
+                  <div>{option.title}</div>
                   <div style={{ fontSize: '0.8rem', color: 'gray' }}>
-                    {option.original_name}
+                    {option.original_title}
                   </div>
                 </div>
                 <div style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>
-                  {new Date(option.first_air_date).getFullYear()}
+                  {new Date(option.release_date).getFullYear()}
                 </div>
               </li>
             )}
             renderInput={(params) => (
               <TextField
                 {...params}
-                label='Serie suchen'
+                label='Film suchen'
                 variant='outlined'
                 type='search'
                 inputRef={inputRef}
-                id='series-search-input'
+                id='movie-search-input'
               />
             )}
           />
@@ -229,7 +225,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
           </Box>
           <Button onClick={handleDialogClose}>Abbrechen</Button>
           <Button
-            onClick={handleAddSeries}
+            onClick={handleAddMovie}
             sx={{
               display: { xs: 'flex', md: 'none' },
             }}
@@ -237,7 +233,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
             <AddIcon />
           </Button>
           <Button
-            onClick={handleAddSeries}
+            onClick={handleAddMovie}
             sx={{
               display: { xs: 'none', md: 'flex' },
             }}
@@ -259,4 +255,4 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
   );
 };
 
-export default AddSeriesDialog;
+export default AddMovieDialog;
