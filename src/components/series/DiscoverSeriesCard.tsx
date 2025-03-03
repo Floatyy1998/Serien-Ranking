@@ -21,6 +21,8 @@ const DiscoverSeriesCard = ({ series, onAdd }: DiscoverSeriesCardProps) => {
     onAdd(series);
   };
 
+  const posterImage = series.poster?.poster ? series.poster.poster : notFound;
+
   return (
     <Card
       className='h-full flex flex-col'
@@ -35,12 +37,7 @@ const DiscoverSeriesCard = ({ series, onAdd }: DiscoverSeriesCardProps) => {
             height: '100%',
             objectFit: 'cover',
           }}
-          image={
-            series.poster.poster.substring(series.poster.poster.length - 4) !==
-            'null'
-              ? series.poster.poster
-              : notFound
-          }
+          image={posterImage}
         />
         <Box
           sx={{

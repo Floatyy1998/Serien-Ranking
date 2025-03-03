@@ -47,7 +47,7 @@ export interface Series {
   poster: {
     poster: string;
   };
-  production: {
+  production?: {
     production: boolean;
   };
   provider?: {

@@ -36,7 +36,7 @@ interface SeriesCardProps {
   index: number;
 }
 export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
-  const shadowColor = !series.production.production ? '#a855f7' : '#22c55e';
+  const shadowColor = !series.production?.production ? '#a855f7' : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
   const location = useLocation();

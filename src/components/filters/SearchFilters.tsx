@@ -2,6 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ListIcon from '@mui/icons-material/List';
+import RecommendIcon from '@mui/icons-material/Recommend';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
@@ -19,12 +20,17 @@ import Firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
-import { genreMenuItems, providerMenuItems } from '../../constants/menuItems';
+import {
+  genreIdMapForSeries,
+  genreMenuItems,
+  providerMenuItems,
+} from '../../constants/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
 import AddSeriesDialog from '../dialogs/AddSeriesDialog';
 import DiscoverSeriesDialog from '../dialogs/DiscoverSeriesDialog';
+import RecommendationsDialog from '../dialogs/RecommendationsDialog';
 import WatchlistDialog from '../dialogs/Watchlist/WatchlistDialog';
 interface SearchFiltersProps {
   onSearchChange: (value: string) => void;
@@ -49,6 +55,9 @@ export const SearchFilters = memo(
     const [dialogAddOpen, setDialogAddOpen] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const addSeriesInputRef = useRef<HTMLInputElement>(null);
+    const [dialogRecommendationsOpen, setDialogRecommendationsOpen] =
+      useState(false);
+    const [recommendations, setRecommendations] = useState<Series[]>([]);
 
     // Reset lokale Filterstates, wenn sich der Benutzer ändert
     useEffect(() => {
@@ -213,10 +222,82 @@ export const SearchFilters = memo(
       }
       return 0;
     });
+
+    const handleDialogRecommendationsOpen = async () => {
+      setDialogRecommendationsOpen(true);
+      const topRatedSeries = seriesList
+        .filter((series) => {
+          const ratingValue =
+            typeof series.rating === 'number'
+              ? series.rating
+              : series.rating
+              ? Math.max(...Object.values(series.rating))
+              : 0;
+
+          return ratingValue >= 7;
+        })
+        .slice(0, 20);
+      const allRecommendations = [];
+
+      for (const series of topRatedSeries) {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/tv/${series.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE`
+        );
+        const data = await response.json();
+        allRecommendations.push(
+          ...data.results.map((result: any) => ({
+            nmr: result.id,
+            begründung: '',
+            beschreibung: result.overview,
+            genre: {
+              genres: result.genre_ids.map(
+                (id: number) =>
+                  genreIdMapForSeries.find((genre) => genre.id === id)?.name ||
+                  ''
+              ),
+            },
+            id: result.id,
+            imdb: {
+              imdb_id: '',
+            },
+            poster: {
+              poster: result.poster_path
+                ? `https://image.tmdb.org/t/p/w500${result.poster_path}`
+                : '',
+            },
+            provider: null,
+            rating: {},
+            runtime: 0,
+            title: result.name,
+            wo: {
+              wo: '',
+            },
+            watchlist: false,
+            status: result.first_air_date ? 'Released' : 'Unreleased',
+            release_date: result.first_air_date,
+            collection_id: null,
+            origin_country: result.origin_country,
+            original_language: result.original_language,
+            original_name: result.original_name,
+            popularity: result.popularity,
+            vote_average: result.vote_average,
+            vote_count: result.vote_count,
+          }))
+        );
+      }
+
+      const uniqueRecommendations = allRecommendations.filter(
+        (rec, index, self) =>
+          index === self.findIndex((r) => r.id === rec.id) &&
+          !seriesList.some((series) => series.id === rec.id)
+      );
+
+      setRecommendations(uniqueRecommendations.sort(() => 0.5 - Math.random()));
+    };
+
     return (
       <Box className='flex flex-col gap-4 md:flex-row md:items-center justify-center mb-6 max-w-[1400px] m-auto'>
-        {}
-        <Box className='flex items-center gap-2'>
+        <Box className='flex flex-col md:flex-row items-center gap-2'>
           <Box sx={{ width: { lg: '300px' }, flexShrink: 0 }}>
             <TextField
               label='Suchen'
@@ -228,98 +309,141 @@ export const SearchFilters = memo(
               inputRef={searchInputRef}
             />
           </Box>
-          {!isSharedListPage && (
-            <Box sx={{ flexShrink: 0 }}>
-              <Tooltip title='Serie hinzufügen'>
-                <Button
-                  variant='outlined'
-                  onClick={handleDialogAddOpen}
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '0.5rem',
-                    overflow: 'hidden',
-                    transition: 'width 0.3s ease',
-                    justifyContent: 'flex-start',
-                    pl: '19px',
-                    '@media (min-width:900px)': {
-                      '&:hover': { width: 150 },
-                      '&:hover .text-wrapper': {
-                        opacity: 1,
-                        transition: 'opacity 0.5s ease',
-                      },
-                    },
-                  }}
-                  aria-label='Serie hinzufügen'
-                  role='button'
-                >
-                  {}
-                  <AddIcon />
-                  <Box
-                    component='span'
+          <Box className='flex flex-row items-center gap-2'>
+            {!isSharedListPage && (
+              <Box sx={{ flexShrink: 0 }}>
+                <Tooltip title='Serie hinzufügen'>
+                  <Button
+                    variant='outlined'
+                    onClick={handleDialogAddOpen}
                     sx={{
-                      whiteSpace: 'nowrap',
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
+                      width: 56,
+                      height: 56,
+                      borderRadius: '0.5rem',
+                      overflow: 'hidden',
+                      transition: 'width 0.3s ease',
+                      justifyContent: 'flex-start',
+                      pl: '19px',
                       '@media (min-width:900px)': {
-                        '&:hover, button:hover &': { opacity: 1 },
+                        '&:hover': { width: 150 },
+                        '&:hover .text-wrapper': {
+                          opacity: 1,
+                          transition: 'opacity 0.5s ease',
+                        },
                       },
                     }}
-                    className='text-wrapper'
+                    aria-label='Serie hinzufügen'
+                    role='button'
                   >
-                    Hinzufügen
-                  </Box>
-                </Button>
-              </Tooltip>
-              <Divider
-                orientation='vertical'
-                flexItem
-                sx={{ ml: 1, display: { xs: 'none', md: 'block' } }}
-              />
-            </Box>
-          )}
-          {!isSharedListPage && (
-            <Tooltip title='Unveröffentlichte Serien entdecken'>
-              <Button
-                variant='outlined'
-                onClick={handleDialogDiscoverOpen}
-                sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '0.5rem',
-                  overflow: 'hidden',
-                  transition: 'width 0.3s ease',
-                  justifyContent: 'flex-start',
-                  pl: '19px',
-                  '@media (min-width:900px)': {
-                    '&:hover': { width: 150 },
-                    '&:hover .text-wrapper': {
-                      opacity: 1,
-                      transition: 'opacity 0.5s ease',
-                    },
-                  },
-                }}
-                aria-label='Unveröffentlichte Serien entdecken'
-                role='button'
-              >
-                <SearchIcon />
-                <Box
-                  component='span'
-                  sx={{
-                    whiteSpace: 'nowrap',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    '@media (min-width:900px)': {
-                      '&:hover, button:hover &': { opacity: 1 },
-                    },
-                  }}
-                  className='text-wrapper'
-                >
-                  Entdecken
-                </Box>
-              </Button>
-            </Tooltip>
-          )}
+                    <AddIcon />
+                    <Box
+                      component='span'
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                        '@media (min-width:900px)': {
+                          '&:hover, button:hover &': { opacity: 1 },
+                        },
+                      }}
+                      className='text-wrapper'
+                    >
+                      Hinzufügen
+                    </Box>
+                  </Button>
+                </Tooltip>
+                <Divider
+                  orientation='vertical'
+                  flexItem
+                  sx={{ ml: 1, display: { xs: 'none', md: 'block' } }}
+                />
+              </Box>
+            )}
+            {!isSharedListPage && (
+              <>
+                <Tooltip title='Unveröffentlichte Serien entdecken'>
+                  <Button
+                    variant='outlined'
+                    onClick={handleDialogDiscoverOpen}
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: '0.5rem',
+                      overflow: 'hidden',
+                      transition: 'width 0.3s ease',
+                      justifyContent: 'flex-start',
+                      pl: '19px',
+                      '@media (min-width:900px)': {
+                        '&:hover': { width: 150 },
+                        '&:hover .text-wrapper': {
+                          opacity: 1,
+                          transition: 'opacity 0.5s ease',
+                        },
+                      },
+                    }}
+                    aria-label='Unveröffentlichte Serien entdecken'
+                    role='button'
+                  >
+                    <SearchIcon />
+                    <Box
+                      component='span'
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                        '@media (min-width:900px)': {
+                          '&:hover, button:hover &': { opacity: 1 },
+                        },
+                      }}
+                      className='text-wrapper'
+                    >
+                      Entdecken
+                    </Box>
+                  </Button>
+                </Tooltip>
+                <Tooltip title='Empfehlungen anzeigen'>
+                  <Button
+                    variant='outlined'
+                    onClick={handleDialogRecommendationsOpen}
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: '0.5rem',
+                      overflow: 'hidden',
+                      transition: 'width 0.3s ease',
+                      justifyContent: 'flex-start',
+                      pl: '19px',
+                      '@media (min-width:900px)': {
+                        '&:hover': { width: 150 },
+                        '&:hover .text-wrapper': {
+                          opacity: 1,
+                          transition: 'opacity 0.5s ease',
+                        },
+                      },
+                    }}
+                    aria-label='Empfehlungen anzeigen'
+                    role='button'
+                  >
+                    <RecommendIcon />
+                    <Box
+                      component='span'
+                      sx={{
+                        whiteSpace: 'nowrap',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                        '@media (min-width:900px)': {
+                          '&:hover, button:hover &': { opacity: 1 },
+                        },
+                      }}
+                      className='text-wrapper'
+                    >
+                      Empfehlung
+                    </Box>
+                  </Button>
+                </Tooltip>
+              </>
+            )}
+          </Box>
         </Box>
         <FormControl className='md:w-[250px]' disabled={isWatchlist}>
           <InputLabel id='genre-label'>Genre</InputLabel>
@@ -465,6 +589,11 @@ export const SearchFilters = memo(
         <DiscoverSeriesDialog
           open={dialogDiscoverOpen}
           onClose={() => setDialogDiscoverOpen(false)}
+        />
+        <RecommendationsDialog
+          open={dialogRecommendationsOpen}
+          onClose={() => setDialogRecommendationsOpen(false)}
+          recommendations={recommendations}
         />
       </Box>
     );
