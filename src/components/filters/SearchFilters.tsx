@@ -58,6 +58,7 @@ export const SearchFilters = memo(
     const [dialogRecommendationsOpen, setDialogRecommendationsOpen] =
       useState(false);
     const [recommendations, setRecommendations] = useState<Series[]>([]);
+    const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
     // Reset lokale Filterstates, wenn sich der Benutzer ändert
     useEffect(() => {
@@ -224,6 +225,7 @@ export const SearchFilters = memo(
     });
 
     const handleDialogRecommendationsOpen = async () => {
+      setLoadingRecommendations(true);
       setDialogRecommendationsOpen(true);
       const topRatedSeries = seriesList
         .filter((series) => {
@@ -293,6 +295,7 @@ export const SearchFilters = memo(
       );
 
       setRecommendations(uniqueRecommendations.sort(() => 0.5 - Math.random()));
+      setLoadingRecommendations(false);
     };
 
     return (
@@ -594,6 +597,7 @@ export const SearchFilters = memo(
           open={dialogRecommendationsOpen}
           onClose={() => setDialogRecommendationsOpen(false)}
           recommendations={recommendations}
+          loading={loadingRecommendations}
         />
       </Box>
     );

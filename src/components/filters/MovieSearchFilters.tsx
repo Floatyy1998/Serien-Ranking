@@ -47,6 +47,7 @@ export const MovieSearchFilters = memo(
     const [dialogRecommendationsOpen, setDialogRecommendationsOpen] =
       useState(false);
     const [recommendations, setRecommendations] = useState<Movie[]>([]);
+    const [loadingRecommendations, setLoadingRecommendations] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const addMovieInputRef = useRef<HTMLInputElement>(null);
     const { movieList } = useMovieList();
@@ -103,6 +104,7 @@ export const MovieSearchFilters = memo(
     };
 
     const handleDialogRecommendationsOpen = async () => {
+      setLoadingRecommendations(true);
       setDialogRecommendationsOpen(true);
       const topRatedMovies = movieList
         .filter((movie) => {
@@ -170,6 +172,7 @@ export const MovieSearchFilters = memo(
       );
 
       setRecommendations(uniqueRecommendations.sort(() => 0.5 - Math.random()));
+      setLoadingRecommendations(false);
     };
 
     return (
@@ -366,6 +369,7 @@ export const MovieSearchFilters = memo(
           open={dialogRecommendationsOpen}
           onClose={() => setDialogRecommendationsOpen(false)}
           recommendations={recommendations}
+          loading={loadingRecommendations}
         />
       </Box>
     );

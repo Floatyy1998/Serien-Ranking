@@ -7,7 +7,8 @@ import {
   Pagination,
   Snackbar,
 } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { InfinitySpin } from 'react-loader-spinner';
 import { useAuth } from '../../App';
 import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
@@ -19,18 +20,21 @@ interface RecommendationsDialogProps {
   open: boolean;
   onClose: () => void;
   recommendations: Series[] | Movie[];
+  loading: boolean;
 }
 
 const RecommendationsDialog = ({
   open,
   onClose,
   recommendations,
+  loading,
 }: RecommendationsDialogProps) => {
   const [page, setPage] = useState(1);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const auth = useAuth();
   const { user } = auth || {};
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [loadingState, setLoadingState] = useState(true);
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('success');
@@ -159,6 +163,10 @@ const RecommendationsDialog = ({
     [user]
   );
 
+  useEffect(() => {
+    setLoadingState(loading);
+  }, [loading]);
+
   const paginatedRecommendations = recommendations.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
@@ -168,34 +176,44 @@ const RecommendationsDialog = ({
     <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth>
       <DialogHeader title='Empfehlungen' onClose={onClose} />
       <DialogContent>
-        <Box display='flex' justifyContent='center' mt={2}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '50px',
-              justifyContent: 'center',
-              p: 2,
-              boxSizing: 'border-box',
-            }}
-          >
-            {paginatedRecommendations.map((item) => (
-              <Box key={item.id} sx={{ width: '230px', height: '444px' }}>
-                {'seasons' in item ? (
-                  <DiscoverSeriesCard
-                    series={item as Series}
-                    onAdd={handleAddSeries}
-                  />
-                ) : (
-                  <DiscoverMovieCard
-                    movie={item as Movie}
-                    onAdd={handleAddMovie}
-                  />
-                )}
-              </Box>
-            ))}
+        {loadingState ? (
+          <Box display='flex' justifyContent='center' mt={2}>
+            <InfinitySpin width='200' color='#00fed7' />
           </Box>
-        </Box>
+        ) : recommendations.length === 0 ? (
+          <Box display='flex' justifyContent='center' mt={2}>
+            Wir haben leider keine Empfehlungen für dich.
+          </Box>
+        ) : (
+          <Box display='flex' justifyContent='center' mt={2}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '50px',
+                justifyContent: 'center',
+                p: 2,
+                boxSizing: 'border-box',
+              }}
+            >
+              {paginatedRecommendations.map((item) => (
+                <Box key={item.id} sx={{ width: '230px', height: '444px' }}>
+                  {'seasons' in item ? (
+                    <DiscoverSeriesCard
+                      series={item as Series}
+                      onAdd={handleAddSeries}
+                    />
+                  ) : (
+                    <DiscoverMovieCard
+                      movie={item as Movie}
+                      onAdd={handleAddMovie}
+                    />
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Box display='flex' justifyContent='center' width='100%'>
