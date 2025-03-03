@@ -11,8 +11,12 @@ import {
   Select,
   SelectChangeEvent,
   Snackbar,
-  TextField,
 } from '@mui/material';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider/LocalizationProvider';
+import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/de';
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../App';
 import { genreIdMapForSeries } from '../../constants/menuItems';
@@ -29,8 +33,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
   const [searchResults, setSearchResults] = useState<Series[]>([]);
   const [filters, setFilters] = useState({
     genre: [] as string[],
-    year: '',
+    startDate: '',
+    endDate: '',
     country: [] as string[],
+    sortBy: 'popularity.desc',
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -39,12 +45,12 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
   >('success');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const auth = useAuth();
   const { user } = auth || {};
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-  };
+  const today = dayjs();
 
   const handleSelectChange = (e: SelectChangeEvent<string[]>) => {
     setFilters({ ...filters, genre: e.target.value as string[] });
@@ -52,6 +58,26 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
 
   const handleCountryChange = (e: SelectChangeEvent<string[]>) => {
     setFilters({ ...filters, country: e.target.value as string[] });
+  };
+
+  const handleSortChange = (e: SelectChangeEvent<string>) => {
+    setFilters({ ...filters, sortBy: e.target.value });
+  };
+
+  const handleStartDateChange = (date: Dayjs | null) => {
+    setStartDate(date);
+    setFilters({
+      ...filters,
+      startDate: date ? date.startOf('day').format('YYYY-MM-DD') : '',
+    });
+  };
+
+  const handleEndDateChange = (date: Dayjs | null) => {
+    setEndDate(date);
+    setFilters({
+      ...filters,
+      endDate: date ? date.startOf('day').format('YYYY-MM-DD') : '',
+    });
   };
 
   const handleSearch = async (page = 1) => {
@@ -62,12 +88,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
 
     const countryCodes = filters.country.join('|');
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const releaseDateGte = tomorrow.toISOString().split('T')[0];
+    const startDate = filters.startDate || today.toISOString().split('T')[0];
 
     const response = await fetch(
-      `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.VITE_API_TMDB}&with_genres=${genreIds}&first_air_date_year=${filters.year}&first_air_date.gte=${releaseDateGte}&with_origin_country=${countryCodes}&page=${page}`
+      `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.VITE_API_TMDB}&with_genres=${genreIds}&first_air_date.gte=${startDate}&first_air_date.lte=${filters.endDate}&with_origin_country=${countryCodes}&sort_by=${filters.sortBy}&page=${page}`
     );
     const data = await response.json();
     setTotalPages(data.total_pages);
@@ -171,8 +195,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
   const handleClose = () => {
     setFilters({
       genre: [],
-      year: '',
+      startDate: '',
+      endDate: '',
       country: [],
+      sortBy: 'popularity.desc',
     });
     setSearchResults([]);
     setCurrentPage(1);
@@ -198,113 +224,156 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth='lg'>
-      <DialogHeader title='Serien entdecken' onClose={handleClose} />
+      <DialogHeader
+        title='Unveröffentlichte Serien entdecken'
+        onClose={handleClose}
+      />
       <DialogContent>
-        <Box display='flex' flexDirection='row' gap={2} mt={2}>
-          <FormControl fullWidth>
-            <InputLabel
-              sx={{
-                backgroundColor: '#0C0C0C',
-                paddingLeft: '4px',
-                paddingRight: '4px',
-              }}
-            >
-              Genre
-            </InputLabel>
-            <Select
-              name='genre'
-              multiple
-              value={filters.genre}
-              onChange={handleSelectChange}
-              renderValue={(selected) => selected.join(', ')}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 224,
-                    width: 250,
+        <Box display='flex' flexDirection='column' gap={2} mt={2}>
+          <Box display='flex' flexDirection='row' gap={2}>
+            <FormControl sx={{ flex: 2 }}>
+              <InputLabel
+                sx={{
+                  backgroundColor: '#0C0C0C',
+                  paddingLeft: '4px',
+                  paddingRight: '4px',
+                }}
+              >
+                Genre
+              </InputLabel>
+              <Select
+                name='genre'
+                multiple
+                value={filters.genre}
+                onChange={handleSelectChange}
+                renderValue={(selected) => selected.join(', ')}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 224,
+                      width: 250,
+                    },
                   },
-                },
-              }}
-            >
-              {genreIdMapForSeries.map((item) => (
-                <MenuItem key={item.id} value={item.name}>
-                  {item.name}
+                }}
+              >
+                {genreIdMapForSeries.map((item) => (
+                  <MenuItem key={item.id} value={item.name}>
+                    {item.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Box display='flex' flexDirection='row' gap={2} sx={{ flex: 2 }}>
+              <LocalizationProvider
+                dateAdapter={AdapterDayjs}
+                adapterLocale='de'
+              >
+                <DatePicker
+                  label='Startdatum'
+                  value={startDate}
+                  onChange={handleStartDateChange}
+                  minDate={today}
+                  sx={{ flex: 1 }}
+                />
+                <DatePicker
+                  label='Enddatum'
+                  value={endDate}
+                  onChange={handleEndDateChange}
+                  minDate={today}
+                  sx={{ flex: 1 }}
+                />
+              </LocalizationProvider>
+            </Box>
+          </Box>
+          <Box display='flex' flexDirection='row' gap={2}>
+            <FormControl fullWidth>
+              <InputLabel
+                sx={{
+                  backgroundColor: '#0C0C0C',
+                  paddingLeft: '4px',
+                  paddingRight: '4px',
+                }}
+              >
+                Land
+              </InputLabel>
+              <Select
+                name='country'
+                multiple
+                value={filters.country}
+                onChange={handleCountryChange}
+                renderValue={(selected) => selected.join(', ')}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 224,
+                      width: 250,
+                    },
+                  },
+                }}
+              >
+                <MenuItem value='US'>USA</MenuItem>
+                <MenuItem value='DE'>Deutschland</MenuItem>
+                <MenuItem value='FR'>Frankreich</MenuItem>
+                <MenuItem value='GB'>Großbritannien</MenuItem>
+                <MenuItem value='JP'>Japan</MenuItem>
+                <MenuItem value='KR'>Südkorea</MenuItem>
+                <MenuItem value='IN'>Indien</MenuItem>
+                <MenuItem value='CN'>China</MenuItem>
+                <MenuItem value='IT'>Italien</MenuItem>
+                <MenuItem value='ES'>Spanien</MenuItem>
+                <MenuItem value='CA'>Kanada</MenuItem>
+                <MenuItem value='AU'>Australien</MenuItem>
+                <MenuItem value='BR'>Brasilien</MenuItem>
+                <MenuItem value='RU'>Russland</MenuItem>
+                <MenuItem value='MX'>Mexiko</MenuItem>
+                <MenuItem value='SE'>Schweden</MenuItem>
+                <MenuItem value='NO'>Norwegen</MenuItem>
+                <MenuItem value='FI'>Finnland</MenuItem>
+                <MenuItem value='DK'>Dänemark</MenuItem>
+                <MenuItem value='NL'>Niederlande</MenuItem>
+                <MenuItem value='BE'>Belgien</MenuItem>
+                <MenuItem value='CH'>Schweiz</MenuItem>
+                <MenuItem value='AT'>Österreich</MenuItem>
+                <MenuItem value='IE'>Irland</MenuItem>
+                <MenuItem value='NZ'>Neuseeland</MenuItem>
+                <MenuItem value='ZA'>Südafrika</MenuItem>
+                <MenuItem value='AR'>Argentinien</MenuItem>
+                <MenuItem value='CL'>Chile</MenuItem>
+                <MenuItem value='CO'>Kolumbien</MenuItem>
+                <MenuItem value='PE'>Peru</MenuItem>
+                <MenuItem value='VE'>Venezuela</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel
+                sx={{
+                  backgroundColor: '#0C0C0C',
+                  paddingLeft: '4px',
+                  paddingRight: '4px',
+                }}
+              >
+                Sortieren nach
+              </InputLabel>
+              <Select
+                name='sortBy'
+                value={filters.sortBy}
+                onChange={handleSortChange}
+              >
+                <MenuItem value='popularity.desc'>
+                  Beliebtheit absteigend
                 </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label='Jahr'
-            name='year'
-            value={filters.year}
-            onChange={handleInputChange}
-            fullWidth
-            InputLabelProps={{
-              style: {
-                backgroundColor: '#0C0C0C',
-                paddingLeft: '4px',
-                paddingRight: '4px',
-              },
-            }}
-          />
-          <FormControl fullWidth>
-            <InputLabel
-              sx={{
-                backgroundColor: '#0C0C0C',
-                paddingLeft: '4px',
-                paddingRight: '4px',
-              }}
-            >
-              Land
-            </InputLabel>
-            <Select
-              name='country'
-              multiple
-              value={filters.country}
-              onChange={handleCountryChange}
-              renderValue={(selected) => selected.join(', ')}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 224,
-                    width: 250,
-                  },
-                },
-              }}
-            >
-              <MenuItem value='US'>USA</MenuItem>
-              <MenuItem value='DE'>Deutschland</MenuItem>
-              <MenuItem value='FR'>Frankreich</MenuItem>
-              <MenuItem value='GB'>Großbritannien</MenuItem>
-              <MenuItem value='JP'>Japan</MenuItem>
-              <MenuItem value='KR'>Südkorea</MenuItem>
-              <MenuItem value='IN'>Indien</MenuItem>
-              <MenuItem value='CN'>China</MenuItem>
-              <MenuItem value='IT'>Italien</MenuItem>
-              <MenuItem value='ES'>Spanien</MenuItem>
-              <MenuItem value='CA'>Kanada</MenuItem>
-              <MenuItem value='AU'>Australien</MenuItem>
-              <MenuItem value='BR'>Brasilien</MenuItem>
-              <MenuItem value='RU'>Russland</MenuItem>
-              <MenuItem value='MX'>Mexiko</MenuItem>
-              <MenuItem value='SE'>Schweden</MenuItem>
-              <MenuItem value='NO'>Norwegen</MenuItem>
-              <MenuItem value='FI'>Finnland</MenuItem>
-              <MenuItem value='DK'>Dänemark</MenuItem>
-              <MenuItem value='NL'>Niederlande</MenuItem>
-              <MenuItem value='BE'>Belgien</MenuItem>
-              <MenuItem value='CH'>Schweiz</MenuItem>
-              <MenuItem value='AT'>Österreich</MenuItem>
-              <MenuItem value='IE'>Irland</MenuItem>
-              <MenuItem value='NZ'>Neuseeland</MenuItem>
-              <MenuItem value='ZA'>Südafrika</MenuItem>
-              <MenuItem value='AR'>Argentinien</MenuItem>
-              <MenuItem value='CL'>Chile</MenuItem>
-              <MenuItem value='CO'>Kolumbien</MenuItem>
-              <MenuItem value='PE'>Peru</MenuItem>
-              <MenuItem value='VE'>Venezuela</MenuItem>
-            </Select>
-          </FormControl>
+                <MenuItem value='popularity.asc'>
+                  Beliebtheit aufsteigend
+                </MenuItem>
+                <MenuItem value='first_air_date.asc'>
+                  Veröffentlichungsdatum aufsteigend
+                </MenuItem>
+                <MenuItem value='first_air_date.desc'>
+                  Veröffentlichungsdatum absteigend
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
         <Box display='flex' justifyContent='center' mt={2}>
           <Button variant='contained' onClick={() => handleSearch()}>

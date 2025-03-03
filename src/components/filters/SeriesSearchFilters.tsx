@@ -155,7 +155,7 @@ export const SeriesSearchFilters = memo(
               />
             </Box>
           )}
-          <Tooltip title='Serien entdecken'>
+          <Tooltip title='Unveröffentlichte Serien entdecken'>
             <Button
               variant='outlined'
               onClick={handleDialogDiscoverOpen}
@@ -175,7 +175,7 @@ export const SeriesSearchFilters = memo(
                   },
                 },
               }}
-              aria-label='Serien entdecken'
+              aria-label='Unveröffentlichte Serien entdecken'
               role='button'
             >
               <SearchIcon />

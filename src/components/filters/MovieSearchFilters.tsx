@@ -159,7 +159,7 @@ export const MovieSearchFilters = memo(
             </Box>
           )}
           {!isSharedListPage && (
-            <Tooltip title='Filme entdecken'>
+            <Tooltip title='Unveröffentlichte Filme entdecken'>
               <Button
                 variant='outlined'
                 onClick={handleDialogDiscoverOpen}
@@ -179,7 +179,7 @@ export const MovieSearchFilters = memo(
                     },
                   },
                 }}
-                aria-label='Filme entdecken'
+                aria-label='Unveröffentlichte Filme entdecken'
                 role='button'
               >
                 <SearchIcon />

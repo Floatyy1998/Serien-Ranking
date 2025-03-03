@@ -279,7 +279,7 @@ export const SearchFilters = memo(
             </Box>
           )}
           {!isSharedListPage && (
-            <Tooltip title='Serien entdecken'>
+            <Tooltip title='Unveröffentlichte Serien entdecken'>
               <Button
                 variant='outlined'
                 onClick={handleDialogDiscoverOpen}
@@ -299,7 +299,7 @@ export const SearchFilters = memo(
                     },
                   },
                 }}
-                aria-label='Serien entdecken'
+                aria-label='Unveröffentlichte Serien entdecken'
                 role='button'
               >
                 <SearchIcon />
