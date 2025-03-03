@@ -114,14 +114,15 @@ export const MovieSearchFilters = memo(
               : movie.rating
               ? Math.max(...Object.values(movie.rating))
               : 0;
-          return ratingValue >= 6.66;
+          return ratingValue >= 6.88;
         })
         .slice(0, 20);
       const allRecommendations = [];
 
       for (const movie of topRatedMovies) {
+        const randomPage = Math.floor(Math.random() * 2) + 1;
         const response = await fetch(
-          `https://api.themoviedb.org/3/movie/${movie.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE`
+          `https://api.themoviedb.org/3/movie/${movie.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE&page=${randomPage}`
         );
         const data = await response.json();
         allRecommendations.push(

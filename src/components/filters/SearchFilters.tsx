@@ -236,14 +236,15 @@ export const SearchFilters = memo(
               ? Math.max(...Object.values(series.rating))
               : 0;
 
-          return ratingValue >= 6.66;
+          return ratingValue >= 6.88;
         })
         .slice(0, 20);
       const allRecommendations = [];
 
       for (const series of topRatedSeries) {
+        const randomPage = Math.floor(Math.random() * 2) + 1;
         const response = await fetch(
-          `https://api.themoviedb.org/3/tv/${series.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE`
+          `https://api.themoviedb.org/3/tv/${series.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE&page=${randomPage}`
         );
         const data = await response.json();
         allRecommendations.push(
