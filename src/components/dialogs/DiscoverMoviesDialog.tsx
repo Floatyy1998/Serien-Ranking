@@ -223,7 +223,12 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
       />
       <DialogContent>
         <Box display='flex' flexDirection='column' gap={2} mt={2}>
-          <Box display='flex' flexDirection='row' gap={2}>
+          <Box
+            display='flex'
+            flexDirection='column'
+            gap={2}
+            sx={{ '@media (min-width: 600px)': { flexDirection: 'row' } }}
+          >
             <FormControl sx={{ flex: 2 }}>
               <InputLabel
                 sx={{
@@ -256,7 +261,15 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                 ))}
               </Select>
             </FormControl>
-            <Box display='flex' flexDirection='row' gap={2} sx={{ flex: 2 }}>
+            <Box
+              display='flex'
+              flexDirection='column'
+              gap={2}
+              sx={{
+                flex: 2,
+                '@media (min-width: 600px)': { flexDirection: 'row' },
+              }}
+            >
               <LocalizationProvider
                 dateAdapter={AdapterDayjs}
                 adapterLocale='de'
@@ -278,7 +291,12 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
               </LocalizationProvider>
             </Box>
           </Box>
-          <Box display='flex' flexDirection='row' gap={2}>
+          <Box
+            display='flex'
+            flexDirection='column'
+            gap={2}
+            sx={{ '@media (min-width: 600px)': { flexDirection: 'row' } }}
+          >
             <FormControl fullWidth>
               <InputLabel
                 sx={{

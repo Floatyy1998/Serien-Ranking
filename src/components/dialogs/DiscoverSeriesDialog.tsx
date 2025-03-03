@@ -230,7 +230,12 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
       />
       <DialogContent>
         <Box display='flex' flexDirection='column' gap={2} mt={2}>
-          <Box display='flex' flexDirection='row' gap={2}>
+          <Box
+            display='flex'
+            flexDirection='column'
+            gap={2}
+            sx={{ '@media (min-width: 600px)': { flexDirection: 'row' } }}
+          >
             <FormControl sx={{ flex: 2 }}>
               <InputLabel
                 sx={{
@@ -263,7 +268,15 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 ))}
               </Select>
             </FormControl>
-            <Box display='flex' flexDirection='row' gap={2} sx={{ flex: 2 }}>
+            <Box
+              display='flex'
+              flexDirection='column'
+              gap={2}
+              sx={{
+                flex: 2,
+                '@media (min-width: 600px)': { flexDirection: 'row' },
+              }}
+            >
               <LocalizationProvider
                 dateAdapter={AdapterDayjs}
                 adapterLocale='de'
@@ -285,7 +298,12 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               </LocalizationProvider>
             </Box>
           </Box>
-          <Box display='flex' flexDirection='row' gap={2}>
+          <Box
+            display='flex'
+            flexDirection='column'
+            gap={2}
+            sx={{ '@media (min-width: 600px)': { flexDirection: 'row' } }}
+          >
             <FormControl fullWidth>
               <InputLabel
                 sx={{
