@@ -80,4 +80,5 @@ export interface Series {
   };
   watchlist?: boolean;
   release_date: string;
+  media_type?: string;
 }

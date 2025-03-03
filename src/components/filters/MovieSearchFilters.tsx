@@ -114,7 +114,7 @@ export const MovieSearchFilters = memo(
               : movie.rating
               ? Math.max(...Object.values(movie.rating))
               : 0;
-          return ratingValue >= 7;
+          return ratingValue >= 6.66;
         })
         .slice(0, 20);
       const allRecommendations = [];

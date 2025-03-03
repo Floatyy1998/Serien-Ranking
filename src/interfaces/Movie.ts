@@ -31,4 +31,5 @@ export interface Movie {
   status?: string;
   release_date?: string;
   collection_id?: number;
+  media_type?: string;
 }

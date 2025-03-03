@@ -198,7 +198,7 @@ const RecommendationsDialog = ({
             >
               {paginatedRecommendations.map((item) => (
                 <Box key={item.id} sx={{ width: '230px', height: '444px' }}>
-                  {'seasons' in item ? (
+                  {item.media_type === 'tv' ? (
                     <DiscoverSeriesCard
                       series={item as Series}
                       onAdd={handleAddSeries}
