@@ -160,10 +160,10 @@ const SharedSeriesList = () => {
     if (columns < 1) columns = 1;
     const base = 20;
     let initialVisible = Math.ceil(base / columns) * columns;
-    if (tabValue === 'series' && initialVisible > sortedSeries.length) {
-      initialVisible = sortedSeries.length;
-    } else if (tabValue === 'movies' && initialVisible > sortedMovies.length) {
-      initialVisible = sortedMovies.length;
+    if (tabValue === 'series' && initialVisible > sortedSeries?.length) {
+      initialVisible = sortedSeries?.length;
+    } else if (tabValue === 'movies' && initialVisible > sortedMovies?.length) {
+      initialVisible = sortedMovies?.length;
     }
     setVisibleCount(initialVisible);
   }, [
@@ -181,7 +181,7 @@ const SharedSeriesList = () => {
     const fullHeight = document.body.offsetHeight;
     if (
       scrollTop + windowHeight >= fullHeight - 1000 &&
-      visibleCount < sortedSeries.length
+      visibleCount < sortedSeries?.length
     ) {
       const cardWidth = 230;
       const gap = 75;
@@ -190,10 +190,10 @@ const SharedSeriesList = () => {
       const remainder = visibleCount % columns;
       const itemsToAdd = remainder === 0 ? columns : columns - remainder;
       setVisibleCount((prev) =>
-        Math.min(prev + itemsToAdd, sortedSeries.length)
+        Math.min(prev + itemsToAdd, sortedSeries?.length)
       );
     }
-  }, [sortedSeries.length, visibleCount]);
+  }, [sortedSeries?.length, visibleCount]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);
@@ -236,7 +236,7 @@ const SharedSeriesList = () => {
               onProviderChange={handleProviderChange}
             />
             <Box className='flex-row flex flex-wrap justify-center gap-20'>
-              {sortedSeries.slice(0, visibleCount).map((series, index) => (
+              {sortedSeries?.slice(0, visibleCount).map((series, index) => (
                 <Box key={`${series.id}-${index}`} className='w-[230px]'>
                   <SeriesCard series={series} genre='All' index={index + 1} />
                 </Box>
@@ -253,7 +253,7 @@ const SharedSeriesList = () => {
             />
             <Box className='flex-row flex flex-wrap justify-center gap-20'>
               {sortedMovies && sortedMovies.length > 0 ? (
-                sortedMovies.slice(0, visibleCount).map((movie, index) => (
+                sortedMovies?.slice(0, visibleCount).map((movie, index) => (
                   <Box key={`${movie.id}-${index}`} className='w-[230px]'>
                     <MovieCard
                       movie={movie}

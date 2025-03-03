@@ -66,7 +66,7 @@ export const MovieGrid = memo(
       const fullHeight = document.body.offsetHeight;
       if (
         scrollTop + windowHeight >= fullHeight - 1000 &&
-        visibleCount < filteredMovies.length
+        visibleCount < filteredMovies?.length
       ) {
         const cardWidth = 230;
         const gap = 75;
@@ -75,10 +75,10 @@ export const MovieGrid = memo(
         const remainder = visibleCount % columns;
         const itemsToAdd = remainder === 0 ? columns : columns - remainder;
         setVisibleCount((prev) =>
-          Math.min(prev + itemsToAdd, filteredMovies.length)
+          Math.min(prev + itemsToAdd, filteredMovies?.length)
         );
       }
-    }, [filteredMovies.length, visibleCount]);
+    }, [filteredMovies?.length, visibleCount]);
 
     useEffect(() => {
       window.addEventListener('scroll', handleWindowScroll);
@@ -92,8 +92,8 @@ export const MovieGrid = memo(
       if (columns < 1) columns = 1;
       const base = 20;
       let initialVisible = Math.ceil(base / columns) * columns;
-      if (initialVisible > filteredMovies.length) {
-        initialVisible = filteredMovies.length;
+      if (initialVisible > filteredMovies?.length) {
+        initialVisible = filteredMovies?.length;
       }
       setVisibleCount(initialVisible);
     }, [debouncedSearchValue, selectedGenre, selectedProvider, filteredMovies]);
@@ -106,7 +106,7 @@ export const MovieGrid = memo(
       );
     }
 
-    if (filteredMovies.length === 0 && selectedGenre === 'All') {
+    if (filteredMovies?.length === 0 && selectedGenre === 'All') {
       return (
         <Box className='flex justify-center items-center w-full h-full'>
           <Typography variant='h2' className='text-center'>
@@ -128,7 +128,7 @@ export const MovieGrid = memo(
             boxSizing: 'border-box',
           }}
         >
-          {filteredMovies.slice(0, visibleCount).map((movie, index) => (
+          {filteredMovies?.slice(0, visibleCount).map((movie, index) => (
             <Box key={index} sx={{ width: '230px', height: '444px' }}>
               <MovieCard
                 movie={movie}

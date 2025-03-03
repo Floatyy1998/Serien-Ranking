@@ -73,8 +73,8 @@ export const SeriesGrid = memo(
       if (columns < 1) columns = 1;
       const base = 20;
       let initialVisible = Math.ceil(base / columns) * columns;
-      if (initialVisible > filteredSeries.length) {
-        initialVisible = filteredSeries.length;
+      if (initialVisible > filteredSeries?.length) {
+        initialVisible = filteredSeries?.length;
       }
       setVisibleCount(initialVisible);
     }, [debouncedSearchValue, selectedGenre, selectedProvider, filteredSeries]);
@@ -131,7 +131,7 @@ export const SeriesGrid = memo(
       const fullHeight = document.body.offsetHeight;
       if (
         scrollTop + windowHeight >= fullHeight - 1000 &&
-        visibleCount < filteredSeries.length
+        visibleCount < filteredSeries?.length
       ) {
         const cardWidth = 230;
         const gap = 75;
@@ -140,10 +140,10 @@ export const SeriesGrid = memo(
         const remainder = visibleCount % columns;
         const itemsToAdd = remainder === 0 ? columns : columns - remainder;
         setVisibleCount((prev) =>
-          Math.min(prev + itemsToAdd, filteredSeries.length)
+          Math.min(prev + itemsToAdd, filteredSeries?.length)
         );
       }
-    }, [filteredSeries.length, visibleCount]);
+    }, [filteredSeries?.length, visibleCount]);
     useEffect(() => {
       window.addEventListener('scroll', handleWindowScroll);
       return () => window.removeEventListener('scroll', handleWindowScroll);
@@ -155,7 +155,7 @@ export const SeriesGrid = memo(
         </Box>
       );
     }
-    if (filteredSeries.length === 0 && selectedGenre === 'All') {
+    if (filteredSeries?.length === 0 && selectedGenre === 'All') {
       return (
         <Box className='flex justify-center items-center w-full h-full'>
           <Typography variant='h2' className='text-center'>
@@ -177,7 +177,7 @@ export const SeriesGrid = memo(
               boxSizing: 'border-box',
             }}
           >
-            {filteredSeries.slice(0, visibleCount).map((series, index) => (
+            {filteredSeries?.slice(0, visibleCount).map((series, index) => (
               <Box key={index} sx={{ width: '230px', height: '444px' }}>
                 <SeriesCard
                   series={series}
