@@ -1,11 +1,15 @@
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Alert,
   Box,
   Dialog,
   DialogActions,
   DialogContent,
+  IconButton,
   Pagination,
   Snackbar,
+  Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
@@ -14,6 +18,7 @@ import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
 import DiscoverMovieCard from '../movies/DiscoverMovieCard';
 import DiscoverSeriesCard from '../series/DiscoverSeriesCard';
+import SimpleCard from '../shared/SimpleCard';
 import { DialogHeader } from './shared/SharedDialogComponents';
 
 interface RecommendationsDialogProps {
@@ -21,6 +26,7 @@ interface RecommendationsDialogProps {
   onClose: () => void;
   recommendations: Series[] | Movie[];
   loading: boolean;
+  basedOnItems: Series[] | Movie[];
 }
 
 const RecommendationsDialog = ({
@@ -28,9 +34,11 @@ const RecommendationsDialog = ({
   onClose,
   recommendations,
   loading,
+  basedOnItems,
 }: RecommendationsDialogProps) => {
   const [page, setPage] = useState(1);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const auth = useAuth();
   const { user } = auth || {};
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -172,9 +180,21 @@ const RecommendationsDialog = ({
     page * itemsPerPage
   );
 
+  const isSeries = basedOnItems.length > 0 && 'seasons' in basedOnItems[0];
+
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
+  const handleClose = () => {
+    setPage(1);
+    setExpanded(false);
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth>
-      <DialogHeader title='Empfehlungen' onClose={onClose} />
+    <Dialog open={open} onClose={handleClose} maxWidth='lg' fullWidth>
+      <DialogHeader title='Empfehlungen' onClose={handleClose} />
       <DialogContent>
         {loadingState ? (
           <Box display='flex' justifyContent='center' mt={2}>
@@ -185,34 +205,84 @@ const RecommendationsDialog = ({
             Wir haben leider keine Empfehlungen für dich.
           </Box>
         ) : (
-          <Box display='flex' justifyContent='center' mt={2}>
+          <>
             <Box
+              display='flex'
+              justifyContent='center'
+              flexDirection='column'
+              textAlign={'center'}
+              mt={2}
               sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '50px',
-                justifyContent: 'center',
-                p: 2,
-                boxSizing: 'border-box',
+                position: 'sticky',
+                top: 0,
+                backgroundColor: '#0C0C0C',
+                zIndex: 1,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                paddingBottom: '10px',
               }}
             >
-              {paginatedRecommendations.map((item) => (
-                <Box key={item.id} sx={{ width: '230px', height: '444px' }}>
-                  {item.media_type === 'tv' ? (
-                    <DiscoverSeriesCard
-                      series={item as Series}
-                      onAdd={handleAddSeries}
-                    />
-                  ) : (
-                    <DiscoverMovieCard
-                      movie={item as Movie}
-                      onAdd={handleAddMovie}
-                    />
-                  )}
+              <Box display='flex' alignItems='center' justifyContent='center'>
+                <Typography
+                  variant='h6'
+                  sx={{
+                    fontSize: 'calc(1rem + 0.2vw)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  Basierend auf diesen {isSeries ? 'Serien' : 'Filmen'}:
+                </Typography>
+                <IconButton onClick={handleExpandClick}>
+                  {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              </Box>
+              {expanded && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '10px',
+                    justifyContent: 'center',
+                    p: 2,
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  {basedOnItems.map((item) => (
+                    <SimpleCard key={item.id} item={item} />
+                  ))}
                 </Box>
-              ))}
+              )}
             </Box>
-          </Box>
+            <Box display='flex' justifyContent='center' mt={2}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '50px',
+                  justifyContent: 'center',
+                  p: 2,
+                  boxSizing: 'border-box',
+                }}
+              >
+                {paginatedRecommendations.map((item) => (
+                  <Box key={item.id} sx={{ width: '230px', height: '444px' }}>
+                    {item.media_type === 'tv' ? (
+                      <DiscoverSeriesCard
+                        series={item as Series}
+                        onAdd={handleAddSeries}
+                      />
+                    ) : (
+                      <DiscoverMovieCard
+                        movie={item as Movie}
+                        onAdd={handleAddMovie}
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          </>
         )}
       </DialogContent>
       <DialogActions>

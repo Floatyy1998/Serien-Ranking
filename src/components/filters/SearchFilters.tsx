@@ -18,6 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { shuffle } from 'lodash';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import {
@@ -59,6 +60,7 @@ export const SearchFilters = memo(
       useState(false);
     const [recommendations, setRecommendations] = useState<Series[]>([]);
     const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+    const [basedOnSeries, setBasedOnSeries] = useState<Series[]>([]);
 
     // Reset lokale Filterstates, wenn sich der Benutzer ändert
     useEffect(() => {
@@ -227,24 +229,13 @@ export const SearchFilters = memo(
     const handleDialogRecommendationsOpen = async () => {
       setLoadingRecommendations(true);
       setDialogRecommendationsOpen(true);
-      const topRatedSeries = seriesList
-        .filter((series) => {
-          const ratingValue =
-            typeof series.rating === 'number'
-              ? series.rating
-              : series.rating
-              ? Math.max(...Object.values(series.rating))
-              : 0;
 
-          return ratingValue >= 6.88;
-        })
-        .slice(0, 20);
+      const randomSeries = shuffle(seriesList).slice(0, 5);
       const allRecommendations = [];
 
-      for (const series of topRatedSeries) {
-        const randomPage = Math.floor(Math.random() * 2) + 1;
+      for (const series of randomSeries) {
         const response = await fetch(
-          `https://api.themoviedb.org/3/tv/${series.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE&page=${randomPage}`
+          `https://api.themoviedb.org/3/tv/${series.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE`
         );
         const data = await response.json();
         allRecommendations.push(
@@ -297,6 +288,7 @@ export const SearchFilters = memo(
       );
 
       setRecommendations(uniqueRecommendations.sort(() => 0.5 - Math.random()));
+      setBasedOnSeries(randomSeries);
       setLoadingRecommendations(false);
     };
 
@@ -600,6 +592,7 @@ export const SearchFilters = memo(
           onClose={() => setDialogRecommendationsOpen(false)}
           recommendations={recommendations}
           loading={loadingRecommendations}
+          basedOnItems={basedOnSeries}
         />
       </Box>
     );
