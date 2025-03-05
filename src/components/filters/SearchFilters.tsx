@@ -293,9 +293,9 @@ export const SearchFilters = memo(
     };
 
     return (
-      <Box className='flex flex-col gap-4 md:flex-row md:items-center justify-center mb-6 max-w-[1400px] m-auto'>
-        <Box className='flex flex-col md:flex-row items-center gap-2'>
-          <Box sx={{ width: { lg: '300px' }, flexShrink: 0 }}>
+      <Box className='flex flex-col gap-4 xl:flex-row md:items-center justify-center mb-6 max-w-[1400px] m-auto'>
+        <Box className='flex flex-col lg:flex-row items-center gap-2'>
+          <Box sx={{ width: '250px', flexShrink: 0 }}>
             <TextField
               label='Suchen'
               variant='outlined'
@@ -306,7 +306,7 @@ export const SearchFilters = memo(
               inputRef={searchInputRef}
             />
           </Box>
-          <Box className='flex flex-row items-center gap-2'>
+          <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
             {!isSharedListPage && (
               <Box sx={{ flexShrink: 0 }}>
                 <Tooltip title='Serie hinzufügen'>
@@ -349,11 +349,6 @@ export const SearchFilters = memo(
                     </Box>
                   </Button>
                 </Tooltip>
-                <Divider
-                  orientation='vertical'
-                  flexItem
-                  sx={{ ml: 1, display: { xs: 'none', md: 'block' } }}
-                />
               </Box>
             )}
             {!isSharedListPage && (
@@ -440,46 +435,55 @@ export const SearchFilters = memo(
                 </Tooltip>
               </>
             )}
+            <Divider
+              className='hidden'
+              orientation='vertical'
+              flexItem
+              sx={{ display: { xl: 'block' }, ml: 1 }}
+            />
           </Box>
         </Box>
-        <FormControl className='md:w-[250px]' disabled={isWatchlist}>
-          <InputLabel id='genre-label'>Genre</InputLabel>
-          <Select
-            labelId='genre-label'
-            label='Genre'
-            value={selectedGenre}
-            onChange={handleGenreChange}
-          >
-            {genreMenuItems.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                {item.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl className='md:w-[250px]' disabled={isWatchlist}>
-          <InputLabel id='provider-label'>Provider</InputLabel>
-          <Select
-            labelId='provider-label'
-            label='Provider'
-            value={selectedProvider}
-            onChange={handleProviderChange}
-          >
-            {providerMenuItems.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                {item.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box className='flex flex-col lg:flex-row items-center gap-2'>
+          <FormControl className='w-[250px]' disabled={isWatchlist}>
+            <InputLabel id='genre-label'>Genre</InputLabel>
+            <Select
+              labelId='genre-label'
+              label='Genre'
+              value={selectedGenre}
+              onChange={handleGenreChange}
+            >
+              {genreMenuItems.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl className='w-[250px]' disabled={isWatchlist}>
+            <InputLabel id='provider-label'>Provider</InputLabel>
+            <Select
+              labelId='provider-label'
+              label='Provider'
+              value={selectedProvider}
+              onChange={handleProviderChange}
+            >
+              {providerMenuItems.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
         {!isSharedListPage && (
           <>
             <Divider
+              className='hidden'
               orientation='vertical'
               flexItem
-              sx={{ display: { xs: 'none', md: 'block' } }}
+              sx={{ display: { xl: 'block' } }}
             />
-            <Box className='flex gap-3 justify-center md:justify-start'>
+            <Box className='flex gap-3 justify-center md:justify-start mt-0'>
               <Tooltip
                 title={
                   isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
