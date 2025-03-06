@@ -63,7 +63,7 @@ Die Anwendung ist live unter [tv-rank.de](https://tv-rank.de) verfügbar.
 
 2. Anwendung im Browser öffnen:
    ```bash
-   http://localhost:3000
+   http://localhost:5173
    ```
 
 ## Build und Deployment
@@ -96,3 +96,8 @@ Die Anwendung ist live unter [tv-rank.de](https://tv-rank.de) verfügbar.
 ## Lizenz
 
 Dieses Projekt ist unter der MIT-Lizenz lizenziert.
+
+## Hinweise
+
+- Dies ist nur das Frontend der Anwendung. Das Backend zum Hinzufügen der Serien und Filme muss separat erstellt werden.
+- Die Anwendung verwendet Firebase Authentication und Firebase Realtime Database.
