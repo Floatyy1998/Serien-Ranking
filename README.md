@@ -1,14 +1,27 @@
-# Serien App
+# TV-RANK
 
-Dies ist eine Serienverwaltungs-App, die mit React, TypeScript und Firebase entwickelt wurde.
+TV-RANK ist eine umfassende Serienverwaltungs-App, die es Benutzern ermöglicht, ihre Lieblingsserien und -filme zu entdecken, zu bewerten und zu verwalten. Die App bietet eine Vielzahl von Funktionen, darunter die Möglichkeit, Serien nach Genre und Anbieter zu filtern, Bewertungen anzuzeigen und zu bearbeiten sowie detaillierte Statistiken zu den angesehenen Serien und Filmen zu erhalten.
 
 ## Funktionen
 
-- Serien anzeigen und durchsuchen
-- Serien nach Genre und Anbieter filtern
-- Serienbewertungen anzeigen und bearbeiten
-- Offline-Unterstützung für Bewertungen und Daten
-- Statistiken über Serien und Bewertungen anzeigen
+- **Serien und Filme anzeigen und durchsuchen**: Durchsuchen Sie eine umfangreiche Datenbank von Serien und Filmen.
+- **Filteroptionen**: Filtern Sie Serien und Filme nach Genre und Anbieter.
+- **Bewertungen anzeigen und bearbeiten**: Sehen Sie sich Bewertungen an und passen Sie diese nach Ihren Vorlieben an.
+- **Watchlist verwalten**: Fügen Sie Serien und Filme zu Ihrer Watchlist hinzu und behalten Sie den Überblick über Ihre Favoriten.
+- **Statistiken anzeigen**: Erhalten Sie detaillierte Statistiken über Ihre angesehenen Serien und Filme.
+
+## Technologien
+
+- **React**: Für die Benutzeroberfläche.
+- **TypeScript**: Für die Typensicherheit und bessere Wartbarkeit des Codes.
+- **Firebase**: Für Authentifizierung und Datenbank.
+- **Material-UI**: Für die Gestaltung der Benutzeroberfläche.
+- **Framer Motion**: Für Animationen.
+- **Vite**: Als Build-Tool.
+
+## Live-Demo
+
+Die Anwendung ist live unter [tv-rank.de](https://tv-rank.de) verfügbar.
 
 ## Installation
 
