@@ -5,10 +5,23 @@ TV-RANK ist eine umfassende Serienverwaltungs-App, die es Benutzern ermöglicht,
 ## Funktionen
 
 - **Serien und Filme anzeigen und durchsuchen**: Durchsuchen Sie eine umfangreiche Datenbank von Serien und Filmen.
+  ![Serien anzeigen](./Bilder/Serien.jpg)
+  ![Filme anzeigen](./Bilder/Filme.jpg)
 - **Filteroptionen**: Filtern Sie Serien und Filme nach Genre und Anbieter.
 - **Bewertungen anzeigen und bearbeiten**: Sehen Sie sich Bewertungen an und passen Sie diese nach Ihren Vorlieben an.
+  ![Bewertungen anzeigen und bearbeiten](./Bilder/Rating.jpg)
 - **Watchlist verwalten**: Fügen Sie Serien und Filme zu Ihrer Watchlist hinzu und behalten Sie den Überblick über Ihre Favoriten.
+  ![Watchlist verwalten](./Bilder/Weiterschauen.jpg)
+- **Keine Episode mehr verpassen**: Sie sehen immer wann die nächste Episode Ihrer Lieblingsserien erscheint.
+  ![Statistiken anzeigen](./Bilder/NeueEpisoden.jpg)
+- **Nie vergessen wo Sie stehen**: Sie Wissen immer genau wo sie eine Serie Pausiert haben.
+  ![Statistiken anzeigen](./Bilder/Watched.jpg)
 - **Statistiken anzeigen**: Erhalten Sie detaillierte Statistiken über Ihre angesehenen Serien und Filme.
+  ![Statistiken anzeigen](./Bilder/Statistik.jpg)
+- **Empfehlungen anzeigen**: Erhalten Sie Empfehlungen für neue Serien und Filme anhand Ihrer Liste.
+  ![Statistiken anzeigen](./Bilder/Empfehlungen.jpg)
+- **Unveröffentlichte Serien und Filme finden**: Entdecken sie unveröffentlichte Serien und Filme und sehen Sie, wann diese erscheinen.
+  ![Statistiken anzeigen](./Bilder/Empfehlungen.jpg)
 
 ## Technologien
 
