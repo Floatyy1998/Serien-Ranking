@@ -25,7 +25,7 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
-import { BarChartIcon, ShareIcon } from 'lucide-react';
+import { BarChartIcon, LogOut, ShareIcon } from 'lucide-react';
 import { memo, useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
@@ -137,22 +137,54 @@ export const Header = memo(({ setIsStatsOpen }: HeaderProps) => {
         color='default'
         elevation={1}
       >
-        <Toolbar>
-          {user && !isSharedListPage && (
-            <Button
-              onClick={handleLogout}
-              variant='outlined'
-              aria-label='Logout'
-              role='button'
-            >
-              Logout
-            </Button>
-          )}
+        <Toolbar sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'absolute', left: 0, ml: 1 }}>
+            {/* Left group: Logout oder "Meine Liste" */}
+            {isSharedListPage ? (
+              isMobile ? (
+                <IconButton
+                  onClick={handleBackToHome}
+                  aria-label='Zu meiner Liste'
+                  role='button'
+                >
+                  {/* Pfeil umgedreht und in Türkis */}
+                  <LogOut
+                    style={{ transform: 'scaleX(-1)', color: '#00fed7' }}
+                  />
+                </IconButton>
+              ) : (
+                <Button
+                  sx={{ width: { xs: 100, sm: 130 } }}
+                  variant='outlined'
+                  color='inherit'
+                  onClick={handleBackToHome}
+                  aria-label='Zu meiner Liste'
+                  role='button'
+                >
+                  Meine Liste
+                </Button>
+              )
+            ) : (
+              user && (
+                <Button
+                  onClick={handleLogout}
+                  variant='outlined'
+                  aria-label='Logout'
+                  role='button'
+                >
+                  Logout
+                </Button>
+              )
+            )}
+          </Box>
+
           <Typography
             variant='h1'
             component='h1'
             sx={{
-              flexGrow: 1,
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
               textAlign: 'center',
               display: 'flex',
               alignItems: 'center',
@@ -168,42 +200,32 @@ export const Header = memo(({ setIsStatsOpen }: HeaderProps) => {
               TV-RANK
             </span>
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {isSharedListPage ? (
-              <Button
-                variant='outlined'
-                color='inherit'
-                onClick={handleBackToHome}
-                aria-label='Zu meiner Liste'
-                role='button'
-              >
-                Zu meiner Liste
-              </Button>
-            ) : (
-              user && (
-                <>
-                  <MuiTooltip title='Statistiken anzeigen'>
-                    <IconButton
-                      color='inherit'
-                      aria-label='Statistiken anzeigen'
-                      onClick={handleStatsOpen}
-                      role='button'
-                    >
-                      <BarChartIcon />
-                    </IconButton>
-                  </MuiTooltip>
-                  <MuiTooltip title='Link teilen'>
-                    <IconButton
-                      color='inherit'
-                      aria-label='Link teilen'
-                      onClick={handleLinksDialogOpen}
-                      role='button'
-                    >
-                      <ShareIcon />
-                    </IconButton>
-                  </MuiTooltip>
-                </>
-              )
+
+          <Box sx={{ position: 'absolute', right: 0, mr: 1 }}>
+            {/* Right group: Weitere Buttons */}
+            {!isSharedListPage && user && (
+              <>
+                <MuiTooltip title='Statistiken anzeigen'>
+                  <IconButton
+                    color='inherit'
+                    aria-label='Statistiken anzeigen'
+                    onClick={handleStatsOpen}
+                    role='button'
+                  >
+                    <BarChartIcon />
+                  </IconButton>
+                </MuiTooltip>
+                <MuiTooltip title='Link teilen'>
+                  <IconButton
+                    color='inherit'
+                    aria-label='Link teilen'
+                    onClick={handleLinksDialogOpen}
+                    role='button'
+                  >
+                    <ShareIcon />
+                  </IconButton>
+                </MuiTooltip>
+              </>
             )}
           </Box>
         </Toolbar>

@@ -154,6 +154,7 @@ export const MovieSearchFilters = memo(
             popularity: result.popularity,
             vote_average: result.vote_average,
             vote_count: result.vote_count,
+            media_type: 'movie',
           }))
         );
       }

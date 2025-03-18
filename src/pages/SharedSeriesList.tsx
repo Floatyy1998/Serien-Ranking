@@ -179,21 +179,30 @@ const SharedSeriesList = () => {
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
     const fullHeight = document.body.offsetHeight;
-    if (
-      scrollTop + windowHeight >= fullHeight - 1000 &&
-      visibleCount < sortedSeries?.length
-    ) {
-      const cardWidth = 230;
-      const gap = 75;
-      let columns = Math.floor(window.innerWidth / (cardWidth + gap));
-      if (columns < 1) columns = 1;
-      const remainder = visibleCount % columns;
-      const itemsToAdd = remainder === 0 ? columns : columns - remainder;
-      setVisibleCount((prev) =>
-        Math.min(prev + itemsToAdd, sortedSeries?.length)
-      );
+    if (scrollTop + windowHeight >= fullHeight - 1000) {
+      if (tabValue === 'series' && visibleCount < sortedSeries?.length) {
+        const cardWidth = 230;
+        const gap = 75;
+        let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+        if (columns < 1) columns = 1;
+        const remainder = visibleCount % columns;
+        const itemsToAdd = remainder === 0 ? columns : columns - remainder;
+        setVisibleCount((prev) =>
+          Math.min(prev + itemsToAdd, sortedSeries?.length)
+        );
+      } else if (tabValue === 'movies' && visibleCount < sortedMovies?.length) {
+        const cardWidth = 230;
+        const gap = 75;
+        let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+        if (columns < 1) columns = 1;
+        const remainder = visibleCount % columns;
+        const itemsToAdd = remainder === 0 ? columns : columns - remainder;
+        setVisibleCount((prev) =>
+          Math.min(prev + itemsToAdd, sortedMovies?.length)
+        );
+      }
     }
-  }, [sortedSeries?.length, visibleCount]);
+  }, [sortedSeries?.length, sortedMovies?.length, visibleCount, tabValue]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);

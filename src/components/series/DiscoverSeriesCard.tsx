@@ -14,9 +14,14 @@ import { getFormattedDate } from '../../utils/date.utils';
 interface DiscoverSeriesCardProps {
   series: Series;
   onAdd: (series: Series) => void;
+  providers: any[];
 }
 
-const DiscoverSeriesCard = ({ series, onAdd }: DiscoverSeriesCardProps) => {
+const DiscoverSeriesCard = ({
+  series,
+  onAdd,
+  providers = [],
+}: DiscoverSeriesCardProps) => {
   const handleAddClick = () => {
     onAdd(series);
   };
@@ -39,6 +44,22 @@ const DiscoverSeriesCard = ({ series, onAdd }: DiscoverSeriesCardProps) => {
           }}
           image={posterImage}
         />
+        {providers.length > 0 && (
+          <Box className='absolute top-2 left-2 flex gap-1'>
+            {providers.map((provider) => (
+              <Box
+                key={provider.provider_id}
+                className='bg-black/50 backdrop-blur-xs rounded-lg p-1 w-9 h-9'
+              >
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${provider.logo}`}
+                  alt={provider.provider_name}
+                  className='h-7 rounded-lg'
+                />
+              </Box>
+            ))}
+          </Box>
+        )}
         <Box
           sx={{
             position: 'absolute',

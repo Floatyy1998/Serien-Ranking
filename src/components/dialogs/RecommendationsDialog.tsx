@@ -29,6 +29,61 @@ interface RecommendationsDialogProps {
   basedOnItems: Series[] | Movie[];
 }
 
+const providerLogos: { [key: number]: { name: string; logo: string } } = {
+  337: {
+    name: 'Disney Plus',
+    logo: `https://image.tmdb.org/t/p/w342/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg`,
+  },
+  8: {
+    name: 'Netflix',
+    logo: `https://image.tmdb.org/t/p/w342/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg`,
+  },
+  9: {
+    name: 'Amazon Prime Video',
+    logo: `https://image.tmdb.org/t/p/w342/emthp39XA2YScoYL1p0sdbAH2WA.jpg`,
+  },
+  283: {
+    name: 'Crunchyroll',
+    logo: `https://image.tmdb.org/t/p/w342/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`,
+  },
+  30: {
+    name: 'WOW',
+    logo: `https://image.tmdb.org/t/p/w342/1WESsDFMs3cJc2TeT3nnzwIffGv.jpg`,
+  },
+  350: {
+    name: 'Apple TV Plus',
+    logo: `https://image.tmdb.org/t/p/w342/6uhKBfmtzFqOcLousHwZuzcrScK.jpg`,
+  },
+  421: {
+    name: 'Joyn Plus',
+    logo: `https://image.tmdb.org/t/p/w342/2joD3S2goOB6lmepX35A8dmaqgM.jpg`,
+  },
+  531: {
+    name: 'Paramount Plus',
+    logo: `https://image.tmdb.org/t/p/w342/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg`,
+  },
+  178: {
+    name: 'MagentaTV',
+    logo: `https://image.tmdb.org/t/p/w342/uULoezj2skPc6amfwru72UPjYXV.jpg`,
+  },
+  298: {
+    name: 'RTL+',
+    logo: `https://image.tmdb.org/t/p/w342/3hI22hp7YDZXyrmXVqDGnVivNTI.jpg`,
+  },
+  354: {
+    name: 'Crunchyroll',
+    logo: `https://image.tmdb.org/t/p/w342/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg`,
+  },
+  613: {
+    name: 'Freevee',
+    logo: `https://image.tmdb.org/t/p/w342/uBE4RMH15mrkuz6vXzuJc7ZLXp1.jpg`,
+  },
+  415: {
+    name: 'Animation Digital Network',
+    logo: 'https://image.tmdb.org/t/p/w342//w86FOwg0bbgUSHWWnjOTuEjsUvq.jpg',
+  },
+};
+
 const RecommendationsDialog = ({
   open,
   onClose,
@@ -47,6 +102,8 @@ const RecommendationsDialog = ({
     'success' | 'error' | 'warning'
   >('success');
   const itemsPerPage = 16;
+  const [providers, setProviders] = useState<{ [key: number]: any }>({});
+
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -175,6 +232,31 @@ const RecommendationsDialog = ({
     setLoadingState(loading);
   }, [loading]);
 
+  useEffect(() => {
+    const fetchProviders = async () => {
+      const newProviders: { [key: number]: any } = {};
+      for (const item of recommendations) {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/${item.media_type}/${item.id}/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd`
+        );
+        const data = await response.json();
+        const providerIds =
+          data.results?.DE?.flatrate?.map(
+            (provider: any) => provider.provider_id
+          ) || [];
+        newProviders[item.id] = providerIds
+          .map((id: number) => providerLogos[id])
+          .filter(Boolean);
+      }
+
+      setProviders(newProviders);
+    };
+
+    if (recommendations.length > 0) {
+      fetchProviders();
+    }
+  }, [recommendations]);
+
   const paginatedRecommendations = recommendations.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
@@ -192,11 +274,14 @@ const RecommendationsDialog = ({
     onClose();
   };
 
+  const allProvidersLoaded =
+    recommendations.length === Object.keys(providers).length;
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth='lg' fullWidth>
       <DialogHeader title='Empfehlungen' onClose={handleClose} />
       <DialogContent>
-        {loadingState ? (
+        {loadingState || !allProvidersLoaded ? (
           <Box display='flex' justifyContent='center' mt={2}>
             <InfinitySpin width='200' color='#00fed7' />
           </Box>
@@ -271,11 +356,13 @@ const RecommendationsDialog = ({
                       <DiscoverSeriesCard
                         series={item as Series}
                         onAdd={handleAddSeries}
+                        providers={providers[item.id]}
                       />
                     ) : (
                       <DiscoverMovieCard
                         movie={item as Movie}
                         onAdd={handleAddMovie}
+                        providers={providers[item.id]}
                       />
                     )}
                   </Box>

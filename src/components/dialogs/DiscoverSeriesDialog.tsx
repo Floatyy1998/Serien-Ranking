@@ -411,7 +411,11 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
           >
             {searchResults.map((series) => (
               <Box key={series.id} sx={{ width: '230px', height: '444px' }}>
-                <DiscoverSeriesCard series={series} onAdd={handleAddSeries} />
+                <DiscoverSeriesCard
+                  providers={[]}
+                  series={series}
+                  onAdd={handleAddSeries}
+                />
               </Box>
             ))}
           </Box>

@@ -404,7 +404,11 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
           >
             {searchResults.map((movie) => (
               <Box key={movie.id} sx={{ width: '230px', height: '444px' }}>
-                <DiscoverMovieCard movie={movie} onAdd={handleAddMovie} />
+                <DiscoverMovieCard
+                  movie={movie}
+                  onAdd={handleAddMovie}
+                  providers={[]}
+                />
               </Box>
             ))}
           </Box>

@@ -14,9 +14,14 @@ import { getFormattedDate } from '../../utils/date.utils';
 interface DiscoverMovieCardProps {
   movie: Movie;
   onAdd: (movie: Movie) => void;
+  providers: any[];
 }
 
-const DiscoverMovieCard = ({ movie, onAdd }: DiscoverMovieCardProps) => {
+const DiscoverMovieCard = ({
+  movie,
+  onAdd,
+  providers = [],
+}: DiscoverMovieCardProps) => {
   const handleAddClick = () => {
     onAdd(movie);
   };
@@ -42,6 +47,22 @@ const DiscoverMovieCard = ({ movie, onAdd }: DiscoverMovieCardProps) => {
               : notFound
           }
         />
+        {providers.length > 0 && (
+          <Box className='absolute top-2 left-2 flex gap-1'>
+            {providers.map((provider) => (
+              <Box
+                key={provider.provider_id}
+                className='bg-black/50 backdrop-blur-xs rounded-lg p-1 w-9 h-9'
+              >
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${provider.logo}`}
+                  alt={provider.provider_name}
+                  className='h-7 rounded-lg'
+                />
+              </Box>
+            ))}
+          </Box>
+        )}
         <Box
           sx={{
             position: 'absolute',
