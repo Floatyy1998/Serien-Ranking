@@ -266,6 +266,7 @@ const WatchlistDialog = ({
       </Dialog>
       {selectedSeries && user && (
         <SeriesWatchedDialog
+          isReadOnly={true}
           open={true}
           onClose={() => setSelectedSeries(null)}
           series={selectedSeries}
