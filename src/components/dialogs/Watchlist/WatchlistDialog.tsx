@@ -270,11 +270,7 @@ const WatchlistDialog = ({
           onClose={() => setSelectedSeries(null)}
           series={selectedSeries}
           user={user}
-          handleWatchedToggleWithConfirmation={(
-            seasonNumber,
-            episodeId,
-            forceWatched?
-          ) => {
+          handleWatchedToggleWithConfirmation={(seasonNumber, episodeId) => {
             handleWatchedToggleWithConfirmation(
               seasonNumber,
               episodeId,
