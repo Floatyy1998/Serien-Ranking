@@ -31,6 +31,8 @@ interface SeriesListItemProps {
     name: string;
   } | null;
   onWatchedToggle: () => void;
+  // Neuer Callback für Klick auf den Serientitel
+  onTitleClick?: (series: Series) => void;
 }
 const SeriesListItem: React.FC<SeriesListItemProps> = ({
   series,
@@ -39,6 +41,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
   moveItem,
   nextUnwatchedEpisode,
   onWatchedToggle,
+  onTitleClick,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -54,7 +57,14 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
         alt={series.title}
       />
       <div className='flex-1'>
-        <div className='font-medium text-[#00fed7]'>
+        <div
+          className='font-medium text-[#00fed7]'
+          style={{ cursor: onTitleClick ? 'pointer' : 'default' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onTitleClick && onTitleClick(series);
+          }}
+        >
           {series.title}
           {!isMobile && remaining > 0 && (
             <span className='text-xs text-gray-500 ml-2'>

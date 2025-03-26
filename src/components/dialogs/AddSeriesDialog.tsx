@@ -81,13 +81,19 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
   );
 
   const handleAddSeries = useCallback(async () => {
-    if (!user || !selectedSeries) {
+    if (!user) {
       setSnackbarMessage(
         'Bitte loggen Sie sich ein, um eine Serie hinzuzufügen.'
       );
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
       onClose();
+      return;
+    }
+    if (!selectedSeries) {
+      setSnackbarMessage('Bitte wählen Sie eine Serie aus.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
       return;
     }
     setSnackbarMessage('Serie wird hinzugefügt');

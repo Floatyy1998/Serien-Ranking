@@ -12,9 +12,11 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAuth } from '../../../App';
 import { Series } from '../../../interfaces/Series';
+import SeriesWatchedDialog from '../SeriesWatchedDialog';
 import { DialogHeader } from '../shared/SharedDialogComponents';
 import SeriesListItem from './SeriesListItem';
 import WatchlistFilter from './WatchlistFilter';
+
 interface WatchlistDialogProps {
   open: boolean;
   onClose: () => void;
@@ -44,6 +46,8 @@ const WatchlistDialog = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showFilter, setShowFilter] = useState(!isMobile);
+  const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
+
   useEffect(() => {
     localStorage.setItem('customOrderActive', customOrderActive.toString());
   }, [customOrderActive]);
@@ -165,98 +169,122 @@ const WatchlistDialog = ({
     );
   };
   return (
-    <Dialog open={open} onClose={onClose} fullWidth container={document.body}>
-      <DialogHeader title='Weiterschauen' onClose={onClose} />
-      <DialogContent
-        sx={{
-          minHeight: '80vh',
-          overflowY: 'auto',
-          p: isMobile ? '0px 12px' : '20px 24px',
-        }}
-      >
-        {(!isMobile || showFilter) && (
-          <WatchlistFilter
-            filterInput={filterInput}
-            setFilterInput={setFilterInput}
-            customOrderActive={customOrderActive}
-            setCustomOrderActive={setCustomOrderActive}
-            sortOption={sortOption}
-            toggleSort={toggleSort}
-          />
-        )}
-        {isMobile && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-            <Button
-              variant='outlined'
-              onClick={() => setShowFilter((prev) => !prev)}
-              sx={{ fontSize: '0.75rem' }}
-            >
-              {showFilter ? 'Filter ausblenden' : 'Filter anzeigen'}
-            </Button>
-          </Box>
-        )}
-        {customOrderActive ? (
-          <DndProvider backend={HTML5Backend}>
-            <div style={{ minHeight: '350px' }}>
-              {displayedSeries.map((series, index) => {
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth container={document.body}>
+        <DialogHeader title='Weiterschauen' onClose={onClose} />
+        <DialogContent
+          sx={{
+            minHeight: '80vh',
+            overflowY: 'auto',
+            p: isMobile ? '0px 12px' : '20px 24px',
+          }}
+        >
+          {(!isMobile || showFilter) && (
+            <WatchlistFilter
+              filterInput={filterInput}
+              setFilterInput={setFilterInput}
+              customOrderActive={customOrderActive}
+              setCustomOrderActive={setCustomOrderActive}
+              sortOption={sortOption}
+              toggleSort={toggleSort}
+            />
+          )}
+          {isMobile && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+              <Button
+                variant='outlined'
+                onClick={() => setShowFilter((prev) => !prev)}
+                sx={{ fontSize: '0.75rem' }}
+              >
+                {showFilter ? 'Filter ausblenden' : 'Filter anzeigen'}
+              </Button>
+            </Box>
+          )}
+          {customOrderActive ? (
+            <DndProvider backend={HTML5Backend}>
+              <div style={{ minHeight: '350px' }}>
+                {displayedSeries.map((series, index) => {
+                  const nextEpisode = getNextUnwatchedEpisode(series);
+                  return (
+                    <SeriesListItem
+                      key={series.id}
+                      series={series}
+                      index={index}
+                      draggable={true}
+                      moveItem={moveItem}
+                      nextUnwatchedEpisode={nextEpisode}
+                      onTitleClick={(s) => setSelectedSeries(s)}
+                      onWatchedToggle={() => {
+                        handleWatchedToggleWithConfirmation(
+                          nextEpisode!.seasonNumber,
+                          nextEpisode!.episodeIndex,
+                          series.id,
+                          series.nmr
+                        );
+                        updateSeriesInDialog(
+                          series.id,
+                          nextEpisode!.seasonNumber,
+                          nextEpisode!.episodeIndex
+                        );
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </DndProvider>
+          ) : (
+            <div>
+              {displayedSeries.map((series) => {
                 const nextEpisode = getNextUnwatchedEpisode(series);
                 return (
                   <SeriesListItem
                     key={series.id}
                     series={series}
-                    index={index}
-                    draggable={true}
-                    moveItem={moveItem}
                     nextUnwatchedEpisode={nextEpisode}
+                    onTitleClick={(s) => setSelectedSeries(s)}
                     onWatchedToggle={() => {
-                      handleWatchedToggleWithConfirmation(
-                        nextEpisode!.seasonNumber,
-                        nextEpisode!.episodeIndex,
-                        series.id,
-                        series.nmr
-                      );
-                      updateSeriesInDialog(
-                        series.id,
-                        nextEpisode!.seasonNumber,
-                        nextEpisode!.episodeIndex
-                      );
+                      if (nextEpisode) {
+                        handleWatchedToggleWithConfirmation(
+                          nextEpisode.seasonNumber,
+                          nextEpisode.episodeIndex,
+                          series.id,
+                          series.nmr
+                        );
+                        updateSeriesInDialog(
+                          series.id,
+                          nextEpisode.seasonNumber,
+                          nextEpisode.episodeIndex
+                        );
+                      }
                     }}
                   />
                 );
               })}
             </div>
-          </DndProvider>
-        ) : (
-          <div>
-            {displayedSeries.map((series) => {
-              const nextEpisode = getNextUnwatchedEpisode(series);
-              return (
-                <SeriesListItem
-                  key={series.id}
-                  series={series}
-                  nextUnwatchedEpisode={nextEpisode}
-                  onWatchedToggle={() => {
-                    if (nextEpisode) {
-                      handleWatchedToggleWithConfirmation(
-                        nextEpisode.seasonNumber,
-                        nextEpisode.episodeIndex,
-                        series.id,
-                        series.nmr
-                      );
-                      updateSeriesInDialog(
-                        series.id,
-                        nextEpisode.seasonNumber,
-                        nextEpisode.episodeIndex
-                      );
-                    }
-                  }}
-                />
-              );
-            })}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+          )}
+        </DialogContent>
+      </Dialog>
+      {selectedSeries && user && (
+        <SeriesWatchedDialog
+          open={true}
+          onClose={() => setSelectedSeries(null)}
+          series={selectedSeries}
+          user={user}
+          handleWatchedToggleWithConfirmation={(
+            seasonNumber,
+            episodeId,
+            forceWatched?
+          ) => {
+            handleWatchedToggleWithConfirmation(
+              seasonNumber,
+              episodeId,
+              selectedSeries.id,
+              selectedSeries.nmr
+            );
+          }}
+        />
+      )}
+    </>
   );
 };
 export default WatchlistDialog;

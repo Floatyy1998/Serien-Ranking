@@ -88,13 +88,19 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
   );
 
   const handleAddMovie = useCallback(async () => {
-    if (!user || !selectedMovie) {
+    if (!user) {
       setSnackbarMessage(
         'Bitte loggen Sie sich ein, um einen Film hinzuzufügen.'
       );
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
       onClose();
+      return;
+    }
+    if (!selectedMovie) {
+      setSnackbarMessage('Bitte wählen Sie einen Film aus.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
       return;
     }
     setSnackbarMessage('Film wird hinzugefügt');
