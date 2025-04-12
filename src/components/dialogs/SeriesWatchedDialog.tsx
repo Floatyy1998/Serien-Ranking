@@ -187,6 +187,19 @@ const SeriesWatchedDialog = memo(
                       <span className='text-lg font-medium'>
                         Staffel {season.seasonNumber + 1}
                       </span>
+                      <span
+                        className='text-sm text-gray-400'
+                        style={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {`${season.episodes.filter((e) => e.watched).length}/${
+                          season.episodes.length
+                        }  Episoden`}
+                        <span className='hidden sm:inline'> gesehen</span>
+                      </span>
                       <div
                         onClick={(e) => {
                           e.stopPropagation();
