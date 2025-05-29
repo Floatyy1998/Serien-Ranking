@@ -47,6 +47,7 @@ const WatchlistDialog = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showFilter, setShowFilter] = useState(!isMobile);
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
+  const [pendingUpdates, setPendingUpdates] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     localStorage.setItem('customOrderActive', customOrderActive.toString());
@@ -146,28 +147,71 @@ const WatchlistDialog = ({
     seasonNumber: number,
     episodeIndex: number
   ) => {
-    setFilteredSeries((prev) =>
-      prev.map((series) =>
-        series.id === seriesId
-          ? {
-              ...series,
-              seasons: series.seasons.map((season) =>
-                season.seasonNumber === seasonNumber
-                  ? {
-                      ...season,
-                      episodes: season.episodes.map((episode, idx) =>
-                        idx === episodeIndex
-                          ? { ...episode, watched: !episode.watched }
-                          : episode
-                      ),
-                    }
-                  : season
-              ),
-            }
-          : series
-      )
+    const updateKey = `${seriesId}-${seasonNumber}-${episodeIndex}`;
+
+    // Verhindere doppelte Updates
+    if (pendingUpdates.has(updateKey)) {
+      return;
+    }
+
+    setPendingUpdates((prev) => new Set(prev).add(updateKey));
+
+    // Verwende setTimeout um sicherzustellen, dass Firebase-Update Zeit hat
+    setTimeout(() => {
+      setFilteredSeries((prev) =>
+        prev.map((series) =>
+          series.id === seriesId
+            ? {
+                ...series,
+                seasons: series.seasons.map((season) =>
+                  season.seasonNumber === seasonNumber
+                    ? {
+                        ...season,
+                        episodes: season.episodes.map((episode, idx) =>
+                          idx === episodeIndex
+                            ? { ...episode, watched: !episode.watched }
+                            : episode
+                        ),
+                      }
+                    : season
+                ),
+              }
+            : series
+        )
+      );
+
+      setPendingUpdates((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(updateKey);
+        return newSet;
+      });
+    }, 100);
+  };
+
+  const handleWatchedToggleWithDebounce = (
+    series: Series,
+    nextEpisode: any
+  ) => {
+    const updateKey = `${series.id}-${nextEpisode.seasonNumber}-${nextEpisode.episodeIndex}`;
+
+    if (pendingUpdates.has(updateKey)) {
+      return; // Verhindere doppelte Klicks
+    }
+
+    handleWatchedToggleWithConfirmation(
+      nextEpisode.seasonNumber,
+      nextEpisode.episodeIndex,
+      series.id,
+      series.nmr
+    );
+
+    updateSeriesInDialog(
+      series.id,
+      nextEpisode.seasonNumber,
+      nextEpisode.episodeIndex
     );
   };
+
   return (
     <>
       <Dialog open={open} onClose={onClose} fullWidth container={document.body}>
@@ -215,17 +259,7 @@ const WatchlistDialog = ({
                       nextUnwatchedEpisode={nextEpisode}
                       onTitleClick={(s) => setSelectedSeries(s)}
                       onWatchedToggle={() => {
-                        handleWatchedToggleWithConfirmation(
-                          nextEpisode!.seasonNumber,
-                          nextEpisode!.episodeIndex,
-                          series.id,
-                          series.nmr
-                        );
-                        updateSeriesInDialog(
-                          series.id,
-                          nextEpisode!.seasonNumber,
-                          nextEpisode!.episodeIndex
-                        );
+                        handleWatchedToggleWithDebounce(series, nextEpisode!);
                       }}
                     />
                   );
@@ -244,17 +278,7 @@ const WatchlistDialog = ({
                     onTitleClick={(s) => setSelectedSeries(s)}
                     onWatchedToggle={() => {
                       if (nextEpisode) {
-                        handleWatchedToggleWithConfirmation(
-                          nextEpisode.seasonNumber,
-                          nextEpisode.episodeIndex,
-                          series.id,
-                          series.nmr
-                        );
-                        updateSeriesInDialog(
-                          series.id,
-                          nextEpisode.seasonNumber,
-                          nextEpisode.episodeIndex
-                        );
+                        handleWatchedToggleWithDebounce(series, nextEpisode);
                       }
                     }}
                   />
