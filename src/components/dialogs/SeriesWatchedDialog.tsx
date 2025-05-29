@@ -195,8 +195,14 @@ const SeriesWatchedDialog = memo(
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {`${season.episodes.filter((e) => e.watched).length}/${
-                          season.episodes.length
+                        {`${
+                          season.episodes && Array.isArray(season.episodes)
+                            ? season.episodes.filter((e) => e.watched).length
+                            : 0
+                        }/${
+                          season.episodes && Array.isArray(season.episodes)
+                            ? season.episodes.length
+                            : 0
                         }  Episoden`}
                         <span className='hidden sm:inline'> gesehen</span>
                       </span>

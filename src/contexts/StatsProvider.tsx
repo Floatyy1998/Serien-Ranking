@@ -138,12 +138,16 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (user) {
       if (seriesList) {
-        const seriesArray = Object.values(seriesList);
+        const seriesArray = Array.isArray(seriesList)
+          ? seriesList
+          : Object.values(seriesList || {});
         setSeriesList(seriesArray);
         setSeriesStatsData(computeStats(seriesArray));
       }
       if (movieList) {
-        const movieArray = Object.values(movieList);
+        const movieArray = Array.isArray(movieList)
+          ? movieList
+          : Object.values(movieList || {});
         setMovieList(movieArray);
         setMovieStatsData(computeStats(movieArray));
       }

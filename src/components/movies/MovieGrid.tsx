@@ -21,7 +21,7 @@ export const MovieGrid = memo(
     const [visibleCount, setVisibleCount] = useState(20);
 
     const filteredMovies = useMemo(() => {
-      return movieList
+      return (movieList || [])
         .filter((movie) => {
           const matchesSearch = movie.title
             .toLowerCase()

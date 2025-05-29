@@ -75,7 +75,7 @@ export const SearchFilters = memo(
     useEffect(() => {
       const fetchWatchlistSeries = async () => {
         if (user) {
-          const watchlistSeries = seriesList.filter(
+          const watchlistSeries = (seriesList || []).filter(
             (series) => series.watchlist
           );
           setWatchlistSeries(watchlistSeries);
