@@ -48,6 +48,29 @@ const WatchlistDialog = ({
   const [showFilter, setShowFilter] = useState(!isMobile);
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   const [pendingUpdates, setPendingUpdates] = useState<Set<string>>(new Set());
+  const [dialogContentVisible, setDialogContentVisible] = useState(false);
+  const [watchlistDialogOpen, setWatchlistDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setWatchlistDialogOpen(true);
+      // Kleiner Delay um sicherzustellen, dass Dialog vollständig geöffnet ist
+      const timer = setTimeout(() => setDialogContentVisible(true), 50);
+      return () => clearTimeout(timer);
+    } else {
+      setDialogContentVisible(false);
+      setWatchlistDialogOpen(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    // Wenn SeriesWatchedDialog geöffnet wird, schließe WatchlistDialog temporär
+    if (selectedSeries) {
+      setWatchlistDialogOpen(false);
+    } else if (open) {
+      setWatchlistDialogOpen(true);
+    }
+  }, [selectedSeries, open]);
 
   useEffect(() => {
     localStorage.setItem('customOrderActive', customOrderActive.toString());
@@ -214,79 +237,86 @@ const WatchlistDialog = ({
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullWidth container={document.body}>
+      <Dialog
+        open={watchlistDialogOpen}
+        onClose={onClose}
+        fullWidth
+        container={document.body}
+      >
         <DialogHeader title='Weiterschauen' onClose={onClose} />
-        <DialogContent
-          sx={{
-            minHeight: '80vh',
-            overflowY: 'auto',
-            p: isMobile ? '0px 12px' : '20px 24px',
-          }}
-        >
-          {(!isMobile || showFilter) && (
-            <WatchlistFilter
-              filterInput={filterInput}
-              setFilterInput={setFilterInput}
-              customOrderActive={customOrderActive}
-              setCustomOrderActive={setCustomOrderActive}
-              sortOption={sortOption}
-              toggleSort={toggleSort}
-            />
-          )}
-          {isMobile && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-              <Button
-                variant='outlined'
-                onClick={() => setShowFilter((prev) => !prev)}
-                sx={{ fontSize: '0.75rem' }}
-              >
-                {showFilter ? 'Filter ausblenden' : 'Filter anzeigen'}
-              </Button>
-            </Box>
-          )}
-          {customOrderActive ? (
-            <DndProvider backend={HTML5Backend}>
-              <div style={{ minHeight: '350px' }}>
-                {displayedSeries.map((series, index) => {
+        {dialogContentVisible && (
+          <DialogContent
+            sx={{
+              minHeight: '80vh',
+              overflowY: 'auto',
+              p: isMobile ? '0px 12px' : '20px 24px',
+            }}
+          >
+            {(!isMobile || showFilter) && (
+              <WatchlistFilter
+                filterInput={filterInput}
+                setFilterInput={setFilterInput}
+                customOrderActive={customOrderActive}
+                setCustomOrderActive={setCustomOrderActive}
+                sortOption={sortOption}
+                toggleSort={toggleSort}
+              />
+            )}
+            {isMobile && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                <Button
+                  variant='outlined'
+                  onClick={() => setShowFilter((prev) => !prev)}
+                  sx={{ fontSize: '0.75rem' }}
+                >
+                  {showFilter ? 'Filter ausblenden' : 'Filter anzeigen'}
+                </Button>
+              </Box>
+            )}
+            {customOrderActive ? (
+              <DndProvider backend={HTML5Backend}>
+                <div style={{ minHeight: '350px' }}>
+                  {displayedSeries.map((series, index) => {
+                    const nextEpisode = getNextUnwatchedEpisode(series);
+                    return (
+                      <SeriesListItem
+                        key={series.id}
+                        series={series}
+                        index={index}
+                        draggable={true}
+                        moveItem={moveItem}
+                        nextUnwatchedEpisode={nextEpisode}
+                        onTitleClick={(s) => setSelectedSeries(s)}
+                        onWatchedToggle={() => {
+                          handleWatchedToggleWithDebounce(series, nextEpisode!);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </DndProvider>
+            ) : (
+              <div>
+                {displayedSeries.map((series) => {
                   const nextEpisode = getNextUnwatchedEpisode(series);
                   return (
                     <SeriesListItem
                       key={series.id}
                       series={series}
-                      index={index}
-                      draggable={true}
-                      moveItem={moveItem}
                       nextUnwatchedEpisode={nextEpisode}
                       onTitleClick={(s) => setSelectedSeries(s)}
                       onWatchedToggle={() => {
-                        handleWatchedToggleWithDebounce(series, nextEpisode!);
+                        if (nextEpisode) {
+                          handleWatchedToggleWithDebounce(series, nextEpisode);
+                        }
                       }}
                     />
                   );
                 })}
               </div>
-            </DndProvider>
-          ) : (
-            <div>
-              {displayedSeries.map((series) => {
-                const nextEpisode = getNextUnwatchedEpisode(series);
-                return (
-                  <SeriesListItem
-                    key={series.id}
-                    series={series}
-                    nextUnwatchedEpisode={nextEpisode}
-                    onTitleClick={(s) => setSelectedSeries(s)}
-                    onWatchedToggle={() => {
-                      if (nextEpisode) {
-                        handleWatchedToggleWithDebounce(series, nextEpisode);
-                      }
-                    }}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </DialogContent>
+            )}
+          </DialogContent>
+        )}
       </Dialog>
       {selectedSeries && user && (
         <SeriesWatchedDialog
