@@ -46,8 +46,8 @@ const SharedSeriesList = () => {
           const userMoviesSnapshot = await userMoviesRef.once('value');
           const userMoviesData = userMoviesSnapshot.val();
 
-          setSeriesList(userSeriesData);
-          setMovieList(userMoviesData);
+          setSeriesList(userSeriesData ? Object.values(userSeriesData) : []);
+          setMovieList(userMoviesData ? Object.values(userMoviesData) : []);
           setLinkValid(Date.now() < data.expiresAt);
         } else {
           throw new Error('Fehler beim Abrufen der Listen.');
@@ -77,7 +77,7 @@ const SharedSeriesList = () => {
   };
 
   const sortedSeries = useMemo(() => {
-    const filtered = seriesList.filter((series) => {
+    const filtered = (seriesList || []).filter((series) => {
       const matchesSearch = series.title
         .toLowerCase()
         .includes(debouncedSearchValue.toLowerCase());
@@ -119,7 +119,7 @@ const SharedSeriesList = () => {
   }, [seriesList, debouncedSearchValue, selectedGenre, selectedProvider]);
 
   const sortedMovies = useMemo(() => {
-    const filtered = movieList?.filter((movie) => {
+    const filtered = (movieList || []).filter((movie) => {
       const matchesSearch = movie.title
         .toLowerCase()
         .includes(debouncedSearchValue.toLowerCase());
