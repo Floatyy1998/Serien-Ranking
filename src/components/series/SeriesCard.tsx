@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import React, { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { allGenres } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
@@ -23,7 +23,6 @@ import { calculateOverallRating } from '../../utils/rating';
 import LoadingCard from '../common/LoadingCard';
 import SeriesDialog from '../dialogs/SeriesDialog';
 import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
-import SeriesWatchedDialog from '../dialogs/SeriesWatchedDialog';
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
 const Typography = lazy(() => import('@mui/material/Typography'));
 const Box = lazy(() => import('@mui/material/Box'));
@@ -76,11 +75,19 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('warning');
-  const [openWatchedDialog, setOpenWatchedDialog] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmDialogCallback, setConfirmDialogCallback] = useState<
     (() => void) | null
   >(null);
+
+  const handleTitleClick = useCallback(() => {
+    window.dispatchEvent(
+      new CustomEvent('openWatchedDialog', {
+        detail: { series, isReadOnly: isSharedListPage },
+      })
+    );
+  }, [series, isSharedListPage]);
+
   const handleClickOpen = () => {
     setOpen(true);
     const initialRatings: { [key: string]: number } = {};
@@ -145,51 +152,9 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
-  const handleTitleClick = () => {
-    setOpenWatchedDialog(true);
-  };
   const handleRatingClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     handleClickOpen();
-  };
-  const handleWatchedToggle = async (
-    seasonNumber: number,
-    episodeId: number
-  ) => {
-    const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
-    if (!season) return;
-    const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
-    if (episodeIndex === -1) return;
-    const updatedEpisodes = season.episodes.map((episode, index) => {
-      if (index <= episodeIndex) {
-        return { ...episode, watched: true };
-      }
-      return episode;
-    });
-    const updatedSeasons = series.seasons.map((s) => {
-      if (s.seasonNumber < seasonNumber) {
-        return {
-          ...s,
-          episodes: s.episodes.map((e) => ({ ...e, watched: true })),
-        };
-      }
-      if (s.seasonNumber === seasonNumber) {
-        return { ...s, episodes: updatedEpisodes };
-      }
-      return s;
-    });
-    try {
-      await firebase
-        .database()
-        .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
-        .set(updatedSeasons);
-    } catch (error) {
-      console.error('Error updating watched status:', error);
-    }
-  };
-  const handleConfirmDialogOpen = (callback: () => void) => {
-    setConfirmDialogCallback(() => callback);
-    setConfirmDialogOpen(true);
   };
   const handleConfirmDialogClose = () => {
     setConfirmDialogOpen(false);
@@ -200,82 +165,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       confirmDialogCallback();
     }
     handleConfirmDialogClose();
-  };
-  const handleWatchedToggleWithConfirmation = async (
-    seasonNumber: number,
-    episodeId: number,
-    forceWatched: boolean = false
-  ) => {
-    if (!user) {
-      setSnackbarMessage('Bitte melden Sie sich an, um den Status zu ändern.');
-      setSnackbarSeverity('warning');
-      setSnackbarOpen(true);
-      return;
-    }
-    const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
-    if (!season) return;
-    if (episodeId === -1) {
-      let updatedEpisodes;
-      if (forceWatched) {
-        updatedEpisodes = season.episodes.map((e) => ({ ...e, watched: true }));
-      } else {
-        const allWatched = season.episodes.every((e) => e.watched);
-        updatedEpisodes = season.episodes.map((e) => ({
-          ...e,
-          watched: !allWatched,
-        }));
-      }
-      const updatedSeasons = series.seasons.map((s) => {
-        if (s.seasonNumber === seasonNumber) {
-          return { ...s, episodes: updatedEpisodes };
-        }
-        return s;
-      });
-      try {
-        await firebase
-          .database()
-          .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
-          .set(updatedSeasons);
-      } catch (error) {
-        console.error('Error updating watched status:', error);
-      }
-      return;
-    }
-    const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
-    if (episodeIndex === -1) return;
-    const episode = season.episodes[episodeIndex];
-    const previousEpisodesUnwatched = season.episodes
-      .slice(0, episodeIndex)
-      .some((e) => !e.watched);
-    if (!episode.watched && previousEpisodesUnwatched) {
-      handleConfirmDialogOpen(async () => {
-        await handleWatchedToggle(seasonNumber, episodeId);
-      });
-    } else {
-      const updatedEpisodes = season.episodes.map((e) => {
-        if (e.id === episodeId) {
-          return { ...e, watched: !e.watched };
-        }
-        return e;
-      });
-      const updatedSeasons = series.seasons.map((s) => {
-        if (s.seasonNumber === seasonNumber) {
-          return { ...s, episodes: updatedEpisodes };
-        }
-        return s;
-      });
-      try {
-        await firebase
-          .database()
-          .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
-          .set(updatedSeasons);
-      } catch (error) {
-        console.error('Error updating watched status:', error);
-      }
-    }
-  };
-  const handleCloseWatchedDialog = () => {
-    setOpenWatchedDialog(false);
   };
   const handleWatchlistToggle = async (event: React.MouseEvent) => {
     if (!isSharedListPage) {
@@ -299,31 +188,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       }
     }
   };
-  const handleBatchWatchedToggle = async (confirmSeason: number) => {
-    if (!user) {
-      setSnackbarMessage('Bitte melden Sie sich an, um den Status zu ändern.');
-      setSnackbarSeverity('warning');
-      setSnackbarOpen(true);
-      return;
-    }
-    const updatedSeasons = series.seasons.map((s) => {
-      if (s.seasonNumber <= confirmSeason) {
-        return {
-          ...s,
-          episodes: s.episodes.map((e) => ({ ...e, watched: true })),
-        };
-      }
-      return s;
-    });
-    try {
-      await firebase
-        .database()
-        .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
-        .set(updatedSeasons);
-    } catch (error) {
-      console.error('Error updating watched status in batch:', error);
-    }
-  };
+
   return (
     <Suspense fallback={<LoadingCard />}>
       <Card
@@ -480,17 +345,6 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
         open={openEpisodes}
         onClose={handleCloseEpisodes}
         series={series}
-      />
-      <SeriesWatchedDialog
-        open={openWatchedDialog}
-        onClose={handleCloseWatchedDialog}
-        series={series}
-        user={user}
-        handleWatchedToggleWithConfirmation={
-          handleWatchedToggleWithConfirmation
-        }
-        handleBatchWatchedToggle={handleBatchWatchedToggle}
-        isReadOnly={isSharedListPage}
       />
       <Snackbar
         open={snackbarOpen}
