@@ -1,4 +1,5 @@
 import { Box, Typography } from '@mui/material';
+import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
@@ -9,6 +10,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 import { getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
+import SeriesWatchedDialog from '../dialogs/SeriesWatchedDialog';
 import TodayEpisodesDialog from '../dialogs/TodayEpisodesDialog';
 import { SeriesCard } from './SeriesCard';
 interface SeriesGridProps {
@@ -26,10 +28,25 @@ export const SeriesGrid = memo(
     const [visibleCount, setVisibleCount] = useState(20);
     const [showTodayDialog, setShowTodayDialog] = useState(false);
     const [todayEpisodes, setTodayEpisodes] = useState<TodayEpisode[]>([]);
+    const [watchedDialogSeriesId, setWatchedDialogSeriesId] = useState<
+      number | null
+    >(null);
+    const [isWatchedDialogReadOnly, setIsWatchedDialogReadOnly] =
+      useState(false);
     const { seriesStatsData } = useStats();
     const dialogShown = useRef(false);
+
+    // Stabilisiere die Liste mit einem Ref um Re-Rendering zu vermeiden
+    const stableFilteredSeries = useRef<any[]>([]);
+
+    // Finde die aktuelle Serie für den Dialog aus der aktuellen seriesList
+    const watchedDialogSeries = useMemo(() => {
+      if (!watchedDialogSeriesId) return null;
+      return seriesList.find((s) => s.nmr === watchedDialogSeriesId) || null;
+    }, [seriesList, watchedDialogSeriesId]);
+
     const filteredSeries = useMemo(() => {
-      return seriesList
+      const filtered = seriesList
         .filter((series) => {
           const matchesSearch = series.title
             .toLowerCase()
@@ -65,6 +82,15 @@ export const SeriesGrid = memo(
           const ratingB = parseFloat(calculateOverallRating(b));
           return ratingB - ratingA;
         });
+
+      if (
+        JSON.stringify(filtered.map((s) => s.nmr)) !==
+        JSON.stringify(stableFilteredSeries.current.map((s) => s.nmr))
+      ) {
+        stableFilteredSeries.current = filtered;
+      }
+
+      return stableFilteredSeries.current;
     }, [seriesList, debouncedSearchValue, selectedGenre, selectedProvider]);
     useEffect(() => {
       const cardWidth = 230;
@@ -125,6 +151,120 @@ export const SeriesGrid = memo(
     const handleDialogClose = () => {
       setShowTodayDialog(false);
     };
+
+    const handleWatchedDialogClose = useCallback(() => {
+      setWatchedDialogSeriesId(null);
+    }, []);
+
+    // Event Listener für Dialog öffnen
+    useEffect(() => {
+      const handleOpenWatchedDialog = (event: any) => {
+        const { series, isReadOnly } = event.detail;
+        setWatchedDialogSeriesId(series.nmr);
+        setIsWatchedDialogReadOnly(isReadOnly);
+      };
+
+      window.addEventListener('openWatchedDialog', handleOpenWatchedDialog);
+      return () => {
+        window.removeEventListener(
+          'openWatchedDialog',
+          handleOpenWatchedDialog
+        );
+      };
+    }, []);
+
+    const handleWatchedToggleWithConfirmation = async (
+      seasonNumber: number,
+      episodeId: number,
+      forceWatched: boolean = false
+    ) => {
+      if (!user || !watchedDialogSeries) return;
+
+      const series = watchedDialogSeries;
+      const season = series.seasons.find(
+        (s) => s.seasonNumber === seasonNumber
+      );
+      if (!season) return;
+
+      if (episodeId === -1) {
+        let updatedEpisodes;
+        if (forceWatched) {
+          updatedEpisodes = season.episodes.map((e) => ({
+            ...e,
+            watched: true,
+          }));
+        } else {
+          const allWatched = season.episodes.every((e) => e.watched);
+          updatedEpisodes = season.episodes.map((e) => ({
+            ...e,
+            watched: !allWatched,
+          }));
+        }
+        const updatedSeasons = series.seasons.map((s) => {
+          if (s.seasonNumber === seasonNumber) {
+            return { ...s, episodes: updatedEpisodes };
+          }
+          return s;
+        });
+        try {
+          await firebase
+            .database()
+            .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
+            .set(updatedSeasons);
+        } catch (error) {
+          console.error('Error updating watched status:', error);
+        }
+        return;
+      }
+
+      const episodeIndex = season.episodes.findIndex((e) => e.id === episodeId);
+      if (episodeIndex === -1) return;
+
+      const updatedEpisodes = season.episodes.map((e) => {
+        if (e.id === episodeId) {
+          return { ...e, watched: !e.watched };
+        }
+        return e;
+      });
+      const updatedSeasons = series.seasons.map((s) => {
+        if (s.seasonNumber === seasonNumber) {
+          return { ...s, episodes: updatedEpisodes };
+        }
+        return s;
+      });
+      try {
+        await firebase
+          .database()
+          .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
+          .set(updatedSeasons);
+      } catch (error) {
+        console.error('Error updating watched status:', error);
+      }
+    };
+
+    const handleBatchWatchedToggle = async (confirmSeason: number) => {
+      if (!user || !watchedDialogSeries) return;
+
+      const series = watchedDialogSeries;
+      const updatedSeasons = series.seasons.map((s) => {
+        if (s.seasonNumber <= confirmSeason) {
+          return {
+            ...s,
+            episodes: s.episodes.map((e) => ({ ...e, watched: true })),
+          };
+        }
+        return s;
+      });
+      try {
+        await firebase
+          .database()
+          .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
+          .set(updatedSeasons);
+      } catch (error) {
+        console.error('Error updating watched status in batch:', error);
+      }
+    };
+
     const handleWindowScroll = useCallback(() => {
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
@@ -178,7 +318,7 @@ export const SeriesGrid = memo(
             }}
           >
             {filteredSeries?.slice(0, visibleCount).map((series, index) => (
-              <Box key={index} sx={{ width: '230px', height: '444px' }}>
+              <Box key={series.nmr} sx={{ width: '230px', height: '444px' }}>
                 <SeriesCard
                   series={series}
                   genre={selectedGenre}
@@ -194,6 +334,19 @@ export const SeriesGrid = memo(
           episodes={todayEpisodes}
           userStats={seriesStatsData?.userStats}
         />
+        {watchedDialogSeries && (
+          <SeriesWatchedDialog
+            open={!!watchedDialogSeries}
+            onClose={handleWatchedDialogClose}
+            series={watchedDialogSeries}
+            user={user}
+            handleWatchedToggleWithConfirmation={
+              handleWatchedToggleWithConfirmation
+            }
+            handleBatchWatchedToggle={handleBatchWatchedToggle}
+            isReadOnly={isWatchedDialogReadOnly}
+          />
+        )}
       </>
     );
   }
