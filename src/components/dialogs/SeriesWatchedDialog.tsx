@@ -29,6 +29,10 @@ interface SeriesWatchedDialogProps {
     forceWatched?: boolean
   ) => void;
   handleBatchWatchedToggle?: (confirmSeason: number) => void;
+  handleEpisodeBatchWatchedToggle?: (
+    seasonNumber: number,
+    episodeId: number
+  ) => void;
   isReadOnly?: boolean;
 }
 const SeriesWatchedDialog = ({
@@ -37,11 +41,17 @@ const SeriesWatchedDialog = ({
   series,
   handleWatchedToggleWithConfirmation,
   handleBatchWatchedToggle,
+  handleEpisodeBatchWatchedToggle,
   isReadOnly = false,
 }: SeriesWatchedDialogProps) => {
   const [expanded, setExpanded] = useState<number | false>(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmSeason, setConfirmSeason] = useState<number | null>(null);
+  const [episodeConfirmOpen, setEpisodeConfirmOpen] = useState(false);
+  const [confirmEpisode, setConfirmEpisode] = useState<{
+    seasonNumber: number;
+    episodeId: number;
+  } | null>(null);
   const uniqueSeasons = useMemo(
     () =>
       series?.seasons?.filter(
@@ -85,6 +95,28 @@ const SeriesWatchedDialog = ({
     setConfirmOpen(false);
     setConfirmSeason(null);
   };
+  const handleEpisodeConfirmYes = () => {
+    if (confirmEpisode && handleEpisodeBatchWatchedToggle) {
+      handleEpisodeBatchWatchedToggle(
+        confirmEpisode.seasonNumber,
+        confirmEpisode.episodeId
+      );
+    }
+    setEpisodeConfirmOpen(false);
+    setConfirmEpisode(null);
+  };
+
+  const handleEpisodeConfirmNo = () => {
+    if (confirmEpisode) {
+      handleWatchedToggleWithConfirmation(
+        confirmEpisode.seasonNumber,
+        confirmEpisode.episodeId
+      );
+    }
+    setEpisodeConfirmOpen(false);
+    setConfirmEpisode(null);
+  };
+
   const handleSeasonClick = (seasonNumber: number, allWatched: boolean) => {
     if (!isReadOnly) {
       if (!allWatched) {
@@ -106,6 +138,40 @@ const SeriesWatchedDialog = ({
     (panel: number) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
+  const handleEpisodeClick = (
+    seasonNumber: number,
+    episodeId: number,
+    episodeIndex: number
+  ) => {
+    if (isReadOnly) return;
+
+    const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
+    if (!season) return;
+
+    const episode = season.episodes[episodeIndex];
+    if (!episode || episode.watched) {
+      // Episode ist bereits gesehen oder nicht gefunden - normaler Toggle
+      handleWatchedToggleWithConfirmation(seasonNumber, episodeId);
+      return;
+    }
+
+    // Prüfe ob vorherige Episoden in dieser Staffel ungesehen sind
+    const hasPreviousUnwatched = season.episodes
+      .slice(0, episodeIndex)
+      .some((e) => !e.watched);
+
+    // Prüfe ob vorherige Staffeln komplett ungesehen sind
+    const hasPreviousSeasonUnwatched = series.seasons
+      .filter((s) => s.seasonNumber < seasonNumber)
+      .some((s) => s.episodes.some((e) => !e.watched));
+
+    if (hasPreviousUnwatched || hasPreviousSeasonUnwatched) {
+      setConfirmEpisode({ seasonNumber, episodeId });
+      setEpisodeConfirmOpen(true);
+    } else {
+      handleWatchedToggleWithConfirmation(seasonNumber, episodeId);
+    }
+  };
   return (
     <Dialog
       open={open}
@@ -266,14 +332,13 @@ const SeriesWatchedDialog = ({
                         </span>
                       </div>
                       <div
-                        onClick={() => {
-                          if (!isReadOnly) {
-                            handleWatchedToggleWithConfirmation(
-                              season.seasonNumber,
-                              episode.id
-                            );
-                          }
-                        }}
+                        onClick={() =>
+                          handleEpisodeClick(
+                            season.seasonNumber,
+                            episode.id,
+                            index
+                          )
+                        }
                         style={{
                           color: episode.watched
                             ? '#00fed7'
@@ -314,6 +379,32 @@ const SeriesWatchedDialog = ({
               </Button>
               <Button autoFocus onClick={handleConfirmYes}>
                 Ja, alle
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+        {episodeConfirmOpen && (
+          <Dialog
+            open={episodeConfirmOpen}
+            onClose={() => {
+              setEpisodeConfirmOpen(false);
+              setConfirmEpisode(null);
+            }}
+          >
+            <DialogTitle>Bestätigung</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Es gibt vorherige Episoden, die noch nicht als gesehen markiert
+                sind. Möchten Sie alle vorherigen Episoden auch als gesehen
+                markieren?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button color='primary' onClick={handleEpisodeConfirmNo}>
+                Nur diese Episode
+              </Button>
+              <Button autoFocus onClick={handleEpisodeConfirmYes}>
+                Ja, alle vorherigen auch
               </Button>
             </DialogActions>
           </Dialog>

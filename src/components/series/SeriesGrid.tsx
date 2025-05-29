@@ -265,6 +265,44 @@ export const SeriesGrid = memo(
       }
     };
 
+    const handleEpisodeBatchWatchedToggle = async (
+      seasonNumber: number,
+      episodeId: number
+    ) => {
+      if (!user || !watchedDialogSeries) return;
+
+      const series = watchedDialogSeries;
+      const updatedSeasons = series.seasons.map((s) => {
+        if (s.seasonNumber < seasonNumber) {
+          // Markiere alle Episoden in vorherigen Staffeln als gesehen
+          return {
+            ...s,
+            episodes: s.episodes.map((e) => ({ ...e, watched: true })),
+          };
+        } else if (s.seasonNumber === seasonNumber) {
+          // Markiere alle Episoden bis zur gewählten Episode (inklusive) als gesehen
+          const episodeIndex = s.episodes.findIndex((e) => e.id === episodeId);
+          return {
+            ...s,
+            episodes: s.episodes.map((e, index) => ({
+              ...e,
+              watched: index <= episodeIndex ? true : e.watched,
+            })),
+          };
+        }
+        return s;
+      });
+
+      try {
+        await firebase
+          .database()
+          .ref(`${user?.uid}/serien/${series.nmr}/seasons`)
+          .set(updatedSeasons);
+      } catch (error) {
+        console.error('Error updating watched status in episode batch:', error);
+      }
+    };
+
     const handleWindowScroll = useCallback(() => {
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
@@ -344,6 +382,7 @@ export const SeriesGrid = memo(
               handleWatchedToggleWithConfirmation
             }
             handleBatchWatchedToggle={handleBatchWatchedToggle}
+            handleEpisodeBatchWatchedToggle={handleEpisodeBatchWatchedToggle}
             isReadOnly={isWatchedDialogReadOnly}
           />
         )}
