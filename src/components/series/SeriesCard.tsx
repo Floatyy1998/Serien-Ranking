@@ -16,6 +16,7 @@ import { useLocation } from 'react-router-dom';
 import { allGenres } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
+import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
 import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
@@ -35,18 +36,26 @@ interface SeriesCardProps {
   index: number;
 }
 export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
-  const shadowColor = !series.production?.production ? '#a855f7' : '#22c55e';
+  // Hole aktuelle Serie-Daten aus dem Provider
+  const { seriesList } = useSeriesList();
+  const currentSeries = seriesList.find((s) => s.nmr === series.nmr) || series;
+
+  const shadowColor = !currentSeries.production?.production
+    ? '#a855f7'
+    : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
   const location = useLocation();
   const isSharedListPage = location.pathname.startsWith('/shared-list');
-  const uniqueProviders = series.provider
-    ? Array.from(new Set(series.provider.provider.map((p) => p.name))).map(
-        (name) => series.provider?.provider.find((p) => p.name === name)
+  const uniqueProviders = currentSeries.provider
+    ? Array.from(
+        new Set(currentSeries.provider.provider.map((p) => p.name))
+      ).map((name) =>
+        currentSeries.provider?.provider.find((p) => p.name === name)
       )
     : [];
-  const rating = calculateOverallRating(series);
-  const nextEpisodeDate = new Date(series.nextEpisode.nextEpisode);
+  const rating = calculateOverallRating(currentSeries);
+  const nextEpisodeDate = new Date(currentSeries.nextEpisode.nextEpisode);
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
@@ -83,16 +92,16 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const handleTitleClick = useCallback(() => {
     window.dispatchEvent(
       new CustomEvent('openWatchedDialog', {
-        detail: { series, isReadOnly: isSharedListPage },
+        detail: { series: currentSeries, isReadOnly: isSharedListPage },
       })
     );
-  }, [series, isSharedListPage]);
+  }, [currentSeries, isSharedListPage]);
 
   const handleClickOpen = () => {
     setOpen(true);
     const initialRatings: { [key: string]: number } = {};
     allGenres.forEach((g) => {
-      initialRatings[g] = series.rating?.[g] || 0;
+      initialRatings[g] = currentSeries.rating?.[g] || 0;
     });
     setRatings(initialRatings);
   };
@@ -100,14 +109,16 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     setOpen(false);
   };
   const handleDeleteSeries = () => {
-    const ref = firebase.database().ref(`${user?.uid}/serien/${series.nmr}`);
+    const ref = firebase
+      .database()
+      .ref(`${user?.uid}/serien/${currentSeries.nmr}`);
     ref.remove();
     setOpen(false);
   };
   const handleUpdateRatings = async () => {
     const ref = firebase
       .database()
-      .ref(`${user?.uid}/serien/${series.nmr}/rating`);
+      .ref(`${user?.uid}/serien/${currentSeries.nmr}/rating`);
     const updatedRatings = Object.fromEntries(
       Object.entries(ratings).map(([k, value]) => [k, value === '' ? 0 : value])
     );
@@ -142,7 +153,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const handlePosterClick = () => {
     if (genre !== 'Neue Episoden') {
       window.open(
-        `https://watchradar.konrad-dinges.de?query=${series.title}`,
+        `https://watchradar.konrad-dinges.de?query=${currentSeries.title}`,
         '_blank'
       );
     } else {
@@ -179,8 +190,8 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       }
       const ref = firebase
         .database()
-        .ref(`${user?.uid}/serien/${series.nmr}/watchlist`);
-      const newWatchlistStatus = !series.watchlist;
+        .ref(`${user?.uid}/serien/${currentSeries.nmr}/watchlist`);
+      const newWatchlistStatus = !currentSeries.watchlist;
       try {
         await ref.set(newWatchlistStatus);
       } catch (error) {
@@ -208,10 +219,10 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               cursor: 'pointer',
             }}
             image={
-              series.poster.poster.substring(
-                series.poster.poster.length - 4
+              currentSeries.poster.poster.substring(
+                currentSeries.poster.poster.length - 4
               ) !== 'null'
-                ? series.poster.poster
+                ? currentSeries.poster.poster
                 : notFound
             }
           />
@@ -231,7 +242,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               ))}
             </Box>
           )}
-          {typeof series.nextEpisode.episode === 'number' && (
+          {typeof currentSeries.nextEpisode.episode === 'number' && (
             <>
               <Box
                 className='absolute top-20 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
@@ -243,8 +254,8 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                   className='text-center'
                   sx={{ fontSize: '1rem' }}
                 >
-                  Staffel {series.nextEpisode.season} Episode{' '}
-                  {series.nextEpisode.episode}
+                  Staffel {currentSeries.nextEpisode.season} Episode{' '}
+                  {currentSeries.nextEpisode.episode}
                   <br></br>
                   {dateString} um {timeString}
                 </Typography>
@@ -267,12 +278,12 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                   }}
                 >
                   Titel: <br></br>
-                  {series.nextEpisode.title}
+                  {currentSeries.nextEpisode.title}
                 </Typography>
               </Box>
             </>
           )}
-          <Tooltip title={series.beschreibung} arrow>
+          <Tooltip title={currentSeries.beschreibung} arrow>
             <Box
               className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 cursor-pointer '
               onClick={handleRatingClick}
@@ -293,7 +304,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               >
                 <BookmarkIcon
                   sx={{
-                    color: series.watchlist ? '#22c55e' : '#9e9e9e',
+                    color: currentSeries.watchlist ? '#22c55e' : '#9e9e9e',
                     width: '24px',
                     height: '24px',
                   }}
@@ -303,7 +314,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
           )}
         </Box>
         <CardContent className='grow flex items-center justify-center '>
-          <Tooltip title={series.title} arrow>
+          <Tooltip title={currentSeries.title} arrow>
             <Typography
               variant='body1'
               className='text-white text-center cursor-pointer'
@@ -325,7 +336,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               onClick={handleTitleClick}
             >
               {shouldNumber && `${index}. `}
-              {series.title}
+              {currentSeries.title}
             </Typography>
           </Tooltip>
         </CardContent>
@@ -333,7 +344,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       <SeriesDialog
         open={open}
         onClose={handleClose}
-        series={series}
+        series={currentSeries}
         allGenres={allGenres}
         ratings={ratings}
         setRatings={setRatings}
@@ -344,7 +355,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       <SeriesEpisodesDialog
         open={openEpisodes}
         onClose={handleCloseEpisodes}
-        series={series}
+        series={currentSeries}
       />
       <Snackbar
         open={snackbarOpen}
