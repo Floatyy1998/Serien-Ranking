@@ -9,7 +9,18 @@ import { DraggableSeriesItem } from './DraggableSeriesItem';
 const countRemainingEpisodes = (series: Series): number => {
   const now = new Date();
   let count = 0;
+
+  // Überprüfung, ob seasons existiert und ein Array ist
+  if (!series.seasons || !Array.isArray(series.seasons)) {
+    return count;
+  }
+
   for (const season of series.seasons) {
+    // Überprüfung, ob episodes existiert und ein Array ist
+    if (!season.episodes || !Array.isArray(season.episodes)) {
+      continue;
+    }
+
     for (const episode of season.episodes) {
       if (!episode.watched && new Date(episode.air_date) <= now) {
         count++;
