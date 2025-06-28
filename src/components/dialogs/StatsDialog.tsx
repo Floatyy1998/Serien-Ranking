@@ -7,7 +7,6 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useLocation } from 'react-router-dom';
 import { useStats } from '../../contexts/StatsProvider';
@@ -65,6 +64,10 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
       open={open}
       onClose={onClose}
       fullWidth
+      disableAutoFocus={true}
+      disableEnforceFocus={false}
+      disableRestoreFocus={false}
+      keepMounted={false}
     >
       <DialogTitle>
         Statistiken
@@ -111,8 +114,15 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                 </Typography>
               </Box>
             </Box>
-            <Grid container spacing={2} columns={2}>
-              <Grid item xs={12} lg={6}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', lg: 'row' },
+                gap: 2,
+                width: '100%',
+              }}
+            >
+              <Box sx={{ flex: 1 }}>
                 <Typography variant='h4'>
                   Anzahl der {isMoviesPage ? 'Filme' : 'Serien'} pro Genre
                 </Typography>
@@ -159,8 +169,8 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                     }}
                   />
                 </Box>
-              </Grid>
-              <Grid item xs={12} lg={6}>
+              </Box>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant='h4'>
                   Durchschnittliche Bewertung der Genres
                 </Typography>
@@ -220,8 +230,18 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                     }}
                   />
                 </Box>
-              </Grid>
-              <Grid item xs={12} lg={6}>
+              </Box>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', lg: 'row' },
+                gap: 2,
+                width: '100%',
+                mt: 2,
+              }}
+            >
+              <Box sx={{ flex: 1 }}>
                 <Typography variant='h4'>
                   Anzahl der {isMoviesPage ? 'Filme' : 'Serien'} pro Anbieter
                 </Typography>
@@ -272,8 +292,8 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                     }}
                   />
                 </Box>
-              </Grid>
-              <Grid item xs={12} lg={6}>
+              </Box>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant='h4'>
                   Durchschnittliche Bewertung der Anbieter
                 </Typography>
@@ -335,8 +355,8 @@ const StatsDialog = ({ open, onClose, isMobile }: StatsDialogProps) => {
                     }}
                   />
                 </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </>
         )}
       </DialogContent>

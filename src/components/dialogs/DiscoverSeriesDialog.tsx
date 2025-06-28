@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider/LocalizationProvider';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/de';
 import { useCallback, useState } from 'react';
@@ -223,7 +223,16 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth='lg'>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth='lg'
+      disableAutoFocus={true}
+      disableEnforceFocus={false}
+      disableRestoreFocus={false}
+      keepMounted={false}
+    >
       <DialogHeader
         title='Unveröffentlichte Serien entdecken'
         onClose={handleClose}

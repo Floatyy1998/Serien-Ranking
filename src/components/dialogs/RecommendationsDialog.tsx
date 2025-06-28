@@ -278,7 +278,16 @@ const RecommendationsDialog = ({
     recommendations.length === Object.keys(providers).length;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth='lg' fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth='lg'
+      fullWidth
+      disableAutoFocus={true}
+      disableEnforceFocus={false}
+      disableRestoreFocus={false}
+      keepMounted={false}
+    >
       <DialogHeader title='Empfehlungen' onClose={handleClose} />
       <DialogContent>
         {loadingState || !allProvidersLoaded ? (
