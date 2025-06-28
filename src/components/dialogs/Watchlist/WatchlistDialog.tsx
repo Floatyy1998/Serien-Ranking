@@ -86,32 +86,38 @@ const WatchlistDialog = ({
       setSortOption(`${field}-asc`);
     }
   };
-  useEffect(() => {
-    if (!customOrderActive) {
-      const [field, order] = sortOption.split('-');
-      const orderMultiplier = order === 'asc' ? 1 : -1;
-      const sorted = [...sortedWatchlistSeries].sort((a, b) => {
-        if (field === 'name') {
-          return a.title.localeCompare(b.title) * orderMultiplier;
-        } else if (field === 'date') {
-          const aNext = getNextUnwatchedEpisode(a);
-          const bNext = getNextUnwatchedEpisode(b);
-          if (aNext && bNext) {
-            return (
-              (new Date(aNext.air_date).getTime() -
-                new Date(bNext.air_date).getTime()) *
-              orderMultiplier
-            );
-          }
-          return 0;
+  // Hilfsfunktion für Sortierung
+  const getSortedSeries = (seriesToSort: Series[]) => {
+    if (customOrderActive) return seriesToSort;
+
+    const [field, order] = sortOption.split('-');
+    const orderMultiplier = order === 'asc' ? 1 : -1;
+    return [...seriesToSort].sort((a, b) => {
+      if (field === 'name') {
+        return a.title.localeCompare(b.title) * orderMultiplier;
+      } else if (field === 'date') {
+        const aNext = getNextUnwatchedEpisode(a);
+        const bNext = getNextUnwatchedEpisode(b);
+        if (aNext && bNext) {
+          return (
+            (new Date(aNext.air_date).getTime() -
+              new Date(bNext.air_date).getTime()) *
+            orderMultiplier
+          );
         }
         return 0;
-      });
-      setFilteredSeries(sorted);
-    }
-  }, [sortedWatchlistSeries, customOrderActive, sortOption]);
+      }
+      return 0;
+    });
+  };
+
+  // Hauptlogik für Sortierung und benutzerdefinierte Reihenfolge
   useEffect(() => {
-    if (customOrderActive && user) {
+    if (!customOrderActive) {
+      // Normale Sortierung - immer mit aktuellen Daten
+      setFilteredSeries(getSortedSeries(sortedWatchlistSeries));
+    } else if (user && sortedWatchlistSeries.length > 0) {
+      // Benutzerdefinierte Reihenfolge - lade Firebase-Reihenfolge
       const orderRef = firebase.database().ref(`${user.uid}/watchlistOrder`);
       orderRef.once('value').then((snapshot) => {
         const savedOrder = snapshot.val();
@@ -129,13 +135,39 @@ const WatchlistDialog = ({
           setFilteredSeries(sortedWatchlistSeries);
         }
       });
+    } else if (sortedWatchlistSeries.length > 0) {
+      // Fallback wenn kein User vorhanden
+      setFilteredSeries(sortedWatchlistSeries);
     }
-  }, [customOrderActive, sortedWatchlistSeries, user]);
+  }, [sortedWatchlistSeries, customOrderActive, sortOption, user]);
+
+  // Zusätzlicher useEffect nur für Episode-Updates bei benutzerdefinierter Reihenfolge
+  useEffect(() => {
+    // Nur bei benutzerdefinierter Reihenfolge und wenn bereits Daten vorhanden sind
+    if (
+      customOrderActive &&
+      user &&
+      filteredSeries.length > 0 &&
+      !pendingUpdates.size
+    ) {
+      // Aktualisiere nur Episode-Daten, behalte Reihenfolge bei
+      setFilteredSeries((prevFiltered) => {
+        return prevFiltered.map((filteredSeries) => {
+          const updatedSeries = sortedWatchlistSeries.find(
+            (s) => s.id === filteredSeries.id
+          );
+          return updatedSeries || filteredSeries;
+        });
+      });
+    }
+  }, [sortedWatchlistSeries, pendingUpdates.size]);
+
   const displayedSeries = filteredSeries.filter((series) =>
     filterInput
       ? series.title.toLowerCase().includes(filterInput.toLowerCase())
       : true
   );
+
   const moveItem = (from: number, to: number) => {
     if (!customOrderActive) {
       setCustomOrderActive(true);
@@ -150,6 +182,7 @@ const WatchlistDialog = ({
     }
     setWatchlistSeries(updated);
   };
+
   const getNextUnwatchedEpisode = (series: Series) => {
     for (const season of series.seasons) {
       for (let i = 0; i < season.episodes.length; i++) {
@@ -165,6 +198,7 @@ const WatchlistDialog = ({
     }
     return null;
   };
+
   const updateSeriesInDialog = (
     seriesId: number,
     seasonNumber: number,
@@ -179,30 +213,39 @@ const WatchlistDialog = ({
 
     setPendingUpdates((prev) => new Set(prev).add(updateKey));
 
-    // Verwende setTimeout um sicherzustellen, dass Firebase-Update Zeit hat
-    setTimeout(() => {
-      setFilteredSeries((prev) =>
-        prev.map((series) =>
-          series.id === seriesId
-            ? {
-                ...series,
-                seasons: series.seasons.map((season) =>
-                  season.seasonNumber === seasonNumber
-                    ? {
-                        ...season,
-                        episodes: season.episodes.map((episode, idx) =>
-                          idx === episodeIndex
-                            ? { ...episode, watched: !episode.watched }
-                            : episode
-                        ),
-                      }
-                    : season
-                ),
-              }
-            : series
-        )
+    // Sofortige lokale Aktualisierung
+    setFilteredSeries((prev) => {
+      const updated = prev.map((series) =>
+        series.id === seriesId
+          ? {
+              ...series,
+              seasons: series.seasons.map((season) =>
+                season.seasonNumber === seasonNumber
+                  ? {
+                      ...season,
+                      episodes: season.episodes.map((episode, idx) =>
+                        idx === episodeIndex
+                          ? { ...episode, watched: !episode.watched }
+                          : episode
+                      ),
+                    }
+                  : season
+              ),
+            }
+          : series
       );
 
+      // Nur re-sortieren wenn nicht benutzerdefinierte Reihenfolge aktiv ist
+      if (customOrderActive) {
+        return updated; // Behalte die Reihenfolge bei
+      } else {
+        // Sortiere nur wenn normale Sortierung aktiv ist
+        return getSortedSeries(updated);
+      }
+    });
+
+    // Cleanup nach kurzer Zeit
+    setTimeout(() => {
       setPendingUpdates((prev) => {
         const newSet = new Set(prev);
         newSet.delete(updateKey);
