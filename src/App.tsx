@@ -10,7 +10,6 @@ import {
   useState,
 } from 'react';
 import { Helmet } from 'react-helmet';
-import { InfinitySpin } from 'react-loader-spinner';
 import {
   Link,
   Navigate,
@@ -20,6 +19,7 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
+import { RingLoader } from 'react-spinners';
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
 import MovieSearchFilters from './components/filters/MovieSearchFilters';
 import { MovieListProvider } from './contexts/MovieListProvider';
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         sx={{ width: '100vw', height: '100vh', backgroundColor: '#000' }}
         className='flex justify-center items-center '
       >
-        <InfinitySpin color='#00fed7' />
+        <RingLoader color='#00fed7' size={60} />
       </Box>
     );
   }
@@ -159,7 +159,7 @@ function AppContent() {
                 <Suspense
                   fallback={
                     <Box className='flex justify-center items-center'>
-                      <InfinitySpin color='#00fed7'></InfinitySpin>
+                      <RingLoader color='#00fed7' size={60}></RingLoader>
                     </Box>
                   }
                 >

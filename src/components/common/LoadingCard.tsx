@@ -1,5 +1,5 @@
 import { Box, Card } from '@mui/material';
-import { InfinitySpin } from 'react-loader-spinner';
+import { RingLoader } from 'react-spinners';
 const LoadingCard = () => {
   return (
     <Card
@@ -15,7 +15,7 @@ const LoadingCard = () => {
           margin: 'auto',
         }}
       >
-        <InfinitySpin color='#00fed7'></InfinitySpin>
+        <RingLoader color='#00fed7' size={60}></RingLoader>
       </Box>
     </Card>
   );

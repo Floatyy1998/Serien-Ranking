@@ -2,8 +2,8 @@ import { Box, Tab, Tabs, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { InfinitySpin } from 'react-loader-spinner';
 import { useParams } from 'react-router-dom';
+import { RingLoader } from 'react-spinners';
 import MovieSearchFilters from '../components/filters/MovieSearchFilters';
 import SearchFilters from '../components/filters/SearchFilters';
 import { MovieCard } from '../components/movies/MovieCard';
@@ -215,7 +215,7 @@ const SharedSeriesList = () => {
         sx={{ width: '90vw', height: '80vh', backgroundColor: '#000' }}
         className='flex justify-center items-center '
       >
-        <InfinitySpin color='#00fed7' />
+        <RingLoader color='#00fed7' size={60} />
       </Box>
     );
   }

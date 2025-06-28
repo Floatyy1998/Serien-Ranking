@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { InfinitySpin } from 'react-loader-spinner';
+import { RingLoader } from 'react-spinners';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useStats } from '../../contexts/StatsProvider';
@@ -329,7 +329,7 @@ export const SeriesGrid = memo(
     if (loading) {
       return (
         <Box className='flex justify-center items-center w-full h-full'>
-          <InfinitySpin color='#00fed7' />
+          <RingLoader color='#00fed7' size={60} />
         </Box>
       );
     }
