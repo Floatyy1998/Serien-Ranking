@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { InfinitySpin } from 'react-loader-spinner';
+import { RingLoader } from 'react-spinners';
 import { useAuth } from '../../App';
 import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
@@ -283,7 +283,7 @@ const RecommendationsDialog = ({
       <DialogContent>
         {loadingState || !allProvidersLoaded ? (
           <Box display='flex' justifyContent='center' mt={2}>
-            <InfinitySpin width='200' color='#00fed7' />
+            <RingLoader size={60} color='#00fed7' />
           </Box>
         ) : recommendations.length === 0 ? (
           <Box display='flex' justifyContent='center' mt={2}>

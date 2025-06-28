@@ -3,8 +3,8 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { Box } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { InfinitySpin } from 'react-loader-spinner';
 import { useNavigate } from 'react-router-dom';
+import { RingLoader } from 'react-spinners';
 interface VerifiedRouteProps {
   children: React.ReactNode;
 }
@@ -67,7 +67,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   if (loading) {
     return (
       <Box className='flex justify-center items-center'>
-        <InfinitySpin color='#00fed7' />
+        <RingLoader color='#00fed7' size={60} />
       </Box>
     );
   }

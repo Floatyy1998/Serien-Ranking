@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import 'firebase/compat/database';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { InfinitySpin } from 'react-loader-spinner';
+import { RingLoader } from 'react-spinners';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { calculateOverallRating } from '../../utils/rating';
@@ -101,7 +101,7 @@ export const MovieGrid = memo(
     if (loading) {
       return (
         <Box className='flex justify-center items-center w-full h-full'>
-          <InfinitySpin color='#00fed7' />
+          <RingLoader color='#00fed7' size={60} />
         </Box>
       );
     }

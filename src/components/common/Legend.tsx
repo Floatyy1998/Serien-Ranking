@@ -1,6 +1,6 @@
 import { Info } from 'lucide-react';
 import { lazy, Suspense } from 'react';
-import { InfinitySpin } from 'react-loader-spinner';
+import { RingLoader } from 'react-spinners';
 const Box = lazy(() => import('@mui/material/Box'));
 const IconButton = lazy(() => import('@mui/material/IconButton'));
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
@@ -10,7 +10,7 @@ export const Legend = () => {
     <Suspense
       fallback={
         <Box className='flex justify-center items-center'>
-          <InfinitySpin color='#00fed7' />
+          <RingLoader color='#00fed7' size={60} />
         </Box>
       }
     >
