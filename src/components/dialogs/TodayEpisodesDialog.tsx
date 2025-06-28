@@ -196,6 +196,10 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
         open={open}
         onClose={handleDialogClose}
         fullWidth
+        disableAutoFocus={true}
+        disableEnforceFocus={false}
+        disableRestoreFocus={false}
+        keepMounted={false}
         slotProps={{
           paper: {
             sx: {

@@ -3,7 +3,6 @@ import {
   Box,
   Dialog,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   IconButton,
   List,
@@ -28,6 +27,10 @@ const SeriesEpisodesDialog = ({
       open={open}
       onClose={onClose}
       fullWidth
+      disableAutoFocus={true}
+      disableEnforceFocus={false}
+      disableRestoreFocus={false}
+      keepMounted={false}
     >
       <DialogTitle
         sx={{
@@ -53,50 +56,48 @@ const SeriesEpisodesDialog = ({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {Array.isArray(series.nextEpisode.nextEpisodes) &&
-              series.nextEpisode.nextEpisodes.map((episode) => (
-                <ListItem
-                  key={`${series.id}-${episode.season}-${episode.number}-${episode.airstamp}`}
+        <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {Array.isArray(series.nextEpisode.nextEpisodes) &&
+            series.nextEpisode.nextEpisodes.map((episode) => (
+              <ListItem
+                key={`${series.id}-${episode.season}-${episode.number}-${episode.airstamp}`}
+                sx={{
+                  border: '1px solid rgba(0,254,215,0.125)',
+                  backgroundColor: 'rgba(0,0,0,0.4)',
+                  borderRadius: 2,
+                  p: 3,
+                  backdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <Box
+                  component='img'
+                  src={series.poster.poster}
+                  alt={episode.name}
                   sx={{
-                    border: '1px solid rgba(0,254,215,0.125)',
-                    backgroundColor: 'rgba(0,0,0,0.4)',
-                    borderRadius: 2,
-                    p: 3,
-                    backdropFilter: 'blur(10px)',
-                    display: 'flex',
-                    alignItems: 'center',
+                    width: 60,
+                    height: 90,
+                    borderRadius: 1,
+                    marginRight: 2,
                   }}
-                >
-                  <Box
-                    component='img'
-                    src={series.poster.poster}
-                    alt={episode.name}
-                    sx={{
-                      width: 60,
-                      height: 90,
-                      borderRadius: 1,
-                      marginRight: 2,
-                    }}
+                />
+                <Box>
+                  <ListItemText
+                    primary={series.title}
+                    secondary={`Staffel ${episode.season}, Ep. ${episode.number}: ${episode.name}`}
                   />
-                  <Box>
-                    <ListItemText
-                      primary={series.title}
-                      secondary={`Staffel ${episode.season}, Ep. ${episode.number}: ${episode.name}`}
-                    />
-                    <Box
-                      component='span'
-                      sx={{ fontSize: '0.8rem', color: 'gray' }}
-                    >
-                      {getFormattedDate(episode.airstamp)} |{' '}
-                      {getFormattedTime(episode.airstamp)}
-                    </Box>
+                  <Box
+                    component='span'
+                    sx={{ fontSize: '0.8rem', color: 'gray' }}
+                  >
+                    {getFormattedDate(episode.airstamp)} |{' '}
+                    {getFormattedTime(episode.airstamp)}
                   </Box>
-                </ListItem>
-              ))}
-          </List>
-        </DialogContentText>
+                </Box>
+              </ListItem>
+            ))}
+        </List>
       </DialogContent>
     </Dialog>
   );

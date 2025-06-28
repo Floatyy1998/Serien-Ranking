@@ -1,24 +1,45 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, DialogTitle, IconButton } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+
 export const DialogHeader = ({
   title,
   onClose,
 }: {
   title: string;
   onClose: () => void;
-}) => (
-  <DialogTitle sx={{ position: 'relative', textAlign: 'center' }}>
-    {title}
-    <IconButton
-      aria-label='close'
-      onClick={onClose}
-      sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
+}) => {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    // Sicheres Focus-Management für Accessibility
+    const timer = setTimeout(() => {
+      if (titleRef.current) {
+        titleRef.current.focus();
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <DialogTitle
+      ref={titleRef}
+      tabIndex={-1}
+      sx={{ position: 'relative', textAlign: 'center', outline: 'none' }}
     >
-      <CloseIcon />
-    </IconButton>
-  </DialogTitle>
-);
+      {title}
+      <IconButton
+        aria-label='close'
+        onClick={onClose}
+        sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
+      >
+        <CloseIcon />
+      </IconButton>
+    </DialogTitle>
+  );
+};
+
 export const TabPanel = (props: {
   children: React.ReactNode;
   value: number;
@@ -31,6 +52,7 @@ export const TabPanel = (props: {
     </div>
   );
 };
+
 export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
   const formatDate = (date: Date) => {
     const d = new Date(date);

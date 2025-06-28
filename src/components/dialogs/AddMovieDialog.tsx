@@ -163,7 +163,15 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
 
   return (
     <>
-      <Dialog open={open} onClose={handleDialogClose} fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleDialogClose}
+        fullWidth
+        disableAutoFocus={true}
+        disableEnforceFocus={false}
+        disableRestoreFocus={false}
+        keepMounted={false}
+      >
         <DialogHeader title='Film hinzufügen' onClose={handleDialogClose} />
         <DialogContent dividers>
           <Autocomplete

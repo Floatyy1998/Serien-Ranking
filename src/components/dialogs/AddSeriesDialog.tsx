@@ -167,7 +167,15 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
 
   return (
     <>
-      <Dialog open={open} onClose={handleDialogClose} fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleDialogClose}
+        fullWidth
+        disableAutoFocus={true}
+        disableEnforceFocus={false}
+        disableRestoreFocus={false}
+        keepMounted={false}
+      >
         <DialogHeader title='Serie hinzufügen' onClose={handleDialogClose} />
         <DialogContent dividers>
           <Autocomplete
