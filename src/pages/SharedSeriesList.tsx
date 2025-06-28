@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { RingLoader } from 'react-spinners';
 import MovieSearchFilters from '../components/filters/MovieSearchFilters';
@@ -76,7 +76,8 @@ const SharedSeriesList = () => {
     setSelectedProvider(value);
   };
 
-  const sortedSeries = useMemo(() => {
+  // React 19: Automatische Memoization - kein useMemo nötig
+  const sortedSeries = (() => {
     const filtered = (seriesList || []).filter((series) => {
       const matchesSearch = series.title
         .toLowerCase()
@@ -116,9 +117,10 @@ const SharedSeriesList = () => {
         );
       });
     }
-  }, [seriesList, debouncedSearchValue, selectedGenre, selectedProvider]);
+  })();
 
-  const sortedMovies = useMemo(() => {
+  // React 19: Automatische Memoization - kein useMemo nötig
+  const sortedMovies = (() => {
     const filtered = (movieList || []).filter((movie) => {
       const matchesSearch = movie.title
         .toLowerCase()
@@ -151,7 +153,7 @@ const SharedSeriesList = () => {
       const ratingB = parseFloat(calculateOverallRating(b));
       return ratingB - ratingA;
     });
-  }, [movieList, debouncedSearchValue, selectedGenre, selectedProvider]);
+  })();
 
   useEffect(() => {
     const cardWidth = 230;
@@ -175,7 +177,8 @@ const SharedSeriesList = () => {
     tabValue,
   ]);
 
-  const handleWindowScroll = useCallback(() => {
+  // React 19: Automatische Memoization - kein useCallback nötig
+  const handleWindowScroll = () => {
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
     const fullHeight = document.body.offsetHeight;
@@ -202,12 +205,12 @@ const SharedSeriesList = () => {
         );
       }
     }
-  }, [sortedSeries?.length, sortedMovies?.length, visibleCount, tabValue]);
+  };
 
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);
     return () => window.removeEventListener('scroll', handleWindowScroll);
-  }, [handleWindowScroll]);
+  }, []); // React 19: Event-Handler brauchen keine Abhängigkeiten
 
   if (loading) {
     return (

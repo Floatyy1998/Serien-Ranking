@@ -26,7 +26,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import { BarChartIcon, LogOut, ShareIcon } from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import SharedLinksDialog from '../dialogs/SharedLinksDialog';
@@ -44,7 +44,8 @@ Chart.register(
 interface HeaderProps {
   setIsStatsOpen: (open: boolean) => void;
 }
-export const Header = memo(({ setIsStatsOpen }: HeaderProps) => {
+// React 19: Automatische Memoization - kein memo nötig
+export const Header = ({ setIsStatsOpen }: HeaderProps) => {
   const auth = useAuth();
   const { user, setUser } = auth || {};
   const location = useLocation();
@@ -67,7 +68,8 @@ export const Header = memo(({ setIsStatsOpen }: HeaderProps) => {
   if (!auth) {
     return null;
   }
-  const handleLogout = useCallback(() => {
+  // React 19: Automatische Memoization - kein useCallback nötig
+  const handleLogout = () => {
     firebase
       .auth()
       .signOut()
@@ -76,21 +78,21 @@ export const Header = memo(({ setIsStatsOpen }: HeaderProps) => {
           setUser(null);
         }
       });
-  }, [setUser]);
-  const handleStatsOpen = useCallback(() => {
+  };
+  const handleStatsOpen = () => {
     setStatsDialogOpen(true);
     setIsStatsOpen(true);
-  }, [setIsStatsOpen]);
-  const handleStatsClose = useCallback(() => {
+  };
+  const handleStatsClose = () => {
     setStatsDialogOpen(false);
-  }, []);
-  const handleTitleClick = useCallback(() => {
+  };
+  const handleTitleClick = () => {
     if (location.pathname === '/login' || location.pathname === '/register') {
       navigate('/');
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [location, navigate]);
+  };
   const handleGenerateShareLink = async () => {
     if (!user) {
       setSnackbarMessage(
@@ -254,5 +256,5 @@ export const Header = memo(({ setIsStatsOpen }: HeaderProps) => {
       />
     </>
   );
-});
+};
 export default Header;

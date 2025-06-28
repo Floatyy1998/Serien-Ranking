@@ -13,7 +13,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Check, ChevronDown } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../interfaces/Series';
 import { getFormattedDate } from '../../utils/date.utils';
@@ -52,17 +52,15 @@ const SeriesWatchedDialog = ({
     seasonNumber: number;
     episodeId: number;
   } | null>(null);
-  const uniqueSeasons = useMemo(
-    () =>
-      series?.seasons?.filter(
-        (season, index, self) =>
-          index ===
-          self.findIndex((s) => s.seasonNumber === season.seasonNumber)
-      ),
-    [series?.seasons]
-  );
+  // React 19: Automatische Memoization - kein useMemo nötig
+  const uniqueSeasons = (() =>
+    series?.seasons?.filter(
+      (season, index, self) =>
+        index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
+    ))();
 
-  const nextUnwatchedEpisode = useMemo(() => {
+  // React 19: Automatische Memoization - kein useMemo nötig
+  const nextUnwatchedEpisode = (() => {
     if (!series.seasons || series.seasons.length === 0) {
       return null;
     }
@@ -79,7 +77,7 @@ const SeriesWatchedDialog = ({
       }
     }
     return null;
-  }, [series.seasons]);
+  })();
 
   const handleConfirmYes = () => {
     if (confirmSeason !== null && handleBatchWatchedToggle) {

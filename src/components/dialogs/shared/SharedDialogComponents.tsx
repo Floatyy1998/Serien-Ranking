@@ -54,6 +54,7 @@ export const TabPanel = (props: {
 };
 
 export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
+  // React 19 optimiert Funktionen automatisch - kein useMemo/useCallback nötig
   const formatDate = (date: Date) => {
     const d = new Date(date);
     return `${String(d.getDate()).padStart(2, '0')}.${String(

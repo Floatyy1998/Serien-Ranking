@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { lazy, Suspense, useCallback, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { allGenres } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
@@ -89,13 +89,14 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     (() => void) | null
   >(null);
 
-  const handleTitleClick = useCallback(() => {
+  // React 19: Automatische Memoization - kein useCallback nötig
+  const handleTitleClick = () => {
     window.dispatchEvent(
       new CustomEvent('openWatchedDialog', {
         detail: { series: currentSeries, isReadOnly: isSharedListPage },
       })
     );
-  }, [currentSeries, isSharedListPage]);
+  };
 
   const handleClickOpen = () => {
     setOpen(true);

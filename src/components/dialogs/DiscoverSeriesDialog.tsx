@@ -17,7 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/de';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../App';
 import { genreIdMapForSeries } from '../../constants/menuItems';
 import { Series } from '../../interfaces/Series';
@@ -137,60 +137,58 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
     document.querySelector('.MuiDialogContent-root')?.scrollTo(0, 0); // Scroll to top
   };
 
-  const handleAddSeries = useCallback(
-    async (series: Series) => {
-      if (!user) {
-        setSnackbarMessage(
-          'Bitte loggen Sie sich ein, um eine Serie hinzuzufügen.'
-        );
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-        return;
-      }
-      setSnackbarMessage('Serie wird hinzugefügt');
-      setSnackbarSeverity('warning');
+  // React 19: Automatische Memoization - kein useCallback nötig
+  const handleAddSeries = async (series: Series) => {
+    if (!user) {
+      setSnackbarMessage(
+        'Bitte loggen Sie sich ein, um eine Serie hinzuzufügen.'
+      );
+      setSnackbarSeverity('error');
       setSnackbarOpen(true);
-      const seriesData = {
-        id: series.id.toString(),
-        data: {
-          user: import.meta.env.VITE_USER,
-          id: series.id,
-          uuid: user.uid,
-        },
-      };
-      try {
-        const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-cache',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          redirect: 'follow',
-          referrerPolicy: 'no-referrer',
-          body: JSON.stringify(seriesData.data),
-        });
-        if (res.ok) {
-          setSnackbarMessage('Serie hinzugefügt!');
-          setSnackbarSeverity('success');
-          setSnackbarOpen(true);
-        } else {
-          const msgJson = await res.json();
-          if (msgJson.error !== 'Serie bereits vorhanden') {
-            throw new Error('Fehler beim Hinzufügen der Serie.');
-          }
-          setSnackbarMessage('Serie bereits vorhanden');
-          setSnackbarSeverity('error');
-          setSnackbarOpen(true);
+      return;
+    }
+    setSnackbarMessage('Serie wird hinzugefügt');
+    setSnackbarSeverity('warning');
+    setSnackbarOpen(true);
+    const seriesData = {
+      id: series.id.toString(),
+      data: {
+        user: import.meta.env.VITE_USER,
+        id: series.id,
+        uuid: user.uid,
+      },
+    };
+    try {
+      const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(seriesData.data),
+      });
+      if (res.ok) {
+        setSnackbarMessage('Serie hinzugefügt!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } else {
+        const msgJson = await res.json();
+        if (msgJson.error !== 'Serie bereits vorhanden') {
+          throw new Error('Fehler beim Hinzufügen der Serie.');
         }
-      } catch (error) {
-        console.error('Error sending data to server:', error);
-        setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
+        setSnackbarMessage('Serie bereits vorhanden');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
-    },
-    [user]
-  );
+    } catch (error) {
+      console.error('Error sending data to server:', error);
+      setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
 
   const handleClose = () => {
     setFilters({
