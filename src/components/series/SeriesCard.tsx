@@ -21,7 +21,6 @@ import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
 import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
-import LoadingCard from '../common/LoadingCard';
 import SeriesDialog from '../dialogs/SeriesDialog';
 import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
@@ -38,15 +37,19 @@ interface SeriesCardProps {
 export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   // Hole aktuelle Serie-Daten aus dem Provider
   const { seriesList } = useSeriesList();
-  const currentSeries = seriesList.find((s) => s.nmr === series.nmr) || series;
+  const location = useLocation();
+  const isSharedListPage = location.pathname.startsWith('/shared-list');
+
+  // Für Shared Lists verwende die übergebenen Daten, sonst die aktuellen aus dem Context
+  const currentSeries = isSharedListPage
+    ? series
+    : seriesList.find((s) => s.nmr === series.nmr) || series;
 
   const shadowColor = !currentSeries.production?.production
     ? '#a855f7'
     : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
-  const location = useLocation();
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
   const uniqueProviders = currentSeries.provider
     ? Array.from(
         new Set(currentSeries.provider.provider.map((p) => p.name))
@@ -202,7 +205,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   };
 
   return (
-    <Suspense fallback={<LoadingCard />}>
+    <Suspense fallback={<div />}>
       <Card
         className='h-full transition-shadow duration-300 flex flex-col series-card hover:animate-rgbShadow'
         sx={{

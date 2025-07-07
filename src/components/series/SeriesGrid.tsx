@@ -1,8 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useRef, useState } from 'react';
-import { RingLoader } from 'react-spinners';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useStats } from '../../contexts/StatsProvider';
@@ -24,7 +23,7 @@ export const SeriesGrid = ({
   selectedGenre,
   selectedProvider,
 }: SeriesGridProps) => {
-  const { seriesList, loading } = useSeriesList();
+  const { seriesList } = useSeriesList();
   const auth = useAuth();
   const user = auth?.user;
   const isSharedListPage = location.pathname.startsWith('/shared-list');
@@ -297,7 +296,7 @@ export const SeriesGrid = ({
   };
 
   // React 19: Automatische Memoization - kein useCallback nötig
-  const handleWindowScroll = () => {
+  const handleWindowScroll = useCallback(() => {
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
     const fullHeight = document.body.offsetHeight;
@@ -315,18 +314,13 @@ export const SeriesGrid = ({
         Math.min(prev + itemsToAdd, filteredSeries?.length)
       );
     }
-  };
+  }, [visibleCount, filteredSeries]);
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);
     return () => window.removeEventListener('scroll', handleWindowScroll);
-  }, []); // React 19: Event-Handler brauchen keine Abhängigkeiten
-  if (loading) {
-    return (
-      <Box className='flex justify-center items-center w-full h-full'>
-        <RingLoader color='#00fed7' size={60} />
-      </Box>
-    );
-  }
+  }, [handleWindowScroll]);
+
+  // Kein Loading-State mehr - das globale Skeleton regelt das
   if (filteredSeries?.length === 0 && selectedGenre === 'All') {
     return (
       <Box className='flex justify-center items-center w-full h-full'>

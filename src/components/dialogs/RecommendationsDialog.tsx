@@ -12,7 +12,6 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { RingLoader } from 'react-spinners';
 import { useAuth } from '../../App';
 import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
@@ -292,7 +291,7 @@ const RecommendationsDialog = ({
       <DialogContent>
         {loadingState || !allProvidersLoaded ? (
           <Box display='flex' justifyContent='center' mt={2}>
-            <RingLoader size={60} color='#00fed7' />
+            <div className='w-12 h-12 border-2 border-[#00fed7] border-t-transparent rounded-full animate-spin' />
           </Box>
         ) : recommendations.length === 0 ? (
           <Box display='flex' justifyContent='center' mt={2}>
