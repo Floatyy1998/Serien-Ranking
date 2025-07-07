@@ -8,7 +8,24 @@ dotenv.config();
 export default defineConfig({
   plugins: [react()],
   define: {
-    'process.env': process.env,
+    // Nur spezifische Umgebungsvariablen definieren für Sicherheit
+    'process.env.VITE_APIKEY': JSON.stringify(process.env.VITE_APIKEY),
+    'process.env.VITE_AUTHDOMAIN': JSON.stringify(process.env.VITE_AUTHDOMAIN),
+    'process.env.VITE_DATABASEURL': JSON.stringify(
+      process.env.VITE_DATABASEURL
+    ),
+    'process.env.VITE_PROJECTID': JSON.stringify(process.env.VITE_PROJECTID),
+    'process.env.VITE_STORAGEBUCKET': JSON.stringify(
+      process.env.VITE_STORAGEBUCKET
+    ),
+    'process.env.VITE_MESSAGINGSENDERID': JSON.stringify(
+      process.env.VITE_MESSAGINGSENDERID
+    ),
+    'process.env.VITE_APPID': JSON.stringify(process.env.VITE_APPID),
+    'process.env.VITE_MEASUREMENTID': JSON.stringify(
+      process.env.VITE_MEASUREMENTID
+    ),
+    'process.env.VITE_API_TMDB': JSON.stringify(process.env.VITE_API_TMDB),
   },
   publicDir: 'public', // Stellen Sie sicher, dass dies korrekt konfiguriert ist
   build: {
