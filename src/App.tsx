@@ -1,7 +1,6 @@
 import { Box, Button, CssBaseline, ThemeProvider, styled } from '@mui/material';
 import Firebase from 'firebase/compat/app';
 import {
-  Suspense,
   createContext,
   lazy,
   useCallback,
@@ -19,19 +18,20 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom';
-import { RingLoader } from 'react-spinners';
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
+import Legend from './components/common/Legend';
 import MovieSearchFilters from './components/filters/MovieSearchFilters';
+import SearchFilters from './components/filters/SearchFilters';
+import Header from './components/layout/Header';
+import MovieGrid from './components/movies/MovieGrid';
+import SeriesGrid from './components/series/SeriesGrid';
+import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { SeriesListProvider } from './contexts/SeriesListProvider';
 import { StatsProvider } from './contexts/StatsProvider';
 import SharedSeriesList from './pages/SharedSeriesList';
 import { theme } from './theme';
-const Header = lazy(() => import('./components/layout/Header'));
-const Legend = lazy(() => import('./components/common/Legend'));
-const SearchFilters = lazy(() => import('./components/filters/SearchFilters'));
-const SeriesGrid = lazy(() => import('./components/series/SeriesGrid'));
-const MovieGrid = lazy(() => import('./components/movies/MovieGrid'));
+// Nur diese bleiben lazy
 const LoginPage = lazy(() => import('./components/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
 const StartPage = lazy(() => import('./pages/StartPage'));
@@ -56,14 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
   if (!firebaseInitialized || !authStateResolved) {
-    return (
-      <Box
-        sx={{ width: '100vw', height: '100vh', backgroundColor: '#000' }}
-        className='flex justify-center items-center '
-      >
-        <RingLoader color='#00fed7' size={60} />
-      </Box>
-    );
+    return null; // Lass das GlobalLoadingProvider das Skeleton zeigen
   }
   return (
     <AuthContext.Provider value={{ user, setUser, authStateResolved }}>
@@ -75,7 +68,9 @@ export const useAuth = () => useContext(AuthContext);
 export function App() {
   return (
     <Router>
-      <AppContent />
+      <GlobalLoadingProvider>
+        <AppContent />
+      </GlobalLoadingProvider>
     </Router>
   );
 }
@@ -154,120 +149,106 @@ function AppContent() {
               <meta name='twitter:card' content='summary_large_image' />
             </Helmet>
             <ThemeProvider theme={theme}>
-              <CssBaseline />
+              <CssBaseline />{' '}
               <div className='w-full'>
-                <Suspense
-                  fallback={
-                    <Box className='flex justify-center items-center'>
-                      <RingLoader color='#00fed7' size={60}></RingLoader>
-                    </Box>
+                <Header setIsStatsOpen={setIsStatsOpen} />
+                <AuthContext.Consumer>
+                  {(auth) =>
+                    auth?.user &&
+                    showNavBar && (
+                      <NavBar>
+                        <NavButton
+                          className={location.pathname === '/' ? 'active' : ''}
+                          onClick={() => handleNavClick('/')}
+                        >
+                          Serien
+                        </NavButton>
+                        <NavButton
+                          className={
+                            location.pathname === '/movies' ? 'active' : ''
+                          }
+                          onClick={() => handleNavClick('/movies')}
+                        >
+                          Filme
+                        </NavButton>
+                      </NavBar>
+                    )
                   }
-                >
-                  <Header setIsStatsOpen={setIsStatsOpen} />
-                  <AuthContext.Consumer>
-                    {(auth) =>
-                      auth?.user &&
-                      showNavBar && (
-                        <NavBar>
-                          <NavButton
-                            className={
-                              location.pathname === '/' ? 'active' : ''
+                </AuthContext.Consumer>
+                <main className='w-full px-4 py-6'>
+                  <div className='mx-auto'>
+                    <Link to='/' className='mb-12' aria-label='Zur Startseite'>
+                      <span className='sr-only'>Zur Startseite</span>
+                    </Link>
+                    <Routes>
+                      <Route path='/login' element={<LoginPage />} />
+                      <Route path='/register' element={<RegisterPage />} />
+                      <Route
+                        path='/'
+                        element={
+                          <AuthContext.Consumer>
+                            {(auth) =>
+                              auth?.user ? (
+                                <VerifiedRoute>
+                                  <div className='flex flex-col gap-4 items-start'>
+                                    {/* Suchfilter und Legende untereinander, linksbündig */}
+                                    <SearchFilters
+                                      onSearchChange={handleSearchChange}
+                                      onGenreChange={handleGenreChange}
+                                      onProviderChange={handleProviderChange}
+                                    />
+                                    <Legend />
+                                    <SeriesGrid
+                                      searchValue={searchValue}
+                                      selectedGenre={selectedGenre}
+                                      selectedProvider={selectedProvider}
+                                    />
+                                  </div>
+                                </VerifiedRoute>
+                              ) : (
+                                <StartPage />
+                              )
                             }
-                            onClick={() => handleNavClick('/')}
-                          >
-                            Serien
-                          </NavButton>
-                          <NavButton
-                            className={
-                              location.pathname === '/movies' ? 'active' : ''
-                            }
-                            onClick={() => handleNavClick('/movies')}
-                          >
-                            Filme
-                          </NavButton>
-                        </NavBar>
-                      )
-                    }
-                  </AuthContext.Consumer>
-                  <main className='w-full px-4 py-6'>
-                    <div className='mx-auto'>
-                      <Link
-                        to='/'
-                        className='mb-12'
-                        aria-label='Zur Startseite'
-                      >
-                        <span className='sr-only'>Zur Startseite</span>
-                      </Link>
-                      <Routes>
-                        <Route path='/login' element={<LoginPage />} />
-                        <Route path='/register' element={<RegisterPage />} />
-                        <Route
-                          path='/'
-                          element={
-                            <AuthContext.Consumer>
-                              {(auth) =>
-                                auth?.user ? (
-                                  <VerifiedRoute>
-                                    <div className='flex flex-col gap-4 items-start'>
-                                      {/* Suchfilter und Legende untereinander, linksbündig */}
-                                      <SearchFilters
-                                        onSearchChange={handleSearchChange}
-                                        onGenreChange={handleGenreChange}
-                                        onProviderChange={handleProviderChange}
-                                      />
-                                      <Legend />
-                                      <SeriesGrid
-                                        searchValue={searchValue}
-                                        selectedGenre={selectedGenre}
-                                        selectedProvider={selectedProvider}
-                                      />
-                                    </div>
-                                  </VerifiedRoute>
-                                ) : (
-                                  <StartPage />
-                                )
-                              }
-                            </AuthContext.Consumer>
-                          }
-                        />
-                        <Route
-                          path='/shared-list/:linkId'
-                          element={<SharedSeriesList />}
-                        />
-                        <Route path='/duckfacts' element={<DuckFacts />} />
-                        <Route
-                          path='/movies'
-                          element={
-                            <AuthContext.Consumer>
-                              {(auth) =>
-                                auth?.user ? (
-                                  <VerifiedRoute>
-                                    <div className='flex flex-col gap-4 items-start'>
-                                      <MovieSearchFilters
-                                        onSearchChange={handleSearchChange}
-                                        onGenreChange={handleGenreChange}
-                                        onProviderChange={handleProviderChange}
-                                      />
+                          </AuthContext.Consumer>
+                        }
+                      />
+                      <Route
+                        path='/shared-list/:linkId'
+                        element={<SharedSeriesList />}
+                      />
+                      <Route path='/duckfacts' element={<DuckFacts />} />
+                      <Route
+                        path='/movies'
+                        element={
+                          <AuthContext.Consumer>
+                            {(auth) =>
+                              auth?.user ? (
+                                <VerifiedRoute>
+                                  <div className='flex flex-col gap-4 items-start'>
+                                    <MovieSearchFilters
+                                      onSearchChange={handleSearchChange}
+                                      onGenreChange={handleGenreChange}
+                                      onProviderChange={handleProviderChange}
+                                    />
 
-                                      <MovieGrid
-                                        searchValue={searchValue}
-                                        selectedGenre={selectedGenre}
-                                        selectedProvider={selectedProvider}
-                                      />
-                                    </div>
-                                  </VerifiedRoute>
-                                ) : (
-                                  <StartPage />
-                                )
-                              }
-                            </AuthContext.Consumer>
-                          }
-                        />
-                        <Route path='*' element={<Navigate to='/' />} />
-                      </Routes>
-                    </div>
-                  </main>
-                </Suspense>
+                                    <MovieGrid
+                                      searchValue={searchValue}
+                                      selectedGenre={selectedGenre}
+                                      selectedProvider={selectedProvider}
+                                    />
+                                  </div>
+                                </VerifiedRoute>
+                              ) : (
+                                <StartPage />
+                              )
+                            }
+                          </AuthContext.Consumer>
+                        }
+                      />{' '}
+                      <Route path='*' element={<Navigate to='/' />} />
+                    </Routes>
+                  </div>
+                </main>
               </div>
             </ThemeProvider>
           </StatsProvider>

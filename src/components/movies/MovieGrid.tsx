@@ -1,7 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
-import { RingLoader } from 'react-spinners';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { calculateOverallRating } from '../../utils/rating';
@@ -19,14 +18,17 @@ export const MovieGrid = ({
   selectedGenre,
   selectedProvider,
 }: MovieGridProps) => {
-  const { movieList, loading } = useMovieList();
+  const { movieList } = useMovieList();
 
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
 
-  // React 19: Automatische Memoization - kein useMemo nötig
-  const filteredMovies = (() => {
-    return (movieList || [])
+  // Stabilisiere die Liste mit einem Ref um Re-Rendering zu vermeiden
+  const stableFilteredMovies = useRef<any[]>([]);
+
+  // Filtere und sortiere die Filme basierend auf den Suchkriterien
+  useEffect(() => {
+    const filtered = (movieList || [])
       .filter((movie) => {
         const matchesSearch = movie.title
           .toLowerCase()
@@ -59,16 +61,24 @@ export const MovieGrid = ({
         const ratingB = parseFloat(calculateOverallRating(b));
         return ratingB - ratingA;
       });
-  })();
+
+    stableFilteredMovies.current = filtered;
+  }, [movieList, debouncedSearchValue, selectedGenre, selectedProvider]);
 
   // React 19: Automatische Memoization - kein useCallback nötig
-  const handleWindowScroll = () => {
+  const handleWindowScroll = useCallback(() => {
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
     const fullHeight = document.body.offsetHeight;
+
+    const currentMovies =
+      stableFilteredMovies.current?.length > 0
+        ? stableFilteredMovies.current
+        : movieList || [];
+
     if (
       scrollTop + windowHeight >= fullHeight - 1000 &&
-      visibleCount < filteredMovies?.length
+      visibleCount < currentMovies?.length
     ) {
       const cardWidth = 230;
       const gap = 75;
@@ -77,15 +87,15 @@ export const MovieGrid = ({
       const remainder = visibleCount % columns;
       const itemsToAdd = remainder === 0 ? columns : columns - remainder;
       setVisibleCount((prev) =>
-        Math.min(prev + itemsToAdd, filteredMovies?.length)
+        Math.min(prev + itemsToAdd, currentMovies?.length)
       );
     }
-  };
+  }, [visibleCount, movieList]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);
     return () => window.removeEventListener('scroll', handleWindowScroll);
-  }, []); // React 19: Event-Handler brauchen keine Abhängigkeiten
+  }, [handleWindowScroll]);
 
   useEffect(() => {
     const cardWidth = 230;
@@ -94,21 +104,26 @@ export const MovieGrid = ({
     if (columns < 1) columns = 1;
     const base = 20;
     let initialVisible = Math.ceil(base / columns) * columns;
-    if (initialVisible > filteredMovies?.length) {
-      initialVisible = filteredMovies?.length;
+
+    const currentMovies =
+      stableFilteredMovies.current?.length > 0
+        ? stableFilteredMovies.current
+        : movieList || [];
+
+    if (initialVisible > currentMovies?.length) {
+      initialVisible = currentMovies?.length;
     }
     setVisibleCount(initialVisible);
-  }, [debouncedSearchValue, selectedGenre, selectedProvider, filteredMovies]);
+  }, [debouncedSearchValue, selectedGenre, selectedProvider, movieList]);
 
-  if (loading) {
-    return (
-      <Box className='flex justify-center items-center w-full h-full'>
-        <RingLoader color='#00fed7' size={60} />
-      </Box>
-    );
-  }
+  // Kein Loading-State mehr - das globale Skeleton regelt das
 
-  if (filteredMovies?.length === 0 && selectedGenre === 'All') {
+  // Überprüfe sowohl die gefilterte Liste als auch die ursprüngliche movieList
+  if (
+    (stableFilteredMovies.current?.length === 0 ||
+      (movieList && movieList.length === 0)) &&
+    selectedGenre === 'All'
+  ) {
     return (
       <Box className='flex justify-center items-center w-full h-full'>
         <Typography variant='h2' className='text-center'>
@@ -130,11 +145,20 @@ export const MovieGrid = ({
           boxSizing: 'border-box',
         }}
       >
-        {filteredMovies?.slice(0, visibleCount).map((movie, index) => (
-          <Box key={index} sx={{ width: '230px', height: '444px' }}>
-            <MovieCard movie={movie} genre={selectedGenre} index={index + 1} />
-          </Box>
-        ))}
+        {(stableFilteredMovies.current?.length > 0
+          ? stableFilteredMovies.current
+          : movieList || []
+        )
+          ?.slice(0, visibleCount)
+          .map((movie, index) => (
+            <Box key={index} sx={{ width: '230px', height: '444px' }}>
+              <MovieCard
+                movie={movie}
+                genre={selectedGenre}
+                index={index + 1}
+              />
+            </Box>
+          ))}
       </Box>
     </Box>
   );

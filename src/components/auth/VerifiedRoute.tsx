@@ -1,10 +1,8 @@
 import { Alert, Button, Card, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { Box } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RingLoader } from 'react-spinners';
 interface VerifiedRouteProps {
   children: React.ReactNode;
 }
@@ -65,12 +63,9 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
     setSnackOpen(false);
   };
   if (loading) {
-    return (
-      <Box className='flex justify-center items-center'>
-        <RingLoader color='#00fed7' size={60} />
-      </Box>
-    );
+    return null; // Lass das GlobalLoadingProvider das Skeleton zeigen
   }
+
   if (!isVerified) {
     return (
       <>

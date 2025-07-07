@@ -1,9 +1,8 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { RingLoader } from 'react-spinners';
 import MovieSearchFilters from '../components/filters/MovieSearchFilters';
 import SearchFilters from '../components/filters/SearchFilters';
 import { MovieCard } from '../components/movies/MovieCard';
@@ -17,7 +16,6 @@ const SharedSeriesList = () => {
   const { linkId } = useParams<{ linkId: string }>();
   const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [movieList, setMovieList] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedProvider, setSelectedProvider] = useState('All');
@@ -55,9 +53,8 @@ const SharedSeriesList = () => {
       } catch (error) {
         console.error('Error fetching shared list:', error);
         setLinkValid(false);
-      } finally {
-        setLoading(false);
       }
+      // Kein finally mehr - das globale Skeleton übernimmt das Loading
     };
     fetchSharedList();
   }, [linkId]);
@@ -76,8 +73,8 @@ const SharedSeriesList = () => {
     setSelectedProvider(value);
   };
 
-  // React 19: Automatische Memoization - kein useMemo nötig
-  const sortedSeries = (() => {
+  // Stabile sortierte Listen mit useMemo
+  const sortedSeries = useMemo(() => {
     const filtered = (seriesList || []).filter((series) => {
       const matchesSearch = series.title
         .toLowerCase()
@@ -117,10 +114,10 @@ const SharedSeriesList = () => {
         );
       });
     }
-  })();
+  }, [seriesList, debouncedSearchValue, selectedGenre, selectedProvider]);
 
-  // React 19: Automatische Memoization - kein useMemo nötig
-  const sortedMovies = (() => {
+  // Stabile sortierte Liste für Filme mit useMemo
+  const sortedMovies = useMemo(() => {
     const filtered = (movieList || []).filter((movie) => {
       const matchesSearch = movie.title
         .toLowerCase()
@@ -153,7 +150,7 @@ const SharedSeriesList = () => {
       const ratingB = parseFloat(calculateOverallRating(b));
       return ratingB - ratingA;
     });
-  })();
+  }, [movieList, debouncedSearchValue, selectedGenre, selectedProvider]);
 
   useEffect(() => {
     const cardWidth = 230;
@@ -168,17 +165,10 @@ const SharedSeriesList = () => {
       initialVisible = sortedMovies?.length;
     }
     setVisibleCount(initialVisible);
-  }, [
-    debouncedSearchValue,
-    selectedGenre,
-    selectedProvider,
-    sortedSeries,
-    sortedMovies,
-    tabValue,
-  ]);
+  }, [sortedSeries, sortedMovies, tabValue]);
 
-  // React 19: Automatische Memoization - kein useCallback nötig
-  const handleWindowScroll = () => {
+  // Stabiler Scroll-Handler mit useCallback
+  const handleWindowScroll = useCallback(() => {
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
     const fullHeight = document.body.offsetHeight;
@@ -205,23 +195,12 @@ const SharedSeriesList = () => {
         );
       }
     }
-  };
+  }, [tabValue, visibleCount, sortedSeries, sortedMovies]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);
     return () => window.removeEventListener('scroll', handleWindowScroll);
-  }, []); // React 19: Event-Handler brauchen keine Abhängigkeiten
-
-  if (loading) {
-    return (
-      <Box
-        sx={{ width: '90vw', height: '80vh', backgroundColor: '#000' }}
-        className='flex justify-center items-center '
-      >
-        <RingLoader color='#00fed7' size={60} />
-      </Box>
-    );
-  }
+  }, [handleWindowScroll]);
 
   if (!linkValid) {
     return (
@@ -250,7 +229,11 @@ const SharedSeriesList = () => {
             <Box className='flex-row flex flex-wrap justify-center gap-20'>
               {sortedSeries?.slice(0, visibleCount).map((series, index) => (
                 <Box key={`${series.id}-${index}`} className='w-[230px]'>
-                  <SeriesCard series={series} genre='All' index={index + 1} />
+                  <SeriesCard
+                    series={series}
+                    genre={selectedGenre}
+                    index={index + 1}
+                  />
                 </Box>
               ))}
             </Box>
