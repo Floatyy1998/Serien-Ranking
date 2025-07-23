@@ -7,9 +7,32 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
+import {
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  Chart,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Tooltip,
+} from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useLocation } from 'react-router-dom';
 import { useStats } from '../../contexts/StatsProvider';
+
+// Chart.js Registrierung
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Legend,
+  Tooltip
+);
 
 interface StatsDialogProps {
   open: boolean;

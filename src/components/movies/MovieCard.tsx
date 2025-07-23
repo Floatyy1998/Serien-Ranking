@@ -10,12 +10,13 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { allGenresForMovies } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
 import { useFriends } from '../../contexts/FriendsProvider';
+import { useMovieList } from '../../contexts/MovieListProvider';
 import { Movie } from '../../interfaces/Movie';
 import '../../styles/animations.css';
 import { getFormattedDate } from '../../utils/date.utils';
@@ -34,23 +35,40 @@ export const MovieCard = ({
   index,
   disableRatingDialog = false,
 }: MovieCardProps) => {
-  const shadowColor = movie.status === 'Released' ? '#a855f7' : '#22c55e';
+  const { movieList } = useMovieList();
+  const location = useLocation();
+  const isSharedListPage = location.pathname.startsWith('/shared-list');
+  const isUserProfilePage =
+    location.pathname.includes('/user/') ||
+    location.pathname.includes('/profile/');
+
+  // Für Shared Lists oder User Profile verwende die übergebenen Daten, sonst die aktuellen aus dem Context
+  const currentMovie =
+    isSharedListPage || isUserProfilePage
+      ? movie
+      : movieList.find((m) => m.nmr === movie.nmr) || movie;
+
+  const shadowColor =
+    currentMovie.status === 'Released' ? '#a855f7' : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
   const { updateUserActivity } = useFriends();
-  const location = useLocation();
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
-  const uniqueProviders = movie.provider
-    ? Array.from(new Set(movie.provider.provider.map((p) => p.name))).map(
-        (name) => movie.provider?.provider.find((p) => p.name === name)
+  const uniqueProviders = currentMovie.provider
+    ? Array.from(
+        new Set(currentMovie.provider.provider.map((p) => p.name))
+      ).map((name) =>
+        currentMovie.provider?.provider.find((p) => p.name === name)
       )
     : [];
-  const rating = calculateOverallRating(movie);
-  const releaseDate = new Date(movie.release_date || '');
+  const rating = useMemo(
+    () => calculateOverallRating(currentMovie),
+    [currentMovie]
+  );
+  const releaseDate = new Date(currentMovie.release_date || '');
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  let dateString = getFormattedDate(movie.release_date || '');
+  let dateString = getFormattedDate(currentMovie.release_date || '');
   if (
     releaseDate.getDate() === today.getDate() &&
     releaseDate.getMonth() === today.getMonth() &&
@@ -78,7 +96,7 @@ export const MovieCard = ({
     setOpen(true);
     const initialRatings: { [key: string]: number } = {};
     allGenresForMovies.forEach((g) => {
-      initialRatings[g] = movie.rating?.[g] || 0;
+      initialRatings[g] = currentMovie.rating?.[g] || 0;
     });
     setRatings(initialRatings);
   };
@@ -95,14 +113,16 @@ export const MovieCard = ({
   };
 
   const handleDeleteMovie = async () => {
-    const ref = firebase.database().ref(`${user?.uid}/filme/${movie.nmr}`);
+    const ref = firebase
+      .database()
+      .ref(`${user?.uid}/filme/${currentMovie.nmr}`);
     await ref.remove();
 
     // Activity tracken für Freunde
     await updateUserActivity({
       type: 'movie_deleted',
-      itemTitle: movie.title || 'Unbekannter Film',
-      itemId: movie.nmr,
+      itemTitle: currentMovie.title || 'Unbekannter Film',
+      itemId: currentMovie.nmr,
     });
 
     setOpen(false);
@@ -111,7 +131,7 @@ export const MovieCard = ({
   const handleUpdateRatings = async () => {
     const ref = firebase
       .database()
-      .ref(`${user?.uid}/filme/${movie.nmr}/rating`);
+      .ref(`${user?.uid}/filme/${currentMovie.nmr}/rating`);
     const updatedRatings = Object.fromEntries(
       Object.entries(ratings).map(([k, value]) => [k, value === '' ? 0 : value])
     );
@@ -122,8 +142,8 @@ export const MovieCard = ({
         // Activity tracken für Freunde
         await updateUserActivity({
           type: 'rating_updated',
-          itemTitle: movie.title || 'Unbekannter Film',
-          itemId: movie.nmr,
+          itemTitle: currentMovie.title || 'Unbekannter Film',
+          itemId: currentMovie.nmr,
         });
 
         setOpen(false);
@@ -166,9 +186,10 @@ export const MovieCard = ({
             cursor: 'pointer',
           }}
           image={
-            movie.poster.poster.substring(movie.poster.poster.length - 4) !==
-            'null'
-              ? movie.poster.poster
+            currentMovie.poster.poster.substring(
+              currentMovie.poster.poster.length - 4
+            ) !== 'null'
+              ? currentMovie.poster.poster
               : notFound
           }
         />
@@ -188,7 +209,7 @@ export const MovieCard = ({
             ))}
           </Box>
         )}
-        {movie.status !== 'Released' && (
+        {currentMovie.status !== 'Released' && (
           <Box
             className='absolute top-60 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
             sx={{
@@ -208,7 +229,7 @@ export const MovieCard = ({
             </Typography>
           </Box>
         )}
-        <Tooltip title={movie.beschreibung} arrow>
+        <Tooltip title={currentMovie.beschreibung} arrow>
           <Box
             className={`absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 ${
               !disableRatingDialog ? 'cursor-pointer' : 'cursor-default'
@@ -223,7 +244,7 @@ export const MovieCard = ({
         </Tooltip>
       </Box>
       <CardContent className='grow flex items-center justify-center '>
-        <Tooltip title={movie.title} arrow>
+        <Tooltip title={currentMovie.title} arrow>
           <Typography
             variant='body1'
             className='text-white text-center cursor-pointer'
@@ -243,14 +264,14 @@ export const MovieCard = ({
               fontSize: '1.2rem',
             }}
           >
-            {index}. {movie.title}
+            {index}. {currentMovie.title}
           </Typography>
         </Tooltip>
       </CardContent>
       <MovieDialog
         open={open}
         onClose={handleClose}
-        movie={movie}
+        movie={currentMovie}
         allGenres={allGenresForMovies}
         ratings={ratings}
         setRatings={setRatings}

@@ -186,9 +186,19 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       case 'series_deleted':
         return `hat die Serie "${title}" entfernt`;
       case 'episode_watched':
-        return `hat eine Episode von "${title}" geschaut${
-          activity.episodeInfo ? ` (${activity.episodeInfo})` : ''
-        }`;
+        // Prüfen ob der Titel bereits Episode-Info enthält (z.B. "Serie - Staffel X Episode Y")
+        if (title.includes(' - Staffel ') && title.includes(' Episode ')) {
+          // Titel enthält bereits Episode-Info, verwende ihn direkt
+          const parts = title.split(' - ');
+          const seriesName = parts[0];
+          const episodeInfo = parts.slice(1).join(' - ');
+          return `hat "${seriesName}" ${episodeInfo} geschaut`;
+        } else {
+          // Verwende separaten episodeInfo
+          return `hat "${title}"${
+            activity.episodeInfo ? ` ${activity.episodeInfo}` : ' eine Episode'
+          } geschaut`;
+        }
       case 'episodes_watched':
         return `hat "${title}" geschaut`;
       case 'series_rated':

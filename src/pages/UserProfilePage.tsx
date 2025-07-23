@@ -21,6 +21,7 @@ import {
   Tab,
   Tabs,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
@@ -52,6 +53,20 @@ interface UserProfileData {
     moviesCount: number;
     averageRating: number;
     totalWatchedEpisodes: number;
+  };
+  seriesStats: {
+    count: number;
+    totalWatchedEpisodes: number;
+    totalWatchtime: number;
+    averageRating: number;
+    favoriteGenre: string;
+  };
+  movieStats: {
+    count: number;
+    watchedCount: number;
+    averageRating: number;
+    favoriteGenre: string;
+    unreleasedCount: number;
   };
 }
 
@@ -158,7 +173,7 @@ export const UserProfilePage: React.FC = () => {
         const seriesList = Object.values(seriesData) as any[];
         const moviesList = Object.values(moviesData) as any[];
 
-        // Statistiken berechnen
+        // Serien-spezifische Statistiken berechnen
         const totalWatchedEpisodes = seriesList.reduce((total, series) => {
           if (series.seasons) {
             return (
@@ -174,9 +189,71 @@ export const UserProfilePage: React.FC = () => {
           return total;
         }, 0);
 
+        const totalSeriesWatchtime = seriesList.reduce((total, series) => {
+          if (series.seasons && series.episodeRuntime) {
+            const watchedEpisodes = series.seasons.reduce(
+              (seasonTotal: number, season: any) => {
+                return (
+                  seasonTotal +
+                  (season.episodes || []).filter((ep: any) => ep.watched).length
+                );
+              },
+              0
+            );
+            return total + watchedEpisodes * series.episodeRuntime;
+          }
+          return total;
+        }, 0);
+
+        // Lieblings-Genre für Serien
+        const seriesGenreCounts = seriesList.reduce((acc, series) => {
+          if (series.genre?.genres) {
+            series.genre.genres.forEach((genre: string) => {
+              if (genre !== 'All') {
+                acc[genre] = (acc[genre] || 0) + 1;
+              }
+            });
+          }
+          return acc;
+        }, {} as Record<string, number>);
+
+        const favoriteSeriesGenre =
+          Object.entries(seriesGenreCounts).sort(
+            ([, a], [, b]) => (b as number) - (a as number)
+          )[0]?.[0] || 'Keine';
+
+        // Film-spezifische Statistiken berechnen
+        const ratedMovies = moviesList.filter((movie) => {
+          const rating = calculateCorrectAverageRating([movie]);
+          return rating > 0;
+        });
+
+        const movieUnreleasedCount = moviesList.filter(
+          (movie) => movie.status !== 'Released'
+        ).length;
+
+        // Lieblings-Genre für Filme
+        const movieGenreCounts = moviesList.reduce((acc, movie) => {
+          if (movie.genre?.genres) {
+            movie.genre.genres.forEach((genre: string) => {
+              if (genre !== 'All') {
+                acc[genre] = (acc[genre] || 0) + 1;
+              }
+            });
+          }
+          return acc;
+        }, {} as Record<string, number>);
+
+        const favoriteMovieGenre =
+          Object.entries(movieGenreCounts).sort(
+            ([, a], [, b]) => (b as number) - (a as number)
+          )[0]?.[0] || 'Keine';
+
         // Korrekte Bewertungsberechnung verwenden
         const allContent = [...seriesList, ...moviesList];
         const averageRating = calculateCorrectAverageRating(allContent);
+        const seriesAverageRating = calculateCorrectAverageRating(seriesList);
+        const movieAverageRating = calculateCorrectAverageRating(moviesList);
 
         setProfileData({
           profile: {
@@ -193,6 +270,20 @@ export const UserProfilePage: React.FC = () => {
             moviesCount: moviesList.length,
             averageRating,
             totalWatchedEpisodes,
+          },
+          seriesStats: {
+            count: seriesList.length,
+            totalWatchedEpisodes,
+            totalWatchtime: Math.round(totalSeriesWatchtime),
+            averageRating: seriesAverageRating,
+            favoriteGenre: favoriteSeriesGenre,
+          },
+          movieStats: {
+            count: moviesList.length,
+            watchedCount: ratedMovies.length,
+            averageRating: movieAverageRating,
+            favoriteGenre: favoriteMovieGenre,
+            unreleasedCount: movieUnreleasedCount,
           },
         });
       } catch (error) {
@@ -388,23 +479,7 @@ export const UserProfilePage: React.FC = () => {
                 : `${profileData.profile.username}s Profil`}
             </Typography>
 
-            {/* Username */}
-            <Typography
-              variant='h6'
-              sx={{ opacity: 0.9, fontSize: '1rem', mb: 1 }}
-            >
-              @{profileData.profile.username}
-            </Typography>
-
-            {/* Optional: Display Name */}
-            {profileData.profile.displayName && (
-              <Typography
-                variant='body2'
-                sx={{ opacity: 0.7, fontSize: '0.875rem', mb: 1 }}
-              >
-                {profileData.profile.displayName}
-              </Typography>
-            )}
+            {/* Username und Display Name entfernt - redundant */}
 
             {/* Status Chips */}
             <Box
@@ -476,20 +551,7 @@ export const UserProfilePage: React.FC = () => {
                   : `👤 ${profileData.profile.username}s Profil`}
               </Typography>
               <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
-                <Typography
-                  variant='h6'
-                  sx={{ opacity: 0.9, fontSize: '1.25rem' }}
-                >
-                  @{profileData.profile.username}
-                </Typography>
-                {profileData.profile.displayName && (
-                  <Typography
-                    variant='body1'
-                    sx={{ opacity: 0.7, fontSize: '1rem' }}
-                  >
-                    ({profileData.profile.displayName})
-                  </Typography>
-                )}
+                {/* Username und Display Name komplett entfernt - redundant */}
                 {profileData.profile.isOnline && (
                   <Chip
                     label='Online'
@@ -593,119 +655,372 @@ export const UserProfilePage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Statistiken */}
+      {/* Statistiken - je nach Tab unterschiedlich */}
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: {
             xs: 'repeat(2, 1fr)',
-            sm: 'repeat(4, 1fr)',
+            sm: 'repeat(5, 1fr)',
           },
           gap: { xs: 2, md: 3 },
-          mb: { xs: 3, md: 4 },
+
           px: { xs: 0.5, md: 0 },
         }}
       >
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Typography
-              variant='h4'
-              color='primary'
-              gutterBottom
-              sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-            >
-              {profileData.stats.seriesCount}
-            </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Serien
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Typography
-              variant='h4'
-              color='secondary'
-              gutterBottom
-              sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-            >
-              {profileData.stats.moviesCount}
-            </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Filme
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Box
-              display='flex'
-              alignItems='center'
-              justifyContent='center'
-              gap={1}
-            >
-              <Star
-                sx={{
-                  color: '#ffa726',
-                  fontSize: { xs: '1.25rem', md: '1.5rem' },
-                }}
-              />
-              <Typography
-                variant='h4'
-                gutterBottom
-                sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-              >
-                {profileData.stats.averageRating.toFixed(2)}
-              </Typography>
-            </Box>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Ø Bewertung
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Box
-              display='flex'
-              alignItems='center'
-              justifyContent='center'
-              gap={1}
-            >
-              <TrendingUp
-                sx={{
-                  color: '#66bb6a',
-                  fontSize: { xs: '1.25rem', md: '1.5rem' },
-                }}
-              />
-              <Typography
-                variant='h4'
-                gutterBottom
-                sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-              >
-                {profileData.stats.totalWatchedEpisodes}
-              </Typography>
-            </Box>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Episoden gesehen
-            </Typography>
-          </CardContent>
-        </Card>
+        {tabValue === 0 ? (
+          // Serien-spezifische Stats
+          <>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='primary'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {profileData.seriesStats.count}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Serien
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <TrendingUp
+                    sx={{
+                      color: '#66bb6a',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {profileData.seriesStats.totalWatchedEpisodes}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Episoden gesehen
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <Star
+                    sx={{
+                      color: '#ffa726',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {profileData.seriesStats.averageRating > 0
+                      ? profileData.seriesStats.averageRating.toFixed(2)
+                      : '0.00'}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Ø Bewertung
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Tooltip
+                  title={(() => {
+                    const totalMinutes = profileData.seriesStats.totalWatchtime;
+                    const totalHours = Math.floor(totalMinutes / 60);
+                    const days = Math.floor(totalHours / 24);
+                    const years = Math.floor(days / 365);
+                    const months = Math.floor((days % 365) / 30);
+                    const weeks = Math.floor(((days % 365) % 30) / 7);
+                    const remainingDays = ((days % 365) % 30) % 7;
+                    const remainingHours = totalHours % 24;
+                    const remainingMinutes = totalMinutes % 60;
+
+                    const parts = [];
+                    if (years > 0)
+                      parts.push(`${years} Jahr${years !== 1 ? 'e' : ''}`);
+                    if (months > 0)
+                      parts.push(`${months} Monat${months !== 1 ? 'e' : ''}`);
+                    if (weeks > 0)
+                      parts.push(`${weeks} Woche${weeks !== 1 ? 'n' : ''}`);
+                    if (remainingDays > 0)
+                      parts.push(
+                        `${remainingDays} Tag${remainingDays !== 1 ? 'e' : ''}`
+                      );
+                    if (remainingHours > 0)
+                      parts.push(
+                        `${remainingHours} Stunde${
+                          remainingHours !== 1 ? 'n' : ''
+                        }`
+                      );
+                    if (remainingMinutes > 0)
+                      parts.push(
+                        `${remainingMinutes} Minute${
+                          remainingMinutes !== 1 ? 'n' : ''
+                        }`
+                      );
+
+                    return parts.length > 0 ? parts.join(', ') : '0 Minuten';
+                  })()}
+                  arrow
+                  placement='top'
+                >
+                  <Typography
+                    variant='h4'
+                    color='secondary'
+                    gutterBottom
+                    sx={{
+                      fontSize: { xs: '1.75rem', md: '2.125rem' },
+                      cursor: 'help',
+                    }}
+                  >
+                    {(() => {
+                      const totalHours = Math.floor(
+                        profileData.seriesStats.totalWatchtime / 60
+                      );
+                      const days = Math.floor(totalHours / 24);
+
+                      if (days >= 365) {
+                        const years = Math.floor(days / 365);
+                        const remainingDaysAfterYears = days % 365;
+
+                        if (remainingDaysAfterYears >= 30) {
+                          const months = Math.floor(
+                            remainingDaysAfterYears / 30
+                          );
+                          const finalDays = remainingDaysAfterYears % 30;
+                          return finalDays > 0
+                            ? `${years}J ${months}M`
+                            : `${years}J ${months}M`;
+                        } else if (remainingDaysAfterYears >= 7) {
+                          const weeks = Math.floor(remainingDaysAfterYears / 7);
+                          const finalDays = remainingDaysAfterYears % 7;
+                          return finalDays > 0
+                            ? `${years}J ${weeks}W`
+                            : `${years}J ${weeks}W`;
+                        } else {
+                          return `${years}J ${remainingDaysAfterYears}T`;
+                        }
+                      } else if (days >= 30) {
+                        const months = Math.floor(days / 30);
+                        const remainingDays = days % 30;
+                        if (remainingDays >= 7) {
+                          const weeks = Math.floor(remainingDays / 7);
+                          return `${months}M ${weeks}W`;
+                        } else {
+                          return `${months}M ${remainingDays}T`;
+                        }
+                      } else if (days >= 7) {
+                        const weeks = Math.floor(days / 7);
+                        const remainingDays = days % 7;
+                        return remainingDays > 0
+                          ? `${weeks}W ${remainingDays}T`
+                          : `${weeks}W`;
+                      } else if (days > 0) {
+                        return `${days}T`;
+                      } else {
+                        return `${totalHours}h`;
+                      }
+                    })()}
+                  </Typography>
+                </Tooltip>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Watchzeit
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='info.main'
+                  gutterBottom
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.25rem' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {profileData.seriesStats.favoriteGenre}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Top Genre
+                </Typography>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          // Film-spezifische Stats
+          <>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='secondary'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {profileData.movieStats.count}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Filme
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <TrendingUp
+                    sx={{
+                      color: '#66bb6a',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {profileData.movieStats.watchedCount}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Gesehen
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <Star
+                    sx={{
+                      color: '#ffa726',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {profileData.movieStats.averageRating > 0
+                      ? profileData.movieStats.averageRating.toFixed(2)
+                      : '0.00'}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Ø Bewertung
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='primary'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {profileData.movieStats.unreleasedCount}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Unreleased
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='info.main'
+                  gutterBottom
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.25rem' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {profileData.movieStats.favoriteGenre}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Top Genre
+                </Typography>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </Box>
 
       {/* Tabs für Serien und Filme */}
