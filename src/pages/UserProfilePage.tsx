@@ -60,6 +60,7 @@ interface UserProfileData {
     totalWatchtime: number;
     averageRating: number;
     favoriteGenre: string;
+    favoriteProvider: string;
   };
   movieStats: {
     count: number;
@@ -67,6 +68,7 @@ interface UserProfileData {
     averageRating: number;
     favoriteGenre: string;
     unreleasedCount: number;
+    favoriteProvider: string;
   };
 }
 
@@ -222,6 +224,29 @@ export const UserProfilePage: React.FC = () => {
             ([, a], [, b]) => (b as number) - (a as number)
           )[0]?.[0] || 'Keine';
 
+        // Bewertete Serien ermitteln
+        const ratedSeries = seriesList.filter((series) => {
+          const rating = calculateCorrectAverageRating([series]);
+          return rating > 0;
+        });
+
+        // Lieblings-Provider für Serien ermitteln
+        const seriesProviderCounts: { [key: string]: number } = {};
+        ratedSeries.forEach((series) => {
+          if (series.provider?.provider) {
+            series.provider.provider.forEach(
+              (prov: { id: number; logo: string; name: string }) => {
+                seriesProviderCounts[prov.name] =
+                  (seriesProviderCounts[prov.name] || 0) + 1;
+              }
+            );
+          }
+        });
+        const favoriteSeriesProvider =
+          Object.entries(seriesProviderCounts).sort(
+            (a, b) => b[1] - a[1]
+          )[0]?.[0] || 'Keine';
+
         // Film-spezifische Statistiken berechnen
         const ratedMovies = moviesList.filter((movie) => {
           const rating = calculateCorrectAverageRating([movie]);
@@ -247,6 +272,23 @@ export const UserProfilePage: React.FC = () => {
         const favoriteMovieGenre =
           Object.entries(movieGenreCounts).sort(
             ([, a], [, b]) => (b as number) - (a as number)
+          )[0]?.[0] || 'Keine';
+
+        // Lieblings-Provider für Filme ermitteln
+        const movieProviderCounts: { [key: string]: number } = {};
+        ratedMovies.forEach((movie) => {
+          if (movie.provider?.provider) {
+            movie.provider.provider.forEach(
+              (prov: { id: number; logo: string; name: string }) => {
+                movieProviderCounts[prov.name] =
+                  (movieProviderCounts[prov.name] || 0) + 1;
+              }
+            );
+          }
+        });
+        const favoriteMovieProvider =
+          Object.entries(movieProviderCounts).sort(
+            (a, b) => b[1] - a[1]
           )[0]?.[0] || 'Keine';
 
         // Korrekte Bewertungsberechnung verwenden
@@ -277,6 +319,7 @@ export const UserProfilePage: React.FC = () => {
             totalWatchtime: Math.round(totalSeriesWatchtime),
             averageRating: seriesAverageRating,
             favoriteGenre: favoriteSeriesGenre,
+            favoriteProvider: favoriteSeriesProvider,
           },
           movieStats: {
             count: moviesList.length,
@@ -284,6 +327,7 @@ export const UserProfilePage: React.FC = () => {
             averageRating: movieAverageRating,
             favoriteGenre: favoriteMovieGenre,
             unreleasedCount: movieUnreleasedCount,
+            favoriteProvider: favoriteMovieProvider,
           },
         });
       } catch (error) {
@@ -661,7 +705,7 @@ export const UserProfilePage: React.FC = () => {
           display: 'grid',
           gridTemplateColumns: {
             xs: 'repeat(2, 1fr)',
-            sm: 'repeat(5, 1fr)',
+            sm: 'repeat(6, 1fr)',
           },
           gap: { xs: 2, md: 3 },
 
@@ -889,6 +933,25 @@ export const UserProfilePage: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='warning.main'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {profileData.seriesStats.favoriteProvider}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Top Provider
+                </Typography>
+              </CardContent>
+            </Card>
           </>
         ) : (
           // Film-spezifische Stats
@@ -1016,6 +1079,25 @@ export const UserProfilePage: React.FC = () => {
                   sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
                 >
                   Top Genre
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='warning.main'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {profileData.movieStats.favoriteProvider}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Provider
                 </Typography>
               </CardContent>
             </Card>
