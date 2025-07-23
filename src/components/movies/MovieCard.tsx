@@ -15,6 +15,7 @@ import { useLocation } from 'react-router-dom';
 import { allGenresForMovies } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
+import { useFriends } from '../../contexts/FriendsProvider';
 import { Movie } from '../../interfaces/Movie';
 import '../../styles/animations.css';
 import { getFormattedDate } from '../../utils/date.utils';
@@ -25,12 +26,18 @@ interface MovieCardProps {
   movie: Movie;
   genre: string;
   index: number;
+  disableRatingDialog?: boolean;
 }
 
-export const MovieCard = ({ movie, index }: MovieCardProps) => {
+export const MovieCard = ({
+  movie,
+  index,
+  disableRatingDialog = false,
+}: MovieCardProps) => {
   const shadowColor = movie.status === 'Released' ? '#a855f7' : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
+  const { updateUserActivity } = useFriends();
   const location = useLocation();
   const isSharedListPage = location.pathname.startsWith('/shared-list');
   const uniqueProviders = movie.provider
@@ -76,13 +83,28 @@ export const MovieCard = ({ movie, index }: MovieCardProps) => {
     setRatings(initialRatings);
   };
 
+  const handleRatingClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!disableRatingDialog) {
+      handleClickOpen();
+    }
+  };
+
   const handleClose = () => {
     setOpen(false);
   };
 
-  const handleDeleteMovie = () => {
+  const handleDeleteMovie = async () => {
     const ref = firebase.database().ref(`${user?.uid}/filme/${movie.nmr}`);
-    ref.remove();
+    await ref.remove();
+
+    // Activity tracken für Freunde
+    await updateUserActivity({
+      type: 'movie_deleted',
+      itemTitle: movie.title || 'Unbekannter Film',
+      itemId: movie.nmr,
+    });
+
     setOpen(false);
   };
 
@@ -96,6 +118,14 @@ export const MovieCard = ({ movie, index }: MovieCardProps) => {
     if (navigator.onLine) {
       try {
         await ref.set(updatedRatings);
+
+        // Activity tracken für Freunde
+        await updateUserActivity({
+          type: 'rating_updated',
+          itemTitle: movie.title || 'Unbekannter Film',
+          itemId: movie.nmr,
+        });
+
         setOpen(false);
       } catch (error) {
         console.error('Error updating ratings online:', error);
@@ -180,8 +210,10 @@ export const MovieCard = ({ movie, index }: MovieCardProps) => {
         )}
         <Tooltip title={movie.beschreibung} arrow>
           <Box
-            className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 cursor-pointer '
-            onClick={handleClickOpen}
+            className={`absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 ${
+              !disableRatingDialog ? 'cursor-pointer' : 'cursor-default'
+            }`}
+            onClick={handleRatingClick}
             aria-label='Bewertung anzeigen'
           >
             <Typography variant='body1' className='text-white'>

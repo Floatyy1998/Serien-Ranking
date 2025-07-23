@@ -16,6 +16,7 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
+import { useFriends } from '../../contexts/FriendsProvider';
 import { DialogHeader } from './shared/SharedDialogComponents';
 
 export interface Filme {
@@ -47,6 +48,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
 }) => {
   const auth = useAuth();
   const { user } = auth || {};
+  const { updateUserActivity } = useFriends();
   const [searchValue, setSearchValue] = useState('');
   const [options, setOptions] = useState<Filme[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<Filme | null>(null);
@@ -126,6 +128,13 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
         body: JSON.stringify(movieData.data),
       });
       if (res.ok) {
+        // Activity tracken für Freunde
+        await updateUserActivity({
+          type: 'movie_added',
+          itemTitle: selectedMovie.title || 'Unbekannter Film',
+          itemId: selectedMovie.id,
+        });
+
         setSnackbarMessage('Film hinzugefügt!');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);

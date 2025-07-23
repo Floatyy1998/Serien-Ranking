@@ -16,6 +16,7 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
+import { useFriends } from '../../contexts/FriendsProvider';
 import { DialogHeader } from './shared/SharedDialogComponents'; // Neuer Import
 
 export interface Serien {
@@ -48,6 +49,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
 }) => {
   const auth = useAuth();
   const { user } = auth || {};
+  const { updateUserActivity } = useFriends();
   const [searchValue, setSearchValue] = useState(''); // Änderung: searchValue auslesen
   const [options, setOptions] = useState<Serien[]>([]);
   const [selectedSeries, setSelectedSeries] = useState<Serien | null>(null);
@@ -119,6 +121,13 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
         body: JSON.stringify(seriesData.data),
       });
       if (res.ok) {
+        // Activity tracken für Freunde
+        await updateUserActivity({
+          type: 'series_added',
+          itemTitle: selectedSeries.name || 'Unbekannte Serie',
+          itemId: selectedSeries.id,
+        });
+
         setSnackbarMessage('Serie hinzugefügt!');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);

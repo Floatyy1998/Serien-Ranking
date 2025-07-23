@@ -1,0 +1,569 @@
+import {
+  Edit,
+  ExitToApp,
+  PhotoCamera,
+  Share,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  IconButton,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import 'firebase/compat/storage';
+import React, { useRef, useState } from 'react';
+import { useAuth } from '../../App';
+
+interface ProfileDialogProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export const ProfileDialog: React.FC<ProfileDialogProps> = ({
+  open,
+  onClose,
+}) => {
+  const { user } = useAuth()!;
+  const [username, setUsername] = useState(user?.displayName || '');
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Öffentliche Einstellung beim Öffnen laden
+  React.useEffect(() => {
+    const loadPublicSetting = async () => {
+      if (!user || !open) return;
+
+      try {
+        const userRef = firebase.database().ref(`users/${user.uid}/isPublic`);
+        const snapshot = await userRef.once('value');
+        setIsPublic(snapshot.val() || false);
+      } catch (error) {
+        console.error('Error loading public setting:', error);
+      }
+    };
+
+    loadPublicSetting();
+  }, [user, open]);
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Bild darf maximal 5MB groß sein');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError('');
+
+      // Firebase Storage Upload
+      const storageRef = firebase.storage().ref();
+      const imageRef = storageRef.child(`profile-images/${user.uid}`);
+
+      await imageRef.put(file);
+      const downloadURL = await imageRef.getDownloadURL();
+
+      setPhotoURL(downloadURL);
+      setSuccess('Profilbild erfolgreich hochgeladen');
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      if (
+        error.code === 'storage/unknown' ||
+        error.code === 'storage/unauthorized'
+      ) {
+        setError(
+          'Firebase Storage ist nicht korrekt konfiguriert. Bitte Storage Rules überprüfen.'
+        );
+      } else if (error.code === 'storage/unauthorized') {
+        setError('Keine Berechtigung zum Hochladen. Bitte erneut anmelden.');
+      } else {
+        setError(
+          'Fehler beim Hochladen des Bildes: ' +
+            (error.message || 'Unbekannter Fehler')
+        );
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const isUsernameValid = (username: string) => {
+    return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+  };
+
+  const checkUsernameAvailable = async (username: string): Promise<boolean> => {
+    if (!user) return false;
+
+    const usersRef = firebase.database().ref('users');
+    const snapshot = await usersRef
+      .orderByChild('username')
+      .equalTo(username)
+      .once('value');
+
+    const data = snapshot.val();
+    if (!data) return true;
+
+    // Username verfügbar wenn kein Eintrag oder nur eigener Eintrag
+    const existingUsers = Object.keys(data);
+    return (
+      existingUsers.length === 0 ||
+      (existingUsers.length === 1 && existingUsers[0] === user.uid)
+    );
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    if (!username.trim()) {
+      setError('Benutzername ist erforderlich');
+      return;
+    }
+
+    if (!isUsernameValid(username)) {
+      setError(
+        'Benutzername muss 3-20 Zeichen lang sein und darf nur Buchstaben, Zahlen und _ enthalten'
+      );
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError('');
+
+      // Username-Verfügbarkeit prüfen
+      const isAvailable = await checkUsernameAvailable(username);
+      if (!isAvailable) {
+        setError('Benutzername ist bereits vergeben');
+        return;
+      }
+
+      // Profil in Firebase Auth aktualisieren
+      await user.updateProfile({
+        displayName: displayName || username,
+        photoURL: photoURL || null,
+      });
+
+      // Benutzer-Daten in Realtime Database speichern
+      await firebase
+        .database()
+        .ref(`users/${user.uid}`)
+        .update({
+          username: username,
+          displayName: displayName || username,
+          photoURL: photoURL || null,
+          isPublic: isPublic,
+          lastActive: firebase.database.ServerValue.TIMESTAMP,
+        });
+
+      setSuccess('Profil erfolgreich aktualisiert');
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError('Fehler beim Speichern des Profils');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTogglePublic = async () => {
+    if (!user) return;
+
+    try {
+      const newPublicState = !isPublic;
+
+      await firebase
+        .database()
+        .ref(`users/${user.uid}/isPublic`)
+        .set(newPublicState);
+
+      setIsPublic(newPublicState);
+      setSuccess(
+        newPublicState
+          ? 'Deine Liste ist jetzt öffentlich sichtbar!'
+          : 'Deine Liste ist jetzt privat!'
+      );
+    } catch (error) {
+      console.error('Error updating public setting:', error);
+      setError('Fehler beim Aktualisieren der Einstellung');
+    }
+  };
+
+  const generateMyPublicLink = () => {
+    const link = `${window.location.origin}/friend/${user?.uid}`;
+    navigator.clipboard.writeText(link);
+    setSuccess('Dein öffentlicher Link wurde kopiert!');
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Online-Status auf false setzen
+      if (user) {
+        await firebase.database().ref(`users/${user.uid}/isOnline`).set(false);
+
+        await firebase
+          .database()
+          .ref(`users/${user.uid}/lastActive`)
+          .set(firebase.database.ServerValue.TIMESTAMP);
+      }
+
+      await firebase.auth().signOut();
+      setSuccess('Erfolgreich ausgeloggt!');
+
+      // Dialog schließen und zur Login-Seite weiterleiten
+      setTimeout(() => {
+        onClose();
+        window.location.reload(); // Oder navigate('/login') wenn Router verwendet wird
+      }, 1000);
+    } catch (error) {
+      console.error('Error logging out:', error);
+      setError('Fehler beim Ausloggen');
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='sm'
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 2, sm: 3 },
+          my: { xs: 2, sm: 4 },
+          borderRadius: { xs: 2, sm: 3 },
+        },
+      }}
+    >
+      <DialogTitle>
+        <Box
+          display='flex'
+          alignItems='center'
+          gap={1}
+          sx={{
+            px: { xs: 1, sm: 0 },
+            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+          }}
+        >
+          <Edit sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+          Profil bearbeiten
+        </Box>
+      </DialogTitle>
+
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
+        <Box
+          display='flex'
+          flexDirection='column'
+          gap={{ xs: 2, sm: 3 }}
+          sx={{ pt: { xs: 1, sm: 2 } }}
+        >
+          {/* Profilbild */}
+          <Box
+            display='flex'
+            flexDirection='column'
+            alignItems='center'
+            gap={{ xs: 1.5, sm: 2 }}
+          >
+            <Avatar
+              src={photoURL}
+              sx={{
+                width: { xs: 80, sm: 120 },
+                height: { xs: 80, sm: 120 },
+                border: '3px solid',
+                borderColor: 'primary.main',
+                boxShadow: 3,
+              }}
+            >
+              {username.charAt(0).toUpperCase()}
+            </Avatar>
+
+            <Box sx={{ textAlign: 'center' }}>
+              <input
+                type='file'
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept='image/*'
+                style={{ display: 'none' }}
+              />
+              <IconButton
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                color='primary'
+                title='Profilbild ändern'
+                sx={{
+                  mb: 1,
+                  backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(25, 118, 210, 0.2)',
+                  },
+                  minHeight: { xs: 44, sm: 40 },
+                  minWidth: { xs: 44, sm: 40 },
+                }}
+              >
+                {uploading ? <CircularProgress size={24} /> : <PhotoCamera />}
+              </IconButton>
+              <Typography
+                variant='caption'
+                display='block'
+                textAlign='center'
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+              >
+                Profilbild ändern
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Username */}
+          <TextField
+            label='Benutzername *'
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            fullWidth
+            helperText='3-20 Zeichen, nur Buchstaben, Zahlen und _'
+            error={!!username && !isUsernameValid(username)}
+            sx={{
+              '& .MuiInputBase-root': {
+                minHeight: { xs: 48, sm: 40 },
+              },
+            }}
+          />
+
+          {/* Display Name */}
+          <TextField
+            label='Anzeigename (optional)'
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            fullWidth
+            helperText='Wird anderen Nutzern angezeigt'
+            sx={{
+              '& .MuiInputBase-root': {
+                minHeight: { xs: 48, sm: 40 },
+              },
+            }}
+          />
+
+          {/* Freigabe-Einstellungen */}
+          <Card variant='outlined' sx={{ borderRadius: { xs: 2, sm: 1 } }}>
+            <CardContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 3 } }}>
+              <Box
+                display='flex'
+                flexDirection={{ xs: 'column', sm: 'row' }}
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                justifyContent='space-between'
+                gap={{ xs: 2, sm: 0 }}
+                mb={{ xs: 2, sm: 2 }}
+              >
+                <Box sx={{ flex: { xs: 1, sm: 'auto' } }}>
+                  <Typography
+                    variant='h6'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                  >
+                    Liste freigeben
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                  >
+                    {isPublic
+                      ? 'Jeder kann deine Liste mit einem Link sehen'
+                      : 'Nur deine Freunde können deine Liste sehen'}
+                  </Typography>
+                </Box>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isPublic}
+                      onChange={handleTogglePublic}
+                      disabled={saving}
+                      icon={<VisibilityOff />}
+                      checkedIcon={<Visibility />}
+                      sx={{
+                        '& .MuiSwitch-switchBase': {
+                          padding: { xs: '9px', sm: '9px' },
+                        },
+                        '& .MuiSwitch-thumb': {
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 20,
+                          height: 20,
+                        },
+                        '& .MuiSvgIcon-root': {
+                          fontSize: { xs: '1.1rem', sm: '1.1rem' },
+                          position: 'relative',
+                          top: '1px',
+                        },
+                      }}
+                    />
+                  }
+                  label=''
+                  sx={{ alignSelf: { xs: 'center', sm: 'auto' } }}
+                />
+              </Box>
+
+              {isPublic && (
+                <Box>
+                  <Button
+                    variant='outlined'
+                    onClick={generateMyPublicLink}
+                    fullWidth
+                    startIcon={<Share />}
+                    sx={{
+                      minHeight: { xs: 48, sm: 40 },
+                      fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                    }}
+                  >
+                    Öffentlichen Link kopieren
+                  </Button>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Feedback */}
+          {error && (
+            <Alert severity='error' onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+
+          {success && (
+            <Alert severity='success' onClose={() => setSuccess('')}>
+              {success}
+            </Alert>
+          )}
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2 } }}>
+        {/* Mobile Layout */}
+        <Box
+          sx={{
+            display: { xs: 'flex', sm: 'none' },
+            flexDirection: 'column',
+            width: '100%',
+            gap: 2,
+          }}
+        >
+          {/* Logout Button - Mobile */}
+          <Button
+            onClick={handleLogout}
+            color='error'
+            variant='outlined'
+            startIcon={<ExitToApp />}
+            disabled={saving}
+            fullWidth
+            sx={{
+              minHeight: 48,
+              fontSize: '0.9rem',
+              '&:hover': {
+                backgroundColor: 'rgba(244, 67, 54, 0.1)',
+              },
+            }}
+          >
+            Ausloggen
+          </Button>
+
+          {/* Action Buttons - Mobile */}
+          <Box display='flex' gap={1.5}>
+            <Button
+              onClick={onClose}
+              disabled={saving}
+              variant='outlined'
+              sx={{
+                flex: 1,
+                minHeight: 48,
+                fontSize: '0.9rem',
+              }}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleSave}
+              variant='contained'
+              disabled={
+                saving || !username.trim() || !isUsernameValid(username)
+              }
+              sx={{
+                flex: 1,
+                minHeight: 48,
+                fontSize: '0.9rem',
+              }}
+            >
+              {saving ? <CircularProgress size={20} /> : 'Speichern'}
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Desktop Layout */}
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'flex' },
+            justifyContent: 'space-between',
+            width: '100%',
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            onClick={handleLogout}
+            color='error'
+            variant='outlined'
+            startIcon={<ExitToApp />}
+            disabled={saving}
+            sx={{
+              '&:hover': {
+                backgroundColor: 'rgba(244, 67, 54, 0.1)',
+              },
+            }}
+          >
+            Ausloggen
+          </Button>
+
+          <Box display='flex' gap={1}>
+            <Button onClick={onClose} disabled={saving}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleSave}
+              variant='contained'
+              disabled={
+                saving || !username.trim() || !isUsernameValid(username)
+              }
+            >
+              {saving ? <CircularProgress size={20} /> : 'Speichern'}
+            </Button>
+          </Box>
+        </Box>
+      </DialogActions>
+    </Dialog>
+  );
+};

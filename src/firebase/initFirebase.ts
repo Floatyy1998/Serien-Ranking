@@ -1,5 +1,8 @@
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import 'firebase/compat/storage';
+
 export const initFirebase = () => {
   const config = {
     apiKey: process.env.VITE_APIKEY,
