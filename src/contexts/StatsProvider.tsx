@@ -67,25 +67,29 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     list.forEach((item) => {
       const ratingStr = calculateOverallRating(item);
       const rating = parseFloat(ratingStr);
+
+      // Watchtime und gesehene Episoden für ALLE Serien berechnen
+      episodesWatched +=
+        item.seasons?.reduce(
+          (count: number, season: any) =>
+            count +
+            (season.episodes?.filter((episode: any) => episode.watched)
+              ?.length || 0),
+          0
+        ) || 0;
+      watchtime +=
+        item.seasons?.reduce(
+          (time: number, season: any) =>
+            time +
+            (season.episodes?.filter((episode: any) => episode.watched)
+              ?.length || 0) *
+              item.episodeRuntime,
+          0
+        ) || 0;
+
+      // Bewertete Serien separat zählen
       if (rating > 0) {
         ratedItems += 1;
-        episodesWatched +=
-          item.seasons?.reduce(
-            (count: number, season: any) =>
-              count +
-              (season.episodes?.filter((episode: any) => episode.watched)
-                ?.length || 0),
-            0
-          ) || 0;
-        watchtime +=
-          item.seasons?.reduce(
-            (time: number, season: any) =>
-              time +
-              (season.episodes?.filter((episode: any) => episode.watched)
-                ?.length || 0) *
-                item.episodeRuntime,
-            0
-          ) || 0;
         item.genre?.genres?.forEach((genre: string) => {
           if (genre !== 'All') {
             if (!genres[genre]) {

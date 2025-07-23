@@ -113,6 +113,11 @@ const WatchlistDialog = ({
 
   // Hauptlogik für Sortierung und benutzerdefinierte Reihenfolge
   useEffect(() => {
+    // NICHT aktualisieren wenn lokale Updates pending sind (verhindert Flackern)
+    if (pendingUpdates.size > 0) {
+      return;
+    }
+
     if (!customOrderActive) {
       // Normale Sortierung - immer mit aktuellen Daten
       setFilteredSeries(getSortedSeries(sortedWatchlistSeries));
@@ -139,16 +144,23 @@ const WatchlistDialog = ({
       // Fallback wenn kein User vorhanden
       setFilteredSeries(sortedWatchlistSeries);
     }
-  }, [sortedWatchlistSeries, customOrderActive, sortOption, user]);
+  }, [
+    sortedWatchlistSeries,
+    customOrderActive,
+    sortOption,
+    user,
+    pendingUpdates.size,
+  ]);
 
   // Zusätzlicher useEffect nur für Episode-Updates bei benutzerdefinierter Reihenfolge
   useEffect(() => {
     // Nur bei benutzerdefinierter Reihenfolge und wenn bereits Daten vorhanden sind
+    // NICHT bei pending Updates (verhindert Überschreibung lokaler Updates)
     if (
       customOrderActive &&
       user &&
       filteredSeries.length > 0 &&
-      !pendingUpdates.size
+      pendingUpdates.size === 0
     ) {
       // Aktualisiere nur Episode-Daten, behalte Reihenfolge bei
       setFilteredSeries((prevFiltered) => {
@@ -160,7 +172,7 @@ const WatchlistDialog = ({
         });
       });
     }
-  }, [sortedWatchlistSeries, pendingUpdates.size]);
+  }, [sortedWatchlistSeries, customOrderActive, user, pendingUpdates.size]);
 
   const displayedSeries = filteredSeries.filter((series) =>
     filterInput
@@ -244,14 +256,14 @@ const WatchlistDialog = ({
       }
     });
 
-    // Cleanup nach kurzer Zeit
+    // Cleanup nach kurzem Timeout
     setTimeout(() => {
       setPendingUpdates((prev) => {
         const newSet = new Set(prev);
         newSet.delete(updateKey);
         return newSet;
       });
-    }, 100);
+    }, 150); // Kurzes aber ausreichendes Timeout
   };
 
   const handleWatchedToggleWithDebounce = (
