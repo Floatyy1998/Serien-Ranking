@@ -15,6 +15,7 @@ import {
   Container,
   Tab,
   Tabs,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import React, { useCallback, useState } from 'react';
@@ -101,9 +102,8 @@ export const MainPage: React.FC = () => {
     setTabValue(newValue);
   };
 
-  // Kombinierte Benutzer-Statistiken für Serien und Filme
-  const stats = React.useMemo(() => {
-    // Gesehene Episoden aus Serien
+  // Separierte Statistiken für Serien und Filme
+  const seriesStats = React.useMemo(() => {
     const totalWatchedEpisodes = seriesList.reduce((total, series) => {
       if (series.seasons) {
         return (
@@ -119,7 +119,101 @@ export const MainPage: React.FC = () => {
       return total;
     }, 0);
 
-    // Korrekte Bewertungsberechnung für alle Inhalte verwenden
+    const totalWatchtime = seriesList.reduce((total, series) => {
+      if (series.seasons && series.episodeRuntime) {
+        const watchedEpisodes = series.seasons.reduce(
+          (seasonTotal: number, season: any) => {
+            return (
+              seasonTotal +
+              (season.episodes || []).filter((ep: any) => ep.watched).length
+            );
+          },
+          0
+        );
+        return total + watchedEpisodes * series.episodeRuntime;
+      }
+      return total;
+    }, 0);
+
+    const ratedSeries = seriesList.filter((series) => {
+      const rating = calculateCorrectAverageRating([series]);
+      return rating > 0;
+    });
+
+    const averageRating = calculateCorrectAverageRating(seriesList);
+
+    // Lieblings-Genre berechnen
+    const genreCounts = seriesList.reduce((acc, series) => {
+      if (series.genre?.genres) {
+        series.genre.genres.forEach((genre: string) => {
+          if (genre !== 'All') {
+            acc[genre] = (acc[genre] || 0) + 1;
+          }
+        });
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const favoriteGenre =
+      Object.entries(genreCounts).sort(
+        ([, a], [, b]) => (b as number) - (a as number)
+      )[0]?.[0] || 'Keine';
+
+    return {
+      count: seriesList.length,
+      totalWatchedEpisodes,
+      totalWatchtime: Math.round(totalWatchtime),
+      ratedCount: ratedSeries.length,
+      averageRating,
+      favoriteGenre,
+    };
+  }, [seriesList]);
+
+  const movieStats = React.useMemo(() => {
+    const ratedMovies = movieList.filter((movie) => {
+      const rating = calculateCorrectAverageRating([movie]);
+      return rating > 0;
+    });
+
+    const averageRating = calculateCorrectAverageRating(movieList);
+
+    // Lieblings-Genre berechnen
+    const genreCounts = movieList.reduce((acc, movie) => {
+      if (movie.genre?.genres) {
+        movie.genre.genres.forEach((genre: string) => {
+          if (genre !== 'All') {
+            acc[genre] = (acc[genre] || 0) + 1;
+          }
+        });
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const favoriteGenre =
+      Object.entries(genreCounts).sort(
+        ([, a], [, b]) => (b as number) - (a as number)
+      )[0]?.[0] || 'Keine';
+
+    // Unveröffentlichte Filme zählen
+    const unreleasedCount = movieList.filter(
+      (movie) => movie.status !== 'Released'
+    ).length;
+
+    // Gesehene Filme (mit Bewertung)
+    const watchedCount = ratedMovies.length;
+
+    return {
+      count: movieList.length,
+      ratedCount: ratedMovies.length,
+      averageRating,
+      favoriteGenre,
+      unreleasedCount,
+      watchedCount,
+    };
+  }, [movieList]);
+
+  // Kombinierte Stats für das Grid
+  const combinedStats = React.useMemo(() => {
     const allContent = [...seriesList, ...movieList];
     const averageRating = calculateCorrectAverageRating(allContent);
 
@@ -127,9 +221,9 @@ export const MainPage: React.FC = () => {
       seriesCount: seriesList.length,
       moviesCount: movieList.length,
       averageRating,
-      totalWatchedEpisodes,
+      totalWatchedEpisodes: seriesStats.totalWatchedEpisodes,
     };
-  }, [seriesList, movieList]);
+  }, [seriesList, movieList, seriesStats.totalWatchedEpisodes]);
 
   const userProfile = React.useMemo(() => {
     if (!user) return undefined;
@@ -204,33 +298,7 @@ export const MainPage: React.FC = () => {
             >
               📺 Meine Serien & Filme
             </Typography>
-            <Box
-              display='flex'
-              alignItems='center'
-              gap={1}
-              sx={{
-                justifyContent: { xs: 'center', md: 'flex-start' },
-                flexWrap: 'wrap',
-              }}
-            >
-              <Typography
-                variant='h6'
-                sx={{ opacity: 0.9, fontSize: { xs: '1rem', md: '1.25rem' } }}
-              >
-                @{userProfile?.username}
-              </Typography>
-              {userProfile?.displayName && (
-                <Typography
-                  variant='body1'
-                  sx={{
-                    opacity: 0.7,
-                    fontSize: { xs: '0.875rem', md: '1rem' },
-                  }}
-                >
-                  ({userProfile.displayName})
-                </Typography>
-              )}
-            </Box>
+            {/* Username und Display Name entfernt - redundant auf eigener Seite */}
             <Typography
               variant='body2'
               sx={{
@@ -295,121 +363,372 @@ export const MainPage: React.FC = () => {
         </Badge>
       </Box>
 
-      {/* Statistiken */}
+      {/* Statistiken - je nach Tab unterschiedlich */}
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: {
             xs: 'repeat(2, 1fr)',
-            sm: 'repeat(4, 1fr)',
+            sm: 'repeat(5, 1fr)',
           },
           gap: { xs: 2, md: 3 },
-          mb: { xs: 3, md: 4 },
+
           px: { xs: 0.5, md: 0 },
         }}
       >
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Typography
-              variant='h4'
-              color='primary'
-              gutterBottom
-              sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-            >
-              {stats.seriesCount}
-            </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Serien
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Typography
-              variant='h4'
-              color='secondary'
-              gutterBottom
-              sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-            >
-              {stats.moviesCount}
-            </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Filme
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Box
-              display='flex'
-              alignItems='center'
-              justifyContent='center'
-              gap={1}
-            >
-              <Star
-                sx={{
-                  color: '#ffa726',
-                  fontSize: { xs: '1.25rem', md: '1.5rem' },
-                }}
-              />
-              <Typography
-                variant='h4'
-                gutterBottom
-                sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-              >
-                {stats.averageRating > 0
-                  ? stats.averageRating.toFixed(2)
-                  : '0.00'}
-              </Typography>
-            </Box>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Ø Bewertung
-            </Typography>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-            <Box
-              display='flex'
-              alignItems='center'
-              justifyContent='center'
-              gap={1}
-            >
-              <TrendingUp
-                sx={{
-                  color: '#66bb6a',
-                  fontSize: { xs: '1.25rem', md: '1.5rem' },
-                }}
-              />
-              <Typography
-                variant='h4'
-                gutterBottom
-                sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-              >
-                {stats.totalWatchedEpisodes}
-              </Typography>
-            </Box>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-            >
-              Episoden gesehen
-            </Typography>
-          </CardContent>
-        </Card>
+        {tabValue === 0 ? (
+          // Serien-spezifische Stats
+          <>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='primary'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {seriesStats.count}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Serien
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <TrendingUp
+                    sx={{
+                      color: '#66bb6a',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {seriesStats.totalWatchedEpisodes}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Episoden gesehen
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <Star
+                    sx={{
+                      color: '#ffa726',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {seriesStats.averageRating > 0
+                      ? seriesStats.averageRating.toFixed(2)
+                      : '0.00'}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Ø Bewertung
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Tooltip
+                  title={(() => {
+                    const totalMinutes = seriesStats.totalWatchtime;
+                    const totalHours = Math.floor(totalMinutes / 60);
+                    const days = Math.floor(totalHours / 24);
+                    const years = Math.floor(days / 365);
+                    const months = Math.floor((days % 365) / 30);
+                    const weeks = Math.floor(((days % 365) % 30) / 7);
+                    const remainingDays = ((days % 365) % 30) % 7;
+                    const remainingHours = totalHours % 24;
+                    const remainingMinutes = totalMinutes % 60;
+
+                    const parts = [];
+                    if (years > 0)
+                      parts.push(`${years} Jahr${years !== 1 ? 'e' : ''}`);
+                    if (months > 0)
+                      parts.push(`${months} Monat${months !== 1 ? 'e' : ''}`);
+                    if (weeks > 0)
+                      parts.push(`${weeks} Woche${weeks !== 1 ? 'n' : ''}`);
+                    if (remainingDays > 0)
+                      parts.push(
+                        `${remainingDays} Tag${remainingDays !== 1 ? 'e' : ''}`
+                      );
+                    if (remainingHours > 0)
+                      parts.push(
+                        `${remainingHours} Stunde${
+                          remainingHours !== 1 ? 'n' : ''
+                        }`
+                      );
+                    if (remainingMinutes > 0)
+                      parts.push(
+                        `${remainingMinutes} Minute${
+                          remainingMinutes !== 1 ? 'n' : ''
+                        }`
+                      );
+
+                    return parts.length > 0 ? parts.join(', ') : '0 Minuten';
+                  })()}
+                  arrow
+                  placement='top'
+                >
+                  <Typography
+                    variant='h4'
+                    color='secondary'
+                    gutterBottom
+                    sx={{
+                      fontSize: { xs: '1.75rem', md: '2.125rem' },
+                      cursor: 'help',
+                    }}
+                  >
+                    {(() => {
+                      const totalHours = Math.floor(
+                        seriesStats.totalWatchtime / 60
+                      );
+                      const days = Math.floor(totalHours / 24);
+
+                      if (days >= 365) {
+                        const years = Math.floor(days / 365);
+                        const remainingDaysAfterYears = days % 365;
+
+                        if (remainingDaysAfterYears >= 30) {
+                          const months = Math.floor(
+                            remainingDaysAfterYears / 30
+                          );
+                          const finalDays = remainingDaysAfterYears % 30;
+                          return finalDays > 0
+                            ? `${years}J ${months}M`
+                            : `${years}J ${months}M`;
+                        } else if (remainingDaysAfterYears >= 7) {
+                          const weeks = Math.floor(remainingDaysAfterYears / 7);
+                          const finalDays = remainingDaysAfterYears % 7;
+                          return finalDays > 0
+                            ? `${years}J ${weeks}W`
+                            : `${years}J ${weeks}W`;
+                        } else {
+                          return `${years}J ${remainingDaysAfterYears}T`;
+                        }
+                      } else if (days >= 30) {
+                        const months = Math.floor(days / 30);
+                        const remainingDays = days % 30;
+                        if (remainingDays >= 7) {
+                          const weeks = Math.floor(remainingDays / 7);
+                          return `${months}M ${weeks}W`;
+                        } else {
+                          return `${months}M ${remainingDays}T`;
+                        }
+                      } else if (days >= 7) {
+                        const weeks = Math.floor(days / 7);
+                        const remainingDays = days % 7;
+                        return remainingDays > 0
+                          ? `${weeks}W ${remainingDays}T`
+                          : `${weeks}W`;
+                      } else if (days > 0) {
+                        return `${days}T`;
+                      } else {
+                        return `${totalHours}h`;
+                      }
+                    })()}
+                  </Typography>
+                </Tooltip>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Watchzeit
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='info.main'
+                  gutterBottom
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.25rem' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {seriesStats.favoriteGenre}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Top Genre
+                </Typography>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          // Film-spezifische Stats
+          <>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='secondary'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {movieStats.count}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Filme
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <TrendingUp
+                    sx={{
+                      color: '#66bb6a',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {movieStats.watchedCount}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Gesehen
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Box
+                  display='flex'
+                  alignItems='center'
+                  justifyContent='center'
+                  gap={1}
+                >
+                  <Star
+                    sx={{
+                      color: '#ffa726',
+                      fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    }}
+                  />
+                  <Typography
+                    variant='h4'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {movieStats.averageRating > 0
+                      ? movieStats.averageRating.toFixed(2)
+                      : '0.00'}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Ø Bewertung
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='primary'
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                >
+                  {movieStats.unreleasedCount}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Unreleased
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <Typography
+                  variant='h4'
+                  color='info.main'
+                  gutterBottom
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.25rem' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {movieStats.favoriteGenre}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                >
+                  Top Genre
+                </Typography>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </Box>
 
       {/* Tabs für Serien und Filme */}
@@ -429,14 +748,14 @@ export const MainPage: React.FC = () => {
           }}
         >
           <Tab
-            label={`Serien (${stats.seriesCount})`}
+            label={`Serien (${combinedStats.seriesCount})`}
             icon={
               <CalendarToday sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
             }
             iconPosition='start'
           />
           <Tab
-            label={`Filme (${stats.moviesCount})`}
+            label={`Filme (${combinedStats.moviesCount})`}
             icon={<Movie sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />}
             iconPosition='start'
           />

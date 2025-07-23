@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useFriends } from '../../contexts/FriendsProvider';
@@ -165,8 +165,14 @@ export const SeriesGrid = ({
     if (initialVisible > filteredSeries?.length) {
       initialVisible = filteredSeries?.length;
     }
+
     setVisibleCount(initialVisible);
-  }, [debouncedSearchValue, selectedGenre, selectedProvider, filteredSeries]);
+  }, [
+    debouncedSearchValue,
+    selectedGenre,
+    selectedProvider,
+    filteredSeries?.length,
+  ]);
   useEffect(() => {
     // Today Dialog nur für eigene Serien, nicht für Freunde
     if (!seriesList.length || !user || dialogShown.current || targetUserId)
@@ -558,30 +564,32 @@ export const SeriesGrid = ({
     }
   };
 
-  // React 19: Automatische Memoization - kein useCallback nötig
-  const handleWindowScroll = useCallback(() => {
-    const scrollTop = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const fullHeight = document.body.offsetHeight;
-    if (
-      scrollTop + windowHeight >= fullHeight - 1000 &&
-      visibleCount < filteredSeries?.length
-    ) {
-      const cardWidth = 230;
-      const gap = 75;
-      let columns = Math.floor(window.innerWidth / (cardWidth + gap));
-      if (columns < 1) columns = 1;
-      const remainder = visibleCount % columns;
-      const itemsToAdd = remainder === 0 ? columns : columns - remainder;
-      setVisibleCount((prev) =>
-        Math.min(prev + itemsToAdd, filteredSeries?.length)
-      );
-    }
-  }, [visibleCount, filteredSeries]);
   useEffect(() => {
-    window.addEventListener('scroll', handleWindowScroll);
-    return () => window.removeEventListener('scroll', handleWindowScroll);
-  }, [handleWindowScroll]);
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const fullHeight = document.body.offsetHeight;
+
+      if (
+        scrollTop + windowHeight >= fullHeight - 1000 &&
+        visibleCount < (filteredSeries?.length || 0)
+      ) {
+        const cardWidth = 230;
+        const gap = 75;
+        let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+        if (columns < 1) columns = 1;
+        const remainder = visibleCount % columns;
+        const itemsToAdd = remainder === 0 ? columns : columns - remainder;
+
+        setVisibleCount((prev) =>
+          Math.min(prev + itemsToAdd, filteredSeries?.length || 0)
+        );
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [visibleCount, filteredSeries?.length]);
 
   // Kein Loading-State mehr - das globale Skeleton regelt das
   if (targetUserId && friendSeriesLoading) {

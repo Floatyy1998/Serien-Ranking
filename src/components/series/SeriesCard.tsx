@@ -167,7 +167,15 @@ export const SeriesCard = ({
       try {
         await ref.set(updatedRatings);
 
-        // Activity tracken für Freunde
+        // Activity tracken für Freunde - mit den aktualisierten Ratings
+        const seriesWithUpdatedRating = {
+          ...currentSeries,
+          rating: Object.fromEntries(
+            Object.entries(updatedRatings).map(([k, v]) => [k, Number(v)])
+          ),
+        };
+        const overallRating = calculateOverallRating(seriesWithUpdatedRating);
+        const ratingValue = parseFloat(overallRating);
         await updateUserActivity({
           type: 'rating_updated',
           itemTitle:
@@ -175,6 +183,7 @@ export const SeriesCard = ({
             currentSeries.original_name ||
             'Unbekannte Serie',
           itemId: currentSeries.nmr,
+          rating: ratingValue > 0 ? ratingValue : undefined,
         });
 
         setOpen(false);

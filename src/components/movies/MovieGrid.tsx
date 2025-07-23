@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { calculateOverallRating } from '../../utils/rating';
@@ -37,9 +37,7 @@ export const MovieGrid = ({
 
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
-
-  // Stabilisiere die Liste mit einem Ref um Re-Rendering zu vermeiden
-  const stableFilteredMovies = useRef<any[]>([]);
+  const [filteredMovies, setFilteredMovies] = useState<any[]>([]);
 
   // Lade Freund-Filme wenn targetUserId gesetzt ist
   useEffect(() => {
@@ -52,9 +50,10 @@ export const MovieGrid = ({
     setFriendMoviesLoading(true);
     const friendMoviesRef = firebase.database().ref(`${targetUserId}/filme`);
 
-    friendMoviesRef
-      .once('value')
-      .then((snapshot) => {
+    // Real-time listener für automatische Updates
+    const listener = friendMoviesRef.on(
+      'value',
+      (snapshot) => {
         const data = snapshot.val() || {};
 
         if (data === null && !snapshot.exists()) {
@@ -65,14 +64,19 @@ export const MovieGrid = ({
         } else {
           setFriendMovieList([]);
         }
-      })
-      .catch((error) => {
+        setFriendMoviesLoading(false);
+      },
+      (error) => {
         console.error('Error loading friend movies:', error);
         setFriendMovieList([]);
-      })
-      .finally(() => {
         setFriendMoviesLoading(false);
-      });
+      }
+    );
+
+    // Cleanup function
+    return () => {
+      friendMoviesRef.off('value', listener);
+    };
   }, [targetUserId]);
 
   // Filtere und sortiere die Filme basierend auf den Suchkriterien
@@ -113,7 +117,7 @@ export const MovieGrid = ({
         return ratingB - ratingA;
       });
 
-    stableFilteredMovies.current = filtered;
+    setFilteredMovies(filtered);
   }, [movieList, debouncedSearchValue, selectedGenre, selectedProvider]);
 
   // React 19: Automatische Memoization - kein useCallback nötig
@@ -123,9 +127,7 @@ export const MovieGrid = ({
     const fullHeight = document.body.offsetHeight;
 
     const currentMovies =
-      stableFilteredMovies.current?.length > 0
-        ? stableFilteredMovies.current
-        : movieList || [];
+      filteredMovies?.length > 0 ? filteredMovies : movieList || [];
 
     if (
       scrollTop + windowHeight >= fullHeight - 1000 &&
@@ -141,7 +143,7 @@ export const MovieGrid = ({
         Math.min(prev + itemsToAdd, currentMovies?.length)
       );
     }
-  }, [visibleCount, movieList]);
+  }, [visibleCount, filteredMovies, movieList]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleWindowScroll);
@@ -157,15 +159,19 @@ export const MovieGrid = ({
     let initialVisible = Math.ceil(base / columns) * columns;
 
     const currentMovies =
-      stableFilteredMovies.current?.length > 0
-        ? stableFilteredMovies.current
-        : movieList || [];
+      filteredMovies?.length > 0 ? filteredMovies : movieList || [];
 
     if (initialVisible > currentMovies?.length) {
       initialVisible = currentMovies?.length;
     }
     setVisibleCount(initialVisible);
-  }, [debouncedSearchValue, selectedGenre, selectedProvider, movieList]);
+  }, [
+    debouncedSearchValue,
+    selectedGenre,
+    selectedProvider,
+    filteredMovies,
+    movieList,
+  ]);
 
   // Loading state für Freund-Filme
   if (targetUserId && friendMoviesLoading) {
@@ -180,8 +186,7 @@ export const MovieGrid = ({
 
   // Überprüfe sowohl die gefilterte Liste als auch die ursprüngliche movieList
   if (
-    (stableFilteredMovies.current?.length === 0 ||
-      (movieList && movieList.length === 0)) &&
+    (filteredMovies?.length === 0 || (movieList && movieList.length === 0)) &&
     selectedGenre === 'All'
   ) {
     return (
@@ -207,12 +212,9 @@ export const MovieGrid = ({
           boxSizing: 'border-box',
         }}
       >
-        {(stableFilteredMovies.current?.length > 0
-          ? stableFilteredMovies.current
-          : movieList || []
-        )
+        {(filteredMovies?.length > 0 ? filteredMovies : movieList || [])
           ?.slice(0, visibleCount)
-          .map((movie, index) => (
+          .map((movie: any, index: number) => (
             <Box key={index} sx={{ width: '230px', height: '444px' }}>
               <MovieCard
                 movie={movie}
