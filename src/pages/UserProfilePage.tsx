@@ -916,7 +916,7 @@ export const UserProfilePage: React.FC = () => {
                   color='info.main'
                   gutterBottom
                   sx={{
-                    fontSize: { xs: '1rem', md: '1.25rem' },
+                    fontSize: { xs: '1.75rem', md: '2.125rem' },
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -1065,7 +1065,7 @@ export const UserProfilePage: React.FC = () => {
                   color='info.main'
                   gutterBottom
                   sx={{
-                    fontSize: { xs: '1rem', md: '1.25rem' },
+                    fontSize: { xs: '1.75rem', md: '2.125rem' },
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
