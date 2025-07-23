@@ -1,16 +1,20 @@
 import { Snackbar, TextField } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from './Authlayout';
+
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
@@ -23,28 +27,93 @@ const RegisterPage = () => {
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
     return re.test(password);
   };
+
+  const validateUsername = (username: string) => {
+    return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+  };
+
+  const checkUsernameAvailable = async (username: string): Promise<boolean> => {
+    const usersRef = firebase.database().ref('users');
+    const snapshot = await usersRef
+      .orderByChild('username')
+      .equalTo(username)
+      .once('value');
+
+    return !snapshot.val(); // true wenn kein Benutzer mit diesem Username existiert
+  };
   const handleCloseSnackbar = () => setOpenSnackbar(false);
-  const handleRegister = () => {
+
+  const handleRegister = async () => {
+    // Validierungen zurücksetzen
+    setEmailError('');
+    setPasswordError('');
+    setUsernameError('');
+
     if (!validateEmail(email)) {
       setEmailError('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
       return;
     }
+
+    if (!validateUsername(username)) {
+      setUsernameError(
+        'Benutzername muss 3-20 Zeichen lang sein und darf nur Buchstaben, Zahlen und _ enthalten.'
+      );
+      return;
+    }
+
     if (!validatePassword(password)) {
       setPasswordError(
         'Das Passwort muss mindestens 8 Zeichen lang sein und Groß-, Kleinbuchstaben, Ziffern sowie Sonderzeichen enthalten.'
       );
       return;
     }
+
     if (password !== confirmPassword) {
       setPasswordError('Die Passwörter stimmen nicht überein.');
       return;
     }
+
+    // Username-Verfügbarkeit prüfen
+    try {
+      const isUsernameAvailable = await checkUsernameAvailable(username);
+      if (!isUsernameAvailable) {
+        setUsernameError('Dieser Benutzername ist bereits vergeben.');
+        return;
+      }
+    } catch (error) {
+      setSnackbarMsg('Fehler bei der Überprüfung des Benutzernamens.');
+      setOpenSnackbar(true);
+      return;
+    }
+
     firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        userCredential.user?.sendEmailVerification();
-        setSnackbarMsg('Bestätigungsmail wurde gesendet.');
+      .then(async (userCredential) => {
+        if (userCredential.user) {
+          // Benutzer-Profil in Auth aktualisieren
+          await userCredential.user.updateProfile({
+            displayName: username,
+          });
+
+          // Benutzer-Daten in Realtime Database speichern
+          await firebase
+            .database()
+            .ref(`users/${userCredential.user.uid}`)
+            .set({
+              email: email,
+              username: username,
+              displayName: username,
+              createdAt: firebase.database.ServerValue.TIMESTAMP,
+            });
+
+          // Email-Verifizierung senden
+          await userCredential.user.sendEmailVerification();
+        }
+
+        setSnackbarMsg(
+          'Registrierung erfolgreich! Bestätigungsmail wurde gesendet.'
+        );
         setOpenSnackbar(true);
         navigate('/');
       })
@@ -70,6 +139,22 @@ const RegisterPage = () => {
             }}
             error={!!emailError}
             helperText={emailError}
+          />
+          <TextField
+            margin='dense'
+            label='Benutzername'
+            type='text'
+            fullWidth
+            value={username}
+            sx={{ backgroundColor: 'inherit' }}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setUsernameError('');
+            }}
+            error={!!usernameError}
+            helperText={
+              usernameError || '3-20 Zeichen, nur Buchstaben, Zahlen und _'
+            }
           />
           <TextField
             margin='dense'

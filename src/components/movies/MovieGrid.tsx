@@ -1,4 +1,5 @@
 import { Box, Typography } from '@mui/material';
+import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -10,6 +11,8 @@ interface MovieGridProps {
   searchValue: string;
   selectedGenre: string;
   selectedProvider: string;
+  viewOnlyMode?: boolean;
+  targetUserId?: string;
 }
 
 // React 19: Automatische Memoization - kein memo nötig
@@ -17,14 +20,60 @@ export const MovieGrid = ({
   searchValue,
   selectedGenre,
   selectedProvider,
+  viewOnlyMode = false,
+  targetUserId,
 }: MovieGridProps) => {
-  const { movieList } = useMovieList();
+  const { movieList: contextMovieList } = useMovieList();
+  const [friendMovieList, setFriendMovieList] = useState<any[]>([]);
+  const [friendMoviesLoading, setFriendMoviesLoading] = useState(false);
+
+  // Verwende Freund-Filme oder eigene Filme
+  // Aber nur wenn Freund-Daten geladen wurden oder kein targetUserId gesetzt ist
+  const movieList = targetUserId
+    ? friendMoviesLoading
+      ? []
+      : friendMovieList
+    : contextMovieList;
 
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
 
   // Stabilisiere die Liste mit einem Ref um Re-Rendering zu vermeiden
   const stableFilteredMovies = useRef<any[]>([]);
+
+  // Lade Freund-Filme wenn targetUserId gesetzt ist
+  useEffect(() => {
+    if (!targetUserId) {
+      setFriendMovieList([]);
+      setFriendMoviesLoading(false);
+      return;
+    }
+
+    setFriendMoviesLoading(true);
+    const friendMoviesRef = firebase.database().ref(`${targetUserId}/filme`);
+
+    friendMoviesRef
+      .once('value')
+      .then((snapshot) => {
+        const data = snapshot.val() || {};
+
+        if (data === null && !snapshot.exists()) {
+          setFriendMovieList([]);
+        } else if (data && typeof data === 'object') {
+          const movies = Object.values(data) as any[];
+          setFriendMovieList(movies);
+        } else {
+          setFriendMovieList([]);
+        }
+      })
+      .catch((error) => {
+        console.error('Error loading friend movies:', error);
+        setFriendMovieList([]);
+      })
+      .finally(() => {
+        setFriendMoviesLoading(false);
+      });
+  }, [targetUserId]);
 
   // Filtere und sortiere die Filme basierend auf den Suchkriterien
   useEffect(() => {
@@ -45,7 +94,9 @@ export const MovieGrid = ({
         const matchesProvider =
           selectedProvider === 'All' ||
           (movie.provider?.provider &&
-            movie.provider.provider.some((p) => p.name === selectedProvider));
+            movie.provider.provider.some(
+              (p: any) => p.name === selectedProvider
+            ));
         return matchesSearch && matchesGenre && matchesProvider;
       })
       .sort((a, b) => {
@@ -116,7 +167,16 @@ export const MovieGrid = ({
     setVisibleCount(initialVisible);
   }, [debouncedSearchValue, selectedGenre, selectedProvider, movieList]);
 
-  // Kein Loading-State mehr - das globale Skeleton regelt das
+  // Loading state für Freund-Filme
+  if (targetUserId && friendMoviesLoading) {
+    return (
+      <Box className='flex justify-center items-center w-full h-full'>
+        <Typography variant='h6' className='text-center'>
+          Lade Filme...
+        </Typography>
+      </Box>
+    );
+  }
 
   // Überprüfe sowohl die gefilterte Liste als auch die ursprüngliche movieList
   if (
@@ -127,7 +187,9 @@ export const MovieGrid = ({
     return (
       <Box className='flex justify-center items-center w-full h-full'>
         <Typography variant='h2' className='text-center'>
-          Noch keine Filme vorhanden. Füge einen Film über das Menü hinzu.
+          {targetUserId
+            ? 'Dieser Benutzer hat noch keine Filme hinzugefügt.'
+            : 'Noch keine Filme vorhanden. Füge einen Film über das Menü hinzu.'}
         </Typography>
       </Box>
     );
@@ -156,6 +218,7 @@ export const MovieGrid = ({
                 movie={movie}
                 genre={selectedGenre}
                 index={index + 1}
+                disableRatingDialog={viewOnlyMode}
               />
             </Box>
           ))}

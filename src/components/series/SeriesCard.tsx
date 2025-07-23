@@ -16,6 +16,7 @@ import { useLocation } from 'react-router-dom';
 import { allGenres } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
+import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
@@ -33,23 +34,36 @@ interface SeriesCardProps {
   series: Series;
   genre: string;
   index: number;
+  disableRatingDialog?: boolean;
+  forceReadOnlyDialogs?: boolean;
 }
-export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
+export const SeriesCard = ({
+  series,
+  genre,
+  index,
+  disableRatingDialog = false,
+  forceReadOnlyDialogs = false,
+}: SeriesCardProps) => {
   // Hole aktuelle Serie-Daten aus dem Provider
   const { seriesList } = useSeriesList();
   const location = useLocation();
   const isSharedListPage = location.pathname.startsWith('/shared-list');
+  const isUserProfilePage =
+    location.pathname.includes('/user/') ||
+    location.pathname.includes('/profile/');
 
-  // Für Shared Lists verwende die übergebenen Daten, sonst die aktuellen aus dem Context
-  const currentSeries = isSharedListPage
-    ? series
-    : seriesList.find((s) => s.nmr === series.nmr) || series;
+  // Für Shared Lists oder User Profile verwende die übergebenen Daten, sonst die aktuellen aus dem Context
+  const currentSeries =
+    isSharedListPage || isUserProfilePage
+      ? series
+      : seriesList.find((s) => s.nmr === series.nmr) || series;
 
   const shadowColor = !currentSeries.production?.production
     ? '#a855f7'
     : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
+  const { updateUserActivity } = useFriends();
   const uniqueProviders = currentSeries.provider
     ? Array.from(
         new Set(currentSeries.provider.provider.map((p) => p.name))
@@ -58,25 +72,34 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
       )
     : [];
   const rating = calculateOverallRating(currentSeries);
-  const nextEpisodeDate = new Date(currentSeries.nextEpisode.nextEpisode);
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-  let dateString = getFormattedDate(series.nextEpisode.nextEpisode);
-  if (
-    nextEpisodeDate.getDate() === today.getDate() &&
-    nextEpisodeDate.getMonth() === today.getMonth() &&
-    nextEpisodeDate.getFullYear() === today.getFullYear()
-  ) {
-    dateString = 'Heute';
-  } else if (
-    nextEpisodeDate.getDate() === tomorrow.getDate() &&
-    nextEpisodeDate.getMonth() === tomorrow.getMonth() &&
-    nextEpisodeDate.getFullYear() === tomorrow.getFullYear()
-  ) {
-    dateString = 'Morgen';
+
+  // Nur berechnen wenn nextEpisode vorhanden ist
+  let nextEpisodeDate: Date | null = null;
+  let dateString = '';
+  let timeString = '';
+
+  if (currentSeries.nextEpisode?.nextEpisode) {
+    nextEpisodeDate = new Date(currentSeries.nextEpisode.nextEpisode);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    dateString = getFormattedDate(series.nextEpisode.nextEpisode);
+
+    if (
+      nextEpisodeDate.getDate() === today.getDate() &&
+      nextEpisodeDate.getMonth() === today.getMonth() &&
+      nextEpisodeDate.getFullYear() === today.getFullYear()
+    ) {
+      dateString = 'Heute';
+    } else if (
+      nextEpisodeDate.getDate() === tomorrow.getDate() &&
+      nextEpisodeDate.getMonth() === tomorrow.getMonth() &&
+      nextEpisodeDate.getFullYear() === tomorrow.getFullYear()
+    ) {
+      dateString = 'Morgen';
+    }
+    timeString = getFormattedTime(series.nextEpisode.nextEpisode);
   }
-  const timeString = getFormattedTime(series.nextEpisode.nextEpisode);
   const [open, setOpen] = useState(false);
   const [ratings, setRatings] = useState<{ [key: string]: number | string }>(
     {}
@@ -96,7 +119,10 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const handleTitleClick = () => {
     window.dispatchEvent(
       new CustomEvent('openWatchedDialog', {
-        detail: { series: currentSeries, isReadOnly: isSharedListPage },
+        detail: {
+          series: currentSeries,
+          isReadOnly: isSharedListPage || forceReadOnlyDialogs,
+        },
       })
     );
   };
@@ -112,11 +138,22 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   const handleClose = () => {
     setOpen(false);
   };
-  const handleDeleteSeries = () => {
+  const handleDeleteSeries = async () => {
     const ref = firebase
       .database()
       .ref(`${user?.uid}/serien/${currentSeries.nmr}`);
-    ref.remove();
+    await ref.remove();
+
+    // Activity tracken für Freunde
+    await updateUserActivity({
+      type: 'series_deleted',
+      itemTitle:
+        currentSeries.title ||
+        currentSeries.original_name ||
+        'Unbekannte Serie',
+      itemId: currentSeries.nmr,
+    });
+
     setOpen(false);
   };
   const handleUpdateRatings = async () => {
@@ -129,6 +166,17 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
     if (navigator.onLine) {
       try {
         await ref.set(updatedRatings);
+
+        // Activity tracken für Freunde
+        await updateUserActivity({
+          type: 'rating_updated',
+          itemTitle:
+            currentSeries.title ||
+            currentSeries.original_name ||
+            'Unbekannte Serie',
+          itemId: currentSeries.nmr,
+        });
+
         setOpen(false);
       } catch (error) {
         console.error('Error updating ratings online:', error);
@@ -169,7 +217,9 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
   };
   const handleRatingClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    handleClickOpen();
+    if (!disableRatingDialog) {
+      handleClickOpen();
+    }
   };
   const handleConfirmDialogClose = () => {
     setConfirmDialogOpen(false);
@@ -246,7 +296,7 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
               ))}
             </Box>
           )}
-          {typeof currentSeries.nextEpisode.episode === 'number' && (
+          {typeof currentSeries.nextEpisode?.episode === 'number' && (
             <>
               <Box
                 className='absolute top-20 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
@@ -258,8 +308,8 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                   className='text-center'
                   sx={{ fontSize: '1rem' }}
                 >
-                  Staffel {currentSeries.nextEpisode.season} Episode{' '}
-                  {currentSeries.nextEpisode.episode}
+                  Staffel {currentSeries.nextEpisode?.season} Episode{' '}
+                  {currentSeries.nextEpisode?.episode}
                   <br></br>
                   {dateString} um {timeString}
                 </Typography>
@@ -282,14 +332,16 @@ export const SeriesCard = ({ series, genre, index }: SeriesCardProps) => {
                   }}
                 >
                   Titel: <br></br>
-                  {currentSeries.nextEpisode.title}
+                  {currentSeries.nextEpisode?.title}
                 </Typography>
               </Box>
             </>
           )}
           <Tooltip title={currentSeries.beschreibung} arrow>
             <Box
-              className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 cursor-pointer '
+              className={`absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 ${
+                !disableRatingDialog ? 'cursor-pointer' : 'cursor-default'
+              }`}
               onClick={handleRatingClick}
               aria-label='Bewertung anzeigen'
             >

@@ -26,6 +26,7 @@ import {
   genreMenuItems,
   providerMenuItems,
 } from '../../constants/menuItems';
+import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
@@ -53,6 +54,7 @@ export const SearchFilters = ({
   const [watchlistSeries, setWatchlistSeries] = useState<Series[]>([]);
   const [sortOption] = useState('date-desc');
   const { seriesList } = useSeriesList();
+  const { updateUserActivity } = useFriends();
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const isSharedListPage = location.pathname.startsWith('/shared-list');
   const authContext = useAuth();
@@ -154,7 +156,7 @@ export const SearchFilters = ({
     setDialogOpen(false);
   };
   const handleWatchedToggleWithConfirmation = useCallback(
-    (
+    async (
       seasonNumber: number,
       episodeIndex: number,
       seriesId: number,
@@ -164,34 +166,58 @@ export const SearchFilters = ({
         const episodeRef = Firebase.database().ref(
           `${user.uid}/serien/${seriesNmr}/seasons/${seasonNumber}/episodes/${episodeIndex}`
         );
-        episodeRef.once('value', (snapshot) => {
-          const episode = snapshot.val();
-          episodeRef.update({ watched: !episode.watched });
-        });
+
+        // Erst die Episode-Daten abrufen für Activity-Logging
+        const snapshot = await episodeRef.once('value');
+        const episode = snapshot.val();
+        const wasWatched = episode.watched;
+        const newWatchedStatus = !wasWatched;
+
+        // Episode-Status umschalten
+        await episodeRef.update({ watched: newWatchedStatus });
+
+        // Activity tracken für Freunde (nur wenn Episode als geschaut markiert wird)
+        if (!wasWatched) {
+          // Finde die Serie um den Titel zu bekommen
+          const series = seriesList.find((s) => s.nmr === seriesNmr);
+          if (series) {
+            // Ermittle Episode-Nummer aus Index wenn episode.episode nicht verfügbar ist
+            const episodeNumber = episode.episode || episodeIndex + 1;
+            await updateUserActivity({
+              type: 'episode_watched',
+              itemTitle: `${
+                series.title || series.original_name || 'Unbekannte Serie'
+              } - Staffel ${seasonNumber} Episode ${episodeNumber}`,
+              itemId: series.nmr,
+            });
+          }
+        }
+
+        // Lokalen State mit dem korrekten neuen Wert aktualisieren
+        setWatchlistSeries((prevSeries) =>
+          prevSeries.map((series) =>
+            series.id === seriesId
+              ? {
+                  ...series,
+                  seasons: series.seasons.map((season) =>
+                    season.seasonNumber === seasonNumber
+                      ? {
+                          ...season,
+                          episodes: season.episodes.map((episode, index) =>
+                            index === episodeIndex
+                              ? { ...episode, watched: newWatchedStatus }
+                              : episode
+                          ),
+                        }
+                      : season
+                  ),
+                }
+              : series
+          )
+        );
       }
-      setWatchlistSeries((prevSeries) =>
-        prevSeries.map((series) =>
-          series.id === seriesId
-            ? {
-                ...series,
-                seasons: series.seasons.map((season) =>
-                  season.seasonNumber === seasonNumber
-                    ? {
-                        ...season,
-                        episodes: season.episodes.map((episode, index) =>
-                          index === episodeIndex
-                            ? { ...episode, watched: !episode.watched }
-                            : episode
-                        ),
-                      }
-                    : season
-                ),
-              }
-            : series
-        )
-      );
     },
-    [user]
+    [user, updateUserActivity, seriesList]
   );
   const getNextUnwatchedEpisode = (series: Series) => {
     for (const season of series.seasons) {

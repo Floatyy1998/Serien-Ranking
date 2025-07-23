@@ -1,11 +1,11 @@
 import {
-  Alert,
   AppBar,
+  Avatar,
+  Badge,
   Box,
   Button,
   IconButton,
   Tooltip as MuiTooltip,
-  Snackbar,
   Toolbar,
   Typography,
 } from '@mui/material';
@@ -25,11 +25,12 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
-import { BarChartIcon, LogOut, ShareIcon } from 'lucide-react';
+import { BarChartIcon, LogOut, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
-import SharedLinksDialog from '../dialogs/SharedLinksDialog';
+import { useFriends } from '../../contexts/FriendsProvider';
+import { ProfileDialog } from '../dialogs/ProfileDialog';
 import StatsDialog from '../dialogs/StatsDialog';
 Chart.register(
   CategoryScale,
@@ -48,23 +49,14 @@ interface HeaderProps {
 export const Header = ({ setIsStatsOpen }: HeaderProps) => {
   const auth = useAuth();
   const { user, setUser } = auth || {};
+  const { unreadRequestsCount, unreadActivitiesCount } = useFriends();
   const location = useLocation();
   const navigate = useNavigate();
   const isSharedListPage = location.pathname.startsWith('/shared-list');
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<
-    'success' | 'error' | 'warning'
-  >('success');
-  const [, setShareLink] = useState<string | null>(null);
-  const [linkDuration, setLinkDuration] = useState<number>(24);
-  const [linksDialogOpen, setLinksDialogOpen] = useState(false);
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   if (!auth) {
     return null;
   }
@@ -93,40 +85,9 @@ export const Header = ({ setIsStatsOpen }: HeaderProps) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-  const handleGenerateShareLink = async () => {
-    if (!user) {
-      setSnackbarMessage(
-        'Bitte loggen Sie sich ein, um einen Link zu generieren.'
-      );
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-    try {
-      const shareRef = firebase.database().ref('sharedLists').push();
-      const expirationTime = Date.now() + linkDuration * 60 * 60 * 1000;
-      await shareRef.set({
-        userId: user.uid,
-        createdAt: firebase.database.ServerValue.TIMESTAMP,
-        expiresAt: expirationTime,
-      });
-      const link = `${window.location.origin}/shared-list/${shareRef.key}`;
-      setShareLink(link);
-      setSnackbarMessage('Link erfolgreich generiert!');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error('Error generating share link:', error);
-      setSnackbarMessage('Fehler beim Generieren des Links.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
-  };
-  const handleLinksDialogOpen = () => {
-    setLinksDialogOpen(true);
-  };
-  const handleLinksDialogClose = () => {
-    setLinksDialogOpen(false);
+
+  const handleFriendsClick = () => {
+    navigate('/friends');
   };
   const handleBackToHome = () => {
     navigate('/');
@@ -217,14 +178,38 @@ export const Header = ({ setIsStatsOpen }: HeaderProps) => {
                     <BarChartIcon />
                   </IconButton>
                 </MuiTooltip>
-                <MuiTooltip title='Link teilen'>
+                <MuiTooltip title='Freunde'>
                   <IconButton
                     color='inherit'
-                    aria-label='Link teilen'
-                    onClick={handleLinksDialogOpen}
+                    aria-label='Freunde'
+                    onClick={handleFriendsClick}
                     role='button'
                   >
-                    <ShareIcon />
+                    <Badge
+                      badgeContent={unreadRequestsCount + unreadActivitiesCount}
+                      color='error'
+                      max={99}
+                    >
+                      <Users />
+                    </Badge>
+                  </IconButton>
+                </MuiTooltip>
+
+                <MuiTooltip title='Profil bearbeiten'>
+                  <IconButton
+                    color='inherit'
+                    aria-label='Profil bearbeiten'
+                    onClick={() => setProfileDialogOpen(true)}
+                    role='button'
+                  >
+                    <Avatar
+                      src={user?.photoURL || undefined}
+                      sx={{ width: 32, height: 32 }}
+                    >
+                      {user?.displayName?.[0]?.toUpperCase() ||
+                        user?.email?.[0]?.toUpperCase() ||
+                        '?'}
+                    </Avatar>
                   </IconButton>
                 </MuiTooltip>
               </>
@@ -238,21 +223,9 @@ export const Header = ({ setIsStatsOpen }: HeaderProps) => {
         onClose={handleStatsClose}
         isMobile={isMobile}
       />
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={snackbarSeverity === 'warning' ? null : 6000}
-        onClose={handleSnackbarClose}
-      >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-      <SharedLinksDialog
-        open={linksDialogOpen}
-        onClose={handleLinksDialogClose}
-        handleGenerateShareLink={handleGenerateShareLink}
-        linkDuration={linkDuration}
-        setLinkDuration={setLinkDuration}
+      <ProfileDialog
+        open={profileDialogOpen}
+        onClose={() => setProfileDialogOpen(false)}
       />
     </>
   );
