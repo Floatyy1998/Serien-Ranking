@@ -1,4 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -26,6 +28,8 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Movie } from '../../interfaces/Movie';
 import AddMovieDialog from '../dialogs/AddMovieDialog';
+import AutoRatingDialog from '../dialogs/AutoRatingDialog';
+import BulkMovieRatingDialog from '../dialogs/BulkMovieRatingDialog';
 import DiscoverMoviesDialog from '../dialogs/DiscoverMoviesDialog';
 import RecommendationsDialog from '../dialogs/RecommendationsDialog';
 
@@ -50,6 +54,8 @@ export const MovieSearchFilters = ({
   const [dialogDiscoverOpen, setDialogDiscoverOpen] = useState(false);
   const [dialogRecommendationsOpen, setDialogRecommendationsOpen] =
     useState(false);
+  const [dialogBulkRatingOpen, setDialogBulkRatingOpen] = useState(false);
+  const [dialogAutoRatingOpen, setDialogAutoRatingOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [basedOnItems, setBasedOnItems] = useState<Movie[]>([]);
@@ -106,6 +112,14 @@ export const MovieSearchFilters = ({
 
   const handleDialogDiscoverOpen = () => {
     setDialogDiscoverOpen(true);
+  };
+
+  const handleDialogBulkRatingOpen = () => {
+    setDialogBulkRatingOpen(true);
+  };
+
+  const handleDialogAutoRatingOpen = () => {
+    setDialogAutoRatingOpen(true);
   };
 
   const handleDialogRecommendationsOpen = async () => {
@@ -312,6 +326,90 @@ export const MovieSearchFilters = ({
               </Button>
             </Tooltip>
           </>
+          <>
+            <Tooltip title='Massenbewertung - Filme schnell bewerten'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogBulkRatingOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 180 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Massenbewertung'
+                role='button'
+              >
+                <RateReviewIcon />
+                <Box
+                  component='span'
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    '@media (min-width:900px)': {
+                      '&:hover, button:hover &': { opacity: 1 },
+                    },
+                  }}
+                  className='text-wrapper'
+                >
+                  Massenbewertung
+                </Box>
+              </Button>
+            </Tooltip>
+          </>
+          <>
+            <Tooltip title='Alle Filme automatisch mit TMDB bewerten'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogAutoRatingOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 150 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Auto-Bewertung'
+                role='button'
+              >
+                <AutoFixHighIcon />
+                <Box
+                  component='span'
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    '@media (min-width:900px)': {
+                      '&:hover, button:hover &': { opacity: 1 },
+                    },
+                  }}
+                  className='text-wrapper'
+                >
+                  Auto-Rating
+                </Box>
+              </Button>
+            </Tooltip>
+          </>
           <Divider
             className='hidden'
             orientation='vertical'
@@ -368,6 +466,15 @@ export const MovieSearchFilters = ({
         recommendations={recommendations}
         loading={loadingRecommendations}
         basedOnItems={basedOnItems}
+      />
+      <BulkMovieRatingDialog
+        open={dialogBulkRatingOpen}
+        onClose={() => setDialogBulkRatingOpen(false)}
+      />
+      <AutoRatingDialog
+        open={dialogAutoRatingOpen}
+        onClose={() => setDialogAutoRatingOpen(false)}
+        mediaType='movies'
       />
     </Box>
   );

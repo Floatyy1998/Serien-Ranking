@@ -1,7 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ListIcon from '@mui/icons-material/List';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -31,6 +33,8 @@ import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
 import AddSeriesDialog from '../dialogs/AddSeriesDialog';
+import AutoRatingDialog from '../dialogs/AutoRatingDialog';
+import BulkSeriesRatingDialog from '../dialogs/BulkSeriesRatingDialog';
 import DiscoverSeriesDialog from '../dialogs/DiscoverSeriesDialog';
 import RecommendationsDialog from '../dialogs/RecommendationsDialog';
 import WatchlistDialog from '../dialogs/Watchlist/WatchlistDialog';
@@ -63,6 +67,8 @@ export const SearchFilters = ({
   const addSeriesInputRef = useRef<HTMLInputElement>(null);
   const [dialogRecommendationsOpen, setDialogRecommendationsOpen] =
     useState(false);
+  const [dialogBulkRatingOpen, setDialogBulkRatingOpen] = useState(false);
+  const [dialogAutoRatingOpen, setDialogAutoRatingOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<Series[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [basedOnSeries, setBasedOnSeries] = useState<Series[]>([]);
@@ -150,6 +156,14 @@ export const SearchFilters = ({
   };
   const handleDialogDiscoverOpen = () => {
     setDialogDiscoverOpen(true);
+  };
+
+  const handleDialogBulkRatingOpen = () => {
+    setDialogBulkRatingOpen(true);
+  };
+
+  const handleDialogAutoRatingOpen = () => {
+    setDialogAutoRatingOpen(true);
   };
   const handleDialogClose = () => {
     setDialogOpen(false);
@@ -459,6 +473,90 @@ export const SearchFilters = ({
               </Button>
             </Tooltip>
           </>
+          <>
+            <Tooltip title='Massenbewertung - Serien schnell bewerten'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogBulkRatingOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 180 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Massenbewertung'
+                role='button'
+              >
+                <RateReviewIcon />
+                <Box
+                  component='span'
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    '@media (min-width:900px)': {
+                      '&:hover, button:hover &': { opacity: 1 },
+                    },
+                  }}
+                  className='text-wrapper'
+                >
+                  Massenbewertung
+                </Box>
+              </Button>
+            </Tooltip>
+          </>
+          <>
+            <Tooltip title='Alle Serien automatisch mit TMDB bewerten'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogAutoRatingOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 150 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Auto-Bewertung'
+                role='button'
+              >
+                <AutoFixHighIcon />
+                <Box
+                  component='span'
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                    '@media (min-width:900px)': {
+                      '&:hover, button:hover &': { opacity: 1 },
+                    },
+                  }}
+                  className='text-wrapper'
+                >
+                  Auto-Rating
+                </Box>
+              </Button>
+            </Tooltip>
+          </>
           <Divider
             className='hidden'
             orientation='vertical'
@@ -617,6 +715,15 @@ export const SearchFilters = ({
         recommendations={recommendations}
         loading={loadingRecommendations}
         basedOnItems={basedOnSeries}
+      />
+      <BulkSeriesRatingDialog
+        open={dialogBulkRatingOpen}
+        onClose={() => setDialogBulkRatingOpen(false)}
+      />
+      <AutoRatingDialog
+        open={dialogAutoRatingOpen}
+        onClose={() => setDialogAutoRatingOpen(false)}
+        mediaType='series'
       />
     </Box>
   );
