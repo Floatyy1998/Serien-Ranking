@@ -62,6 +62,15 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
     if (reason === 'clickaway') return;
     setSnackOpen(false);
   };
+
+  const handleLogout = () => {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        navigate('/login');
+      });
+  };
   if (loading) {
     return null; // Lass das GlobalLoadingProvider das Skeleton zeigen
   }
@@ -92,13 +101,30 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
                 Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den
                 Verifizierungslink.
               </p>
-              <Button
-                variant='contained'
-                onClick={() => resendVerification()}
-                className='bg-[#00fed7] text-black font-medium px-8 py-3 rounded-lg hover:bg-[#00d4b4] transition-colors'
-              >
-                LINK ERNEUT SENDEN
-              </Button>
+              <div className='flex flex-col gap-4'>
+                <Button
+                  variant='contained'
+                  onClick={() => resendVerification()}
+                  className='bg-[#00fed7] text-black font-medium px-8 py-3 rounded-lg hover:bg-[#00d4b4] transition-colors'
+                >
+                  LINK ERNEUT SENDEN
+                </Button>
+                <Button
+                  variant='outlined'
+                  onClick={handleLogout}
+                  sx={{
+                    color: '#00fed7',
+                    borderColor: '#00fed7',
+                    '&:hover': {
+                      borderColor: '#00d4b4',
+                      backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                    },
+                  }}
+                  className='font-medium px-8 py-3 rounded-lg transition-colors'
+                >
+                  AUSLOGGEN
+                </Button>
+              </div>
             </main>
           </Card>
         </div>
