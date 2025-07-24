@@ -42,6 +42,7 @@ export const SeriesGrid = ({
   const [isWatchedDialogReadOnly, setIsWatchedDialogReadOnly] = useState(false);
   const { seriesStatsData } = useStats();
   const dialogShown = useRef(false);
+  const initialLoadComplete = useRef(false);
 
   // Freund-Serien State
   const [friendSeriesList, setFriendSeriesList] = useState<any[]>([]);
@@ -172,8 +173,18 @@ export const SeriesGrid = ({
   ]);
   useEffect(() => {
     // Today Dialog nur für eigene Serien, nicht für Freunde
-    if (!seriesList.length || !user || dialogShown.current || targetUserId)
+    // Nur beim ersten Laden der Serien anzeigen, nicht bei Filter-Änderungen
+    if (
+      !seriesList.length ||
+      !user ||
+      dialogShown.current ||
+      targetUserId ||
+      initialLoadComplete.current
+    )
       return;
+
+    initialLoadComplete.current = true;
+
     const now = Date.now();
     const storedHideUntil = localStorage.getItem('todayDontShow');
     if (storedHideUntil && now < parseInt(storedHideUntil)) return;
@@ -209,7 +220,7 @@ export const SeriesGrid = ({
         dialogShown.current = true;
       }, 1000);
     }
-  }, [seriesList, user, debouncedSearchValue, selectedGenre, selectedProvider]);
+  }, [seriesList, user, targetUserId]);
   const handleDialogClose = () => {
     setShowTodayDialog(false);
   };
