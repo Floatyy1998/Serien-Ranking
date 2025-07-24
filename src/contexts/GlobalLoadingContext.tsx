@@ -48,7 +48,6 @@ export const GlobalLoadingProvider = ({
   const shouldShowSkeleton =
     !location.pathname.includes('/login') &&
     !location.pathname.includes('/register');
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
 
   if (isGlobalLoading && shouldShowSkeleton) {
     return (
@@ -769,7 +768,7 @@ export const GlobalLoadingProvider = ({
             )}
 
             {/* Für andere Seiten - vereinfachtes Layout */}
-            {location.pathname !== '/' && !isSharedListPage && (
+            {location.pathname !== '/' && (
               <div style={{ padding: '16px' }}>
                 {/* Filter Area für andere Seiten */}
                 <div

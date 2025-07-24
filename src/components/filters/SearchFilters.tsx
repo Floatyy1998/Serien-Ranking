@@ -56,7 +56,6 @@ export const SearchFilters = ({
   const { seriesList } = useSeriesList();
   const { updateUserActivity } = useFriends();
   const debouncedSearchValue = useDebounce(searchValue, 300);
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
   const authContext = useAuth();
   const user = authContext?.user;
   const [dialogAddOpen, setDialogAddOpen] = useState(false);
@@ -336,134 +335,130 @@ export const SearchFilters = ({
           />
         </Box>
         <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
-          {!isSharedListPage && (
-            <Box sx={{ flexShrink: 0 }}>
-              <Tooltip title='Serie hinzufügen'>
-                <Button
-                  variant='outlined'
-                  onClick={handleDialogAddOpen}
+          <Box sx={{ flexShrink: 0 }}>
+            <Tooltip title='Serie hinzufügen'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogAddOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 150 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Serie hinzufügen'
+                role='button'
+              >
+                <AddIcon />
+                <Box
+                  component='span'
                   sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '0.5rem',
-                    overflow: 'hidden',
-                    transition: 'width 0.3s ease',
-                    justifyContent: 'flex-start',
-                    pl: '19px',
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
                     '@media (min-width:900px)': {
-                      '&:hover': { width: 150 },
-                      '&:hover .text-wrapper': {
-                        opacity: 1,
-                        transition: 'opacity 0.5s ease',
-                      },
+                      '&:hover, button:hover &': { opacity: 1 },
                     },
                   }}
-                  aria-label='Serie hinzufügen'
-                  role='button'
+                  className='text-wrapper'
                 >
-                  <AddIcon />
-                  <Box
-                    component='span'
-                    sx={{
-                      whiteSpace: 'nowrap',
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                      '@media (min-width:900px)': {
-                        '&:hover, button:hover &': { opacity: 1 },
-                      },
-                    }}
-                    className='text-wrapper'
-                  >
-                    Hinzufügen
-                  </Box>
-                </Button>
-              </Tooltip>
-            </Box>
-          )}
-          {!isSharedListPage && (
-            <>
-              <Tooltip title='Unveröffentlichte Serien entdecken'>
-                <Button
-                  variant='outlined'
-                  onClick={handleDialogDiscoverOpen}
+                  Hinzufügen
+                </Box>
+              </Button>
+            </Tooltip>
+          </Box>
+          <>
+            <Tooltip title='Unveröffentlichte Serien entdecken'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogDiscoverOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 150 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Unveröffentlichte Serien entdecken'
+                role='button'
+              >
+                <SearchIcon />
+                <Box
+                  component='span'
                   sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '0.5rem',
-                    overflow: 'hidden',
-                    transition: 'width 0.3s ease',
-                    justifyContent: 'flex-start',
-                    pl: '19px',
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
                     '@media (min-width:900px)': {
-                      '&:hover': { width: 150 },
-                      '&:hover .text-wrapper': {
-                        opacity: 1,
-                        transition: 'opacity 0.5s ease',
-                      },
+                      '&:hover, button:hover &': { opacity: 1 },
                     },
                   }}
-                  aria-label='Unveröffentlichte Serien entdecken'
-                  role='button'
+                  className='text-wrapper'
                 >
-                  <SearchIcon />
-                  <Box
-                    component='span'
-                    sx={{
-                      whiteSpace: 'nowrap',
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                      '@media (min-width:900px)': {
-                        '&:hover, button:hover &': { opacity: 1 },
-                      },
-                    }}
-                    className='text-wrapper'
-                  >
-                    Entdecken
-                  </Box>
-                </Button>
-              </Tooltip>
-              <Tooltip title='Empfehlungen anzeigen'>
-                <Button
-                  variant='outlined'
-                  onClick={handleDialogRecommendationsOpen}
+                  Entdecken
+                </Box>
+              </Button>
+            </Tooltip>
+            <Tooltip title='Empfehlungen anzeigen'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogRecommendationsOpen}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '0.5rem',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease',
+                  justifyContent: 'flex-start',
+                  pl: '19px',
+                  '@media (min-width:900px)': {
+                    '&:hover': { width: 150 },
+                    '&:hover .text-wrapper': {
+                      opacity: 1,
+                      transition: 'opacity 0.5s ease',
+                    },
+                  },
+                }}
+                aria-label='Empfehlungen anzeigen'
+                role='button'
+              >
+                <RecommendIcon />
+                <Box
+                  component='span'
                   sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '0.5rem',
-                    overflow: 'hidden',
-                    transition: 'width 0.3s ease',
-                    justifyContent: 'flex-start',
-                    pl: '19px',
+                    whiteSpace: 'nowrap',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
                     '@media (min-width:900px)': {
-                      '&:hover': { width: 150 },
-                      '&:hover .text-wrapper': {
-                        opacity: 1,
-                        transition: 'opacity 0.5s ease',
-                      },
+                      '&:hover, button:hover &': { opacity: 1 },
                     },
                   }}
-                  aria-label='Empfehlungen anzeigen'
-                  role='button'
+                  className='text-wrapper'
                 >
-                  <RecommendIcon />
-                  <Box
-                    component='span'
-                    sx={{
-                      whiteSpace: 'nowrap',
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease',
-                      '@media (min-width:900px)': {
-                        '&:hover, button:hover &': { opacity: 1 },
-                      },
-                    }}
-                    className='text-wrapper'
-                  >
-                    Empfehlung
-                  </Box>
-                </Button>
-              </Tooltip>
-            </>
-          )}
+                  Empfehlung
+                </Box>
+              </Button>
+            </Tooltip>
+          </>
           <Divider
             className='hidden'
             orientation='vertical'
@@ -504,104 +499,100 @@ export const SearchFilters = ({
           </Select>
         </FormControl>
       </Box>
-      {!isSharedListPage && (
-        <>
-          <Divider
-            className='hidden'
-            orientation='vertical'
-            flexItem
-            sx={{ display: { xl: 'block' } }}
-          />
-          <Box className='flex gap-3 justify-center md:justify-start mt-0'>
-            <Tooltip
-              title={
+      <>
+        <Divider
+          className='hidden'
+          orientation='vertical'
+          flexItem
+          sx={{ display: { xl: 'block' } }}
+        />
+        <Box className='flex gap-3 justify-center md:justify-start mt-0'>
+          <Tooltip
+            title={isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'}
+          >
+            <Button
+              variant={isWatchlist ? 'contained' : 'outlined'}
+              onClick={handleWatchlistToggle}
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: '0.5rem',
+                overflow: 'hidden',
+                transition: 'width 0.3s ease',
+                justifyContent: 'flex-start',
+                pl: '19px',
+                '@media (min-width:900px)': {
+                  '&:hover': { width: 150 },
+                  '&:hover .text-wrapper': {
+                    opacity: 1,
+                    transition: 'opacity 0.5s ease',
+                  },
+                },
+              }}
+              aria-label={
                 isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
               }
+              role='button'
             >
-              <Button
-                variant={isWatchlist ? 'contained' : 'outlined'}
-                onClick={handleWatchlistToggle}
+              {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+              <Box
+                component='span'
                 sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '0.5rem',
-                  overflow: 'hidden',
-                  transition: 'width 0.3s ease',
-                  justifyContent: 'flex-start',
-                  pl: '19px',
+                  whiteSpace: 'nowrap',
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease',
                   '@media (min-width:900px)': {
-                    '&:hover': { width: 150 },
-                    '&:hover .text-wrapper': {
-                      opacity: 1,
-                      transition: 'opacity 0.5s ease',
-                    },
+                    '&:hover, button:hover &': { opacity: 1 },
                   },
                 }}
-                aria-label={
-                  isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
-                }
-                role='button'
+                className='text-wrapper'
               >
-                {isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-                <Box
-                  component='span'
-                  sx={{
-                    whiteSpace: 'nowrap',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    '@media (min-width:900px)': {
-                      '&:hover, button:hover &': { opacity: 1 },
-                    },
-                  }}
-                  className='text-wrapper'
-                >
-                  {isWatchlist ? 'Ausblenden' : 'Anzeigen'}
-                </Box>
-              </Button>
-            </Tooltip>
-            <Tooltip title='Als nächstes schauen'>
-              <Button
-                variant='outlined'
-                onClick={handleDialogOpen}
+                {isWatchlist ? 'Ausblenden' : 'Anzeigen'}
+              </Box>
+            </Button>
+          </Tooltip>
+          <Tooltip title='Als nächstes schauen'>
+            <Button
+              variant='outlined'
+              onClick={handleDialogOpen}
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: '0.5rem',
+                overflow: 'hidden',
+                transition: 'width 0.3s ease',
+                justifyContent: 'flex-start',
+                pl: '19px',
+                '@media (min-width:900px)': {
+                  '&:hover': { width: 150 },
+                  '&:hover .text-wrapper': {
+                    opacity: 1,
+                    transition: 'opacity 0.5s ease',
+                  },
+                },
+              }}
+              aria-label='Als nächstes schauen'
+              role='button'
+            >
+              <ListIcon />
+              <Box
+                component='span'
                 sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '0.5rem',
-                  overflow: 'hidden',
-                  transition: 'width 0.3s ease',
-                  justifyContent: 'flex-start',
-                  pl: '19px',
+                  whiteSpace: 'nowrap',
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease',
                   '@media (min-width:900px)': {
-                    '&:hover': { width: 150 },
-                    '&:hover .text-wrapper': {
-                      opacity: 1,
-                      transition: 'opacity 0.5s ease',
-                    },
+                    '&:hover, button:hover &': { opacity: 1 },
                   },
                 }}
-                aria-label='Als nächstes schauen'
-                role='button'
+                className='text-wrapper'
               >
-                <ListIcon />
-                <Box
-                  component='span'
-                  sx={{
-                    whiteSpace: 'nowrap',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                    '@media (min-width:900px)': {
-                      '&:hover, button:hover &': { opacity: 1 },
-                    },
-                  }}
-                  className='text-wrapper'
-                >
-                  Nächstes
-                </Box>
-              </Button>
-            </Tooltip>
-          </Box>
-        </>
-      )}
+                Nächstes
+              </Box>
+            </Button>
+          </Tooltip>
+        </Box>
+      </>
       <WatchlistDialog
         open={dialogOpen}
         onClose={handleDialogClose}

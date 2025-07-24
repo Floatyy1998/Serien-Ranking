@@ -2,7 +2,6 @@ import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
@@ -33,8 +32,6 @@ export const SeriesGrid = ({
   const auth = useAuth();
   const user = auth?.user;
   const { updateUserActivity } = useFriends();
-  const location = useLocation();
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
   const [showTodayDialog, setShowTodayDialog] = useState(false);
@@ -205,7 +202,7 @@ export const SeriesGrid = ({
       },
       []
     );
-    if (episodesToday.length > 0 && !isSharedListPage) {
+    if (episodesToday.length > 0) {
       setTimeout(() => {
         setTodayEpisodes(episodesToday);
         setShowTodayDialog(true);

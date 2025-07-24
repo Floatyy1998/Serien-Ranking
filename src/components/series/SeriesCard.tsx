@@ -47,16 +47,14 @@ export const SeriesCard = ({
   // Hole aktuelle Serie-Daten aus dem Provider
   const { seriesList } = useSeriesList();
   const location = useLocation();
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
   const isUserProfilePage =
     location.pathname.includes('/user/') ||
     location.pathname.includes('/profile/');
 
-  // Für Shared Lists oder User Profile verwende die übergebenen Daten, sonst die aktuellen aus dem Context
-  const currentSeries =
-    isSharedListPage || isUserProfilePage
-      ? series
-      : seriesList.find((s) => s.nmr === series.nmr) || series;
+  // Für User Profile verwende die übergebenen Daten, sonst die aktuellen aus dem Context
+  const currentSeries = isUserProfilePage
+    ? series
+    : seriesList.find((s) => s.nmr === series.nmr) || series;
 
   const shadowColor = !currentSeries.production?.production
     ? '#a855f7'
@@ -121,7 +119,7 @@ export const SeriesCard = ({
       new CustomEvent('openWatchedDialog', {
         detail: {
           series: currentSeries,
-          isReadOnly: isSharedListPage || forceReadOnlyDialogs,
+          isReadOnly: forceReadOnlyDialogs,
         },
       })
     );
@@ -241,25 +239,23 @@ export const SeriesCard = ({
     handleConfirmDialogClose();
   };
   const handleWatchlistToggle = async (event: React.MouseEvent) => {
-    if (!isSharedListPage) {
-      event.stopPropagation();
-      if (!user) {
-        setSnackbarMessage(
-          'Bitte melden Sie sich an, um die Watchlist zu ändern.'
-        );
-        setSnackbarSeverity('warning');
-        setSnackbarOpen(true);
-        return;
-      }
-      const ref = firebase
-        .database()
-        .ref(`${user?.uid}/serien/${currentSeries.nmr}/watchlist`);
-      const newWatchlistStatus = !currentSeries.watchlist;
-      try {
-        await ref.set(newWatchlistStatus);
-      } catch (error) {
-        console.error('Error updating watchlist status:', error);
-      }
+    event.stopPropagation();
+    if (!user) {
+      setSnackbarMessage(
+        'Bitte melden Sie sich an, um die Watchlist zu ändern.'
+      );
+      setSnackbarSeverity('warning');
+      setSnackbarOpen(true);
+      return;
+    }
+    const ref = firebase
+      .database()
+      .ref(`${user?.uid}/serien/${currentSeries.nmr}/watchlist`);
+    const newWatchlistStatus = !currentSeries.watchlist;
+    try {
+      await ref.set(newWatchlistStatus);
+    } catch (error) {
+      console.error('Error updating watchlist status:', error);
     }
   };
 
@@ -359,24 +355,22 @@ export const SeriesCard = ({
               </Typography>
             </Box>
           </Tooltip>
-          {!isSharedListPage && (
-            <Tooltip title='Zur Watchlist hinzufügen' arrow>
-              <Box
-                className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
-                onClick={handleWatchlistToggle}
-                aria-label='Zur Watchlist hinzufügen'
-                role='button'
-              >
-                <BookmarkIcon
-                  sx={{
-                    color: currentSeries.watchlist ? '#22c55e' : '#9e9e9e',
-                    width: '24px',
-                    height: '24px',
-                  }}
-                />
-              </Box>
-            </Tooltip>
-          )}
+          <Tooltip title='Zur Watchlist hinzufügen' arrow>
+            <Box
+              className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
+              onClick={handleWatchlistToggle}
+              aria-label='Zur Watchlist hinzufügen'
+              role='button'
+            >
+              <BookmarkIcon
+                sx={{
+                  color: currentSeries.watchlist ? '#22c55e' : '#9e9e9e',
+                  width: '24px',
+                  height: '24px',
+                }}
+              />
+            </Box>
+          </Tooltip>
         </Box>
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={currentSeries.title} arrow>
@@ -415,7 +409,7 @@ export const SeriesCard = ({
         setRatings={setRatings}
         handleDeleteSeries={handleDeleteSeries}
         handleUpdateRatings={handleUpdateRatings}
-        isReadOnly={isSharedListPage}
+        isReadOnly={false}
       />
       <SeriesEpisodesDialog
         open={openEpisodes}

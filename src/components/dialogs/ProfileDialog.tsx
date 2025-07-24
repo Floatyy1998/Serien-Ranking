@@ -40,18 +40,60 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   onClose,
 }) => {
   const { user } = useAuth()!;
-  const [username, setUsername] = useState(user?.displayName || '');
-  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isPublic, setIsPublic] = useState(false);
+  const [usernameEditable, setUsernameEditable] = useState(false);
+  const [displayNameEditable, setDisplayNameEditable] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Öffentliche Einstellung beim Öffnen laden
+  // Profildaten beim Öffnen laden
   React.useEffect(() => {
+    const loadProfileData = async () => {
+      if (!user || !open) return;
+
+      try {
+        const userRef = firebase.database().ref(`users/${user.uid}`);
+        const snapshot = await userRef.once('value');
+        const userData = snapshot.val();
+
+        if (userData) {
+          setUsername(userData.username || '');
+          setDisplayName(userData.displayName || '');
+          setPhotoURL(userData.photoURL || user.photoURL || '');
+          setIsPublic(userData.isPublic || false);
+        } else {
+          // Falls keine Daten in der DB existieren, verwende Firebase Auth Daten
+          setUsername('');
+          setDisplayName(user.displayName || '');
+          setPhotoURL(user.photoURL || '');
+          setIsPublic(false);
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+        // Fallback zu Firebase Auth Daten
+        setUsername('');
+        setDisplayName(user.displayName || '');
+        setPhotoURL(user.photoURL || '');
+        setIsPublic(false);
+      }
+    };
+
+    if (open) {
+      loadProfileData();
+      // Edit-Zustände beim Öffnen zurücksetzen
+      setUsernameEditable(false);
+      setDisplayNameEditable(false);
+    }
+  }, [user, open]);
+
+  // Öffentliche Einstellung beim Öffnen laden (entfernt, da jetzt oben abgehandelt)
+  /*React.useEffect(() => {
     const loadPublicSetting = async () => {
       if (!user || !open) return;
 
@@ -65,7 +107,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
     };
 
     loadPublicSetting();
-  }, [user, open]);
+  }, [user, open]);*/
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -89,8 +131,30 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
       await imageRef.put(file);
       const downloadURL = await imageRef.getDownloadURL();
 
+      // Sofort speichern - Profilbild in Firebase Auth aktualisieren
+      await user.updateProfile({
+        photoURL: downloadURL,
+      });
+
+      // Sofort speichern - Profilbild in Realtime Database aktualisieren
+      await firebase
+        .database()
+        .ref(`users/${user.uid}/photoURL`)
+        .set(downloadURL);
+
+      // Firebase Auth User neu laden und Auth State Change forcieren
+      await user.reload();
+
+      // Zusätzliche Maßnahme: Auth State Change manuell triggern
+      // Dies stellt sicher, dass alle Komponenten das Update erhalten
+      const currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        // Trigger ein manuelles Auth State Change Event
+        firebase.auth().updateCurrentUser(currentUser);
+      }
+
       setPhotoURL(downloadURL);
-      setSuccess('Profilbild erfolgreich hochgeladen');
+      setSuccess('Profilbild erfolgreich hochgeladen und gespeichert');
     } catch (error: any) {
       console.error('Error uploading image:', error);
       if (
@@ -341,33 +405,107 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           </Box>
 
           {/* Username */}
-          <TextField
-            label='Benutzername *'
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            fullWidth
-            helperText='3-20 Zeichen, nur Buchstaben, Zahlen und _'
-            error={!!username && !isUsernameValid(username)}
-            sx={{
-              '& .MuiInputBase-root': {
-                minHeight: { xs: 48, sm: 40 },
-              },
-            }}
-          />
+          <Box sx={{ position: 'relative' }}>
+            <TextField
+              label='Benutzername *'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              fullWidth
+              disabled={!usernameEditable}
+              helperText='3-20 Zeichen, nur Buchstaben, Zahlen und _'
+              error={!!username && !isUsernameValid(username)}
+              sx={{
+                '& .MuiInputBase-root': {
+                  minHeight: { xs: 48, sm: 40 },
+                  paddingRight: '48px', // Platz für das Edit-Icon
+                },
+                '& .Mui-disabled': {
+                  color: 'text.primary !important',
+                  '-webkit-text-fill-color': 'text.primary !important',
+                },
+                '& .Mui-disabled .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                },
+                '& .Mui-disabled:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                },
+                '& .MuiFormHelperText-root': {
+                  backgroundColor: '#0C0C0C',
+                  margin: '3px 0 0 0',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                },
+              }}
+            />
+            <IconButton
+              onClick={() => setUsernameEditable(!usernameEditable)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: '32%',
+                transform: 'translateY(-50%)',
+                color: usernameEditable ? 'primary.main' : 'text.secondary',
+                '&:hover': {
+                  backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                },
+              }}
+              size='small'
+            >
+              <Edit fontSize='small' />
+            </IconButton>
+          </Box>
 
           {/* Display Name */}
-          <TextField
-            label='Anzeigename (optional)'
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            fullWidth
-            helperText='Wird anderen Nutzern angezeigt'
-            sx={{
-              '& .MuiInputBase-root': {
-                minHeight: { xs: 48, sm: 40 },
-              },
-            }}
-          />
+          <Box sx={{ position: 'relative' }}>
+            <TextField
+              label='Anzeigename (optional)'
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              fullWidth
+              disabled={!displayNameEditable}
+              helperText='Wird anderen Nutzern angezeigt'
+              sx={{
+                '& .MuiInputBase-root': {
+                  minHeight: { xs: 48, sm: 40 },
+                  paddingRight: '48px', // Platz für das Edit-Icon
+                },
+                '& .Mui-disabled': {
+                  color: 'text.primary !important',
+                  '-webkit-text-fill-color': 'text.primary !important',
+                },
+                '& .Mui-disabled .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                },
+                '& .Mui-disabled:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0, 0, 0, 0.23) !important',
+                },
+                '& .MuiFormHelperText-root': {
+                  backgroundColor: '#0C0C0C',
+                  margin: '3px 0 0 0',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                },
+              }}
+            />
+            <IconButton
+              onClick={() => setDisplayNameEditable(!displayNameEditable)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: '32%',
+                transform: 'translateY(-50%)',
+                color: displayNameEditable ? 'primary.main' : 'text.secondary',
+                '&:hover': {
+                  backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                },
+              }}
+              size='small'
+            >
+              <Edit fontSize='small' />
+            </IconButton>
+          </Box>
 
           {/* Freigabe-Einstellungen */}
           <Card variant='outlined' sx={{ borderRadius: { xs: 2, sm: 1 } }}>

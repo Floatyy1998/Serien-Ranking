@@ -37,16 +37,14 @@ export const MovieCard = ({
 }: MovieCardProps) => {
   const { movieList } = useMovieList();
   const location = useLocation();
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
   const isUserProfilePage =
     location.pathname.includes('/user/') ||
     location.pathname.includes('/profile/');
 
-  // Für Shared Lists oder User Profile verwende die übergebenen Daten, sonst die aktuellen aus dem Context
-  const currentMovie =
-    isSharedListPage || isUserProfilePage
-      ? movie
-      : movieList.find((m) => m.nmr === movie.nmr) || movie;
+  // Für User Profile verwende die übergebenen Daten, sonst die aktuellen aus dem Context
+  const currentMovie = isUserProfilePage
+    ? movie
+    : movieList.find((m) => m.nmr === movie.nmr) || movie;
 
   const shadowColor =
     currentMovie.status === 'Released' ? '#a855f7' : '#22c55e';
@@ -139,11 +137,20 @@ export const MovieCard = ({
       try {
         await ref.set(updatedRatings);
 
-        // Activity tracken für Freunde
+        // Activity tracken für Freunde - mit der aktualisierten Bewertung
+        const movieWithUpdatedRating = {
+          ...currentMovie,
+          rating: Object.fromEntries(
+            Object.entries(ratings).map(([k, v]) => [k, Number(v)])
+          ),
+        };
+        const overallRating = calculateOverallRating(movieWithUpdatedRating);
+        const ratingValue = parseFloat(overallRating);
         await updateUserActivity({
           type: 'rating_updated',
           itemTitle: currentMovie.title || 'Unbekannter Film',
           itemId: currentMovie.nmr,
+          rating: ratingValue > 0 ? ratingValue : undefined,
         });
 
         setOpen(false);
@@ -277,7 +284,7 @@ export const MovieCard = ({
         setRatings={setRatings}
         handleDeleteMovie={handleDeleteMovie}
         handleUpdateRatings={handleUpdateRatings}
-        isReadOnly={isSharedListPage}
+        isReadOnly={false}
       />
       <Snackbar
         open={snackbarOpen}
