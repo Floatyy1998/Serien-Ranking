@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
@@ -41,8 +41,23 @@ export const SeriesGrid = ({
   >(null);
   const [isWatchedDialogReadOnly, setIsWatchedDialogReadOnly] = useState(false);
   const { seriesStatsData } = useStats();
-  const dialogShown = useRef(false);
-  const initialLoadComplete = useRef(false);
+
+  // Prüfe ob der Benutzer "heute nicht mehr anzeigen" gewählt hat
+  const isDontShowTodayActive = () => {
+    const now = Date.now();
+    const storedHideUntil = localStorage.getItem('todayDontShow');
+    return storedHideUntil && now < parseInt(storedHideUntil);
+  };
+
+  // Prüfe ob der Dialog bereits in dieser Session gezeigt wurde
+  const isDialogShownThisSession = () => {
+    return sessionStorage.getItem('todayDialogShownThisSession') === 'true';
+  };
+
+  // Markiere Dialog als in dieser Session gezeigt
+  const setDialogShownThisSession = () => {
+    sessionStorage.setItem('todayDialogShownThisSession', 'true');
+  };
 
   // Freund-Serien State
   const [friendSeriesList, setFriendSeriesList] = useState<any[]>([]);
@@ -173,54 +188,50 @@ export const SeriesGrid = ({
   ]);
   useEffect(() => {
     // Today Dialog nur für eigene Serien, nicht für Freunde
-    // Nur beim ersten Laden der Serien anzeigen, nicht bei Filter-Änderungen
+    // Nur anzeigen wenn nicht durch "heute nicht mehr anzeigen" verhindert
+    // und noch nicht in dieser Session gezeigt
     if (
-      !seriesList.length ||
+      !contextSeriesList.length ||
       !user ||
-      dialogShown.current ||
-      targetUserId ||
-      initialLoadComplete.current
+      isDontShowTodayActive() ||
+      isDialogShownThisSession() ||
+      targetUserId
     )
       return;
 
-    initialLoadComplete.current = true;
-
-    const now = Date.now();
-    const storedHideUntil = localStorage.getItem('todayDontShow');
-    if (storedHideUntil && now < parseInt(storedHideUntil)) return;
-    const episodesToday: TodayEpisode[] = seriesList.reduce<TodayEpisode[]>(
-      (acc, series) => {
-        if (series.nextEpisode && series.nextEpisode.nextEpisode) {
-          const episodeDate = new Date(series.nextEpisode.nextEpisode);
-          if (
-            new Date().getFullYear() === episodeDate.getFullYear() &&
-            new Date().getMonth() === episodeDate.getMonth() &&
-            new Date().getDate() === episodeDate.getDate()
-          ) {
-            acc.push({
-              id: series.id,
-              seriesTitle: series.title || 'Unbekannte Serie',
-              episodeTitle: series.nextEpisode?.title || 'Unbekannte Episode',
-              releaseTime: getFormattedTime(episodeDate.toISOString()),
-              releaseTimestamp: episodeDate.getTime(),
-              poster: series.poster?.poster || '',
-              seasonNumber: series.nextEpisode?.season || 0,
-              episodeNumber: series.nextEpisode?.episode || 0,
-            });
-          }
+    const episodesToday: TodayEpisode[] = contextSeriesList.reduce<
+      TodayEpisode[]
+    >((acc, series) => {
+      if (series.nextEpisode && series.nextEpisode.nextEpisode) {
+        const episodeDate = new Date(series.nextEpisode.nextEpisode);
+        if (
+          new Date().getFullYear() === episodeDate.getFullYear() &&
+          new Date().getMonth() === episodeDate.getMonth() &&
+          new Date().getDate() === episodeDate.getDate()
+        ) {
+          acc.push({
+            id: series.id,
+            seriesTitle: series.title || 'Unbekannte Serie',
+            episodeTitle: series.nextEpisode?.title || 'Unbekannte Episode',
+            releaseTime: getFormattedTime(episodeDate.toISOString()),
+            releaseTimestamp: episodeDate.getTime(),
+            poster: series.poster?.poster || '',
+            seasonNumber: series.nextEpisode?.season || 0,
+            episodeNumber: series.nextEpisode?.episode || 0,
+          });
         }
-        return acc;
-      },
-      []
-    );
+      }
+      return acc;
+    }, []);
+
     if (episodesToday.length > 0) {
       setTimeout(() => {
         setTodayEpisodes(episodesToday);
         setShowTodayDialog(true);
-        dialogShown.current = true;
+        setDialogShownThisSession(); // Markiere als in dieser Session gezeigt
       }, 1000);
     }
-  }, [seriesList, user, targetUserId]);
+  }, [contextSeriesList, user, targetUserId]);
   const handleDialogClose = () => {
     setShowTodayDialog(false);
   };
