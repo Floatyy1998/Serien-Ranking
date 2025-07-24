@@ -23,8 +23,7 @@ const RegisterPage = () => {
     return re.test(email);
   };
   const validatePassword = (password: string) => {
-    const re =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s])[^\s]{8,}$/;
     return re.test(password);
   };
 
@@ -63,7 +62,7 @@ const RegisterPage = () => {
 
     if (!validatePassword(password)) {
       setPasswordError(
-        'Das Passwort muss mindestens 8 Zeichen lang sein und Groß-, Kleinbuchstaben, Ziffern sowie Sonderzeichen enthalten.'
+        'Das Passwort muss mindestens 8 Zeichen lang sein und Groß-, Kleinbuchstaben, Ziffern sowie mindestens ein Sonderzeichen enthalten.'
       );
       return;
     }
