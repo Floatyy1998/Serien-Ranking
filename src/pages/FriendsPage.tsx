@@ -462,6 +462,10 @@ export const FriendsPage: React.FC = () => {
               '&.Mui-selected': {
                 color: '#00fed7',
               },
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: 'inherit',
+              },
             },
             '& .MuiTabs-indicator': {
               backgroundColor: '#00fed7',
@@ -470,12 +474,16 @@ export const FriendsPage: React.FC = () => {
               transform: 'scaleX(0.85)',
               transformOrigin: 'center',
             },
+            '& .MuiTouchRipple-root': {
+              display: 'none',
+            },
           }}
         >
           <Tab
             icon={<People sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />}
             label={`Freunde (${friends.length})`}
             iconPosition='start'
+            disableRipple
           />
           <Tab
             icon={
@@ -483,11 +491,13 @@ export const FriendsPage: React.FC = () => {
             }
             label={`Anfragen (${friendRequests.length})`}
             iconPosition='start'
+            disableRipple
           />
           <Tab
             icon={<Search sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />}
             label='Freunde finden'
             iconPosition='start'
+            disableRipple
           />
         </Tabs>
       </Paper>
@@ -570,7 +580,9 @@ export const FriendsPage: React.FC = () => {
                           borderColor: '#00fed7',
                         }}
                       >
-                        {currentProfile.username?.charAt(0).toUpperCase()}
+                        {currentProfile.displayName
+                          ? currentProfile.displayName.charAt(0).toUpperCase()
+                          : currentProfile.username.charAt(0).toUpperCase()}
                       </Avatar>
 
                       <Box>
@@ -583,18 +595,9 @@ export const FriendsPage: React.FC = () => {
                             color: '#e0e0e0',
                           }}
                         >
-                          @{currentProfile.username}
+                          {currentProfile.displayName ||
+                            '@' + currentProfile.username}
                         </Typography>
-                        {currentProfile.displayName && (
-                          <Typography
-                            variant='body2'
-                            color='#9e9e9e'
-                            gutterBottom
-                            sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                          >
-                            {currentProfile.displayName}
-                          </Typography>
-                        )}
 
                         {currentProfile.isOnline ? (
                           <Chip

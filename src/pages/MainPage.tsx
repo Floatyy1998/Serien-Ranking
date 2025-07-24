@@ -262,7 +262,7 @@ export const MainPage: React.FC = () => {
       photoURL: user.photoURL || undefined,
       isOnline: true,
     };
-  }, [user]);
+  }, [user, user?.photoURL]); // Explizit user.photoURL als Dependency hinzufügen
 
   return (
     <Container
@@ -811,6 +811,13 @@ export const MainPage: React.FC = () => {
               fontSize: { xs: '0.75rem', md: '0.875rem' },
               minHeight: { xs: 48, md: 72 },
               padding: { xs: '6px 8px', md: '12px 16px' },
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: 'inherit',
+              },
+            },
+            '& .MuiTouchRipple-root': {
+              display: 'none',
             },
           }}
         >
@@ -820,11 +827,13 @@ export const MainPage: React.FC = () => {
               <CalendarToday sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
             }
             iconPosition='start'
+            disableRipple
           />
           <Tab
             label={`Filme (${combinedStats.moviesCount})`}
             icon={<Movie sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />}
             iconPosition='start'
+            disableRipple
           />
         </Tabs>
 

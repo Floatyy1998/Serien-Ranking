@@ -70,17 +70,14 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     const loadActivities = async () => {
       setLoading(true);
       try {
-        console.log('Loading activities for friend:', friendId);
         const activitiesRef = firebase.database().ref(`activities/${friendId}`);
         const snapshot = await activitiesRef
           .orderByChild('timestamp')
           .limitToLast(20)
           .once('value');
 
-        console.log('Activities snapshot exists:', snapshot.exists());
         if (snapshot.exists()) {
           const data = snapshot.val();
-          console.log('Raw activities data:', data);
           const activityList = Object.entries(data).map(
             ([id, activity]: [string, any]) => ({
               id,
@@ -90,10 +87,8 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
 
           // Sortiere nach Timestamp (neueste zuerst)
           activityList.sort((a, b) => b.timestamp - a.timestamp);
-          console.log('Processed activities:', activityList);
           setActivities(activityList);
         } else {
-          console.log('No activities found for friend:', friendId);
           setActivities([]);
         }
       } catch (error) {

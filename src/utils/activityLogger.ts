@@ -28,8 +28,6 @@ export const logActivity = async (
 
     const activitiesRef = firebase.database().ref(`activities/${userId}`);
     await activitiesRef.push(activityWithTimestamp);
-
-    console.log('Activity logged:', activityWithTimestamp);
   } catch (error) {
     console.error('Error logging activity:', error);
   }

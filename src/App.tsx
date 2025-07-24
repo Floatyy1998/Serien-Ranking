@@ -21,7 +21,6 @@ import { FriendSeriesListPage } from './pages/FriendSeriesListPage';
 import { FriendsPage } from './pages/FriendsPage';
 import MainPage from './pages/MainPage';
 import MoviePage from './pages/MoviePage';
-import SharedSeriesList from './pages/SharedSeriesList';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { theme } from './theme';
 // Nur diese bleiben lazy
@@ -158,10 +157,6 @@ function AppContent() {
                               }
                             </AuthContext.Consumer>
                           }
-                        />
-                        <Route
-                          path='/shared-list/:linkId'
-                          element={<SharedSeriesList />}
                         />
                         <Route
                           path='/friends'

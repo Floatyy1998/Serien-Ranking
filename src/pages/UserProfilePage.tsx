@@ -112,6 +112,13 @@ export const UserProfilePage: React.FC = () => {
   const [selectedMovieProvider, setSelectedMovieProvider] = useState('All');
   const debouncedSearchValue = useDebounce(searchValue, 300);
 
+  // Profildaten zurücksetzen wenn userId sich ändert
+  useEffect(() => {
+    setProfileData(null);
+    setLoading(true);
+    setError('');
+  }, [userId]);
+
   useEffect(() => {
     const loadUserProfile = async () => {
       if (!userId || !user) return;
@@ -391,7 +398,7 @@ export const UserProfilePage: React.FC = () => {
       onlineStatusRef.off('value', onlineListener);
       lastActiveRef.off('value', lastActiveListener);
     };
-  }, [userId, profileData?.profile?.username]); // Abhängigkeit auf username um zu vermeiden, dass es sich selbst triggert
+  }, [userId]); // Nur userId als Abhängigkeit, nicht username
 
   const canViewProfile = () => {
     if (!profileData) return false;
@@ -452,10 +459,12 @@ export const UserProfilePage: React.FC = () => {
               src={profileData.profile.photoURL}
               sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
             >
-              {profileData.profile.username?.charAt(0).toUpperCase()}
+              {(profileData.profile.displayName || profileData.profile.username)
+                ?.charAt(0)
+                .toUpperCase()}
             </Avatar>
             <Typography variant='h5' gutterBottom>
-              @{profileData.profile.username}
+              @{profileData.profile.displayName || profileData.profile.username}
             </Typography>
             <Typography variant='body1' color='text.secondary' mb={3}>
               Dieses Profil ist privat. Du musst mit diesem Benutzer befreundet
@@ -508,7 +517,9 @@ export const UserProfilePage: React.FC = () => {
                 mb: 1.5,
               }}
             >
-              {profileData.profile.username?.charAt(0).toUpperCase()}
+              {(profileData.profile.displayName || profileData.profile.username)
+                ?.charAt(0)
+                .toUpperCase()}
             </Avatar>
 
             {/* Titel */}
@@ -520,7 +531,10 @@ export const UserProfilePage: React.FC = () => {
             >
               {isOwnProfile
                 ? 'Mein Profil'
-                : `${profileData.profile.username}s Profil`}
+                : `${
+                    profileData.profile.displayName ||
+                    profileData.profile.username
+                  }s Profil`}
             </Typography>
 
             {/* Username und Display Name entfernt - redundant */}
@@ -580,7 +594,9 @@ export const UserProfilePage: React.FC = () => {
                 boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)',
               }}
             >
-              {profileData.profile.username?.charAt(0).toUpperCase()}
+              {(profileData.profile.displayName || profileData.profile.username)
+                ?.charAt(0)
+                .toUpperCase()}
             </Avatar>
             <Box>
               <Typography
@@ -592,7 +608,10 @@ export const UserProfilePage: React.FC = () => {
               >
                 {isOwnProfile
                   ? '👤 Mein Profil'
-                  : `👤 ${profileData.profile.username}s Profil`}
+                  : `👤 ${
+                      profileData.profile.displayName ||
+                      profileData.profile.username
+                    }s Profil`}
               </Typography>
               <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
                 {/* Username und Display Name komplett entfernt - redundant */}
@@ -1305,6 +1324,13 @@ export const UserProfilePage: React.FC = () => {
               fontSize: { xs: '0.75rem', md: '0.875rem' },
               minHeight: { xs: 48, md: 72 },
               padding: { xs: '6px 8px', md: '12px 16px' },
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: 'inherit',
+              },
+            },
+            '& .MuiTouchRipple-root': {
+              display: 'none',
             },
           }}
         >
@@ -1314,11 +1340,13 @@ export const UserProfilePage: React.FC = () => {
               <CalendarToday sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
             }
             iconPosition='start'
+            disableRipple
           />
           <Tab
             label={`Filme (${profileData.stats.moviesCount})`}
             icon={<Star sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />}
             iconPosition='start'
+            disableRipple
           />
         </Tabs>
 
