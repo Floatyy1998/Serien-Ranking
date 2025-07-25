@@ -357,8 +357,10 @@ export const FriendsPage: React.FC = () => {
         display='flex'
         justifyContent='space-between'
         alignItems='center'
-        mb={4}
         sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
           borderRadius: 2,
           p: { xs: 1.5, sm: 2, md: 3 },
@@ -366,6 +368,21 @@ export const FriendsPage: React.FC = () => {
           flexDirection: { xs: 'column', md: 'row' },
           gap: { xs: 1.5, md: 0 },
           minHeight: { xs: 'auto', md: '120px' },
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          cursor: 'pointer',
+          transition: 'background 0.2s',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)',
+          },
+        }}
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+          if (
+            e.target instanceof HTMLElement &&
+            !e.target.closest('.friends-header-avatar') &&
+            !e.target.closest('.friends-header-button')
+          ) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }}
       >
         <Box
@@ -445,6 +462,7 @@ export const FriendsPage: React.FC = () => {
       <Paper
         sx={{
           mb: 3,
+          mt: 2,
           backgroundColor: '#2d2d30',
           borderRadius: 2,
         }}
@@ -755,6 +773,7 @@ export const FriendsPage: React.FC = () => {
                         }}
                       >
                         <Avatar
+                          className='friends-header-avatar'
                           src={requestProfile.photoURL}
                           sx={{
                             width: { xs: 48, md: 56 },
@@ -811,6 +830,7 @@ export const FriendsPage: React.FC = () => {
                         }}
                       >
                         <Button
+                          className='friends-header-button'
                           variant='contained'
                           color='success'
                           size='small'

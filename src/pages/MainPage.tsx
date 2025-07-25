@@ -274,8 +274,10 @@ export const MainPage: React.FC = () => {
         display='flex'
         justifyContent='space-between'
         alignItems='center'
-        mb={4}
         sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
           borderRadius: 2,
           p: { xs: 1.5, sm: 2, md: 3 },
@@ -283,6 +285,22 @@ export const MainPage: React.FC = () => {
           flexDirection: { xs: 'column', md: 'row' },
           gap: { xs: 1.5, md: 0 },
           minHeight: { xs: 'auto', md: '120px' },
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          cursor: 'pointer',
+          transition: 'background 0.2s',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)',
+          },
+        }}
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+          // Nur scrollen, wenn nicht auf Avatar oder Button geklickt
+          if (
+            e.target instanceof HTMLElement &&
+            !e.target.closest('.main-header-avatar') &&
+            !e.target.closest('.main-header-button')
+          ) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }}
       >
         <Box
@@ -298,6 +316,7 @@ export const MainPage: React.FC = () => {
           <Avatar
             src={userProfile?.photoURL}
             onClick={() => setProfileDialogOpen(true)}
+            className='main-header-avatar'
             sx={{
               width: { xs: 50, sm: 60, md: 80 },
               height: { xs: 50, sm: 60, md: 80 },
@@ -371,6 +390,7 @@ export const MainPage: React.FC = () => {
             variant='contained'
             onClick={() => navigate('/friends')}
             startIcon={<People />}
+            className='main-header-button'
             sx={{
               background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
               color: '#000',
