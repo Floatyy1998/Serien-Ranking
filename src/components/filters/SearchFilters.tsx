@@ -182,12 +182,14 @@ export const SearchFilters = ({
           if (series) {
             // Ermittle Episode-Nummer aus Index wenn episode.episode nicht verfügbar ist
             const episodeNumber = episode.episode || episodeIndex + 1;
+
             await updateUserActivity({
               type: 'episode_watched',
               itemTitle: `${
                 series.title || series.original_name || 'Unbekannte Serie'
               } - Staffel ${seasonNumber} Episode ${episodeNumber}`,
-              itemId: series.nmr,
+              tmdbId: series.id, // TMDB ID verwenden
+              itemId: series.nmr, // Fallback für ältere Versionen
             });
           }
         }

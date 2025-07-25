@@ -132,7 +132,8 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
         await updateUserActivity({
           type: 'movie_added',
           itemTitle: selectedMovie.title || 'Unbekannter Film',
-          itemId: selectedMovie.id,
+          tmdbId: selectedMovie.id, // TMDB ID verwenden
+          itemId: selectedMovie.id, // Bei neuen Filmen ist dies dasselbe
         });
 
         setSnackbarMessage('Film hinzugefügt!');

@@ -54,7 +54,8 @@ export interface FriendActivity {
     | 'episode_watched'
     | 'episodes_watched';
   itemTitle: string;
-  itemId: number;
+  tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
+  itemId: number; // Interne ID (Fallback für ältere Aktivitäten)
   rating?: number;
   timestamp: number;
 }

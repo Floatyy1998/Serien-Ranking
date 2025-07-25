@@ -120,7 +120,8 @@ export const MovieCard = ({
     await updateUserActivity({
       type: 'movie_deleted',
       itemTitle: currentMovie.title || 'Unbekannter Film',
-      itemId: currentMovie.nmr,
+      tmdbId: currentMovie.id, // TMDB ID verwenden
+      itemId: currentMovie.nmr, // Fallback für ältere Versionen
     });
 
     setOpen(false);
@@ -149,7 +150,8 @@ export const MovieCard = ({
         await updateUserActivity({
           type: 'rating_updated',
           itemTitle: currentMovie.title || 'Unbekannter Film',
-          itemId: currentMovie.nmr,
+          tmdbId: currentMovie.id, // TMDB ID verwenden
+          itemId: currentMovie.nmr, // Fallback für ältere Versionen
           rating: ratingValue > 0 ? ratingValue : undefined,
         });
 
