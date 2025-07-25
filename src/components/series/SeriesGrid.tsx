@@ -330,7 +330,8 @@ export const SeriesGrid = ({
               itemTitle: `${
                 series.title || series.original_name || 'Unbekannte Serie'
               } - ${activityText}`,
-              itemId: series.nmr,
+              tmdbId: series.id, // TMDB ID verwenden
+              itemId: series.nmr, // Fallback für ältere Versionen
             });
           }
         }
@@ -374,7 +375,8 @@ export const SeriesGrid = ({
           itemTitle: `${
             series.title || series.original_name || 'Unbekannte Serie'
           } - Staffel ${seasonNumber} Episode ${episodeNumber}`,
-          itemId: series.nmr,
+          tmdbId: series.id, // TMDB ID verwenden
+          itemId: series.nmr, // Fallback für ältere Versionen
         });
       }
     } catch (error) {
@@ -462,7 +464,8 @@ export const SeriesGrid = ({
           itemTitle: `${
             series.title || series.original_name || 'Unbekannte Serie'
           } - ${activityText}`,
-          itemId: series.nmr,
+          tmdbId: series.id, // TMDB ID verwenden
+          itemId: series.nmr, // Fallback für ältere Versionen
         });
       }
     } catch (error) {
@@ -575,7 +578,8 @@ export const SeriesGrid = ({
           itemTitle: `${
             series.title || series.original_name || 'Unbekannte Serie'
           } - ${activityText}`,
-          itemId: series.nmr,
+          tmdbId: series.id, // TMDB ID verwenden
+          itemId: series.nmr, // Fallback für ältere Versionen
         });
       }
     } catch (error) {

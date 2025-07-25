@@ -3,28 +3,38 @@ import {
   Close,
   Delete,
   FastForward,
-  Movie,
+  Movie as MovieIcon,
   PlayArrow,
   Star,
   Timeline,
   Tv,
 } from '@mui/icons-material';
 import {
+  Alert,
   Avatar,
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   Fade,
   IconButton,
   Slide,
+  Snackbar,
   Typography,
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../App';
+import { useFriends } from '../../contexts/FriendsProvider';
+import { Movie } from '../../interfaces/Movie';
+import { Series } from '../../interfaces/Series';
+import MovieDialog from './MovieDialog';
+import SeriesDialog from './SeriesDialog';
 
 interface ActivityItem {
   id: string;
@@ -44,6 +54,8 @@ interface ActivityItem {
   episodeInfo?: string;
   rating?: number;
   timestamp: number;
+  tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
+  itemId?: number; // Interne ID (Fallback für ältere Aktivitäten)
 }
 
 interface FriendActivityDialogProps {
@@ -63,6 +75,217 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
 }) => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Dialog state
+  const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [seriesDialogOpen, setSeriesDialogOpen] = useState(false);
+  const [movieDialogOpen, setMovieDialogOpen] = useState(false);
+
+  // TMDB Dialog state
+  const [tmdbDialogOpen, setTmdbDialogOpen] = useState(false);
+  const [tmdbData, setTmdbData] = useState<any>(null);
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const [tmdbType, setTmdbType] = useState<'movie' | 'tv'>('movie');
+  const [adding, setAdding] = useState(false);
+
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    'success' | 'error' | 'warning'
+  >('success');
+
+  // Context hooks
+  const auth = useAuth();
+  const user = auth?.user;
+  const { updateUserActivity } = useFriends();
+
+  // Snackbar handler
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  // Function to fetch TMDB data
+  const fetchTMDBData = async (tmdbId: number, type: 'movie' | 'tv') => {
+    try {
+      setTmdbLoading(true);
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+      const url = `https://api.themoviedb.org/3/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=de-DE`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      setTmdbData(data);
+      setTmdbType(type);
+      setTmdbDialogOpen(true);
+    } catch (error) {
+      console.error('Fehler beim Laden der TMDB-Daten:', error);
+    } finally {
+      setTmdbLoading(false);
+    }
+  };
+
+  // Function to add series/movie to own list using existing API
+  const addToOwnList = async () => {
+    if (!tmdbData || !user) return;
+
+    try {
+      setAdding(true);
+
+      if (tmdbType === 'tv') {
+        // Add series using existing API
+        const seriesData = {
+          id: tmdbData.id.toString(),
+          data: {
+            user: import.meta.env.VITE_USER,
+            id: tmdbData.id,
+            uuid: user.uid,
+          },
+        };
+
+        const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-cache',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          redirect: 'follow',
+          referrerPolicy: 'no-referrer',
+          body: JSON.stringify(seriesData.data),
+        });
+
+        if (res.ok) {
+          // Activity tracken für Freunde
+          await updateUserActivity({
+            type: 'series_added',
+            itemTitle: tmdbData.name || 'Unbekannte Serie',
+            tmdbId: tmdbData.id, // TMDB ID verwenden
+            itemId: tmdbData.id, // Bei TMDB-Daten ist dies dasselbe
+          });
+
+          setSnackbarMessage(
+            `Serie "${tmdbData.name}" erfolgreich hinzugefügt!`
+          );
+          setSnackbarSeverity('success');
+          setSnackbarOpen(true);
+        } else {
+          const msgJson = await res.json();
+          if (msgJson.error === 'Serie bereits vorhanden') {
+            setSnackbarMessage(
+              `Serie "${tmdbData.name}" ist bereits in deiner Liste vorhanden`
+            );
+            setSnackbarSeverity('warning');
+            setSnackbarOpen(true);
+            throw new Error('Fehler beim Hinzufügen der Serie.');
+          }
+        }
+      } else {
+        // Add movie using existing API
+        const movieData = {
+          id: tmdbData.id.toString(),
+          data: {
+            user: import.meta.env.VITE_USER,
+            id: tmdbData.id,
+            uuid: user.uid,
+          },
+        };
+
+        const res = await fetch(`https://serienapi.konrad-dinges.de/addMovie`, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-cache',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          redirect: 'follow',
+          referrerPolicy: 'no-referrer',
+          body: JSON.stringify(movieData.data),
+        });
+
+        if (res.ok) {
+          // Activity tracken für Freunde
+          await updateUserActivity({
+            type: 'movie_added',
+            itemTitle: tmdbData.title || 'Unbekannter Film',
+            tmdbId: tmdbData.id, // TMDB ID verwenden
+            itemId: tmdbData.id, // Bei TMDB-Daten ist dies dasselbe
+          });
+
+          setSnackbarMessage(
+            `Film "${tmdbData.title}" erfolgreich hinzugefügt!`
+          );
+          setSnackbarSeverity('success');
+          setSnackbarOpen(true);
+        } else {
+          const msgJson = await res.json();
+          if (msgJson.error === 'Film bereits vorhanden') {
+            setSnackbarMessage(
+              `Film "${tmdbData.title}" ist bereits in deiner Liste vorhanden`
+            );
+            setSnackbarSeverity('warning');
+            setSnackbarOpen(true);
+          } else {
+            throw new Error('Fehler beim Hinzufügen des Films.');
+          }
+        }
+      }
+
+      // Close dialog after successful addition
+      setTmdbDialogOpen(false);
+      setTmdbData(null);
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen zur eigenen Liste:', error);
+      setSnackbarMessage(
+        `Fehler beim Hinzufügen zur Liste: ${
+          error instanceof Error ? error.message : 'Unbekannter Fehler'
+        }`
+      );
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  // Handler functions for opening dialogs
+  const handleTitleClick = async (activity: ActivityItem) => {
+    const title =
+      activity.itemTitle || activity.seriesTitle || activity.movieTitle;
+
+    // Priorisiere TMDB-ID, verwende itemId als Fallback
+    const tmdbId = activity.tmdbId || activity.itemId;
+
+    // Always try to use TMDB ID first if available
+    if (tmdbId) {
+      if (
+        activity.type.includes('series') ||
+        activity.type === 'episode_watched' ||
+        activity.type === 'episodes_watched'
+      ) {
+        await fetchTMDBData(tmdbId, 'tv');
+        return;
+      } else if (activity.type.includes('movie')) {
+        await fetchTMDBData(tmdbId, 'movie');
+        return;
+      }
+    }
+  };
+
+  const handleSeriesDialogClose = () => {
+    setSeriesDialogOpen(false);
+    setSelectedSeries(null);
+  };
+
+  const handleMovieDialogClose = () => {
+    setMovieDialogOpen(false);
+    setSelectedMovie(null);
+  };
+
+  const handleTmdbDialogClose = () => {
+    setTmdbDialogOpen(false);
+    setTmdbData(null);
+    setAdding(false);
+  };
 
   useEffect(() => {
     if (!open || !friendId) return;
@@ -116,7 +339,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       case 'series_rated':
         return <Star sx={iconStyle} />;
       case 'movie_added':
-        return <Movie sx={iconStyle} />;
+        return <MovieIcon sx={iconStyle} />;
       case 'movie_deleted':
         return <Delete sx={iconStyle} />;
       case 'movie_rated':
@@ -175,40 +398,128 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       activity.movieTitle ||
       'Unbekannter Titel';
 
+    const TitleComponent = ({ children }: { children: React.ReactNode }) => (
+      <Box
+        component='span'
+        sx={{
+          color: '#00fed7',
+          cursor: 'pointer',
+          textDecoration: 'underline',
+          '&:hover': {
+            color: '#00d4b8',
+          },
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleTitleClick(activity);
+        }}
+      >
+        {children}
+      </Box>
+    );
+
     switch (activity.type) {
       case 'series_added':
-        return `hat die Serie "${title}" hinzugefügt`;
+        return (
+          <>
+            hat die Serie "<TitleComponent>{title}</TitleComponent>" hinzugefügt
+          </>
+        );
       case 'series_deleted':
-        return `hat die Serie "${title}" entfernt`;
-      case 'episode_watched':
+        return (
+          <>
+            hat die Serie "<TitleComponent>{title}</TitleComponent>" entfernt
+          </>
+        );
+      case 'episode_watched': {
         // Prüfen ob der Titel bereits Episode-Info enthält (z.B. "Serie - Staffel X Episode Y")
         if (title.includes(' - Staffel ') && title.includes(' Episode ')) {
-          // Titel enthält bereits Episode-Info, verwende ihn direkt
-          const parts = title.split(' - ');
-          const seriesName = parts[0];
-          const episodeInfo = parts.slice(1).join(' - ');
-          return `hat "${seriesName}" ${episodeInfo} geschaut`;
+          const staffelIndex = title.indexOf(' - Staffel ');
+          const seriesName = title.substring(0, staffelIndex);
+          let episodeInfo = title.substring(staffelIndex + 1); // +1 für das Leerzeichen nach dem Bindestrich
+          // Staffelnummer extrahieren und +1 rechnen
+          const staffelMatch = episodeInfo.match(/Staffel\s(\d+)/);
+          let staffelNum = staffelMatch ? parseInt(staffelMatch[1], 10) : null;
+          if (staffelNum !== null) {
+            episodeInfo = episodeInfo.replace(
+              /Staffel\s\d+/,
+              `Staffel ${staffelNum + 1}`
+            );
+          }
+          return (
+            <>
+              hat "<TitleComponent>{seriesName}</TitleComponent>" {episodeInfo}{' '}
+              geschaut
+            </>
+          );
         } else {
           // Verwende separaten episodeInfo
-          return `hat "${title}"${
-            activity.episodeInfo ? ` ${activity.episodeInfo}` : ' eine Episode'
-          } geschaut`;
+          return (
+            <>
+              hat "<TitleComponent>{title}</TitleComponent>"
+              {activity.episodeInfo
+                ? ` ${activity.episodeInfo}`
+                : ' eine Episode'}{' '}
+              geschaut
+            </>
+          );
         }
-      case 'episodes_watched':
-        return `hat "${title}" geschaut`;
+      }
+      case 'episodes_watched': {
+        // Prüfen ob der Titel Staffel-Info enthält (z.B. "Serie - Staffel X (n Episoden)")
+        if (title.includes(' - Staffel ')) {
+          const staffelIndex = title.indexOf(' - Staffel ');
+          const seriesName = title.substring(0, staffelIndex);
+          let staffelUndRest = title.substring(staffelIndex + 1); // +1 für Leerzeichen nach Bindestrich
+          // Staffelnummer extrahieren und +1 rechnen
+          const staffelMatch = staffelUndRest.match(/Staffel\s(\d+)/);
+          let staffelNum = staffelMatch ? parseInt(staffelMatch[1], 10) : null;
+          if (staffelNum !== null) staffelNum += 1;
+          staffelUndRest = staffelUndRest.replace(
+            /Staffel\s\d+/,
+            `Staffel ${staffelNum}`
+          );
+          return (
+            <>
+              hat "<TitleComponent>{seriesName}</TitleComponent>"{' '}
+              {staffelUndRest} geschaut
+            </>
+          );
+        } else {
+          return (
+            <>
+              hat "<TitleComponent>{title}</TitleComponent>" geschaut
+            </>
+          );
+        }
+      }
       case 'series_rated':
       case 'rating_updated':
-        return `hat "${title}" bewertet${
-          activity.rating ? ` (${activity.rating}/10)` : ''
-        }`;
+        return (
+          <>
+            hat "<TitleComponent>{title}</TitleComponent>" bewertet
+            {activity.rating ? ` (${activity.rating}/10)` : ''}
+          </>
+        );
       case 'movie_added':
-        return `hat den Film "${title}" hinzugefügt`;
+        return (
+          <>
+            hat den Film "<TitleComponent>{title}</TitleComponent>" hinzugefügt
+          </>
+        );
       case 'movie_deleted':
-        return `hat den Film "${title}" entfernt`;
+        return (
+          <>
+            hat den Film "<TitleComponent>{title}</TitleComponent>" entfernt
+          </>
+        );
       case 'movie_rated':
-        return `hat "${title}" bewertet${
-          activity.rating ? ` (${activity.rating}/10)` : ''
-        }`;
+        return (
+          <>
+            hat "<TitleComponent>{title}</TitleComponent>" bewertet
+            {activity.rating ? ` (${activity.rating}/10)` : ''}
+          </>
+        );
       default:
         return 'Unbekannte Aktivität';
     }
@@ -455,6 +766,278 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
           </Box>
         )}
       </DialogContent>
+
+      {/* Series Dialog */}
+      {selectedSeries && seriesDialogOpen && (
+        <SeriesDialog
+          open={seriesDialogOpen}
+          onClose={handleSeriesDialogClose}
+          series={selectedSeries}
+          allGenres={[]}
+          ratings={{}}
+          setRatings={() => {}}
+          handleDeleteSeries={() => {}}
+          handleUpdateRatings={() => {}}
+          isReadOnly={true}
+        />
+      )}
+
+      {/* Movie Dialog */}
+      {selectedMovie && movieDialogOpen && (
+        <MovieDialog
+          open={movieDialogOpen}
+          onClose={handleMovieDialogClose}
+          movie={selectedMovie}
+          allGenres={[]}
+          ratings={{}}
+          setRatings={() => {}}
+          handleDeleteMovie={() => {}}
+          handleUpdateRatings={() => {}}
+          isReadOnly={true}
+        />
+      )}
+
+      {/* TMDB Dialog */}
+      {tmdbDialogOpen && (
+        <Dialog
+          open={tmdbDialogOpen}
+          onClose={handleTmdbDialogClose}
+          maxWidth='md'
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
+              color: 'white',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+            },
+          }}
+        >
+          {tmdbLoading ? (
+            <DialogContent sx={{ textAlign: 'center', py: 8 }}>
+              <Typography variant='h6' color='#00fed7'>
+                Lade Daten...
+              </Typography>
+            </DialogContent>
+          ) : tmdbData ? (
+            <>
+              <DialogTitle
+                sx={{
+                  background:
+                    'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
+                  color: 'white',
+                  position: 'relative',
+                }}
+              >
+                <IconButton
+                  onClick={handleTmdbDialogClose}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8,
+                    color: 'white',
+                  }}
+                >
+                  <Close />
+                </IconButton>
+                <Box sx={{ pr: 6 }}>
+                  <Typography
+                    variant='h5'
+                    component='div'
+                    sx={{ fontWeight: 'bold' }}
+                  >
+                    {tmdbType === 'tv' ? tmdbData.name : tmdbData.title}
+                    {tmdbData.first_air_date &&
+                      ` (${new Date(tmdbData.first_air_date).getFullYear()})`}
+                    {tmdbData.release_date &&
+                      ` (${new Date(tmdbData.release_date).getFullYear()})`}
+                  </Typography>
+                  <Chip
+                    label={tmdbType === 'tv' ? '📺 Serie' : '🎬 Film'}
+                    size='small'
+                    sx={{
+                      mt: 1,
+                      backgroundColor: '#00fed7',
+                      color: '#000',
+                      fontWeight: 'bold',
+                    }}
+                  />
+                </Box>
+              </DialogTitle>
+              <DialogContent sx={{ p: 3, backgroundColor: '#1e1e1e' }}>
+                <Box
+                  display='flex'
+                  gap={3}
+                  flexDirection={{ xs: 'column', md: 'row' }}
+                >
+                  {tmdbData.poster_path && (
+                    <Box sx={{ flexShrink: 0 }}>
+                      <Box
+                        component='img'
+                        src={`https://image.tmdb.org/t/p/w300${tmdbData.poster_path}`}
+                        alt={tmdbType === 'tv' ? tmdbData.name : tmdbData.title}
+                        sx={{
+                          width: { xs: '200px', md: '250px' },
+                          height: 'auto',
+                          borderRadius: 2,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                          mx: { xs: 'auto', md: 0 },
+                          display: 'block',
+                        }}
+                      />
+                    </Box>
+                  )}
+
+                  <Box flex={1}>
+                    {tmdbData.overview && (
+                      <Box mb={3}>
+                        <Typography
+                          variant='h6'
+                          gutterBottom
+                          sx={{ color: '#00fed7' }}
+                        >
+                          Beschreibung
+                        </Typography>
+                        <Typography variant='body1' sx={{ lineHeight: 1.6 }}>
+                          {tmdbData.overview}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    <Box display='flex' flexDirection='column' gap={2}>
+                      {tmdbData.vote_average && (
+                        <Box>
+                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                            TMDB Bewertung
+                          </Typography>
+                          <Typography variant='body1'>
+                            ⭐ {tmdbData.vote_average.toFixed(1)}/10
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {tmdbData.genres && tmdbData.genres.length > 0 && (
+                        <Box>
+                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                            Genres
+                          </Typography>
+                          <Box display='flex' gap={1} flexWrap='wrap' mt={1}>
+                            {tmdbData.genres.map((genre: any) => (
+                              <Chip
+                                key={genre.id}
+                                label={genre.name}
+                                size='small'
+                                sx={{
+                                  backgroundColor: '#00fed7',
+                                  color: '#000',
+                                  fontWeight: 'bold',
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+
+                      {tmdbType === 'tv' && tmdbData.number_of_seasons && (
+                        <Box>
+                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                            Staffeln
+                          </Typography>
+                          <Typography variant='body1'>
+                            {tmdbData.number_of_seasons} Staffel(n) •{' '}
+                            {tmdbData.number_of_episodes} Episoden
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {tmdbType === 'movie' && tmdbData.runtime && (
+                        <Box>
+                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                            Laufzeit
+                          </Typography>
+                          <Typography variant='body1'>
+                            {tmdbData.runtime} Minuten
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+              </DialogContent>
+              <DialogActions sx={{ p: 3, backgroundColor: '#1e1e1e', gap: 2 }}>
+                <Button
+                  variant='outlined'
+                  onClick={handleTmdbDialogClose}
+                  sx={{
+                    borderColor: '#404040',
+                    color: '#e0e0e0',
+                    '&:hover': {
+                      borderColor: '#00fed7',
+                      backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                    },
+                  }}
+                >
+                  Schließen
+                </Button>
+                <Button
+                  variant='contained'
+                  onClick={addToOwnList}
+                  disabled={adding}
+                  sx={{
+                    backgroundColor: '#00fed7',
+                    color: '#000',
+                    fontWeight: 'bold',
+                    '&:hover': {
+                      backgroundColor: '#00d4b8',
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#666',
+                      color: '#999',
+                    },
+                  }}
+                >
+                  {adding
+                    ? 'Wird hinzugefügt...'
+                    : `${
+                        tmdbType === 'tv' ? 'Serie' : 'Film'
+                      } zu meiner Liste hinzufügen`}
+                </Button>
+              </DialogActions>
+            </>
+          ) : null}
+        </Dialog>
+      )}
+
+      {/* Snackbar für Erfolgs-/Fehlermeldungen */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{
+            backgroundColor:
+              snackbarSeverity === 'success'
+                ? '#4caf50'
+                : snackbarSeverity === 'warning'
+                ? '#ff9800'
+                : '#f44336',
+            color: 'white',
+            '& .MuiAlert-icon': {
+              color: 'white',
+            },
+            '& .MuiAlert-action': {
+              color: 'white',
+            },
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
