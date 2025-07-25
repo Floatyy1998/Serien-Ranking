@@ -249,9 +249,6 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
 
   // Handler functions for opening dialogs
   const handleTitleClick = async (activity: ActivityItem) => {
-    const title =
-      activity.itemTitle || activity.seriesTitle || activity.movieTitle;
-
     // Priorisiere TMDB-ID, verwende itemId als Fallback
     const tmdbId = activity.tmdbId || activity.itemId;
 
