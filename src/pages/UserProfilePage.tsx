@@ -493,6 +493,9 @@ export const UserProfilePage: React.FC = () => {
       {/* Header */}
       <Box
         sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
           background: isOwnProfile
             ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)'
             : 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
@@ -500,6 +503,23 @@ export const UserProfilePage: React.FC = () => {
           p: { xs: 2, sm: 2.5, md: 3 },
           color: 'white',
           mb: 4,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          cursor: 'pointer',
+          transition: 'background 0.2s',
+          '&:hover': {
+            background: isOwnProfile
+              ? 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)'
+              : 'linear-gradient(135deg, #444444 0%, #232323 100%)',
+          },
+        }}
+        onClick={(e) => {
+          if (
+            e.target instanceof HTMLElement &&
+            !e.target.closest('.profile-header-avatar') &&
+            !e.target.closest('.profile-header-button')
+          ) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }}
       >
         {/* Mobile Layout */}
@@ -507,6 +527,7 @@ export const UserProfilePage: React.FC = () => {
           {/* Avatar zentriert */}
           <Box sx={{ textAlign: 'center', mb: 2 }}>
             <Avatar
+              className='profile-header-avatar'
               src={profileData.profile.photoURL}
               sx={{
                 width: 80,
@@ -660,6 +681,7 @@ export const UserProfilePage: React.FC = () => {
 
           {/* Desktop Back Button */}
           <Button
+            className='profile-header-button'
             variant='contained'
             onClick={() => navigate(isOwnProfile ? '/' : '/friends')}
             startIcon={<ArrowBack />}
