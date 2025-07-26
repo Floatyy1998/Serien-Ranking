@@ -126,7 +126,6 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
           type: 'series_added',
           itemTitle: selectedSeries.name || 'Unbekannte Serie',
           tmdbId: selectedSeries.id, // TMDB ID verwenden
-          itemId: selectedSeries.id, // Bei neuen Serien ist dies dasselbe
         });
 
         setSnackbarMessage('Serie hinzugefügt!');

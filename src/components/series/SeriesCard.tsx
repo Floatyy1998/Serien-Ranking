@@ -149,7 +149,7 @@ export const SeriesCard = ({
         currentSeries.title ||
         currentSeries.original_name ||
         'Unbekannte Serie',
-      itemId: currentSeries.nmr,
+      tmdbId: currentSeries.id, // TMDB ID verwenden
     });
 
     setOpen(false);
@@ -180,8 +180,8 @@ export const SeriesCard = ({
             currentSeries.title ||
             currentSeries.original_name ||
             'Unbekannte Serie',
-          itemId: currentSeries.nmr,
           rating: ratingValue > 0 ? ratingValue : undefined,
+          tmdbId: currentSeries.id, // TMDB ID verwenden
         });
 
         setOpen(false);

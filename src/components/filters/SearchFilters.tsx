@@ -189,7 +189,6 @@ export const SearchFilters = ({
                 series.title || series.original_name || 'Unbekannte Serie'
               } - Staffel ${seasonNumber} Episode ${episodeNumber}`,
               tmdbId: series.id, // TMDB ID verwenden
-              itemId: series.nmr, // Fallback für ältere Versionen
             });
           }
         }
