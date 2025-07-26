@@ -52,10 +52,10 @@ export interface FriendActivity {
     | 'movie_deleted'
     | 'rating_updated'
     | 'episode_watched'
-    | 'episodes_watched';
+    | 'episodes_watched'
+    | 'rating_updated_movie';
   itemTitle: string;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
-  itemId: number; // Interne ID (Fallback für ältere Aktivitäten)
   rating?: number;
   timestamp: number;
 }

@@ -133,7 +133,6 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
           type: 'movie_added',
           itemTitle: selectedMovie.title || 'Unbekannter Film',
           tmdbId: selectedMovie.id, // TMDB ID verwenden
-          itemId: selectedMovie.id, // Bei neuen Filmen ist dies dasselbe
         });
 
         setSnackbarMessage('Film hinzugefügt!');

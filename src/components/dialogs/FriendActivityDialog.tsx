@@ -47,7 +47,8 @@ interface ActivityItem {
     | 'rating_updated'
     | 'movie_added'
     | 'movie_deleted'
-    | 'movie_rated';
+    | 'movie_rated'
+    | 'rating_updated_movie';
   itemTitle?: string; // Neues universelles Feld
   seriesTitle?: string;
   movieTitle?: string;
@@ -55,7 +56,6 @@ interface ActivityItem {
   rating?: number;
   timestamp: number;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
-  itemId?: number; // Interne ID (Fallback für ältere Aktivitäten)
 }
 
 interface FriendActivityDialogProps {
@@ -161,7 +161,6 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
             type: 'series_added',
             itemTitle: tmdbData.name || 'Unbekannte Serie',
             tmdbId: tmdbData.id, // TMDB ID verwenden
-            itemId: tmdbData.id, // Bei TMDB-Daten ist dies dasselbe
           });
 
           setSnackbarMessage(
@@ -208,7 +207,6 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
             type: 'movie_added',
             itemTitle: tmdbData.title || 'Unbekannter Film',
             tmdbId: tmdbData.id, // TMDB ID verwenden
-            itemId: tmdbData.id, // Bei TMDB-Daten ist dies dasselbe
           });
 
           setSnackbarMessage(
@@ -249,22 +247,30 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
 
   // Handler functions for opening dialogs
   const handleTitleClick = async (activity: ActivityItem) => {
-    // Priorisiere TMDB-ID, verwende itemId als Fallback
-    const tmdbId = activity.tmdbId || activity.itemId;
+    const tmdbId = activity.tmdbId;
+    console.log('Handling title click for activity:', activity);
 
-    // Always try to use TMDB ID first if available
-    if (tmdbId) {
-      if (
-        activity.type.includes('series') ||
-        activity.type === 'episode_watched' ||
-        activity.type === 'episodes_watched'
-      ) {
-        await fetchTMDBData(tmdbId, 'tv');
-        return;
-      } else if (activity.type.includes('movie')) {
-        await fetchTMDBData(tmdbId, 'movie');
-        return;
-      }
+    if (!tmdbId) return;
+
+    // Öffne Dialog für alle relevanten Typen
+    if (
+      activity.type.includes('series') ||
+      activity.type === 'episode_watched' ||
+      activity.type === 'episodes_watched' ||
+      activity.type === 'series_rated' ||
+      activity.type === 'rating_updated'
+    ) {
+      console.log('Opening series dialog for activity:', activity);
+      console.log('TMDB ID:', tmdbId);
+
+      await fetchTMDBData(tmdbId, 'tv');
+      return;
+    } else if (
+      activity.type.includes('movie') ||
+      activity.type === 'movie_rated'
+    ) {
+      await fetchTMDBData(tmdbId, 'movie');
+      return;
     }
   };
 
@@ -492,6 +498,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       }
       case 'series_rated':
       case 'rating_updated':
+      case 'rating_updated_movie':
         return (
           <>
             hat "<TitleComponent>{title}</TitleComponent>" bewertet
