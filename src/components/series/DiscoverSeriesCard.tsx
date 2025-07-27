@@ -7,9 +7,11 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import { useState } from 'react';
 import notFound from '../../assets/notFound.jpg';
 import { Series } from '../../interfaces/Series';
 import { getFormattedDate } from '../../utils/date.utils';
+import TmdbDialog from '../dialogs/TmdbDialog';
 
 interface DiscoverSeriesCardProps {
   series: Series;
@@ -22,8 +24,37 @@ const DiscoverSeriesCard = ({
   onAdd,
   providers = [],
 }: DiscoverSeriesCardProps) => {
+  const [tmdbOpen, setTmdbOpen] = useState(false);
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const [tmdbData, setTmdbData] = useState<any>(null);
+
   const handleAddClick = () => {
     onAdd(series);
+  };
+
+  const handlePosterClick = async () => {
+    if (!series.id) return;
+    setTmdbLoading(true);
+    setTmdbOpen(true);
+    try {
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+      const res = await fetch(
+        `https://api.themoviedb.org/3/tv/${series.id}?api_key=${TMDB_API_KEY}&language=de-DE`
+      );
+      if (!res.ok) throw new Error('Fehler beim Laden der TMDB-Daten');
+      const data = await res.json();
+      setTmdbData(data);
+    } catch (e) {
+      setTmdbData(null);
+    } finally {
+      setTmdbLoading(false);
+    }
+  };
+
+  const handleTmdbClose = () => {
+    setTmdbOpen(false);
+    setTmdbData(null);
+    setTmdbLoading(false);
   };
 
   const posterImage = series.poster?.poster ? series.poster.poster : notFound;
@@ -41,8 +72,10 @@ const DiscoverSeriesCard = ({
           sx={{
             height: '100%',
             objectFit: 'cover',
+            cursor: 'pointer',
           }}
           image={posterImage}
+          onClick={handlePosterClick}
         />
         {providers.length > 0 && (
           <Box className='absolute top-2 left-2 flex gap-1'>
@@ -120,6 +153,15 @@ const DiscoverSeriesCard = ({
           </Typography>
         </Tooltip>
       </CardContent>
+      {tmdbOpen && (
+        <TmdbDialog
+          open={tmdbOpen}
+          loading={tmdbLoading}
+          data={tmdbData}
+          type='tv'
+          onClose={handleTmdbClose}
+        />
+      )}
     </Card>
   );
 };

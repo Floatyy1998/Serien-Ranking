@@ -22,6 +22,7 @@ import '../../styles/animations.css';
 import { getFormattedDate } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
 import MovieDialog from '../dialogs/MovieDialog';
+import TmdbDialog from '../dialogs/TmdbDialog';
 
 interface MovieCardProps {
   movie: Movie;
@@ -97,6 +98,36 @@ export const MovieCard = ({
       initialRatings[g] = currentMovie.rating?.[g] || 0;
     });
     setRatings(initialRatings);
+  };
+
+  // TMDB Dialog State
+  const [tmdbDialogOpen, setTmdbDialogOpen] = useState(false);
+  const [tmdbData, setTmdbData] = useState<any>(null);
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const [, setAdding] = useState(false);
+
+  const fetchTMDBData = async (tmdbId: number) => {
+    try {
+      setTmdbLoading(true);
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+      const url = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=de-DE`;
+      const response = await fetch(url);
+      const data = await response.json();
+      setTmdbData(data);
+      setTmdbDialogOpen(true);
+    } catch (error) {
+      setSnackbarMessage('Fehler beim Laden der TMDB-Daten');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setTmdbLoading(false);
+    }
+  };
+
+  const handlePosterClick = () => {
+    if (currentMovie.id) {
+      fetchTMDBData(currentMovie.id);
+    }
   };
 
   const handleRatingClick = (event: React.MouseEvent) => {
@@ -176,126 +207,141 @@ export const MovieCard = ({
   };
 
   return (
-    <Card
-      className='h-full transition-shadow duration-300 flex flex-col series-card hover:animate-rgbShadow'
-      sx={{
-        boxShadow: ` ${shadowColor} 8px 8px 20px 0px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px;`,
-        '&:hover': {
-          boxShadow: `${shadowColor} 8px 8px 20px 5px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px;`,
-        },
-      }}
-    >
-      <Box className='relative aspect-2/3'>
-        <CardMedia
-          sx={{
-            height: '100%',
-            objectFit: 'cover',
-            cursor: 'pointer',
-          }}
-          image={
-            currentMovie.poster.poster.substring(
-              currentMovie.poster.poster.length - 4
-            ) !== 'null'
-              ? currentMovie.poster.poster
-              : notFound
-          }
-        />
-        {uniqueProviders.length > 0 && (
-          <Box className='absolute top-2 left-2 flex gap-1'>
-            {uniqueProviders.map((provider) => (
-              <Box
-                key={provider?.id}
-                className='bg-black/50 backdrop-blur-xs rounded-lg p-1 w-9 h-9'
-              >
-                <img
-                  src={provider?.logo}
-                  alt={provider?.name}
-                  className='h-7 rounded-lg'
-                />
-              </Box>
-            ))}
-          </Box>
-        )}
-        {currentMovie.status !== 'Released' && (
-          <Box
-            className='absolute top-60 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
-            sx={{
-              height: '50px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography
-              variant='body2'
-              className='text-center'
-              sx={{ fontSize: '1.1rem' }}
-            >
-              Erscheint am {dateString}
-            </Typography>
-          </Box>
-        )}
-        <Tooltip title={currentMovie.beschreibung} arrow>
-          <Box
-            className={`absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 ${
-              !disableRatingDialog ? 'cursor-pointer' : 'cursor-default'
-            }`}
-            onClick={handleRatingClick}
-            aria-label='Bewertung anzeigen'
-          >
-            <Typography variant='body1' className='text-white'>
-              {rating}
-            </Typography>
-          </Box>
-        </Tooltip>
-      </Box>
-      <CardContent className='grow flex items-center justify-center '>
-        <Tooltip title={currentMovie.title} arrow>
-          <Typography
-            variant='body1'
-            className='text-white text-center cursor-pointer'
-            sx={{
-              maxWidth: '100%',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              height: '3em',
-              lineHeight: '1.5em',
-              wordBreak: 'break-word',
-              textDecoration: 'underline',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.2rem',
-            }}
-          >
-            {index}. {currentMovie.title}
-          </Typography>
-        </Tooltip>
-      </CardContent>
-      <MovieDialog
-        open={open}
-        onClose={handleClose}
-        movie={currentMovie}
-        allGenres={allGenresForMovies}
-        ratings={ratings}
-        setRatings={setRatings}
-        handleDeleteMovie={handleDeleteMovie}
-        handleUpdateRatings={handleUpdateRatings}
-        isReadOnly={false}
-      />
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+    <>
+      <Card
+        className='h-full transition-shadow duration-300 flex flex-col series-card hover:animate-rgbShadow'
+        sx={{
+          boxShadow: ` ${shadowColor} 8px 8px 20px 0px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px;`,
+          '&:hover': {
+            boxShadow: `${shadowColor} 8px 8px 20px 5px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px;`,
+          },
+        }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Card>
+        <Box className='relative aspect-2/3' onClick={handlePosterClick}>
+          <CardMedia
+            sx={{
+              height: '100%',
+              objectFit: 'cover',
+              cursor: 'pointer',
+            }}
+            image={
+              currentMovie.poster.poster.substring(
+                currentMovie.poster.poster.length - 4
+              ) !== 'null'
+                ? currentMovie.poster.poster
+                : notFound
+            }
+          />
+          {uniqueProviders.length > 0 && (
+            <Box className='absolute top-2 left-2 flex gap-1'>
+              {uniqueProviders.map((provider) => (
+                <Box
+                  key={provider?.id}
+                  className='bg-black/50 backdrop-blur-xs rounded-lg p-1 w-9 h-9'
+                >
+                  <img
+                    src={provider?.logo}
+                    alt={provider?.name}
+                    className='h-7 rounded-lg'
+                  />
+                </Box>
+              ))}
+            </Box>
+          )}
+          {currentMovie.status !== 'Released' && (
+            <Box
+              className='absolute top-60 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
+              sx={{
+                height: '50px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography
+                variant='body2'
+                className='text-center'
+                sx={{ fontSize: '1.1rem' }}
+              >
+                Erscheint am {dateString}
+              </Typography>
+            </Box>
+          )}
+          <Tooltip title={currentMovie.beschreibung} arrow>
+            <Box
+              className={`absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 ${
+                !disableRatingDialog ? 'cursor-pointer' : 'cursor-default'
+              }`}
+              onClick={handleRatingClick}
+              aria-label='Bewertung anzeigen'
+            >
+              <Typography variant='body1' className='text-white'>
+                {rating}
+              </Typography>
+            </Box>
+          </Tooltip>
+        </Box>
+        <CardContent className='grow flex items-center justify-center '>
+          <Tooltip title={currentMovie.title} arrow>
+            <Typography
+              variant='body1'
+              className='text-white text-center cursor-pointer'
+              sx={{
+                maxWidth: '100%',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                height: '3em',
+                lineHeight: '1.5em',
+                wordBreak: 'break-word',
+                textDecoration: 'underline',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.2rem',
+              }}
+            >
+              {index}. {currentMovie.title}
+            </Typography>
+          </Tooltip>
+        </CardContent>
+        <MovieDialog
+          open={open}
+          onClose={handleClose}
+          movie={currentMovie}
+          allGenres={allGenresForMovies}
+          ratings={ratings}
+          setRatings={setRatings}
+          handleDeleteMovie={handleDeleteMovie}
+          handleUpdateRatings={handleUpdateRatings}
+          isReadOnly={false}
+        />
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+        >
+          <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </Card>
+
+      {/* TMDB Dialog */}
+      <TmdbDialog
+        open={tmdbDialogOpen}
+        loading={tmdbLoading}
+        data={tmdbData}
+        type='movie'
+        onClose={() => {
+          setTmdbDialogOpen(false);
+          setTmdbData(null);
+          setAdding(false);
+        }}
+      />
+    </>
   );
 };
 
