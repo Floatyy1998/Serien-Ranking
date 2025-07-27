@@ -281,7 +281,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   };
 
   const generateMyPublicLink = () => {
-    const link = `${window.location.origin}/friend/${user?.uid}`;
+    const link = `${window.location.origin}/public/${user?.uid}`;
     navigator.clipboard.writeText(link);
     setSuccess('Dein öffentlicher Link wurde kopiert!');
   };

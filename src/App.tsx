@@ -17,10 +17,10 @@ import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider } from './contexts/NotificationProvider';
 import { SeriesListProvider } from './contexts/SeriesListProvider';
 import { StatsProvider } from './contexts/StatsProvider';
-import { FriendSeriesListPage } from './pages/FriendSeriesListPage';
 import { FriendsPage } from './pages/FriendsPage';
 import MainPage from './pages/MainPage';
 import MoviePage from './pages/MoviePage';
+import { PublicListPage } from './pages/PublicListPage';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { theme } from './theme';
 // Nur diese bleiben lazy
@@ -175,20 +175,8 @@ function AppContent() {
                           }
                         />
                         <Route
-                          path='/friend/:friendId'
-                          element={
-                            <AuthContext.Consumer>
-                              {(auth) =>
-                                auth?.user ? (
-                                  <VerifiedRoute>
-                                    <FriendSeriesListPage />
-                                  </VerifiedRoute>
-                                ) : (
-                                  <Navigate to='/login' />
-                                )
-                              }
-                            </AuthContext.Consumer>
-                          }
+                          path='/public/:friendId'
+                          element={<PublicListPage />}
                         />
                         <Route
                           path='/profile/:userId'

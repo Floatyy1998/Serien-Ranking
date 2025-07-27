@@ -1,6 +1,6 @@
 import {
   CalendarToday,
-  Close,
+  Close as CloseIcon,
   Delete,
   FastForward,
   Movie as MovieIcon,
@@ -580,19 +580,11 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
         }}
       >
         <IconButton
+          aria-label='close'
           onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 16,
-            top: 16,
-            color: 'white',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            '&:hover': {
-              backgroundColor: 'rgba(255,255,255,0.2)',
-            },
-          }}
+          sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
         >
-          <Close />
+          <CloseIcon />
         </IconButton>
 
         <Box display='flex' alignItems='center' justifyContent='center' gap={2}>

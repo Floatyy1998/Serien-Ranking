@@ -67,12 +67,13 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             }}
           >
             <IconButton
+              aria-label='close'
               onClick={onClose}
-              sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}
+              sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
             >
               <CloseIcon />
             </IconButton>
-            <Box sx={{ pr: 6 }}>
+            <Box>
               <Typography
                 variant='h5'
                 component='div'
@@ -205,20 +206,6 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             </Box>
           </DialogContent>
           <DialogActions sx={{ p: 3, backgroundColor: '#1e1e1e', gap: 2 }}>
-            <Button
-              variant='outlined'
-              onClick={onClose}
-              sx={{
-                borderColor: '#404040',
-                color: '#e0e0e0',
-                '&:hover': {
-                  borderColor: '#00fed7',
-                  backgroundColor: 'rgba(0, 254, 215, 0.1)',
-                },
-              }}
-            >
-              Schließen
-            </Button>
             {showAddButton && onAdd && (
               <Button
                 variant='contained'
