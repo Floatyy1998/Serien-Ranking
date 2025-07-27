@@ -177,7 +177,7 @@ export const MovieGrid = ({
   if (targetUserId && friendMoviesLoading) {
     return (
       <Box className='flex justify-center items-center w-full h-full'>
-        <Typography variant='h6' className='text-center'>
+        <Typography variant='h2' className='text-center'>
           Lade Filme...
         </Typography>
       </Box>
