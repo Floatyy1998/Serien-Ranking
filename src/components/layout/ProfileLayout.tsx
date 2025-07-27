@@ -83,7 +83,7 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
       location.pathname.startsWith('/profile/') ||
       location.pathname.startsWith('/friend/')
     ) {
-      return 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)'; // Profile
+      return 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)'; // Freunde
     }
     // Default
     return 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)';
