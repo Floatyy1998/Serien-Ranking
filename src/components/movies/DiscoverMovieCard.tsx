@@ -7,9 +7,12 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+
+import { useState } from 'react';
 import notFound from '../../assets/notFound.jpg';
 import { Movie } from '../../interfaces/Movie';
 import { getFormattedDate } from '../../utils/date.utils';
+import TmdbDialog from '../dialogs/TmdbDialog';
 
 interface DiscoverMovieCardProps {
   movie: Movie;
@@ -22,8 +25,37 @@ const DiscoverMovieCard = ({
   onAdd,
   providers = [],
 }: DiscoverMovieCardProps) => {
+  const [tmdbOpen, setTmdbOpen] = useState(false);
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const [tmdbData, setTmdbData] = useState<any>(null);
+
   const handleAddClick = () => {
     onAdd(movie);
+  };
+
+  const handlePosterClick = async () => {
+    if (!movie.id) return;
+    setTmdbLoading(true);
+    setTmdbOpen(true);
+    try {
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+      const res = await fetch(
+        `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&language=de-DE`
+      );
+      if (!res.ok) throw new Error('Fehler beim Laden der TMDB-Daten');
+      const data = await res.json();
+      setTmdbData(data);
+    } catch (e) {
+      setTmdbData(null);
+    } finally {
+      setTmdbLoading(false);
+    }
+  };
+
+  const handleTmdbClose = () => {
+    setTmdbOpen(false);
+    setTmdbData(null);
+    setTmdbLoading(false);
   };
 
   return (
@@ -39,6 +71,7 @@ const DiscoverMovieCard = ({
           sx={{
             height: '100%',
             objectFit: 'cover',
+            cursor: 'pointer',
           }}
           image={
             movie.poster.poster.substring(movie.poster.poster.length - 4) !==
@@ -46,6 +79,7 @@ const DiscoverMovieCard = ({
               ? movie.poster.poster
               : notFound
           }
+          onClick={handlePosterClick}
         />
         {providers.length > 0 && (
           <Box className='absolute top-2 left-2 flex gap-1'>
@@ -123,6 +157,15 @@ const DiscoverMovieCard = ({
           </Typography>
         </Tooltip>
       </CardContent>
+      {tmdbOpen && (
+        <TmdbDialog
+          open={tmdbOpen}
+          loading={tmdbLoading}
+          data={tmdbData}
+          type='movie'
+          onClose={handleTmdbClose}
+        />
+      )}
     </Card>
   );
 };

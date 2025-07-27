@@ -13,12 +13,10 @@ import {
   Alert,
   Avatar,
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   Fade,
@@ -31,10 +29,13 @@ import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { useFriends } from '../../contexts/FriendsProvider';
+import { useMovieList } from '../../contexts/MovieListProvider';
+import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
 import MovieDialog from './MovieDialog';
 import SeriesDialog from './SeriesDialog';
+import TmdbDialog from './TmdbDialog';
 
 interface ActivityItem {
   id: string;
@@ -73,6 +74,9 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
   friendName,
   friendPhotoURL,
 }) => {
+  // Eigene Movie/Series-Listen aus Context
+  const { movieList } = useMovieList();
+  const { seriesList } = useSeriesList();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -248,7 +252,6 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
   // Handler functions for opening dialogs
   const handleTitleClick = async (activity: ActivityItem) => {
     const tmdbId = activity.tmdbId;
-    console.log('Handling title click for activity:', activity);
 
     if (!tmdbId) return;
 
@@ -260,9 +263,6 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       activity.type === 'series_rated' ||
       activity.type === 'rating_updated'
     ) {
-      console.log('Opening series dialog for activity:', activity);
-      console.log('TMDB ID:', tmdbId);
-
       await fetchTMDBData(tmdbId, 'tv');
       return;
     } else if (
@@ -803,214 +803,25 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
 
       {/* TMDB Dialog */}
       {tmdbDialogOpen && (
-        <Dialog
+        <TmdbDialog
           open={tmdbDialogOpen}
           onClose={handleTmdbDialogClose}
-          maxWidth='md'
-          fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-              color: 'white',
-              maxHeight: '90vh',
-              overflow: 'hidden',
-            },
-          }}
-        >
-          {tmdbLoading ? (
-            <DialogContent sx={{ textAlign: 'center', py: 8 }}>
-              <Typography variant='h6' color='#00fed7'>
-                Lade Daten...
-              </Typography>
-            </DialogContent>
-          ) : tmdbData ? (
-            <>
-              <DialogTitle
-                sx={{
-                  background:
-                    'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
-                  color: 'white',
-                  position: 'relative',
-                }}
-              >
-                <IconButton
-                  onClick={handleTmdbDialogClose}
-                  sx={{
-                    position: 'absolute',
-                    right: 8,
-                    top: 8,
-                    color: 'white',
-                  }}
-                >
-                  <Close />
-                </IconButton>
-                <Box sx={{ pr: 6 }}>
-                  <Typography
-                    variant='h5'
-                    component='div'
-                    sx={{ fontWeight: 'bold' }}
-                  >
-                    {tmdbType === 'tv' ? tmdbData.name : tmdbData.title}
-                    {tmdbData.first_air_date &&
-                      ` (${new Date(tmdbData.first_air_date).getFullYear()})`}
-                    {tmdbData.release_date &&
-                      ` (${new Date(tmdbData.release_date).getFullYear()})`}
-                  </Typography>
-                  <Chip
-                    label={tmdbType === 'tv' ? '📺 Serie' : '🎬 Film'}
-                    size='small'
-                    sx={{
-                      mt: 1,
-                      backgroundColor: '#00fed7',
-                      color: '#000',
-                      fontWeight: 'bold',
-                    }}
-                  />
-                </Box>
-              </DialogTitle>
-              <DialogContent sx={{ p: 3, backgroundColor: '#1e1e1e' }}>
-                <Box
-                  display='flex'
-                  gap={3}
-                  flexDirection={{ xs: 'column', md: 'row' }}
-                >
-                  {tmdbData.poster_path && (
-                    <Box sx={{ flexShrink: 0 }}>
-                      <Box
-                        component='img'
-                        src={`https://image.tmdb.org/t/p/w300${tmdbData.poster_path}`}
-                        alt={tmdbType === 'tv' ? tmdbData.name : tmdbData.title}
-                        sx={{
-                          width: { xs: '200px', md: '250px' },
-                          height: 'auto',
-                          borderRadius: 2,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                          mx: { xs: 'auto', md: 0 },
-                          display: 'block',
-                        }}
-                      />
-                    </Box>
-                  )}
-
-                  <Box flex={1}>
-                    {tmdbData.overview && (
-                      <Box mb={3}>
-                        <Typography
-                          variant='h6'
-                          gutterBottom
-                          sx={{ color: '#00fed7' }}
-                        >
-                          Beschreibung
-                        </Typography>
-                        <Typography variant='body1' sx={{ lineHeight: 1.6 }}>
-                          {tmdbData.overview}
-                        </Typography>
-                      </Box>
-                    )}
-
-                    <Box display='flex' flexDirection='column' gap={2}>
-                      {tmdbData.vote_average && (
-                        <Box>
-                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
-                            TMDB Bewertung
-                          </Typography>
-                          <Typography variant='body1'>
-                            ⭐ {tmdbData.vote_average.toFixed(1)}/10
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {tmdbData.genres && tmdbData.genres.length > 0 && (
-                        <Box>
-                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
-                            Genres
-                          </Typography>
-                          <Box display='flex' gap={1} flexWrap='wrap' mt={1}>
-                            {tmdbData.genres.map((genre: any) => (
-                              <Chip
-                                key={genre.id}
-                                label={genre.name}
-                                size='small'
-                                sx={{
-                                  backgroundColor: '#00fed7',
-                                  color: '#000',
-                                  fontWeight: 'bold',
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-                      )}
-
-                      {tmdbType === 'tv' && tmdbData.number_of_seasons && (
-                        <Box>
-                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
-                            Staffeln
-                          </Typography>
-                          <Typography variant='body1'>
-                            {tmdbData.number_of_seasons} Staffel(n) •{' '}
-                            {tmdbData.number_of_episodes} Episoden
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {tmdbType === 'movie' && tmdbData.runtime && (
-                        <Box>
-                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
-                            Laufzeit
-                          </Typography>
-                          <Typography variant='body1'>
-                            {tmdbData.runtime} Minuten
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Box>
-                </Box>
-              </DialogContent>
-              <DialogActions sx={{ p: 3, backgroundColor: '#1e1e1e', gap: 2 }}>
-                <Button
-                  variant='outlined'
-                  onClick={handleTmdbDialogClose}
-                  sx={{
-                    borderColor: '#404040',
-                    color: '#e0e0e0',
-                    '&:hover': {
-                      borderColor: '#00fed7',
-                      backgroundColor: 'rgba(0, 254, 215, 0.1)',
-                    },
-                  }}
-                >
-                  Schließen
-                </Button>
-                <Button
-                  variant='contained'
-                  onClick={addToOwnList}
-                  disabled={adding}
-                  sx={{
-                    backgroundColor: '#00fed7',
-                    color: '#000',
-                    fontWeight: 'bold',
-                    '&:hover': {
-                      backgroundColor: '#00d4b8',
-                    },
-                    '&:disabled': {
-                      backgroundColor: '#666',
-                      color: '#999',
-                    },
-                  }}
-                >
-                  {adding
-                    ? 'Wird hinzugefügt...'
-                    : `${
-                        tmdbType === 'tv' ? 'Serie' : 'Film'
-                      } zu meiner Liste hinzufügen`}
-                </Button>
-              </DialogActions>
-            </>
-          ) : null}
-        </Dialog>
+          data={tmdbData}
+          type={tmdbType}
+          loading={tmdbLoading}
+          adding={adding}
+          onAdd={addToOwnList}
+          showAddButton={(() => {
+            if (!tmdbData) return false;
+            if (tmdbType === 'tv') {
+              // Prüfe, ob Serie mit tmdbData.id schon in seriesList ist
+              return !seriesList.some((s) => s.id === tmdbData.id);
+            } else {
+              // Prüfe, ob Film mit tmdbData.id schon in movieList ist
+              return !movieList.some((m) => m.id === tmdbData.id);
+            }
+          })()}
+        />
       )}
 
       {/* Snackbar für Erfolgs-/Fehlermeldungen */}

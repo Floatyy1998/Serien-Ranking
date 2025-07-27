@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { calculateOverallRating } from '../../utils/rating';
@@ -27,13 +27,14 @@ export const MovieGrid = ({
   const [friendMovieList, setFriendMovieList] = useState<any[]>([]);
   const [friendMoviesLoading, setFriendMoviesLoading] = useState(false);
 
-  // Verwende Freund-Filme oder eigene Filme
-  // Aber nur wenn Freund-Daten geladen wurden oder kein targetUserId gesetzt ist
-  const movieList = targetUserId
-    ? friendMoviesLoading
-      ? []
-      : friendMovieList
-    : contextMovieList;
+  // Verwende Freund-Filme oder eigene Filme (memoisiert, um Endlosschleifen zu verhindern)
+  const movieList = useMemo(() => {
+    if (targetUserId) {
+      if (friendMoviesLoading) return [];
+      return friendMovieList;
+    }
+    return contextMovieList;
+  }, [targetUserId, friendMoviesLoading, friendMovieList, contextMovieList]);
 
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
@@ -82,7 +83,7 @@ export const MovieGrid = ({
   // Filtere und sortiere die Filme basierend auf den Suchkriterien
   useEffect(() => {
     const filtered = (movieList || [])
-      .filter((movie) => {
+      .filter((movie: any) => {
         const matchesSearch = movie.title
           .toLowerCase()
           .includes(debouncedSearchValue.toLowerCase());
@@ -103,7 +104,7 @@ export const MovieGrid = ({
             ));
         return matchesSearch && matchesGenre && matchesProvider;
       })
-      .sort((a, b) => {
+      .sort((a: any, b: any) => {
         if (selectedGenre === 'Zuletzt Hinzugefügt') {
           return b.nmr - a.nmr;
         }
@@ -160,7 +161,6 @@ export const MovieGrid = ({
 
     const currentMovies =
       filteredMovies?.length > 0 ? filteredMovies : movieList || [];
-
     if (initialVisible > currentMovies?.length) {
       initialVisible = currentMovies?.length;
     }

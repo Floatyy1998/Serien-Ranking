@@ -24,6 +24,7 @@ import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
 import SeriesDialog from '../dialogs/SeriesDialog';
 import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
+import TmdbDialog from '../dialogs/TmdbDialog';
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
 const Typography = lazy(() => import('@mui/material/Typography'));
 const Box = lazy(() => import('@mui/material/Box'));
@@ -209,12 +210,35 @@ export const SeriesCard = ({
     'Ohne Bewertung',
     'Neue Episoden',
   ].includes(genre);
+  // TMDB Dialog State
+  const [tmdbDialogOpen, setTmdbDialogOpen] = useState(false);
+  const [tmdbData, setTmdbData] = useState<any>(null);
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const [, setAdding] = useState(false);
+
+  const fetchTMDBData = async (tmdbId: number) => {
+    try {
+      setTmdbLoading(true);
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+      const url = `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}&language=de-DE`;
+      const response = await fetch(url);
+      const data = await response.json();
+      setTmdbData(data);
+      setTmdbDialogOpen(true);
+    } catch (error) {
+      setSnackbarMessage('Fehler beim Laden der TMDB-Daten');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setTmdbLoading(false);
+    }
+  };
+
   const handlePosterClick = () => {
     if (genre !== 'Neue Episoden') {
-      window.open(
-        `https://watchradar.konrad-dinges.de?query=${currentSeries.title}`,
-        '_blank'
-      );
+      if (currentSeries.id) {
+        fetchTMDBData(currentSeries.id);
+      }
     } else {
       setOpenEpisodes(true);
     }
@@ -446,6 +470,19 @@ export const SeriesCard = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* TMDB Dialog */}
+      <TmdbDialog
+        open={tmdbDialogOpen}
+        loading={tmdbLoading}
+        data={tmdbData}
+        type='tv'
+        onClose={() => {
+          setTmdbDialogOpen(false);
+          setTmdbData(null);
+          setAdding(false);
+        }}
+      />
     </Suspense>
   );
 };
