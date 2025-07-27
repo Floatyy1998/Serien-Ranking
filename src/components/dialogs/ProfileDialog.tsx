@@ -1,4 +1,5 @@
 import {
+  Close as CloseIcon,
   Edit,
   ExitToApp,
   PhotoCamera,
@@ -340,6 +341,13 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           Profil bearbeiten
         </Box>
       </DialogTitle>
+      <IconButton
+        aria-label='close'
+        onClick={onClose}
+        sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
+      >
+        <CloseIcon />
+      </IconButton>
 
       <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
         <Box

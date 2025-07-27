@@ -1,7 +1,6 @@
 import {
   ArrowBack,
   CalendarToday,
-  Search,
   Star,
   TrendingUp,
 } from '@mui/icons-material';
@@ -1152,71 +1151,22 @@ export const UserProfilePage: React.FC = () => {
         <Box
           sx={{ p: { xs: 2, md: 3 }, borderBottom: 1, borderColor: 'divider' }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              gap: { xs: 2, md: 3 },
-              alignItems: { xs: 'stretch', md: 'center' },
-              justifyContent: 'center',
-            }}
-          >
+          <Box className='flex flex-col lg:flex-row items-center gap-2 justify-center'>
             {/* Suchfeld */}
             <TextField
               variant='outlined'
-              label='Suchen...'
+              label='Suchen'
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              sx={{
-                minWidth: { xs: '100%', md: 300 },
-                '& .MuiInputLabel-root': {
-                  color: '#9e9e9e',
-                },
-                '& .MuiOutlinedInput-root': {
-                  color: '#e0e0e0',
-                  '& fieldset': {
-                    borderColor: '#404040',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#00fed7',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#00fed7',
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: <Search sx={{ mr: 1, color: '#9e9e9e' }} />,
-              }}
+              className='w-[250px]'
             />
 
             {/* Genre Filter */}
-            <FormControl
-              variant='outlined'
-              sx={{
-                minWidth: { xs: '100%', md: 200 },
-                '& .MuiInputLabel-root': {
-                  color: '#9e9e9e',
-                },
-                '& .MuiOutlinedInput-root': {
-                  color: '#e0e0e0',
-                  '& fieldset': {
-                    borderColor: '#404040',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#00fed7',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#00fed7',
-                  },
-                },
-                '& .MuiSelect-icon': {
-                  color: '#9e9e9e',
-                },
-              }}
-            >
-              <InputLabel>Genre</InputLabel>
+
+            <FormControl className='w-[250px]'>
+              <InputLabel id='genre-label'>Genre</InputLabel>
               <Select
+                labelId='genre-label'
                 value={
                   tabValue === 0 ? selectedSeriesGenre : selectedMovieGenre
                 }
@@ -1228,27 +1178,6 @@ export const UserProfilePage: React.FC = () => {
                   } else {
                     setSelectedMovieGenre(value);
                   }
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      backgroundColor: '#2d2d30',
-                      border: '1px solid #404040',
-                      '& .MuiMenuItem-root': {
-                        color: '#e0e0e0',
-                        '&:hover': {
-                          backgroundColor: '#404040',
-                        },
-                        '&.Mui-selected': {
-                          backgroundColor: '#00fed7',
-                          color: '#000',
-                          '&:hover': {
-                            backgroundColor: '#00c5a3',
-                          },
-                        },
-                      },
-                    },
-                  },
                 }}
               >
                 {(tabValue === 0
@@ -1263,30 +1192,7 @@ export const UserProfilePage: React.FC = () => {
             </FormControl>
 
             {/* Provider Filter */}
-            <FormControl
-              variant='outlined'
-              sx={{
-                minWidth: { xs: '100%', md: 200 },
-                '& .MuiInputLabel-root': {
-                  color: '#9e9e9e',
-                },
-                '& .MuiOutlinedInput-root': {
-                  color: '#e0e0e0',
-                  '& fieldset': {
-                    borderColor: '#404040',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#00fed7',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#00fed7',
-                  },
-                },
-                '& .MuiSelect-icon': {
-                  color: '#9e9e9e',
-                },
-              }}
-            >
+            <FormControl className='w-[250px]' variant='outlined'>
               <InputLabel>Anbieter</InputLabel>
               <Select
                 value={
@@ -1302,27 +1208,6 @@ export const UserProfilePage: React.FC = () => {
                   } else {
                     setSelectedMovieProvider(value);
                   }
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      backgroundColor: '#2d2d30',
-                      border: '1px solid #404040',
-                      '& .MuiMenuItem-root': {
-                        color: '#e0e0e0',
-                        '&:hover': {
-                          backgroundColor: '#404040',
-                        },
-                        '&.Mui-selected': {
-                          backgroundColor: '#00fed7',
-                          color: '#000',
-                          '&:hover': {
-                            backgroundColor: '#00c5a3',
-                          },
-                        },
-                      },
-                    },
-                  },
                 }}
               >
                 {providerMenuItems.map((provider) => (
