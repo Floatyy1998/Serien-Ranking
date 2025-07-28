@@ -72,7 +72,7 @@ const SeriesDialog = ({
           Genre:
         </Typography>
         <Box className='flex flex-wrap gap-2 mb-4 justify-center'>
-          {series.genre.genres.map((g) => (
+          {series.genre?.genres?.length > 0 ? series.genre.genres.map((g) => (
             <Chip
               key={g}
               label={g}
@@ -82,7 +82,11 @@ const SeriesDialog = ({
                 borderRadius: theme.shape.borderRadius,
               }}
             />
-          ))}
+          )) : (
+            <Typography variant='body2' color='text.secondary'>
+              Keine Genres verfügbar
+            </Typography>
+          )}
         </Box>
         <Typography sx={{ fontSize: '1.4rem' }}>Rating:</Typography>
         {allGenres.map((g) => (

@@ -667,7 +667,7 @@ export const SeriesGrid = ({
           }}
         >
           {filteredSeries?.slice(0, visibleCount).map((series, index) => (
-            <Box key={series.nmr} sx={{ width: '230px', height: '444px' }}>
+            <Box key={series.id || series.nmr || index} sx={{ width: '230px', height: '444px' }}>
               <SeriesCard
                 series={series}
                 genre={selectedGenre}

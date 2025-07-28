@@ -302,6 +302,7 @@ export const SeriesCard = ({
               cursor: 'pointer',
             }}
             image={
+              currentSeries.poster?.poster && 
               currentSeries.poster.poster.substring(
                 currentSeries.poster.poster.length - 4
               ) !== 'null'
