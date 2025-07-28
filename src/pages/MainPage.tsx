@@ -22,6 +22,7 @@ import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import Legend from '../components/common/Legend';
+import NewSeasonNotificationDialog from '../components/dialogs/NewSeasonNotificationDialog';
 import { ProfileDialog } from '../components/dialogs/ProfileDialog';
 import MovieSearchFilters from '../components/filters/MovieSearchFilters';
 import SearchFilters from '../components/filters/SearchFilters';
@@ -58,7 +59,8 @@ function TabPanel(props: TabPanelProps) {
 export const MainPage: React.FC = () => {
   const { user } = useAuth()!;
   const navigate = useNavigate();
-  const { seriesList } = useSeriesList();
+  const { seriesList, seriesWithNewSeasons, clearNewSeasons } = useSeriesList();
+
   const { movieList } = useMovieList();
   const { totalUnreadActivities } = useNotifications();
   const { friendRequests } = useFriends();
@@ -899,6 +901,13 @@ export const MainPage: React.FC = () => {
       <ProfileDialog
         open={profileDialogOpen}
         onClose={() => setProfileDialogOpen(false)}
+      />
+
+      {/* New Season Notification Dialog */}
+      <NewSeasonNotificationDialog
+        open={seriesWithNewSeasons.length > 0}
+        onClose={clearNewSeasons}
+        seriesWithNewSeasons={seriesWithNewSeasons}
       />
     </Container>
   );

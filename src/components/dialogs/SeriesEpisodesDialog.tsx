@@ -8,6 +8,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Typography,
 } from '@mui/material';
 import { Series } from '../../interfaces/Series';
 import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
@@ -57,7 +58,8 @@ const SeriesEpisodesDialog = ({
       </DialogTitle>
       <DialogContent>
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {Array.isArray(series.nextEpisode.nextEpisodes) &&
+          {Array.isArray(series.nextEpisode?.nextEpisodes) &&
+          series.nextEpisode.nextEpisodes.length > 0 ? (
             series.nextEpisode.nextEpisodes.map((episode) => (
               <ListItem
                 key={`${series.id}-${episode.season}-${episode.number}-${episode.airstamp}`}
@@ -73,7 +75,7 @@ const SeriesEpisodesDialog = ({
               >
                 <Box
                   component='img'
-                  src={series.poster.poster}
+                  src={series.poster?.poster || '/placeholder.jpg'}
                   alt={episode.name}
                   sx={{
                     width: 60,
@@ -96,7 +98,14 @@ const SeriesEpisodesDialog = ({
                   </Box>
                 </Box>
               </ListItem>
-            ))}
+            ))
+          ) : (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant='body1' color='text.secondary'>
+                Keine kommenden Episoden verfügbar
+              </Typography>
+            </Box>
+          )}
         </List>
       </DialogContent>
     </Dialog>

@@ -220,7 +220,15 @@ export const SearchFilters = ({
     [user, updateUserActivity, seriesList]
   );
   const getNextUnwatchedEpisode = (series: Series) => {
+    if (!series.seasons || !Array.isArray(series.seasons)) {
+      return null;
+    }
+    
     for (const season of series.seasons) {
+      if (!season.episodes || !Array.isArray(season.episodes)) {
+        continue;
+      }
+      
       for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
         if (!episode.watched) {
