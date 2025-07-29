@@ -9,6 +9,8 @@ interface FilterProps {
   setCustomOrderActive: (active: boolean) => void;
   sortOption: string;
   toggleSort: (field: string) => void;
+  hideRewatches: boolean;
+  setHideRewatches: (hide: boolean) => void;
 }
 const WatchlistFilter: React.FC<FilterProps> = ({
   filterInput,
@@ -17,6 +19,8 @@ const WatchlistFilter: React.FC<FilterProps> = ({
   setCustomOrderActive,
   sortOption,
   toggleSort,
+  hideRewatches,
+  setHideRewatches,
 }) => {
   return (
     <Box className='flex flex-col mb-4'>
@@ -42,6 +46,21 @@ const WatchlistFilter: React.FC<FilterProps> = ({
           >
             Benutzerdefiniert
           </Button>
+          <Tooltip title={hideRewatches ? 'Rewatches anzeigen' : 'Rewatches ausblenden'}>
+            <Button
+              variant={!hideRewatches ? 'contained' : 'outlined'}
+              onClick={() => setHideRewatches(!hideRewatches)}
+              sx={{
+                width: 'auto',
+                fontSize: '0.75rem',
+                backgroundColor: !hideRewatches ? '#ff9800' : 'transparent',
+                color: !hideRewatches ? '#000' : '#ff9800',
+                borderColor: '#ff9800',
+              }}
+            >
+              Rewatches
+            </Button>
+          </Tooltip>
           <Tooltip title='Nach Name sortieren'>
             <Button
               onClick={() => toggleSort('name')}

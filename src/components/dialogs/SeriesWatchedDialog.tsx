@@ -19,6 +19,22 @@ import { Series } from '../../interfaces/Series';
 import { getFormattedDate } from '../../utils/date.utils';
 import RewatchDialog from './RewatchDialog';
 import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
+
+// Hilfsfunktion für Rewatch-Farben
+const getRewatchColor = (watchCount: number): string => {
+  switch (watchCount) {
+    case 2: return '#ff9800'; // Orange
+    case 3: return '#f44336'; // Rot
+    case 4: return '#9c27b0'; // Lila
+    case 5: return '#3f51b5'; // Indigo
+    case 6: return '#2196f3'; // Blau
+    case 7: return '#00bcd4'; // Cyan
+    case 8: return '#4caf50'; // Grün
+    case 9: return '#8bc34a'; // Hellgrün
+    case 10: return '#cddc39'; // Lime
+    default: return watchCount > 10 ? '#ffc107' : '#00fed7'; // Gold für >10, sonst Standard
+  }
+};
 interface SeriesWatchedDialogProps {
   open: boolean;
   onClose: () => void;
@@ -333,7 +349,10 @@ const SeriesWatchedDialog = ({
                       }}
                       style={{
                         color: allWatched
-                          ? '#00fed7'
+                          ? (() => {
+                              const minWatchCount = Math.min(...season.episodes.map(ep => ep.watchCount || 1));
+                              return minWatchCount > 1 ? getRewatchColor(minWatchCount) : '#00fed7';
+                            })()
                           : 'rgba(255, 255, 255, 0.3)',
                         transition: 'all 0.2s ease-in-out',
                         cursor: isReadOnly ? 'default' : 'pointer',
@@ -343,8 +362,11 @@ const SeriesWatchedDialog = ({
                         fontWeight: 'bold',
                       }}
                     >
-                      {allWatched && season.episodes.some(ep => ep.watchCount && ep.watchCount > 1) ? (
-                        `${Math.max(...season.episodes.map(ep => ep.watchCount || 1))}x`
+                      {allWatched ? (
+                        (() => {
+                          const minWatchCount = Math.min(...season.episodes.map(ep => ep.watchCount || 1));
+                          return minWatchCount > 1 ? `${minWatchCount}x` : <Check size={18} />;
+                        })()
                       ) : (
                         <Check size={18} />
                       )}
@@ -377,8 +399,11 @@ const SeriesWatchedDialog = ({
                           )
                         }
                         style={{
-                          color: episode.watched
-                            ? '#00fed7'
+                          color: episode.watched 
+                            ? (episode.watchCount && episode.watchCount > 1 
+                                ? getRewatchColor(episode.watchCount) 
+                                : '#00fed7'
+                              )
                             : 'rgba(255, 255, 255, 0.3)',
                           transition: 'all 0.2s ease-in-out',
                           cursor: isReadOnly ? 'default' : 'pointer',
