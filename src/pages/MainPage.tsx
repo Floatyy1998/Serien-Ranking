@@ -21,6 +21,7 @@ import {
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
+import BadgeButton from '../components/badges/BadgeButton';
 import Legend from '../components/common/Legend';
 import NewSeasonNotificationDialog from '../components/dialogs/NewSeasonNotificationDialog';
 import { ProfileDialog } from '../components/dialogs/ProfileDialog';
@@ -383,7 +384,10 @@ export const MainPage: React.FC = () => {
           </Box>
         </Box>
 
-        <Badge
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <BadgeButton />
+          
+          <Badge
           badgeContent={totalUnreadActivities + friendRequests.length}
           color='error'
           invisible={totalUnreadActivities + friendRequests.length === 0}
@@ -422,6 +426,7 @@ export const MainPage: React.FC = () => {
             Freunde
           </Button>
         </Badge>
+        </Box>
       </Box>
 
       {/* Statistiken - je nach Tab unterschiedlich */}

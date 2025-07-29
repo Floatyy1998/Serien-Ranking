@@ -4,6 +4,8 @@ import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { useFriends } from '../../contexts/FriendsProvider';
+import { activityBatchManager } from '../../utils/activityBatchManager';
+import { EpisodeWatchData } from '../../utils/batchActivity.utils';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useStats } from '../../contexts/StatsProvider';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -488,22 +490,32 @@ export const SeriesGrid = ({
         .ref(`${targetUserId || user?.uid}/serien/${series.nmr}/seasons`)
         .set(updatedSeasons);
 
-      // Activity tracken für Freunde
+      // Activity tracken für Freunde mit Batch-System
       const episode = season.episodes.find((e: any) => e.id === episodeId);
-      if (episode && !targetUserId) {
+      if (episode && !targetUserId && user?.uid) {
         const episodeNumber = episode.episode || episodeIndex + 1;
         const seriesTitle = series.title || series.original_name || 'Unbekannte Serie';
         
+        // Erstelle Episode-Daten für Batch-System
+        const episodeData: EpisodeWatchData = {
+          seriesTitle,
+          seasonNumber,
+          episodeNumber,
+          episodeName: episode.name || `Episode ${episodeNumber}`,
+          airDate: episode.air_date || '',
+          watchedTimestamp: Date.now(),
+          tmdbId: series.id,
+          isRewatch: false,
+          watchCount: 1,
+        };
+
         if (isRewatch && episode.watched) {
-          // Rewatch-Activity: Episode wurde erneut geschaut
+          // Rewatch-Activity
           const newWatchCount = (episode.watchCount || 1) + 1;
-          await updateUserActivity({
-            type: 'episode_watched',
-            itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber} (${newWatchCount}x gesehen)`,
-            tmdbId: series.id,
-          });
+          episodeData.isRewatch = true;
+          episodeData.watchCount = newWatchCount;
         } else if (forceUnwatch && episode.watched) {
-          // Unwatch-Activity: watchCount wurde reduziert
+          // Unwatch-Activity: Erstelle direkte Activity (nicht batchbar)
           const currentWatchCount = episode.watchCount || 1;
           const newWatchCount = currentWatchCount > 1 ? currentWatchCount - 1 : 0;
           if (newWatchCount > 0) {
@@ -513,13 +525,17 @@ export const SeriesGrid = ({
               tmdbId: series.id,
             });
           }
-        } else if (!episode.watched) {
-          // Normale erste Ansicht
-          await updateUserActivity({
-            type: 'episode_watched',
-            itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber}`,
-            tmdbId: series.id,
+          return; // Kein Batch für Unwatch
+        }
+        
+        // Normale Episode oder Rewatch: Über Batch-System verarbeiten
+        if (!forceUnwatch) {
+          console.log(`🎬 SeriesGrid: Adding episode activity to batch manager:`, {
+            userId: user.uid,
+            episodeData,
+            isRewatch: episodeData.isRewatch
           });
+          await activityBatchManager.addEpisodeActivity(user.uid, episodeData);
         }
       }
     } catch (error) {
