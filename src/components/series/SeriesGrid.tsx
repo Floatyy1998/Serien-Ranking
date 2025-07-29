@@ -258,7 +258,9 @@ export const SeriesGrid = ({
   const handleWatchedToggleWithConfirmation = async (
     seasonNumber: number,
     episodeId: number,
-    forceWatched: boolean = false
+    forceWatched: boolean = false,
+    isRewatch: boolean = false,
+    forceUnwatch: boolean = false
   ) => {
     if (!user || !watchedDialogSeries || viewOnlyMode) return;
 
@@ -272,15 +274,40 @@ export const SeriesGrid = ({
       let updatedEpisodes;
       const allWatched = season.episodes.every((e: any) => e.watched);
 
-      if (forceWatched) {
+      if (forceUnwatch) {
+        // Unwatch für gesamte Staffel: Reduziere watchCount schrittweise für alle Episoden
+        updatedEpisodes = season.episodes.map((e: any) => {
+          if (!e.watched) return e; // Ungesehene Episoden bleiben unverändert
+          
+          const currentWatchCount = e.watchCount || 1;
+          if (currentWatchCount > 2) {
+            // Von 3x auf 2x, 4x auf 3x, etc.
+            return { ...e, watched: true, watchCount: currentWatchCount - 1 };
+          } else if (currentWatchCount === 2) {
+            // Von 2x auf 1x (normaler Haken)
+            return { ...e, watched: true, watchCount: 1 };
+          } else {
+            // Von 1x (Haken) auf ungesehen
+            return { ...e, watched: false, watchCount: undefined };
+          }
+        });
+      } else if (isRewatch === true) {
+        // Rewatch für gesamte Staffel: Erhöhe watchCount für alle Episoden
+        updatedEpisodes = season.episodes.map((e: any) => {
+          const currentWatchCount = e.watchCount || 1;
+          return { ...e, watched: true, watchCount: currentWatchCount + 1 };
+        });
+      } else if (forceWatched) {
         updatedEpisodes = season.episodes.map((e: any) => ({
           ...e,
           watched: true,
+          watchCount: e.watched ? e.watchCount : 1,
         }));
       } else {
         updatedEpisodes = season.episodes.map((e: any) => ({
           ...e,
           watched: !allWatched,
+          watchCount: !allWatched && !e.watched ? 1 : (allWatched ? undefined : e.watchCount),
         }));
       }
 
@@ -347,7 +374,27 @@ export const SeriesGrid = ({
 
     const updatedEpisodes = season.episodes.map((e: any) => {
       if (e.id === episodeId) {
-        return { ...e, watched: !e.watched };
+        if (forceUnwatch) {
+          // Unwatch: Reduziere watchCount schrittweise
+          const currentWatchCount = e.watchCount || 1;
+          if (currentWatchCount > 2) {
+            // Von 3x auf 2x, 4x auf 3x, etc.
+            return { ...e, watched: true, watchCount: currentWatchCount - 1 };
+          } else if (currentWatchCount === 2) {
+            // Von 2x auf 1x (normaler Haken)
+            return { ...e, watched: true, watchCount: 1 };
+          } else {
+            // Von 1x (Haken) auf ungesehen
+            return { ...e, watched: false, watchCount: undefined };
+          }
+        } else if (isRewatch === true) {
+          // Rewatch: Erhöhe watchCount
+          const currentWatchCount = e.watchCount || 1;
+          return { ...e, watched: true, watchCount: currentWatchCount + 1 };
+        } else {
+          // Normaler Toggle
+          return { ...e, watched: !e.watched, watchCount: e.watched ? undefined : 1 };
+        }
       }
       return e;
     });

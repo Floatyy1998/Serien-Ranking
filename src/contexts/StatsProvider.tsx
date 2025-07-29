@@ -68,22 +68,29 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       const ratingStr = calculateOverallRating(item);
       const rating = parseFloat(ratingStr);
 
-      // Watchtime und gesehene Episoden für ALLE Serien berechnen
+      // Watchtime und gesehene Episoden für ALLE Serien berechnen (inkl. Rewatches)
       episodesWatched +=
         item.seasons?.reduce(
           (count: number, season: any) =>
             count +
-            (season.episodes?.filter((episode: any) => episode.watched)
-              ?.length || 0),
+            (season.episodes?.reduce((episodeCount: number, episode: any) => {
+              if (episode.watched) {
+                return episodeCount + (episode.watchCount || 1);
+              }
+              return episodeCount;
+            }, 0) || 0),
           0
         ) || 0;
       watchtime +=
         item.seasons?.reduce(
           (time: number, season: any) =>
             time +
-            (season.episodes?.filter((episode: any) => episode.watched)
-              ?.length || 0) *
-              item.episodeRuntime,
+            (season.episodes?.reduce((episodeTime: number, episode: any) => {
+              if (episode.watched) {
+                return episodeTime + (episode.watchCount || 1) * item.episodeRuntime;
+              }
+              return episodeTime;
+            }, 0) || 0),
           0
         ) || 0;
 

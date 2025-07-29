@@ -208,13 +208,15 @@ export const PublicListPage: React.FC = () => {
         const seriesList = Object.values(seriesData) as any[];
         const moviesList = Object.values(moviesData) as any[];
 
-        // Serien-spezifische Statistiken berechnen
+        // Serien-spezifische Statistiken berechnen (inkl. Rewatches)
         const totalWatchedEpisodes = seriesList.reduce((total, series) => {
           if (series.seasons) {
             Object.values(series.seasons).forEach((season: any) => {
               if (season.episodes) {
                 Object.values(season.episodes).forEach((ep: any) => {
-                  if (ep.watched) total += 1;
+                  if (ep.watched) {
+                    total += (ep.watchCount || 1);
+                  }
                 });
               }
             });
@@ -224,15 +226,17 @@ export const PublicListPage: React.FC = () => {
 
         const totalSeriesWatchtime = seriesList.reduce((total, series) => {
           if (series.seasons && series.episodeRuntime) {
-            let watchedEpisodes = 0;
+            let watchedEpisodeTime = 0;
             Object.values(series.seasons).forEach((season: any) => {
               if (season.episodes) {
                 Object.values(season.episodes).forEach((ep: any) => {
-                  if (ep.watched) watchedEpisodes += 1;
+                  if (ep.watched) {
+                    watchedEpisodeTime += (ep.watchCount || 1) * (series.episodeRuntime || 0);
+                  }
                 });
               }
             });
-            total += watchedEpisodes * (series.episodeRuntime || 0);
+            total += watchedEpisodeTime;
           }
           return total;
         }, 0);

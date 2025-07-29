@@ -68,6 +68,7 @@ export interface Series {
       id: number;
       name: string;
       watched: boolean;
+      watchCount?: number;
     }[];
   }[];
   title: string;
