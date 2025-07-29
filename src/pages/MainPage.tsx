@@ -113,7 +113,12 @@ export const MainPage: React.FC = () => {
           series.seasons.reduce((seasonTotal: number, season: any) => {
             return (
               seasonTotal +
-              (season.episodes || []).filter((ep: any) => ep.watched).length
+              (season.episodes || []).reduce((episodeTotal: number, ep: any) => {
+                if (ep.watched) {
+                  return episodeTotal + (ep.watchCount || 1);
+                }
+                return episodeTotal;
+              }, 0)
             );
           }, 0)
         );
@@ -123,16 +128,21 @@ export const MainPage: React.FC = () => {
 
     const totalWatchtime = seriesList.reduce((total, series) => {
       if (series.seasons && series.episodeRuntime) {
-        const watchedEpisodes = series.seasons.reduce(
+        const watchedEpisodeTime = series.seasons.reduce(
           (seasonTotal: number, season: any) => {
             return (
               seasonTotal +
-              (season.episodes || []).filter((ep: any) => ep.watched).length
+              (season.episodes || []).reduce((episodeTime: number, ep: any) => {
+                if (ep.watched) {
+                  return episodeTime + (ep.watchCount || 1) * series.episodeRuntime;
+                }
+                return episodeTime;
+              }, 0)
             );
           },
           0
         );
-        return total + watchedEpisodes * series.episodeRuntime;
+        return total + watchedEpisodeTime;
       }
       return total;
     }, 0);

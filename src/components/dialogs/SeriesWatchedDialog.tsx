@@ -17,6 +17,7 @@ import { useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../interfaces/Series';
 import { getFormattedDate } from '../../utils/date.utils';
+import RewatchDialog from './RewatchDialog';
 import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
 interface SeriesWatchedDialogProps {
   open: boolean;
@@ -26,7 +27,9 @@ interface SeriesWatchedDialogProps {
   handleWatchedToggleWithConfirmation: (
     seasonNumber: number,
     episodeId: number,
-    forceWatched?: boolean
+    forceWatched?: boolean,
+    isRewatch?: boolean,
+    forceUnwatch?: boolean
   ) => void;
   handleBatchWatchedToggle?: (confirmSeason: number) => void;
   handleEpisodeBatchWatchedToggle?: (
@@ -51,6 +54,14 @@ const SeriesWatchedDialog = ({
   const [confirmEpisode, setConfirmEpisode] = useState<{
     seasonNumber: number;
     episodeId: number;
+  } | null>(null);
+  const [rewatchDialogOpen, setRewatchDialogOpen] = useState(false);
+  const [rewatchItem, setRewatchItem] = useState<{
+    type: 'episode' | 'season';
+    name: string;
+    seasonNumber: number;
+    episodeId?: number;
+    currentWatchCount: number;
   } | null>(null);
   // React 19: Automatische Memoization - kein useMemo nötig
   const uniqueSeasons = (() =>
@@ -128,7 +139,19 @@ const SeriesWatchedDialog = ({
           setConfirmOpen(true);
         }
       } else {
-        handleWatchedToggleWithConfirmation(seasonNumber, -1);
+        // Wenn alle Episoden der Staffel gesehen wurden, zeige Rewatch-Dialog
+        const season = uniqueSeasons?.find((s) => s.seasonNumber === seasonNumber);
+        if (season) {
+          const totalWatchCount = season.episodes.reduce((sum, ep) => sum + (ep.watchCount || 1), 0);
+          const avgWatchCount = Math.round(totalWatchCount / season.episodes.length);
+          setRewatchItem({
+            type: 'season',
+            name: `Staffel ${seasonNumber + 1}`,
+            seasonNumber,
+            currentWatchCount: avgWatchCount,
+          });
+          setRewatchDialogOpen(true);
+        }
       }
     }
   };
@@ -147,9 +170,19 @@ const SeriesWatchedDialog = ({
     if (!season) return;
 
     const episode = season.episodes[episodeIndex];
-    if (!episode || episode.watched) {
-      // Episode ist bereits gesehen oder nicht gefunden - normaler Toggle
-      handleWatchedToggleWithConfirmation(seasonNumber, episodeId);
+    if (!episode) return;
+
+    // Wenn Episode bereits gesehen wurde, zeige Rewatch-Dialog
+    if (episode.watched) {
+      const watchCount = episode.watchCount || 1;
+      setRewatchItem({
+        type: 'episode',
+        name: episode.name,
+        seasonNumber,
+        episodeId,
+        currentWatchCount: watchCount,
+      });
+      setRewatchDialogOpen(true);
       return;
     }
 
@@ -306,9 +339,15 @@ const SeriesWatchedDialog = ({
                         cursor: isReadOnly ? 'default' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
                       }}
                     >
-                      <Check size={18} />
+                      {allWatched && season.episodes.some(ep => ep.watchCount && ep.watchCount > 1) ? (
+                        `${Math.max(...season.episodes.map(ep => ep.watchCount || 1))}x`
+                      ) : (
+                        <Check size={18} />
+                      )}
                     </div>
                   </div>
                 </AccordionSummary>
@@ -345,9 +384,15 @@ const SeriesWatchedDialog = ({
                           cursor: isReadOnly ? 'default' : 'pointer',
                           display: 'flex',
                           alignItems: 'center',
+                          fontSize: '14px',
+                          fontWeight: 'bold',
                         }}
                       >
-                        <Check size={18} />
+                        {episode.watched && episode.watchCount && episode.watchCount > 1 ? (
+                          `${episode.watchCount}x`
+                        ) : (
+                          <Check size={18} />
+                        )}
                       </div>
                     </div>
                   ))}
@@ -407,6 +452,56 @@ const SeriesWatchedDialog = ({
             </DialogActions>
           </Dialog>
         )}
+        <RewatchDialog
+          open={rewatchDialogOpen}
+          onClose={() => {
+            setRewatchDialogOpen(false);
+            setRewatchItem(null);
+          }}
+          onRewatch={() => {
+            if (rewatchItem) {
+              if (rewatchItem.type === 'episode' && rewatchItem.episodeId !== undefined) {
+                handleWatchedToggleWithConfirmation(
+                  rewatchItem.seasonNumber,
+                  rewatchItem.episodeId,
+                  false,
+                  true
+                );
+              } else if (rewatchItem.type === 'season') {
+                handleWatchedToggleWithConfirmation(
+                  rewatchItem.seasonNumber,
+                  -1,
+                  false,
+                  true
+                );
+              }
+            }
+          }}
+          onUnwatch={() => {
+            if (rewatchItem) {
+              if (rewatchItem.type === 'episode' && rewatchItem.episodeId !== undefined) {
+                handleWatchedToggleWithConfirmation(
+                  rewatchItem.seasonNumber,
+                  rewatchItem.episodeId,
+                  false,
+                  false,
+                  true
+                );
+              } else if (rewatchItem.type === 'season') {
+                handleWatchedToggleWithConfirmation(
+                  rewatchItem.seasonNumber,
+                  -1,
+                  false,
+                  false,
+                  true
+                );
+              }
+            }
+          }}
+          itemType={rewatchItem?.type || 'episode'}
+          itemName={rewatchItem?.name || ''}
+          currentWatchCount={rewatchItem?.currentWatchCount || 1}
+        />
       </DialogContent>
     </Dialog>
   );
