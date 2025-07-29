@@ -44,6 +44,7 @@ interface ActivityItem {
     | 'series_deleted'
     | 'episode_watched'
     | 'episodes_watched'
+    | 'season_watched'
     | 'series_rated'
     | 'rating_updated'
     | 'movie_added'
@@ -492,6 +493,35 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
           return (
             <>
               hat "<TitleComponent>{title}</TitleComponent>" geschaut
+            </>
+          );
+        }
+      }
+      case 'season_watched': {
+        // Staffel komplett geschaut
+        if (title.includes(' - Staffel ')) {
+          const staffelIndex = title.indexOf(' - Staffel ');
+          const seriesName = title.substring(0, staffelIndex);
+          let staffelInfo = title.substring(staffelIndex + 1); // +1 für Leerzeichen nach Bindestrich
+          // Staffelnummer extrahieren und +1 rechnen für Anzeige
+          const staffelMatch = staffelInfo.match(/Staffel\s(\d+)/);
+          let staffelNum = staffelMatch ? parseInt(staffelMatch[1], 10) : null;
+          if (staffelNum !== null) staffelNum += 1;
+          staffelInfo = staffelInfo.replace(
+            /Staffel\s\d+/,
+            `Staffel ${staffelNum}`
+          );
+          return (
+            <>
+              hat "<TitleComponent>{seriesName}</TitleComponent>" {staffelInfo}{' '}
+              geschaut
+            </>
+          );
+        } else {
+          return (
+            <>
+              hat eine Staffel von "<TitleComponent>{title}</TitleComponent>"
+              geschaut
             </>
           );
         }
