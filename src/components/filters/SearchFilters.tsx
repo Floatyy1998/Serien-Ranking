@@ -30,6 +30,7 @@ import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
+import { hasActiveRewatch, getNextRewatchEpisode } from '../../utils/rewatch.utils';
 import AddSeriesDialog from '../dialogs/AddSeriesDialog';
 import DiscoverSeriesDialog from '../dialogs/DiscoverSeriesDialog';
 import RecommendationsDialog from '../dialogs/RecommendationsDialog';
@@ -80,6 +81,7 @@ export const SearchFilters = ({
   useEffect(() => {
     const fetchWatchlistSeries = async () => {
       if (user) {
+        
         const watchlistSeries = (seriesList || []).filter(
           (series) => series.watchlist
         );
@@ -170,10 +172,26 @@ export const SearchFilters = ({
         const snapshot = await episodeRef.once('value');
         const episode = snapshot.val();
         const wasWatched = episode.watched;
-        const newWatchedStatus = !wasWatched;
 
-        // Episode-Status umschalten
-        await episodeRef.update({ watched: newWatchedStatus });
+        let updateData: any;
+        
+        if (wasWatched) {
+          // Episode ist bereits geschaut - erhöhe watchCount für Rewatch
+          const currentWatchCount = episode.watchCount || 1;
+          updateData = {
+            watched: true,
+            watchCount: currentWatchCount + 1
+          };
+        } else {
+          // Episode war noch nicht geschaut - markiere als geschaut
+          updateData = {
+            watched: true,
+            watchCount: 1
+          };
+        }
+
+        // Episode-Status aktualisieren
+        await episodeRef.update(updateData);
 
         // Activity tracken für Freunde (nur wenn Episode als geschaut markiert wird)
         if (!wasWatched) {
@@ -205,7 +223,7 @@ export const SearchFilters = ({
                           ...season,
                           episodes: season.episodes.map((episode, index) =>
                             index === episodeIndex
-                              ? { ...episode, watched: newWatchedStatus }
+                              ? { ...episode, ...updateData }
                               : episode
                           ),
                         }
@@ -224,6 +242,7 @@ export const SearchFilters = ({
       return null;
     }
     
+    // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
     for (const season of series.seasons) {
       if (!season.episodes || !Array.isArray(season.episodes)) {
         continue;
@@ -236,10 +255,25 @@ export const SearchFilters = ({
             ...episode,
             seasonNumber: season.seasonNumber,
             episodeIndex: i,
+            isRewatch: false,
           };
         }
       }
     }
+
+    // Nur wenn keine ungesehenen Episoden vorhanden sind: Prüfe auf Rewatch-Episoden
+    if (hasActiveRewatch(series)) {
+      const nextRewatch = getNextRewatchEpisode(series);
+      if (nextRewatch) {
+        return {
+          ...nextRewatch,
+          seasonNumber: nextRewatch.seasonNumber,
+          episodeIndex: nextRewatch.episodeIndex,
+          isRewatch: true,
+        };
+      }
+    }
+    
     return null;
   };
   const filteredWatchlistSeries = watchlistSeries.filter((series) => {

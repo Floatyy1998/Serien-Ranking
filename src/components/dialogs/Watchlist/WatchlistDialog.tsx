@@ -12,6 +12,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAuth } from '../../../App';
 import { Series } from '../../../interfaces/Series';
+import { getNextRewatchEpisode, hasActiveRewatch } from '../../../utils/rewatch.utils';
 import SeriesWatchedDialog from '../SeriesWatchedDialog';
 import { DialogHeader } from '../shared/SharedDialogComponents';
 import SeriesListItem from './SeriesListItem';
@@ -36,11 +37,15 @@ const WatchlistDialog = ({
   handleWatchedToggleWithConfirmation,
   setWatchlistSeries,
 }: WatchlistDialogProps) => {
+  
   const [filterInput, setFilterInput] = useState('');
   const [customOrderActive, setCustomOrderActive] = useState(
     localStorage.getItem('customOrderActive') === 'true'
   );
   const [sortOption, setSortOption] = useState('name-asc');
+  const [hideRewatches, setHideRewatches] = useState(
+    localStorage.getItem('hideRewatches') !== 'false'
+  );
   const [filteredSeries, setFilteredSeries] = useState<Series[]>([]);
   const { user } = useAuth()!;
   const theme = useTheme();
@@ -75,6 +80,10 @@ const WatchlistDialog = ({
   useEffect(() => {
     localStorage.setItem('customOrderActive', customOrderActive.toString());
   }, [customOrderActive]);
+  
+  useEffect(() => {
+    localStorage.setItem('hideRewatches', hideRewatches.toString());
+  }, [hideRewatches]);
   const toggleSort = (field: string) => {
     if (customOrderActive) {
       setCustomOrderActive(false);
@@ -174,11 +183,92 @@ const WatchlistDialog = ({
     }
   }, [sortedWatchlistSeries, customOrderActive, user, pendingUpdates.size]);
 
-  const displayedSeries = filteredSeries.filter((series) =>
-    filterInput
+  const getNextUnwatchedEpisode = (series: Series) => {
+    // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
+    for (const season of series.seasons) {
+      for (let i = 0; i < season.episodes.length; i++) {
+        const episode = season.episodes[i];
+        if (!episode.watched) {
+          return {
+            ...episode,
+            seasonNumber: season.seasonNumber,
+            episodeIndex: i,
+            isRewatch: false,
+          };
+        }
+      }
+    }
+
+    // Nur wenn keine ungesehenen Episoden vorhanden sind: Prüfe auf Rewatch-Episoden
+    if (!hideRewatches && hasActiveRewatch(series)) {
+      const nextRewatch = getNextRewatchEpisode(series);
+      if (nextRewatch) {
+        return {
+          ...nextRewatch,
+          // Markiere als Rewatch-Episode für spätere Verwendung
+          isRewatch: true,
+          currentWatchCount: nextRewatch.currentWatchCount,
+          targetWatchCount: nextRewatch.targetWatchCount,
+        };
+      }
+    }
+
+    return null;
+  };
+
+  // Neue Funktion um sowohl nächste Episode als auch Rewatch-Info zu bekommen
+  const getEpisodeInfo = (series: Series) => {
+    let nextEpisode = null;
+    let rewatchInfo = null;
+
+    // Finde nächste ungesehene Episode
+    for (const season of series.seasons) {
+      for (let i = 0; i < season.episodes.length; i++) {
+        const episode = season.episodes[i];
+        if (!episode.watched) {
+          nextEpisode = {
+            ...episode,
+            seasonNumber: season.seasonNumber,
+            episodeIndex: i,
+            isRewatch: false,
+          };
+          break;
+        }
+      }
+      if (nextEpisode) break;
+    }
+
+    // Finde Rewatch-Info (unabhängig von neuen Episoden)
+    if (hasActiveRewatch(series)) {
+      const nextRewatch = getNextRewatchEpisode(series);
+      if (nextRewatch) {
+        rewatchInfo = {
+          ...nextRewatch,
+          isRewatch: true,
+          currentWatchCount: nextRewatch.currentWatchCount,
+          targetWatchCount: nextRewatch.targetWatchCount,
+        };
+      }
+    }
+
+    return { nextEpisode, rewatchInfo };
+  };
+
+  const displayedSeries = filteredSeries.filter((series) => {
+    // Titel-Filter
+    const matchesTitle = filterInput
       ? series.title.toLowerCase().includes(filterInput.toLowerCase())
-      : true
-  );
+      : true;
+    
+    // Rewatch-Filter: Blende Serien aus, die nur Rewatch-Episoden haben
+    if (hideRewatches) {
+      const nextEpisode = getNextUnwatchedEpisode(series);
+      const hasUnwatchedEpisodes = nextEpisode && !nextEpisode.isRewatch;
+      return matchesTitle && hasUnwatchedEpisodes;
+    }
+    
+    return matchesTitle;
+  });
 
   const moveItem = (from: number, to: number) => {
     if (!customOrderActive) {
@@ -193,22 +283,6 @@ const WatchlistDialog = ({
       firebase.database().ref(`${user.uid}/watchlistOrder`).set(order);
     }
     setWatchlistSeries(updated);
-  };
-
-  const getNextUnwatchedEpisode = (series: Series) => {
-    for (const season of series.seasons) {
-      for (let i = 0; i < season.episodes.length; i++) {
-        const episode = season.episodes[i];
-        if (!episode.watched) {
-          return {
-            ...episode,
-            seasonNumber: season.seasonNumber,
-            episodeIndex: i,
-          };
-        }
-      }
-    }
-    return null;
   };
 
   const updateSeriesInDialog = (
@@ -235,11 +309,19 @@ const WatchlistDialog = ({
                 season.seasonNumber === seasonNumber
                   ? {
                       ...season,
-                      episodes: season.episodes.map((episode, idx) =>
-                        idx === episodeIndex
-                          ? { ...episode, watched: !episode.watched }
-                          : episode
-                      ),
+                      episodes: season.episodes.map((episode, idx) => {
+                        if (idx === episodeIndex) {
+                          if (episode.watched) {
+                            // Erhöhe watchCount für Rewatch
+                            const currentWatchCount = episode.watchCount || 1;
+                            return { ...episode, watched: true, watchCount: currentWatchCount + 1 };
+                          } else {
+                            // Normale erste Ansicht
+                            return { ...episode, watched: true, watchCount: 1 };
+                          }
+                        }
+                        return episode;
+                      }),
                     }
                   : season
               ),
@@ -315,6 +397,8 @@ const WatchlistDialog = ({
                 setCustomOrderActive={setCustomOrderActive}
                 sortOption={sortOption}
                 toggleSort={toggleSort}
+                hideRewatches={hideRewatches}
+                setHideRewatches={setHideRewatches}
               />
             )}
             {isMobile && (
@@ -332,7 +416,9 @@ const WatchlistDialog = ({
               <DndProvider backend={HTML5Backend}>
                 <div style={{ minHeight: '350px' }}>
                   {displayedSeries.map((series, index) => {
-                    const nextEpisode = getNextUnwatchedEpisode(series);
+                    const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
+                    // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
+                    const priorityEpisode = !hideRewatches && rewatchInfo ? rewatchInfo : (nextEpisode || rewatchInfo);
                     return (
                       <SeriesListItem
                         key={series.id}
@@ -340,10 +426,13 @@ const WatchlistDialog = ({
                         index={index}
                         draggable={true}
                         moveItem={moveItem}
-                        nextUnwatchedEpisode={nextEpisode}
+                        nextUnwatchedEpisode={priorityEpisode}
+                        rewatchInfo={null} // Keine separate Rewatch-Info mehr, da priorityEpisode das schon abdeckt
                         onTitleClick={(s) => setSelectedSeries(s)}
                         onWatchedToggle={() => {
-                          handleWatchedToggleWithDebounce(series, nextEpisode!);
+                          if (priorityEpisode) {
+                            handleWatchedToggleWithDebounce(series, priorityEpisode);
+                          }
                         }}
                       />
                     );
@@ -353,16 +442,19 @@ const WatchlistDialog = ({
             ) : (
               <div>
                 {displayedSeries.map((series) => {
-                  const nextEpisode = getNextUnwatchedEpisode(series);
+                  const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
+                  // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
+                  const priorityEpisode = !hideRewatches && rewatchInfo ? rewatchInfo : (nextEpisode || rewatchInfo);
                   return (
                     <SeriesListItem
                       key={series.id}
                       series={series}
-                      nextUnwatchedEpisode={nextEpisode}
+                      nextUnwatchedEpisode={priorityEpisode}
+                      rewatchInfo={null} // Keine separate Rewatch-Info mehr, da priorityEpisode das schon abdeckt
                       onTitleClick={(s) => setSelectedSeries(s)}
                       onWatchedToggle={() => {
-                        if (nextEpisode) {
-                          handleWatchedToggleWithDebounce(series, nextEpisode);
+                        if (priorityEpisode) {
+                          handleWatchedToggleWithDebounce(series, priorityEpisode);
                         }
                       }}
                     />

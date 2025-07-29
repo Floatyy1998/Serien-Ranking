@@ -10,6 +10,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 import { getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
+import { hasActiveRewatch } from '../../utils/rewatch.utils';
 import SeriesWatchedDialog from '../dialogs/SeriesWatchedDialog';
 import TodayEpisodesDialog from '../dialogs/TodayEpisodesDialog';
 import { SeriesCard } from './SeriesCard';
@@ -131,7 +132,7 @@ export const SeriesGrid = ({
         (selectedGenre === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
         selectedGenre === 'Zuletzt Hinzugefügt' ||
-        (selectedGenre === 'Watchlist' && series.watchlist) ||
+        (selectedGenre === 'Watchlist' && (series.watchlist || hasActiveRewatch(series))) ||
         series.genre?.genres?.includes(selectedGenre);
       const matchesProvider =
         selectedProvider === 'All' ||
@@ -287,15 +288,23 @@ export const SeriesGrid = ({
             // Von 2x auf 1x (normaler Haken)
             return { ...e, watched: true, watchCount: 1 };
           } else {
-            // Von 1x (Haken) auf ungesehen
-            return { ...e, watched: false, watchCount: undefined };
+            // Von 1x (Haken) auf ungesehen - entferne watchCount Feld komplett
+            const { watchCount, ...episodeWithoutWatchCount } = e;
+            return { ...episodeWithoutWatchCount, watched: false };
           }
         });
       } else if (isRewatch === true) {
-        // Rewatch für gesamte Staffel: Erhöhe watchCount für alle Episoden
+        // Rewatch für gesamte Staffel
+        const watchCounts = season.episodes.map((e: any) => e.watchCount || 1);
+        const maxWatchCount = Math.max(...watchCounts);
+        const minWatchCount = Math.min(...watchCounts);
+        
+        // Wenn alle Episoden den gleichen watchCount haben, erhöhe alle um 1
+        // Sonst setze alle auf die höchste watchCount
+        const targetWatchCount = maxWatchCount === minWatchCount ? maxWatchCount + 1 : maxWatchCount;
+        
         updatedEpisodes = season.episodes.map((e: any) => {
-          const currentWatchCount = e.watchCount || 1;
-          return { ...e, watched: true, watchCount: currentWatchCount + 1 };
+          return { ...e, watched: true, watchCount: targetWatchCount };
         });
       } else if (forceWatched) {
         updatedEpisodes = season.episodes.map((e: any) => ({
@@ -304,11 +313,19 @@ export const SeriesGrid = ({
           watchCount: e.watched ? e.watchCount : 1,
         }));
       } else {
-        updatedEpisodes = season.episodes.map((e: any) => ({
-          ...e,
-          watched: !allWatched,
-          watchCount: !allWatched && !e.watched ? 1 : (allWatched ? undefined : e.watchCount),
-        }));
+        updatedEpisodes = season.episodes.map((e: any) => {
+          if (!allWatched && !e.watched) {
+            // Episode wird als watched markiert
+            return { ...e, watched: true, watchCount: 1 };
+          } else if (allWatched) {
+            // Episode wird als unwatch markiert - entferne watchCount Feld
+            const { watchCount, ...episodeWithoutWatchCount } = e;
+            return { ...episodeWithoutWatchCount, watched: false };
+          } else {
+            // Keine Änderung
+            return e;
+          }
+        });
       }
 
       const updatedSeasons = series.seasons.map((s: any) => {
@@ -384,8 +401,9 @@ export const SeriesGrid = ({
             // Von 2x auf 1x (normaler Haken)
             return { ...e, watched: true, watchCount: 1 };
           } else {
-            // Von 1x (Haken) auf ungesehen
-            return { ...e, watched: false, watchCount: undefined };
+            // Von 1x (Haken) auf ungesehen - entferne watchCount Feld komplett
+            const { watchCount, ...episodeWithoutWatchCount } = e;
+            return { ...episodeWithoutWatchCount, watched: false };
           }
         } else if (isRewatch === true) {
           // Rewatch: Erhöhe watchCount
