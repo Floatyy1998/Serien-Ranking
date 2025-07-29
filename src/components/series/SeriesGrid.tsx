@@ -132,7 +132,8 @@ export const SeriesGrid = ({
         (selectedGenre === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
         selectedGenre === 'Zuletzt Hinzugefügt' ||
-        (selectedGenre === 'Watchlist' && (series.watchlist || hasActiveRewatch(series))) ||
+        (selectedGenre === 'Watchlist' &&
+          (series.watchlist || hasActiveRewatch(series))) ||
         series.genre?.genres?.includes(selectedGenre);
       const matchesProvider =
         selectedProvider === 'All' ||
@@ -279,7 +280,7 @@ export const SeriesGrid = ({
         // Unwatch für gesamte Staffel: Reduziere watchCount schrittweise für alle Episoden
         updatedEpisodes = season.episodes.map((e: any) => {
           if (!e.watched) return e; // Ungesehene Episoden bleiben unverändert
-          
+
           const currentWatchCount = e.watchCount || 1;
           if (currentWatchCount > 2) {
             // Von 3x auf 2x, 4x auf 3x, etc.
@@ -298,11 +299,12 @@ export const SeriesGrid = ({
         const watchCounts = season.episodes.map((e: any) => e.watchCount || 1);
         const maxWatchCount = Math.max(...watchCounts);
         const minWatchCount = Math.min(...watchCounts);
-        
+
         // Wenn alle Episoden den gleichen watchCount haben, erhöhe alle um 1
         // Sonst setze alle auf die höchste watchCount
-        const targetWatchCount = maxWatchCount === minWatchCount ? maxWatchCount + 1 : maxWatchCount;
-        
+        const targetWatchCount =
+          maxWatchCount === minWatchCount ? maxWatchCount + 1 : maxWatchCount;
+
         updatedEpisodes = season.episodes.map((e: any) => {
           return { ...e, watched: true, watchCount: targetWatchCount };
         });
@@ -343,34 +345,61 @@ export const SeriesGrid = ({
 
         // Activity tracken für ganze Staffel (nur wenn nicht targetUserId und Episoden als gesehen markiert werden)
         if (!targetUserId && (forceWatched || !allWatched)) {
-          const unwatchedEpisodes = season.episodes.filter(
+          // Finde die Episoden die GERADE als watched markiert wurden (waren vorher unwatched)
+          const previouslyUnwatched = season.episodes.filter(
             (e: any) => !e.watched
           );
-          if (unwatchedEpisodes.length > 0) {
-            // Sortiere Episoden nach Episode-Nummer
-            const sortedUnwatched = unwatchedEpisodes.sort(
-              (a: any, b: any) => (a.episode || 0) - (b.episode || 0)
-            );
-            const firstEpisode = sortedUnwatched[0];
-            const lastEpisode = sortedUnwatched[sortedUnwatched.length - 1];
+          const nowWatched = updatedEpisodes.filter((e: any) => e.watched);
+          const newlyWatchedCount =
+            nowWatched.length -
+            (season.episodes.length - previouslyUnwatched.length);
 
+          if (newlyWatchedCount > 0) {
             let activityText;
-            if (unwatchedEpisodes.length === 1) {
+
+            // Prüfe ob die ganze Staffel auf einmal abgehakt wurde
+            if (previouslyUnwatched.length === season.episodes.length) {
+              // Ganze Staffel war unwatched und wurde komplett abgehakt
+              activityText = `Staffel ${seasonNumber} komplett`;
+            } else if (newlyWatchedCount === 1) {
+              // Nur eine Episode wurde abgehakt
+              const newlyWatchedEpisode = previouslyUnwatched[0];
               activityText = `Staffel ${seasonNumber} Episode ${
-                firstEpisode.episode || 'X'
+                newlyWatchedEpisode.episode || 'X'
               }`;
-            } else if (unwatchedEpisodes.length === season.episodes.length) {
-              activityText = `Staffel ${seasonNumber} komplett (Episode ${
-                firstEpisode.episode || 1
-              }-${lastEpisode.episode || season.episodes.length})`;
-            } else {
+            } else if (previouslyUnwatched.length > 1) {
+              // Mehrere Episoden wurden abgehakt
+              const sortedUnwatched = previouslyUnwatched.sort(
+                (a: any, b: any) => (a.episode || 0) - (b.episode || 0)
+              );
+              const firstEpisode = sortedUnwatched[0];
+              const lastEpisode = sortedUnwatched[sortedUnwatched.length - 1];
               activityText = `Staffel ${seasonNumber} Episode ${
                 firstEpisode.episode || 1
-              }-${lastEpisode.episode || unwatchedEpisodes.length}`;
+              }-${lastEpisode.episode || previouslyUnwatched.length}`;
+            } else {
+              activityText = `Staffel ${seasonNumber}`;
             }
 
+            const activityType:
+              | 'episodes_watched'
+              | 'episode_watched'
+              | 'series_added'
+              | 'series_deleted'
+              | 'rating_updated'
+              | 'movie_added'
+              | 'movie_deleted'
+              | 'rating_updated_movie' = 'episodes_watched';
+
+            console.log('🔍 DEBUG ACTIVITY:', {
+              activityType,
+              previouslyUnwatchedCount: previouslyUnwatched.length,
+              totalEpisodes: season.episodes.length,
+              activityText,
+            });
+
             await updateUserActivity({
-              type: 'episodes_watched',
+              type: activityType,
               itemTitle: `${
                 series.title || series.original_name || 'Unbekannte Serie'
               } - ${activityText}`,
@@ -411,7 +440,11 @@ export const SeriesGrid = ({
           return { ...e, watched: true, watchCount: currentWatchCount + 1 };
         } else {
           // Normaler Toggle
-          return { ...e, watched: !e.watched, watchCount: e.watched ? undefined : 1 };
+          return {
+            ...e,
+            watched: !e.watched,
+            watchCount: e.watched ? undefined : 1,
+          };
         }
       }
       return e;
@@ -732,7 +765,10 @@ export const SeriesGrid = ({
           }}
         >
           {filteredSeries?.slice(0, visibleCount).map((series, index) => (
-            <Box key={series.id || series.nmr || index} sx={{ width: '230px', height: '444px' }}>
+            <Box
+              key={series.id || series.nmr || index}
+              sx={{ width: '230px', height: '444px' }}
+            >
               <SeriesCard
                 series={series}
                 genre={selectedGenre}
