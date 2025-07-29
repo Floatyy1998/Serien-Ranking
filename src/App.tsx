@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
 import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
+import { BadgeProvider } from './contexts/BadgeProvider';
 import { FriendsProvider } from './contexts/FriendsProvider';
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
@@ -109,6 +110,7 @@ function AppContent() {
           <SeriesListProvider>
             <MovieListProvider>
               <StatsProvider>
+                <BadgeProvider>
                 <Helmet>
                   <title>
                     TV-RANK - Entdecke, bewerte und verwalte deine
@@ -216,6 +218,7 @@ function AppContent() {
                     </main>
                   </div>
                 </ThemeProvider>
+                </BadgeProvider>
               </StatsProvider>
             </MovieListProvider>
           </SeriesListProvider>

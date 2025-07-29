@@ -58,6 +58,8 @@ interface ActivityItem {
   rating?: number;
   timestamp: number;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
+  batchType?: 'binge' | 'quickwatch' | 'season_complete'; // Batch-Type für spezielle Icons
+  episodeCount?: number; // Anzahl der Episoden bei Batch-Activities
 }
 
 interface FriendActivityDialogProps {
@@ -329,9 +331,23 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     loadActivities();
   }, [open, friendId]);
 
-  const getActivityIcon = (type: string) => {
+  const getActivityIcon = (activity: ActivityItem) => {
     const iconStyle = { fontSize: 20, color: 'white' };
-    switch (type) {
+    
+    // Spezielle Icons für Batch-Activities
+    if (activity.batchType) {
+      switch (activity.batchType) {
+        case 'binge':
+          return <FastForward sx={{...iconStyle, fontSize: 22}} />; // Größer für Binge
+        case 'quickwatch':
+          return <PlayArrow sx={{...iconStyle, color: '#ffd700'}} />; // Gold für Quickwatch
+        case 'season_complete':
+          return <Tv sx={{...iconStyle, color: '#00fed7'}} />; // Türkis für Season complete
+      }
+    }
+    
+    // Standard Icons
+    switch (activity.type) {
       case 'series_added':
         return <Tv sx={iconStyle} />;
       case 'series_deleted':
@@ -353,8 +369,21 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     }
   };
 
-  const getActivityColor = (type: string) => {
-    switch (type) {
+  const getActivityColor = (activity: ActivityItem) => {
+    // Spezielle Farben für Batch-Activities
+    if (activity.batchType) {
+      switch (activity.batchType) {
+        case 'binge':
+          return '#ff6b35'; // Orange-Rot für Binge
+        case 'quickwatch':
+          return '#ffd700'; // Gold für Quickwatch
+        case 'season_complete':
+          return '#00fed7'; // Türkis für Season complete
+      }
+    }
+    
+    // Standard Farben
+    switch (activity.type) {
       case 'series_added':
       case 'movie_added':
         return '#4caf50';
@@ -372,8 +401,20 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     }
   };
 
-  const getActivityEmoji = (type: string) => {
-    switch (type) {
+  const getActivityEmoji = (activity: ActivityItem | string) => {
+    // Handle legacy string parameter for title usage
+    if (typeof activity === 'string') {
+      return activity === 'default' ? '📊' : '📊';
+    }
+    
+    // Spezielle Emojis für Batch-Activities - sind bereits im itemTitle enthalten!
+    // Batch-Activities haben bereits Emojis im Titel, verwende Standard-Emoji
+    if (activity.batchType) {
+      return ''; // Kein extra Emoji, da schon im Titel
+    }
+    
+    // Standard Emojis
+    switch (activity.type) {
       case 'series_added':
         return '📺';
       case 'series_deleted':
@@ -712,7 +753,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
                       top: 8,
                       bottom: 8,
                       width: 4,
-                      backgroundColor: getActivityColor(activity.type),
+                      backgroundColor: getActivityColor(activity),
                       borderRadius: '2px',
                     },
                   }}
@@ -727,14 +768,14 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
                           width: 48,
                           height: 48,
                           borderRadius: '50%',
-                          backgroundColor: getActivityColor(activity.type),
+                          backgroundColor: getActivityColor(activity),
                           boxShadow: `0 4px 12px ${getActivityColor(
-                            activity.type
+                            activity
                           )}33`,
                           flexShrink: 0,
                         }}
                       >
-                        {getActivityIcon(activity.type)}
+                        {getActivityIcon(activity)}
                       </Box>
 
                       <Box flex={1} minWidth={0}>
@@ -782,7 +823,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
                           flexShrink: 0,
                         }}
                       >
-                        {getActivityEmoji(activity.type)}
+                        {getActivityEmoji(activity)}
                       </Box>
                     </Box>
                   </CardContent>
