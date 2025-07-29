@@ -343,8 +343,36 @@ export const SeriesGrid = ({
           .ref(`${targetUserId || user?.uid}/serien/${series.nmr}/seasons`)
           .set(updatedSeasons);
 
-        // Activity tracken für ganze Staffel (nur wenn nicht targetUserId und Episoden als gesehen markiert werden)
-        if (!targetUserId && (forceWatched || !allWatched)) {
+        // Activity tracken für ganze Staffel
+        if (!targetUserId) {
+          const seriesTitle = series.title || series.original_name || 'Unbekannte Serie';
+          
+          if (isRewatch) {
+            // Rewatch der gesamten Staffel
+            const watchCounts = updatedEpisodes.map((e: any) => e.watchCount || 1);
+            const minWatchCount = Math.min(...watchCounts);
+            await updateUserActivity({
+              type: 'episodes_watched',
+              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} komplett (${minWatchCount}x gesehen)`,
+              tmdbId: series.id,
+            });
+          } else if (forceUnwatch) {
+            // Season Unwatch - nur loggen wenn watchCount reduziert wurde
+            const hasReducedWatchCount = updatedEpisodes.some((e: any) => {
+              const originalEpisode = season.episodes.find((orig: any) => orig.id === e.id);
+              return originalEpisode && (originalEpisode.watchCount || 1) > (e.watchCount || 1);
+            });
+            
+            if (hasReducedWatchCount) {
+              const watchCounts = updatedEpisodes.filter((e: any) => e.watched).map((e: any) => e.watchCount || 1);
+              const avgWatchCount = watchCounts.length > 0 ? Math.round(watchCounts.reduce((a: number, b: number) => a + b, 0) / watchCounts.length) : 1;
+              await updateUserActivity({
+                type: 'episodes_watched',
+                itemTitle: `${seriesTitle} - Staffel ${seasonNumber} (auf ${avgWatchCount}x reduziert)`,
+                tmdbId: series.id,
+              });
+            }
+          } else if (forceWatched || !allWatched) {
           // Finde die Episoden die GERADE als watched markiert wurden (waren vorher unwatched)
           const previouslyUnwatched = season.episodes.filter(
             (e: any) => !e.watched
@@ -400,11 +428,10 @@ export const SeriesGrid = ({
 
             await updateUserActivity({
               type: activityType,
-              itemTitle: `${
-                series.title || series.original_name || 'Unbekannte Serie'
-              } - ${activityText}`,
-              tmdbId: series.id, // TMDB ID verwenden
+              itemTitle: `${seriesTitle} - ${activityText}`,
+              tmdbId: series.id,
             });
+          }
           }
         }
       } catch (error) {
@@ -461,19 +488,39 @@ export const SeriesGrid = ({
         .ref(`${targetUserId || user?.uid}/serien/${series.nmr}/seasons`)
         .set(updatedSeasons);
 
-      // Activity tracken für Freunde (nur wenn Episode als geschaut markiert wird)
+      // Activity tracken für Freunde
       const episode = season.episodes.find((e: any) => e.id === episodeId);
-      if (episode && !episode.watched && !targetUserId) {
-        // Ermittle Episode-Nummer aus Index wenn episode.episode nicht verfügbar ist
+      if (episode && !targetUserId) {
         const episodeNumber = episode.episode || episodeIndex + 1;
-        // nur wenn von unwatched zu watched
-        await updateUserActivity({
-          type: 'episode_watched',
-          itemTitle: `${
-            series.title || series.original_name || 'Unbekannte Serie'
-          } - Staffel ${seasonNumber} Episode ${episodeNumber}`,
-          tmdbId: series.id, // TMDB ID verwenden
-        });
+        const seriesTitle = series.title || series.original_name || 'Unbekannte Serie';
+        
+        if (isRewatch && episode.watched) {
+          // Rewatch-Activity: Episode wurde erneut geschaut
+          const newWatchCount = (episode.watchCount || 1) + 1;
+          await updateUserActivity({
+            type: 'episode_watched',
+            itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber} (${newWatchCount}x gesehen)`,
+            tmdbId: series.id,
+          });
+        } else if (forceUnwatch && episode.watched) {
+          // Unwatch-Activity: watchCount wurde reduziert
+          const currentWatchCount = episode.watchCount || 1;
+          const newWatchCount = currentWatchCount > 1 ? currentWatchCount - 1 : 0;
+          if (newWatchCount > 0) {
+            await updateUserActivity({
+              type: 'episode_watched',
+              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber} (auf ${newWatchCount}x reduziert)`,
+              tmdbId: series.id,
+            });
+          }
+        } else if (!episode.watched) {
+          // Normale erste Ansicht
+          await updateUserActivity({
+            type: 'episode_watched',
+            itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber}`,
+            tmdbId: series.id,
+          });
+        }
       }
     } catch (error) {
       console.error('Error updating watched status:', error);

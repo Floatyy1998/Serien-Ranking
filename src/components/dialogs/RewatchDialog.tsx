@@ -33,6 +33,8 @@ const RewatchDialog = ({
     setLoading(true);
     try {
       await onRewatch();
+    } catch (error) {
+      console.error(`[Rewatch] Error rewatching ${itemType}: ${itemName}`, error);
     } finally {
       setLoading(false);
       onClose();
@@ -43,6 +45,8 @@ const RewatchDialog = ({
     setLoading(true);
     try {
       await onUnwatch();
+    } catch (error) {
+      console.error(`[Rewatch] Error unwatching ${itemType}: ${itemName}`, error);
     } finally {
       setLoading(false);
       onClose();
