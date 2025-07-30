@@ -131,8 +131,6 @@ export const generateBatchActivity = (
 
   // Mehrere Episoden
   const seriesTitle = episodes[0].seriesTitle;
-  const isBinge = detectBingeWatch(episodes, options);
-  const isCompleteSeason = isSeasonComplete(episodes);
   
   // Prüfe auf Quickwatch-Pattern bei mehreren Episoden
   const quickwatchEpisodes = episodes.filter(ep => 

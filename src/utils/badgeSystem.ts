@@ -572,7 +572,7 @@ export class BadgeSystem {
     }
   }
 
-  private async checkBingeBadge(badge: Badge, activityData: any, now: number): Promise<{ earned: boolean; details?: string } | null> {
+  private async checkBingeBadge(badge: Badge, _activityData: any, now: number): Promise<{ earned: boolean; details?: string } | null> {
     
     // Für Binge-Badges prüfen wir Activities der letzten Stunden basierend auf timeframe
     let timeWindowMs: number;
@@ -603,7 +603,7 @@ export class BadgeSystem {
     });
     
     // Prüfe ob eine Serie die Anforderungen erfüllt
-    for (const [tmdbId, seriesActivities] of seriesGroups) {
+    for (const [, seriesActivities] of seriesGroups) {
       let episodeCount = 0;
       let seriesTitle = 'Unbekannte Serie';
       
@@ -662,7 +662,7 @@ export class BadgeSystem {
     return null;
   }
 
-  private async checkQuickwatchBadge(badge: Badge, activityData: any, now: number): Promise<{ earned: boolean; details?: string } | null> {
+  private async checkQuickwatchBadge(badge: Badge, activityData: any, _now: number): Promise<{ earned: boolean; details?: string } | null> {
     
     // Prüfe ob aktuelle Episode am Release Day geschaut wurde
     if (activityData.airDate && activityData.timestamp) {
@@ -809,9 +809,6 @@ export class BadgeSystem {
           dayGroups.get(dayKey)!.push(activity);
         }
       });
-      
-      // Sortiere Tage absteigend (neueste zuerst)
-      const sortedDates = Array.from(dayGroups.keys()).sort().reverse();
       
       let streak = 0;
       const today = new Date();
