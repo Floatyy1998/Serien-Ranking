@@ -12,6 +12,7 @@ import {
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
 import BadgeNotificationManager from './components/badges/BadgeNotificationManager';
 import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
+import GenreChangeNotificationManager from './components/genreChange/GenreChangeNotificationManager';
 import { BadgeProvider } from './contexts/BadgeProvider';
 import { FriendsProvider } from './contexts/FriendsProvider';
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
@@ -127,6 +128,7 @@ function AppContent() {
               <StatsProvider>
                 <BadgeProvider>
                   <BadgeNotificationManager>
+                    <GenreChangeNotificationManager />
                     <Helmet>
                       <title>
                         TV-RANK - Entdecke, bewerte und verwalte deine
