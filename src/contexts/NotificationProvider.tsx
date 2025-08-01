@@ -67,12 +67,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
           unreadCounts[friend.uid] = unreadCount;
           total += unreadCount;
-        } catch (error) {
-          console.error(
-            `Error loading unread activities for ${friend.uid}:`,
-            error
-          );
-          unreadCounts[friend.uid] = 0;
+        } catch (error) {unreadCounts[friend.uid] = 0;
         }
       }
 
@@ -149,9 +144,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         setTotalUnreadActivities(newTotal);
         return updated;
       });
-    } catch (error) {
-      console.error('Error marking activities as read:', error);
-    }
+    } catch (error) {}
   };
 
   const markAllActivitiesAsRead = async () => {
@@ -169,9 +162,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setFriendUnreadActivities({});
       setTotalUnreadActivities(0);
-    } catch (error) {
-      console.error('Error marking all activities as read:', error);
-    }
+    } catch (error) {}
   };
 
   return (

@@ -1,6 +1,17 @@
 import firebase from 'firebase/compat/app';
+import { badgeActivityLogger, type BadgeActivity } from './badgeActivityLogger';
 
-export type BadgeCategory = 'binge' | 'quickwatch' | 'marathon' | 'streak' | 'rewatch' | 'series_explorer';
+export type BadgeCategory =
+  | 'binge'
+  | 'quickwatch'
+  | 'marathon'
+  | 'streak'
+  | 'rewatch'
+  | 'series_explorer'
+  | 'collector'
+  | 'social'
+  | 'completion'
+  | 'dedication';
 export type BadgeTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 
 export interface Badge {
@@ -16,6 +27,8 @@ export interface Badge {
     seasons?: number;
     days?: number;
     series?: number;
+    ratings?: number;
+    watchlistItems?: number;
     timeframe?: string; // '1day', '1week', '1month'
   };
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
@@ -49,7 +62,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🍿',
     color: '#cd7f32',
     requirements: { episodes: 3, timeframe: '2hours' },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'binge_bronze_plus',
@@ -60,7 +73,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🥨',
     color: '#cd7f32',
     requirements: { episodes: 5, timeframe: '2hours' },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'binge_silver',
@@ -71,7 +84,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🛋️',
     color: '#c0c0c0',
     requirements: { episodes: 8, timeframe: '4hours' },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'binge_silver_plus',
@@ -82,7 +95,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '📺',
     color: '#c0c0c0',
     requirements: { episodes: 12, timeframe: '4hours' },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'binge_gold',
@@ -93,7 +106,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🏆',
     color: '#ffd700',
     requirements: { seasons: 1, timeframe: '1day' },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'binge_gold_plus',
@@ -104,7 +117,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '👑',
     color: '#ffd700',
     requirements: { seasons: 2, timeframe: '1day' },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'binge_platinum',
@@ -115,18 +128,19 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '👹',
     color: '#e5e4e2',
     requirements: { seasons: 3, timeframe: '1day' },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'binge_diamond',
     category: 'binge',
     tier: 'diamond',
     name: 'Binge-Gott',
-    description: 'Eine komplette Serie (30+ Episoden) an einem Wochenende beendet',
+    description:
+      'Eine komplette Serie (30+ Episoden) an einem Wochenende beendet',
     emoji: '🔥',
     color: '#b9f2ff',
     requirements: { episodes: 30, timeframe: '2days' },
-    rarity: 'legendary'
+    rarity: 'legendary',
   },
 
   // QUICKWATCH BADGES ⚡ (Release Day Watching)
@@ -139,7 +153,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '⚡',
     color: '#cd7f32',
     requirements: { episodes: 3 },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'quickwatch_bronze_plus',
@@ -150,7 +164,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🌅',
     color: '#cd7f32',
     requirements: { episodes: 8 },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'quickwatch_silver',
@@ -161,7 +175,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🎯',
     color: '#c0c0c0',
     requirements: { episodes: 15 },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'quickwatch_silver_plus',
@@ -172,7 +186,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🏹',
     color: '#c0c0c0',
     requirements: { episodes: 25 },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'quickwatch_gold',
@@ -183,7 +197,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '👑',
     color: '#ffd700',
     requirements: { episodes: 40 },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'quickwatch_gold_plus',
@@ -194,7 +208,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🏆',
     color: '#ffd700',
     requirements: { episodes: 60 },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'quickwatch_platinum',
@@ -205,7 +219,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🚀',
     color: '#e5e4e2',
     requirements: { episodes: 85 },
-    rarity: 'legendary'
+    rarity: 'legendary',
   },
   {
     id: 'quickwatch_diamond',
@@ -216,7 +230,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '💎',
     color: '#b9f2ff',
     requirements: { episodes: 120 },
-    rarity: 'legendary'
+    rarity: 'legendary',
   },
 
   // MARATHON BADGES 📺
@@ -229,7 +243,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '📺',
     color: '#cd7f32',
     requirements: { episodes: 15, timeframe: '1week' },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'marathon_bronze_plus',
@@ -240,7 +254,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '⚔️',
     color: '#cd7f32',
     requirements: { episodes: 25, timeframe: '1week' },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'marathon_silver',
@@ -251,7 +265,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '💝',
     color: '#c0c0c0',
     requirements: { episodes: 40, timeframe: '1week' },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'marathon_silver_plus',
@@ -262,7 +276,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '📚',
     color: '#c0c0c0',
     requirements: { episodes: 60, timeframe: '1week' },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'marathon_gold',
@@ -273,7 +287,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🎭',
     color: '#ffd700',
     requirements: { episodes: 85, timeframe: '1week' },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'marathon_gold_plus',
@@ -284,7 +298,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🏃‍♂️',
     color: '#ffd700',
     requirements: { episodes: 120, timeframe: '1week' },
-    rarity: 'epic'
+    rarity: 'epic',
   },
 
   // STREAK BADGES 🔥
@@ -297,7 +311,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🔥',
     color: '#cd7f32',
     requirements: { days: 7 },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'streak_bronze_plus',
@@ -308,7 +322,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '📅',
     color: '#cd7f32',
     requirements: { days: 14 },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'streak_silver',
@@ -319,7 +333,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '⚡',
     color: '#c0c0c0',
     requirements: { days: 30 },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'streak_silver_plus',
@@ -330,7 +344,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🗓️',
     color: '#c0c0c0',
     requirements: { days: 50 },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'streak_gold',
@@ -341,7 +355,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🤖',
     color: '#ffd700',
     requirements: { days: 75 },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'streak_gold_plus',
@@ -352,7 +366,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '💎',
     color: '#ffd700',
     requirements: { days: 100 },
-    rarity: 'legendary'
+    rarity: 'legendary',
   },
 
   // REWATCH BADGES 🔄
@@ -365,7 +379,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🔄',
     color: '#cd7f32',
     requirements: { episodes: 5 },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'rewatch_bronze_plus',
@@ -376,7 +390,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '♻️',
     color: '#cd7f32',
     requirements: { episodes: 15 },
-    rarity: 'common'
+    rarity: 'common',
   },
   {
     id: 'rewatch_silver',
@@ -387,7 +401,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '💫',
     color: '#c0c0c0',
     requirements: { episodes: 30 },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'rewatch_silver_plus',
@@ -398,7 +412,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '📼',
     color: '#c0c0c0',
     requirements: { episodes: 50 },
-    rarity: 'rare'
+    rarity: 'rare',
   },
   {
     id: 'rewatch_gold',
@@ -409,7 +423,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '👑',
     color: '#ffd700',
     requirements: { episodes: 75 },
-    rarity: 'epic'
+    rarity: 'epic',
   },
   {
     id: 'rewatch_gold_plus',
@@ -420,7 +434,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     emoji: '🏆',
     color: '#ffd700',
     requirements: { episodes: 120 },
-    rarity: 'epic'
+    rarity: 'epic',
   },
 
   // SERIES EXPLORER BADGES 🗺️
@@ -429,67 +443,581 @@ export const BADGE_DEFINITIONS: Badge[] = [
     category: 'series_explorer',
     tier: 'bronze',
     name: 'Entdecker',
-    description: '10 verschiedene Serien angefangen',
+    description: '15 verschiedene Serien angefangen',
     emoji: '🗺️',
     color: '#cd7f32',
-    requirements: { series: 10 },
-    rarity: 'common'
+    requirements: { series: 15 },
+    rarity: 'common',
   },
   {
     id: 'explorer_bronze_plus',
     category: 'series_explorer',
     tier: 'bronze',
     name: 'Serien-Scout',
-    description: '20 verschiedene Serien angefangen',
+    description: '30 verschiedene Serien angefangen',
     emoji: '🔍',
     color: '#cd7f32',
-    requirements: { series: 20 },
-    rarity: 'common'
+    requirements: { series: 30 },
+    rarity: 'common',
+  },
+  {
+    id: 'explorer_bronze_max',
+    category: 'series_explorer',
+    tier: 'bronze',
+    name: 'Neuland-Erkunder',
+    description: '50 verschiedene Serien angefangen',
+    emoji: '🧭',
+    color: '#cd7f32',
+    requirements: { series: 50 },
+    rarity: 'common',
   },
   {
     id: 'explorer_silver',
     category: 'series_explorer',
     tier: 'silver',
     name: 'Serien-Sammler',
-    description: '35 verschiedene Serien angefangen',
+    description: '75 verschiedene Serien angefangen',
     emoji: '📚',
     color: '#c0c0c0',
-    requirements: { series: 35 },
-    rarity: 'rare'
+    requirements: { series: 75 },
+    rarity: 'rare',
   },
   {
     id: 'explorer_silver_plus',
     category: 'series_explorer',
     tier: 'silver',
     name: 'Genre-Jäger',
-    description: '55 verschiedene Serien angefangen',
+    description: '100 verschiedene Serien angefangen',
     emoji: '🎯',
     color: '#c0c0c0',
-    requirements: { series: 55 },
-    rarity: 'rare'
+    requirements: { series: 100 },
+    rarity: 'rare',
+  },
+  {
+    id: 'explorer_silver_max',
+    category: 'series_explorer',
+    tier: 'silver',
+    name: 'Vielfalt-Liebhaber',
+    description: '130 verschiedene Serien angefangen',
+    emoji: '🌈',
+    color: '#c0c0c0',
+    requirements: { series: 130 },
+    rarity: 'rare',
   },
   {
     id: 'explorer_gold',
     category: 'series_explorer',
     tier: 'gold',
     name: 'Genre-Meister',
-    description: '80 verschiedene Serien angefangen',
+    description: '160 verschiedene Serien angefangen',
     emoji: '🎬',
     color: '#ffd700',
-    requirements: { series: 80 },
-    rarity: 'epic'
+    requirements: { series: 160 },
+    rarity: 'epic',
   },
   {
     id: 'explorer_gold_plus',
     category: 'series_explorer',
     tier: 'gold',
     name: 'Serien-Universalist',
-    description: '120 verschiedene Serien angefangen',
+    description: '200 verschiedene Serien angefangen',
     emoji: '🌍',
     color: '#ffd700',
+    requirements: { series: 200 },
+    rarity: 'epic',
+  },
+  {
+    id: 'explorer_gold_max',
+    category: 'series_explorer',
+    tier: 'gold',
+    name: 'Entdecker-Legende',
+    description: '250 verschiedene Serien angefangen',
+    emoji: '🏛️',
+    color: '#ffd700',
+    requirements: { series: 250 },
+    rarity: 'epic',
+  },
+  {
+    id: 'explorer_platinum',
+    category: 'series_explorer',
+    tier: 'platinum',
+    name: 'Serien-Weltreisender',
+    description: '300 verschiedene Serien angefangen',
+    emoji: '✈️',
+    color: '#e5e4e2',
+    requirements: { series: 300 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'explorer_platinum_plus',
+    category: 'series_explorer',
+    tier: 'platinum',
+    name: 'Kultureller Botschafter',
+    description: '380 verschiedene Serien angefangen',
+    emoji: '🏺',
+    color: '#e5e4e2',
+    requirements: { series: 380 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'explorer_diamond',
+    category: 'series_explorer',
+    tier: 'diamond',
+    name: 'Omnipräsenter Seher',
+    description: '500 verschiedene Serien angefangen',
+    emoji: '💎',
+    color: '#b9f2ff',
+    requirements: { series: 500 },
+    rarity: 'legendary',
+  },
+
+  // COLLECTOR BADGES ⭐ (Bewertungen)
+  {
+    id: 'collector_bronze',
+    category: 'collector',
+    tier: 'bronze',
+    name: 'Bewertungsanfang',
+    description: '15 Serien/Filme bewertet',
+    emoji: '⭐',
+    color: '#cd7f32',
+    requirements: { ratings: 15 },
+    rarity: 'common',
+  },
+  {
+    id: 'collector_bronze_plus',
+    category: 'collector',
+    tier: 'bronze',
+    name: 'Geschmacksfinder',
+    description: '35 Serien/Filme bewertet',
+    emoji: '🎯',
+    color: '#cd7f32',
+    requirements: { ratings: 35 },
+    rarity: 'common',
+  },
+  {
+    id: 'collector_bronze_max',
+    category: 'collector',
+    tier: 'bronze',
+    name: 'Meinungsbilder',
+    description: '60 Serien/Filme bewertet',
+    emoji: '💭',
+    color: '#cd7f32',
+    requirements: { ratings: 60 },
+    rarity: 'common',
+  },
+  {
+    id: 'collector_silver',
+    category: 'collector',
+    tier: 'silver',
+    name: 'Kritiker',
+    description: '90 Serien/Filme bewertet',
+    emoji: '🎭',
+    color: '#c0c0c0',
+    requirements: { ratings: 90 },
+    rarity: 'rare',
+  },
+  {
+    id: 'collector_silver_plus',
+    category: 'collector',
+    tier: 'silver',
+    name: 'Qualitätsprüfer',
+    description: '130 Serien/Filme bewertet',
+    emoji: '🔍',
+    color: '#c0c0c0',
+    requirements: { ratings: 130 },
+    rarity: 'rare',
+  },
+  {
+    id: 'collector_silver_max',
+    category: 'collector',
+    tier: 'silver',
+    name: 'Bewertungsprofi',
+    description: '180 Serien/Filme bewertet',
+    emoji: '📊',
+    color: '#c0c0c0',
+    requirements: { ratings: 180 },
+    rarity: 'rare',
+  },
+  {
+    id: 'collector_gold',
+    category: 'collector',
+    tier: 'gold',
+    name: 'Master-Kritiker',
+    description: '240 Serien/Filme bewertet',
+    emoji: '🏆',
+    color: '#ffd700',
+    requirements: { ratings: 240 },
+    rarity: 'epic',
+  },
+  {
+    id: 'collector_gold_plus',
+    category: 'collector',
+    tier: 'gold',
+    name: 'Geschmacks-Experte',
+    description: '320 Serien/Filme bewertet',
+    emoji: '�',
+    color: '#ffd700',
+    requirements: { ratings: 320 },
+    rarity: 'epic',
+  },
+  {
+    id: 'collector_gold_max',
+    category: 'collector',
+    tier: 'gold',
+    name: 'Kritik-Virtuose',
+    description: '420 Serien/Filme bewertet',
+    emoji: '🎨',
+    color: '#ffd700',
+    requirements: { ratings: 420 },
+    rarity: 'epic',
+  },
+  {
+    id: 'collector_platinum',
+    category: 'collector',
+    tier: 'platinum',
+    name: 'Bewertungs-Titan',
+    description: '550 Serien/Filme bewertet',
+    emoji: '⚡',
+    color: '#e5e4e2',
+    requirements: { ratings: 550 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'collector_platinum_plus',
+    category: 'collector',
+    tier: 'platinum',
+    name: 'Geschmacks-Orakel',
+    description: '700 Serien/Filme bewertet',
+    emoji: '🔮',
+    color: '#e5e4e2',
+    requirements: { ratings: 700 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'collector_diamond',
+    category: 'collector',
+    tier: 'diamond',
+    name: 'Allwissender Kritiker',
+    description: '1000 Serien/Filme bewertet',
+    emoji: '🌟',
+    color: '#b9f2ff',
+    requirements: { ratings: 1000 },
+    rarity: 'legendary',
+  },
+
+  // SOCIAL BADGES 🤝 (Watchlist-Management)
+  {
+    id: 'social_bronze',
+    category: 'social',
+    tier: 'bronze',
+    name: 'Planer',
+    description: '15 Serien zur Watchlist hinzugefügt',
+    emoji: '📋',
+    color: '#cd7f32',
+    requirements: { watchlistItems: 15 },
+    rarity: 'common',
+  },
+  {
+    id: 'social_bronze_plus',
+    category: 'social',
+    tier: 'bronze',
+    name: 'Sammelleidenschaft',
+    description: '35 Serien zur Watchlist hinzugefügt',
+    emoji: '📚',
+    color: '#cd7f32',
+    requirements: { watchlistItems: 35 },
+    rarity: 'common',
+  },
+  {
+    id: 'social_bronze_max',
+    category: 'social',
+    tier: 'bronze',
+    name: 'Vorausplaner',
+    description: '60 Serien zur Watchlist hinzugefügt',
+    emoji: '🗂️',
+    color: '#cd7f32',
+    requirements: { watchlistItems: 60 },
+    rarity: 'common',
+  },
+  {
+    id: 'social_silver',
+    category: 'social',
+    tier: 'silver',
+    name: 'Watchlist-König',
+    description: '90 Serien zur Watchlist hinzugefügt',
+    emoji: '👑',
+    color: '#c0c0c0',
+    requirements: { watchlistItems: 90 },
+    rarity: 'rare',
+  },
+  {
+    id: 'social_silver_plus',
+    category: 'social',
+    tier: 'silver',
+    name: 'Endlos-Planer',
+    description: '130 Serien zur Watchlist hinzugefügt',
+    emoji: '∞',
+    color: '#c0c0c0',
+    requirements: { watchlistItems: 130 },
+    rarity: 'rare',
+  },
+  {
+    id: 'social_silver_max',
+    category: 'social',
+    tier: 'silver',
+    name: 'Sammel-Süchtiger',
+    description: '180 Serien zur Watchlist hinzugefügt',
+    emoji: '🧲',
+    color: '#c0c0c0',
+    requirements: { watchlistItems: 180 },
+    rarity: 'rare',
+  },
+  {
+    id: 'social_gold',
+    category: 'social',
+    tier: 'gold',
+    name: 'Watchlist-Gigant',
+    description: '250 Serien zur Watchlist hinzugefügt',
+    emoji: '🏗️',
+    color: '#ffd700',
+    requirements: { watchlistItems: 250 },
+    rarity: 'epic',
+  },
+  {
+    id: 'social_gold_plus',
+    category: 'social',
+    tier: 'gold',
+    name: 'Niemals-Genug',
+    description: '350 Serien zur Watchlist hinzugefügt',
+    emoji: '🌊',
+    color: '#ffd700',
+    requirements: { watchlistItems: 350 },
+    rarity: 'epic',
+  },
+  {
+    id: 'social_platinum',
+    category: 'social',
+    tier: 'platinum',
+    name: 'Unersättlicher Sammler',
+    description: '500 Serien zur Watchlist hinzugefügt',
+    emoji: '🗃️',
+    color: '#e5e4e2',
+    requirements: { watchlistItems: 500 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'social_diamond',
+    category: 'social',
+    tier: 'diamond',
+    name: 'Watchlist-Universum',
+    description: '750 Serien zur Watchlist hinzugefügt',
+    emoji: '🌌',
+    color: '#b9f2ff',
+    requirements: { watchlistItems: 750 },
+    rarity: 'legendary',
+  },
+
+  // COMPLETION BADGES 🏁 (Serien komplett geschaut)
+  {
+    id: 'completion_bronze',
+    category: 'completion',
+    tier: 'bronze',
+    name: 'Erste Vollendung',
+    description: '5 Serien komplett abgeschlossen',
+    emoji: '🏁',
+    color: '#cd7f32',
+    requirements: { series: 5 },
+    rarity: 'common',
+  },
+  {
+    id: 'completion_bronze_plus',
+    category: 'completion',
+    tier: 'bronze',
+    name: 'Abschluss-Sammler',
+    description: '12 Serien komplett abgeschlossen',
+    emoji: '📜',
+    color: '#cd7f32',
+    requirements: { series: 12 },
+    rarity: 'common',
+  },
+  {
+    id: 'completion_bronze_max',
+    category: 'completion',
+    tier: 'bronze',
+    name: 'Durchhalter',
+    description: '20 Serien komplett abgeschlossen',
+    emoji: '💪',
+    color: '#cd7f32',
+    requirements: { series: 20 },
+    rarity: 'common',
+  },
+  {
+    id: 'completion_silver',
+    category: 'completion',
+    tier: 'silver',
+    name: 'Serien-Beender',
+    description: '35 Serien komplett abgeschlossen',
+    emoji: '✅',
+    color: '#c0c0c0',
+    requirements: { series: 35 },
+    rarity: 'rare',
+  },
+  {
+    id: 'completion_silver_plus',
+    category: 'completion',
+    tier: 'silver',
+    name: 'Vollendungs-Meister',
+    description: '55 Serien komplett abgeschlossen',
+    emoji: '🎯',
+    color: '#c0c0c0',
+    requirements: { series: 55 },
+    rarity: 'rare',
+  },
+  {
+    id: 'completion_silver_max',
+    category: 'completion',
+    tier: 'silver',
+    name: 'Geschichten-Vollender',
+    description: '80 Serien komplett abgeschlossen',
+    emoji: '📖',
+    color: '#c0c0c0',
+    requirements: { series: 80 },
+    rarity: 'rare',
+  },
+  {
+    id: 'completion_gold',
+    category: 'completion',
+    tier: 'gold',
+    name: 'Finale-Spezialist',
+    description: '120 Serien komplett abgeschlossen',
+    emoji: '🎬',
+    color: '#ffd700',
     requirements: { series: 120 },
-    rarity: 'epic'
-  }
+    rarity: 'epic',
+  },
+  {
+    id: 'completion_gold_plus',
+    category: 'completion',
+    tier: 'gold',
+    name: 'Ende-Enthusiast',
+    description: '180 Serien komplett abgeschlossen',
+    emoji: '🏆',
+    color: '#ffd700',
+    requirements: { series: 180 },
+    rarity: 'epic',
+  },
+  {
+    id: 'completion_platinum',
+    category: 'completion',
+    tier: 'platinum',
+    name: 'Abschluss-Perfektionist',
+    description: '250 Serien komplett abgeschlossen',
+    emoji: '👑',
+    color: '#e5e4e2',
+    requirements: { series: 250 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'completion_diamond',
+    category: 'completion',
+    tier: 'diamond',
+    name: 'Legendärer Vollender',
+    description: '350 Serien komplett abgeschlossen',
+    emoji: '💎',
+    color: '#b9f2ff',
+    requirements: { series: 350 },
+    rarity: 'legendary',
+  },
+
+  // DEDICATION BADGES ⏰ (Zeitbasierte Badges)
+  {
+    id: 'dedication_bronze',
+    category: 'dedication',
+    tier: 'bronze',
+    name: 'Wochenend-Warrior',
+    description: '50 Episoden in einer Woche geschaut',
+    emoji: '⏰',
+    color: '#cd7f32',
+    requirements: { episodes: 50, timeframe: '1week' },
+    rarity: 'common',
+  },
+  {
+    id: 'dedication_bronze_plus',
+    category: 'dedication',
+    tier: 'bronze',
+    name: 'Serien-Sprint',
+    description: '100 Episoden in einer Woche geschaut',
+    emoji: '🏃',
+    color: '#cd7f32',
+    requirements: { episodes: 100, timeframe: '1week' },
+    rarity: 'common',
+  },
+  {
+    id: 'dedication_silver',
+    category: 'dedication',
+    tier: 'silver',
+    name: 'Monats-Marathonläufer',
+    description: '300 Episoden in einem Monat geschaut',
+    emoji: '📅',
+    color: '#c0c0c0',
+    requirements: { episodes: 300, timeframe: '1month' },
+    rarity: 'rare',
+  },
+  {
+    id: 'dedication_silver_plus',
+    category: 'dedication',
+    tier: 'silver',
+    name: 'Unermüdlicher Seher',
+    description: '500 Episoden in einem Monat geschaut',
+    emoji: '👁️',
+    color: '#c0c0c0',
+    requirements: { episodes: 500, timeframe: '1month' },
+    rarity: 'rare',
+  },
+  {
+    id: 'dedication_gold',
+    category: 'dedication',
+    tier: 'gold',
+    name: 'Jahres-Champion',
+    description: '2000 Episoden in einem Jahr geschaut',
+    emoji: '🗓️',
+    color: '#ffd700',
+    requirements: { episodes: 2000, timeframe: '1year' },
+    rarity: 'epic',
+  },
+  {
+    id: 'dedication_platinum',
+    category: 'dedication',
+    tier: 'platinum',
+    name: 'Lebenszeit-Devotee',
+    description: '5000 Episoden insgesamt geschaut',
+    emoji: '⌛',
+    color: '#e5e4e2',
+    requirements: { episodes: 5000 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'dedication_diamond',
+    category: 'dedication',
+    tier: 'diamond',
+    name: 'Ewiger Zuschauer',
+    description: '10000 Episoden insgesamt geschaut',
+    emoji: '♾️',
+    color: '#b9f2ff',
+    requirements: { episodes: 10000 },
+    rarity: 'legendary',
+  },
+  {
+    id: 'social_gold',
+    category: 'social',
+    tier: 'gold',
+    name: 'Watchlist-Legende',
+    description: '200 Serien zur Watchlist hinzugefügt',
+    emoji: '🌟',
+    color: '#ffd700',
+    requirements: { watchlistItems: 200 },
+    rarity: 'epic',
+  },
 ];
 
 // Badge-System Klasse
@@ -506,7 +1034,7 @@ export class BadgeSystem {
   async checkForNewBadges(activityData: any): Promise<EarnedBadge[]> {
     const newBadges: EarnedBadge[] = [];
     const currentBadges = await this.getUserBadges();
-    const currentBadgeIds = new Set(currentBadges.map(b => b.id));
+    const currentBadgeIds = new Set(currentBadges.map((b) => b.id));
 
     for (const badge of BADGE_DEFINITIONS) {
       // Skip wenn Badge bereits verdient
@@ -519,9 +1047,9 @@ export class BadgeSystem {
         const earnedBadge: EarnedBadge = {
           ...badge,
           earnedAt: Date.now(),
-          details: earned.details
+          details: earned.details,
         };
-        
+
         newBadges.push(earnedBadge);
         await this.saveBadge(earnedBadge);
       }
@@ -533,47 +1061,126 @@ export class BadgeSystem {
   /**
    * Prüft ob ein spezifisches Badge verdient wurde
    */
-  private async checkBadgeRequirements(badge: Badge, activityData: any): Promise<{ earned: boolean; details?: string } | null> {
+  private async checkBadgeRequirements(
+    badge: Badge,
+    activityData: any
+  ): Promise<{ earned: boolean; details?: string } | null> {
     const now = Date.now();
-    
+
     switch (badge.category) {
       case 'binge':
-        // Binge-Badges können für alle Episode-Activities geprüft werden
-        if (activityData.type === 'episode_watched' || activityData.type === 'episodes_watched' || activityData.type === 'rewatch') {
+        // Binge-Badges für alle Episode-Activities
+        if (
+          activityData.type === 'episode_watched' ||
+          activityData.type === 'episodes_watched' ||
+          activityData.type === 'season_watched' ||
+          activityData.type === 'season_rewatched' ||
+          activityData.type === 'rewatch'
+        ) {
           return this.checkBingeBadge(badge, activityData, now);
         }
         return null;
       case 'quickwatch':
-        // Quickwatch-Badges können für alle Episode-Activities geprüft werden
-        if (activityData.type === 'episode_watched' || activityData.type === 'episodes_watched' || activityData.type === 'rewatch') {
+        // Quickwatch-Badges für alle Episode-Activities mit airDate
+        if (
+          (activityData.type === 'episode_watched' ||
+            activityData.type === 'episodes_watched' ||
+            activityData.type === 'season_watched' ||
+            activityData.type === 'rewatch') &&
+          activityData.airDate
+        ) {
           return this.checkQuickwatchBadge(badge, activityData, now);
         }
         return null;
       case 'marathon':
-        // Marathon-Badges können für alle Episode-Activities geprüft werden
-        if (activityData.type === 'episode_watched' || activityData.type === 'episodes_watched' || activityData.type === 'rewatch') {
+        // Marathon-Badges für alle Episode-Activities
+        if (
+          activityData.type === 'episode_watched' ||
+          activityData.type === 'episodes_watched' ||
+          activityData.type === 'season_watched' ||
+          activityData.type === 'season_rewatched' ||
+          activityData.type === 'rewatch'
+        ) {
           return this.checkMarathonBadge(badge, now);
         }
         return null;
       case 'streak':
-        // Streak-Badges können für alle Activities geprüft werden
-        return this.checkStreakBadge(badge, now);
+        // Streak-Badges für alle Activities die "schauen" bedeuten
+        if (
+          activityData.type === 'episode_watched' ||
+          activityData.type === 'episodes_watched' ||
+          activityData.type === 'season_watched' ||
+          activityData.type === 'season_rewatched' ||
+          activityData.type === 'rewatch'
+        ) {
+          return this.checkStreakBadge(badge, now);
+        }
+        return null;
       case 'rewatch':
-        // Prüfe sowohl auf Activity-Typ 'rewatch' als auch auf isRewatch-Flag
-        if (activityData.type === 'rewatch' || activityData.isRewatch) {
+        // Rewatch-Badges für Rewatch-Activities
+        if (
+          activityData.type === 'rewatch' ||
+          activityData.type === 'season_rewatched' ||
+          activityData.isRewatch
+        ) {
           return this.checkRewatchBadge(badge, now);
         }
         return null;
       case 'series_explorer':
-        // Explorer-Badges können für alle Activities geprüft werden
-        return this.checkExplorerBadge(badge, now);
+        // Explorer-Badges für neue Serien
+        if (activityData.type === 'series_added') {
+          return this.checkExplorerBadge(badge, now);
+        }
+        return null;
+      case 'collector':
+        // Collector-Badges für Rating-Activities
+        if (
+          activityData.type === 'rating_added' ||
+          activityData.type === 'series_rated' ||
+          activityData.type === 'movie_rated'
+        ) {
+          return this.checkCollectorBadge(badge, now);
+        }
+        return null;
+      case 'social':
+        // Social-Badges für Watchlist-Activities
+        if (
+          activityData.type === 'watchlist_added' ||
+          activityData.type === 'series_added_to_watchlist' ||
+          activityData.type === 'movie_added_to_watchlist'
+        ) {
+          return this.checkSocialBadge(badge, now);
+        }
+        return null;
+      case 'completion':
+        // Completion-Badges für komplette Serien
+        if (
+          activityData.type === 'series_completed' ||
+          activityData.type === 'season_watched'
+        ) {
+          return this.checkCompletionBadge(badge, now);
+        }
+        return null;
+      case 'dedication':
+        // Dedication-Badges für zeitbasierte Episoden-Counts
+        if (
+          activityData.type === 'episode_watched' ||
+          activityData.type === 'episodes_watched' ||
+          activityData.type === 'season_watched'
+        ) {
+          return this.checkDedicationBadge(badge, now);
+        }
+        return null;
       default:
         return null;
     }
   }
 
-  private async checkBingeBadge(badge: Badge, _activityData: any, now: number): Promise<{ earned: boolean; details?: string } | null> {
-    
+  private async checkBingeBadge(
+    badge: Badge,
+    _activityData: any,
+    now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
     // Für Binge-Badges prüfen wir Activities der letzten Stunden basierend auf timeframe
     let timeWindowMs: number;
     if (badge.requirements.timeframe === '2hours') {
@@ -587,35 +1194,43 @@ export class BadgeSystem {
     } else {
       timeWindowMs = 24 * 60 * 60 * 1000; // Default: 1 Tag
     }
-    
+
     const timeAgo = now - timeWindowMs;
     const activities = await this.getActivitiesSince(timeAgo);
-    
+
     // Gruppiere nach Serie und zähle Episoden
     const seriesGroups = new Map<number, any[]>();
-    activities.forEach(activity => {
-      if (activity.tmdbId && (activity.type === 'episode_watched' || activity.type === 'episodes_watched')) {
+    activities.forEach((activity) => {
+      if (
+        activity.tmdbId &&
+        (activity.type === 'episode_watched' ||
+          activity.type === 'episodes_watched' ||
+          activity.type === 'season_watched' ||
+          activity.type === 'rewatch')
+      ) {
         if (!seriesGroups.has(activity.tmdbId)) {
           seriesGroups.set(activity.tmdbId, []);
         }
         seriesGroups.get(activity.tmdbId)!.push(activity);
       }
     });
-    
+
     // Prüfe ob eine Serie die Anforderungen erfüllt
-    for (const [, seriesActivities] of seriesGroups) {
+    for (const [_, seriesActivities] of seriesGroups) {
       let episodeCount = 0;
       let seriesTitle = 'Unbekannte Serie';
-      
-      seriesActivities.forEach(activity => {
+
+      seriesActivities.forEach((activity) => {
         if (activity.type === 'episodes_watched' && activity.episodeCount) {
           episodeCount += activity.episodeCount;
         } else if (activity.type === 'episode_watched') {
           episodeCount += 1;
         } else if (activity.type === 'rewatch') {
-          episodeCount += 1; // Rewatch zählt auch als Episode
+          episodeCount += 1;
         }
-        
+        // 🚫 WICHTIG: season_watched wird NICHT für Episode-Zählung verwendet!
+        // Es wird nur für Season-spezifische Badges benutzt.
+
         // Verbesserte Titel-Extraktion
         if (activity.itemTitle) {
           if (activity.itemTitle.includes(' - ')) {
@@ -624,206 +1239,425 @@ export class BadgeSystem {
             // Fallback für andere Title-Formate
             seriesTitle = activity.itemTitle;
           }
+        } else if (activity.seriesTitle) {
+          seriesTitle = activity.seriesTitle;
         }
       });
-      
+
       // Episode-basierte Binge Badges (3, 5, 20 Episoden)
-      if (badge.requirements.episodes && episodeCount >= badge.requirements.episodes) {
+      if (
+        badge.requirements.episodes &&
+        episodeCount >= badge.requirements.episodes
+      ) {
         return {
           earned: true,
-          details: `${seriesTitle} - ${episodeCount} Episoden in ${badge.requirements.timeframe || 'kurzer Zeit'}`
+          details: `${seriesTitle} - ${episodeCount} Episoden in ${
+            badge.requirements.timeframe || 'kurzer Zeit'
+          }`,
         };
       }
-      
+
       // Für Season-basierte Badges: PRÜFE ECHTE STAFFEL-COMPLETION
       if (badge.requirements.seasons) {
         // WICHTIGE KORREKTUR: Nicht einfach durch 8 teilen!
         // Schaue nach tatsächlichen "Staffel komplett" Activities
         let actualSeasonsCompleted = 0;
-        
-        seriesActivities.forEach(activity => {
-          // Zähle nur echte "kompett" Staffel-Activities
-          if (activity.itemTitle && 
-              (activity.itemTitle.includes('komplett') || 
-               activity.itemTitle.includes('Staffel') && activity.itemTitle.includes('komplett'))) {
+
+        seriesActivities.forEach((activity) => {
+          // Zähle echte Staffel-Completion Activities
+          if (
+            activity.type === 'season_watched' ||
+            activity.type === 'season_rewatched'
+          ) {
+            actualSeasonsCompleted++;
+          } else if (
+            activity.itemTitle &&
+            (activity.itemTitle.includes('komplett') ||
+              (activity.itemTitle.includes('Staffel') &&
+                activity.itemTitle.includes('komplett')))
+          ) {
             actualSeasonsCompleted++;
           }
         });
-        
+
         if (actualSeasonsCompleted >= badge.requirements.seasons) {
           return {
             earned: true,
-            details: `${seriesTitle} - ${actualSeasonsCompleted} Staffel${actualSeasonsCompleted > 1 ? 'n' : ''} komplett`
+            details: `${seriesTitle} - ${actualSeasonsCompleted} Staffel${
+              actualSeasonsCompleted > 1 ? 'n' : ''
+            } komplett`,
           };
         }
       }
     }
-    
+
     return null;
   }
 
-  private async checkQuickwatchBadge(badge: Badge, activityData: any, _now: number): Promise<{ earned: boolean; details?: string } | null> {
-    
+  private async checkQuickwatchBadge(
+    badge: Badge,
+    activityData: any,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
     // Prüfe ob aktuelle Episode am Release Day geschaut wurde
     if (activityData.airDate && activityData.timestamp) {
       const airDate = new Date(activityData.airDate);
       const watchDate = new Date(activityData.timestamp);
-      
+
       // Vergleiche nur das Datum (ohne Zeit)
       const airDateString = airDate.toDateString();
       const watchDateString = watchDate.toDateString();
-      
+
       if (airDateString === watchDateString) {
-        // Hole aktuellen Release Day Counter aus Firebase
-        const counterRef = firebase.database().ref(`badges/${this.userId}/counters/release_day_episodes`);
-        const counterSnapshot = await counterRef.once('value');
-        const releaseDayCount = (counterSnapshot.val() || 0) + 1; // +1 für aktuelle Episode
-        
-        // Update Counter
-        await counterRef.set(releaseDayCount);
-        
+        // 🎯 KORRIGIERT: Zähle ALLE Quickwatch Activities (nicht nur heute)
+
+        // Hole alle Badge-Activities
+        const activitiesRef = firebase
+          .database()
+          .ref(`badgeActivities/${this.userId}`);
+        const activitiesSnapshot = await activitiesRef.once('value');
+        const allActivities = Object.values(
+          activitiesSnapshot.val() || {}
+        ) as any[];
+
+        // Zähle ALLE Quickwatch Activities (egal wann sie waren)
+        const allQuickwatchActivities = allActivities.filter((activity) => {
+          if (activity.type !== 'quickwatch') return false;
+
+          return true;
+        });
+
+        // Prüfe ob aktuelle Episode auch eine Quickwatch ist
+        let totalQuickwatchCount = allQuickwatchActivities.length;
+
+        // +1 für aktuelle Episode wenn sie eine Quickwatch ist
+        const currentAirDate = new Date(activityData.airDate)
+          .toISOString()
+          .split('T')[0];
+        const currentWatchDate = new Date(activityData.timestamp)
+          .toISOString()
+          .split('T')[0];
+
+        if (currentAirDate === currentWatchDate) {
+          totalQuickwatchCount += 1; // +1 für aktuelle Quickwatch Episode
+        }
+
         // Prüfe Badge-Anforderungen
-        if (badge.requirements.episodes && releaseDayCount >= badge.requirements.episodes) {
+        if (
+          badge.requirements.episodes &&
+          totalQuickwatchCount >= badge.requirements.episodes
+        ) {
           return {
             earned: true,
-            details: `${activityData.seriesTitle} - ${releaseDayCount} Episoden am Veröffentlichungstag`
+            details: `${totalQuickwatchCount} Quickwatch Episoden insgesamt`,
           };
         }
       }
     }
-    
+
     return null;
   }
 
-  private async checkMarathonBadge(badge: Badge, now: number): Promise<{ earned: boolean; details?: string } | null> {
-    
+  private async checkMarathonBadge(
+    badge: Badge,
+    now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
     // Prüfe Episoden der letzten Woche
-    const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
+    const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
     const activities = await this.getActivitiesSince(weekAgo);
-    
+
     // Zähle alle Episode-Activities
     let totalEpisodes = 0;
-    
-    activities.forEach(activity => {
+
+    activities.forEach((activity) => {
       if (activity.type === 'episode_watched') {
         totalEpisodes += 1;
-      } else if (activity.type === 'episodes_watched' && activity.episodeCount) {
+      } else if (
+        activity.type === 'episodes_watched' &&
+        activity.episodeCount
+      ) {
+        totalEpisodes += activity.episodeCount;
+      } else if (activity.type === 'season_watched' && activity.episodeCount) {
         totalEpisodes += activity.episodeCount;
       } else if (activity.type === 'rewatch') {
-        totalEpisodes += 1; // Rewatch zählt auch als Episode
+        totalEpisodes += 1;
       }
     });
-    
+
     if (totalEpisodes >= badge.requirements.episodes!) {
       return {
         earned: true,
-        details: `${totalEpisodes} Episoden in einer Woche`
+        details: `${totalEpisodes} Episoden in einer Woche`,
       };
     }
     return null;
   }
 
-  private async checkStreakBadge(badge: Badge, _now: number): Promise<{ earned: boolean; details?: string } | null> {
+  private async checkStreakBadge(
+    badge: Badge,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
     const streak = await this.calculateCurrentStreak();
-    
+
     if (streak >= badge.requirements.days!) {
       return {
         earned: true,
-        details: `${streak} Tage Streak`
+        details: `${streak} Tage Streak`,
       };
     }
     return null;
   }
 
-  private async checkRewatchBadge(badge: Badge, _now: number): Promise<{ earned: boolean; details?: string } | null> {
+  private async checkRewatchBadge(
+    badge: Badge,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
     const rewatchCount = await this.getRewatchCount();
-    
+
     if (rewatchCount >= badge.requirements.episodes!) {
       return {
         earned: true,
-        details: `${rewatchCount} Rewatch-Episoden`
+        details: `${rewatchCount} Rewatch-Episoden`,
       };
     }
     return null;
   }
 
-  private async checkExplorerBadge(badge: Badge, _now: number): Promise<{ earned: boolean; details?: string } | null> {
+  private async checkExplorerBadge(
+    badge: Badge,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
     const seriesCount = await this.getUniqueSeriesCount();
-    
+
     if (seriesCount >= badge.requirements.series!) {
       return {
         earned: true,
-        details: `${seriesCount} verschiedene Serien`
+        details: `${seriesCount} verschiedene Serien`,
+      };
+    }
+    return null;
+  }
+
+  private async checkCollectorBadge(
+    badge: Badge,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
+    // Verwende Badge-Activities anstatt direkte Firebase-Abfrage
+    const allActivities = await badgeActivityLogger.getAllBadgeActivities(
+      this.userId
+    );
+    const ratingActivities = allActivities.filter(
+      (activity) => activity.type === 'rating_added'
+    );
+    const ratingsCount = ratingActivities.length;
+
+    if (ratingsCount >= badge.requirements.ratings!) {
+      return {
+        earned: true,
+        details: `${ratingsCount} Bewertungen abgegeben`,
+      };
+    }
+    return null;
+  }
+
+  private async checkSocialBadge(
+    badge: Badge,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
+    const watchlistCount = await badgeActivityLogger.getBadgeCounter(
+      this.userId,
+      'watchlistItems'
+    );
+
+    if (watchlistCount >= badge.requirements.watchlistItems!) {
+      return {
+        earned: true,
+        details: `${watchlistCount} Serien zur Watchlist hinzugefügt`,
+      };
+    }
+    return null;
+  }
+
+  private async checkCompletionBadge(
+    badge: Badge,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
+    // Zähle komplette Serien über Firebase
+    const seriesSnapshot = await firebase
+      .database()
+      .ref(`${this.userId}/serien`)
+      .once('value');
+
+    if (!seriesSnapshot.exists()) {
+      return null;
+    }
+
+    const seriesData = seriesSnapshot.val();
+    let completedSeriesCount = 0;
+
+    // Prüfe jede Serie ob sie komplett ist
+    for (const series of Object.values(seriesData) as any[]) {
+      if (series.seasons && Array.isArray(series.seasons)) {
+        let isSeriesComplete = true;
+
+        // Prüfe ob alle Staffeln komplett sind
+        for (const season of series.seasons) {
+          if (season.episodes && Array.isArray(season.episodes)) {
+            const hasUnwatchedEpisodes = season.episodes.some(
+              (episode: any) => !episode.watched
+            );
+            if (hasUnwatchedEpisodes) {
+              isSeriesComplete = false;
+              break;
+            }
+          }
+        }
+
+        if (isSeriesComplete && series.seasons.length > 0) {
+          completedSeriesCount++;
+        }
+      }
+    }
+
+    if (completedSeriesCount >= badge.requirements.series!) {
+      return {
+        earned: true,
+        details: `${completedSeriesCount} Serien komplett abgeschlossen`,
+      };
+    }
+    return null;
+  }
+
+  private async checkDedicationBadge(
+    badge: Badge,
+    _now: number
+  ): Promise<{ earned: boolean; details?: string } | null> {
+    // Hole alle Badge-Activities für Episode-Counts
+    const allActivities = await badgeActivityLogger.getAllBadgeActivities(
+      this.userId
+    );
+
+    // Zeitfenster bestimmen
+    let timeWindowMs: number | null = null;
+    let totalEpisodes = 0;
+
+    if (badge.requirements.timeframe) {
+      const now = Date.now();
+      if (badge.requirements.timeframe === '1week') {
+        timeWindowMs = 7 * 24 * 60 * 60 * 1000;
+      } else if (badge.requirements.timeframe === '1month') {
+        timeWindowMs = 30 * 24 * 60 * 60 * 1000;
+      } else if (badge.requirements.timeframe === '1year') {
+        timeWindowMs = 365 * 24 * 60 * 60 * 1000;
+      }
+
+      if (timeWindowMs) {
+        const cutoffTime = now - timeWindowMs;
+
+        // Filtere Activities im Zeitfenster
+        const recentActivities = allActivities.filter(
+          (activity) => activity.timestamp >= cutoffTime
+        );
+
+        // Zähle Episoden in den letzten X Zeitraum
+        for (const activity of recentActivities) {
+          if (activity.type === 'episode_watched') {
+            totalEpisodes += 1;
+          } else if (activity.type === 'episodes_watched') {
+            totalEpisodes += (activity as any).episodeCount || 1;
+          } else if (activity.type === 'season_watched') {
+            totalEpisodes += (activity as any).episodeCount || 1;
+          }
+        }
+      }
+    } else {
+      // Lebenszeitbadges - alle Episoden zählen
+      for (const activity of allActivities) {
+        if (activity.type === 'episode_watched') {
+          totalEpisodes += 1;
+        } else if (activity.type === 'episodes_watched') {
+          totalEpisodes += (activity as any).episodeCount || 1;
+        } else if (activity.type === 'season_watched') {
+          totalEpisodes += (activity as any).episodeCount || 1;
+        }
+      }
+    }
+
+    if (totalEpisodes >= badge.requirements.episodes!) {
+      const timeframeText = badge.requirements.timeframe
+        ? ` (${badge.requirements.timeframe})`
+        : ' (insgesamt)';
+      return {
+        earned: true,
+        details: `${totalEpisodes} Episoden${timeframeText}`,
       };
     }
     return null;
   }
 
   /**
-   * Hilfsmethoden für Datenabfragen
+   * Hilfsmethoden für Datenabfragen - Nutzt Badge-Activity-System
    */
-  private async getActivitiesSince(timestamp: number): Promise<any[]> {
+  private async getActivitiesSince(
+    timestamp: number
+  ): Promise<BadgeActivity[]> {
     try {
-      const snapshot = await firebase
-        .database()
-        .ref(`activities/${this.userId}`)
-        .orderByChild('timestamp')
-        .startAt(timestamp)
-        .once('value');
-        
-      if (!snapshot.exists()) {
-        return [];
-      }
-      
-      const activities = Object.values(snapshot.val() || {}) as any[];
-      return activities;
+      return await badgeActivityLogger.getBadgeActivitiesSince(
+        this.userId,
+        timestamp
+      );
     } catch (error) {
+      console.error('❌ Fehler beim Laden der Badge-Activities:', error);
       return [];
     }
   }
 
   private async calculateCurrentStreak(): Promise<number> {
     try {
-      const snapshot = await firebase
-        .database()
-        .ref(`activities/${this.userId}`)
-        .orderByChild('timestamp')
-        .once('value');
-      
-      if (!snapshot.exists()) {
-        return 0;
-      }
-      
-      const activities = Object.values(snapshot.val() || {}) as any[];
-      
-      // Gruppiere Activities nach Tagen
-      const dayGroups = new Map<string, any[]>();
-      activities.forEach(activity => {
-        if (activity.timestamp) {
+      const activities = await badgeActivityLogger.getAllBadgeActivities(
+        this.userId
+      );
+
+      // Gruppiere Activities nach Tagen - nur "schauen"-Activities zählen
+      const dayGroups = new Map<string, BadgeActivity[]>();
+      activities.forEach((activity) => {
+        if (
+          activity.timestamp &&
+          (activity.type === 'episode_watched' ||
+            activity.type === 'episodes_watched' ||
+            activity.type === 'season_watched' ||
+            activity.type === 'rewatch')
+        ) {
           const date = new Date(activity.timestamp);
-          const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-          
+          const dayKey = `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+          ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
           if (!dayGroups.has(dayKey)) {
             dayGroups.set(dayKey, []);
           }
           dayGroups.get(dayKey)!.push(activity);
         }
       });
-      
+
       let streak = 0;
       const today = new Date();
-      const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      
+      const todayKey = `${today.getFullYear()}-${String(
+        today.getMonth() + 1
+      ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
       // Beginne mit heute oder gestern (falls heute noch keine Activity)
       let checkDate = new Date(today);
       if (!dayGroups.has(todayKey)) {
         checkDate.setDate(checkDate.getDate() - 1);
       }
-      
+
       // Zähle aufeinanderfolgende Tage rückwärts
       while (true) {
-        const checkKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-        
+        const checkKey = `${checkDate.getFullYear()}-${String(
+          checkDate.getMonth() + 1
+        ).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+
         if (dayGroups.has(checkKey)) {
           streak++;
           checkDate.setDate(checkDate.getDate() - 1);
@@ -831,9 +1665,10 @@ export class BadgeSystem {
           break;
         }
       }
-      
+
       return streak;
     } catch (error) {
+      console.error('❌ Fehler bei Streak-Berechnung:', error);
       return 0;
     }
   }
@@ -845,47 +1680,61 @@ export class BadgeSystem {
         .database()
         .ref(`activities/${this.userId}`)
         .once('value');
-      
+
       if (!snapshot.exists()) {
         return 0;
       }
-      
+
       const activities = Object.values(snapshot.val() || {}) as any[];
-      
+
       // Zähle Rewatch-bezogene Activities
       let rewatchCount = 0;
-      
-      activities.forEach(activity => {
-        // KOMPLETT ERWEITERTE Rewatch-Erkennung - berücksichtige ALLE möglichen Rewatch-Szenarien
-        const isRewatch = activity.type === 'rewatch' || 
-                          activity.batchType === 'rewatch' ||
-                          // Erkenne "(Nx gesehen)" Pattern
-                          (activity.itemTitle && /\(\d+x gesehen\)/.test(activity.itemTitle)) ||
-                          // Erkenne "(Nx)" Pattern (ohne "gesehen")
-                          (activity.itemTitle && /\(\d+x\)/.test(activity.itemTitle)) ||
-                          // Erkenne "komplett (Nx gesehen)" Pattern
-                          (activity.itemTitle && /komplett \(\d+x gesehen\)/.test(activity.itemTitle)) ||
-                          // Erkenne "(auf Nx reduziert)" Pattern
-                          (activity.itemTitle && /\(auf \d+x reduziert\)/.test(activity.itemTitle)) ||
-                          // NEUE: Erkenne Batch-Activities mit Rewatch-Inhalten
-                          (activity.type === 'episodes_watched' && activity.itemTitle && 
-                           (
-                             activity.itemTitle.includes('komplett durchgebingt') || 
-                             activity.itemTitle.includes('(') && activity.itemTitle.includes('x')
-                           )
-                          );
-        
+
+      activities.forEach((activity) => {
+        // KOMPLETT ERWEITERTE Rewatch-Erkennung
+        const isRewatch =
+          activity.type === 'rewatch' ||
+          activity.type === 'season_rewatched' ||
+          activity.batchType === 'rewatch' ||
+          activity.isRewatch === true ||
+          // Erkenne "(Nx gesehen)" Pattern
+          (activity.itemTitle && /\(\d+x gesehen\)/.test(activity.itemTitle)) ||
+          // Erkenne "(Nx)" Pattern (ohne "gesehen")
+          (activity.itemTitle && /\(\d+x\)/.test(activity.itemTitle)) ||
+          // Erkenne "komplett (Nx gesehen)" Pattern
+          (activity.itemTitle &&
+            /komplett \(\d+x gesehen\)/.test(activity.itemTitle)) ||
+          // Erkenne "(auf Nx reduziert)" Pattern
+          (activity.itemTitle &&
+            /\(auf \d+x reduziert\)/.test(activity.itemTitle)) ||
+          // Erkenne Rewatch in Titel
+          (activity.itemTitle &&
+            activity.itemTitle.toLowerCase().includes('rewatch'));
+
         if (isRewatch) {
-          // Für Batch-Activities: Zähle alle Episoden in dem Batch
-          if (activity.type === 'episodes_watched' && activity.episodeCount && activity.episodeCount > 0) {
+          // Für Season-Activities: Nutze episodeCount
+          if (
+            activity.type === 'season_rewatched' &&
+            activity.episodeCount &&
+            activity.episodeCount > 0
+          ) {
             rewatchCount += activity.episodeCount;
-          } else {
-            // Für einzelne Episodes: +1
+          }
+          // Für Batch-Activities: Nutze episodeCount
+          else if (
+            activity.type === 'episodes_watched' &&
+            activity.episodeCount &&
+            activity.episodeCount > 0
+          ) {
+            rewatchCount += activity.episodeCount;
+          }
+          // Für einzelne Episodes: +1
+          else {
             rewatchCount++;
           }
         }
       });
-      
+
       return rewatchCount;
     } catch (error) {
       return 0;
@@ -899,14 +1748,14 @@ export class BadgeSystem {
         .database()
         .ref(`${this.userId}/serien`)
         .once('value');
-      
+
       if (!snapshot.exists()) {
         return 0;
       }
-      
+
       const series = Object.values(snapshot.val() || {}) as any[];
       const uniqueSeriesCount = series.length;
-      
+
       return uniqueSeriesCount;
     } catch (error) {
       return 0;
@@ -922,7 +1771,7 @@ export class BadgeSystem {
       .ref(`badges/${this.userId}/${badge.id}`)
       .set({
         ...badge,
-        earnedAt: firebase.database.ServerValue.TIMESTAMP
+        earnedAt: firebase.database.ServerValue.TIMESTAMP,
       });
   }
 
@@ -934,9 +1783,9 @@ export class BadgeSystem {
       .database()
       .ref(`badges/${this.userId}`)
       .once('value');
-    
+
     if (!snapshot.exists()) return [];
-    
+
     const data = snapshot.val();
     return Object.values(data) as EarnedBadge[];
   }
@@ -949,14 +1798,18 @@ export class BadgeSystem {
       .database()
       .ref(`badgeProgress/${this.userId}/${badgeId}`)
       .once('value');
-    
+
     return snapshot.exists() ? snapshot.val() : null;
   }
 
   /**
    * Aktualisiert Badge-Progress
    */
-  async updateBadgeProgress(badgeId: string, current: number, total: number): Promise<void> {
+  async updateBadgeProgress(
+    badgeId: string,
+    current: number,
+    total: number
+  ): Promise<void> {
     await firebase
       .database()
       .ref(`badgeProgress/${this.userId}/${badgeId}`)
@@ -964,9 +1817,105 @@ export class BadgeSystem {
         badgeId,
         current,
         total,
-        lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        lastUpdated: firebase.database.ServerValue.TIMESTAMP,
       });
+  }
+
+  /**
+   * 🔄 Prüft ALLE Badges für einen User neu und vergibt fehlende Badges
+   * Nützlich für Badge-System-Reparaturen oder wenn Badges nachträglich hinzugefügt werden
+   */
+  async recalculateAllBadges(): Promise<EarnedBadge[]> {
+    const newBadges: EarnedBadge[] = [];
+    const currentBadges = await this.getUserBadges();
+    const currentBadgeIds = new Set(currentBadges.map((b) => b.id));
+
+    // Durchlaufe alle verfügbaren Badge-Definitionen
+    for (const badge of BADGE_DEFINITIONS) {
+      // Skip wenn Badge bereits verdient
+      if (currentBadgeIds.has(badge.id)) {
+        continue;
+      }
+
+      // Prüfe Badge-Requirements basierend auf Kategorie
+      let earned: { earned: boolean; details?: string } | null = null;
+      const now = Date.now();
+
+      switch (badge.category) {
+        case 'social':
+          earned = await this.checkSocialBadge(badge, now);
+          break;
+        case 'collector':
+          earned = await this.checkCollectorBadge(badge, now);
+          break;
+        case 'series_explorer':
+          earned = await this.checkExplorerBadge(badge, now);
+          break;
+        case 'binge':
+          // Für Binge-Badges prüfen wir gegen letzte Activities
+          const bingeMockActivity = { type: 'episode_watched', timestamp: now };
+          earned = await this.checkBingeBadge(badge, bingeMockActivity, now);
+          break;
+        case 'quickwatch':
+          // Für Quickwatch-Badges prüfen wir gegen letzte Activities
+          const quickwatchMockActivity = { type: 'quickwatch', timestamp: now };
+          earned = await this.checkQuickwatchBadge(
+            badge,
+            quickwatchMockActivity,
+            now
+          );
+          break;
+        case 'rewatch':
+          // Für Rewatch-Badges prüfen wir gegen letzte Activities
+          earned = await this.checkRewatchBadge(badge, now);
+          break;
+        case 'marathon':
+          // Für Marathon-Badges prüfen wir gegen letzte Activities
+          earned = await this.checkMarathonBadge(badge, now);
+          break;
+        case 'streak':
+          // Für Streak-Badges prüfen wir gegen letzte Activities
+          earned = await this.checkStreakBadge(badge, now);
+          break;
+        case 'completion':
+          // Für Completion-Badges prüfen wir komplette Serien
+          earned = await this.checkCompletionBadge(badge, now);
+          break;
+        case 'dedication':
+          // Für Dedication-Badges prüfen wir zeitbasierte Episode-Counts
+          earned = await this.checkDedicationBadge(badge, now);
+          break;
+        default:
+          continue;
+      }
+
+      if (earned?.earned) {
+        const earnedBadge: EarnedBadge = {
+          ...badge,
+          earnedAt: Date.now(),
+          details: earned.details,
+        };
+
+        newBadges.push(earnedBadge);
+        await this.saveBadge(earnedBadge);
+      }
+    }
+
+    return newBadges;
   }
 }
 
 export default BadgeSystem;
+
+/**
+ * 🛠️ Debug-Konsole: Badge-System-Funktionen für Browser-Konsole
+ */
+declare global {
+  interface Window {
+    debugBadges: {
+      recalculateUserBadges: (userId: string) => Promise<void>;
+      getUserBadges: (userId: string) => Promise<void>;
+      getWatchlistCounter: (userId: string) => Promise<void>;
+    };
+  }
+}

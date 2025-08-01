@@ -1,3 +1,4 @@
+import { Close as CloseIcon, Lock, Star } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -12,18 +13,17 @@ import {
   Tab,
   Tabs,
   Typography,
-  useTheme
+  useTheme,
 } from '@mui/material';
-import { Close as CloseIcon, Lock, Star } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
-import { 
-  BADGE_DEFINITIONS, 
-  BadgeSystem, 
-  EarnedBadge, 
-  Badge, 
+import {
+  Badge,
+  BADGE_DEFINITIONS,
+  BadgeCategory,
   BadgeProgress,
-  BadgeCategory 
+  BadgeSystem,
+  EarnedBadge,
 } from '../../utils/badgeSystem';
 
 interface BadgeOverviewDialogProps {
@@ -45,14 +45,16 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => (
 
 const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
   open,
-  onClose
+  onClose,
 }) => {
   const theme = useTheme();
   const auth = useAuth();
   const user = auth?.user;
 
   const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([]);
-  const [badgeProgress, setBadgeProgress] = useState<Record<string, BadgeProgress>>({});
+  const [badgeProgress, setBadgeProgress] = useState<
+    Record<string, BadgeProgress>
+  >({});
   const [, setLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
 
@@ -62,7 +64,9 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
     { key: 'marathon', label: 'Marathon', icon: '📺' },
     { key: 'streak', label: 'Streak', icon: '🔥' },
     { key: 'rewatch', label: 'Rewatch', icon: '🔄' },
-    { key: 'series_explorer', label: 'Explorer', icon: '🗺️' }
+    { key: 'series_explorer', label: 'Explorer', icon: '🗺️' },
+    { key: 'collector', label: 'Collector', icon: '⭐' },
+    { key: 'social', label: 'Social', icon: '🤝' },
   ];
 
   useEffect(() => {
@@ -73,13 +77,13 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
   const loadBadgeData = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const badgeSystem = new BadgeSystem(user.uid);
       const earned = await badgeSystem.getUserBadges();
       setEarnedBadges(earned);
-      
+
       // Lade Progress für alle Badges
       const progressData: Record<string, BadgeProgress> = {};
       for (const badge of BADGE_DEFINITIONS) {
@@ -98,23 +102,35 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'common': return '#9e9e9e';
-      case 'rare': return '#2196f3';
-      case 'epic': return '#9c27b0';
-      case 'legendary': return '#ff9800';
-      default: return '#9e9e9e';
+      case 'common':
+        return '#9e9e9e';
+      case 'rare':
+        return '#2196f3';
+      case 'epic':
+        return '#9c27b0';
+      case 'legendary':
+        return '#ff9800';
+      default:
+        return '#9e9e9e';
     }
   };
 
   const getRarityStars = (rarity: string) => {
-    const count = rarity === 'legendary' ? 5 : rarity === 'epic' ? 4 : rarity === 'rare' ? 3 : 2;
+    const count =
+      rarity === 'legendary'
+        ? 5
+        : rarity === 'epic'
+        ? 4
+        : rarity === 'rare'
+        ? 3
+        : 2;
     return [...Array(count)].map((_, i) => (
       <Star key={i} sx={{ fontSize: 14, color: getRarityColor(rarity) }} />
     ));
   };
 
   const isBadgeEarned = (badgeId: string) => {
-    return earnedBadges.some(b => b.id === badgeId);
+    return earnedBadges.some((b) => b.id === badgeId);
   };
 
   const getBadgeProgress = (badgeId: string) => {
@@ -124,41 +140,64 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
   const renderBadgeCard = (badge: Badge) => {
     const earned = isBadgeEarned(badge.id);
     const progress = getBadgeProgress(badge.id);
-    const earnedBadge = earnedBadges.find(b => b.id === badge.id);
+    const earnedBadge = earnedBadges.find((b) => b.id === badge.id);
 
     return (
       <Card
         key={badge.id}
         sx={{
           height: '100%',
-          background: earned 
+          background: earned
             ? `linear-gradient(135deg, ${badge.color}20 0%, ${theme.palette.grey[900]} 100%)`
             : `linear-gradient(135deg, ${theme.palette.grey[800]} 0%, ${theme.palette.grey[900]} 100%)`,
-          border: earned ? `1px solid ${badge.color}60` : `1px solid ${theme.palette.grey[700]}`,
+          border: earned
+            ? `1px solid ${badge.color}60`
+            : `1px solid ${theme.palette.grey[700]}`,
           position: 'relative',
           transition: 'all 0.3s ease',
           '&:hover': {
             transform: 'translateY(-4px)',
-            boxShadow: earned 
+            boxShadow: earned
               ? `0 8px 25px ${badge.color}30`
-              : `0 8px 25px rgba(0,0,0,0.3)`
-          }
+              : `0 8px 25px rgba(0,0,0,0.3)`,
+          },
         }}
       >
-        <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <CardContent
+          sx={{
+            p: 3,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           {/* Rarity Stars */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              mb: 2,
+            }}
+          >
             <Box sx={{ display: 'flex', gap: 0.5 }}>
               {getRarityStars(badge.rarity)}
             </Box>
             {earned && earnedBadge && (
               <Chip
-                label={new Date(earnedBadge.earnedAt).toLocaleDateString('de-DE')}
-                size="small"
+                label={new Date(earnedBadge.earnedAt).toLocaleDateString(
+                  'de-DE',
+                  {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  }
+                )}
+                size='small'
                 sx={{
                   backgroundColor: `${badge.color}20`,
                   color: badge.color,
-                  fontSize: '0.7rem'
+                  fontSize: '0.7rem',
                 }}
               />
             )}
@@ -174,7 +213,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                 backgroundColor: earned ? badge.color : theme.palette.grey[700],
                 margin: '0 auto',
                 opacity: earned ? 1 : 0.5,
-                position: 'relative'
+                position: 'relative',
               }}
             >
               {badge.emoji}
@@ -190,7 +229,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
                   }}
                 >
                   <Lock sx={{ color: 'white', fontSize: '1.5rem' }} />
@@ -201,23 +240,23 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
           {/* Badge Info */}
           <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 'bold', 
+            <Typography
+              variant='h6'
+              sx={{
+                fontWeight: 'bold',
                 mb: 1,
-                color: earned ? badge.color : theme.palette.grey[400]
+                color: earned ? badge.color : theme.palette.grey[400],
               }}
             >
               {badge.name}
             </Typography>
-            
-            <Typography 
-              variant="body2" 
-              sx={{ 
+
+            <Typography
+              variant='body2'
+              sx={{
                 color: theme.palette.grey[300],
                 mb: 2,
-                lineHeight: 1.4
+                lineHeight: 1.4,
               }}
             >
               {badge.description}
@@ -227,20 +266,24 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             {progress && !earned && (
               <Box sx={{ mb: 2 }}>
                 <LinearProgress
-                  variant="determinate"
+                  variant='determinate'
                   value={(progress.current / progress.total) * 100}
                   sx={{
                     height: 6,
                     borderRadius: 3,
                     backgroundColor: theme.palette.grey[700],
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: badge.color
-                    }
+                      backgroundColor: badge.color,
+                    },
                   }}
                 />
-                <Typography 
-                  variant="caption" 
-                  sx={{ color: theme.palette.grey[400], mt: 0.5, display: 'block' }}
+                <Typography
+                  variant='caption'
+                  sx={{
+                    color: theme.palette.grey[400],
+                    mt: 0.5,
+                    display: 'block',
+                  }}
                 >
                   {progress.current} / {progress.total}
                 </Typography>
@@ -249,14 +292,14 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
             {/* Badge Details */}
             {earnedBadge?.details && (
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant='caption'
+                sx={{
                   color: '#00fed7',
                   backgroundColor: 'rgba(0, 254, 215, 0.1)',
                   padding: '4px 8px',
                   borderRadius: '8px',
-                  display: 'inline-block'
+                  display: 'inline-block',
                 }}
               >
                 {earnedBadge.details}
@@ -268,12 +311,12 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Chip
               label={badge.rarity.toUpperCase()}
-              size="small"
+              size='small'
               sx={{
                 backgroundColor: `${getRarityColor(badge.rarity)}20`,
                 color: getRarityColor(badge.rarity),
                 fontWeight: 'bold',
-                fontSize: '0.7rem'
+                fontSize: '0.7rem',
               }}
             />
           </Box>
@@ -283,22 +326,32 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
   };
 
   const renderCategoryBadges = (category: BadgeCategory) => {
-    const categoryBadges = BADGE_DEFINITIONS.filter(b => b.category === category);
-    
+    const categoryBadges = BADGE_DEFINITIONS.filter(
+      (b) => b.category === category
+    );
+
     return (
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: 3,
+        }}
+      >
         {categoryBadges.map((badge) => (
-          <Box key={badge.id}>
-            {renderBadgeCard(badge)}
-          </Box>
+          <Box key={badge.id}>{renderBadgeCard(badge)}</Box>
         ))}
       </Box>
     );
   };
 
   const getEarnedCount = (category: BadgeCategory) => {
-    const categoryBadges = BADGE_DEFINITIONS.filter(b => b.category === category);
-    const earnedCount = categoryBadges.filter(b => isBadgeEarned(b.id)).length;
+    const categoryBadges = BADGE_DEFINITIONS.filter(
+      (b) => b.category === category
+    );
+    const earnedCount = categoryBadges.filter((b) =>
+      isBadgeEarned(b.id)
+    ).length;
     return `${earnedCount}/${categoryBadges.length}`;
   };
 
@@ -306,14 +359,14 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="lg"
+      maxWidth='lg'
       fullWidth
       PaperProps={{
         sx: {
           minHeight: '80vh',
           backgroundColor: theme.palette.grey[900],
-          color: 'white'
-        }
+          color: 'white',
+        },
       }}
     >
       <DialogTitle
@@ -321,25 +374,40 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
           textAlign: 'center',
           position: 'relative',
           background: `linear-gradient(135deg, ${theme.palette.grey[800]} 0%, ${theme.palette.grey[900]} 100%)`,
-          borderBottom: `1px solid ${theme.palette.grey[700]}`
+          borderBottom: `1px solid ${theme.palette.grey[700]}`,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-          <Typography component="div" variant="h4" sx={{ fontWeight: 'bold', color: '#ffd700' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <Typography
+            component='div'
+            variant='h4'
+            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+          >
             🏆 Meine Badges
           </Typography>
         </Box>
-        <Typography component="div" variant="subtitle1" sx={{ color: theme.palette.grey[400], mt: 1 }}>
+        <Typography
+          component='div'
+          variant='subtitle1'
+          sx={{ color: theme.palette.grey[400], mt: 1 }}
+        >
           {earnedBadges.length} / {BADGE_DEFINITIONS.length} Badges verdient
         </Typography>
-        
+
         <IconButton
           onClick={onClose}
           sx={{
             position: 'absolute',
             right: 8,
             top: 8,
-            color: 'white'
+            color: 'white',
           }}
         >
           <CloseIcon />
@@ -352,18 +420,18 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
           <Tabs
             value={tabValue}
             onChange={(_, newValue) => setTabValue(newValue)}
-            variant="scrollable"
-            scrollButtons="auto"
+            variant='scrollable'
+            scrollButtons='auto'
             sx={{
               '& .MuiTab-root': {
                 color: theme.palette.grey[400],
                 '&.Mui-selected': {
-                  color: '#00fed7'
-                }
+                  color: '#00fed7',
+                },
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#00fed7'
-              }
+                backgroundColor: '#00fed7',
+              },
             }}
           >
             {categories.map((category) => (
@@ -375,12 +443,12 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                     <span>{category.label}</span>
                     <Chip
                       label={getEarnedCount(category.key)}
-                      size="small"
+                      size='small'
                       sx={{
                         backgroundColor: theme.palette.grey[700],
                         color: 'white',
                         height: 20,
-                        fontSize: '0.7rem'
+                        fontSize: '0.7rem',
                       }}
                     />
                   </Box>

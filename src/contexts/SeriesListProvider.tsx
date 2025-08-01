@@ -60,9 +60,7 @@ export const SeriesListProvider = ({
         
         setHasCheckedForNewSeasons(true);
         setInitialLoad(false);
-      } catch (error) {
-        console.error('Fehler bei der Erkennung neuer Staffeln:', error);
-        setHasCheckedForNewSeasons(true);
+      } catch (error) {setHasCheckedForNewSeasons(true);
         setInitialLoad(false);
       }
     }, 200); // 200ms Debounce

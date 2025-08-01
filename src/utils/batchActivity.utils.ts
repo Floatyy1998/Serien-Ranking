@@ -46,9 +46,7 @@ export const isQuickwatch = (
     
     // Episode wurde innerhalb der quickwatch-Zeit nach Veröffentlichung geschaut
     return timeDiffHours >= 0 && timeDiffHours <= opts.quickwatchHoursAfterRelease;
-  } catch (error) {
-    console.error('Error calculating quickwatch status:', error);
-    return false;
+  } catch (error) {return false;
   }
 };
 

@@ -162,9 +162,7 @@ const RecommendationsDialog = ({
           setSnackbarSeverity('error');
           setSnackbarOpen(true);
         }
-      } catch (error) {
-        console.error('Error sending data to server:', error);
-        setSnackbarMessage('Fehler beim Hinzufügen des Films.');
+      } catch (error) {setSnackbarMessage('Fehler beim Hinzufügen des Films.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
@@ -217,9 +215,7 @@ const RecommendationsDialog = ({
           setSnackbarSeverity('error');
           setSnackbarOpen(true);
         }
-      } catch (error) {
-        console.error('Error sending data to server:', error);
-        setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
+      } catch (error) {setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }

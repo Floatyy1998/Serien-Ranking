@@ -283,9 +283,7 @@ export const FriendsProvider = ({
       });
 
       return true;
-    } catch (error) {
-      console.error('Error sending friend request:', error);
-      throw error;
+    } catch (error) {throw error;
     }
   };
 
@@ -351,9 +349,7 @@ export const FriendsProvider = ({
         status: 'accepted',
         respondedAt: firebase.database.ServerValue.TIMESTAMP,
       });
-    } catch (error) {
-      console.error('Error accepting friend request:', error);
-      throw error;
+    } catch (error) {throw error;
     }
   };
 
@@ -365,9 +361,7 @@ export const FriendsProvider = ({
         status: 'declined',
         respondedAt: firebase.database.ServerValue.TIMESTAMP,
       });
-    } catch (error) {
-      console.error('Error declining friend request:', error);
-      throw error;
+    } catch (error) {throw error;
     }
   };
 
@@ -386,9 +380,7 @@ export const FriendsProvider = ({
         .database()
         .ref(`users/${friendId}/friends/${user.uid}`)
         .remove();
-    } catch (error) {
-      console.error('Error removing friend:', error);
-      throw error;
+    } catch (error) {throw error;
     }
   };
 
@@ -432,9 +424,7 @@ export const FriendsProvider = ({
           await activitiesRef.update(updates);
         }
       }
-    } catch (error) {
-      console.error('Error updating user activity:', error);
-    }
+    } catch (error) {}
   };
 
   return (

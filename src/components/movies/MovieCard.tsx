@@ -19,8 +19,11 @@ import { useFriends } from '../../contexts/FriendsProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { Movie } from '../../interfaces/Movie';
 import '../../styles/animations.css';
+import { logMovieDeleted } from '../../utils/activityLogger';
+import { logBadgeRating } from '../../utils/badgeActivityLogger';
 import { getFormattedDate } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
+import { logMovieRatedUnified } from '../../utils/unifiedActivityLogger';
 import MovieDialog from '../dialogs/MovieDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
 
@@ -51,7 +54,7 @@ export const MovieCard = ({
     currentMovie.status === 'Released' ? '#a855f7' : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
-  const { updateUserActivity } = useFriends();
+  const {} = useFriends();
   const uniqueProviders = currentMovie.provider
     ? Array.from(
         new Set(currentMovie.provider.provider.map((p) => p.name))
@@ -147,12 +150,14 @@ export const MovieCard = ({
       .ref(`${user?.uid}/filme/${currentMovie.nmr}`);
     await ref.remove();
 
-    // Activity tracken für Freunde
-    await updateUserActivity({
-      type: 'movie_deleted',
-      itemTitle: currentMovie.title || 'Unbekannter Film',
-      tmdbId: currentMovie.id, // TMDB ID verwenden
-    });
+    // Activity für Badge-System loggen (ersetzt Friend-Activity)
+    if (user?.uid) {
+      await logMovieDeleted(
+        user.uid,
+        currentMovie.title || 'Unbekannter Film',
+        currentMovie.id
+      );
+    }
 
     setOpen(false);
   };
@@ -168,7 +173,7 @@ export const MovieCard = ({
       try {
         await ref.set(updatedRatings);
 
-        // Activity tracken für Freunde - mit der aktualisierten Bewertung
+        // Activity für Badge-System loggen (ersetzt Friend-Activity)
         const movieWithUpdatedRating = {
           ...currentMovie,
           rating: Object.fromEntries(
@@ -177,12 +182,24 @@ export const MovieCard = ({
         };
         const overallRating = calculateOverallRating(movieWithUpdatedRating);
         const ratingValue = parseFloat(overallRating);
-        await updateUserActivity({
-          type: 'rating_updated_movie',
-          itemTitle: currentMovie.title || 'Unbekannter Film',
-          tmdbId: currentMovie.id, // TMDB ID verwenden
-          rating: ratingValue > 0 ? ratingValue : undefined,
-        });
+
+        if (user?.uid && ratingValue > 0) {
+          await logMovieRatedUnified(
+            user.uid,
+            currentMovie.title || 'Unbekannter Film',
+            ratingValue,
+            currentMovie.id
+          );
+
+          // 🏆 BADGE-ACTIVITY: Rating hinzugefügt
+          await logBadgeRating(
+            user.uid,
+            currentMovie.title || 'Unbekannter Film',
+            ratingValue,
+            currentMovie.id,
+            'movie'
+          );
+        }
 
         setOpen(false);
       } catch (error) {

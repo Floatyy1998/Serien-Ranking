@@ -29,9 +29,7 @@ export const storeSeasonData = async (
   try {
     const ref = firebase.database().ref(`${userId}/newSeasonData`);
     await ref.set(data);
-  } catch (error) {
-    console.error('Fehler beim Speichern der Staffel-Daten:', error);
-  }
+  } catch (error) {}
 };
 
 export const detectNewSeasons = async (

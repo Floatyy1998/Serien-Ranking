@@ -1,4 +1,6 @@
 import {
+  BookmarkAdd,
+  BookmarkRemove,
   CalendarToday,
   Close as CloseIcon,
   Delete,
@@ -50,7 +52,11 @@ interface ActivityItem {
     | 'movie_added'
     | 'movie_deleted'
     | 'movie_rated'
-    | 'rating_updated_movie';
+    | 'rating_updated_movie'
+    | 'series_added_to_watchlist'
+    | 'series_removed_from_watchlist'
+    | 'movie_added_to_watchlist'
+    | 'movie_removed_from_watchlist';
   itemTitle?: string; // Neues universelles Feld
   seriesTitle?: string;
   movieTitle?: string;
@@ -333,19 +339,19 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
 
   const getActivityIcon = (activity: ActivityItem) => {
     const iconStyle = { fontSize: 20, color: 'white' };
-    
+
     // Spezielle Icons für Batch-Activities
     if (activity.batchType) {
       switch (activity.batchType) {
         case 'binge':
-          return <FastForward sx={{...iconStyle, fontSize: 22}} />; // Größer für Binge
+          return <FastForward sx={{ ...iconStyle, fontSize: 22 }} />; // Größer für Binge
         case 'quickwatch':
-          return <PlayArrow sx={{...iconStyle, color: '#ffd700'}} />; // Gold für Quickwatch
+          return <PlayArrow sx={{ ...iconStyle, color: '#ffd700' }} />; // Gold für Quickwatch
         case 'season_complete':
-          return <Tv sx={{...iconStyle, color: '#00fed7'}} />; // Türkis für Season complete
+          return <Tv sx={{ ...iconStyle, color: '#00fed7' }} />; // Türkis für Season complete
       }
     }
-    
+
     // Standard Icons
     switch (activity.type) {
       case 'series_added':
@@ -364,6 +370,14 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
         return <Delete sx={iconStyle} />;
       case 'movie_rated':
         return <Star sx={iconStyle} />;
+      case 'series_added_to_watchlist':
+        return <BookmarkAdd sx={iconStyle} />;
+      case 'series_removed_from_watchlist':
+        return <BookmarkRemove sx={iconStyle} />;
+      case 'movie_added_to_watchlist':
+        return <BookmarkAdd sx={iconStyle} />;
+      case 'movie_removed_from_watchlist':
+        return <BookmarkRemove sx={iconStyle} />;
       default:
         return <Timeline sx={iconStyle} />;
     }
@@ -381,7 +395,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
           return '#00fed7'; // Türkis für Season complete
       }
     }
-    
+
     // Standard Farben
     switch (activity.type) {
       case 'series_added':
@@ -396,6 +410,12 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       case 'series_rated':
       case 'movie_rated':
         return '#ff9800';
+      case 'series_added_to_watchlist':
+      case 'movie_added_to_watchlist':
+        return '#9c27b0'; // Lila für Watchlist hinzufügen
+      case 'series_removed_from_watchlist':
+      case 'movie_removed_from_watchlist':
+        return '#607d8b'; // Blau-Grau für Watchlist entfernen
       default:
         return '#9e9e9e';
     }
@@ -406,13 +426,13 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     if (typeof activity === 'string') {
       return activity === 'default' ? '📊' : '📊';
     }
-    
+
     // Spezielle Emojis für Batch-Activities - sind bereits im itemTitle enthalten!
     // Batch-Activities haben bereits Emojis im Titel, verwende Standard-Emoji
     if (activity.batchType) {
       return ''; // Kein extra Emoji, da schon im Titel
     }
-    
+
     // Standard Emojis
     switch (activity.type) {
       case 'series_added':
@@ -593,6 +613,34 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
           <>
             hat "<TitleComponent>{title}</TitleComponent>" bewertet
             {activity.rating ? ` (${activity.rating}/10)` : ''}
+          </>
+        );
+      case 'series_added_to_watchlist':
+        return (
+          <>
+            hat "<TitleComponent>{title}</TitleComponent>" zur Watchlist
+            hinzugefügt
+          </>
+        );
+      case 'series_removed_from_watchlist':
+        return (
+          <>
+            hat "<TitleComponent>{title}</TitleComponent>" von der Watchlist
+            entfernt
+          </>
+        );
+      case 'movie_added_to_watchlist':
+        return (
+          <>
+            hat den Film "<TitleComponent>{title}</TitleComponent>" zur
+            Watchlist hinzugefügt
+          </>
+        );
+      case 'movie_removed_from_watchlist':
+        return (
+          <>
+            hat den Film "<TitleComponent>{title}</TitleComponent>" von der
+            Watchlist entfernt
           </>
         );
       default:

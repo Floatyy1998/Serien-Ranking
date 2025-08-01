@@ -33,8 +33,7 @@ export const DuckFacts = () => {
     const playAudio = () => {
       audio
         .play()
-        .catch((error) => console.error('Audio playback failed:', error));
-      document.removeEventListener('click', playAudio);
+        .catch(() => document.removeEventListener('click', playAudio));
     };
     document.addEventListener('click', playAudio);
   }, []);
@@ -44,9 +43,7 @@ export const DuckFacts = () => {
     const newFact = duckFacts[Math.floor(Math.random() * duckFacts.length)];
     setFact(newFact);
     const audio = new Audio(quack);
-    audio
-      .play()
-      .catch((error) => console.error('Audio playback failed:', error));
+    audio.play().catch((error) => console.error('Error playing audio:', error));
   };
   return (
     <>
