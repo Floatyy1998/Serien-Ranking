@@ -114,16 +114,11 @@ export const generateBatchActivity = (
     const episode = episodes[0];
     // Einzelne Episode - prüfe auf Quickwatch
     if (isQuickwatch(episode.airDate, episode.watchedTimestamp, options)) {
-      const rewatchSuffix =
-        episode.isRewatch && episode.watchCount && episode.watchCount > 1
-          ? ` (${episode.watchCount}x gesehen)`
-          : '';
-
       return {
         shouldBatch: true,
         batchType: 'quickwatch',
         episodes,
-        activityTitle: `${episode.seriesTitle} - Staffel ${episode.seasonNumber} Episode ${episode.episodeNumber} direkt nach Veröffentlichung angeschaut${rewatchSuffix}`,
+        activityTitle: `${episode.seriesTitle} - Staffel ${episode.seasonNumber} Episode ${episode.episodeNumber} direkt nach Veröffentlichung angeschaut`,
         emoji: '⚡',
       };
     }
