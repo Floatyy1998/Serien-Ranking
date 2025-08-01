@@ -64,7 +64,7 @@ interface ActivityItem {
   rating?: number;
   timestamp: number;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
-  batchType?: 'binge' | 'quickwatch' | 'season_complete'; // Batch-Type für spezielle Icons
+  batchType?: 'binge' | 'quickwatch' | 'season_complete' | 'single_episode'; // Batch-Type für spezielle Icons
   episodeCount?: number; // Anzahl der Episoden bei Batch-Activities
 }
 
@@ -427,10 +427,20 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       return activity === 'default' ? '📊' : '📊';
     }
 
-    // Spezielle Emojis für Batch-Activities - sind bereits im itemTitle enthalten!
-    // Batch-Activities haben bereits Emojis im Titel, verwende Standard-Emoji
+    // Spezielle Emojis für Batch-Activities basierend auf batchType
     if (activity.batchType) {
-      return ''; // Kein extra Emoji, da schon im Titel
+      switch (activity.batchType) {
+        case 'binge':
+          return '🔥'; // Feuer für Binge-Watching
+        case 'quickwatch':
+          return '⚡'; // Blitz für Quickwatch
+        case 'season_complete':
+          return '🏆'; // Pokal für komplette Staffel
+        case 'single_episode':
+          return '📺'; // TV für einzelne Episode
+        default:
+          return '📺';
+      }
     }
 
     // Standard Emojis

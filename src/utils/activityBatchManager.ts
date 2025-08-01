@@ -1,11 +1,11 @@
 import firebase from 'firebase/compat/app';
-import { 
-  EpisodeWatchData, 
-  generateBatchActivity, 
-  BatchDetectionOptions,
-  BatchResult
-} from './batchActivity.utils';
 import { BadgeSystem, EarnedBadge } from './badgeSystem';
+import {
+  BatchDetectionOptions,
+  BatchResult,
+  EpisodeWatchData,
+  generateBatchActivity,
+} from './batchActivity.utils';
 
 interface PendingActivity {
   episodeData: EpisodeWatchData;
@@ -22,14 +22,15 @@ class ActivityBatchManager {
   private pendingActivities: Map<string, PendingActivity[]> = new Map();
   private batchTimers: Map<string, NodeJS.Timeout> = new Map();
   private config: Required<BatchConfig>;
-  private badgeCallbacks: Map<string, (badges: EarnedBadge[]) => void> = new Map();
+  private badgeCallbacks: Map<string, (badges: EarnedBadge[]) => void> =
+    new Map();
 
   constructor(config: BatchConfig = {}) {
     this.config = {
       bingeTimeWindowMinutes: 120,
       quickwatchHoursAfterRelease: 24,
-      batchDelayMs: 30000, // 30 Sekunden
-      ...config
+      batchDelayMs: 0, // Sofort verarbeiten ohne Verzögerung
+      ...config,
     };
   }
 
@@ -41,23 +42,23 @@ class ActivityBatchManager {
     episodeData: EpisodeWatchData
   ): Promise<void> {
     const userKey = userId;
-    
+
     // Sofortige Badge-Prüfung für alle Episoden (nicht nur Rewatch)
     await this.checkBadgesForIndividualEpisode(userId, episodeData);
-    
+
     // Init user's pending activities if not exists
     if (!this.pendingActivities.has(userKey)) {
       this.pendingActivities.set(userKey, []);
     }
 
     const userActivities = this.pendingActivities.get(userKey)!;
-    
+
     // Füge neue Activity hinzu
     userActivities.push({
       episodeData,
       timestamp: Date.now(),
       userId,
-      tmdbId: episodeData.tmdbId
+      tmdbId: episodeData.tmdbId,
     });
 
     // Clear existing timer for this user
@@ -66,10 +67,15 @@ class ActivityBatchManager {
       clearTimeout(existingTimer);
     }
 
+    // Bei sofortiger Verarbeitung (batchDelayMs = 0) warten wir kurz
+    // um mehrere schnell hintereinander hinzugefügte Episoden zu sammeln
+    const effectiveDelay =
+      this.config.batchDelayMs === 0 ? 1000 : this.config.batchDelayMs;
+
     // Set new timer
     const timer = setTimeout(() => {
       this.processUserBatch(userKey);
-    }, this.config.batchDelayMs);
+    }, effectiveDelay);
 
     this.batchTimers.set(userKey, timer);
   }
@@ -79,20 +85,22 @@ class ActivityBatchManager {
    */
   private async processUserBatch(userId: string): Promise<void> {
     const userActivities = this.pendingActivities.get(userId);
-    if (!userActivities || userActivities.length === 0) return;
+    if (!userActivities || userActivities.length === 0) {
+      return;
+    }
 
     try {
       // Gruppiere Activities nach Serie
       const activitiesBySeries = this.groupActivitiesBySeries(userActivities);
 
-      for (const [, activities] of activitiesBySeries.entries()) {
-        const episodeDataList = activities.map(a => a.episodeData);
+      for (const [seriesKey, activities] of activitiesBySeries.entries()) {
+        const episodeDataList = activities.map((a) => a.episodeData);
         const batchResult = generateBatchActivity(episodeDataList, this.config);
 
         if (batchResult.shouldBatch) {
           // Erstelle Batch-Activity
           await this.createBatchActivity(userId, batchResult);
-          
+
           // Prüfe auf neue Badges für Batch-Aktivitäten
           await this.checkBadgesForBatch(userId, batchResult);
         } else {
@@ -106,14 +114,13 @@ class ActivityBatchManager {
       // Cleanup
       this.pendingActivities.delete(userId);
       this.batchTimers.delete(userId);
-
     } catch (error) {
-      
+      console.error('💥 Error in batch processing:', error);
       // Fallback: Erstelle individuelle Activities
       for (const activity of userActivities) {
         await this.createIndividualActivity(userId, activity);
       }
-      
+
       this.pendingActivities.delete(userId);
       this.batchTimers.delete(userId);
     }
@@ -130,11 +137,11 @@ class ActivityBatchManager {
     for (const activity of activities) {
       // Gruppiere nach Serie und Staffel für bessere Batch-Detection
       const key = `${activity.episodeData.tmdbId}-S${activity.episodeData.seasonNumber}`;
-      
+
       if (!groups.has(key)) {
         groups.set(key, []);
       }
-      
+
       groups.get(key)!.push(activity);
     }
 
@@ -150,7 +157,7 @@ class ActivityBatchManager {
   ): Promise<void> {
     const activity = {
       type: 'episodes_watched' as const,
-      itemTitle: `${batchResult.activityTitle} ${batchResult.emoji}`,
+      itemTitle: batchResult.activityTitle, // Kein Emoji im Titel - wird separat am Ende angezeigt
       tmdbId: batchResult.episodes[0].tmdbId,
       timestamp: Date.now(),
       batchType: batchResult.batchType,
@@ -158,11 +165,7 @@ class ActivityBatchManager {
     };
 
     // Schreibe zu Firebase
-    await firebase
-      .database()
-      .ref(`activities/${userId}`)
-      .push(activity);
-
+    await firebase.database().ref(`activities/${userId}`).push(activity);
   }
 
   /**
@@ -173,10 +176,14 @@ class ActivityBatchManager {
     pendingActivity: PendingActivity
   ): Promise<void> {
     const { episodeData } = pendingActivity;
-    
+
     let activityTitle = `${episodeData.seriesTitle} - Staffel ${episodeData.seasonNumber} Episode ${episodeData.episodeNumber}`;
-    
-    if (episodeData.isRewatch && episodeData.watchCount && episodeData.watchCount > 1) {
+
+    if (
+      episodeData.isRewatch &&
+      episodeData.watchCount &&
+      episodeData.watchCount > 1
+    ) {
       activityTitle += ` (${episodeData.watchCount}x gesehen)`;
     }
 
@@ -188,13 +195,9 @@ class ActivityBatchManager {
     };
 
     // Schreibe zu Firebase
-    await firebase
-      .database()
-      .ref(`activities/${userId}`)
-      .push(activity);
+    await firebase.database().ref(`activities/${userId}`).push(activity);
 
-    // Prüfe bei allen Episoden auf Badges (nicht nur Rewatch)
-    await this.checkBadgesForIndividualEpisode(userId, episodeData);
+    // Badge-Checks werden bereits beim Hinzufügen gemacht - nicht doppelt
   }
 
   /**
@@ -202,7 +205,7 @@ class ActivityBatchManager {
    */
   async flushAll(): Promise<void> {
     const userIds = Array.from(this.pendingActivities.keys());
-    
+
     // Clear all timers
     for (const timer of this.batchTimers.values()) {
       clearTimeout(timer);
@@ -210,9 +213,7 @@ class ActivityBatchManager {
     this.batchTimers.clear();
 
     // Process all batches
-    await Promise.all(
-      userIds.map(userId => this.processUserBatch(userId))
-    );
+    await Promise.all(userIds.map((userId) => this.processUserBatch(userId)));
   }
 
   /**
@@ -224,14 +225,17 @@ class ActivityBatchManager {
       clearTimeout(timer);
       this.batchTimers.delete(userId);
     }
-    
+
     await this.processUserBatch(userId);
   }
 
   /**
    * Registriert einen Callback für neue Badges
    */
-  onBadgeEarned(userId: string, callback: (badges: EarnedBadge[]) => void): void {
+  onBadgeEarned(
+    userId: string,
+    callback: (badges: EarnedBadge[]) => void
+  ): void {
     this.badgeCallbacks.set(userId, callback);
   }
 
@@ -245,20 +249,23 @@ class ActivityBatchManager {
   /**
    * Prüft auf neue Badges basierend auf Batch-Aktivität
    */
-  private async checkBadgesForBatch(userId: string, batchResult: BatchResult): Promise<void> {
+  private async checkBadgesForBatch(
+    userId: string,
+    batchResult: BatchResult
+  ): Promise<void> {
     try {
       const badgeSystem = new BadgeSystem(userId);
-      
+
       // Erstelle Badge-Check-Daten basierend auf Batch-Typ
       const activityData = {
         type: batchResult.batchType,
         episodes: batchResult.episodes.length,
         seriesTitle: batchResult.episodes[0]?.seriesTitle || 'Unbekannte Serie',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       const newBadges = await badgeSystem.checkForNewBadges(activityData);
-      
+
       if (newBadges.length > 0) {
         // Callback ausführen wenn registriert
         const callback = this.badgeCallbacks.get(userId);
@@ -266,21 +273,23 @@ class ActivityBatchManager {
           callback(newBadges);
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
    * Prüft auf neue Badges für individuelle Episoden (besonders Rewatch-Badges)
    */
-  private async checkBadgesForIndividualEpisode(userId: string, episodeData: EpisodeWatchData): Promise<void> {
+  private async checkBadgesForIndividualEpisode(
+    userId: string,
+    episodeData: EpisodeWatchData
+  ): Promise<void> {
     try {
       const badgeSystem = new BadgeSystem(userId);
-      
-      
-      // Erstelle Activity-Daten für Badge-Check basierend auf Episode-Typ
+
+      // Erstelle Activity-Daten für Badge-Check - IMMER als episode_watched
+      // (Rewatch-Erkennung erfolgt über watchCount und Titel-Pattern)
       const activityData = {
-        type: episodeData.isRewatch ? 'rewatch' : 'episode_watched',
+        type: 'episode_watched',
         episodes: 1,
         seriesTitle: episodeData.seriesTitle,
         timestamp: episodeData.watchedTimestamp,
@@ -289,11 +298,11 @@ class ActivityBatchManager {
         tmdbId: episodeData.tmdbId,
         airDate: episodeData.airDate, // Für Release Day Badge-Prüfung
         seasonNumber: episodeData.seasonNumber,
-        episodeNumber: episodeData.episodeNumber
+        episodeNumber: episodeData.episodeNumber,
       };
 
       const newBadges = await badgeSystem.checkForNewBadges(activityData);
-      
+
       if (newBadges.length > 0) {
         // Callback ausführen wenn registriert
         const callback = this.badgeCallbacks.get(userId);
@@ -301,8 +310,7 @@ class ActivityBatchManager {
           callback(newBadges);
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 }
 
@@ -310,7 +318,7 @@ class ActivityBatchManager {
 export const activityBatchManager = new ActivityBatchManager({
   bingeTimeWindowMinutes: 120, // 2 Stunden für Binge-Detection
   quickwatchHoursAfterRelease: 24, // 24 Stunden für Quickwatch
-  batchDelayMs: 30000, // 30 Sekunden warten bevor Batch verarbeitet wird
+  batchDelayMs: 0, // Sofort verarbeiten ohne Verzögerung
 });
 
 export default ActivityBatchManager;

@@ -776,6 +776,17 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'social_gold',
     category: 'social',
     tier: 'gold',
+    name: 'Watchlist-Legende',
+    description: '200 Serien zur Watchlist hinzugefügt',
+    emoji: '🌟',
+    color: '#ffd700',
+    requirements: { watchlistItems: 200 },
+    rarity: 'epic',
+  },
+  {
+    id: 'social_gold_plus',
+    category: 'social',
+    tier: 'gold',
     name: 'Watchlist-Gigant',
     description: '250 Serien zur Watchlist hinzugefügt',
     emoji: '🏗️',
@@ -784,7 +795,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     rarity: 'epic',
   },
   {
-    id: 'social_gold_plus',
+    id: 'social_gold_max',
     category: 'social',
     tier: 'gold',
     name: 'Niemals-Genug',
@@ -1007,18 +1018,11 @@ export const BADGE_DEFINITIONS: Badge[] = [
     requirements: { episodes: 10000 },
     rarity: 'legendary',
   },
-  {
-    id: 'social_gold',
-    category: 'social',
-    tier: 'gold',
-    name: 'Watchlist-Legende',
-    description: '200 Serien zur Watchlist hinzugefügt',
-    emoji: '🌟',
-    color: '#ffd700',
-    requirements: { watchlistItems: 200 },
-    rarity: 'epic',
-  },
 ];
+
+// Das folgende Badge war ein Duplikat und wurde entfernt:
+// social_gold mit 200 watchlistItems (Watchlist-Legende)
+// Es gab bereits einen social_gold mit 250 watchlistItems (Watchlist-Gigant)
 
 // Badge-System Klasse
 export class BadgeSystem {
@@ -1074,8 +1078,7 @@ export class BadgeSystem {
           activityData.type === 'episode_watched' ||
           activityData.type === 'episodes_watched' ||
           activityData.type === 'season_watched' ||
-          activityData.type === 'season_rewatched' ||
-          activityData.type === 'rewatch'
+          activityData.type === 'season_rewatched'
         ) {
           return this.checkBingeBadge(badge, activityData, now);
         }
@@ -1085,8 +1088,7 @@ export class BadgeSystem {
         if (
           (activityData.type === 'episode_watched' ||
             activityData.type === 'episodes_watched' ||
-            activityData.type === 'season_watched' ||
-            activityData.type === 'rewatch') &&
+            activityData.type === 'season_watched') &&
           activityData.airDate
         ) {
           return this.checkQuickwatchBadge(badge, activityData, now);
@@ -1098,8 +1100,7 @@ export class BadgeSystem {
           activityData.type === 'episode_watched' ||
           activityData.type === 'episodes_watched' ||
           activityData.type === 'season_watched' ||
-          activityData.type === 'season_rewatched' ||
-          activityData.type === 'rewatch'
+          activityData.type === 'season_rewatched'
         ) {
           return this.checkMarathonBadge(badge, now);
         }
@@ -1110,18 +1111,20 @@ export class BadgeSystem {
           activityData.type === 'episode_watched' ||
           activityData.type === 'episodes_watched' ||
           activityData.type === 'season_watched' ||
-          activityData.type === 'season_rewatched' ||
-          activityData.type === 'rewatch'
+          activityData.type === 'season_rewatched'
         ) {
           return this.checkStreakBadge(badge, now);
         }
         return null;
       case 'rewatch':
-        // Rewatch-Badges für Rewatch-Activities
+        // Rewatch-Badges für alle Episode-Activities mit isRewatch=true oder watchCount>1
         if (
-          activityData.type === 'rewatch' ||
-          activityData.type === 'season_rewatched' ||
-          activityData.isRewatch
+          (activityData.type === 'episode_watched' ||
+            activityData.type === 'episodes_watched' ||
+            activityData.type === 'season_watched' ||
+            activityData.type === 'season_rewatched') &&
+          (activityData.isRewatch ||
+            (activityData.watchCount && activityData.watchCount > 1))
         ) {
           return this.checkRewatchBadge(badge, now);
         }
@@ -1205,8 +1208,7 @@ export class BadgeSystem {
         activity.tmdbId &&
         (activity.type === 'episode_watched' ||
           activity.type === 'episodes_watched' ||
-          activity.type === 'season_watched' ||
-          activity.type === 'rewatch')
+          activity.type === 'season_watched')
       ) {
         if (!seriesGroups.has(activity.tmdbId)) {
           seriesGroups.set(activity.tmdbId, []);
@@ -1224,8 +1226,6 @@ export class BadgeSystem {
         if (activity.type === 'episodes_watched' && activity.episodeCount) {
           episodeCount += activity.episodeCount;
         } else if (activity.type === 'episode_watched') {
-          episodeCount += 1;
-        } else if (activity.type === 'rewatch') {
           episodeCount += 1;
         }
         // 🚫 WICHTIG: season_watched wird NICHT für Episode-Zählung verwendet!
@@ -1379,8 +1379,6 @@ export class BadgeSystem {
         totalEpisodes += activity.episodeCount;
       } else if (activity.type === 'season_watched' && activity.episodeCount) {
         totalEpisodes += activity.episodeCount;
-      } else if (activity.type === 'rewatch') {
-        totalEpisodes += 1;
       }
     });
 
@@ -1442,19 +1440,69 @@ export class BadgeSystem {
     badge: Badge,
     _now: number
   ): Promise<{ earned: boolean; details?: string } | null> {
-    // Verwende Badge-Activities anstatt direkte Firebase-Abfrage
-    const allActivities = await badgeActivityLogger.getAllBadgeActivities(
-      this.userId
-    );
-    const ratingActivities = allActivities.filter(
-      (activity) => activity.type === 'rating_added'
-    );
-    const ratingsCount = ratingActivities.length;
+    // Zähle ECHTE Bewertungen direkt aus Firebase (Serien + Filme)
+    let totalRatings = 0;
 
-    if (ratingsCount >= badge.requirements.ratings!) {
+    try {
+      // Import der calculateOverallRating Funktion
+      const { calculateOverallRating } = await import('./rating');
+
+      // Zähle bewertete Serien
+      const seriesSnapshot = await firebase
+        .database()
+        .ref(`${this.userId}/serien`)
+        .once('value');
+
+      if (seriesSnapshot.exists()) {
+        const seriesData = seriesSnapshot.val();
+        for (const series of Object.values(seriesData) as any[]) {
+          // Verschiedene Rating-Strukturen unterstützen
+          if (series.rating) {
+            if (typeof series.rating === 'number' && series.rating > 0) {
+              totalRatings++;
+            } else if (typeof series.rating === 'object') {
+              // Verwende calculateOverallRating für korrekte Bewertung
+              const overallRating = calculateOverallRating(series);
+              if (parseFloat(overallRating) > 0) {
+                totalRatings++;
+              }
+            }
+          }
+        }
+      }
+
+      // Zähle bewertete Filme
+      const moviesSnapshot = await firebase
+        .database()
+        .ref(`${this.userId}/filme`)
+        .once('value');
+
+      if (moviesSnapshot.exists()) {
+        const moviesData = moviesSnapshot.val();
+        for (const movie of Object.values(moviesData) as any[]) {
+          // Verschiedene Rating-Strukturen unterstützen
+          if (movie.rating) {
+            if (typeof movie.rating === 'number' && movie.rating > 0) {
+              totalRatings++;
+            } else if (typeof movie.rating === 'object') {
+              // Verwende calculateOverallRating für korrekte Bewertung
+              const overallRating = calculateOverallRating(movie);
+              if (parseFloat(overallRating) > 0) {
+                totalRatings++;
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Fehler beim Zählen der Bewertungen:', error);
+      return null;
+    }
+
+    if (totalRatings >= badge.requirements.ratings!) {
       return {
         earned: true,
-        details: `${ratingsCount} Bewertungen abgegeben`,
+        details: `${totalRatings} Bewertungen abgegeben`,
       };
     }
     return null;
@@ -1625,8 +1673,7 @@ export class BadgeSystem {
           activity.timestamp &&
           (activity.type === 'episode_watched' ||
             activity.type === 'episodes_watched' ||
-            activity.type === 'season_watched' ||
-            activity.type === 'rewatch')
+            activity.type === 'season_watched')
         ) {
           const date = new Date(activity.timestamp);
           const dayKey = `${date.getFullYear()}-${String(
@@ -1693,7 +1740,6 @@ export class BadgeSystem {
       activities.forEach((activity) => {
         // KOMPLETT ERWEITERTE Rewatch-Erkennung
         const isRewatch =
-          activity.type === 'rewatch' ||
           activity.type === 'season_rewatched' ||
           activity.batchType === 'rewatch' ||
           activity.isRewatch === true ||
@@ -1916,6 +1962,7 @@ declare global {
       recalculateUserBadges: (userId: string) => Promise<void>;
       getUserBadges: (userId: string) => Promise<void>;
       getWatchlistCounter: (userId: string) => Promise<void>;
+      getRatingsCount: (userId: string) => Promise<void>;
     };
   }
 }

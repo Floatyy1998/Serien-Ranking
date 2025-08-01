@@ -11,7 +11,6 @@ import {
   logBadgeMovieAdded,
   logBadgeQuickwatch,
   logBadgeRating,
-  logBadgeRewatch,
   logBadgeSeriesAdded,
   logBadgeStreak,
   logBadgeWatchlistAdded,
@@ -131,37 +130,6 @@ export const logSeasonWatchedUnified = async (
     );
   } catch (error) {
     // Fehler beim Unified Season-Logging
-  }
-};
-
-/**
- * 🔄 Rewatch - Dual-Logging (Rewatch-Badges)
- */
-export const logRewatchUnified = async (
-  userId: string,
-  seriesTitle: string,
-  tmdbId: number,
-  originalAirDate?: string,
-  episodeCount: number = 1
-): Promise<void> => {
-  try {
-    // 1. Friend-Activity für Freunde-System
-    await logActivity(userId, {
-      type: 'rewatch',
-      seriesTitle,
-      tmdbId,
-    });
-
-    // 2. Badge-Activity für Badge-System (Rewatch-Badges)
-    await logBadgeRewatch(
-      userId,
-      seriesTitle,
-      tmdbId,
-      originalAirDate,
-      episodeCount
-    );
-  } catch (error) {
-    // Fehler beim Unified Rewatch-Logging
   }
 };
 

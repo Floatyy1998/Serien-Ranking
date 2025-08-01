@@ -13,13 +13,6 @@ import BadgeSystem from '../../utils/badgeSystem';
 import { EpisodeWatchData } from '../../utils/batchActivity.utils';
 import { getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
-import { hasActiveRewatch } from '../../utils/rewatch.utils';
-import {
-  logBatchEpisodesWatchedUnified,
-  logEpisodeWatchedUnified,
-  logRewatchUnified,
-  logSeasonWatchedUnified,
-} from '../../utils/unifiedActivityLogger';
 import SeriesWatchedDialog from '../dialogs/SeriesWatchedDialog';
 import TodayEpisodesDialog from '../dialogs/TodayEpisodesDialog';
 import { SeriesCard } from './SeriesCard';
@@ -141,8 +134,7 @@ export const SeriesGrid = ({
         (selectedGenre === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
         selectedGenre === 'Zuletzt Hinzugefügt' ||
-        (selectedGenre === 'Watchlist' &&
-          (series.watchlist || hasActiveRewatch(series))) ||
+        (selectedGenre === 'Watchlist' && series.watchlist) ||
         series.genre?.genres?.includes(selectedGenre);
       const matchesProvider =
         selectedProvider === 'All' ||
@@ -290,7 +282,7 @@ export const SeriesGrid = ({
         // Lade alle Filme
         const moviesSnapshot = await firebase
           .database()
-          .ref(`${user.uid}/movies`)
+          .ref(`${user.uid}/filme`)
           .once('value');
 
         let ratingCount = 0;
@@ -480,8 +472,11 @@ export const SeriesGrid = ({
               tmdbId: series.id,
             });
 
-            // Badge-System Activity logging für Season Rewatch
-            await logSeasonWatchedUnified(
+            // Badge-System Activity logging für Season Rewatch (KEINE Friend-Activity)
+            const { logSeasonWatched } = await import(
+              '../../utils/badgeActivityLogger'
+            );
+            await logSeasonWatched(
               user.uid,
               seriesTitle,
               seasonNumber,
@@ -529,52 +524,20 @@ export const SeriesGrid = ({
               (season.episodes.length - previouslyUnwatched.length);
 
             if (newlyWatchedCount > 0) {
-              let activityText;
-
-              // Prüfe ob die ganze Staffel auf einmal abgehakt wurde
-              if (previouslyUnwatched.length === season.episodes.length) {
-                // Ganze Staffel war unwatched und wurde komplett abgehakt
-                activityText = `Staffel ${seasonNumber} komplett`;
-              } else if (newlyWatchedCount === 1) {
-                // Nur eine Episode wurde abgehakt
-                const newlyWatchedEpisode = previouslyUnwatched[0];
-                activityText = `Staffel ${seasonNumber} Episode ${
-                  newlyWatchedEpisode.episode || 'X'
-                }`;
-              } else if (previouslyUnwatched.length > 1) {
-                // Mehrere Episoden wurden abgehakt
-                const sortedUnwatched = previouslyUnwatched.sort(
-                  (a: any, b: any) => (a.episode || 0) - (b.episode || 0)
-                );
-                const firstEpisode = sortedUnwatched[0];
-                const lastEpisode = sortedUnwatched[sortedUnwatched.length - 1];
-                activityText = `Staffel ${seasonNumber} Episode ${
-                  firstEpisode.episode || 1
-                }-${lastEpisode.episode || previouslyUnwatched.length}`;
-              } else {
-                activityText = `Staffel ${seasonNumber}`;
-              }
-
-              const activityType:
-                | 'episodes_watched'
-                | 'episode_watched'
-                | 'series_added'
-                | 'series_deleted'
-                | 'rating_updated'
-                | 'movie_added'
-                | 'movie_deleted'
-                | 'rating_updated_movie' = 'episodes_watched';
-
-              await updateUserActivity({
-                type: activityType,
-                itemTitle: `${seriesTitle} - ${activityText}`,
-                tmdbId: series.id,
-              });
-
-              // Badge-System Activity logging für Season Watching
+              // Direkte Activity für Staffel-Checkbox mit korrekter Staffelnummer
               if (previouslyUnwatched.length === season.episodes.length) {
                 // Ganze Staffel wurde komplett geschaut
-                await logSeasonWatchedUnified(
+                await updateUserActivity({
+                  type: 'episodes_watched',
+                  itemTitle: `${seriesTitle} - Staffel ${seasonNumber} komplett geschaut`,
+                  tmdbId: series.id,
+                });
+
+                // NUR Badge-System für Achievements (KEINE Friend-Activity)
+                const { logSeasonWatched } = await import(
+                  '../../utils/badgeActivityLogger'
+                );
+                await logSeasonWatched(
                   user.uid,
                   seriesTitle,
                   seasonNumber,
@@ -582,50 +545,26 @@ export const SeriesGrid = ({
                   series.id,
                   false // nicht rewatch
                 );
+              } else {
+                // Teilweise Staffel geschaut
+                await updateUserActivity({
+                  type: 'episodes_watched',
+                  itemTitle: `${seriesTitle} - Staffel ${seasonNumber} (${newlyWatchedCount} Episoden geschaut)`,
+                  tmdbId: series.id,
+                });
 
-                // 🎯 ZUSÄTZLICH: Logge auch alle individuellen Episoden für Binge-Badges
-                for (const episode of season.episodes) {
-                  await logEpisodeWatchedUnified(
+                // Badge für einzelne Episoden loggen (KEINE Friend-Activities)
+                const { logEpisodeWatched } = await import(
+                  '../../utils/badgeActivityLogger'
+                );
+                for (const episode of previouslyUnwatched) {
+                  await logEpisodeWatched(
                     user.uid,
                     seriesTitle,
                     seasonNumber,
                     episode.episode || 1,
                     series.id,
                     episode.air_date || episode.airDate,
-                    false // nicht rewatch
-                  );
-                }
-              } else {
-                // Batch von Episoden oder einzelne Episode
-                const episodesToLog = previouslyUnwatched.map((ep: any) => ({
-                  episodeNumber: ep.episode || 1,
-                  seasonNumber: seasonNumber,
-                  airDate: ep.airDate,
-                }));
-
-                await logBatchEpisodesWatchedUnified(
-                  user.uid,
-                  seriesTitle,
-                  episodesToLog.length,
-                  series.id,
-                  newlyWatchedCount === 1 ? 'multiple' : 'multiple',
-                  false, // nicht rewatch
-                  episodesToLog.map((ep: any) => ep.airDate).filter(Boolean)
-                );
-
-                // 🎯 ZUSÄTZLICHE PRÜFUNG: Ist die ganze Staffel jetzt komplett?
-                const allEpisodesWatched = updatedEpisodes.every(
-                  (e: any) => e.watched
-                );
-                if (allEpisodesWatched) {
-                  // ⚠️ WICHTIG: NUR Season-Badge loggen, KEINE individuellen Episoden
-                  // (Die wurden bereits durch logBatchEpisodesWatchedUnified erfasst)
-                  await logSeasonWatchedUnified(
-                    user.uid,
-                    seriesTitle,
-                    seasonNumber,
-                    season.episodes.length,
-                    series.id,
                     false // nicht rewatch
                   );
                 }
@@ -731,19 +670,13 @@ export const SeriesGrid = ({
         if (!forceUnwatch) {
           await activityBatchManager.addEpisodeActivity(user.uid, episodeData);
 
-          // Badge-System Activity logging für einzelne Episode
-          if (isRewatch && episode.watched) {
-            // Rewatch der einzelnen Episode
-            await logRewatchUnified(
-              user.uid,
-              seriesTitle,
-              series.id,
-              episode.air_date || episode.airDate, // originalAirDate - beide Varianten
-              1 // episodeCount
+          // Badge-System Activity logging für einzelne Episode (KEINE Friend-Activity)
+          if (!episode.watched) {
+            // Neue Episode geschaut - nur Badge loggen
+            const { logEpisodeWatched } = await import(
+              '../../utils/badgeActivityLogger'
             );
-          } else if (!episode.watched) {
-            // Neue Episode geschaut
-            await logEpisodeWatchedUnified(
+            await logEpisodeWatched(
               user.uid,
               seriesTitle,
               seasonNumber,
@@ -762,9 +695,11 @@ export const SeriesGrid = ({
                 (e: any) => e.watched
               );
               if (allEpisodesWatched) {
-                // ⚠️ WICHTIG: NUR Season-Badge loggen, KEINE individuellen Episoden
-                // (Die Episode wurde bereits durch logEpisodeWatchedUnified erfasst)
-                await logSeasonWatchedUnified(
+                // ⚠️ WICHTIG: NUR Season-Badge loggen, KEINE Friend-Activity
+                const { logSeasonWatched } = await import(
+                  '../../utils/badgeActivityLogger'
+                );
+                await logSeasonWatched(
                   user.uid,
                   seriesTitle,
                   seasonNumber,
@@ -817,53 +752,24 @@ export const SeriesGrid = ({
 
       // Activity tracken für Batch-Operationen (nur wenn nicht targetUserId)
       if (!targetUserId && episodesToMark.length > 0) {
-        // Gruppiere nach Staffeln
-        const seasonGroups = episodesToMark.reduce((acc: any, episode) => {
-          if (!acc[episode.seasonNumber]) {
-            acc[episode.seasonNumber] = [];
-          }
-          acc[episode.seasonNumber].push(episode);
-          return acc;
-        }, {});
+        const seriesTitle =
+          series.title || series.original_name || 'Unbekannte Serie';
 
-        // Erstelle Activity-Text
-        const seasonTexts = Object.keys(seasonGroups)
-          .sort((a, b) => parseInt(a) - parseInt(b))
-          .map((seasonNum) => {
-            const episodes = seasonGroups[seasonNum];
-            // Filtere und sortiere Episoden mit gültigen Episode-Nummern
-            const validEpisodes = episodes
-              .filter((e: any) => e.episode !== undefined && e.episode !== null)
-              .sort((a: any, b: any) => a.episode - b.episode);
-
-            if (validEpisodes.length === 0) {
-              return `Staffel ${seasonNum} (${episodes.length} Episoden)`;
-            }
-
-            const firstEp = validEpisodes[0].episode;
-            const lastEp = validEpisodes[validEpisodes.length - 1].episode;
-
-            if (validEpisodes.length === 1) {
-              return `Staffel ${seasonNum} Episode ${firstEp}`;
-            } else {
-              return `Staffel ${seasonNum} Episode ${firstEp}-${lastEp}`;
-            }
-          });
-
-        let activityText;
-        if (seasonTexts.length === 1) {
-          activityText = seasonTexts[0];
-        } else {
-          activityText = seasonTexts.join(', ');
+        // Füge alle neu markierten Episoden zum Batch-Manager hinzu
+        for (const episode of episodesToMark) {
+          const episodeData: EpisodeWatchData = {
+            seriesTitle,
+            seasonNumber: episode.seasonNumber,
+            episodeNumber: episode.episode || 1,
+            episodeName: episode.name || `Episode ${episode.episode || 1}`,
+            airDate: episode.air_date || episode.airDate || '',
+            watchedTimestamp: Date.now(),
+            tmdbId: series.id,
+            isRewatch: false,
+            watchCount: 1,
+          };
+          await activityBatchManager.addEpisodeActivity(user.uid, episodeData);
         }
-
-        await updateUserActivity({
-          type: 'episodes_watched',
-          itemTitle: `${
-            series.title || series.original_name || 'Unbekannte Serie'
-          } - ${activityText}`,
-          tmdbId: series.id, // TMDB ID verwenden
-        });
       }
     } catch (error) {
       // Error updating watched status in batch
@@ -930,53 +836,24 @@ export const SeriesGrid = ({
 
       // Activity tracken für Episode-Batch-Operationen (nur wenn nicht targetUserId)
       if (!targetUserId && episodesToMark.length > 0) {
-        // Gruppiere nach Staffeln
-        const seasonGroups = episodesToMark.reduce((acc: any, episode) => {
-          if (!acc[episode.seasonNumber]) {
-            acc[episode.seasonNumber] = [];
-          }
-          acc[episode.seasonNumber].push(episode);
-          return acc;
-        }, {});
+        const seriesTitle =
+          series.title || series.original_name || 'Unbekannte Serie';
 
-        // Erstelle Activity-Text
-        const seasonTexts = Object.keys(seasonGroups)
-          .sort((a, b) => parseInt(a) - parseInt(b))
-          .map((seasonNum) => {
-            const episodes = seasonGroups[seasonNum];
-            // Filtere und sortiere Episoden mit gültigen Episode-Nummern
-            const validEpisodes = episodes
-              .filter((e: any) => e.episode !== undefined && e.episode !== null)
-              .sort((a: any, b: any) => a.episode - b.episode);
-
-            if (validEpisodes.length === 0) {
-              return `Staffel ${seasonNum} (${episodes.length} Episoden)`;
-            }
-
-            const firstEp = validEpisodes[0].episode;
-            const lastEp = validEpisodes[validEpisodes.length - 1].episode;
-
-            if (validEpisodes.length === 1) {
-              return `Staffel ${seasonNum} Episode ${firstEp}`;
-            } else {
-              return `Staffel ${seasonNum} Episode ${firstEp}-${lastEp}`;
-            }
-          });
-
-        let activityText;
-        if (seasonTexts.length === 1) {
-          activityText = seasonTexts[0];
-        } else {
-          activityText = seasonTexts.join(', ');
+        // Füge alle neu markierten Episoden zum Batch-Manager hinzu
+        for (const episode of episodesToMark) {
+          const episodeData: EpisodeWatchData = {
+            seriesTitle,
+            seasonNumber: episode.seasonNumber,
+            episodeNumber: episode.episode || 1,
+            episodeName: episode.name || `Episode ${episode.episode || 1}`,
+            airDate: episode.air_date || episode.airDate || '',
+            watchedTimestamp: Date.now(),
+            tmdbId: series.id,
+            isRewatch: false,
+            watchCount: 1,
+          };
+          await activityBatchManager.addEpisodeActivity(user.uid, episodeData);
         }
-
-        await updateUserActivity({
-          type: 'episodes_watched',
-          itemTitle: `${
-            series.title || series.original_name || 'Unbekannte Serie'
-          } - ${activityText}`,
-          tmdbId: series.id, // TMDB ID verwenden
-        });
       }
     } catch (error) {
       // Error updating watched status in episode batch
