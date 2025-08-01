@@ -659,7 +659,7 @@ export const SeriesGrid = ({
           if (newWatchCount > 0) {
             await updateUserActivity({
               type: 'episode_watched',
-              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber} (auf ${newWatchCount}x reduziert)`,
+              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber} auf ${newWatchCount}x reduziert`,
               tmdbId: series.id,
             });
           }
