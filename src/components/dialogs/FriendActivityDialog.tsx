@@ -521,10 +521,15 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
               `Staffel ${staffelNum + 1}`
             );
           }
+          // Prüfe ob episodeInfo bereits "geschaut"/"angeschaut" enthält oder "reduziert"
+          const containsWatched =
+            episodeInfo.includes('geschaut') ||
+            episodeInfo.includes('angeschaut');
+          const containsReduziert = episodeInfo.includes('reduziert');
           return (
             <>
-              hat "<TitleComponent>{seriesName}</TitleComponent>" {episodeInfo}{' '}
-              geschaut
+              hat "<TitleComponent>{seriesName}</TitleComponent>" {episodeInfo}
+              {containsWatched || containsReduziert ? '' : ' geschaut'}
             </>
           );
         } else {
@@ -554,25 +559,27 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
             /Staffel\s\d+/,
             `Staffel ${staffelNum}`
           );
-          // Prüfe ob staffelUndRest bereits "angeschaut" oder "geschaut" enthält
+          // Prüfe ob staffelUndRest bereits "angeschaut", "geschaut" oder "reduziert" enthält
           const endsWithGeschaut =
             staffelUndRest.endsWith('angeschaut') ||
             staffelUndRest.endsWith('geschaut');
+          const containsReduziert = staffelUndRest.includes('reduziert');
           return (
             <>
               hat "<TitleComponent>{seriesName}</TitleComponent>"{' '}
               {staffelUndRest}
-              {endsWithGeschaut ? '' : ' geschaut'}
+              {endsWithGeschaut || containsReduziert ? '' : ' geschaut'}
             </>
           );
         } else {
-          // Prüfe ob der Titel bereits "angeschaut" oder "geschaut" enthält
+          // Prüfe ob der Titel bereits "angeschaut", "geschaut" oder "reduziert" enthält
           const endsWithGeschaut =
             title.endsWith('angeschaut') || title.endsWith('geschaut');
+          const containsReduziert = title.includes('reduziert');
           return (
             <>
               hat "<TitleComponent>{title}</TitleComponent>"
-              {endsWithGeschaut ? '' : ' geschaut'}
+              {endsWithGeschaut || containsReduziert ? '' : ' geschaut'}
             </>
           );
         }
