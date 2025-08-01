@@ -93,7 +93,7 @@ class ActivityBatchManager {
       // Gruppiere Activities nach Serie
       const activitiesBySeries = this.groupActivitiesBySeries(userActivities);
 
-      for (const [seriesKey, activities] of activitiesBySeries.entries()) {
+      for (const [, activities] of activitiesBySeries.entries()) {
         const episodeDataList = activities.map((a) => a.episodeData);
         const batchResult = generateBatchActivity(episodeDataList, this.config);
 
