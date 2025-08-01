@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
 import { useFriends } from '../../contexts/FriendsProvider';
+import { logSeriesAddedUnified } from '../../utils/unifiedActivityLogger';
 import { DialogHeader } from './shared/SharedDialogComponents'; // Neuer Import
 
 export interface Serien {
@@ -49,7 +50,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
 }) => {
   const auth = useAuth();
   const { user } = auth || {};
-  const { updateUserActivity } = useFriends();
+  const {} = useFriends();
   const [searchValue, setSearchValue] = useState(''); // Änderung: searchValue auslesen
   const [options, setOptions] = useState<Serien[]>([]);
   const [selectedSeries, setSelectedSeries] = useState<Serien | null>(null);
@@ -121,12 +122,14 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
         body: JSON.stringify(seriesData.data),
       });
       if (res.ok) {
-        // Activity tracken für Freunde
-        await updateUserActivity({
-          type: 'series_added',
-          itemTitle: selectedSeries.name || 'Unbekannte Serie',
-          tmdbId: selectedSeries.id, // TMDB ID verwenden
-        });
+        // Unified Activity-Logging für Friend + Badge-System (Explorer-Badges)
+        await logSeriesAddedUnified(
+          user.uid,
+          selectedSeries.name || 'Unbekannte Serie',
+          selectedSeries.id,
+          selectedSeries.genre_ids?.map((id) => `Genre_${id}`) || [], // Genres
+          selectedSeries.first_air_date // firstAirDate
+        );
 
         setSnackbarMessage('Serie hinzugefügt!');
         setSnackbarSeverity('success');
@@ -222,7 +225,10 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                   </div>
                 </div>
                 <div style={{ marginLeft: 'auto', fontSize: '0.8rem' }}>
-                  {new Date(option.first_air_date).getFullYear()}
+                  {option.first_air_date
+                    ? new Date(option.first_air_date).getFullYear() ||
+                      'Unbekannt'
+                    : 'Unbekannt'}
                 </div>
               </li>
             )}

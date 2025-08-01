@@ -75,9 +75,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           setPhotoURL(user.photoURL || '');
           setIsPublic(false);
         }
-      } catch (error) {
-        console.error('Error loading profile data:', error);
-        // Fallback zu Firebase Auth Daten
+      } catch (error) {// Fallback zu Firebase Auth Daten
         setUsername('');
         setDisplayName(user.displayName || '');
         setPhotoURL(user.photoURL || '');
@@ -102,9 +100,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
         const userRef = firebase.database().ref(`users/${user.uid}/isPublic`);
         const snapshot = await userRef.once('value');
         setIsPublic(snapshot.val() || false);
-      } catch (error) {
-        console.error('Error loading public setting:', error);
-      }
+      } catch (error) {}
     };
 
     loadPublicSetting();
@@ -156,9 +152,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
 
       setPhotoURL(downloadURL);
       setSuccess('Profilbild erfolgreich hochgeladen und gespeichert');
-    } catch (error: any) {
-      console.error('Error uploading image:', error);
-      if (
+    } catch (error: any) {if (
         error.code === 'storage/unknown' ||
         error.code === 'storage/unauthorized'
       ) {
@@ -250,9 +244,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
       setTimeout(() => {
         onClose();
       }, 1500);
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      setError('Fehler beim Speichern des Profils');
+    } catch (error) {setError('Fehler beim Speichern des Profils');
     } finally {
       setSaving(false);
     }
@@ -275,9 +267,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           ? 'Deine Liste ist jetzt öffentlich sichtbar!'
           : 'Deine Liste ist jetzt privat!'
       );
-    } catch (error) {
-      console.error('Error updating public setting:', error);
-      setError('Fehler beim Aktualisieren der Einstellung');
+    } catch (error) {setError('Fehler beim Aktualisieren der Einstellung');
     }
   };
 
@@ -307,9 +297,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
         onClose();
         window.location.reload(); // Oder navigate('/login') wenn Router verwendet wird
       }, 1000);
-    } catch (error) {
-      console.error('Error logging out:', error);
-      setError('Fehler beim Ausloggen');
+    } catch (error) {setError('Fehler beim Ausloggen');
     }
   };
 

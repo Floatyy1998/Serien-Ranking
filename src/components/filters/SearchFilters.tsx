@@ -30,7 +30,14 @@ import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Series } from '../../interfaces/Series';
-import { hasActiveRewatch, getNextRewatchEpisode } from '../../utils/rewatch.utils';
+import {
+  logBadgeRewatch,
+  logEpisodeWatched,
+} from '../../utils/badgeActivityLogger';
+import {
+  getNextRewatchEpisode,
+  hasActiveRewatch,
+} from '../../utils/rewatch.utils';
 import AddSeriesDialog from '../dialogs/AddSeriesDialog';
 import DiscoverSeriesDialog from '../dialogs/DiscoverSeriesDialog';
 import RecommendationsDialog from '../dialogs/RecommendationsDialog';
@@ -81,7 +88,6 @@ export const SearchFilters = ({
   useEffect(() => {
     const fetchWatchlistSeries = async () => {
       if (user) {
-        
         const watchlistSeries = (seriesList || []).filter(
           (series) => series.watchlist
         );
@@ -174,19 +180,19 @@ export const SearchFilters = ({
         const wasWatched = episode.watched;
 
         let updateData: any;
-        
+
         if (wasWatched) {
           // Episode ist bereits geschaut - erhöhe watchCount für Rewatch
           const currentWatchCount = episode.watchCount || 1;
           updateData = {
             watched: true,
-            watchCount: currentWatchCount + 1
+            watchCount: currentWatchCount + 1,
           };
         } else {
           // Episode war noch nicht geschaut - markiere als geschaut
           updateData = {
             watched: true,
-            watchCount: 1
+            watchCount: 1,
           };
         }
 
@@ -200,14 +206,40 @@ export const SearchFilters = ({
           if (series) {
             // Ermittle Episode-Nummer aus Index wenn episode.episode nicht verfügbar ist
             const episodeNumber = episode.episode || episodeIndex + 1;
+            const seriesTitle =
+              series.title || series.original_name || 'Unbekannte Serie';
 
             await updateUserActivity({
               type: 'episode_watched',
-              itemTitle: `${
-                series.title || series.original_name || 'Unbekannte Serie'
-              } - Staffel ${seasonNumber} Episode ${episodeNumber}`,
+              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber}`,
               tmdbId: series.id, // TMDB ID verwenden
             });
+
+            // 🏆 BADGE-SYSTEM: Episode-Watching Activity loggen
+            await logEpisodeWatched(
+              user.uid,
+              seriesTitle,
+              seasonNumber,
+              episodeNumber,
+              series.id,
+              episode.air_date || episode.airDate, // airDate für Quickwatch-Detection
+              false // isRewatch = false für neue Episoden
+            );
+          }
+        } else if (wasWatched) {
+          // 🏆 BADGE-SYSTEM: Rewatch Activity loggen
+          const series = seriesList.find((s) => s.nmr === seriesNmr);
+          if (series) {
+            const seriesTitle =
+              series.title || series.original_name || 'Unbekannte Serie';
+
+            await logBadgeRewatch(
+              user.uid,
+              seriesTitle,
+              series.id,
+              episode.air_date || episode.airDate,
+              1 // episodeCount = 1 für einzelne Episode
+            );
           }
         }
 
@@ -241,13 +273,13 @@ export const SearchFilters = ({
     if (!series.seasons || !Array.isArray(series.seasons)) {
       return null;
     }
-    
+
     // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
     for (const season of series.seasons) {
       if (!season.episodes || !Array.isArray(season.episodes)) {
         continue;
       }
-      
+
       for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
         if (!episode.watched) {
@@ -273,7 +305,7 @@ export const SearchFilters = ({
         };
       }
     }
-    
+
     return null;
   };
   const filteredWatchlistSeries = watchlistSeries.filter((series) => {

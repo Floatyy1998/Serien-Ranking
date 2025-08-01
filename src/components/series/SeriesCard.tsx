@@ -20,8 +20,14 @@ import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
+import { logSeriesDeleted } from '../../utils/activityLogger';
+import { logBadgeRating } from '../../utils/badgeActivityLogger';
 import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
+import {
+  logSeriesAddedToWatchlistUnified,
+  logSeriesRatedUnified,
+} from '../../utils/unifiedActivityLogger';
 import SeriesDialog from '../dialogs/SeriesDialog';
 import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
@@ -62,7 +68,7 @@ export const SeriesCard = ({
     : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
-  const { updateUserActivity } = useFriends();
+  const {} = useFriends();
   const uniqueProviders = currentSeries.provider
     ? Array.from(
         new Set(currentSeries.provider.provider.map((p) => p.name))
@@ -143,15 +149,16 @@ export const SeriesCard = ({
       .ref(`${user?.uid}/serien/${currentSeries.nmr}`);
     await ref.remove();
 
-    // Activity tracken für Freunde
-    await updateUserActivity({
-      type: 'series_deleted',
-      itemTitle:
+    // Activity für Badge-System loggen (ersetzt Friend-Activity)
+    if (user?.uid) {
+      await logSeriesDeleted(
+        user.uid,
         currentSeries.title ||
-        currentSeries.original_name ||
-        'Unbekannte Serie',
-      tmdbId: currentSeries.id, // TMDB ID verwenden
-    });
+          currentSeries.original_name ||
+          'Unbekannte Serie',
+        currentSeries.id
+      );
+    }
 
     setOpen(false);
   };
@@ -166,7 +173,7 @@ export const SeriesCard = ({
       try {
         await ref.set(updatedRatings);
 
-        // Activity tracken für Freunde - mit den aktualisierten Ratings
+        // Activity für Badge-System loggen (ersetzt Friend-Activity)
         const seriesWithUpdatedRating = {
           ...currentSeries,
           rating: Object.fromEntries(
@@ -175,15 +182,28 @@ export const SeriesCard = ({
         };
         const overallRating = calculateOverallRating(seriesWithUpdatedRating);
         const ratingValue = parseFloat(overallRating);
-        await updateUserActivity({
-          type: 'rating_updated',
-          itemTitle:
+
+        if (user?.uid && ratingValue > 0) {
+          await logSeriesRatedUnified(
+            user.uid,
             currentSeries.title ||
-            currentSeries.original_name ||
-            'Unbekannte Serie',
-          rating: ratingValue > 0 ? ratingValue : undefined,
-          tmdbId: currentSeries.id, // TMDB ID verwenden
-        });
+              currentSeries.original_name ||
+              'Unbekannte Serie',
+            ratingValue,
+            currentSeries.id
+          );
+
+          // 🏆 BADGE-ACTIVITY: Rating hinzugefügt
+          await logBadgeRating(
+            user.uid,
+            currentSeries.title ||
+              currentSeries.original_name ||
+              'Unbekannte Serie',
+            ratingValue,
+            currentSeries.id,
+            'series'
+          );
+        }
 
         setOpen(false);
       } catch (error) {
@@ -278,6 +298,15 @@ export const SeriesCard = ({
     const newWatchlistStatus = !currentSeries.watchlist;
     try {
       await ref.set(newWatchlistStatus);
+
+      // Unified Logging: Friend-Activity + Badge-Activity in einem
+      const seriesTitle = currentSeries.title;
+      const tmdbId = currentSeries.id;
+
+      if (newWatchlistStatus) {
+        // Serie zur Watchlist hinzugefügt - Unified Logging
+        await logSeriesAddedToWatchlistUnified(user.uid, seriesTitle, tmdbId);
+      }
     } catch (error) {
       console.error('Error updating watchlist status:', error);
     }
@@ -302,7 +331,7 @@ export const SeriesCard = ({
               cursor: 'pointer',
             }}
             image={
-              currentSeries.poster?.poster && 
+              currentSeries.poster?.poster &&
               currentSeries.poster.poster.substring(
                 currentSeries.poster.poster.length - 4
               ) !== 'null'

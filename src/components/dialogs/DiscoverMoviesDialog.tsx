@@ -187,9 +187,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
           setSnackbarSeverity('error');
           setSnackbarOpen(true);
         }
-      } catch (error) {
-        console.error('Error sending data to server:', error);
-        setSnackbarMessage('Fehler beim Hinzufügen des Films.');
+      } catch (error) {setSnackbarMessage('Fehler beim Hinzufügen des Films.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }

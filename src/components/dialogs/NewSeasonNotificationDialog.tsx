@@ -90,9 +90,7 @@ const NewSeasonNotificationDialog = ({
         .database()
         .ref(`${user.uid}/serien/${series.nmr}`);
       await seriesRef.update({ watchlist: true });
-    } catch (error) {
-      console.error('Fehler beim Hinzufügen zur Watchlist:', error);
-    }
+    } catch (error) {}
   };
 
   const handleAddToWatchlist = async (series: Series) => {

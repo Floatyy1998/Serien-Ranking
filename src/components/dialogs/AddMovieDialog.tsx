@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
 import { useFriends } from '../../contexts/FriendsProvider';
+import { logMovieAddedUnified } from '../../utils/unifiedActivityLogger';
 import { DialogHeader } from './shared/SharedDialogComponents';
 
 export interface Filme {
@@ -48,7 +49,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
 }) => {
   const auth = useAuth();
   const { user } = auth || {};
-  const { updateUserActivity } = useFriends();
+  const {} = useFriends();
   const [searchValue, setSearchValue] = useState('');
   const [options, setOptions] = useState<Filme[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<Filme | null>(null);
@@ -128,12 +129,14 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
         body: JSON.stringify(movieData.data),
       });
       if (res.ok) {
-        // Activity tracken für Freunde
-        await updateUserActivity({
-          type: 'movie_added',
-          itemTitle: selectedMovie.title || 'Unbekannter Film',
-          tmdbId: selectedMovie.id, // TMDB ID verwenden
-        });
+        // Unified Activity-Logging für Friend + Badge-System (Explorer-Badges)
+        await logMovieAddedUnified(
+          user.uid,
+          selectedMovie.title || 'Unbekannter Film',
+          selectedMovie.id,
+          selectedMovie.genre_ids?.map((id) => `Genre_${id}`) || [], // Genres
+          selectedMovie.release_date // releaseDate
+        );
 
         setSnackbarMessage('Film hinzugefügt!');
         setSnackbarSeverity('success');

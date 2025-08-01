@@ -107,9 +107,7 @@ export const FriendsPage: React.FC = () => {
           if (snapshot.exists()) {
             profiles[friend.uid] = snapshot.val();
           }
-        } catch (error) {
-          console.error(`Error loading profile for ${friend.uid}:`, error);
-        }
+        } catch (error) {}
       }
 
       setFriendProfiles(profiles);
@@ -134,12 +132,7 @@ export const FriendsPage: React.FC = () => {
           if (snapshot.exists()) {
             profiles[request.fromUserId] = snapshot.val();
           }
-        } catch (error) {
-          console.error(
-            `Error loading profile for ${request.fromUserId}:`,
-            error
-          );
-        }
+        } catch (error) {}
       }
 
       setRequestProfiles(profiles);
@@ -245,9 +238,7 @@ export const FriendsPage: React.FC = () => {
 
       results.sort((a, b) => a.username.localeCompare(b.username));
       setSearchResults(results);
-    } catch (error) {
-      console.error('Error searching users:', error);
-      setError('Fehler bei der Suche');
+    } catch (error) {setError('Fehler bei der Suche');
     } finally {
       setSearching(false);
     }

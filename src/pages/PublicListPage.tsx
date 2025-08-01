@@ -360,9 +360,7 @@ export const PublicListPage: React.FC = () => {
             favoriteProvider: favoriteMovieProvider,
           },
         });
-      } catch (error) {
-        console.error('Error loading user profile:', error);
-        setError('Fehler beim Laden des Profils');
+      } catch (error) {setError('Fehler beim Laden des Profils');
       } finally {
         setLoading(false);
       }

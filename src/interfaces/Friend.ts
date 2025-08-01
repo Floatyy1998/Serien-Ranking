@@ -53,7 +53,13 @@ export interface FriendActivity {
     | 'rating_updated'
     | 'episode_watched'
     | 'episodes_watched'
-    | 'rating_updated_movie';
+    | 'rating_updated_movie'
+    | 'series_rated'
+    | 'movie_rated'
+    | 'series_added_to_watchlist'
+    | 'series_removed_from_watchlist'
+    | 'movie_added_to_watchlist'
+    | 'movie_removed_from_watchlist';
   itemTitle: string;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
   rating?: number;

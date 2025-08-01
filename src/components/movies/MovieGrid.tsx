@@ -67,8 +67,7 @@ export const MovieGrid = ({
         }
         setFriendMoviesLoading(false);
       },
-      (error) => {
-        console.error('Error loading friend movies:', error);
+      () => {
         setFriendMovieList([]);
         setFriendMoviesLoading(false);
       }

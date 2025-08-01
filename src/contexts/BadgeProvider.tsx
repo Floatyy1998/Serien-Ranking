@@ -29,14 +29,7 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
   // Registriere Badge-Callback beim ActivityBatchManager
   useEffect(() => {
     if (user) {
-      const handleNewBadges = (badges: EarnedBadge[]) => {
-        console.log('🏆 BadgeProvider: New badges received:', badges);
-        console.log('🏆 BadgeProvider: Setting new badges in state');
-        setNewBadges(prev => {
-          console.log('🏆 BadgeProvider: Previous badges:', prev);
-          const updated = [...prev, ...badges];
-          console.log('🏆 BadgeProvider: Updated badges:', updated);
-          return updated;
+      const handleNewBadges = (badges: EarnedBadge[]) => {setNewBadges(prev => {const updated = [...prev, ...badges];return updated;
         });
       };
 

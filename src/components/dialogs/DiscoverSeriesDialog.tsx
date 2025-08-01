@@ -182,9 +182,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
-    } catch (error) {
-      console.error('Error sending data to server:', error);
-      setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
+    } catch (error) {setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
     }
