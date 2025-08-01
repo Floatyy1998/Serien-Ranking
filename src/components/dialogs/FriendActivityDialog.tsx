@@ -554,16 +554,25 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
             /Staffel\s\d+/,
             `Staffel ${staffelNum}`
           );
+          // Prüfe ob staffelUndRest bereits "angeschaut" oder "geschaut" enthält
+          const endsWithGeschaut =
+            staffelUndRest.endsWith('angeschaut') ||
+            staffelUndRest.endsWith('geschaut');
           return (
             <>
               hat "<TitleComponent>{seriesName}</TitleComponent>"{' '}
-              {staffelUndRest} geschaut
+              {staffelUndRest}
+              {endsWithGeschaut ? '' : ' geschaut'}
             </>
           );
         } else {
+          // Prüfe ob der Titel bereits "angeschaut" oder "geschaut" enthält
+          const endsWithGeschaut =
+            title.endsWith('angeschaut') || title.endsWith('geschaut');
           return (
             <>
-              hat "<TitleComponent>{title}</TitleComponent>" geschaut
+              hat "<TitleComponent>{title}</TitleComponent>"
+              {endsWithGeschaut ? '' : ' geschaut'}
             </>
           );
         }
@@ -592,7 +601,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
           return (
             <>
               hat eine Staffel von "<TitleComponent>{title}</TitleComponent>"
-              geschaut
+              abgeschlossen
             </>
           );
         }
