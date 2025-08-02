@@ -55,11 +55,19 @@ export const TabPanel = (props: {
 
 export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
   // React 19 optimiert Funktionen automatisch - kein useMemo/useCallback nötig
-  const formatDate = (date: Date) => {
-    const d = new Date(date);
-    return `${String(d.getDate()).padStart(2, '0')}.${String(
-      d.getMonth() + 1
-    ).padStart(2, '0')}.${d.getFullYear()}`;
+  const formatDate = (dateInput: string | Date) => {
+    try {
+      const d = new Date(dateInput);
+      // Prüfe ob das Datum valid ist
+      if (isNaN(d.getTime())) {
+        return 'Unbekanntes Datum';
+      }
+      return `${String(d.getDate()).padStart(2, '0')}.${String(
+        d.getMonth() + 1
+      ).padStart(2, '0')}.${d.getFullYear()}`;
+    } catch (error) {
+      return 'Unbekanntes Datum';
+    }
   };
   return (
     <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>

@@ -30,11 +30,48 @@ export const MovieListProvider = ({
       return;
     }
 
-    setLoading(true);
+    // 🚀 Smart Loading: Erst cached Daten laden, dann Firebase Listener
+    let cachedData: Movie[] = [];
+    try {
+      const cached = localStorage.getItem(`movieCache_${user.uid}`);
+      if (cached) {
+        cachedData = JSON.parse(cached);
+        setMovieList(cachedData);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.warn('Failed to load cached movies:', error);
+    }
+
+    setLoading(cachedData.length === 0); // Nur loading wenn kein Cache
     const ref = firebase.database().ref(`${user.uid}/filme`);
+
+    let lastUpdateTime = 0;
+    const UPDATE_THROTTLE = 1000; // Max 1 Update pro Sekunde
+
     ref.on('value', (snapshot) => {
+      const now = Date.now();
+      if (now - lastUpdateTime < UPDATE_THROTTLE) return;
+      lastUpdateTime = now;
+
       const data = snapshot.val();
-      setMovieList(data ? (Object.values(data) as Movie[]) : []);
+      const newMovieList = data ? (Object.values(data) as Movie[]) : [];
+
+      // Nur Update wenn sich Daten wirklich geändert haben
+      if (JSON.stringify(newMovieList) !== JSON.stringify(cachedData)) {
+        setMovieList(newMovieList);
+
+        // Cache aktualisieren (async)
+        try {
+          localStorage.setItem(
+            `movieCache_${user.uid}`,
+            JSON.stringify(newMovieList)
+          );
+        } catch (error) {
+          console.warn('Failed to cache movies:', error);
+        }
+      }
+
       setLoading(false);
     });
 

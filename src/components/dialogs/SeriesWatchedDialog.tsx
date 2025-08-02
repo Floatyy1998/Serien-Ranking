@@ -23,16 +23,26 @@ import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
 // Hilfsfunktion für Rewatch-Farben
 const getRewatchColor = (watchCount: number): string => {
   switch (watchCount) {
-    case 2: return '#ff9800'; // Orange
-    case 3: return '#f44336'; // Rot
-    case 4: return '#9c27b0'; // Lila
-    case 5: return '#3f51b5'; // Indigo
-    case 6: return '#2196f3'; // Blau
-    case 7: return '#00bcd4'; // Cyan
-    case 8: return '#4caf50'; // Grün
-    case 9: return '#8bc34a'; // Hellgrün
-    case 10: return '#cddc39'; // Lime
-    default: return watchCount > 10 ? '#ffc107' : '#00fed7'; // Gold für >10, sonst Standard
+    case 2:
+      return '#ff9800'; // Orange
+    case 3:
+      return '#f44336'; // Rot
+    case 4:
+      return '#9c27b0'; // Lila
+    case 5:
+      return '#3f51b5'; // Indigo
+    case 6:
+      return '#2196f3'; // Blau
+    case 7:
+      return '#00bcd4'; // Cyan
+    case 8:
+      return '#4caf50'; // Grün
+    case 9:
+      return '#8bc34a'; // Hellgrün
+    case 10:
+      return '#cddc39'; // Lime
+    default:
+      return watchCount > 10 ? '#ffc107' : '#00fed7'; // Gold für >10, sonst Standard
   }
 };
 interface SeriesWatchedDialogProps {
@@ -96,9 +106,9 @@ const SeriesWatchedDialog = ({
         const episode = season.episodes[i];
         if (!episode.watched) {
           return {
+            ...episode, // Spreade erst das originale Episode-Objekt
             seasonNumber: season.seasonNumber,
             episodeNumber: i + 1,
-            ...episode,
           };
         }
       }
@@ -156,10 +166,17 @@ const SeriesWatchedDialog = ({
         }
       } else {
         // Wenn alle Episoden der Staffel gesehen wurden, zeige Rewatch-Dialog
-        const season = uniqueSeasons?.find((s) => s.seasonNumber === seasonNumber);
+        const season = uniqueSeasons?.find(
+          (s) => s.seasonNumber === seasonNumber
+        );
         if (season) {
-          const totalWatchCount = season.episodes.reduce((sum, ep) => sum + (ep.watchCount || 1), 0);
-          const avgWatchCount = Math.round(totalWatchCount / season.episodes.length);
+          const totalWatchCount = season.episodes.reduce(
+            (sum, ep) => sum + (ep.watchCount || 1),
+            0
+          );
+          const avgWatchCount = Math.round(
+            totalWatchCount / season.episodes.length
+          );
           setRewatchItem({
             type: 'season',
             name: `Staffel ${seasonNumber + 1}`,
@@ -350,8 +367,14 @@ const SeriesWatchedDialog = ({
                       style={{
                         color: allWatched
                           ? (() => {
-                              const minWatchCount = Math.min(...season.episodes.map(ep => ep.watchCount || 1));
-                              return minWatchCount > 1 ? getRewatchColor(minWatchCount) : '#00fed7';
+                              const minWatchCount = Math.min(
+                                ...season.episodes.map(
+                                  (ep) => ep.watchCount || 1
+                                )
+                              );
+                              return minWatchCount > 1
+                                ? getRewatchColor(minWatchCount)
+                                : '#00fed7';
                             })()
                           : 'rgba(255, 255, 255, 0.3)',
                         transition: 'all 0.2s ease-in-out',
@@ -364,8 +387,14 @@ const SeriesWatchedDialog = ({
                     >
                       {allWatched ? (
                         (() => {
-                          const minWatchCount = Math.min(...season.episodes.map(ep => ep.watchCount || 1));
-                          return minWatchCount > 1 ? `${minWatchCount}x` : <Check size={18} />;
+                          const minWatchCount = Math.min(
+                            ...season.episodes.map((ep) => ep.watchCount || 1)
+                          );
+                          return minWatchCount > 1 ? (
+                            `${minWatchCount}x`
+                          ) : (
+                            <Check size={18} />
+                          );
                         })()
                       ) : (
                         <Check size={18} />
@@ -399,11 +428,10 @@ const SeriesWatchedDialog = ({
                           )
                         }
                         style={{
-                          color: episode.watched 
-                            ? (episode.watchCount && episode.watchCount > 1 
-                                ? getRewatchColor(episode.watchCount) 
-                                : '#00fed7'
-                              )
+                          color: episode.watched
+                            ? episode.watchCount && episode.watchCount > 1
+                              ? getRewatchColor(episode.watchCount)
+                              : '#00fed7'
                             : 'rgba(255, 255, 255, 0.3)',
                           transition: 'all 0.2s ease-in-out',
                           cursor: isReadOnly ? 'default' : 'pointer',
@@ -413,7 +441,9 @@ const SeriesWatchedDialog = ({
                           fontWeight: 'bold',
                         }}
                       >
-                        {episode.watched && episode.watchCount && episode.watchCount > 1 ? (
+                        {episode.watched &&
+                        episode.watchCount &&
+                        episode.watchCount > 1 ? (
                           `${episode.watchCount}x`
                         ) : (
                           <Check size={18} />
@@ -485,7 +515,10 @@ const SeriesWatchedDialog = ({
           }}
           onRewatch={() => {
             if (rewatchItem) {
-              if (rewatchItem.type === 'episode' && rewatchItem.episodeId !== undefined) {
+              if (
+                rewatchItem.type === 'episode' &&
+                rewatchItem.episodeId !== undefined
+              ) {
                 handleWatchedToggleWithConfirmation(
                   rewatchItem.seasonNumber,
                   rewatchItem.episodeId,
@@ -504,7 +537,10 @@ const SeriesWatchedDialog = ({
           }}
           onUnwatch={() => {
             if (rewatchItem) {
-              if (rewatchItem.type === 'episode' && rewatchItem.episodeId !== undefined) {
+              if (
+                rewatchItem.type === 'episode' &&
+                rewatchItem.episodeId !== undefined
+              ) {
                 handleWatchedToggleWithConfirmation(
                   rewatchItem.seasonNumber,
                   rewatchItem.episodeId,
