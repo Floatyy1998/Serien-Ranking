@@ -24,6 +24,7 @@ import { genreMenuItems, providerMenuItems } from '../../constants/menuItems';
 import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useProtectedEpisodeUpdate } from '../../hooks/useProtectedEpisodeUpdate';
 import { Series } from '../../interfaces/Series';
 import {
   logBadgeRewatch,
@@ -71,6 +72,9 @@ export const SearchFilters = ({
   const [recommendations, setRecommendations] = useState<Series[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [basedOnSeries, setBasedOnSeries] = useState<Series[]>([]);
+
+  // 🛡️ Hook für geschützte Episode-Updates
+  const { updateEpisode } = useProtectedEpisodeUpdate();
 
   // Reset lokale Filterstates, wenn sich der Benutzer ändert
   useEffect(() => {
@@ -193,10 +197,21 @@ export const SearchFilters = ({
           };
         }
 
-        // Episode-Status aktualisieren
-        await episodeRef.update(updateData);
+        // �️ Geschütztes Firebase-Update (mit automatischem Retry)
+        try {
+          await updateEpisode(
+            user.uid,
+            seriesNmr,
+            seasonNumber,
+            episodeIndex,
+            updateData
+          );
+        } catch (error) {
+          console.error('Episode update failed:', error);
+          // Update wird automatisch erneut versucht durch useProtectedEpisodeUpdate
+        }
 
-        // Activity tracken für Freunde (nur wenn Episode als geschaut markiert wird)
+        // Optimiertes Activity-Logging - nur bei wichtigen Changes
         if (!wasWatched) {
           // Finde die Serie um den Titel zu bekommen
           const series = seriesList.find((s) => s.nmr === seriesNmr);

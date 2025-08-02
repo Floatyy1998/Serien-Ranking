@@ -1,6 +1,13 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useAuth } from '../App';
 import { Series } from '../interfaces/Series';
 import { detectNewSeasons } from '../utils/newSeasonDetection';
@@ -28,7 +35,9 @@ export const SeriesListProvider = ({
   const { user } = useAuth()!;
   const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [loading, setLoading] = useState(true);
-  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>([]);
+  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(
+    []
+  );
   const [hasCheckedForNewSeasons, setHasCheckedForNewSeasons] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const detectionRunRef = useRef(false);
@@ -36,35 +45,39 @@ export const SeriesListProvider = ({
   const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced detection function um doppelte Firebase Calls zu handhaben
-  const runNewSeasonDetection = useCallback((seriesList: Series[], userId: string) => {
-    // Cancle vorherigen Timeout
-    if (detectionTimeoutRef.current) {
-      clearTimeout(detectionTimeoutRef.current);
-    }
-    
-    // Setze neuen Timeout - läuft nur wenn keine weiteren Calls kommen
-    detectionTimeoutRef.current = setTimeout(async () => {
-      if (detectionRunRef.current) {
-        return;
+  const runNewSeasonDetection = useCallback(
+    (seriesList: Series[], userId: string) => {
+      // Cancle vorherigen Timeout
+      if (detectionTimeoutRef.current) {
+        clearTimeout(detectionTimeoutRef.current);
       }
-      
-      detectionRunRef.current = true;
-      
-      try {
-        const newSeasons = await detectNewSeasons(seriesList, userId);
-        
-        if (newSeasons.length > 0) {
-          foundNewSeasonsRef.current = newSeasons;
-          setSeriesWithNewSeasons(newSeasons);
+
+      // Setze neuen Timeout - läuft nur wenn keine weiteren Calls kommen
+      detectionTimeoutRef.current = setTimeout(async () => {
+        if (detectionRunRef.current) {
+          return;
         }
-        
-        setHasCheckedForNewSeasons(true);
-        setInitialLoad(false);
-      } catch (error) {setHasCheckedForNewSeasons(true);
-        setInitialLoad(false);
-      }
-    }, 200); // 200ms Debounce
-  }, []);
+
+        detectionRunRef.current = true;
+
+        try {
+          const newSeasons = await detectNewSeasons(seriesList, userId);
+
+          if (newSeasons.length > 0) {
+            foundNewSeasonsRef.current = newSeasons;
+            setSeriesWithNewSeasons(newSeasons);
+          }
+
+          setHasCheckedForNewSeasons(true);
+          setInitialLoad(false);
+        } catch (error) {
+          setHasCheckedForNewSeasons(true);
+          setInitialLoad(false);
+        }
+      }, 200); // 200ms Debounce
+    },
+    []
+  );
 
   useEffect(() => {
     if (!user) {
@@ -75,23 +88,66 @@ export const SeriesListProvider = ({
       setInitialLoad(true);
       detectionRunRef.current = false;
       foundNewSeasonsRef.current = [];
-      
+
       // Cleanup timeout
       if (detectionTimeoutRef.current) {
         clearTimeout(detectionTimeoutRef.current);
         detectionTimeoutRef.current = null;
       }
-      
+
       setLoading(false);
       return;
     }
+
+    // 🚀 Smart Loading: Erst cached Daten laden, dann Firebase Listener
+    let cachedData: Series[] = [];
+    try {
+      const cached = localStorage.getItem(`seriesCache_${user.uid}`);
+      if (cached) {
+        cachedData = JSON.parse(cached);
+        setSeriesList(cachedData);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.warn('Failed to load cached series:', error);
+    }
+
     // Beim Login: Firebase Listener setzen für automatische Aktualisierung
-    setLoading(true);
+    setLoading(cachedData.length === 0); // Nur loading wenn kein Cache
     const ref = firebase.database().ref(`${user.uid}/serien`);
+
+    let lastUpdateTime = 0;
+    const UPDATE_THROTTLE = 250; // Max 4 Updates pro Sekunde (reduziert von 1000ms)
+
     ref.on('value', async (snapshot) => {
+      const now = Date.now();
+      if (now - lastUpdateTime < UPDATE_THROTTLE) return;
+      lastUpdateTime = now;
+
       const data = snapshot.val();
       const newSeriesList = data ? (Object.values(data) as Series[]) : [];
-      setSeriesList(newSeriesList);
+
+      // 🔧 Fix: Vergleiche mit aktuellem State, nicht mit statischem Cache
+      setSeriesList((prevSeriesList) => {
+        // Nur Update wenn sich Daten wirklich geändert haben
+        if (JSON.stringify(newSeriesList) !== JSON.stringify(prevSeriesList)) {
+          console.log('📡 SeriesList updated from Firebase');
+
+          // Cache aktualisieren (async)
+          try {
+            localStorage.setItem(
+              `seriesCache_${user.uid}`,
+              JSON.stringify(newSeriesList)
+            );
+          } catch (error) {
+            console.warn('Failed to cache series:', error);
+          }
+
+          return newSeriesList;
+        }
+        return prevSeriesList;
+      });
+
       setLoading(false);
 
       // Nur beim allerersten Laden nach Login prüfen auf neue Staffeln
@@ -102,6 +158,7 @@ export const SeriesListProvider = ({
         setInitialLoad(false);
       }
     });
+
     return () => {
       ref.off();
       // Cleanup timeout bei Unmount
@@ -120,20 +177,20 @@ export const SeriesListProvider = ({
   const recheckForNewSeasons = useCallback(() => {
     detectionRunRef.current = false;
     setHasCheckedForNewSeasons(false);
-    
+
     if (user && seriesList.length > 0) {
       runNewSeasonDetection(seriesList, user.uid);
     }
   }, [user, seriesList, runNewSeasonDetection]);
 
   return (
-    <SeriesListContext.Provider 
-      value={{ 
-        seriesList, 
-        loading, 
-        seriesWithNewSeasons, 
+    <SeriesListContext.Provider
+      value={{
+        seriesList,
+        loading,
+        seriesWithNewSeasons,
         clearNewSeasons,
-        recheckForNewSeasons
+        recheckForNewSeasons,
       }}
     >
       {children}

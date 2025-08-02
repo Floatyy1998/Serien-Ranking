@@ -11,8 +11,17 @@ import React, { useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAuth } from '../../../App';
+import { useFriends } from '../../../contexts/FriendsProvider';
+import { useDataProtection } from '../../../hooks/useDataProtection';
 import { Series } from '../../../interfaces/Series';
-import { getNextRewatchEpisode, hasActiveRewatch } from '../../../utils/rewatch.utils';
+import {
+  logBadgeRewatch,
+  logEpisodeWatched,
+} from '../../../utils/badgeActivityLogger';
+import {
+  getNextRewatchEpisode,
+  hasActiveRewatch,
+} from '../../../utils/rewatch.utils';
 import SeriesWatchedDialog from '../SeriesWatchedDialog';
 import { DialogHeader } from '../shared/SharedDialogComponents';
 import SeriesListItem from './SeriesListItem';
@@ -37,7 +46,6 @@ const WatchlistDialog = ({
   handleWatchedToggleWithConfirmation,
   setWatchlistSeries,
 }: WatchlistDialogProps) => {
-  
   const [filterInput, setFilterInput] = useState('');
   const [customOrderActive, setCustomOrderActive] = useState(
     localStorage.getItem('customOrderActive') === 'true'
@@ -48,6 +56,7 @@ const WatchlistDialog = ({
   );
   const [filteredSeries, setFilteredSeries] = useState<Series[]>([]);
   const { user } = useAuth()!;
+  const { updateUserActivity } = useFriends();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showFilter, setShowFilter] = useState(!isMobile);
@@ -55,6 +64,23 @@ const WatchlistDialog = ({
   const [pendingUpdates, setPendingUpdates] = useState<Set<string>>(new Set());
   const [dialogContentVisible, setDialogContentVisible] = useState(false);
   const [watchlistDialogOpen, setWatchlistDialogOpen] = useState(false);
+
+  // 🛡️ Datenschutz bei Seitenwechsel/Schließung
+  const { addProtectedUpdate, removeProtectedUpdate, hasPendingUpdates } =
+    useDataProtection();
+
+  // Erweiterte onClose Funktion mit Datenschutz
+  const handleDialogClose = () => {
+    if (hasPendingUpdates()) {
+      const confirmClose = window.confirm(
+        'Es sind noch Änderungen ausstehend. Möchten Sie den Dialog wirklich schließen?'
+      );
+      if (!confirmClose) {
+        return; // Bleibe im Dialog
+      }
+    }
+    onClose();
+  };
 
   useEffect(() => {
     if (open) {
@@ -80,7 +106,7 @@ const WatchlistDialog = ({
   useEffect(() => {
     localStorage.setItem('customOrderActive', customOrderActive.toString());
   }, [customOrderActive]);
-  
+
   useEffect(() => {
     localStorage.setItem('hideRewatches', hideRewatches.toString());
   }, [hideRewatches]);
@@ -131,24 +157,95 @@ const WatchlistDialog = ({
       // Normale Sortierung - immer mit aktuellen Daten
       setFilteredSeries(getSortedSeries(sortedWatchlistSeries));
     } else if (user && sortedWatchlistSeries.length > 0) {
-      // Benutzerdefinierte Reihenfolge - lade Firebase-Reihenfolge
-      const orderRef = firebase.database().ref(`${user.uid}/watchlistOrder`);
-      orderRef.once('value').then((snapshot) => {
-        const savedOrder = snapshot.val();
-        if (savedOrder && Array.isArray(savedOrder)) {
-          const ordered = savedOrder
-            .map((id: number) =>
-              sortedWatchlistSeries.find((series) => series.id === id)
-            )
-            .filter(Boolean) as Series[];
-          const missing = sortedWatchlistSeries.filter(
-            (series) => !ordered.some((s) => s.id === series.id)
-          );
-          setFilteredSeries([...ordered, ...missing]);
-        } else {
-          setFilteredSeries(sortedWatchlistSeries);
+      // 🚀 Optimiert: Cache die Watchlist-Reihenfolge lokal
+      const cachedOrderKey = `watchlistOrder_${user.uid}`;
+      let savedOrder: number[] | null = null;
+
+      try {
+        const cached = localStorage.getItem(cachedOrderKey);
+        savedOrder = cached ? JSON.parse(cached) : null;
+      } catch (error) {
+        console.warn('Failed to load cached watchlist order:', error);
+      }
+
+      if (savedOrder && Array.isArray(savedOrder)) {
+        // Verwende Cache
+        const ordered = savedOrder
+          .map((id: number) =>
+            sortedWatchlistSeries.find((series) => series.id === id)
+          )
+          .filter(Boolean) as Series[];
+        const missing = sortedWatchlistSeries.filter(
+          (series) => !ordered.some((s) => s.id === series.id)
+        );
+        setFilteredSeries([...ordered, ...missing]);
+
+        // Prüfe Firebase nur alle 30 Sekunden
+        const lastCheck = localStorage.getItem(`${cachedOrderKey}_lastCheck`);
+        const shouldCheck =
+          !lastCheck || Date.now() - parseInt(lastCheck) > 30000;
+
+        if (shouldCheck) {
+          const orderRef = firebase
+            .database()
+            .ref(`${user.uid}/watchlistOrder`);
+          orderRef.once('value').then((snapshot) => {
+            const firebaseOrder = snapshot.val();
+            if (
+              firebaseOrder &&
+              JSON.stringify(firebaseOrder) !== JSON.stringify(savedOrder)
+            ) {
+              localStorage.setItem(
+                cachedOrderKey,
+                JSON.stringify(firebaseOrder)
+              );
+              localStorage.setItem(
+                `${cachedOrderKey}_lastCheck`,
+                Date.now().toString()
+              );
+              // Re-render mit neuen Daten
+              const newOrdered = firebaseOrder
+                .map((id: number) =>
+                  sortedWatchlistSeries.find((series) => series.id === id)
+                )
+                .filter(Boolean) as Series[];
+              const newMissing = sortedWatchlistSeries.filter(
+                (series) => !newOrdered.some((s) => s.id === series.id)
+              );
+              setFilteredSeries([...newOrdered, ...newMissing]);
+            }
+            localStorage.setItem(
+              `${cachedOrderKey}_lastCheck`,
+              Date.now().toString()
+            );
+          });
         }
-      });
+      } else {
+        // Kein Cache, lade von Firebase
+        const orderRef = firebase.database().ref(`${user.uid}/watchlistOrder`);
+        orderRef.once('value').then((snapshot) => {
+          const firebaseOrder = snapshot.val();
+          if (firebaseOrder && Array.isArray(firebaseOrder)) {
+            localStorage.setItem(cachedOrderKey, JSON.stringify(firebaseOrder));
+            localStorage.setItem(
+              `${cachedOrderKey}_lastCheck`,
+              Date.now().toString()
+            );
+
+            const ordered = firebaseOrder
+              .map((id: number) =>
+                sortedWatchlistSeries.find((series) => series.id === id)
+              )
+              .filter(Boolean) as Series[];
+            const missing = sortedWatchlistSeries.filter(
+              (series) => !ordered.some((s) => s.id === series.id)
+            );
+            setFilteredSeries([...ordered, ...missing]);
+          } else {
+            setFilteredSeries(sortedWatchlistSeries);
+          }
+        });
+      }
     } else if (sortedWatchlistSeries.length > 0) {
       // Fallback wenn kein User vorhanden
       setFilteredSeries(sortedWatchlistSeries);
@@ -259,14 +356,14 @@ const WatchlistDialog = ({
     const matchesTitle = filterInput
       ? series.title.toLowerCase().includes(filterInput.toLowerCase())
       : true;
-    
+
     // Rewatch-Filter: Blende Serien aus, die nur Rewatch-Episoden haben
     if (hideRewatches) {
       const nextEpisode = getNextUnwatchedEpisode(series);
       const hasUnwatchedEpisodes = nextEpisode && !nextEpisode.isRewatch;
       return matchesTitle && hasUnwatchedEpisodes;
     }
-    
+
     return matchesTitle;
   });
 
@@ -314,7 +411,11 @@ const WatchlistDialog = ({
                           if (episode.watched) {
                             // Erhöhe watchCount für Rewatch
                             const currentWatchCount = episode.watchCount || 1;
-                            return { ...episode, watched: true, watchCount: currentWatchCount + 1 };
+                            return {
+                              ...episode,
+                              watched: true,
+                              watchCount: currentWatchCount + 1,
+                            };
                           } else {
                             // Normale erste Ansicht
                             return { ...episode, watched: true, watchCount: 1 };
@@ -348,7 +449,7 @@ const WatchlistDialog = ({
     }, 150); // Kurzes aber ausreichendes Timeout
   };
 
-  const handleWatchedToggleWithDebounce = (
+  const handleWatchedToggleWithDebounce = async (
     series: Series,
     nextEpisode: any
   ) => {
@@ -358,29 +459,103 @@ const WatchlistDialog = ({
       return; // Verhindere doppelte Klicks
     }
 
-    handleWatchedToggleWithConfirmation(
-      nextEpisode.seasonNumber,
-      nextEpisode.episodeIndex,
-      series.id,
-      series.nmr
-    );
+    if (!user) return;
 
+    // Sofortige lokale UI-Aktualisierung
     updateSeriesInDialog(
       series.id,
       nextEpisode.seasonNumber,
       nextEpisode.episodeIndex
     );
+
+    // 🛡️ Firebase-Update mit Schutz vor Datenverlust
+    const episodeRef = firebase
+      .database()
+      .ref(
+        `${user.uid}/serien/${series.nmr}/seasons/${nextEpisode.seasonNumber}/episodes/${nextEpisode.episodeIndex}`
+      );
+
+    // Definiere die Update-Funktion einmal
+    const performUpdate = async () => {
+      const snapshot = await episodeRef.once('value');
+      const episode = snapshot.val();
+      const wasWatched = episode.watched;
+
+      let updateData: any;
+      if (wasWatched) {
+        const currentWatchCount = episode.watchCount || 1;
+        updateData = {
+          watched: true,
+          watchCount: currentWatchCount + 1,
+        };
+      } else {
+        updateData = {
+          watched: true,
+          watchCount: 1,
+        };
+      }
+
+      await episodeRef.update(updateData);
+
+      // Activity-Logging (nur bei neuen Episoden, nicht bei Rewatches)
+      if (!wasWatched) {
+        const episodeNumber = episode.episode || nextEpisode.episodeIndex + 1;
+        const seriesTitle =
+          series.title || series.original_name || 'Unbekannte Serie';
+
+        await updateUserActivity({
+          type: 'episode_watched',
+          itemTitle: `${seriesTitle} - Staffel ${nextEpisode.seasonNumber} Episode ${episodeNumber}`,
+          tmdbId: series.id,
+        });
+
+        // Badge-System Activity-Logging
+        await logEpisodeWatched(
+          user.uid,
+          seriesTitle,
+          nextEpisode.seasonNumber,
+          episodeNumber,
+          series.id,
+          episode.air_date || '', // airDate für Quickwatch-Detection
+          false // isRewatch = false für neue Episoden
+        );
+      } else {
+        // Rewatch-Logging
+        await logBadgeRewatch(
+          user.uid,
+          series.title || series.original_name || 'Unbekannte Serie',
+          series.id,
+          episode.air_date || '',
+          1 // episodeCount = 1 für einzelne Episode
+        );
+      }
+    };
+
+    try {
+      // Registriere Update für Überwachung BEVOR wir es ausführen
+      addProtectedUpdate(updateKey, performUpdate, 3);
+
+      // Führe Update sofort aus
+      await performUpdate();
+      console.log(`✅ Episode ${updateKey} updated successfully`);
+
+      // Erfolgreich - entferne aus Überwachung
+      removeProtectedUpdate(updateKey);
+    } catch (error) {
+      console.error(`❌ Episode update failed for ${updateKey}:`, error);
+      // Update bleibt in der Überwachung für automatischen Retry
+    }
   };
 
   return (
     <>
       <Dialog
         open={watchlistDialogOpen}
-        onClose={onClose}
+        onClose={handleDialogClose}
         fullWidth
         container={document.body}
       >
-        <DialogHeader title='Weiterschauen' onClose={onClose} />
+        <DialogHeader title='Weiterschauen' onClose={handleDialogClose} />
         {dialogContentVisible && (
           <DialogContent
             sx={{
@@ -418,7 +593,10 @@ const WatchlistDialog = ({
                   {displayedSeries.map((series, index) => {
                     const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
                     // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
-                    const priorityEpisode = !hideRewatches && rewatchInfo ? rewatchInfo : (nextEpisode || rewatchInfo);
+                    const priorityEpisode =
+                      !hideRewatches && rewatchInfo
+                        ? rewatchInfo
+                        : nextEpisode || rewatchInfo;
                     return (
                       <SeriesListItem
                         key={series.id}
@@ -431,7 +609,10 @@ const WatchlistDialog = ({
                         onTitleClick={(s) => setSelectedSeries(s)}
                         onWatchedToggle={() => {
                           if (priorityEpisode) {
-                            handleWatchedToggleWithDebounce(series, priorityEpisode);
+                            handleWatchedToggleWithDebounce(
+                              series,
+                              priorityEpisode
+                            );
                           }
                         }}
                       />
@@ -444,7 +625,10 @@ const WatchlistDialog = ({
                 {displayedSeries.map((series) => {
                   const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
                   // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
-                  const priorityEpisode = !hideRewatches && rewatchInfo ? rewatchInfo : (nextEpisode || rewatchInfo);
+                  const priorityEpisode =
+                    !hideRewatches && rewatchInfo
+                      ? rewatchInfo
+                      : nextEpisode || rewatchInfo;
                   return (
                     <SeriesListItem
                       key={series.id}
@@ -454,7 +638,10 @@ const WatchlistDialog = ({
                       onTitleClick={(s) => setSelectedSeries(s)}
                       onWatchedToggle={() => {
                         if (priorityEpisode) {
-                          handleWatchedToggleWithDebounce(series, priorityEpisode);
+                          handleWatchedToggleWithDebounce(
+                            series,
+                            priorityEpisode
+                          );
                         }
                       }}
                     />

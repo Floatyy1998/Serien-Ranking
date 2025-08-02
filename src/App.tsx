@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
 import BadgeNotificationManager from './components/badges/BadgeNotificationManager';
+import { PerformanceMonitor } from './components/dev/PerformanceMonitor';
 import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
 import { BadgeProvider } from './contexts/BadgeProvider';
 import { FriendsProvider } from './contexts/FriendsProvider';
@@ -127,6 +128,7 @@ function AppContent() {
               <StatsProvider>
                 <BadgeProvider>
                   <BadgeNotificationManager>
+                    <PerformanceMonitor />
                     <Helmet>
                       <title>
                         TV-RANK - Entdecke, bewerte und verwalte deine
