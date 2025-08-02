@@ -96,7 +96,6 @@ const RecommendationsDialog = ({
   const auth = useAuth();
   const { user } = auth || {};
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [loadingState, setLoadingState] = useState(true);
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('success');
@@ -112,6 +111,13 @@ const RecommendationsDialog = ({
     if (dialogContent) {
       dialogContent.scrollTop = 0;
     }
+
+    // Preload provider für neue Seite
+    const newPageItems = recommendations.slice(
+      (value - 1) * itemsPerPage,
+      value * itemsPerPage
+    );
+    loadProvidersForItems(newPageItems);
   };
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -162,7 +168,8 @@ const RecommendationsDialog = ({
           setSnackbarSeverity('error');
           setSnackbarOpen(true);
         }
-      } catch (error) {setSnackbarMessage('Fehler beim Hinzufügen des Films.');
+      } catch (error) {
+        setSnackbarMessage('Fehler beim Hinzufügen des Films.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
@@ -215,7 +222,8 @@ const RecommendationsDialog = ({
           setSnackbarSeverity('error');
           setSnackbarOpen(true);
         }
-      } catch (error) {setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
+      } catch (error) {
+        setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
@@ -224,33 +232,71 @@ const RecommendationsDialog = ({
   );
 
   useEffect(() => {
-    setLoadingState(loading);
-  }, [loading]);
+    // Provider werden jetzt progressiv geladen - zeige sofort Inhalte an
+    if (recommendations.length > 0 && open) {
+      // Lade Provider für die ersten sichtbaren Items sofort
+      const currentPageItems = recommendations.slice(
+        (page - 1) * itemsPerPage,
+        page * itemsPerPage
+      );
 
-  useEffect(() => {
-    const fetchProviders = async () => {
-      const newProviders: { [key: number]: any } = {};
-      for (const item of recommendations) {
-        const response = await fetch(
-          `https://api.themoviedb.org/3/${item.media_type}/${item.id}/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd`
-        );
-        const data = await response.json();
-        const providerIds =
-          data.results?.DE?.flatrate?.map(
-            (provider: any) => provider.provider_id
-          ) || [];
-        newProviders[item.id] = providerIds
-          .map((id: number) => providerLogos[id])
-          .filter(Boolean);
-      }
-
-      setProviders(newProviders);
-    };
-
-    if (recommendations.length > 0) {
-      fetchProviders();
+      loadProvidersForItems(currentPageItems);
     }
-  }, [recommendations]);
+  }, [recommendations, page, open]);
+
+  const loadProvidersForItems = async (items: any[]) => {
+    const itemsToLoad = items.filter((item) => !providers[item.id]);
+
+    if (itemsToLoad.length === 0) return;
+
+    // Lade Provider in kleinen Batches für bessere Performance
+    const batchSize = 4;
+    for (let i = 0; i < itemsToLoad.length; i += batchSize) {
+      const batch = itemsToLoad.slice(i, i + batchSize);
+
+      const providerPromises = batch.map(async (item) => {
+        try {
+          const response = await fetch(
+            `https://api.themoviedb.org/3/${item.media_type}/${item.id}/watch/providers?api_key=d812a3cdd27ca10d95979a2d45d100cd`
+          );
+          const data = await response.json();
+          const providerIds =
+            data.results?.DE?.flatrate?.map(
+              (provider: any) => provider.provider_id
+            ) || [];
+
+          return {
+            id: item.id,
+            providers: providerIds
+              .map((id: number) => providerLogos[id])
+              .filter(Boolean),
+          };
+        } catch (error) {
+          console.error(
+            `Fehler beim Laden der Provider für ${item.id}:`,
+            error
+          );
+          return { id: item.id, providers: [] };
+        }
+      });
+
+      const batchResults = await Promise.all(providerPromises);
+
+      // Update providers state mit den neuen Ergebnissen
+      setProviders((prev) => {
+        const updated = { ...prev };
+        batchResults.forEach((result) => {
+          updated[result.id] = result.providers;
+        });
+        return updated;
+      });
+
+      // Kleine Pause zwischen Batches für bessere UX
+      if (i + batchSize < itemsToLoad.length) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+  };
 
   const paginatedRecommendations = recommendations.slice(
     (page - 1) * itemsPerPage,
@@ -266,11 +312,9 @@ const RecommendationsDialog = ({
   const handleClose = () => {
     setPage(1);
     setExpanded(false);
+    setProviders({}); // Reset providers beim Schließen
     onClose();
   };
-
-  const allProvidersLoaded =
-    recommendations.length === Object.keys(providers).length;
 
   return (
     <Dialog
@@ -285,7 +329,7 @@ const RecommendationsDialog = ({
     >
       <DialogHeader title='Empfehlungen' onClose={handleClose} />
       <DialogContent>
-        {loadingState || !allProvidersLoaded ? (
+        {loading ? (
           <Box display='flex' justifyContent='center' mt={2}>
             <div className='w-12 h-12 border-2 border-[#00fed7] border-t-transparent rounded-full animate-spin' />
           </Box>
@@ -360,13 +404,13 @@ const RecommendationsDialog = ({
                       <DiscoverSeriesCard
                         series={item as Series}
                         onAdd={handleAddSeries}
-                        providers={providers[item.id]}
+                        providers={providers[item.id] || []}
                       />
                     ) : (
                       <DiscoverMovieCard
                         movie={item as Movie}
                         onAdd={handleAddMovie}
-                        providers={providers[item.id]}
+                        providers={providers[item.id] || []}
                       />
                     )}
                   </Box>

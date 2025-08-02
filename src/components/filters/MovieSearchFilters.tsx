@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
+import ExploreIcon from '@mui/icons-material/Explore';
 import RecommendIcon from '@mui/icons-material/Recommend';
-import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
@@ -14,17 +14,17 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import 'firebase/compat/database';
-import { shuffle } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import {
-  genreIdMap,
   genreMenuItemsForMovies,
   providerMenuItems,
 } from '../../constants/menuItems';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Movie } from '../../interfaces/Movie';
+import { calculateOverallRating } from '../../utils/rating';
+import { generateRecommendations } from '../../utils/recommendationEngine';
 import AddMovieDialog from '../dialogs/AddMovieDialog';
 import DiscoverMoviesDialog from '../dialogs/DiscoverMoviesDialog';
 import RecommendationsDialog from '../dialogs/RecommendationsDialog';
@@ -112,65 +112,107 @@ export const MovieSearchFilters = ({
     setLoadingRecommendations(true);
     setDialogRecommendationsOpen(true);
 
-    const randomMovies = shuffle(movieList).slice(0, 5);
-    const allRecommendations = [];
+    try {
+      // Verwende eine zufällige Auswahl bewerteter Filme als Basis
+      const ratedMovies = movieList.filter((movie) => {
+        if (!movie.rating || typeof movie.rating !== 'object') return false;
+        const overallRating = calculateOverallRating(movie);
+        const numericRating = parseFloat(overallRating);
+        return !isNaN(numericRating) && numericRating > 0;
+      });
 
-    for (const movie of randomMovies) {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/movie/${movie.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE`
+      // Fisher-Yates Shuffle für echte Randomisierung
+      const shuffleArray = (array: Movie[]) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      };
+
+      const shuffledRatedMovies = shuffleArray(ratedMovies).slice(0, 5);
+
+      const basedOnMovies =
+        shuffledRatedMovies.length > 0
+          ? shuffledRatedMovies
+          : movieList.slice(0, 5);
+
+      // Verwende die optimierte Recommendation Engine MIT spezifischen Items
+      const result = await generateRecommendations(
+        movieList,
+        [],
+        'movies',
+        basedOnMovies
       );
-      const data = await response.json();
-      allRecommendations.push(
-        ...data.results.map((result: any) => ({
-          nmr: result.id,
-          begründung: '',
-          beschreibung: result.overview,
-          genre: {
-            genres: result.genre_ids.map(
-              (id: number) =>
-                genreIdMap.find((genre) => genre.id === id)?.name || ''
-            ),
-          },
-          id: result.id,
-          imdb: {
-            imdb_id: '',
-          },
-          poster: {
-            poster: result.poster_path
-              ? `https://image.tmdb.org/t/p/w500${result.poster_path}`
-              : '',
-          },
-          provider: null,
-          rating: {},
-          runtime: 0,
-          title: result.title,
-          wo: {
-            wo: '',
-          },
-          watchlist: false,
-          status: result.release_date ? 'Released' : 'Unreleased',
-          release_date: result.release_date,
-          collection_id: null,
-          origin_country: result.origin_country,
-          original_language: result.original_language,
-          original_name: result.original_title,
-          popularity: result.popularity,
-          vote_average: result.vote_average,
-          vote_count: result.vote_count,
-          media_type: 'movie',
-        }))
-      );
+
+      // Konvertiere die Ergebnisse in das erwartete Format
+      const formattedRecommendations = result.movies.map((result: any) => ({
+        nmr: result.id,
+        begründung: '',
+        beschreibung: result.overview,
+        genre: {
+          genres:
+            result.genre_ids?.map((id: number) => {
+              // Einfache Genre-Mapping direkt hier
+              const genreMap: { [key: number]: string } = {
+                28: 'Action',
+                12: 'Adventure',
+                16: 'Animation',
+                35: 'Comedy',
+                80: 'Crime',
+                99: 'Documentary',
+                18: 'Drama',
+                10751: 'Family',
+                14: 'Fantasy',
+                36: 'History',
+                27: 'Horror',
+                10402: 'Music',
+                9648: 'Mystery',
+                10749: 'Romance',
+                878: 'Science Fiction',
+                10770: 'TV Movie',
+                53: 'Thriller',
+                10752: 'War',
+                37: 'Western',
+              };
+              return genreMap[id] || '';
+            }) || [],
+        },
+        id: result.id,
+        imdb: { imdb_id: '' },
+        poster: {
+          poster: result.poster_path
+            ? `https://image.tmdb.org/t/p/w500${result.poster_path}`
+            : '',
+        },
+        provider: undefined,
+        rating: {},
+        runtime: 0,
+        title: result.title,
+        wo: { wo: '' },
+        watchlist: false,
+        status: result.release_date ? 'Released' : 'Unreleased',
+        release_date: result.release_date,
+        collection_id: undefined,
+        origin_country: result.origin_country,
+        original_language: result.original_language,
+        original_name: result.original_title,
+        popularity: result.popularity,
+        vote_average: result.vote_average,
+        vote_count: result.vote_count,
+        media_type: 'movie',
+      }));
+
+      setRecommendations(formattedRecommendations);
+      setBasedOnItems(basedOnMovies);
+    } catch (error) {
+      console.error('Fehler beim Laden der Empfehlungen:', error);
+      setRecommendations([]);
+      setBasedOnItems([]);
+    } finally {
+      setLoadingRecommendations(false);
     }
-
-    const uniqueRecommendations = allRecommendations.filter(
-      (rec, index, self) =>
-        index === self.findIndex((r) => r.id === rec.id) &&
-        !movieList.some((movie) => movie.id === rec.id)
-    );
-
-    setRecommendations(uniqueRecommendations.sort(() => 0.5 - Math.random()));
-    setLoadingRecommendations(false);
-    setBasedOnItems(randomMovies);
   };
 
   return (
@@ -254,7 +296,7 @@ export const MovieSearchFilters = ({
                 aria-label='Unveröffentlichte Filme entdecken'
                 role='button'
               >
-                <SearchIcon />
+                <ExploreIcon />
                 <Box
                   component='span'
                   sx={{

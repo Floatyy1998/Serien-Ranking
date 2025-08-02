@@ -1,16 +1,25 @@
 import {
+  Clear as ClearIcon,
+  FilterAlt as FilterIcon,
+  Search as SearchIcon,
+} from '@mui/icons-material';
+import {
   Alert,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   FormControl,
   InputLabel,
   MenuItem,
+  Paper,
   Select,
   SelectChangeEvent,
   Snackbar,
+  Stack,
+  Typography,
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -51,6 +60,56 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
   const { user } = auth || {};
 
   const today = dayjs();
+
+  // Länder-Mapping für bessere Darstellung
+  const countryMap: Record<string, string> = {
+    US: 'USA',
+    DE: 'Deutschland',
+    FR: 'Frankreich',
+    GB: 'Großbritannien',
+    JP: 'Japan',
+    KR: 'Südkorea',
+    IN: 'Indien',
+    CN: 'China',
+    IT: 'Italien',
+    ES: 'Spanien',
+    CA: 'Kanada',
+    AU: 'Australien',
+    BR: 'Brasilien',
+    RU: 'Russland',
+    MX: 'Mexiko',
+    SE: 'Schweden',
+    NO: 'Norwegen',
+    FI: 'Finnland',
+    DK: 'Dänemark',
+    NL: 'Niederlande',
+    BE: 'Belgien',
+    CH: 'Schweiz',
+    AT: 'Österreich',
+    IE: 'Irland',
+    NZ: 'Neuseeland',
+    ZA: 'Südafrika',
+    AR: 'Argentinien',
+    CL: 'Chile',
+    CO: 'Kolumbien',
+    PE: 'Peru',
+    VE: 'Venezuela',
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      genre: [],
+      startDate: '',
+      endDate: '',
+      country: [],
+      sortBy: 'popularity.desc',
+    });
+    setStartDate(null);
+    setEndDate(null);
+    setSearchResults([]);
+    setCurrentPage(1);
+    setTotalPages(1);
+  };
 
   const handleSelectChange = (e: SelectChangeEvent<string[]>) => {
     setFilters({ ...filters, genre: e.target.value as string[] });
@@ -182,7 +241,8 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
-    } catch (error) {setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
+    } catch (error) {
+      setSnackbarMessage('Fehler beim Hinzufügen der Serie.');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
     }
@@ -223,235 +283,345 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
       open={open}
       onClose={handleClose}
       fullWidth
-      maxWidth='lg'
+      maxWidth='xl'
       disableAutoFocus={true}
       disableEnforceFocus={false}
       disableRestoreFocus={false}
       keepMounted={false}
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          backgroundColor: '#1a1a1a',
+        },
+      }}
     >
-      <DialogHeader
-        title='Unveröffentlichte Serien entdecken'
-        onClose={handleClose}
-      />
+      <DialogHeader title='📺 Neue Serien entdecken' onClose={handleClose} />
       <DialogContent>
-        <Box display='flex' flexDirection='column' gap={2} mt={2}>
-          <Box
-            display='flex'
-            flexDirection='column'
-            gap={2}
-            sx={{ '@media (min-width: 600px)': { flexDirection: 'row' } }}
+        {/* Filter Sektion */}
+        <Paper
+          elevation={2}
+          sx={{
+            p: 3,
+            mb: 3,
+            backgroundColor: '#2a2a2a',
+            border: '1px solid #444',
+          }}
+        >
+          <Typography
+            variant='h6'
+            sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
           >
-            <FormControl sx={{ flex: 2 }}>
-              <InputLabel
-                sx={{
-                  backgroundColor: '#0C0C0C',
-                  paddingLeft: '4px',
-                  paddingRight: '4px',
-                }}
-              >
-                Genre
-              </InputLabel>
-              <Select
-                name='genre'
-                multiple
-                value={filters.genre}
-                onChange={handleSelectChange}
-                renderValue={(selected) => selected.join(', ')}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 224,
-                      width: 250,
-                    },
-                  },
-                }}
-              >
-                {genreIdMapForSeries.map((item) => (
-                  <MenuItem key={item.id} value={item.name}>
-                    {item.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <FilterIcon /> Filter
+          </Typography>
+
+          <Stack spacing={3}>
+            {/* Erste Zeile: Genre und Datumsbereich */}
             <Box
-              display='flex'
-              flexDirection='column'
-              gap={2}
               sx={{
-                flex: 2,
-                '@media (min-width: 600px)': { flexDirection: 'row' },
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 2,
               }}
             >
-              <LocalizationProvider
-                dateAdapter={AdapterDayjs}
-                adapterLocale='de'
-              >
-                <DatePicker
-                  label='Startdatum'
-                  value={startDate}
-                  onChange={handleStartDateChange}
-                  minDate={today}
-                  sx={{ flex: 1 }}
-                />
-                <DatePicker
-                  label='Enddatum'
-                  value={endDate}
-                  onChange={handleEndDateChange}
-                  minDate={today}
-                  sx={{ flex: 1 }}
-                />
-              </LocalizationProvider>
+              <Box sx={{ flex: 1 }}>
+                <FormControl fullWidth>
+                  <InputLabel
+                    sx={{
+                      backgroundColor: '#2a2a2a',
+                      paddingLeft: '4px',
+                      paddingRight: '4px',
+                    }}
+                  >
+                    Genre auswählen
+                  </InputLabel>
+                  <Select
+                    name='genre'
+                    multiple
+                    value={filters.genre}
+                    onChange={handleSelectChange}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip key={value} label={value} size='small' />
+                        ))}
+                      </Box>
+                    )}
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 300,
+                          width: 300,
+                        },
+                      },
+                    }}
+                  >
+                    {genreIdMapForSeries.map((item) => (
+                      <MenuItem key={item.id} value={item.name}>
+                        {item.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <LocalizationProvider
+                  dateAdapter={AdapterDayjs}
+                  adapterLocale='de'
+                >
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <DatePicker
+                      label='Von Datum'
+                      value={startDate}
+                      onChange={handleStartDateChange}
+                      minDate={today}
+                      sx={{ flex: 1 }}
+                      slotProps={{
+                        textField: {
+                          size: 'medium',
+                        },
+                      }}
+                    />
+                    <DatePicker
+                      label='Bis Datum'
+                      value={endDate}
+                      onChange={handleEndDateChange}
+                      minDate={startDate || today}
+                      sx={{ flex: 1 }}
+                      slotProps={{
+                        textField: {
+                          size: 'medium',
+                        },
+                      }}
+                    />
+                  </Stack>
+                </LocalizationProvider>
+              </Box>
             </Box>
-          </Box>
-          <Box
-            display='flex'
-            flexDirection='column'
-            gap={2}
-            sx={{ '@media (min-width: 600px)': { flexDirection: 'row' } }}
+
+            {/* Zweite Zeile: Land und Sortierung */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 2,
+              }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <FormControl fullWidth>
+                  <InputLabel
+                    sx={{
+                      backgroundColor: '#2a2a2a',
+                      paddingLeft: '4px',
+                      paddingRight: '4px',
+                    }}
+                  >
+                    Länder auswählen
+                  </InputLabel>
+                  <Select
+                    name='country'
+                    multiple
+                    value={filters.country}
+                    onChange={handleCountryChange}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip
+                            key={value}
+                            label={countryMap[value] || value}
+                            size='small'
+                          />
+                        ))}
+                      </Box>
+                    )}
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 300,
+                          width: 300,
+                        },
+                      },
+                    }}
+                  >
+                    {Object.entries(countryMap).map(([code, name]) => (
+                      <MenuItem key={code} value={code}>
+                        {name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <FormControl fullWidth>
+                  <InputLabel
+                    sx={{
+                      backgroundColor: '#2a2a2a',
+                      paddingLeft: '4px',
+                      paddingRight: '4px',
+                    }}
+                  >
+                    Sortieren nach
+                  </InputLabel>
+                  <Select
+                    name='sortBy'
+                    value={filters.sortBy}
+                    onChange={handleSortChange}
+                  >
+                    <MenuItem value='popularity.desc'>Beliebtheit ↓</MenuItem>
+                    <MenuItem value='popularity.asc'>Beliebtheit ↑</MenuItem>
+                    <MenuItem value='first_air_date.desc'>
+                      Neueste zuerst
+                    </MenuItem>
+                    <MenuItem value='first_air_date.asc'>
+                      Älteste zuerst
+                    </MenuItem>
+                    <MenuItem value='vote_average.desc'>
+                      Beste Bewertung
+                    </MenuItem>
+                    <MenuItem value='vote_count.desc'>Meist bewertet</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+
+            {/* Action Buttons */}
+            <Stack
+              direction='row'
+              spacing={2}
+              justifyContent='center'
+              sx={{ pt: 1 }}
+            >
+              <Button
+                variant='contained'
+                startIcon={<SearchIcon />}
+                onClick={() => handleSearch()}
+                size='large'
+                sx={{ px: 4 }}
+              >
+                Serien suchen
+              </Button>
+              <Button
+                variant='outlined'
+                startIcon={<ClearIcon />}
+                onClick={handleClearFilters}
+                size='large'
+              >
+                Filter zurücksetzen
+              </Button>
+            </Stack>
+          </Stack>
+        </Paper>
+        {/* Suchergebnisse */}
+        {searchResults.length > 0 && (
+          <Paper
+            elevation={1}
+            sx={{
+              p: 3,
+              backgroundColor: '#2a2a2a',
+              border: '1px solid #444',
+            }}
           >
-            <FormControl fullWidth>
-              <InputLabel
-                sx={{
-                  backgroundColor: '#0C0C0C',
-                  paddingLeft: '4px',
-                  paddingRight: '4px',
-                }}
-              >
-                Land
-              </InputLabel>
-              <Select
-                name='country'
-                multiple
-                value={filters.country}
-                onChange={handleCountryChange}
-                renderValue={(selected) => selected.join(', ')}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 224,
-                      width: 250,
+            <Typography variant='h6' sx={{ mb: 2 }}>
+              Suchergebnisse ({searchResults.length} Serien)
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 3,
+                justifyContent: 'center',
+                minHeight: '200px',
+              }}
+            >
+              {searchResults.map((series) => (
+                <Box
+                  key={series.id}
+                  sx={{
+                    width: '230px',
+                    height: '444px',
+                    transition: 'transform 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
                     },
-                  },
-                }}
-              >
-                <MenuItem value='US'>USA</MenuItem>
-                <MenuItem value='DE'>Deutschland</MenuItem>
-                <MenuItem value='FR'>Frankreich</MenuItem>
-                <MenuItem value='GB'>Großbritannien</MenuItem>
-                <MenuItem value='JP'>Japan</MenuItem>
-                <MenuItem value='KR'>Südkorea</MenuItem>
-                <MenuItem value='IN'>Indien</MenuItem>
-                <MenuItem value='CN'>China</MenuItem>
-                <MenuItem value='IT'>Italien</MenuItem>
-                <MenuItem value='ES'>Spanien</MenuItem>
-                <MenuItem value='CA'>Kanada</MenuItem>
-                <MenuItem value='AU'>Australien</MenuItem>
-                <MenuItem value='BR'>Brasilien</MenuItem>
-                <MenuItem value='RU'>Russland</MenuItem>
-                <MenuItem value='MX'>Mexiko</MenuItem>
-                <MenuItem value='SE'>Schweden</MenuItem>
-                <MenuItem value='NO'>Norwegen</MenuItem>
-                <MenuItem value='FI'>Finnland</MenuItem>
-                <MenuItem value='DK'>Dänemark</MenuItem>
-                <MenuItem value='NL'>Niederlande</MenuItem>
-                <MenuItem value='BE'>Belgien</MenuItem>
-                <MenuItem value='CH'>Schweiz</MenuItem>
-                <MenuItem value='AT'>Österreich</MenuItem>
-                <MenuItem value='IE'>Irland</MenuItem>
-                <MenuItem value='NZ'>Neuseeland</MenuItem>
-                <MenuItem value='ZA'>Südafrika</MenuItem>
-                <MenuItem value='AR'>Argentinien</MenuItem>
-                <MenuItem value='CL'>Chile</MenuItem>
-                <MenuItem value='CO'>Kolumbien</MenuItem>
-                <MenuItem value='PE'>Peru</MenuItem>
-                <MenuItem value='VE'>Venezuela</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel
-                sx={{
-                  backgroundColor: '#0C0C0C',
-                  paddingLeft: '4px',
-                  paddingRight: '4px',
-                }}
-              >
-                Sortieren nach
-              </InputLabel>
-              <Select
-                name='sortBy'
-                value={filters.sortBy}
-                onChange={handleSortChange}
-              >
-                <MenuItem value='popularity.desc'>
-                  Beliebtheit absteigend
-                </MenuItem>
-                <MenuItem value='popularity.asc'>
-                  Beliebtheit aufsteigend
-                </MenuItem>
-                <MenuItem value='first_air_date.asc'>
-                  Veröffentlichungsdatum aufsteigend
-                </MenuItem>
-                <MenuItem value='first_air_date.desc'>
-                  Veröffentlichungsdatum absteigend
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </Box>
-        <Box display='flex' justifyContent='center' mt={2}>
-          <Button variant='contained' onClick={() => handleSearch()}>
-            Suchen
-          </Button>
-        </Box>
-        <Box display='flex' justifyContent='center' mt={2}>
+                  }}
+                >
+                  <DiscoverSeriesCard
+                    providers={[]}
+                    series={series}
+                    onAdd={handleAddSeries}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+        )}
+
+        {/* Keine Ergebnisse */}
+        {searchResults.length === 0 && currentPage > 0 && (
+          <Paper
+            elevation={1}
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              backgroundColor: '#2a2a2a',
+              border: '1px solid #444',
+            }}
+          >
+            <Typography variant='h6' color='text.secondary'>
+              Keine Serien gefunden
+            </Typography>
+            <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+              Versuchen Sie andere Filter oder erweitern Sie den Datumsbereich
+            </Typography>
+          </Paper>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ p: 3, justifyContent: 'space-between' }}>
+        <Button variant='outlined' onClick={handleClose} sx={{ px: 3 }}>
+          Schließen
+        </Button>
+
+        {searchResults.length > 0 && (
           <Box
             sx={{
               display: 'flex',
-              flexWrap: 'wrap',
-              gap: '50px',
+              alignItems: 'center',
+              gap: 2,
+              flex: 1,
               justifyContent: 'center',
-              p: 2,
-              boxSizing: 'border-box',
             }}
           >
-            {searchResults.map((series) => (
-              <Box key={series.id} sx={{ width: '230px', height: '444px' }}>
-                <DiscoverSeriesCard
-                  providers={[]}
-                  series={series}
-                  onAdd={handleAddSeries}
-                />
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        {searchResults.length > 0 && (
-          <Box
-            display='flex'
-            alignItems='center'
-            flexGrow={1}
-            justifyContent={{ xs: 'center', sm: 'flex-start' }}
-          >
             <Button
               variant='contained'
-              size='small'
+              size='medium'
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
+              sx={{ minWidth: '50px' }}
             >
-              &lt;
+              ‹ Zurück
             </Button>
-            <Box mx={2}>
-              Seite {currentPage} von {totalPages}
-            </Box>
+            <Paper
+              elevation={0}
+              sx={{
+                px: 2,
+                py: 1,
+                backgroundColor: '#333',
+                borderRadius: 1,
+              }}
+            >
+              <Typography variant='body2' sx={{ whiteSpace: 'nowrap' }}>
+                Seite {currentPage} von {totalPages}
+              </Typography>
+            </Paper>
             <Button
               variant='contained'
-              size='small'
+              size='medium'
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
+              sx={{ minWidth: '50px' }}
             >
-              &gt;
+              Weiter ›
             </Button>
           </Box>
         )}
