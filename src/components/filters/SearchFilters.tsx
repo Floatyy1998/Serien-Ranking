@@ -1,9 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import ExploreIcon from '@mui/icons-material/Explore';
 import ListIcon from '@mui/icons-material/List';
 import RecommendIcon from '@mui/icons-material/Recommend';
-import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
@@ -18,14 +18,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { shuffle } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
-import {
-  genreIdMapForSeries,
-  genreMenuItems,
-  providerMenuItems,
-} from '../../constants/menuItems';
+import { genreMenuItems, providerMenuItems } from '../../constants/menuItems';
 import { useFriends } from '../../contexts/FriendsProvider';
 import { useSeriesList } from '../../contexts/SeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -34,6 +29,8 @@ import {
   logBadgeRewatch,
   logEpisodeWatched,
 } from '../../utils/badgeActivityLogger';
+import { calculateOverallRating } from '../../utils/rating';
+import { generateRecommendations } from '../../utils/recommendationEngine';
 import {
   getNextRewatchEpisode,
   hasActiveRewatch,
@@ -334,65 +331,113 @@ export const SearchFilters = ({
     setLoadingRecommendations(true);
     setDialogRecommendationsOpen(true);
 
-    const randomSeries = shuffle(seriesList).slice(0, 5);
-    const allRecommendations = [];
+    try {
+      // Verwende eine zufällige Auswahl bewerteter Serien als Basis
+      const ratedSeries = seriesList.filter((series) => {
+        if (!series.rating || typeof series.rating !== 'object') return false;
+        const overallRating = calculateOverallRating(series);
+        const numericRating = parseFloat(overallRating);
+        return !isNaN(numericRating) && numericRating > 0;
+      });
 
-    for (const series of randomSeries) {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/tv/${series.id}/recommendations?api_key=d812a3cdd27ca10d95979a2d45d100cd&language=de-DE`
+      // Fisher-Yates Shuffle für echte Randomisierung
+      const shuffleArray = (array: Series[]) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      };
+
+      const shuffledRatedSeries = shuffleArray(ratedSeries).slice(0, 5);
+
+      const basedOnSeriesItems =
+        shuffledRatedSeries.length > 0
+          ? shuffledRatedSeries
+          : seriesList.slice(0, 5);
+
+      // Verwende die optimierte Recommendation Engine MIT spezifischen Items
+      const result = await generateRecommendations(
+        [],
+        seriesList,
+        'series',
+        basedOnSeriesItems
       );
-      const data = await response.json();
-      allRecommendations.push(
-        ...data.results.map((result: any) => ({
-          nmr: result.id,
-          begründung: '',
-          beschreibung: result.overview,
-          genre: {
-            genres: result.genre_ids.map(
-              (id: number) =>
-                genreIdMapForSeries.find((genre) => genre.id === id)?.name || ''
-            ),
-          },
-          id: result.id,
-          imdb: {
-            imdb_id: '',
-          },
-          poster: {
-            poster: result.poster_path
-              ? `https://image.tmdb.org/t/p/w500${result.poster_path}`
-              : '',
-          },
-          provider: null,
-          rating: {},
-          runtime: 0,
-          title: result.name,
-          wo: {
-            wo: '',
-          },
-          watchlist: false,
-          status: result.first_air_date ? 'Released' : 'Unreleased',
-          release_date: result.first_air_date,
-          collection_id: null,
-          origin_country: result.origin_country,
-          original_language: result.original_language,
-          original_name: result.original_name,
-          popularity: result.popularity,
-          vote_average: result.vote_average,
-          vote_count: result.vote_count,
-          media_type: 'tv',
-        }))
-      );
+
+      // Konvertiere die Ergebnisse in das erwartete Format
+      const formattedRecommendations = result.series.map((result: any) => ({
+        nmr: result.id,
+        begründung: '',
+        beschreibung: result.overview,
+        genre: {
+          genres:
+            result.genre_ids?.map((id: number) => {
+              // Einfache Genre-Mapping für TV direkt hier
+              const genreMap: { [key: number]: string } = {
+                10759: 'Action & Adventure',
+                16: 'Animation',
+                35: 'Comedy',
+                80: 'Crime',
+                99: 'Documentary',
+                18: 'Drama',
+                10751: 'Family',
+                10762: 'Kids',
+                9648: 'Mystery',
+                10763: 'News',
+                10764: 'Reality',
+                10765: 'Sci-Fi & Fantasy',
+                10766: 'Soap',
+                10767: 'Talk',
+                10768: 'War & Politics',
+                37: 'Western',
+              };
+              return genreMap[id] || '';
+            }) || [],
+        },
+        id: result.id,
+        imdb: { imdb_id: '' },
+        poster: {
+          poster: result.poster_path
+            ? `https://image.tmdb.org/t/p/w500${result.poster_path}`
+            : '',
+        },
+        provider: undefined,
+        rating: {},
+        runtime: 0,
+        title: result.name,
+        wo: { wo: '' },
+        watchlist: false,
+        status: result.first_air_date ? 'Released' : 'Unreleased',
+        release_date: result.first_air_date,
+        collection_id: undefined,
+        origin_country: result.origin_country,
+        original_language: result.original_language,
+        original_name: result.original_name,
+        popularity: result.popularity,
+        vote_average: result.vote_average,
+        vote_count: result.vote_count,
+        media_type: 'tv',
+        // Zusätzliche Series-spezifische Felder
+        episodeCount: 0,
+        episodeRuntime: 0,
+        nextEpisode: undefined,
+        seasonCount: 0,
+        seasons: [],
+        lastEpisodeDate: undefined,
+        tvMaze: undefined,
+        watchtime: undefined,
+      }));
+
+      setRecommendations(formattedRecommendations as unknown as Series[]);
+      setBasedOnSeries(basedOnSeriesItems);
+    } catch (error) {
+      console.error('Fehler beim Laden der Empfehlungen:', error);
+      setRecommendations([]);
+      setBasedOnSeries([]);
+    } finally {
+      setLoadingRecommendations(false);
     }
-
-    const uniqueRecommendations = allRecommendations.filter(
-      (rec, index, self) =>
-        index === self.findIndex((r) => r.id === rec.id) &&
-        !seriesList.some((series) => series.id === rec.id)
-    );
-
-    setRecommendations(uniqueRecommendations.sort(() => 0.5 - Math.random()));
-    setBasedOnSeries(randomSeries);
-    setLoadingRecommendations(false);
   };
 
   return (
@@ -476,7 +521,7 @@ export const SearchFilters = ({
                 aria-label='Unveröffentlichte Serien entdecken'
                 role='button'
               >
-                <SearchIcon />
+                <ExploreIcon />
                 <Box
                   component='span'
                   sx={{
