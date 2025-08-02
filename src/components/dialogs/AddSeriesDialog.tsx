@@ -26,6 +26,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
 import { useFriends } from '../../contexts/FriendsProvider';
+import { useMovieList } from '../../contexts/MovieListProvider';
+import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { generateRecommendations } from '../../utils/recommendationEngine';
 import { logSeriesAddedUnified } from '../../utils/unifiedActivityLogger';
 import { DialogHeader } from './shared/SharedDialogComponents';
 
@@ -81,6 +84,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
   const auth = useAuth();
   const { user } = auth || {};
   const {} = useFriends();
+  const { movieList } = useMovieList();
+  const { seriesList } = useSeriesList();
 
   // States für Tabs und Search
   const [activeTab, setActiveTab] = useState(0);
@@ -92,7 +97,9 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
   const [trendingSeries, setTrendingSeries] = useState<Serien[]>([]);
   const [popularSeries, setPopularSeries] = useState<Serien[]>([]);
   const [topRatedSeries, setTopRatedSeries] = useState<Serien[]>([]);
+  const [recommendedSeries, setRecommendedSeries] = useState<Serien[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [isPersonalized, setIsPersonalized] = useState(false);
 
   // Globales Grid-Layout für bessere mobile Darstellung
   const gridLayoutSx = {
@@ -133,18 +140,31 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
   >('success');
   const [keepOpen, setKeepOpen] = useState(false);
 
-  // Empfehlungen laden - Initial Load (30 Serien)
+  // Filter-Funktion für bereits hinzugefügte Serien
+  const filterAlreadyAdded = useCallback(
+    (items: Serien[]) => {
+      if (!seriesList || seriesList.length === 0) return items;
+
+      const addedSeriesIds = new Set(seriesList.map((series) => series.id));
+      return items.filter((item) => !addedSeriesIds.has(item.id));
+    },
+    [seriesList]
+  );
+
+  // Empfehlungen laden - Initial Load mit intelligenten Empfehlungen
   const loadRecommendations = useCallback(async () => {
     setLoadingRecommendations(true);
     const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 
     try {
+      // Parallel laden: Standard-Kategorien + personalisierte Empfehlungen
       const [
         trendingRes1,
         trendingRes2,
         popularRes1,
         popularRes2,
         topRatedRes,
+        recommendations,
       ] = await Promise.all([
         fetch(
           `https://api.themoviedb.org/3/trending/tv/week?api_key=${TMDB_API_KEY}&language=de-DE&region=US&page=1`
@@ -161,6 +181,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
         fetch(
           `https://api.themoviedb.org/3/tv/top_rated?api_key=${TMDB_API_KEY}&language=de-DE&page=1`
         ),
+        generateRecommendations(movieList, seriesList, 'series'),
       ]);
 
       const [
@@ -177,16 +198,24 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
         topRatedRes.json(),
       ]);
 
-      // Kombiniere die ersten 2 Seiten für 30 Serien initial
-      setTrendingSeries([
+      // Kombiniere die ersten 2 Seiten für 30 Serien initial und filtere bereits hinzugefügte
+      const allTrending = [
         ...(trendingData1.results || []),
         ...(trendingData2.results || []),
-      ]);
-      setPopularSeries([
+      ];
+      const allPopular = [
         ...(popularData1.results || []),
         ...(popularData2.results || []),
-      ]);
-      setTopRatedSeries(topRatedData.results || []);
+      ];
+      const allTopRated = topRatedData.results || [];
+
+      setTrendingSeries(filterAlreadyAdded(allTrending));
+      setPopularSeries(filterAlreadyAdded(allPopular));
+      setTopRatedSeries(filterAlreadyAdded(allTopRated));
+
+      // Setze personalisierte Empfehlungen (bereits gefiltert von der Engine)
+      setRecommendedSeries(filterAlreadyAdded(recommendations.series));
+      setIsPersonalized(recommendations.isPersonalized);
 
       // Set pagination to page 3 for next load (da wir schon 1+2 geladen haben)
       setTrendingPage(3);
@@ -200,7 +229,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
     } finally {
       setLoadingRecommendations(false);
     }
-  }, []);
+  }, [movieList, seriesList, filterAlreadyAdded]);
 
   // Load more functions for infinite scroll (jeweils 20 mehr)
   const loadMoreTrending = useCallback(async () => {
@@ -216,7 +245,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
-        setTrendingSeries((prev) => [...prev, ...data.results]);
+        const filteredResults = filterAlreadyAdded(data.results);
+        setTrendingSeries((prev) => [...prev, ...filteredResults]);
         setTrendingPage((prev) => prev + 1);
         setHasMoreTrending(data.page < data.total_pages);
       } else {
@@ -242,7 +272,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
-        setPopularSeries((prev) => [...prev, ...data.results]);
+        const filteredResults = filterAlreadyAdded(data.results);
+        setPopularSeries((prev) => [...prev, ...filteredResults]);
         setPopularPage((prev) => prev + 1);
         setHasMorePopular(data.page < data.total_pages);
       } else {
@@ -268,7 +299,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
-        setTopRatedSeries((prev) => [...prev, ...data.results]);
+        const filteredResults = filterAlreadyAdded(data.results);
+        setTopRatedSeries((prev) => [...prev, ...filteredResults]);
         setTopRatedPage((prev) => prev + 1);
         setHasMoreTopRated(data.page < data.total_pages);
       } else {
@@ -295,7 +327,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
           `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${value}&language=de-DE&page=1`
         );
         const data = await response.json();
-        setSearchResults(data.results || []);
+        setSearchResults(filterAlreadyAdded(data.results || []));
         setSearchPage(2);
         setHasMoreSearch(data.total_pages > 1);
       } catch (error) {
@@ -324,7 +356,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
-        setSearchResults((prev) => [...prev, ...data.results]);
+        const filteredResults = filterAlreadyAdded(data.results);
+        setSearchResults((prev) => [...prev, ...filteredResults]);
         setSearchPage((prev) => prev + 1);
         setHasMoreSearch(data.page < data.total_pages);
       } else {
@@ -572,12 +605,12 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
     onClose();
   };
 
-  // Load recommendations when dialog opens
+  // Load recommendations when dialog opens or user lists change
   useEffect(() => {
     if (open) {
       loadRecommendations();
     }
-  }, [open, loadRecommendations]);
+  }, [open, loadRecommendations, seriesList, movieList]);
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -729,12 +762,74 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                   </Box>
                 )}
 
-              {searchValue.length < 2 && (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography color='text.secondary'>
-                    Gib mindestens 2 Zeichen ein, um zu suchen
+              {searchValue.length < 2 && !isSearching && (
+                <>
+                  <Typography
+                    variant='h6'
+                    gutterBottom
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      mb: 3,
+                      fontSize: { xs: '1rem', sm: '1.1rem' },
+                    }}
+                  >
+                    <LocalFireDepartmentIcon color='primary' />
+                    {isPersonalized
+                      ? 'Empfehlungen für dich'
+                      : 'Trending Serien'}
                   </Typography>
-                </Box>
+
+                  {loadingRecommendations ? (
+                    <Box sx={gridLayoutSx}>
+                      {Array.from(new Array(12)).map((_, index) => (
+                        <Box key={index} sx={{ aspectRatio: '2/3' }}>
+                          <Skeleton
+                            variant='rectangular'
+                            width='100%'
+                            height='100%'
+                            sx={{ borderRadius: 3 }}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <>
+                      {/* Personalisierte Empfehlungen oder Fallback */}
+                      <Box sx={gridLayoutSx}>
+                        {recommendedSeries.length > 0
+                          ? recommendedSeries.map((series) => (
+                              <SeriesCard
+                                key={series.id}
+                                series={series}
+                                onClick={() => handleSeriesSelect(series)}
+                              />
+                            ))
+                          : [
+                              ...trendingSeries.slice(0, 6),
+                              ...popularSeries.slice(0, 6),
+                            ]
+                              .slice(0, 12)
+                              .map((series) => (
+                                <SeriesCard
+                                  key={series.id}
+                                  series={series}
+                                  onClick={() => handleSeriesSelect(series)}
+                                />
+                              ))}
+                      </Box>
+
+                      <Box sx={{ textAlign: 'center', mt: 3 }}>
+                        <Typography variant='body2' color='text.secondary'>
+                          {isPersonalized
+                            ? 'Basierend auf deinen Lieblings-Genres'
+                            : 'Gib mindestens 2 Zeichen ein, um gezielt zu suchen'}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </>
               )}
             </Box>
           </TabPanel>
