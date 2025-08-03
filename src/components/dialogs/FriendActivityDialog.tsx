@@ -27,12 +27,12 @@ import {
   Snackbar,
   Typography,
 } from '@mui/material';
-import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useFirebaseCache } from '../../hooks/useFirebaseCache';
 import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
 import MovieDialog from './MovieDialog';
@@ -86,8 +86,32 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
   // Eigene Movie/Series-Listen aus Context
   const { movieList } = useMovieList();
   const { seriesList } = useSeriesList();
+
+  // 🚀 Optimierte Friend-Activities mit Cache
+  const { data: activitiesData, loading } = useFirebaseCache<
+    Record<string, ActivityItem>
+  >(open && friendId ? `activities/${friendId}` : '', {
+    ttl: 2 * 60 * 1000, // 2 Minuten Cache für Friend-Activities
+    useRealtimeListener: true,
+  });
+
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(false);
+
+  // Konvertiere cached data zu activities array
+  useEffect(() => {
+    if (activitiesData) {
+      const activityList = Object.entries(activitiesData).map(
+        ([id, activity]: [string, any]) => ({
+          id,
+          ...activity,
+        })
+      );
+      activityList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      setActivities(activityList);
+    } else {
+      setActivities([]);
+    }
+  }, [activitiesData]);
 
   // Dialog state
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
@@ -299,43 +323,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     setAdding(false);
   };
 
-  useEffect(() => {
-    if (!open || !friendId) return;
-
-    const loadActivities = async () => {
-      setLoading(true);
-      try {
-        const activitiesRef = firebase.database().ref(`activities/${friendId}`);
-        const snapshot = await activitiesRef
-          .orderByChild('timestamp')
-          .limitToLast(20)
-          .once('value');
-
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const activityList = Object.entries(data).map(
-            ([id, activity]: [string, any]) => ({
-              id,
-              ...activity,
-            })
-          );
-
-          // Sortiere nach Timestamp (neueste zuerst)
-          activityList.sort((a, b) => b.timestamp - a.timestamp);
-          setActivities(activityList);
-        } else {
-          setActivities([]);
-        }
-      } catch (error) {
-        console.error('Error loading activities:', error);
-        setActivities([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadActivities();
-  }, [open, friendId]);
+  // 🚀 useEffect entfernt - Activities werden jetzt direkt über Cache geladen
 
   const getActivityIcon = (activity: ActivityItem) => {
     const iconStyle = { fontSize: 20, color: 'white' };

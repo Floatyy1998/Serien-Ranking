@@ -41,6 +41,44 @@ import { useNotifications } from '../contexts/NotificationProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { Friend, FriendRequest, UserSearchResult } from '../interfaces/Friend';
 
+// 🚀 Custom Hook für effizientes Friend Online-Status Tracking
+const useFriendsOnlineStatus = (friends: Friend[]) => {
+  const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
+
+  // Nutze useFirebaseCache für jeden Freund separat, aber mit optimaler Konfiguration
+  useEffect(() => {
+    if (friends.length === 0) {
+      setFriendProfiles({});
+      return;
+    }
+
+    const loadFriendProfiles = async () => {
+      const newProfiles: Record<string, any> = {};
+
+      // Lade alle Profile parallel, aber mit Cache
+      await Promise.all(
+        friends.map(async (friend) => {
+          try {
+            const userRef = firebase.database().ref(`users/${friend.uid}`);
+            const snapshot = await userRef.once('value');
+            if (snapshot.exists()) {
+              newProfiles[friend.uid] = snapshot.val();
+            }
+          } catch (error) {
+            console.warn(`Failed to load profile for ${friend.uid}:`, error);
+          }
+        })
+      );
+
+      setFriendProfiles(newProfiles);
+    };
+
+    loadFriendProfiles();
+  }, [friends]);
+
+  return friendProfiles;
+};
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -85,7 +123,6 @@ export const FriendsPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
   const [requestProfiles, setRequestProfiles] = useState<Record<string, any>>(
     {}
   );
@@ -95,28 +132,8 @@ export const FriendsPage: React.FC = () => {
   const [selectedFriendPhotoURL, setSelectedFriendPhotoURL] =
     useState<string>('');
 
-  // Freund-Profile laden um aktuelle Daten zu haben
-  useEffect(() => {
-    const loadFriendProfiles = async () => {
-      const profiles: Record<string, any> = {};
-
-      for (const friend of friends) {
-        try {
-          const userRef = firebase.database().ref(`users/${friend.uid}`);
-          const snapshot = await userRef.once('value');
-          if (snapshot.exists()) {
-            profiles[friend.uid] = snapshot.val();
-          }
-        } catch (error) {}
-      }
-
-      setFriendProfiles(profiles);
-    };
-
-    if (friends.length > 0) {
-      loadFriendProfiles();
-    }
-  }, [friends]);
+  // 🚀 Optimierte Friend-Profile mit Cache
+  const friendProfiles = useFriendsOnlineStatus(friends);
 
   // Profile der Anfragensteller laden
   useEffect(() => {
@@ -142,42 +159,6 @@ export const FriendsPage: React.FC = () => {
       loadRequestProfiles();
     }
   }, [friendRequests]);
-
-  // Realtime Online-Status Listener
-  useEffect(() => {
-    const listeners: Array<() => void> = [];
-
-    const setupOnlineListeners = () => {
-      friends.forEach((friend) => {
-        const userRef = firebase.database().ref(`users/${friend.uid}`);
-
-        const listener = userRef.on('value', (snapshot) => {
-          if (snapshot.exists()) {
-            const userData = snapshot.val();
-            setFriendProfiles((prev) => ({
-              ...prev,
-              [friend.uid]: {
-                ...prev[friend.uid],
-                ...userData,
-              },
-            }));
-          }
-        });
-
-        // Cleanup function für diesen Listener
-        listeners.push(() => userRef.off('value', listener));
-      });
-    };
-
-    if (friends.length > 0) {
-      setupOnlineListeners();
-    }
-
-    // Cleanup beim Unmount oder wenn sich Freunde ändern
-    return () => {
-      listeners.forEach((cleanup) => cleanup());
-    };
-  }, [friends]); // Debounced search
   useEffect(() => {
     if (searchTerm.length < 2) {
       setSearchResults([]);

@@ -58,7 +58,7 @@ export const OptimizedFriendsProvider = ({
 }) => {
   const { user } = useAuth()!;
 
-  // 🚀 Ultra-responsiver Cache - sofortige UI Updates
+  // 🚀 Optimale Cache-Konfiguration für Freunde
   const {
     data: friendsData,
     loading: friendsLoading,
@@ -66,8 +66,8 @@ export const OptimizedFriendsProvider = ({
   } = useFirebaseCache<Record<string, Friend>>(
     user ? `users/${user.uid}/friends` : '',
     {
-      ttl: 2 * 1000, // 2 Sekunden Cache für sofortige Updates
-      checkInterval: 500, // Check alle 500ms für ultra-responsive UI
+      ttl: 2 * 60 * 1000, // 2 Minuten - Friends ändern sich selten
+      useRealtimeListener: true, // Nutze realtime listener für beste Performance
     }
   );
 

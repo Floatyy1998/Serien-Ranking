@@ -1,4 +1,4 @@
-// import { FriendActivity } from '../contexts/FriendsProvider';
+// Batch Activity Utilities - Optimized for Firebase Performance
 
 export interface BatchDetectionOptions {
   bingeTimeWindowMinutes?: number; // Zeit zwischen Episoden für Binge-Detection (default: 120 Min)

@@ -35,6 +35,7 @@ import {
   providerMenuItems,
 } from '../constants/menuItems';
 import { useDebounce } from '../hooks/useDebounce';
+import { useFirebaseCache } from '../hooks/useFirebaseCache';
 import { calculateCorrectAverageRating } from '../utils/rating';
 
 interface UserProfileData {
@@ -103,6 +104,23 @@ export const UserProfilePage: React.FC = () => {
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
 
+  // 🚀 Optimierte Online-Status Überwachung mit Cache
+  const { data: onlineStatus } = useFirebaseCache<boolean>(
+    userId ? `users/${userId}/isOnline` : '',
+    {
+      ttl: 30 * 1000, // 30 Sekunden Cache für Online-Status
+      useRealtimeListener: true, // Realtime für Live-Status
+    }
+  );
+
+  const { data: lastActiveTimestamp } = useFirebaseCache<number>(
+    userId ? `users/${userId}/lastActive` : '',
+    {
+      ttl: 60 * 1000, // 1 Minute Cache für LastActive
+      useRealtimeListener: true,
+    }
+  );
+
   // Filter und Suche States
   const [searchValue, setSearchValue] = useState('');
   const [selectedSeriesGenre, setSelectedSeriesGenre] = useState('All');
@@ -110,6 +128,29 @@ export const UserProfilePage: React.FC = () => {
   const [selectedSeriesProvider, setSelectedSeriesProvider] = useState('All');
   const [selectedMovieProvider, setSelectedMovieProvider] = useState('All');
   const debouncedSearchValue = useDebounce(searchValue, 300);
+
+  // Aktualisiere Profile-Daten wenn sich Online-Status ändert
+  useEffect(() => {
+    if (!profileData || !userId) return;
+
+    setProfileData((prev) =>
+      prev
+        ? {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              isOnline: onlineStatus || false,
+              lastActive: lastActiveTimestamp || undefined,
+            },
+          }
+        : null
+    );
+  }, [
+    onlineStatus,
+    lastActiveTimestamp,
+    userId,
+    profileData?.profile.username,
+  ]);
 
   // Profildaten zurücksetzen wenn userId sich ändert
   useEffect(() => {
@@ -189,12 +230,15 @@ export const UserProfilePage: React.FC = () => {
               series.seasons.reduce((seasonTotal: number, season: any) => {
                 return (
                   seasonTotal +
-                  (season.episodes || []).reduce((episodeTotal: number, ep: any) => {
-                    if (ep.watched) {
-                      return episodeTotal + (ep.watchCount || 1);
-                    }
-                    return episodeTotal;
-                  }, 0)
+                  (season.episodes || []).reduce(
+                    (episodeTotal: number, ep: any) => {
+                      if (ep.watched) {
+                        return episodeTotal + (ep.watchCount || 1);
+                      }
+                      return episodeTotal;
+                    },
+                    0
+                  )
                 );
               }, 0)
             );
@@ -208,12 +252,18 @@ export const UserProfilePage: React.FC = () => {
               (seasonTotal: number, season: any) => {
                 return (
                   seasonTotal +
-                  (season.episodes || []).reduce((episodeTime: number, ep: any) => {
-                    if (ep.watched) {
-                      return episodeTime + (ep.watchCount || 1) * series.episodeRuntime;
-                    }
-                    return episodeTime;
-                  }, 0)
+                  (season.episodes || []).reduce(
+                    (episodeTime: number, ep: any) => {
+                      if (ep.watched) {
+                        return (
+                          episodeTime +
+                          (ep.watchCount || 1) * series.episodeRuntime
+                        );
+                      }
+                      return episodeTime;
+                    },
+                    0
+                  )
                 );
               },
               0
@@ -346,7 +396,8 @@ export const UserProfilePage: React.FC = () => {
             favoriteProvider: favoriteMovieProvider,
           },
         });
-      } catch (error) {setError('Fehler beim Laden des Profils');
+      } catch (error) {
+        setError('Fehler beim Laden des Profils');
       } finally {
         setLoading(false);
       }
@@ -363,49 +414,6 @@ export const UserProfilePage: React.FC = () => {
     setSelectedSeriesProvider('All');
     setSelectedMovieProvider('All');
   }, [tabValue]);
-
-  // Separater useEffect für Realtime Online-Status Updates
-  useEffect(() => {
-    if (!userId || !profileData) return;
-
-    const onlineStatusRef = firebase.database().ref(`users/${userId}/isOnline`);
-    const lastActiveRef = firebase.database().ref(`users/${userId}/lastActive`);
-
-    const onlineListener = onlineStatusRef.on('value', (snapshot) => {
-      const isOnline = snapshot.val() || false;
-      setProfileData((prev) =>
-        prev
-          ? {
-              ...prev,
-              profile: {
-                ...prev.profile,
-                isOnline,
-              },
-            }
-          : null
-      );
-    });
-
-    const lastActiveListener = lastActiveRef.on('value', (snapshot) => {
-      const lastActive = snapshot.val();
-      setProfileData((prev) =>
-        prev
-          ? {
-              ...prev,
-              profile: {
-                ...prev.profile,
-                lastActive,
-              },
-            }
-          : null
-      );
-    });
-
-    return () => {
-      onlineStatusRef.off('value', onlineListener);
-      lastActiveRef.off('value', lastActiveListener);
-    };
-  }, [userId]); // Nur userId als Abhängigkeit, nicht username
 
   const canViewProfile = () => {
     if (!profileData) return false;

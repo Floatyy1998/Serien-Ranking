@@ -12,12 +12,15 @@ interface CacheOptions {
   ttl?: number; // Time to live in ms (default: 5 minutes)
   checkInterval?: number; // How often to check for updates in ms (default: 30 seconds)
   forceRefresh?: boolean;
+  useRealtimeListener?: boolean; // Use realtime listener instead of periodic checks (default: true)
 }
 
 /**
  * Intelligenter Firebase Cache Hook
  * - Cached Daten lokal zwischen
- * - Reduziert Firebase-Reads durch TTL und Intervall-Checks
+ * - Nutzt standardmäßig Realtime Listener für optimale Performance
+ * - Fallback auf periodische Checks bei Bedarf
+ * - Reduziert Firebase-Reads durch intelligentes Caching
  * - Unterstützt sowohl realtime als auch einmalige Abfragen
  */
 export function useFirebaseCache<T>(path: string, options: CacheOptions = {}) {
@@ -25,6 +28,7 @@ export function useFirebaseCache<T>(path: string, options: CacheOptions = {}) {
     ttl = 5 * 60 * 1000, // 5 Minuten default
     checkInterval = 30 * 1000, // 30 Sekunden default
     forceRefresh = false,
+    useRealtimeListener = true, // Default: verwende realtime listener
   } = options;
 
   const [data, setData] = useState<T | null>(null);
@@ -98,12 +102,56 @@ export function useFirebaseCache<T>(path: string, options: CacheOptions = {}) {
     [path, getCachedData, setCachedData, forceRefresh]
   );
 
-  // Periodische Updates ohne realtime listener
+  // Setup realtime listener für bessere Performance
+  const setupRealtimeListener = useCallback(() => {
+    if (!path) return;
+
+    // Cleanup existing listener
+    if (listenerRef.current) {
+      listenerRef.current.off();
+    }
+
+    const ref = firebase.database().ref(path);
+    listenerRef.current = ref;
+
+    // Prüfe erst Cache
+    const cached = getCachedData(path);
+    if (cached && !forceRefresh) {
+      setData(cached);
+      setLoading(false);
+    }
+
+    // Setup listener für realtime updates
+    ref.on(
+      'value',
+      (snapshot) => {
+        const result = snapshot.val();
+        performanceTracker.trackFirebaseRead();
+
+        // Nur Update bei tatsächlicher Änderung
+        const cached = cacheRef.current.get(path);
+        if (!cached || JSON.stringify(result) !== JSON.stringify(cached.data)) {
+          setCachedData(path, result);
+          setData(result);
+        }
+
+        setLoading(false);
+        setError(null);
+      },
+      (error) => {
+        setError(error.message);
+        setLoading(false);
+      }
+    );
+  }, [path, getCachedData, setCachedData, forceRefresh]);
+
+  // Fallback: Periodische Updates für spezielle Fälle
   const startPeriodicCheck = useCallback(() => {
     if (checkTimerRef.current) {
       clearInterval(checkTimerRef.current);
     }
 
+    // Nur als Fallback verwenden, normalerweise realtime listener
     checkTimerRef.current = setInterval(async () => {
       const cached = cacheRef.current.get(path);
       if (!cached) return;
@@ -124,7 +172,6 @@ export function useFirebaseCache<T>(path: string, options: CacheOptions = {}) {
           setData(newData);
         }
 
-        // Update lastCheck time
         cached.lastCheck = now;
       } catch (err) {
         console.warn('Periodic check failed:', err);
@@ -144,13 +191,23 @@ export function useFirebaseCache<T>(path: string, options: CacheOptions = {}) {
     };
   }, []);
 
-  // Initial fetch
+  // Initial setup - wähle zwischen realtime listener und periodic checks
   useEffect(() => {
     if (path) {
-      fetchData();
-      startPeriodicCheck();
+      if (useRealtimeListener) {
+        setupRealtimeListener();
+      } else {
+        fetchData();
+        startPeriodicCheck();
+      }
     }
-  }, [path, fetchData, startPeriodicCheck]);
+  }, [
+    path,
+    useRealtimeListener,
+    setupRealtimeListener,
+    fetchData,
+    startPeriodicCheck,
+  ]);
 
   return {
     data,
@@ -158,5 +215,19 @@ export function useFirebaseCache<T>(path: string, options: CacheOptions = {}) {
     error,
     refetch: () => fetchData(true),
     clearCache: () => cacheRef.current.delete(path),
+    switchToRealtime: () => {
+      if (checkTimerRef.current) {
+        clearInterval(checkTimerRef.current);
+        checkTimerRef.current = null;
+      }
+      setupRealtimeListener();
+    },
+    switchToPolling: () => {
+      if (listenerRef.current) {
+        listenerRef.current.off();
+        listenerRef.current = null;
+      }
+      startPeriodicCheck();
+    },
   };
 }

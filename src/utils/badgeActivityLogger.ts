@@ -6,6 +6,7 @@
  */
 
 import firebase from 'firebase/compat/app';
+import { optimizedBadgeService } from './optimizedBadgeService';
 
 // Badge-spezifische Activity-Interfaces
 export interface BadgeActivityBase {
@@ -499,16 +500,27 @@ class BadgeActivityLogger {
    */
   private async incrementWatchlistCounter(userId: string): Promise<void> {
     try {
+      // 🚀 Nutze optimierten Service statt direkter Firebase-Call
+      const { badgeActivities } =
+        await optimizedBadgeService.getBadgeCalculationData(userId);
+      const watchlistCount = badgeActivities.filter(
+        (activity) => activity.type === 'watchlist'
+      ).length;
+
+      const counterRef = firebase
+        .database()
+        .ref(`badgeCounters/${userId}/watchlistItems`);
+
+      // Setze den neuen Counter-Wert (Firebase v8)
+      await counterRef.set(watchlistCount + 1);
+    } catch (error) {
+      // Fehler beim Aktualisieren des Watchlist-Counters - Fallback
       const counterRef = firebase
         .database()
         .ref(`badgeCounters/${userId}/watchlistItems`);
       const snapshot = await counterRef.once('value');
       const currentCount = snapshot.val() || 0;
-
-      // Setze den neuen Counter-Wert (Firebase v8)
       await counterRef.set(currentCount + 1);
-    } catch (error) {
-      // Fehler beim Aktualisieren des Watchlist-Counters
     }
   }
 

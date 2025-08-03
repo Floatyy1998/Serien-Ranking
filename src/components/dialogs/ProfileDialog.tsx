@@ -30,6 +30,8 @@ import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import React, { useRef, useState } from 'react';
 import { useAuth } from '../../App';
+import { useFirebaseBatch } from '../../hooks/useFirebaseBatch';
+import { useFirebaseCache } from '../../hooks/useFirebaseCache';
 
 interface ProfileDialogProps {
   open: boolean;
@@ -53,43 +55,42 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   const [displayNameEditable, setDisplayNameEditable] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Profildaten beim Öffnen laden
-  React.useEffect(() => {
-    const loadProfileData = async () => {
-      if (!user || !open) return;
+  const { addUpdate: addBatchUpdate } = useFirebaseBatch({
+    batchSize: 5,
+    delayMs: 500,
+    maxDelayMs: 2000,
+  });
 
-      try {
-        const userRef = firebase.database().ref(`users/${user.uid}`);
-        const snapshot = await userRef.once('value');
-        const userData = snapshot.val();
-
-        if (userData) {
-          setUsername(userData.username || '');
-          setDisplayName(userData.displayName || '');
-          setPhotoURL(userData.photoURL || user.photoURL || '');
-          setIsPublic(userData.isPublic || false);
-        } else {
-          // Falls keine Daten in der DB existieren, verwende Firebase Auth Daten
-          setUsername('');
-          setDisplayName(user.displayName || '');
-          setPhotoURL(user.photoURL || '');
-          setIsPublic(false);
-        }
-      } catch (error) {// Fallback zu Firebase Auth Daten
-        setUsername('');
-        setDisplayName(user.displayName || '');
-        setPhotoURL(user.photoURL || '');
-        setIsPublic(false);
-      }
-    };
-
-    if (open) {
-      loadProfileData();
-      // Edit-Zustände beim Öffnen zurücksetzen
-      setUsernameEditable(false);
-      setDisplayNameEditable(false);
+  // 🚀 Optimierte Profile-Daten mit Cache
+  const { data: userData, loading: userDataLoading } = useFirebaseCache<any>(
+    user && open ? `users/${user.uid}` : '',
+    {
+      ttl: 5 * 60 * 1000, // 5 Minuten Cache für Profile-Daten
+      useRealtimeListener: true, // Realtime für Profile-Updates
     }
-  }, [user, open]);
+  );
+
+  // Profildaten aus Cache laden
+  React.useEffect(() => {
+    if (!user || !open || userDataLoading) return;
+
+    if (userData) {
+      setUsername(userData.username || '');
+      setDisplayName(userData.displayName || '');
+      setPhotoURL(userData.photoURL || user.photoURL || '');
+      setIsPublic(userData.isPublic || false);
+    } else {
+      // Falls keine Daten im Cache, verwende Firebase Auth Daten
+      setUsername('');
+      setDisplayName(user.displayName || '');
+      setPhotoURL(user.photoURL || '');
+      setIsPublic(false);
+    }
+
+    // Edit-Zustände beim Öffnen zurücksetzen
+    setUsernameEditable(false);
+    setDisplayNameEditable(false);
+  }, [user, open, userData, userDataLoading]);
 
   // Öffentliche Einstellung beim Öffnen laden (entfernt, da jetzt oben abgehandelt)
   /*React.useEffect(() => {
@@ -152,7 +153,8 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
 
       setPhotoURL(downloadURL);
       setSuccess('Profilbild erfolgreich hochgeladen und gespeichert');
-    } catch (error: any) {if (
+    } catch (error: any) {
+      if (
         error.code === 'storage/unknown' ||
         error.code === 'storage/unauthorized'
       ) {
@@ -179,21 +181,27 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   const checkUsernameAvailable = async (username: string): Promise<boolean> => {
     if (!user) return false;
 
-    const usersRef = firebase.database().ref('users');
-    const snapshot = await usersRef
-      .orderByChild('username')
-      .equalTo(username)
-      .once('value');
+    // 🚀 Cache-basierte Username-Verfügbarkeitsprüfung
+    try {
+      const usersRef = firebase.database().ref('users');
+      const snapshot = await usersRef
+        .orderByChild('username')
+        .equalTo(username)
+        .once('value');
 
-    const data = snapshot.val();
-    if (!data) return true;
+      const data = snapshot.val();
+      if (!data) return true;
 
-    // Username verfügbar wenn kein Eintrag oder nur eigener Eintrag
-    const existingUsers = Object.keys(data);
-    return (
-      existingUsers.length === 0 ||
-      (existingUsers.length === 1 && existingUsers[0] === user.uid)
-    );
+      // Username verfügbar wenn kein Eintrag oder nur eigener Eintrag
+      const existingUsers = Object.keys(data);
+      return (
+        existingUsers.length === 0 ||
+        (existingUsers.length === 1 && existingUsers[0] === user.uid)
+      );
+    } catch (error) {
+      console.error('Error checking username availability:', error);
+      return false;
+    }
   };
 
   const handleSave = async () => {
@@ -222,29 +230,28 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
         return;
       }
 
+      // 🚀 Batch-Updates für optimierte Firebase-Operationen
+      addBatchUpdate(`users/${user.uid}/username`, username);
+      addBatchUpdate(`users/${user.uid}/displayName`, displayName || username);
+      addBatchUpdate(`users/${user.uid}/photoURL`, photoURL || null);
+      addBatchUpdate(`users/${user.uid}/isPublic`, isPublic);
+      addBatchUpdate(
+        `users/${user.uid}/lastActive`,
+        firebase.database.ServerValue.TIMESTAMP
+      );
+
       // Profil in Firebase Auth aktualisieren
       await user.updateProfile({
         displayName: displayName || username,
         photoURL: photoURL || null,
       });
 
-      // Benutzer-Daten in Realtime Database speichern
-      await firebase
-        .database()
-        .ref(`users/${user.uid}`)
-        .update({
-          username: username,
-          displayName: displayName || username,
-          photoURL: photoURL || null,
-          isPublic: isPublic,
-          lastActive: firebase.database.ServerValue.TIMESTAMP,
-        });
-
       setSuccess('Profil erfolgreich aktualisiert');
       setTimeout(() => {
         onClose();
       }, 1500);
-    } catch (error) {setError('Fehler beim Speichern des Profils');
+    } catch (error) {
+      setError('Fehler beim Speichern des Profils');
     } finally {
       setSaving(false);
     }
@@ -256,10 +263,8 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
     try {
       const newPublicState = !isPublic;
 
-      await firebase
-        .database()
-        .ref(`users/${user.uid}/isPublic`)
-        .set(newPublicState);
+      // 🚀 Batch-Update für Public-Status
+      addBatchUpdate(`users/${user.uid}/isPublic`, newPublicState);
 
       setIsPublic(newPublicState);
       setSuccess(
@@ -267,7 +272,8 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           ? 'Deine Liste ist jetzt öffentlich sichtbar!'
           : 'Deine Liste ist jetzt privat!'
       );
-    } catch (error) {setError('Fehler beim Aktualisieren der Einstellung');
+    } catch (error) {
+      setError('Fehler beim Aktualisieren der Einstellung');
     }
   };
 
@@ -279,14 +285,13 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
 
   const handleLogout = async () => {
     try {
-      // Online-Status auf false setzen
+      // 🚀 Batch-Update für Logout-Status
       if (user) {
-        await firebase.database().ref(`users/${user.uid}/isOnline`).set(false);
-
-        await firebase
-          .database()
-          .ref(`users/${user.uid}/lastActive`)
-          .set(firebase.database.ServerValue.TIMESTAMP);
+        addBatchUpdate(`users/${user.uid}/isOnline`, false);
+        addBatchUpdate(
+          `users/${user.uid}/lastActive`,
+          firebase.database.ServerValue.TIMESTAMP
+        );
       }
 
       await firebase.auth().signOut();
@@ -297,7 +302,8 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
         onClose();
         window.location.reload(); // Oder navigate('/login') wenn Router verwendet wird
       }, 1000);
-    } catch (error) {setError('Fehler beim Ausloggen');
+    } catch (error) {
+      setError('Fehler beim Ausloggen');
     }
   };
 
