@@ -24,8 +24,8 @@ import { logSeriesDeleted } from '../../utils/activityLogger';
 import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
 import {
-  logRatingClean,
-} from '../../utils/cleanActivityLogger';
+  logRatingAdded,
+} from '../../utils/minimalActivityLogger';
 import SeriesDialog from '../dialogs/SeriesDialog';
 import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
@@ -182,14 +182,14 @@ export const SeriesCard = ({
         const ratingValue = parseFloat(overallRating);
 
         if (user?.uid && ratingValue > 0) {
-          await logRatingClean(
+          await logRatingAdded(
             user.uid,
-            currentSeries.id?.toString() || '',
             currentSeries.title ||
               currentSeries.original_name ||
               'Unbekannte Serie',
+            'series',
             ratingValue,
-            'series'
+            currentSeries.id || 0
           );
 
           // Badge rating handled by clean logger

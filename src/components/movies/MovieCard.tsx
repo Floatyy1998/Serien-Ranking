@@ -22,7 +22,7 @@ import '../../styles/animations.css';
 import { logMovieDeleted } from '../../utils/activityLogger';
 import { getFormattedDate } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
-import { logRatingClean } from '../../utils/cleanActivityLogger';
+import { logRatingAdded } from '../../utils/minimalActivityLogger';
 import MovieDialog from '../dialogs/MovieDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
 
@@ -183,12 +183,12 @@ export const MovieCard = ({
         const ratingValue = parseFloat(overallRating);
 
         if (user?.uid && ratingValue > 0) {
-          await logRatingClean(
+          await logRatingAdded(
             user.uid,
-            currentMovie.id?.toString() || '',
             currentMovie.title || 'Unbekannter Film',
+            'movie',
             ratingValue,
-            'movie'
+            currentMovie.id || 0
           );
 
           // Badge rating handled by clean logger

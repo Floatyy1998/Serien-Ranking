@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '../App';
-import { EarnedBadge } from '../utils/badgeSystem';
-import { activityBatchManager } from '../utils/activityBatchManager';
+import { EarnedBadge } from '../utils/badgeDefinitions';
+// activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
 import BadgeNotification from '../components/badges/BadgeNotification';
 import BadgeOverviewDialog from '../components/badges/BadgeOverviewDialog';
 
@@ -26,17 +26,41 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [showOverviewDialog, setShowOverviewDialog] = useState(false);
 
-  // Registriere Badge-Callback beim ActivityBatchManager
+  // Registriere Badge-Callback beim minimalActivityLogger
   useEffect(() => {
     if (user) {
-      const handleNewBadges = (badges: EarnedBadge[]) => {setNewBadges(prev => {const updated = [...prev, ...badges];return updated;
+      const handleNewBadges = (badges: EarnedBadge[]) => {
+        // Zusätzliche Duplikat-Filterung auf UI-Ebene
+        setNewBadges(prev => {
+          const existingBadgeIds = new Set(prev.map(b => b.id));
+          const newUniqueBadges = badges.filter(badge => !existingBadgeIds.has(badge.id));
+          
+          if (newUniqueBadges.length > 0) {
+            console.log('🎉 New badges received:', newUniqueBadges.map(b => b.name));
+            return [...prev, ...newUniqueBadges];
+          }
+          return prev;
         });
       };
 
-      activityBatchManager.onBadgeEarned(user.uid, handleNewBadges);
+      let cleanup: (() => void) | null = null;
 
+      // Dynamischer Import um zirkuläre Abhängigkeiten zu vermeiden
+      import('../utils/minimalActivityLogger').then(({ registerBadgeCallback, removeBadgeCallback }) => {
+        registerBadgeCallback(user.uid, handleNewBadges);
+        console.log('🎯 Badge callback registered for user:', user.uid);
+
+        cleanup = () => {
+          removeBadgeCallback(user.uid);
+          console.log('🎯 Badge callback removed for user:', user.uid);
+        };
+      });
+
+      // Korrekte Cleanup-Funktion
       return () => {
-        activityBatchManager.removeBadgeCallback(user.uid);
+        if (cleanup) {
+          cleanup();
+        }
       };
     }
   }, [user]);

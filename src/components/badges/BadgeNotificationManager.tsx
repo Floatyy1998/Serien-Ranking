@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
-import { EarnedBadge } from '../../utils/badgeSystem';
+import { EarnedBadge } from '../../utils/badgeDefinitions';
 import BadgeNotification from './BadgeNotification';
 
 interface BadgeNotificationManagerProps {

@@ -5,9 +5,10 @@ import {
   Close as CloseIcon,
   Delete,
   FastForward,
+  LocalMovies,
   Movie as MovieIcon,
   PlayArrow,
-  Star,
+  ThumbUp,
   Timeline,
   Tv,
 } from '@mui/icons-material';
@@ -49,6 +50,7 @@ interface ActivityItem {
     | 'season_watched'
     | 'series_rated'
     | 'rating_updated'
+    | 'rating_added'
     | 'movie_added'
     | 'movie_deleted'
     | 'movie_rated'
@@ -352,13 +354,17 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       case 'episodes_watched':
         return <FastForward sx={iconStyle} />;
       case 'series_rated':
-        return <Star sx={iconStyle} />;
+      case 'rating_updated':
+        return <ThumbUp sx={{ ...iconStyle, color: 'white' }} />; // Weißer Daumen hoch für Serie
+      case 'rating_added':
+        return <ThumbUp sx={{ ...iconStyle, color: 'white' }} />; // Weißer Daumen hoch für generische Bewertung
       case 'movie_added':
         return <MovieIcon sx={iconStyle} />;
       case 'movie_deleted':
         return <Delete sx={iconStyle} />;
       case 'movie_rated':
-        return <Star sx={iconStyle} />;
+      case 'rating_updated_movie':
+        return <LocalMovies sx={{ ...iconStyle, color: 'white' }} />; // Weißes Movie Icon für Film
       case 'series_added_to_watchlist':
         return <BookmarkAdd sx={iconStyle} />;
       case 'series_removed_from_watchlist':
@@ -397,8 +403,12 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       case 'episodes_watched':
         return '#00fed7';
       case 'series_rated':
+      case 'rating_updated':
+      case 'rating_added':
+        return '#2196f3'; // Blau für Serie-Bewertungen (unterscheidet sich von hinzufügen-Grün)
       case 'movie_rated':
-        return '#ff9800';
+      case 'rating_updated_movie':
+        return '#ff5722'; // Orange-Rot für Film-Bewertungen
       case 'series_added_to_watchlist':
       case 'movie_added_to_watchlist':
         return '#9c27b0'; // Lila für Watchlist hinzufügen
@@ -605,6 +615,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       case 'series_rated':
       case 'rating_updated':
       case 'rating_updated_movie':
+      case 'rating_added':
         return (
           <>
             hat "<TitleComponent>{title}</TitleComponent>" bewertet

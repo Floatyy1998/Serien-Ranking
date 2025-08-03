@@ -22,9 +22,8 @@ import {
   BADGE_DEFINITIONS,
   BadgeCategory,
   BadgeProgress,
-  BadgeSystem,
   EarnedBadge,
-} from '../../utils/badgeSystem';
+} from '../../utils/badgeDefinitions';
 
 interface BadgeOverviewDialogProps {
   open: boolean;
@@ -80,18 +79,13 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
     setLoading(true);
     try {
-      const badgeSystem = new BadgeSystem(user.uid);
+      const { getOfflineBadgeSystem } = await import('../../utils/offlineBadgeSystem');
+      const badgeSystem = getOfflineBadgeSystem(user.uid);
       const earned = await badgeSystem.getUserBadges();
       setEarnedBadges(earned);
 
-      // Lade Progress für alle Badges
+      // TODO: Badge Progress implementieren falls benötigt
       const progressData: Record<string, BadgeProgress> = {};
-      for (const badge of BADGE_DEFINITIONS) {
-        const progress = await badgeSystem.getBadgeProgress(badge.id);
-        if (progress) {
-          progressData[badge.id] = progress;
-        }
-      }
       setBadgeProgress(progressData);
     } catch (error) {
       console.error('Error loading badge data:', error);
