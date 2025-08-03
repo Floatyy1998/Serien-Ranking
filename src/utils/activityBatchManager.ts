@@ -152,18 +152,9 @@ class ActivityBatchManager {
    * Erstellt eine Batch-Activity in Firebase
    */
   private async createBatchActivity(
-    userId: string,
-    batchResult: BatchResult
+    _userId: string,
+    _batchResult: BatchResult
   ): Promise<void> {
-    const activity = {
-      type: 'episodes_watched' as const,
-      itemTitle: batchResult.activityTitle, // Kein Emoji im Titel - wird separat am Ende angezeigt
-      tmdbId: batchResult.episodes[0].tmdbId,
-      timestamp: Date.now(),
-      batchType: batchResult.batchType,
-      episodeCount: batchResult.episodes.length,
-    };
-
     // 🚫 Kein Friend-Activity-Logging mehr für Batch-Episode-Updates
     // Nur noch Badge-System wird von einzelnen Komponenten direkt aufgerufen
   }
@@ -172,31 +163,11 @@ class ActivityBatchManager {
    * Erstellt eine individuelle Episode-Activity
    */
   private async createIndividualActivity(
-    userId: string,
-    pendingActivity: PendingActivity
+    _userId: string,
+    _pendingActivity: PendingActivity
   ): Promise<void> {
-    const { episodeData } = pendingActivity;
-
-    let activityTitle = `${episodeData.seriesTitle} - Staffel ${episodeData.seasonNumber} Episode ${episodeData.episodeNumber}`;
-
-    if (
-      episodeData.isRewatch &&
-      episodeData.watchCount &&
-      episodeData.watchCount > 1
-    ) {
-      activityTitle += ` (${episodeData.watchCount}x gesehen)`;
-    }
-
-    const activity = {
-      type: 'episode_watched' as const,
-      itemTitle: activityTitle,
-      tmdbId: episodeData.tmdbId,
-      timestamp: pendingActivity.timestamp,
-    };
-
     // 🚫 Kein Friend-Activity-Logging mehr für Episode-Updates
     // Nur noch Badge-System wird von einzelnen Komponenten direkt aufgerufen
-
     // Badge-Checks werden bereits beim Hinzufügen gemacht - nicht doppelt
   }
 
