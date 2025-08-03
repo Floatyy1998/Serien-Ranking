@@ -60,7 +60,13 @@ function TabPanel(props: TabPanelProps) {
 export const MainPage: React.FC = () => {
   const { user } = useAuth()!;
   const navigate = useNavigate();
-  const { seriesList, seriesWithNewSeasons, clearNewSeasons } = useSeriesList();
+  const {
+    seriesList,
+    seriesWithNewSeasons,
+    clearNewSeasons,
+    isOffline,
+    isStale,
+  } = useSeriesList();
 
   const { movieList } = useMovieList();
   const { totalUnreadActivities } = useNotifications();
@@ -287,648 +293,677 @@ export const MainPage: React.FC = () => {
       maxWidth={false}
       sx={{ px: { xs: 1, sm: 2, md: 3 }, py: { xs: 2, md: 4 } }}
     >
-      {/* Header */}
-      <Box
-        display='flex'
-        justifyContent='space-between'
-        alignItems='center'
-        sx={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          borderRadius: 2,
-          p: { xs: 1.5, sm: 2, md: 3 },
-          color: 'white',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: { xs: 1.5, md: 0 },
-          minHeight: { xs: 'auto', md: '120px' },
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-          cursor: 'pointer',
-          transition: 'background 0.2s',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)',
-          },
-        }}
-        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-          // Nur scrollen, wenn nicht auf Avatar oder Button geklickt
-          if (
-            e.target instanceof HTMLElement &&
-            !e.target.closest('.main-header-avatar') &&
-            !e.target.closest('.main-header-button')
-          ) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        }}
-      >
+      {/* �🚀 Offline/Cache Debug Indicator */}
+      {(isOffline || isStale) && (
         <Box
-          display='flex'
-          alignItems='center'
-          gap={{ xs: 1.5, sm: 2, md: 3 }}
           sx={{
-            width: { xs: '100%', md: 'auto' },
-            justifyContent: { xs: 'center', md: 'flex-start' },
-            flexDirection: { xs: 'column', sm: 'row' },
+            backgroundColor: isOffline ? '#ff6b6b' : '#4ecdc4',
+            color: 'white',
+            padding: 1,
+            borderRadius: 1,
+            marginBottom: 2,
+            textAlign: 'center',
+            fontWeight: 'bold',
           }}
         >
-          <Avatar
-            src={userProfile?.photoURL}
-            onClick={() => setProfileDialogOpen(true)}
-            className='main-header-avatar'
+          {isOffline
+            ? '📱 OFFLINE MODUS - Zeige gecachte Daten'
+            : '📦 CACHE MODUS - Daten aus Cache geladen'}{' '}
+          ({seriesList.length} Serien verfügbar)
+        </Box>
+      )}
+
+      {/* 🚀 Hauptinhalt */}
+      <>
+        {/* Header */}
+        <Box
+          display='flex'
+          justifyContent='space-between'
+          alignItems='center'
+          sx={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
+            borderRadius: 2,
+            p: { xs: 1.5, sm: 2, md: 3 },
+            color: 'white',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: { xs: 1.5, md: 0 },
+            minHeight: { xs: 'auto', md: '120px' },
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            cursor: 'pointer',
+            transition: 'background 0.2s',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)',
+            },
+          }}
+          onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+            // Nur scrollen, wenn nicht auf Avatar oder Button geklickt
+            if (
+              e.target instanceof HTMLElement &&
+              !e.target.closest('.main-header-avatar') &&
+              !e.target.closest('.main-header-button')
+            ) {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+        >
+          <Box
+            display='flex'
+            alignItems='center'
+            gap={{ xs: 1.5, sm: 2, md: 3 }}
             sx={{
-              width: { xs: 50, sm: 60, md: 80 },
-              height: { xs: 50, sm: 60, md: 80 },
-              cursor: 'pointer',
-              border: '3px solid #00fed7',
-              boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: '0 0 20px rgba(0, 254, 215, 0.5)',
-                borderColor: '#00c5a3',
-              },
+              width: { xs: '100%', md: 'auto' },
+              justifyContent: { xs: 'center', md: 'flex-start' },
+              flexDirection: { xs: 'column', sm: 'row' },
             }}
           >
-            {userProfile?.username?.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box sx={{ textAlign: { xs: 'center', sm: 'left', md: 'left' } }}>
-            <Typography
-              variant='h4'
-              component='h1'
-              gutterBottom
-              fontWeight='bold'
+            <Avatar
+              src={userProfile?.photoURL}
+              onClick={() => setProfileDialogOpen(true)}
+              className='main-header-avatar'
               sx={{
-                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' },
-                mb: { xs: 0.5, md: 1 },
+                width: { xs: 50, sm: 60, md: 80 },
+                height: { xs: 50, sm: 60, md: 80 },
+                cursor: 'pointer',
+                border: '3px solid #00fed7',
+                boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 0 20px rgba(0, 254, 215, 0.5)',
+                  borderColor: '#00c5a3',
+                },
               }}
             >
-              📺 Meine Serien & Filme
-            </Typography>
-            {/* Username und Display Name entfernt - redundant auf eigener Seite */}
-            <Typography
-              variant='body2'
+              {userProfile?.username?.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box sx={{ textAlign: { xs: 'center', sm: 'left', md: 'left' } }}>
+              <Typography
+                variant='h4'
+                component='h1'
+                gutterBottom
+                fontWeight='bold'
+                sx={{
+                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' },
+                  mb: { xs: 0.5, md: 1 },
+                }}
+              >
+                📺 Meine Serien & Filme
+              </Typography>
+              {/* Username und Display Name entfernt - redundant auf eigener Seite */}
+              <Typography
+                variant='body2'
+                sx={{
+                  opacity: 0.8,
+                  mt: 1,
+                  fontSize: { xs: '0.75rem', md: '0.875rem' },
+                }}
+              >
+                Entdecke, bewerte und verwalte deine Lieblingsserien und -filme
+              </Typography>
+              <Typography
+                variant='caption'
+                sx={{
+                  opacity: 0.6,
+                  mt: 0.5,
+                  fontSize: { xs: '0.625rem', md: '0.75rem' },
+                  fontStyle: 'italic',
+                }}
+              >
+                💡 Klicke auf dein Profilbild für Einstellungen
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <BadgeButton />
+
+            <Badge
+              badgeContent={totalUnreadActivities + friendRequests.length}
+              color='error'
+              invisible={totalUnreadActivities + friendRequests.length === 0}
               sx={{
-                opacity: 0.8,
-                mt: 1,
-                fontSize: { xs: '0.75rem', md: '0.875rem' },
+                '& .MuiBadge-badge': {
+                  backgroundColor: '#ff4444',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  minWidth: '20px',
+                  height: '20px',
+                  fontSize: '0.75rem',
+                },
               }}
             >
-              Entdecke, bewerte und verwalte deine Lieblingsserien und -filme
-            </Typography>
-            <Typography
-              variant='caption'
-              sx={{
-                opacity: 0.6,
-                mt: 0.5,
-                fontSize: { xs: '0.625rem', md: '0.75rem' },
-                fontStyle: 'italic',
-              }}
-            >
-              💡 Klicke auf dein Profilbild für Einstellungen
-            </Typography>
+              <Button
+                variant='contained'
+                onClick={() => navigate('/friends')}
+                startIcon={<People />}
+                className='main-header-button'
+                sx={{
+                  background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
+                  color: '#000',
+                  fontWeight: 'bold',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
+                    boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                    transform: 'translateY(-2px)',
+                  },
+                  fontSize: { xs: '0.75rem', md: '0.875rem' },
+                  padding: { xs: '8px 16px', md: '10px 20px' },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Freunde
+              </Button>
+            </Badge>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <BadgeButton />
+        {/* Statistiken - je nach Tab unterschiedlich */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'repeat(2, 1fr)',
+              sm: 'repeat(6, 1fr)',
+            },
+            gap: { xs: 2, md: 3 },
 
-          <Badge
-            badgeContent={totalUnreadActivities + friendRequests.length}
-            color='error'
-            invisible={totalUnreadActivities + friendRequests.length === 0}
-            sx={{
-              '& .MuiBadge-badge': {
-                backgroundColor: '#ff4444',
-                color: 'white',
-                fontWeight: 'bold',
-                minWidth: '20px',
-                height: '20px',
-                fontSize: '0.75rem',
-              },
-            }}
-          >
-            <Button
-              variant='contained'
-              onClick={() => navigate('/friends')}
-              startIcon={<People />}
-              className='main-header-button'
-              sx={{
-                background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-                color: '#000',
-                fontWeight: 'bold',
-                borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                  boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
-                  transform: 'translateY(-2px)',
-                },
-                fontSize: { xs: '0.75rem', md: '0.875rem' },
-                padding: { xs: '8px 16px', md: '10px 20px' },
-                transition: 'all 0.3s ease',
-              }}
-            >
-              Freunde
-            </Button>
-          </Badge>
-        </Box>
-      </Box>
-
-      {/* Statistiken - je nach Tab unterschiedlich */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: 'repeat(2, 1fr)',
-            sm: 'repeat(6, 1fr)',
-          },
-          gap: { xs: 2, md: 3 },
-
-          px: { xs: 0.5, md: 0 },
-        }}
-      >
-        {tabValue === 0 ? (
-          // Serien-spezifische Stats
-          <>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Typography
-                  variant='h4'
-                  color='primary'
-                  gutterBottom
-                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-                >
-                  {seriesStats.count}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Serien
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Box
-                  display='flex'
-                  alignItems='center'
-                  justifyContent='center'
-                  gap={1}
-                >
-                  <TrendingUp
-                    sx={{
-                      color: '#66bb6a',
-                      fontSize: { xs: '1.25rem', md: '1.5rem' },
-                    }}
-                  />
+            px: { xs: 0.5, md: 0 },
+          }}
+        >
+          {tabValue === 0 ? (
+            // Serien-spezifische Stats
+            <>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
+                    color='primary'
                     gutterBottom
                     sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
                   >
-                    {seriesStats.totalWatchedEpisodes}
+                    {seriesStats.count}
                   </Typography>
-                </Box>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Episoden gesehen
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Box
-                  display='flex'
-                  alignItems='center'
-                  justifyContent='center'
-                  gap={1}
-                >
-                  <Star
-                    sx={{
-                      color: '#ffa726',
-                      fontSize: { xs: '1.25rem', md: '1.5rem' },
-                    }}
-                  />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Serien
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Box
+                    display='flex'
+                    alignItems='center'
+                    justifyContent='center'
+                    gap={1}
+                  >
+                    <TrendingUp
+                      sx={{
+                        color: '#66bb6a',
+                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                      }}
+                    />
+                    <Typography
+                      variant='h4'
+                      gutterBottom
+                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    >
+                      {seriesStats.totalWatchedEpisodes}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Episoden gesehen
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Box
+                    display='flex'
+                    alignItems='center'
+                    justifyContent='center'
+                    gap={1}
+                  >
+                    <Star
+                      sx={{
+                        color: '#ffa726',
+                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                      }}
+                    />
+                    <Typography
+                      variant='h4'
+                      gutterBottom
+                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    >
+                      {seriesStats.averageRating > 0
+                        ? seriesStats.averageRating.toFixed(2)
+                        : '0.00'}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Ø Bewertung
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Tooltip
+                    title={(() => {
+                      const totalMinutes = seriesStats.totalWatchtime;
+                      const totalHours = Math.floor(totalMinutes / 60);
+                      const days = Math.floor(totalHours / 24);
+                      const years = Math.floor(days / 365);
+                      const months = Math.floor((days % 365) / 30);
+                      const weeks = Math.floor(((days % 365) % 30) / 7);
+                      const remainingDays = ((days % 365) % 30) % 7;
+                      const remainingHours = totalHours % 24;
+                      const remainingMinutes = totalMinutes % 60;
+
+                      const parts = [];
+                      if (years > 0)
+                        parts.push(`${years} Jahr${years !== 1 ? 'e' : ''}`);
+                      if (months > 0)
+                        parts.push(`${months} Monat${months !== 1 ? 'e' : ''}`);
+                      if (weeks > 0)
+                        parts.push(`${weeks} Woche${weeks !== 1 ? 'n' : ''}`);
+                      if (remainingDays > 0)
+                        parts.push(
+                          `${remainingDays} Tag${
+                            remainingDays !== 1 ? 'e' : ''
+                          }`
+                        );
+                      if (remainingHours > 0)
+                        parts.push(
+                          `${remainingHours} Stunde${
+                            remainingHours !== 1 ? 'n' : ''
+                          }`
+                        );
+                      if (remainingMinutes > 0)
+                        parts.push(
+                          `${remainingMinutes} Minute${
+                            remainingMinutes !== 1 ? 'n' : ''
+                          }`
+                        );
+
+                      return parts.length > 0 ? parts.join(', ') : '0 Minuten';
+                    })()}
+                    arrow
+                    placement='top'
+                  >
+                    <Typography
+                      variant='h4'
+                      color='secondary'
+                      gutterBottom
+                      sx={{
+                        fontSize: { xs: '1.75rem', md: '2.125rem' },
+                        cursor: 'help',
+                      }}
+                    >
+                      {(() => {
+                        const totalHours = Math.floor(
+                          seriesStats.totalWatchtime / 60
+                        );
+                        const days = Math.floor(totalHours / 24);
+
+                        if (days >= 365) {
+                          const years = Math.floor(days / 365);
+                          const remainingDaysAfterYears = days % 365;
+
+                          if (remainingDaysAfterYears >= 30) {
+                            const months = Math.floor(
+                              remainingDaysAfterYears / 30
+                            );
+                            const finalDays = remainingDaysAfterYears % 30;
+                            return finalDays > 0
+                              ? `${years}J ${months}M`
+                              : `${years}J ${months}M`;
+                          } else if (remainingDaysAfterYears >= 7) {
+                            const weeks = Math.floor(
+                              remainingDaysAfterYears / 7
+                            );
+                            const finalDays = remainingDaysAfterYears % 7;
+                            return finalDays > 0
+                              ? `${years}J ${weeks}W`
+                              : `${years}J ${weeks}W`;
+                          } else {
+                            return `${years}J ${remainingDaysAfterYears}T`;
+                          }
+                        } else if (days >= 30) {
+                          const months = Math.floor(days / 30);
+                          const remainingDays = days % 30;
+                          if (remainingDays >= 7) {
+                            const weeks = Math.floor(remainingDays / 7);
+                            return `${months}M ${weeks}W`;
+                          } else {
+                            return `${months}M ${remainingDays}T`;
+                          }
+                        } else if (days >= 7) {
+                          const weeks = Math.floor(days / 7);
+                          const remainingDays = days % 7;
+                          return remainingDays > 0
+                            ? `${weeks}W ${remainingDays}T`
+                            : `${weeks}W`;
+                        } else if (days > 0) {
+                          return `${days}T`;
+                        } else {
+                          return `${totalHours}h`;
+                        }
+                      })()}
+                    </Typography>
+                  </Tooltip>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Watchzeit
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
+                    color='info.main'
+                    gutterBottom
+                    sx={{
+                      fontSize: { xs: '1.75rem', md: '2.125rem' },
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {seriesStats.favoriteGenre}
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Top Genre
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Typography
+                    variant='h4'
+                    color='warning.main'
                     gutterBottom
                     sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
                   >
-                    {seriesStats.averageRating > 0
-                      ? seriesStats.averageRating.toFixed(2)
-                      : '0.00'}
+                    {seriesStats.favoriteProvider}
                   </Typography>
-                </Box>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Ø Bewertung
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Tooltip
-                  title={(() => {
-                    const totalMinutes = seriesStats.totalWatchtime;
-                    const totalHours = Math.floor(totalMinutes / 60);
-                    const days = Math.floor(totalHours / 24);
-                    const years = Math.floor(days / 365);
-                    const months = Math.floor((days % 365) / 30);
-                    const weeks = Math.floor(((days % 365) % 30) / 7);
-                    const remainingDays = ((days % 365) % 30) % 7;
-                    const remainingHours = totalHours % 24;
-                    const remainingMinutes = totalMinutes % 60;
-
-                    const parts = [];
-                    if (years > 0)
-                      parts.push(`${years} Jahr${years !== 1 ? 'e' : ''}`);
-                    if (months > 0)
-                      parts.push(`${months} Monat${months !== 1 ? 'e' : ''}`);
-                    if (weeks > 0)
-                      parts.push(`${weeks} Woche${weeks !== 1 ? 'n' : ''}`);
-                    if (remainingDays > 0)
-                      parts.push(
-                        `${remainingDays} Tag${remainingDays !== 1 ? 'e' : ''}`
-                      );
-                    if (remainingHours > 0)
-                      parts.push(
-                        `${remainingHours} Stunde${
-                          remainingHours !== 1 ? 'n' : ''
-                        }`
-                      );
-                    if (remainingMinutes > 0)
-                      parts.push(
-                        `${remainingMinutes} Minute${
-                          remainingMinutes !== 1 ? 'n' : ''
-                        }`
-                      );
-
-                    return parts.length > 0 ? parts.join(', ') : '0 Minuten';
-                  })()}
-                  arrow
-                  placement='top'
-                >
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Top Provider
+                  </Typography>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            // Film-spezifische Stats
+            <>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='secondary'
                     gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {movieStats.count}
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Filme
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Box
+                    display='flex'
+                    alignItems='center'
+                    justifyContent='center'
+                    gap={1}
+                  >
+                    <TrendingUp
+                      sx={{
+                        color: '#66bb6a',
+                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                      }}
+                    />
+                    <Typography
+                      variant='h4'
+                      gutterBottom
+                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    >
+                      {movieStats.watchedCount}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Gesehen
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Box
+                    display='flex'
+                    alignItems='center'
+                    justifyContent='center'
+                    gap={1}
+                  >
+                    <Star
+                      sx={{
+                        color: '#ffa726',
+                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                      }}
+                    />
+                    <Typography
+                      variant='h4'
+                      gutterBottom
+                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    >
+                      {movieStats.averageRating > 0
+                        ? movieStats.averageRating.toFixed(2)
+                        : '0.00'}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Ø Bewertung
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Typography
+                    variant='h4'
+                    color='primary'
+                    gutterBottom
+                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                  >
+                    {movieStats.unreleasedCount}
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Unreleased
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                  <Typography
+                    variant='h4'
+                    color='info.main'
+                    gutterBottom
                     sx={{
                       fontSize: { xs: '1.75rem', md: '2.125rem' },
-                      cursor: 'help',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {(() => {
-                      const totalHours = Math.floor(
-                        seriesStats.totalWatchtime / 60
-                      );
-                      const days = Math.floor(totalHours / 24);
-
-                      if (days >= 365) {
-                        const years = Math.floor(days / 365);
-                        const remainingDaysAfterYears = days % 365;
-
-                        if (remainingDaysAfterYears >= 30) {
-                          const months = Math.floor(
-                            remainingDaysAfterYears / 30
-                          );
-                          const finalDays = remainingDaysAfterYears % 30;
-                          return finalDays > 0
-                            ? `${years}J ${months}M`
-                            : `${years}J ${months}M`;
-                        } else if (remainingDaysAfterYears >= 7) {
-                          const weeks = Math.floor(remainingDaysAfterYears / 7);
-                          const finalDays = remainingDaysAfterYears % 7;
-                          return finalDays > 0
-                            ? `${years}J ${weeks}W`
-                            : `${years}J ${weeks}W`;
-                        } else {
-                          return `${years}J ${remainingDaysAfterYears}T`;
-                        }
-                      } else if (days >= 30) {
-                        const months = Math.floor(days / 30);
-                        const remainingDays = days % 30;
-                        if (remainingDays >= 7) {
-                          const weeks = Math.floor(remainingDays / 7);
-                          return `${months}M ${weeks}W`;
-                        } else {
-                          return `${months}M ${remainingDays}T`;
-                        }
-                      } else if (days >= 7) {
-                        const weeks = Math.floor(days / 7);
-                        const remainingDays = days % 7;
-                        return remainingDays > 0
-                          ? `${weeks}W ${remainingDays}T`
-                          : `${weeks}W`;
-                      } else if (days > 0) {
-                        return `${days}T`;
-                      } else {
-                        return `${totalHours}h`;
-                      }
-                    })()}
+                    {movieStats.favoriteGenre}
                   </Typography>
-                </Tooltip>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Watchzeit
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Typography
-                  variant='h4'
-                  color='info.main'
-                  gutterBottom
-                  sx={{
-                    fontSize: { xs: '1.75rem', md: '2.125rem' },
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {seriesStats.favoriteGenre}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Top Genre
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Typography
-                  variant='h4'
-                  color='warning.main'
-                  gutterBottom
-                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-                >
-                  {seriesStats.favoriteProvider}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Top Provider
-                </Typography>
-              </CardContent>
-            </Card>
-          </>
-        ) : (
-          // Film-spezifische Stats
-          <>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Typography
-                  variant='h4'
-                  color='secondary'
-                  gutterBottom
-                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-                >
-                  {movieStats.count}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Filme
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Box
-                  display='flex'
-                  alignItems='center'
-                  justifyContent='center'
-                  gap={1}
-                >
-                  <TrendingUp
-                    sx={{
-                      color: '#66bb6a',
-                      fontSize: { xs: '1.25rem', md: '1.5rem' },
-                    }}
-                  />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                  >
+                    Top Genre
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
+                    color='warning.main'
                     gutterBottom
                     sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
                   >
-                    {movieStats.watchedCount}
+                    {movieStats.favoriteProvider}
                   </Typography>
-                </Box>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Gesehen
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Box
-                  display='flex'
-                  alignItems='center'
-                  justifyContent='center'
-                  gap={1}
-                >
-                  <Star
-                    sx={{
-                      color: '#ffa726',
-                      fontSize: { xs: '1.25rem', md: '1.5rem' },
-                    }}
-                  />
                   <Typography
-                    variant='h4'
-                    gutterBottom
-                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
                   >
-                    {movieStats.averageRating > 0
-                      ? movieStats.averageRating.toFixed(2)
-                      : '0.00'}
+                    Provider
                   </Typography>
-                </Box>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Ø Bewertung
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Typography
-                  variant='h4'
-                  color='primary'
-                  gutterBottom
-                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-                >
-                  {movieStats.unreleasedCount}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Unreleased
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Typography
-                  variant='h4'
-                  color='info.main'
-                  gutterBottom
-                  sx={{
-                    fontSize: { xs: '1.75rem', md: '2.125rem' },
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {movieStats.favoriteGenre}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Top Genre
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                <Typography
-                  variant='h4'
-                  color='warning.main'
-                  gutterBottom
-                  sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-                >
-                  {movieStats.favoriteProvider}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
-                >
-                  Provider
-                </Typography>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </Box>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </Box>
 
-      {/* Tabs für Serien und Filme */}
-      <Card>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant='fullWidth'
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            '& .MuiTab-root': {
-              fontSize: { xs: '0.75rem', md: '0.875rem' },
-              minHeight: { xs: 48, md: 72 },
-              padding: { xs: '6px 8px', md: '12px 16px' },
-              '&:hover': {
-                backgroundColor: 'transparent',
-                color: 'inherit',
+        {/* Tabs für Serien und Filme */}
+        <Card>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            variant='fullWidth'
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              '& .MuiTab-root': {
+                fontSize: { xs: '0.75rem', md: '0.875rem' },
+                minHeight: { xs: 48, md: 72 },
+                padding: { xs: '6px 8px', md: '12px 16px' },
+                '&:hover': {
+                  backgroundColor: 'transparent',
+                  color: 'inherit',
+                },
               },
-            },
-            '& .MuiTouchRipple-root': {
-              display: 'none',
-            },
-          }}
-        >
-          <Tab
-            label={`Serien (${combinedStats.seriesCount})`}
-            icon={
-              <CalendarToday sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
-            }
-            iconPosition='start'
-            disableRipple
-          />
-          <Tab
-            label={`Filme (${combinedStats.moviesCount})`}
-            icon={<Movie sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />}
-            iconPosition='start'
-            disableRipple
-          />
-        </Tabs>
+              '& .MuiTouchRipple-root': {
+                display: 'none',
+              },
+            }}
+          >
+            <Tab
+              label={`Serien (${combinedStats.seriesCount})`}
+              icon={
+                <CalendarToday
+                  sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}
+                />
+              }
+              iconPosition='start'
+              disableRipple
+            />
+            <Tab
+              label={`Filme (${combinedStats.moviesCount})`}
+              icon={<Movie sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />}
+              iconPosition='start'
+              disableRipple
+            />
+          </Tabs>
 
-        <TabPanel value={tabValue} index={0}>
-          <Box sx={{ p: { xs: 1, md: 2 } }}>
-            <Box sx={{ mb: { xs: 2, md: 3 } }}>
-              <SearchFilters
-                onSearchChange={handleSearchChange}
-                onGenreChange={handleGenreChange}
-                onProviderChange={handleProviderChange}
+          <TabPanel value={tabValue} index={0}>
+            <Box sx={{ p: { xs: 1, md: 2 } }}>
+              <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                <SearchFilters
+                  onSearchChange={handleSearchChange}
+                  onGenreChange={handleGenreChange}
+                  onProviderChange={handleProviderChange}
+                />
+              </Box>
+              <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                <Legend />
+              </Box>
+              <SeriesGrid
+                searchValue={searchValue}
+                selectedGenre={selectedGenre}
+                selectedProvider={selectedProvider}
               />
             </Box>
-            <Box sx={{ mb: { xs: 2, md: 3 } }}>
-              <Legend />
-            </Box>
-            <SeriesGrid
-              searchValue={searchValue}
-              selectedGenre={selectedGenre}
-              selectedProvider={selectedProvider}
-            />
-          </Box>
-        </TabPanel>
+          </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
-          <Box sx={{ p: { xs: 1, md: 2 } }}>
-            <Box sx={{ mb: { xs: 2, md: 3 } }}>
-              <MovieSearchFilters
-                onSearchChange={handleMovieSearchChange}
-                onGenreChange={handleMovieGenreChange}
-                onProviderChange={handleMovieProviderChange}
+          <TabPanel value={tabValue} index={1}>
+            <Box sx={{ p: { xs: 1, md: 2 } }}>
+              <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                <MovieSearchFilters
+                  onSearchChange={handleMovieSearchChange}
+                  onGenreChange={handleMovieGenreChange}
+                  onProviderChange={handleMovieProviderChange}
+                />
+              </Box>
+              <MovieGrid
+                searchValue={movieSearchValue}
+                selectedGenre={movieSelectedGenre}
+                selectedProvider={movieSelectedProvider}
               />
             </Box>
-            <MovieGrid
-              searchValue={movieSearchValue}
-              selectedGenre={movieSelectedGenre}
-              selectedProvider={movieSelectedProvider}
-            />
-          </Box>
-        </TabPanel>
-      </Card>
+          </TabPanel>
+        </Card>
 
-      {/* Profile Dialog */}
-      <ProfileDialog
-        open={profileDialogOpen}
-        onClose={() => setProfileDialogOpen(false)}
-      />
+        {/* Profile Dialog */}
+        <ProfileDialog
+          open={profileDialogOpen}
+          onClose={() => setProfileDialogOpen(false)}
+        />
 
-      {/* New Season Notification Dialog */}
-      <NewSeasonNotificationDialog
-        open={seriesWithNewSeasons.length > 0}
-        onClose={clearNewSeasons}
-        seriesWithNewSeasons={seriesWithNewSeasons}
-      />
+        {/* New Season Notification Dialog */}
+        <NewSeasonNotificationDialog
+          open={seriesWithNewSeasons.length > 0}
+          onClose={clearNewSeasons}
+          seriesWithNewSeasons={seriesWithNewSeasons}
+        />
+      </>
     </Container>
   );
 };

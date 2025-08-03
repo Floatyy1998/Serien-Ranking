@@ -6,7 +6,7 @@ import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useStats } from '../../contexts/StatsProvider';
 import { useDebounce } from '../../hooks/useDebounce';
-import { useFirebaseCache } from '../../hooks/useFirebaseCache';
+import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 import { activityBatchManager } from '../../utils/activityBatchManager';
 import BadgeSystem from '../../utils/badgeSystem';
@@ -62,13 +62,14 @@ export const SeriesGrid = ({
     sessionStorage.setItem('todayDialogShownThisSession', 'true');
   };
 
-  // Freund-Serien über optimierten Cache laden
+  // 🚀 Enhanced Freund-Serien über optimierten Cache laden
   const { data: friendSeriesData, loading: friendSeriesLoading } =
-    useFirebaseCache<Record<string, any>>(
+    useEnhancedFirebaseCache<Record<string, any>>(
       targetUserId ? `${targetUserId}/serien` : '',
       {
         ttl: 2 * 60 * 1000, // 2 Minuten Cache
         useRealtimeListener: true, // Realtime für Live-Updates
+        enableOfflineSupport: true, // Offline-Unterstützung für Freund-Serien
       }
     );
 

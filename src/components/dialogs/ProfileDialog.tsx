@@ -30,8 +30,8 @@ import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import React, { useRef, useState } from 'react';
 import { useAuth } from '../../App';
+import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { useFirebaseBatch } from '../../hooks/useFirebaseBatch';
-import { useFirebaseCache } from '../../hooks/useFirebaseCache';
 
 interface ProfileDialogProps {
   open: boolean;
@@ -61,14 +61,13 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
     maxDelayMs: 2000,
   });
 
-  // 🚀 Optimierte Profile-Daten mit Cache
-  const { data: userData, loading: userDataLoading } = useFirebaseCache<any>(
-    user && open ? `users/${user.uid}` : '',
-    {
+  // 🚀 Enhanced Profile-Daten mit Cache & Offline-Support
+  const { data: userData, loading: userDataLoading } =
+    useEnhancedFirebaseCache<any>(user && open ? `users/${user.uid}` : '', {
       ttl: 5 * 60 * 1000, // 5 Minuten Cache für Profile-Daten
       useRealtimeListener: true, // Realtime für Profile-Updates
-    }
-  );
+      enableOfflineSupport: true, // Offline-Unterstützung für Profile
+    });
 
   // Profildaten aus Cache laden
   React.useEffect(() => {
