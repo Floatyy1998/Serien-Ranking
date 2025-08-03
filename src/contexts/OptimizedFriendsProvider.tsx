@@ -11,6 +11,7 @@ import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { Friend, FriendActivity, FriendRequest } from '../interfaces/Friend';
 import { limitActivities } from '../utils/activityCleanup';
+import { getOfflineBadgeSystem } from '../utils/offlineBadgeSystem';
 
 interface OptimizedFriendsContextType {
   friends: Friend[];
@@ -338,11 +339,22 @@ export const OptimizedFriendsProvider = ({
       if (!userData) return false;
 
       const targetUserId = Object.keys(userData)[0];
+      const targetUserData = userData[targetUserId];
+      
+      // Aktueller User Daten laden für fromUsername/fromUserEmail
+      const currentUserRef = firebase.database().ref(`users/${user.uid}`);
+      const currentUserSnapshot = await currentUserRef.once('value');
+      const currentUserData = currentUserSnapshot.val();
+
       const requestRef = firebase.database().ref('friendRequests').push();
 
       await requestRef.set({
         fromUserId: user.uid,
         toUserId: targetUserId,
+        fromUsername: currentUserData?.username || user.displayName || 'Unbekannt',
+        toUsername: targetUserData?.username || username,
+        fromUserEmail: currentUserData?.email || user.email || '',
+        toUserEmail: targetUserData?.email || '',
         status: 'pending',
         sentAt: firebase.database.ServerValue.TIMESTAMP,
       });
@@ -406,6 +418,15 @@ export const OptimizedFriendsProvider = ({
         status: 'accepted',
         respondedAt: firebase.database.ServerValue.TIMESTAMP,
       });
+
+      // Badge-Check ausführen (Social badges für neue Freunde)
+      try {
+        const badgeSystem = getOfflineBadgeSystem(user.uid);
+        badgeSystem.invalidateCache(); // Cache leeren für frische Friend-Zählung
+        await badgeSystem.checkForNewBadges();
+      } catch (badgeError) {
+        console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
+      }
 
       // Refresh friends data
       refetchFriends();

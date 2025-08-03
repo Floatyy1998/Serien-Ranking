@@ -1,5 +1,6 @@
-import { BadgeSystem, EarnedBadge } from './badgeSystem';
-// import { pushActivityWithLimit } from './activityCleanup'; // Nicht mehr benötigt - keine Friend-Activities für Episodes
+import { EarnedBadge } from './badgeSystem';
+import { getOfflineBadgeSystem } from './offlineBadgeSystem';
+import { badgeCounterService } from './badgeCounterService';
 import {
   BatchDetectionOptions,
   BatchResult,
@@ -225,17 +226,11 @@ class ActivityBatchManager {
     batchResult: BatchResult
   ): Promise<void> {
     try {
-      const badgeSystem = new BadgeSystem(userId);
+      // 🍿 Binge-Session Detection
+      await this.detectBingeSession(userId, batchResult);
 
-      // Erstelle Badge-Check-Daten basierend auf Batch-Typ
-      const activityData = {
-        type: batchResult.batchType,
-        episodes: batchResult.episodes.length,
-        seriesTitle: batchResult.episodes[0]?.seriesTitle || 'Unbekannte Serie',
-        timestamp: Date.now(),
-      };
-
-      const newBadges = await badgeSystem.checkForNewBadges(activityData);
+      const badgeSystem = getOfflineBadgeSystem(userId);
+      const newBadges = await badgeSystem.checkForNewBadges();
 
       if (newBadges.length > 0) {
         // Callback ausführen wenn registriert
@@ -248,31 +243,46 @@ class ActivityBatchManager {
   }
 
   /**
-   * Prüft auf neue Badges für individuelle Episoden (besonders Rewatch-Badges)
+   * 🍿 Erkenne Binge-Sessions aus Batch-Daten
+   */
+  private async detectBingeSession(userId: string, batchResult: BatchResult): Promise<void> {
+    try {
+      const episodeCount = batchResult.episodes.length;
+      
+      // Bestimme Binge-Typ basierend auf Episode-Count und Zeit
+      let bingeTimeframe = '';
+      
+      if (episodeCount >= 3 && episodeCount < 8) {
+        bingeTimeframe = '2hours'; // Snack-Session / Appetit-Anreger
+      } else if (episodeCount >= 8 && episodeCount < 12) {
+        bingeTimeframe = '4hours'; // Couch-Potato / Serien-Schnürer
+      } else if (episodeCount >= 12) {
+        bingeTimeframe = '1day'; // Staffel-Fresser+
+      }
+
+      if (bingeTimeframe && episodeCount >= 3) {
+        await badgeCounterService.recordBingeSession(userId, episodeCount, bingeTimeframe);
+        console.log(`🍿 Binge-Session erkannt: ${episodeCount} Episoden (${bingeTimeframe})`);
+      }
+    } catch (error) {
+      console.error('Fehler bei Binge-Detection:', error);
+    }
+  }
+
+  /**
+   * Prüft auf neue Badges für individuelle Episoden + aktualisiert Counter
    */
   private async checkBadgesForIndividualEpisode(
     userId: string,
     episodeData: EpisodeWatchData
   ): Promise<void> {
     try {
-      const badgeSystem = new BadgeSystem(userId);
+      // 1. Counter aktualisieren
+      await this.updateCountersForEpisode(userId, episodeData);
 
-      // Erstelle Activity-Daten für Badge-Check - IMMER als episode_watched
-      // (Rewatch-Erkennung erfolgt über watchCount und Titel-Pattern)
-      const activityData = {
-        type: 'episode_watched',
-        episodes: 1,
-        seriesTitle: episodeData.seriesTitle,
-        timestamp: episodeData.watchedTimestamp,
-        isRewatch: episodeData.isRewatch,
-        watchCount: episodeData.watchCount,
-        tmdbId: episodeData.tmdbId,
-        airDate: episodeData.airDate, // Für Release Day Badge-Prüfung
-        seasonNumber: episodeData.seasonNumber,
-        episodeNumber: episodeData.episodeNumber,
-      };
-
-      const newBadges = await badgeSystem.checkForNewBadges(activityData);
+      // 2. Badge-Check
+      const badgeSystem = getOfflineBadgeSystem(userId);
+      const newBadges = await badgeSystem.checkForNewBadges();
 
       if (newBadges.length > 0) {
         // Callback ausführen wenn registriert
@@ -282,6 +292,39 @@ class ActivityBatchManager {
         }
       }
     } catch (error) {}
+  }
+
+  /**
+   * Aktualisiert Counter basierend auf Episode-Daten
+   */
+  private async updateCountersForEpisode(
+    userId: string,
+    episodeData: EpisodeWatchData
+  ): Promise<void> {
+    try {
+      // Streak-Counter aktualisieren (bei jeder Episode)
+      await badgeCounterService.updateStreakCounter(userId);
+
+      // Quickwatch-Counter falls Episode am Release Day
+      if (episodeData.airDate && !episodeData.isRewatch) {
+        const airDate = new Date(episodeData.airDate).toDateString();
+        const today = new Date().toDateString();
+        
+        if (airDate === today) {
+          await badgeCounterService.incrementQuickwatchCounter(userId);
+        }
+      }
+
+      // Rewatch-Counter falls Rewatch
+      if (episodeData.isRewatch) {
+        await badgeCounterService.incrementRewatchCounter(userId);
+      }
+
+      // Marathon-Counter (wöchentlich)
+      await badgeCounterService.recordMarathonProgress(userId, 1);
+    } catch (error) {
+      console.error('Fehler beim Counter-Update:', error);
+    }
   }
 }
 

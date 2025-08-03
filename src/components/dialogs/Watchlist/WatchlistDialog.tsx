@@ -18,9 +18,8 @@ import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCach
 import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
 import { Series } from '../../../interfaces/Series';
 import {
-  logBadgeRewatch,
-  logEpisodeWatched,
-} from '../../../utils/badgeActivityLogger';
+  logEpisodeWatchedClean,
+} from '../../../utils/cleanActivityLogger';
 import {
   getNextRewatchEpisode,
   hasActiveRewatch,
@@ -477,7 +476,7 @@ const WatchlistDialog = ({
           const seriesTitle =
             series.title || series.original_name || 'Unbekannte Serie';
 
-          await logEpisodeWatched(
+          await logEpisodeWatchedClean(
             user.uid,
             seriesTitle,
             nextEpisode.seasonNumber,
@@ -488,22 +487,7 @@ const WatchlistDialog = ({
           );
         }
       } else if (wasWatched) {
-        // Rewatch: Badge-Activity für Rewatch
-        const seriesTitle =
-          series.title || series.original_name || 'Unbekannte Serie';
-        const episodeData = series.seasons?.find(
-          (s) => s.seasonNumber === nextEpisode.seasonNumber
-        )?.episodes?.[nextEpisode.episodeIndex];
-
-        if (episodeData) {
-          await logBadgeRewatch(
-            user.uid,
-            seriesTitle,
-            series.id,
-            episodeData.air_date,
-            1 // episodeCount = 1 für einzelne Episode
-          );
-        }
+        // Rewatch-Logging ist bereits in logEpisodeWatchedClean integriert über isRewatch-Parameter
       }
 
       // 🚀 WICHTIG: Cache invalidieren nach Episode-Update um sofortige UI-Updates zu gewährleisten
