@@ -461,11 +461,6 @@ export const SeriesGrid = ({
 
           if (isRewatch) {
             // Rewatch der gesamten Staffel
-            const watchCounts = updatedEpisodes.map(
-              (e: any) => e.watchCount || 1
-            );
-            const minWatchCount = Math.min(...watchCounts);
-
             // 🚫 Keine Friend-Activity für Season-Rewatch
             // Nur Badge-System Activity logging für Season Rewatch
             const { logSeasonWatched } = await import(
@@ -492,17 +487,6 @@ export const SeriesGrid = ({
             });
 
             if (hasReducedWatchCount) {
-              const watchCounts = updatedEpisodes
-                .filter((e: any) => e.watched)
-                .map((e: any) => e.watchCount || 1);
-              const avgWatchCount =
-                watchCounts.length > 0
-                  ? Math.round(
-                      watchCounts.reduce((a: number, b: number) => a + b, 0) /
-                        watchCounts.length
-                    )
-                  : 1;
-
               // 🚫 Keine Friend-Activity für Season-Watch-Count-Änderung
             }
           } else if (forceWatched || !allWatched) {
@@ -635,10 +619,6 @@ export const SeriesGrid = ({
           episodeData.watchCount = newWatchCount;
         } else if (forceUnwatch && episode.watched) {
           // Unwatch-Activity: Erstelle direkte Activity (nicht batchbar)
-          const currentWatchCount = episode.watchCount || 1;
-          const newWatchCount =
-            currentWatchCount > 1 ? currentWatchCount - 1 : 0;
-
           // 🚫 Keine Friend-Activity für Episode-Unwatch
           // Das ist auch eine Episode-bezogene Aktivität
 
