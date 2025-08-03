@@ -3,8 +3,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
-import { useFriends } from '../../contexts/FriendsProvider';
-import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useStats } from '../../contexts/StatsProvider';
 import { useDebounce } from '../../hooks/useDebounce';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
@@ -34,7 +33,7 @@ export const SeriesGrid = ({
   const { seriesList: contextSeriesList } = useSeriesList();
   const auth = useAuth();
   const user = auth?.user;
-  const { updateUserActivity } = useFriends();
+  // const { updateUserActivity } = useOptimizedFriends(); // Nicht mehr benötigt - keine Friend-Activities für Episodes
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
   const [showTodayDialog, setShowTodayDialog] = useState(false);
@@ -466,13 +465,9 @@ export const SeriesGrid = ({
               (e: any) => e.watchCount || 1
             );
             const minWatchCount = Math.min(...watchCounts);
-            await updateUserActivity({
-              type: 'episodes_watched',
-              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} komplett (${minWatchCount}x gesehen)`,
-              tmdbId: series.id,
-            });
 
-            // Badge-System Activity logging für Season Rewatch (KEINE Friend-Activity)
+            // 🚫 Keine Friend-Activity für Season-Rewatch
+            // Nur Badge-System Activity logging für Season Rewatch
             const { logSeasonWatched } = await import(
               '../../utils/badgeActivityLogger'
             );
@@ -507,11 +502,8 @@ export const SeriesGrid = ({
                         watchCounts.length
                     )
                   : 1;
-              await updateUserActivity({
-                type: 'episodes_watched',
-                itemTitle: `${seriesTitle} - Staffel ${seasonNumber} auf ${avgWatchCount}x reduziert`,
-                tmdbId: series.id,
-              });
+
+              // 🚫 Keine Friend-Activity für Season-Watch-Count-Änderung
             }
           } else if (forceWatched || !allWatched) {
             // Finde die Episoden die GERADE als watched markiert wurden (waren vorher unwatched)
@@ -526,14 +518,10 @@ export const SeriesGrid = ({
             if (newlyWatchedCount > 0) {
               // Direkte Activity für Staffel-Checkbox mit korrekter Staffelnummer
               if (previouslyUnwatched.length === season.episodes.length) {
-                // Ganze Staffel wurde komplett geschaut
-                await updateUserActivity({
-                  type: 'episodes_watched',
-                  itemTitle: `${seriesTitle} - Staffel ${seasonNumber} komplett geschaut`,
-                  tmdbId: series.id,
-                });
+                // Ganze Staffel wurde komplett geschaut - Nur Badge-System
+                // 🚫 Keine Friend-Activity für Season-Complete
 
-                // NUR Badge-System für Achievements (KEINE Friend-Activity)
+                // NUR Badge-System für Achievements
                 const { logSeasonWatched } = await import(
                   '../../utils/badgeActivityLogger'
                 );
@@ -546,14 +534,8 @@ export const SeriesGrid = ({
                   false // nicht rewatch
                 );
               } else {
-                // Teilweise Staffel geschaut
-                await updateUserActivity({
-                  type: 'episodes_watched',
-                  itemTitle: `${seriesTitle} - Staffel ${seasonNumber} (${newlyWatchedCount} Episoden geschaut)`,
-                  tmdbId: series.id,
-                });
-
-                // Badge für einzelne Episoden loggen (KEINE Friend-Activities)
+                // Teilweise Staffel geschaut - Nur Badge-System Logging
+                // 🏆 Badge für einzelne Episoden loggen (KEINE Friend-Activities)
                 const { logEpisodeWatched } = await import(
                   '../../utils/badgeActivityLogger'
                 );
@@ -656,13 +638,10 @@ export const SeriesGrid = ({
           const currentWatchCount = episode.watchCount || 1;
           const newWatchCount =
             currentWatchCount > 1 ? currentWatchCount - 1 : 0;
-          if (newWatchCount > 0) {
-            await updateUserActivity({
-              type: 'episode_watched',
-              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber} auf ${newWatchCount}x reduziert`,
-              tmdbId: series.id,
-            });
-          }
+
+          // 🚫 Keine Friend-Activity für Episode-Unwatch
+          // Das ist auch eine Episode-bezogene Aktivität
+
           return; // Kein Batch für Unwatch
         }
 

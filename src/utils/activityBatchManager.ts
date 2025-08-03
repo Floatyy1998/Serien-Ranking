@@ -1,5 +1,5 @@
-import firebase from 'firebase/compat/app';
 import { BadgeSystem, EarnedBadge } from './badgeSystem';
+// import { pushActivityWithLimit } from './activityCleanup'; // Nicht mehr benötigt - keine Friend-Activities für Episodes
 import {
   BatchDetectionOptions,
   BatchResult,
@@ -164,8 +164,8 @@ class ActivityBatchManager {
       episodeCount: batchResult.episodes.length,
     };
 
-    // Schreibe zu Firebase
-    await firebase.database().ref(`activities/${userId}`).push(activity);
+    // 🚫 Kein Friend-Activity-Logging mehr für Batch-Episode-Updates
+    // Nur noch Badge-System wird von einzelnen Komponenten direkt aufgerufen
   }
 
   /**
@@ -194,8 +194,8 @@ class ActivityBatchManager {
       timestamp: pendingActivity.timestamp,
     };
 
-    // Schreibe zu Firebase
-    await firebase.database().ref(`activities/${userId}`).push(activity);
+    // 🚫 Kein Friend-Activity-Logging mehr für Episode-Updates
+    // Nur noch Badge-System wird von einzelnen Komponenten direkt aufgerufen
 
     // Badge-Checks werden bereits beim Hinzufügen gemacht - nicht doppelt
   }

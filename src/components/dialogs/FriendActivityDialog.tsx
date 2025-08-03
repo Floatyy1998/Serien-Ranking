@@ -30,9 +30,9 @@ import {
 import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
-import { useFriends } from '../../contexts/FriendsProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
 import MovieDialog from './MovieDialog';
@@ -112,7 +112,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
   // Context hooks
   const auth = useAuth();
   const user = auth?.user;
-  const { updateUserActivity } = useFriends();
+  const { updateUserActivity } = useOptimizedFriends();
 
   // Snackbar handler
   const handleSnackbarClose = () => {

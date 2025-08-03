@@ -1,4 +1,5 @@
 import firebase from 'firebase/compat/app';
+import { pushActivityWithLimit } from './activityCleanup';
 
 export interface ActivityLog {
   type:
@@ -75,9 +76,8 @@ export const logActivity = async (
       friendActivity.rating = activity.rating;
     }
 
-    // Speichere Friend-Activity
-    const activitiesRef = firebase.database().ref(`activities/${userId}`);
-    await activitiesRef.push(friendActivity);
+    // Speichere Friend-Activity mit automatischer Limitierung
+    await pushActivityWithLimit(userId, friendActivity);
 
     // Prüfe Badge-System nach neuen Badges
   } catch (error) {

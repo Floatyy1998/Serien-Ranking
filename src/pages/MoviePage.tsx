@@ -4,7 +4,7 @@ import MovieSearchFilters from '../components/filters/MovieSearchFilters';
 import ProfileLayout from '../components/layout/ProfileLayout';
 import MovieGrid from '../components/movies/MovieGrid';
 import { useMovieList } from '../contexts/MovieListProvider';
-import { useSeriesList } from '../contexts/SeriesListProvider';
+import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { calculateOverallRating } from '../utils/rating';
 
 export const MoviePage: React.FC = () => {

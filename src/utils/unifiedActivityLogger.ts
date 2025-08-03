@@ -55,7 +55,7 @@ export const logEpisodeWatchedUnified = async (
       isRewatch
     );
   } catch (error) {
-    // Fehler beim Unified Episode-Logging
+    console.error('❌ Error in unified logging:', error);
   }
 };
 

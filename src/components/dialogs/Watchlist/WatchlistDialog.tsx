@@ -7,11 +7,12 @@ import {
   useTheme,
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAuth } from '../../../App';
-import { useFriends } from '../../../contexts/FriendsProvider';
+// import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider'; // Nicht mehr benötigt
+import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
 import { useDataProtection } from '../../../hooks/useDataProtection';
 import { Series } from '../../../interfaces/Series';
 import {
@@ -30,21 +31,12 @@ import WatchlistFilter from './WatchlistFilter';
 interface WatchlistDialogProps {
   open: boolean;
   onClose: () => void;
-  sortedWatchlistSeries: Series[];
-  handleWatchedToggleWithConfirmation: (
-    seasonNumber: number,
-    episodeIndex: number,
-    seriesId: number,
-    seriesNmr: number
-  ) => void;
-  setWatchlistSeries: React.Dispatch<React.SetStateAction<Series[]>>;
+  onSeriesUpdate?: () => void; // Callback für SearchFilters um Re-render zu triggern
 }
 const WatchlistDialog = ({
   open,
   onClose,
-  sortedWatchlistSeries,
-  handleWatchedToggleWithConfirmation,
-  setWatchlistSeries,
+  onSeriesUpdate,
 }: WatchlistDialogProps) => {
   const [filterInput, setFilterInput] = useState('');
   const [customOrderActive, setCustomOrderActive] = useState(
@@ -56,7 +48,8 @@ const WatchlistDialog = ({
   );
   const [filteredSeries, setFilteredSeries] = useState<Series[]>([]);
   const { user } = useAuth()!;
-  const { updateUserActivity } = useFriends();
+  const { seriesList, refetchSeries } = useSeriesList(); // Hole aktuelle Serien direkt aus Context + Cache-Invalidierung
+  // const { updateUserActivity } = useOptimizedFriends(); // Nicht mehr benötigt - unified logger verwendet
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showFilter, setShowFilter] = useState(!isMobile);
@@ -66,19 +59,10 @@ const WatchlistDialog = ({
   const [watchlistDialogOpen, setWatchlistDialogOpen] = useState(false);
 
   // 🛡️ Datenschutz bei Seitenwechsel/Schließung
-  const { addProtectedUpdate, removeProtectedUpdate, hasPendingUpdates } =
-    useDataProtection();
+  const { addProtectedUpdate } = useDataProtection();
 
   // Erweiterte onClose Funktion mit Datenschutz
   const handleDialogClose = () => {
-    if (hasPendingUpdates()) {
-      const confirmClose = window.confirm(
-        'Es sind noch Änderungen ausstehend. Möchten Sie den Dialog wirklich schließen?'
-      );
-      if (!confirmClose) {
-        return; // Bleibe im Dialog
-      }
-    }
     onClose();
   };
 
@@ -110,6 +94,41 @@ const WatchlistDialog = ({
   useEffect(() => {
     localStorage.setItem('hideRewatches', hideRewatches.toString());
   }, [hideRewatches]);
+
+  // Definiere getNextUnwatchedEpisode ZUERST, bevor es verwendet wird
+  const getNextUnwatchedEpisode = (series: Series) => {
+    // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
+    for (const season of series.seasons) {
+      for (let i = 0; i < season.episodes.length; i++) {
+        const episode = season.episodes[i];
+        if (!episode.watched) {
+          return {
+            ...episode,
+            seasonNumber: season.seasonNumber,
+            episodeIndex: i,
+            isRewatch: false,
+          };
+        }
+      }
+    }
+
+    // Nur wenn keine ungesehenen Episoden vorhanden sind: Prüfe auf Rewatch-Episoden
+    if (!hideRewatches && hasActiveRewatch(series)) {
+      const nextRewatch = getNextRewatchEpisode(series);
+      if (nextRewatch) {
+        return {
+          ...nextRewatch,
+          // Markiere als Rewatch-Episode für spätere Verwendung
+          isRewatch: true,
+          currentWatchCount: nextRewatch.currentWatchCount,
+          targetWatchCount: nextRewatch.targetWatchCount,
+        };
+      }
+    }
+
+    return null;
+  };
+
   const toggleSort = (field: string) => {
     if (customOrderActive) {
       setCustomOrderActive(false);
@@ -146,6 +165,16 @@ const WatchlistDialog = ({
     });
   };
 
+  // Hole aktuelle Watchlist-Serien direkt aus dem Context statt Props zu verwenden
+  const currentWatchlistSeries = useMemo(() => {
+    return (seriesList || [])
+      .filter((series) => series.watchlist)
+      .filter((series) => {
+        const nextEpisode = getNextUnwatchedEpisode(series);
+        return nextEpisode && new Date(nextEpisode.air_date) <= new Date();
+      });
+  }, [seriesList, hideRewatches]); // hideRewatches beeinflusst getNextUnwatchedEpisode
+
   // Hauptlogik für Sortierung und benutzerdefinierte Reihenfolge
   useEffect(() => {
     // NICHT aktualisieren wenn lokale Updates pending sind (verhindert Flackern)
@@ -154,9 +183,9 @@ const WatchlistDialog = ({
     }
 
     if (!customOrderActive) {
-      // Normale Sortierung - immer mit aktuellen Daten
-      setFilteredSeries(getSortedSeries(sortedWatchlistSeries));
-    } else if (user && sortedWatchlistSeries.length > 0) {
+      // Normale Sortierung - immer mit aktuellen Daten aus Context
+      setFilteredSeries(getSortedSeries(currentWatchlistSeries));
+    } else if (user && currentWatchlistSeries.length > 0) {
       // 🚀 Optimiert: Cache die Watchlist-Reihenfolge lokal
       const cachedOrderKey = `watchlistOrder_${user.uid}`;
       let savedOrder: number[] | null = null;
@@ -172,10 +201,10 @@ const WatchlistDialog = ({
         // Verwende Cache
         const ordered = savedOrder
           .map((id: number) =>
-            sortedWatchlistSeries.find((series) => series.id === id)
+            currentWatchlistSeries.find((series) => series.id === id)
           )
           .filter(Boolean) as Series[];
-        const missing = sortedWatchlistSeries.filter(
+        const missing = currentWatchlistSeries.filter(
           (series) => !ordered.some((s) => s.id === series.id)
         );
         setFilteredSeries([...ordered, ...missing]);
@@ -206,10 +235,10 @@ const WatchlistDialog = ({
               // Re-render mit neuen Daten
               const newOrdered = firebaseOrder
                 .map((id: number) =>
-                  sortedWatchlistSeries.find((series) => series.id === id)
+                  currentWatchlistSeries.find((series) => series.id === id)
                 )
                 .filter(Boolean) as Series[];
-              const newMissing = sortedWatchlistSeries.filter(
+              const newMissing = currentWatchlistSeries.filter(
                 (series) => !newOrdered.some((s) => s.id === series.id)
               );
               setFilteredSeries([...newOrdered, ...newMissing]);
@@ -234,24 +263,24 @@ const WatchlistDialog = ({
 
             const ordered = firebaseOrder
               .map((id: number) =>
-                sortedWatchlistSeries.find((series) => series.id === id)
+                currentWatchlistSeries.find((series) => series.id === id)
               )
               .filter(Boolean) as Series[];
-            const missing = sortedWatchlistSeries.filter(
+            const missing = currentWatchlistSeries.filter(
               (series) => !ordered.some((s) => s.id === series.id)
             );
             setFilteredSeries([...ordered, ...missing]);
           } else {
-            setFilteredSeries(sortedWatchlistSeries);
+            setFilteredSeries(currentWatchlistSeries);
           }
         });
       }
-    } else if (sortedWatchlistSeries.length > 0) {
+    } else if (currentWatchlistSeries.length > 0) {
       // Fallback wenn kein User vorhanden
-      setFilteredSeries(sortedWatchlistSeries);
+      setFilteredSeries(currentWatchlistSeries);
     }
   }, [
-    sortedWatchlistSeries,
+    currentWatchlistSeries,
     customOrderActive,
     sortOption,
     user,
@@ -271,47 +300,14 @@ const WatchlistDialog = ({
       // Aktualisiere nur Episode-Daten, behalte Reihenfolge bei
       setFilteredSeries((prevFiltered) => {
         return prevFiltered.map((filteredSeries) => {
-          const updatedSeries = sortedWatchlistSeries.find(
+          const updatedSeries = currentWatchlistSeries.find(
             (s) => s.id === filteredSeries.id
           );
           return updatedSeries || filteredSeries;
         });
       });
     }
-  }, [sortedWatchlistSeries, customOrderActive, user, pendingUpdates.size]);
-
-  const getNextUnwatchedEpisode = (series: Series) => {
-    // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
-    for (const season of series.seasons) {
-      for (let i = 0; i < season.episodes.length; i++) {
-        const episode = season.episodes[i];
-        if (!episode.watched) {
-          return {
-            ...episode,
-            seasonNumber: season.seasonNumber,
-            episodeIndex: i,
-            isRewatch: false,
-          };
-        }
-      }
-    }
-
-    // Nur wenn keine ungesehenen Episoden vorhanden sind: Prüfe auf Rewatch-Episoden
-    if (!hideRewatches && hasActiveRewatch(series)) {
-      const nextRewatch = getNextRewatchEpisode(series);
-      if (nextRewatch) {
-        return {
-          ...nextRewatch,
-          // Markiere als Rewatch-Episode für spätere Verwendung
-          isRewatch: true,
-          currentWatchCount: nextRewatch.currentWatchCount,
-          targetWatchCount: nextRewatch.targetWatchCount,
-        };
-      }
-    }
-
-    return null;
-  };
+  }, [currentWatchlistSeries, customOrderActive, user, pendingUpdates.size]);
 
   // Neue Funktion um sowohl nächste Episode als auch Rewatch-Info zu bekommen
   const getEpisodeInfo = (series: Series) => {
@@ -379,74 +375,7 @@ const WatchlistDialog = ({
       const order = updated.map((s) => s.id);
       firebase.database().ref(`${user.uid}/watchlistOrder`).set(order);
     }
-    setWatchlistSeries(updated);
-  };
-
-  const updateSeriesInDialog = (
-    seriesId: number,
-    seasonNumber: number,
-    episodeIndex: number
-  ) => {
-    const updateKey = `${seriesId}-${seasonNumber}-${episodeIndex}`;
-
-    // Verhindere doppelte Updates
-    if (pendingUpdates.has(updateKey)) {
-      return;
-    }
-
-    setPendingUpdates((prev) => new Set(prev).add(updateKey));
-
-    // Sofortige lokale Aktualisierung
-    setFilteredSeries((prev) => {
-      const updated = prev.map((series) =>
-        series.id === seriesId
-          ? {
-              ...series,
-              seasons: series.seasons.map((season) =>
-                season.seasonNumber === seasonNumber
-                  ? {
-                      ...season,
-                      episodes: season.episodes.map((episode, idx) => {
-                        if (idx === episodeIndex) {
-                          if (episode.watched) {
-                            // Erhöhe watchCount für Rewatch
-                            const currentWatchCount = episode.watchCount || 1;
-                            return {
-                              ...episode,
-                              watched: true,
-                              watchCount: currentWatchCount + 1,
-                            };
-                          } else {
-                            // Normale erste Ansicht
-                            return { ...episode, watched: true, watchCount: 1 };
-                          }
-                        }
-                        return episode;
-                      }),
-                    }
-                  : season
-              ),
-            }
-          : series
-      );
-
-      // Nur re-sortieren wenn nicht benutzerdefinierte Reihenfolge aktiv ist
-      if (customOrderActive) {
-        return updated; // Behalte die Reihenfolge bei
-      } else {
-        // Sortiere nur wenn normale Sortierung aktiv ist
-        return getSortedSeries(updated);
-      }
-    });
-
-    // Cleanup nach kurzem Timeout
-    setTimeout(() => {
-      setPendingUpdates((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(updateKey);
-        return newSet;
-      });
-    }, 150); // Kurzes aber ausreichendes Timeout
+    // setWatchlistSeries wird nicht mehr verwendet - Dialog arbeitet eigenständig
   };
 
   const handleWatchedToggleWithDebounce = async (
@@ -461,12 +390,38 @@ const WatchlistDialog = ({
 
     if (!user) return;
 
-    // Sofortige lokale UI-Aktualisierung
-    updateSeriesInDialog(
-      series.id,
-      nextEpisode.seasonNumber,
-      nextEpisode.episodeIndex
-    );
+    // 🚫 Temporäres lokales UI-Update für sofortige Responsiveness
+    // Wird nach Cache-Update wieder bereinigt
+    setFilteredSeries((prevSeries) => {
+      return prevSeries.map((s) => {
+        if (s.id === series.id) {
+          return {
+            ...s,
+            seasons: s.seasons.map((season) => {
+              if (season.seasonNumber === nextEpisode.seasonNumber) {
+                return {
+                  ...season,
+                  episodes: season.episodes.map((ep, idx) => {
+                    if (idx === nextEpisode.episodeIndex) {
+                      return {
+                        ...ep,
+                        watched: true,
+                        watchCount: ep.watched ? (ep.watchCount || 1) + 1 : 1,
+                      };
+                    }
+                    return ep;
+                  }),
+                };
+              }
+              return season;
+            }),
+          };
+        }
+        return s;
+      });
+    });
+
+    setPendingUpdates((prev) => new Set(prev).add(updateKey));
 
     // 🛡️ Firebase-Update mit Schutz vor Datenverlust
     const episodeRef = firebase
@@ -497,53 +452,75 @@ const WatchlistDialog = ({
 
       await episodeRef.update(updateData);
 
-      // Activity-Logging (nur bei neuen Episoden, nicht bei Rewatches)
+      // 🏆 BADGE-SYSTEM: Activity-Logging für Badge-Berechnung (keine Friend-Activities)
       if (!wasWatched) {
-        const episodeNumber = episode.episode || nextEpisode.episodeIndex + 1;
+        // Neue Episode: Badge-Activity für Episode-Watch
+        const episodeData = series.seasons?.find(
+          (s) => s.seasonNumber === nextEpisode.seasonNumber
+        )?.episodes?.[nextEpisode.episodeIndex];
+
+        if (episodeData) {
+          const episodeNumber = nextEpisode.episodeIndex + 1; // Episode-Index zu Episode-Nummer
+          const seriesTitle =
+            series.title || series.original_name || 'Unbekannte Serie';
+
+          await logEpisodeWatched(
+            user.uid,
+            seriesTitle,
+            nextEpisode.seasonNumber,
+            episodeNumber,
+            series.id,
+            episodeData.air_date,
+            false // isRewatch = false für neue Episoden
+          );
+        }
+      } else if (wasWatched) {
+        // Rewatch: Badge-Activity für Rewatch
         const seriesTitle =
           series.title || series.original_name || 'Unbekannte Serie';
+        const episodeData = series.seasons?.find(
+          (s) => s.seasonNumber === nextEpisode.seasonNumber
+        )?.episodes?.[nextEpisode.episodeIndex];
 
-        await updateUserActivity({
-          type: 'episode_watched',
-          itemTitle: `${seriesTitle} - Staffel ${nextEpisode.seasonNumber} Episode ${episodeNumber}`,
-          tmdbId: series.id,
+        if (episodeData) {
+          await logBadgeRewatch(
+            user.uid,
+            seriesTitle,
+            series.id,
+            episodeData.air_date,
+            1 // episodeCount = 1 für einzelne Episode
+          );
+        }
+      }
+
+      // 🚀 WICHTIG: Cache invalidieren nach Episode-Update um sofortige UI-Updates zu gewährleisten
+      await refetchSeries();
+
+      // Cleanup des Pending-Status und Sync mit Cache-Daten
+      setTimeout(() => {
+        setPendingUpdates((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(updateKey);
+          return newSet;
         });
 
-        // Badge-System Activity-Logging
-        await logEpisodeWatched(
-          user.uid,
-          seriesTitle,
-          nextEpisode.seasonNumber,
-          episodeNumber,
-          series.id,
-          episode.air_date || '', // airDate für Quickwatch-Detection
-          false // isRewatch = false für neue Episoden
-        );
-      } else {
-        // Rewatch-Logging
-        await logBadgeRewatch(
-          user.uid,
-          series.title || series.original_name || 'Unbekannte Serie',
-          series.id,
-          episode.air_date || '',
-          1 // episodeCount = 1 für einzelne Episode
-        );
-      }
+        // Force Update der UI mit aktuellen Cache-Daten nach dem Refetch
+        // Dies überschreibt das temporäre lokale Update mit den echten Firebase-Daten
+      }, 500); // Länger warten damit Cache-Update definitiv durch ist
+
+      // Informiere SearchFilters über das Update für Re-render
+      onSeriesUpdate?.();
     };
 
     try {
-      // Registriere Update für Überwachung BEVOR wir es ausführen
+      // Registriere Update für Überwachung und führe es aus
       addProtectedUpdate(updateKey, performUpdate, 3);
 
-      // Führe Update sofort aus
-      await performUpdate();
-      console.log(`✅ Episode ${updateKey} updated successfully`);
-
-      // Erfolgreich - entferne aus Überwachung
-      removeProtectedUpdate(updateKey);
+      // Das Update wird automatisch durch useDataProtection ausgeführt
+      // Kein manueller Aufruf nötig - verhindert doppelte Ausführung
+      console.log(`📝 Episode ${updateKey} update queued`);
     } catch (error) {
       console.error(`❌ Episode update failed for ${updateKey}:`, error);
-      // Update bleibt in der Überwachung für automatischen Retry
     }
   };
 
@@ -660,12 +637,12 @@ const WatchlistDialog = ({
           series={selectedSeries}
           user={user}
           handleWatchedToggleWithConfirmation={(seasonNumber, episodeId) => {
-            handleWatchedToggleWithConfirmation(
+            // Verwende den lokalen Handler statt den externen von SearchFilters
+            const nextEpisode = {
               seasonNumber,
-              episodeId,
-              selectedSeries.id,
-              selectedSeries.nmr
-            );
+              episodeIndex: episodeId,
+            };
+            handleWatchedToggleWithDebounce(selectedSeries, nextEpisode);
           }}
         />
       )}

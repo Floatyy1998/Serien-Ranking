@@ -25,9 +25,9 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
-import { useFriends } from '../../contexts/FriendsProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { generateRecommendations } from '../../utils/recommendationEngine';
 import { logMovieAddedUnified } from '../../utils/unifiedActivityLogger';
 import { DialogHeader } from './shared/SharedDialogComponents';
@@ -82,7 +82,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
 }) => {
   const auth = useAuth();
   const { user } = auth || {};
-  const {} = useFriends();
+  const {} = useOptimizedFriends();
   const { movieList } = useMovieList();
   const { seriesList } = useSeriesList();
 
