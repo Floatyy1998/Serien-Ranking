@@ -29,7 +29,7 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { generateRecommendations } from '../../utils/recommendationEngine';
-import { logSeriesAddedUnified } from '../../utils/unifiedActivityLogger';
+import { logSeriesAddedClean } from '../../utils/cleanActivityLogger';
 import { DialogHeader } from './shared/SharedDialogComponents';
 
 export interface Serien {
@@ -561,11 +561,10 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
       });
       if (res.ok) {
         // Unified Activity-Logging für Friend + Badge-System (Explorer-Badges)
-        await logSeriesAddedUnified(
+        await logSeriesAddedClean(
           user.uid,
           selectedSeries.name || 'Unbekannte Serie',
           selectedSeries.id,
-          selectedSeries.genre_ids?.map((id) => `Genre_${id}`) || [], // Genres
           selectedSeries.first_air_date // firstAirDate
         );
 

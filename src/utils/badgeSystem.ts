@@ -1,5 +1,5 @@
 import firebase from 'firebase/compat/app';
-import { badgeActivityLogger, type BadgeActivity } from './badgeActivityLogger';
+import { badgeActivityLogger } from './badgeActivityLogger';
 
 export type BadgeCategory =
   | 'binge'
@@ -28,7 +28,7 @@ export interface Badge {
     days?: number;
     series?: number;
     ratings?: number;
-    watchlistItems?: number;
+    friends?: number;
     timeframe?: string; // '1day', '1week', '1month'
   };
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
@@ -710,121 +710,121 @@ export const BADGE_DEFINITIONS: Badge[] = [
     id: 'social_bronze',
     category: 'social',
     tier: 'bronze',
-    name: 'Planer',
-    description: '15 Serien zur Watchlist hinzugefügt',
-    emoji: '📋',
+    name: 'Kontaktfreudig',
+    description: '3 Freunde hinzugefügt',
+    emoji: '👋',
     color: '#cd7f32',
-    requirements: { watchlistItems: 15 },
+    requirements: { friends: 3 },
     rarity: 'common',
   },
   {
     id: 'social_bronze_plus',
     category: 'social',
     tier: 'bronze',
-    name: 'Sammelleidenschaft',
-    description: '35 Serien zur Watchlist hinzugefügt',
-    emoji: '📚',
+    name: 'Gesellig',
+    description: '5 Freunde hinzugefügt',
+    emoji: '🤝',
     color: '#cd7f32',
-    requirements: { watchlistItems: 35 },
+    requirements: { friends: 5 },
     rarity: 'common',
   },
   {
     id: 'social_bronze_max',
     category: 'social',
     tier: 'bronze',
-    name: 'Vorausplaner',
-    description: '60 Serien zur Watchlist hinzugefügt',
-    emoji: '🗂️',
+    name: 'Freundeskreis',
+    description: '10 Freunde hinzugefügt',
+    emoji: '👥',
     color: '#cd7f32',
-    requirements: { watchlistItems: 60 },
+    requirements: { friends: 10 },
     rarity: 'common',
   },
   {
     id: 'social_silver',
     category: 'social',
     tier: 'silver',
-    name: 'Watchlist-König',
-    description: '90 Serien zur Watchlist hinzugefügt',
-    emoji: '👑',
+    name: 'Networker',
+    description: '15 Freunde hinzugefügt',
+    emoji: '🌐',
     color: '#c0c0c0',
-    requirements: { watchlistItems: 90 },
+    requirements: { friends: 15 },
     rarity: 'rare',
   },
   {
     id: 'social_silver_plus',
     category: 'social',
     tier: 'silver',
-    name: 'Endlos-Planer',
-    description: '130 Serien zur Watchlist hinzugefügt',
-    emoji: '∞',
+    name: 'Beliebte Person',
+    description: '25 Freunde hinzugefügt',
+    emoji: '⭐',
     color: '#c0c0c0',
-    requirements: { watchlistItems: 130 },
+    requirements: { friends: 25 },
     rarity: 'rare',
   },
   {
     id: 'social_silver_max',
     category: 'social',
     tier: 'silver',
-    name: 'Sammel-Süchtiger',
-    description: '180 Serien zur Watchlist hinzugefügt',
+    name: 'Sozialer Magnet',
+    description: '35 Freunde hinzugefügt',
     emoji: '🧲',
     color: '#c0c0c0',
-    requirements: { watchlistItems: 180 },
+    requirements: { friends: 35 },
     rarity: 'rare',
   },
   {
     id: 'social_gold',
     category: 'social',
     tier: 'gold',
-    name: 'Watchlist-Legende',
-    description: '200 Serien zur Watchlist hinzugefügt',
+    name: 'Community-Legende',
+    description: '200 Freunde hinzugefügt',
     emoji: '🌟',
     color: '#ffd700',
-    requirements: { watchlistItems: 200 },
+    requirements: { friends: 200 },
     rarity: 'epic',
   },
   {
     id: 'social_gold_plus',
     category: 'social',
     tier: 'gold',
-    name: 'Watchlist-Gigant',
-    description: '250 Serien zur Watchlist hinzugefügt',
-    emoji: '🏗️',
+    name: 'Influencer',
+    description: '75 Freunde hinzugefügt',
+    emoji: '📢',
     color: '#ffd700',
-    requirements: { watchlistItems: 250 },
+    requirements: { friends: 75 },
     rarity: 'epic',
   },
   {
     id: 'social_gold_max',
     category: 'social',
     tier: 'gold',
-    name: 'Niemals-Genug',
-    description: '350 Serien zur Watchlist hinzugefügt',
+    name: 'Freunde-Magnet',
+    description: '350 Freunde hinzugefügt',
     emoji: '🌊',
     color: '#ffd700',
-    requirements: { watchlistItems: 350 },
+    requirements: { friends: 350 },
     rarity: 'epic',
   },
   {
     id: 'social_platinum',
     category: 'social',
     tier: 'platinum',
-    name: 'Unersättlicher Sammler',
-    description: '500 Serien zur Watchlist hinzugefügt',
+    name: 'Soziales Genie',
+    description: '500 Freunde hinzugefügt',
     emoji: '🗃️',
     color: '#e5e4e2',
-    requirements: { watchlistItems: 500 },
+    requirements: { friends: 500 },
     rarity: 'legendary',
   },
   {
     id: 'social_diamond',
     category: 'social',
     tier: 'diamond',
-    name: 'Watchlist-Universum',
-    description: '750 Serien zur Watchlist hinzugefügt',
+    name: 'Freundschafts-Universum',
+    description: '750 Freunde hinzugefügt',
     emoji: '🌌',
     color: '#b9f2ff',
-    requirements: { watchlistItems: 750 },
+    requirements: { friends: 750 },
     rarity: 'legendary',
   },
 
@@ -1021,8 +1021,8 @@ export const BADGE_DEFINITIONS: Badge[] = [
 ];
 
 // Das folgende Badge war ein Duplikat und wurde entfernt:
-// social_gold mit 200 watchlistItems (Watchlist-Legende)
-// Es gab bereits einen social_gold mit 250 watchlistItems (Watchlist-Gigant)
+// social_gold mit 200 friends (Watchlist-Legende)
+// Es gab bereits einen social_gold mit 250 friends (Watchlist-Gigant)
 
 // Badge-System Klasse
 export class BadgeSystem {
@@ -1514,10 +1514,10 @@ export class BadgeSystem {
   ): Promise<{ earned: boolean; details?: string } | null> {
     const watchlistCount = await badgeActivityLogger.getBadgeCounter(
       this.userId,
-      'watchlistItems'
+      'friends'
     );
 
-    if (watchlistCount >= badge.requirements.watchlistItems!) {
+    if (watchlistCount >= badge.requirements.friends!) {
       return {
         earned: true,
         details: `${watchlistCount} Serien zur Watchlist hinzugefügt`,
@@ -1648,7 +1648,7 @@ export class BadgeSystem {
    */
   private async getActivitiesSince(
     timestamp: number
-  ): Promise<BadgeActivity[]> {
+  ): Promise<any[]> {
     try {
       return await badgeActivityLogger.getBadgeActivitiesSince(
         this.userId,
@@ -1667,7 +1667,7 @@ export class BadgeSystem {
       );
 
       // Gruppiere Activities nach Tagen - nur "schauen"-Activities zählen
-      const dayGroups = new Map<string, BadgeActivity[]>();
+      const dayGroups = new Map<string, any[]>();
       activities.forEach((activity) => {
         if (
           activity.timestamp &&

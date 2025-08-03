@@ -20,10 +20,9 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { Movie } from '../../interfaces/Movie';
 import '../../styles/animations.css';
 import { logMovieDeleted } from '../../utils/activityLogger';
-import { logBadgeRating } from '../../utils/badgeActivityLogger';
 import { getFormattedDate } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
-import { logMovieRatedUnified } from '../../utils/unifiedActivityLogger';
+import { logRatingClean } from '../../utils/cleanActivityLogger';
 import MovieDialog from '../dialogs/MovieDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
 
@@ -184,21 +183,15 @@ export const MovieCard = ({
         const ratingValue = parseFloat(overallRating);
 
         if (user?.uid && ratingValue > 0) {
-          await logMovieRatedUnified(
+          await logRatingClean(
             user.uid,
+            currentMovie.id?.toString() || '',
             currentMovie.title || 'Unbekannter Film',
             ratingValue,
-            currentMovie.id
-          );
-
-          // 🏆 BADGE-ACTIVITY: Rating hinzugefügt
-          await logBadgeRating(
-            user.uid,
-            currentMovie.title || 'Unbekannter Film',
-            ratingValue,
-            currentMovie.id,
             'movie'
           );
+
+          // Badge rating handled by clean logger
         }
 
         setOpen(false);

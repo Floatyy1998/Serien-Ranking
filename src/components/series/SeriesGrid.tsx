@@ -271,15 +271,15 @@ export const SeriesGrid = ({
               // Jede bewertete Serie als rating_added Activity loggen
               const overallRating = calculateOverallRating(series);
               if (parseFloat(overallRating) > 0) {
-                // Import der badgeActivityLogger Funktion direkt
-                const { logBadgeRating } = await import(
-                  '../../utils/badgeActivityLogger'
+                // Import der cleanActivityLogger Funktion direkt
+                const { logRatingClean } = await import(
+                  '../../utils/cleanActivityLogger'
                 );
-                await logBadgeRating(
+                await logRatingClean(
                   user.uid,
+                  series.id?.toString() || '',
                   series.title || 'Unbekannte Serie',
                   parseFloat(overallRating),
-                  series.id,
                   'series'
                 );
                 ratingCount++;
@@ -296,14 +296,14 @@ export const SeriesGrid = ({
               // Jeden bewerteten Film als rating_added Activity loggen
               const overallRating = calculateOverallRating(movie);
               if (parseFloat(overallRating) > 0) {
-                const { logBadgeRating } = await import(
-                  '../../utils/badgeActivityLogger'
+                const { logRatingClean } = await import(
+                  '../../utils/cleanActivityLogger'
                 );
-                await logBadgeRating(
+                await logRatingClean(
                   user.uid,
+                  movie.id?.toString() || '',
                   movie.title || 'Unbekannter Film',
                   parseFloat(overallRating),
-                  movie.id,
                   'movie'
                 );
                 ratingCount++;
@@ -440,10 +440,10 @@ export const SeriesGrid = ({
             // Rewatch der gesamten Staffel
             // 🚫 Keine Friend-Activity für Season-Rewatch
             // Nur Badge-System Activity logging für Season Rewatch
-            const { logSeasonWatched } = await import(
-              '../../utils/badgeActivityLogger'
+            const { logSeasonWatchedClean } = await import(
+              '../../utils/cleanActivityLogger'
             );
-            await logSeasonWatched(
+            await logSeasonWatchedClean(
               user.uid,
               seriesTitle,
               seasonNumber,
@@ -483,10 +483,10 @@ export const SeriesGrid = ({
                 // 🚫 Keine Friend-Activity für Season-Complete
 
                 // NUR Badge-System für Achievements
-                const { logSeasonWatched } = await import(
-                  '../../utils/badgeActivityLogger'
+                const { logSeasonWatchedClean } = await import(
+                  '../../utils/cleanActivityLogger'
                 );
-                await logSeasonWatched(
+                await logSeasonWatchedClean(
                   user.uid,
                   seriesTitle,
                   seasonNumber,
@@ -497,11 +497,11 @@ export const SeriesGrid = ({
               } else {
                 // Teilweise Staffel geschaut - Nur Badge-System Logging
                 // 🏆 Badge für einzelne Episoden loggen (KEINE Friend-Activities)
-                const { logEpisodeWatched } = await import(
-                  '../../utils/badgeActivityLogger'
+                const { logEpisodeWatchedClean } = await import(
+                  '../../utils/cleanActivityLogger'
                 );
                 for (const episode of previouslyUnwatched) {
-                  await logEpisodeWatched(
+                  await logEpisodeWatchedClean(
                     user.uid,
                     seriesTitle,
                     seasonNumber,
@@ -609,10 +609,10 @@ export const SeriesGrid = ({
           // Badge-System Activity logging für einzelne Episode (KEINE Friend-Activity)
           if (!episode.watched) {
             // Neue Episode geschaut - nur Badge loggen
-            const { logEpisodeWatched } = await import(
-              '../../utils/badgeActivityLogger'
+            const { logEpisodeWatchedClean } = await import(
+              '../../utils/cleanActivityLogger'
             );
-            await logEpisodeWatched(
+            await logEpisodeWatchedClean(
               user.uid,
               seriesTitle,
               seasonNumber,
@@ -632,10 +632,10 @@ export const SeriesGrid = ({
               );
               if (allEpisodesWatched) {
                 // ⚠️ WICHTIG: NUR Season-Badge loggen, KEINE Friend-Activity
-                const { logSeasonWatched } = await import(
-                  '../../utils/badgeActivityLogger'
+                const { logSeasonWatchedClean } = await import(
+                  '../../utils/cleanActivityLogger'
                 );
-                await logSeasonWatched(
+                await logSeasonWatchedClean(
                   user.uid,
                   seriesTitle,
                   seasonNumber,

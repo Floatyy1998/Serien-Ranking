@@ -134,6 +134,12 @@ function isApiRequest(url) {
 // Cache-First für statische Assets
 async function handleStaticAsset(request) {
   try {
+    // 🛡️ Filter unsupported schemes (chrome-extension, etc.)
+    if (!request.url.startsWith('http://') && !request.url.startsWith('https://')) {
+      console.warn('Service Worker: Unsupported scheme, skipping cache:', request.url);
+      return fetch(request);
+    }
+
     const cache = await caches.open(STATIC_CACHE);
     const cachedResponse = await cache.match(request);
 
@@ -156,6 +162,12 @@ async function handleStaticAsset(request) {
 // Network-First für API Calls
 async function handleApiRequest(request) {
   try {
+    // 🛡️ Filter unsupported schemes
+    if (!request.url.startsWith('http://') && !request.url.startsWith('https://')) {
+      console.warn('Service Worker: Unsupported scheme for API, skipping cache:', request.url);
+      return fetch(request);
+    }
+
     const networkResponse = await fetch(request);
 
     if (networkResponse.ok) {
@@ -188,6 +200,12 @@ async function handleApiRequest(request) {
 // Network-First für dynamische Inhalte
 async function handleDynamicRequest(request) {
   try {
+    // 🛡️ Filter unsupported schemes
+    if (!request.url.startsWith('http://') && !request.url.startsWith('https://')) {
+      console.warn('Service Worker: Unsupported scheme for dynamic content, skipping cache:', request.url);
+      return fetch(request);
+    }
+
     const networkResponse = await fetch(request);
 
     if (networkResponse.ok) {

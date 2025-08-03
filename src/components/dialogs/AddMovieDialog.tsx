@@ -29,7 +29,7 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { generateRecommendations } from '../../utils/recommendationEngine';
-import { logMovieAddedUnified } from '../../utils/unifiedActivityLogger';
+import { logMovieAddedClean } from '../../utils/cleanActivityLogger';
 import { DialogHeader } from './shared/SharedDialogComponents';
 
 export interface Filme {
@@ -560,11 +560,10 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
       });
       if (res.ok) {
         // Unified Activity-Logging für Friend + Badge-System (Explorer-Badges)
-        await logMovieAddedUnified(
+        await logMovieAddedClean(
           user.uid,
           selectedMovie.title || 'Unbekannter Film',
           selectedMovie.id,
-          selectedMovie.genre_ids?.map((id) => `Genre_${id}`) || [], // Genres
           selectedMovie.release_date // releaseDate
         );
 

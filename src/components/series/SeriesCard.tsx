@@ -21,13 +21,11 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
 import { logSeriesDeleted } from '../../utils/activityLogger';
-import { logBadgeRating } from '../../utils/badgeActivityLogger';
 import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 import { calculateOverallRating } from '../../utils/rating';
 import {
-  logSeriesAddedToWatchlistUnified,
-  logSeriesRatedUnified,
-} from '../../utils/unifiedActivityLogger';
+  logRatingClean,
+} from '../../utils/cleanActivityLogger';
 import SeriesDialog from '../dialogs/SeriesDialog';
 import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
@@ -184,25 +182,17 @@ export const SeriesCard = ({
         const ratingValue = parseFloat(overallRating);
 
         if (user?.uid && ratingValue > 0) {
-          await logSeriesRatedUnified(
+          await logRatingClean(
             user.uid,
+            currentSeries.id?.toString() || '',
             currentSeries.title ||
               currentSeries.original_name ||
               'Unbekannte Serie',
             ratingValue,
-            currentSeries.id
-          );
-
-          // 🏆 BADGE-ACTIVITY: Rating hinzugefügt
-          await logBadgeRating(
-            user.uid,
-            currentSeries.title ||
-              currentSeries.original_name ||
-              'Unbekannte Serie',
-            ratingValue,
-            currentSeries.id,
             'series'
           );
+
+          // Badge rating handled by clean logger
         }
 
         setOpen(false);
@@ -299,13 +289,9 @@ export const SeriesCard = ({
     try {
       await ref.set(newWatchlistStatus);
 
-      // Unified Logging: Friend-Activity + Badge-Activity in einem
-      const seriesTitle = currentSeries.title;
-      const tmdbId = currentSeries.id;
-
+      // Social Badges nutzen jetzt Friends statt Watchlist - kein Logging mehr nötig
       if (newWatchlistStatus) {
-        // Serie zur Watchlist hinzugefügt - Unified Logging
-        await logSeriesAddedToWatchlistUnified(user.uid, seriesTitle, tmdbId);
+        // Watchlist-Logging entfernt - Social Badges nutzen jetzt Friends
       }
     } catch (error) {
       console.error('Error updating watchlist status:', error);

@@ -19,6 +19,9 @@ import {
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
 import BadgeNotificationManager from './components/badges/BadgeNotificationManager';
 import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
+// Badge Migration Tools für Development
+import './utils/migrateBadgeSystem';
+import './utils/testMigration';
 import { BadgeProvider } from './contexts/BadgeProvider';
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
