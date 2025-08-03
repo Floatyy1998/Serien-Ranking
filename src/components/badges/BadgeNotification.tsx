@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import { EarnedBadge } from '../../utils/badgeSystem';
+import { EarnedBadge } from '../../utils/badgeDefinitions';
 
 interface BadgeNotificationProps {
   badge: EarnedBadge | null;

@@ -101,23 +101,38 @@ class BadgeCounterService {
    */
   async recordBingeSession(userId: string, episodeCount: number, timeframe: string): Promise<void> {
     try {
+      console.log(`🍿 Recording binge session: ${episodeCount} episodes (${timeframe}) for user ${userId}`);
+      
       const now = Date.now();
       const sessionRef = firebase.database().ref(`badgeCounters/${userId}/bingeSessions`).push();
       
-      await sessionRef.set({
+      const sessionData = {
         episodeCount,
         timeframe,
         timestamp: now,
         expiresAt: now + (24 * 60 * 60 * 1000) // 24h TTL
-      });
+      };
+      
+      console.log('🍿 Session data:', sessionData);
+      await sessionRef.set(sessionData);
+      console.log('✅ Binge session saved to Firebase');
 
       // Update max binge counter
       const maxBingeRef = firebase.database().ref(`badgeCounters/${userId}/maxBingeEpisodes`);
-      await maxBingeRef.transaction((current) => {
-        return Math.max(current || 0, episodeCount);
+      const transactionResult = await maxBingeRef.transaction((current) => {
+        const newMax = Math.max(current || 0, episodeCount);
+        console.log(`📊 MaxBinge update: ${current || 0} -> ${newMax}`);
+        return newMax;
       });
+      
+      if (transactionResult.committed) {
+        console.log('✅ MaxBingeEpisodes updated successfully:', transactionResult.snapshot.val());
+      } else {
+        console.error('❌ MaxBingeEpisodes transaction failed');
+      }
     } catch (error) {
-      console.error('Fehler beim Binge-Counter:', error);
+      console.error('❌ Fehler beim Binge-Counter:', error);
+      console.error('Error details:', error);
     }
   }
 

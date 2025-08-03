@@ -17,7 +17,7 @@ import {
   Routes,
 } from 'react-router-dom';
 import { VerifiedRoute } from './components/auth/VerifiedRoute';
-import BadgeNotificationManager from './components/badges/BadgeNotificationManager';
+// BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
 // Badge Migration Tools für Development
 import './utils/migrateBadgeSystem';
@@ -264,7 +264,6 @@ function AppContent() {
           <MovieListProvider>
             <StatsProvider>
               <BadgeProvider>
-                <BadgeNotificationManager>
                   <Helmet>
                     <title>
                       TV-RANK - Entdecke, bewerte und verwalte deine
@@ -409,7 +408,6 @@ function AppContent() {
                       </main>
                     </div>
                   </ThemeProvider>
-                </BadgeNotificationManager>
               </BadgeProvider>
             </StatsProvider>
           </MovieListProvider>

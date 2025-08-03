@@ -7,7 +7,7 @@
 
 import firebase from 'firebase/compat/app';
 import { getOfflineBadgeSystem } from './offlineBadgeSystem';
-import type { EarnedBadge } from './badgeSystem';
+import type { EarnedBadge } from './badgeDefinitions';
 
 export interface MigrationResult {
   success: boolean;

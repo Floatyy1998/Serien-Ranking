@@ -18,8 +18,8 @@ import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCach
 import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
 import { Series } from '../../../interfaces/Series';
 import {
-  logEpisodeWatchedClean,
-} from '../../../utils/cleanActivityLogger';
+  updateEpisodeCounters,
+} from '../../../utils/minimalActivityLogger';
 import {
   getNextRewatchEpisode,
   hasActiveRewatch,
@@ -465,29 +465,20 @@ const WatchlistDialog = ({
       await episodeRef.update(updateData);
 
       // 🏆 BADGE-SYSTEM: Activity-Logging für Badge-Berechnung (keine Friend-Activities)
-      if (!wasWatched) {
-        // Neue Episode: Badge-Activity für Episode-Watch
-        const episodeData = series.seasons?.find(
-          (s) => s.seasonNumber === nextEpisode.seasonNumber
-        )?.episodes?.[nextEpisode.episodeIndex];
+      const episodeData = series.seasons?.find(
+        (s) => s.seasonNumber === nextEpisode.seasonNumber
+      )?.episodes?.[nextEpisode.episodeIndex];
 
-        if (episodeData) {
-          const episodeNumber = nextEpisode.episodeIndex + 1; // Episode-Index zu Episode-Nummer
-          const seriesTitle =
-            series.title || series.original_name || 'Unbekannte Serie';
+      if (episodeData) {
+        // Variablen entfernt da nicht verwendet
 
-          await logEpisodeWatchedClean(
-            user.uid,
-            seriesTitle,
-            nextEpisode.seasonNumber,
-            episodeNumber,
-            series.id,
-            episodeData.air_date,
-            false // isRewatch = false für neue Episoden
-          );
-        }
-      } else if (wasWatched) {
-        // Rewatch-Logging ist bereits in logEpisodeWatchedClean integriert über isRewatch-Parameter
+        // Counter-Updates für beide Fälle: neue Episode und Rewatch
+        await updateEpisodeCounters(
+          user.uid,
+          series.id,
+          wasWatched, // isRewatch = true wenn Episode bereits gesehen war
+          episodeData.air_date
+        );
       }
 
       // 🚀 WICHTIG: Cache invalidieren nach Episode-Update um sofortige UI-Updates zu gewährleisten
