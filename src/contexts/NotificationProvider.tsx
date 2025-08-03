@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '../App';
-import { useFriends } from './FriendsProvider';
+import { useOptimizedFriends } from './OptimizedFriendsProvider';
 
 interface NotificationContextType {
   totalUnreadActivities: number;
@@ -28,7 +28,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { user } = useAuth()!;
-  const { friends } = useFriends();
+  const { friends } = useOptimizedFriends();
   const [friendUnreadActivities, setFriendUnreadActivities] = useState<
     Record<string, number>
   >({});
@@ -67,7 +67,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
           unreadCounts[friend.uid] = unreadCount;
           total += unreadCount;
-        } catch (error) {unreadCounts[friend.uid] = 0;
+        } catch (error) {
+          unreadCounts[friend.uid] = 0;
         }
       }
 

@@ -14,11 +14,11 @@ import BadgeNotificationManager from './components/badges/BadgeNotificationManag
 import { PerformanceMonitor } from './components/dev/PerformanceMonitor';
 import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
 import { BadgeProvider } from './contexts/BadgeProvider';
-import { FriendsProvider } from './contexts/FriendsProvider';
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider } from './contexts/NotificationProvider';
-import { SeriesListProvider } from './contexts/SeriesListProvider';
+import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
+import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
 import { StatsProvider } from './contexts/StatsProvider';
 import { FriendsPage } from './pages/FriendsPage';
 import MainPage from './pages/MainPage';
@@ -121,7 +121,7 @@ export function App() {
 function AppContent() {
   return (
     <AuthProvider>
-      <FriendsProvider>
+      <OptimizedFriendsProvider>
         <NotificationProvider>
           <SeriesListProvider>
             <MovieListProvider>
@@ -245,7 +245,7 @@ function AppContent() {
             </MovieListProvider>
           </SeriesListProvider>
         </NotificationProvider>
-      </FriendsProvider>
+      </OptimizedFriendsProvider>
     </AuthProvider>
   );
 }

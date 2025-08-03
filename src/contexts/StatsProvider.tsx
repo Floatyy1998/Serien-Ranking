@@ -4,7 +4,7 @@ import { useAuth } from '../App';
 import { StatsData } from '../interfaces/StatsData';
 import { calculateOverallRating } from '../utils/rating';
 import { useMovieList } from './MovieListProvider';
-import { useSeriesList } from './SeriesListProvider';
+import { useSeriesList } from './OptimizedSeriesListProvider';
 
 interface StatsContextType {
   seriesStatsData: StatsData | null;
@@ -87,7 +87,9 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
             time +
             (season.episodes?.reduce((episodeTime: number, episode: any) => {
               if (episode.watched) {
-                return episodeTime + (episode.watchCount || 1) * item.episodeRuntime;
+                return (
+                  episodeTime + (episode.watchCount || 1) * item.episodeRuntime
+                );
               }
               return episodeTime;
             }, 0) || 0),

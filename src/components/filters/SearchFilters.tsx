@@ -16,26 +16,14 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { genreMenuItems, providerMenuItems } from '../../constants/menuItems';
-import { useFriends } from '../../contexts/FriendsProvider';
-import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useDebounce } from '../../hooks/useDebounce';
-import { useProtectedEpisodeUpdate } from '../../hooks/useProtectedEpisodeUpdate';
 import { Series } from '../../interfaces/Series';
-import {
-  logBadgeRewatch,
-  logEpisodeWatched,
-} from '../../utils/badgeActivityLogger';
 import { calculateOverallRating } from '../../utils/rating';
 import { generateRecommendations } from '../../utils/recommendationEngine';
-import {
-  getNextRewatchEpisode,
-  hasActiveRewatch,
-} from '../../utils/rewatch.utils';
 import AddSeriesDialog from '../dialogs/AddSeriesDialog';
 import DiscoverSeriesDialog from '../dialogs/DiscoverSeriesDialog';
 import RecommendationsDialog from '../dialogs/RecommendationsDialog';
@@ -57,10 +45,8 @@ export const SearchFilters = ({
   const [isWatchlist, setIsWatchlist] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogDiscoverOpen, setDialogDiscoverOpen] = useState(false);
-  const [watchlistSeries, setWatchlistSeries] = useState<Series[]>([]);
-  const [sortOption] = useState('date-desc');
   const { seriesList } = useSeriesList();
-  const { updateUserActivity } = useFriends();
+  // const { updateUserActivity } = useOptimizedFriends(); // Nicht mehr benötigt - keine Friend-Activities für Episodes
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const authContext = useAuth();
   const user = authContext?.user;
@@ -73,9 +59,6 @@ export const SearchFilters = ({
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [basedOnSeries, setBasedOnSeries] = useState<Series[]>([]);
 
-  // 🛡️ Hook für geschützte Episode-Updates
-  const { updateEpisode } = useProtectedEpisodeUpdate();
-
   // Reset lokale Filterstates, wenn sich der Benutzer ändert
   useEffect(() => {
     setSearchValue('');
@@ -86,17 +69,6 @@ export const SearchFilters = ({
     onProviderChange('All');
   }, [user]);
 
-  useEffect(() => {
-    const fetchWatchlistSeries = async () => {
-      if (user) {
-        const watchlistSeries = (seriesList || []).filter(
-          (series) => series.watchlist
-        );
-        setWatchlistSeries(watchlistSeries);
-      }
-    };
-    fetchWatchlistSeries();
-  }, [user, seriesList]);
   useEffect(() => {
     onSearchChange(debouncedSearchValue);
   }, [debouncedSearchValue, onSearchChange]);
@@ -163,184 +135,6 @@ export const SearchFilters = ({
   const handleDialogClose = () => {
     setDialogOpen(false);
   };
-  const handleWatchedToggleWithConfirmation = useCallback(
-    async (
-      seasonNumber: number,
-      episodeIndex: number,
-      seriesId: number,
-      seriesNmr: number
-    ) => {
-      if (user) {
-        const episodeRef = Firebase.database().ref(
-          `${user.uid}/serien/${seriesNmr}/seasons/${seasonNumber}/episodes/${episodeIndex}`
-        );
-
-        // Erst die Episode-Daten abrufen für Activity-Logging
-        const snapshot = await episodeRef.once('value');
-        const episode = snapshot.val();
-        const wasWatched = episode.watched;
-
-        let updateData: any;
-
-        if (wasWatched) {
-          // Episode ist bereits geschaut - erhöhe watchCount für Rewatch
-          const currentWatchCount = episode.watchCount || 1;
-          updateData = {
-            watched: true,
-            watchCount: currentWatchCount + 1,
-          };
-        } else {
-          // Episode war noch nicht geschaut - markiere als geschaut
-          updateData = {
-            watched: true,
-            watchCount: 1,
-          };
-        }
-
-        // �️ Geschütztes Firebase-Update (mit automatischem Retry)
-        try {
-          await updateEpisode(
-            user.uid,
-            seriesNmr,
-            seasonNumber,
-            episodeIndex,
-            updateData
-          );
-        } catch (error) {
-          console.error('Episode update failed:', error);
-          // Update wird automatisch erneut versucht durch useProtectedEpisodeUpdate
-        }
-
-        // Optimiertes Activity-Logging - nur bei wichtigen Changes
-        if (!wasWatched) {
-          // Finde die Serie um den Titel zu bekommen
-          const series = seriesList.find((s) => s.nmr === seriesNmr);
-          if (series) {
-            // Ermittle Episode-Nummer aus Index wenn episode.episode nicht verfügbar ist
-            const episodeNumber = episode.episode || episodeIndex + 1;
-            const seriesTitle =
-              series.title || series.original_name || 'Unbekannte Serie';
-
-            await updateUserActivity({
-              type: 'episode_watched',
-              itemTitle: `${seriesTitle} - Staffel ${seasonNumber} Episode ${episodeNumber}`,
-              tmdbId: series.id, // TMDB ID verwenden
-            });
-
-            // 🏆 BADGE-SYSTEM: Episode-Watching Activity loggen
-            await logEpisodeWatched(
-              user.uid,
-              seriesTitle,
-              seasonNumber,
-              episodeNumber,
-              series.id,
-              episode.air_date || episode.airDate, // airDate für Quickwatch-Detection
-              false // isRewatch = false für neue Episoden
-            );
-          }
-        } else if (wasWatched) {
-          // 🏆 BADGE-SYSTEM: Rewatch Activity loggen
-          const series = seriesList.find((s) => s.nmr === seriesNmr);
-          if (series) {
-            const seriesTitle =
-              series.title || series.original_name || 'Unbekannte Serie';
-
-            await logBadgeRewatch(
-              user.uid,
-              seriesTitle,
-              series.id,
-              episode.air_date || episode.airDate,
-              1 // episodeCount = 1 für einzelne Episode
-            );
-          }
-        }
-
-        // Lokalen State mit dem korrekten neuen Wert aktualisieren
-        setWatchlistSeries((prevSeries) =>
-          prevSeries.map((series) =>
-            series.id === seriesId
-              ? {
-                  ...series,
-                  seasons: series.seasons.map((season) =>
-                    season.seasonNumber === seasonNumber
-                      ? {
-                          ...season,
-                          episodes: season.episodes.map((episode, index) =>
-                            index === episodeIndex
-                              ? { ...episode, ...updateData }
-                              : episode
-                          ),
-                        }
-                      : season
-                  ),
-                }
-              : series
-          )
-        );
-      }
-    },
-    [user, updateUserActivity, seriesList]
-  );
-  const getNextUnwatchedEpisode = (series: Series) => {
-    if (!series.seasons || !Array.isArray(series.seasons)) {
-      return null;
-    }
-
-    // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
-    for (const season of series.seasons) {
-      if (!season.episodes || !Array.isArray(season.episodes)) {
-        continue;
-      }
-
-      for (let i = 0; i < season.episodes.length; i++) {
-        const episode = season.episodes[i];
-        if (!episode.watched) {
-          return {
-            ...episode,
-            seasonNumber: season.seasonNumber,
-            episodeIndex: i,
-            isRewatch: false,
-          };
-        }
-      }
-    }
-
-    // Nur wenn keine ungesehenen Episoden vorhanden sind: Prüfe auf Rewatch-Episoden
-    if (hasActiveRewatch(series)) {
-      const nextRewatch = getNextRewatchEpisode(series);
-      if (nextRewatch) {
-        return {
-          ...nextRewatch,
-          seasonNumber: nextRewatch.seasonNumber,
-          episodeIndex: nextRewatch.episodeIndex,
-          isRewatch: true,
-        };
-      }
-    }
-
-    return null;
-  };
-  const filteredWatchlistSeries = watchlistSeries.filter((series) => {
-    const nextEpisode = getNextUnwatchedEpisode(series);
-    return nextEpisode && new Date(nextEpisode.air_date) <= new Date();
-  });
-  const sortedWatchlistSeries = [...filteredWatchlistSeries].sort((a, b) => {
-    const [sortField, sortOrder] = sortOption.split('-');
-    const orderMultiplier = sortOrder === 'asc' ? 1 : -1;
-    if (sortField === 'name') {
-      return a.title.localeCompare(b.title) * orderMultiplier;
-    } else if (sortField === 'date') {
-      const nextEpisodeA = getNextUnwatchedEpisode(a);
-      const nextEpisodeB = getNextUnwatchedEpisode(b);
-      if (!nextEpisodeA || !nextEpisodeB) return 0;
-      return (
-        (new Date(nextEpisodeA.air_date).getTime() -
-          new Date(nextEpisodeB.air_date).getTime()) *
-        orderMultiplier
-      );
-    }
-    return 0;
-  });
 
   const handleDialogRecommendationsOpen = async () => {
     setLoadingRecommendations(true);
@@ -728,15 +522,7 @@ export const SearchFilters = ({
           </Tooltip>
         </Box>
       </>
-      <WatchlistDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        sortedWatchlistSeries={sortedWatchlistSeries}
-        handleWatchedToggleWithConfirmation={
-          handleWatchedToggleWithConfirmation
-        }
-        setWatchlistSeries={setWatchlistSeries}
-      />
+      <WatchlistDialog open={dialogOpen} onClose={handleDialogClose} />
       <AddSeriesDialog
         open={dialogAddOpen}
         onClose={() => setDialogAddOpen(false)}

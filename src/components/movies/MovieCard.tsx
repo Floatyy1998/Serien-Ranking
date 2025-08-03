@@ -15,8 +15,8 @@ import { useLocation } from 'react-router-dom';
 import { allGenresForMovies } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
-import { useFriends } from '../../contexts/FriendsProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { Movie } from '../../interfaces/Movie';
 import '../../styles/animations.css';
 import { logMovieDeleted } from '../../utils/activityLogger';
@@ -54,7 +54,7 @@ export const MovieCard = ({
     currentMovie.status === 'Released' ? '#a855f7' : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
-  const {} = useFriends();
+  const {} = useOptimizedFriends();
   const uniqueProviders = currentMovie.provider
     ? Array.from(
         new Set(currentMovie.provider.provider.map((p) => p.name))

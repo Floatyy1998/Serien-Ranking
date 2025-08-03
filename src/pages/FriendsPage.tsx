@@ -37,8 +37,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import FriendActivityDialog from '../components/dialogs/FriendActivityDialog';
 import { ProfileDialog } from '../components/dialogs/ProfileDialog';
-import { useFriends } from '../contexts/FriendsProvider';
 import { useNotifications } from '../contexts/NotificationProvider';
+import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { Friend, FriendRequest, UserSearchResult } from '../interfaces/Friend';
 
 interface TabPanelProps {
@@ -76,7 +76,7 @@ export const FriendsPage: React.FC = () => {
     acceptFriendRequest,
     declineFriendRequest,
     removeFriend,
-  } = useFriends();
+  } = useOptimizedFriends();
 
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
@@ -238,7 +238,8 @@ export const FriendsPage: React.FC = () => {
 
       results.sort((a, b) => a.username.localeCompare(b.username));
       setSearchResults(results);
-    } catch (error) {setError('Fehler bei der Suche');
+    } catch (error) {
+      setError('Fehler bei der Suche');
     } finally {
       setSearching(false);
     }

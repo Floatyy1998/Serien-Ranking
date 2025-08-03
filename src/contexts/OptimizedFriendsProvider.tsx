@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../App';
 import { useFirebaseCache } from '../hooks/useFirebaseCache';
 import { Friend, FriendActivity, FriendRequest } from '../interfaces/Friend';
+import { limitActivities } from '../utils/activityCleanup';
 
 interface OptimizedFriendsContextType {
   friends: Friend[];
@@ -57,7 +58,7 @@ export const OptimizedFriendsProvider = ({
 }) => {
   const { user } = useAuth()!;
 
-  // 🚀 Cached Friends-Daten - Check nur alle 60 Sekunden
+  // 🚀 Ultra-responsiver Cache - sofortige UI Updates
   const {
     data: friendsData,
     loading: friendsLoading,
@@ -65,8 +66,8 @@ export const OptimizedFriendsProvider = ({
   } = useFirebaseCache<Record<string, Friend>>(
     user ? `users/${user.uid}/friends` : '',
     {
-      ttl: 3 * 60 * 1000, // 3 Minuten Cache
-      checkInterval: 60 * 1000, // Check alle 60 Sekunden
+      ttl: 2 * 1000, // 2 Sekunden Cache für sofortige Updates
+      checkInterval: 500, // Check alle 500ms für ultra-responsive UI
     }
   );
 
@@ -195,20 +196,18 @@ export const OptimizedFriendsProvider = ({
     // Initial load
     loadRequests();
 
-    // Smart interval: Häufiger checken wenn ungelesene Requests vorhanden
-    const getInterval = () =>
-      unreadRequestsCount > 0 ? 30 * 1000 : 2 * 60 * 1000;
-
-    const scheduleNextCheck = () => {
-      const interval = getInterval();
-      setTimeout(() => {
+    // Setup interval für Friend Requests
+    const interval = setInterval(
+      () => {
         loadRequests();
-        scheduleNextCheck();
-      }, interval);
-    };
+      },
+      unreadRequestsCount > 0 ? 30 * 1000 : 2 * 60 * 1000
+    );
 
-    scheduleNextCheck();
-  }, [user, lastReadRequestsTime, unreadRequestsCount]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [user?.uid, lastReadRequestsTime]); // Stabile Dependencies
 
   // 🚀 Optimiert: Friend Activities mit intelligenter Paginierung und Caching
   const loadFriendActivities = useCallback(async () => {
@@ -282,6 +281,9 @@ export const OptimizedFriendsProvider = ({
 
   // Smart loading: Nur initial und dann adaptive Intervalle
   useEffect(() => {
+    if (!user || friends.length === 0) return;
+
+    // Initial load
     loadFriendActivities();
 
     // Adaptive Intervalle basierend auf Aktivität
@@ -291,16 +293,15 @@ export const OptimizedFriendsProvider = ({
       return 5 * 60 * 1000; // 5 Minuten standard
     };
 
-    const scheduleNextActivityCheck = () => {
-      const interval = getActivityInterval();
-      setTimeout(() => {
-        loadFriendActivities();
-        scheduleNextActivityCheck();
-      }, interval);
-    };
+    // Setup interval
+    const interval = setInterval(() => {
+      loadFriendActivities();
+    }, getActivityInterval());
 
-    scheduleNextActivityCheck();
-  }, [loadFriendActivities, unreadActivitiesCount, friendActivities.length]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [user?.uid, friends.length]); // Stabile Dependencies
 
   useEffect(() => {
     setLoading(friendsLoading);
@@ -460,6 +461,9 @@ export const OptimizedFriendsProvider = ({
         userName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
         timestamp: firebase.database.ServerValue.TIMESTAMP,
       });
+
+      // 🧹 Limitiere Activities auf maximal 20 Einträge
+      await limitActivities(user.uid);
     } catch (error) {
       console.warn('Failed to update user activity:', error);
     }

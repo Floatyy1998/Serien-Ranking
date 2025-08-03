@@ -29,10 +29,10 @@ import MovieSearchFilters from '../components/filters/MovieSearchFilters';
 import SearchFilters from '../components/filters/SearchFilters';
 import MovieGrid from '../components/movies/MovieGrid';
 import SeriesGrid from '../components/series/SeriesGrid';
-import { useFriends } from '../contexts/FriendsProvider';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useNotifications } from '../contexts/NotificationProvider';
-import { useSeriesList } from '../contexts/SeriesListProvider';
+import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
+import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { calculateCorrectAverageRating } from '../utils/rating';
 
 interface TabPanelProps {
@@ -64,7 +64,7 @@ export const MainPage: React.FC = () => {
 
   const { movieList } = useMovieList();
   const { totalUnreadActivities } = useNotifications();
-  const { friendRequests } = useFriends();
+  const { friendRequests } = useOptimizedFriends();
   const [searchValue, setSearchValue] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedProvider, setSelectedProvider] = useState('All');
@@ -114,12 +114,15 @@ export const MainPage: React.FC = () => {
           series.seasons.reduce((seasonTotal: number, season: any) => {
             return (
               seasonTotal +
-              (season.episodes || []).reduce((episodeTotal: number, ep: any) => {
-                if (ep.watched) {
-                  return episodeTotal + (ep.watchCount || 1);
-                }
-                return episodeTotal;
-              }, 0)
+              (season.episodes || []).reduce(
+                (episodeTotal: number, ep: any) => {
+                  if (ep.watched) {
+                    return episodeTotal + (ep.watchCount || 1);
+                  }
+                  return episodeTotal;
+                },
+                0
+              )
             );
           }, 0)
         );
@@ -135,7 +138,9 @@ export const MainPage: React.FC = () => {
               seasonTotal +
               (season.episodes || []).reduce((episodeTime: number, ep: any) => {
                 if (ep.watched) {
-                  return episodeTime + (ep.watchCount || 1) * series.episodeRuntime;
+                  return (
+                    episodeTime + (ep.watchCount || 1) * series.episodeRuntime
+                  );
                 }
                 return episodeTime;
               }, 0)
@@ -386,46 +391,46 @@ export const MainPage: React.FC = () => {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <BadgeButton />
-          
+
           <Badge
-          badgeContent={totalUnreadActivities + friendRequests.length}
-          color='error'
-          invisible={totalUnreadActivities + friendRequests.length === 0}
-          sx={{
-            '& .MuiBadge-badge': {
-              backgroundColor: '#ff4444',
-              color: 'white',
-              fontWeight: 'bold',
-              minWidth: '20px',
-              height: '20px',
-              fontSize: '0.75rem',
-            },
-          }}
-        >
-          <Button
-            variant='contained'
-            onClick={() => navigate('/friends')}
-            startIcon={<People />}
-            className='main-header-button'
+            badgeContent={totalUnreadActivities + friendRequests.length}
+            color='error'
+            invisible={totalUnreadActivities + friendRequests.length === 0}
             sx={{
-              background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-              color: '#000',
-              fontWeight: 'bold',
-              borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
-                transform: 'translateY(-2px)',
+              '& .MuiBadge-badge': {
+                backgroundColor: '#ff4444',
+                color: 'white',
+                fontWeight: 'bold',
+                minWidth: '20px',
+                height: '20px',
+                fontSize: '0.75rem',
               },
-              fontSize: { xs: '0.75rem', md: '0.875rem' },
-              padding: { xs: '8px 16px', md: '10px 20px' },
-              transition: 'all 0.3s ease',
             }}
           >
-            Freunde
-          </Button>
-        </Badge>
+            <Button
+              variant='contained'
+              onClick={() => navigate('/friends')}
+              startIcon={<People />}
+              className='main-header-button'
+              sx={{
+                background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
+                color: '#000',
+                fontWeight: 'bold',
+                borderRadius: 2,
+                boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
+                  boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                  transform: 'translateY(-2px)',
+                },
+                fontSize: { xs: '0.75rem', md: '0.875rem' },
+                padding: { xs: '8px 16px', md: '10px 20px' },
+                transition: 'all 0.3s ease',
+              }}
+            >
+              Freunde
+            </Button>
+          </Badge>
         </Box>
       </Box>
 

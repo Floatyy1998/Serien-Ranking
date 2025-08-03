@@ -16,8 +16,8 @@ import { useLocation } from 'react-router-dom';
 import { allGenres } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
 import notFound from '../../assets/notFound.jpg';
-import { useFriends } from '../../contexts/FriendsProvider';
-import { useSeriesList } from '../../contexts/SeriesListProvider';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
 import { logSeriesDeleted } from '../../utils/activityLogger';
@@ -68,7 +68,7 @@ export const SeriesCard = ({
     : '#22c55e';
   const auth = useAuth();
   const user = auth?.user;
-  const {} = useFriends();
+  const {} = useOptimizedFriends();
   const uniqueProviders = currentSeries.provider
     ? Array.from(
         new Set(currentSeries.provider.provider.map((p) => p.name))
