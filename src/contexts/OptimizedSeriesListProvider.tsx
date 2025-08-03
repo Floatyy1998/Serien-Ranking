@@ -42,7 +42,7 @@ export const SeriesListProvider = ({
   const detectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🚀 Ultra-responsiver Cache - sofortige UI Updates
+  // 🚀 Optimale Cache-Konfiguration für Serien
   const {
     data: seriesData,
     loading,
@@ -50,8 +50,8 @@ export const SeriesListProvider = ({
   } = useFirebaseCache<Record<string, Series>>(
     user ? `${user.uid}/serien` : '',
     {
-      ttl: 500, // 2 Sekunden Cache für sofortige Updates
-      checkInterval: 100, // Check alle 500ms für ultra-responsive UI
+      ttl: 5 * 60 * 1000, // 5 Minuten - sinnvoller für Seriendaten
+      useRealtimeListener: true, // Nutze realtime listener für beste Performance
     }
   );
 

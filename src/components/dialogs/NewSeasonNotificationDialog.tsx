@@ -10,8 +10,8 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import firebase from 'firebase/compat/app';
 import { useAuth } from '../../App';
+import { useFirebaseBatch } from '../../hooks/useFirebaseBatch';
 import { Series } from '../../interfaces/Series';
 
 const providerLogos: { [key: number]: { name: string; logo: string } } = {
@@ -82,14 +82,18 @@ const NewSeasonNotificationDialog = ({
 }: NewSeasonNotificationDialogProps) => {
   const { user } = useAuth()!;
 
+  // 🚀 Batch-Updates für Watchlist-Operationen
+  const { addUpdate: addBatchUpdate } = useFirebaseBatch({
+    batchSize: 5,
+    delayMs: 500,
+  });
+
   const addToWatchlist = async (series: Series) => {
     if (!user) return;
 
     try {
-      const seriesRef = firebase
-        .database()
-        .ref(`${user.uid}/serien/${series.nmr}`);
-      await seriesRef.update({ watchlist: true });
+      // 🚀 Batch-Update statt direktem Firebase-Call
+      addBatchUpdate(`${user.uid}/serien/${series.nmr}/watchlist`, true);
     } catch (error) {}
   };
 

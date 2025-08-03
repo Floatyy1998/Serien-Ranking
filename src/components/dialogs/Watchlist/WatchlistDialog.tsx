@@ -14,6 +14,8 @@ import { useAuth } from '../../../App';
 // import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider'; // Nicht mehr benötigt
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
 import { useDataProtection } from '../../../hooks/useDataProtection';
+import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
+import { useFirebaseCache } from '../../../hooks/useFirebaseCache';
 import { Series } from '../../../interfaces/Series';
 import {
   logBadgeRewatch,
@@ -60,6 +62,20 @@ const WatchlistDialog = ({
 
   // 🛡️ Datenschutz bei Seitenwechsel/Schließung
   const { addProtectedUpdate } = useDataProtection();
+
+  // 🚀 Optimierte Watchlist-Order mit Cache
+  const { data: watchlistOrder, refetch: refetchOrder } = useFirebaseCache<
+    number[]
+  >(user ? `${user.uid}/watchlistOrder` : '', {
+    ttl: 2 * 60 * 1000, // 2 Minuten Cache für Order
+    useRealtimeListener: false, // Polling für Order ist OK
+  });
+
+  // 🚀 Batch-Updates für bessere Performance
+  const { addUpdate: addBatchUpdate } = useFirebaseBatch({
+    batchSize: 5,
+    delayMs: 500,
+  });
 
   // Erweiterte onClose Funktion mit Datenschutz
   const handleDialogClose = () => {
@@ -215,11 +231,9 @@ const WatchlistDialog = ({
           !lastCheck || Date.now() - parseInt(lastCheck) > 30000;
 
         if (shouldCheck) {
-          const orderRef = firebase
-            .database()
-            .ref(`${user.uid}/watchlistOrder`);
-          orderRef.once('value').then((snapshot) => {
-            const firebaseOrder = snapshot.val();
+          // 🚀 Nutze optimierten Cache statt direkter Firebase-Calls
+          if (watchlistOrder && Array.isArray(watchlistOrder)) {
+            const firebaseOrder = watchlistOrder;
             if (
               firebaseOrder &&
               JSON.stringify(firebaseOrder) !== JSON.stringify(savedOrder)
@@ -243,37 +257,33 @@ const WatchlistDialog = ({
               );
               setFilteredSeries([...newOrdered, ...newMissing]);
             }
-            localStorage.setItem(
-              `${cachedOrderKey}_lastCheck`,
-              Date.now().toString()
-            );
-          });
+          }
+          localStorage.setItem(
+            `${cachedOrderKey}_lastCheck`,
+            Date.now().toString()
+          );
         }
       } else {
-        // Kein Cache, lade von Firebase
-        const orderRef = firebase.database().ref(`${user.uid}/watchlistOrder`);
-        orderRef.once('value').then((snapshot) => {
-          const firebaseOrder = snapshot.val();
-          if (firebaseOrder && Array.isArray(firebaseOrder)) {
-            localStorage.setItem(cachedOrderKey, JSON.stringify(firebaseOrder));
-            localStorage.setItem(
-              `${cachedOrderKey}_lastCheck`,
-              Date.now().toString()
-            );
+        // Kein Cache, nutze optimierten Hook statt direkter Firebase-Calls
+        if (watchlistOrder && Array.isArray(watchlistOrder)) {
+          localStorage.setItem(cachedOrderKey, JSON.stringify(watchlistOrder));
+          localStorage.setItem(
+            `${cachedOrderKey}_lastCheck`,
+            Date.now().toString()
+          );
 
-            const ordered = firebaseOrder
-              .map((id: number) =>
-                currentWatchlistSeries.find((series) => series.id === id)
-              )
-              .filter(Boolean) as Series[];
-            const missing = currentWatchlistSeries.filter(
-              (series) => !ordered.some((s) => s.id === series.id)
-            );
-            setFilteredSeries([...ordered, ...missing]);
-          } else {
-            setFilteredSeries(currentWatchlistSeries);
-          }
-        });
+          const ordered = watchlistOrder
+            .map((id: number) =>
+              currentWatchlistSeries.find((series) => series.id === id)
+            )
+            .filter(Boolean) as Series[];
+          const missing = currentWatchlistSeries.filter(
+            (series) => !ordered.some((s) => s.id === series.id)
+          );
+          setFilteredSeries([...ordered, ...missing]);
+        } else {
+          setFilteredSeries(currentWatchlistSeries);
+        }
       }
     } else if (currentWatchlistSeries.length > 0) {
       // Fallback wenn kein User vorhanden
@@ -373,7 +383,8 @@ const WatchlistDialog = ({
     setFilteredSeries(updated);
     if (user) {
       const order = updated.map((s) => s.id);
-      firebase.database().ref(`${user.uid}/watchlistOrder`).set(order);
+      // 🚀 Nutze Batch-Update statt direkter Firebase-Call
+      addBatchUpdate(`${user.uid}/watchlistOrder`, order);
     }
     // setWatchlistSeries wird nicht mehr verwendet - Dialog arbeitet eigenständig
   };

@@ -6,6 +6,7 @@ import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useStats } from '../../contexts/StatsProvider';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useFirebaseCache } from '../../hooks/useFirebaseCache';
 import { TodayEpisode } from '../../interfaces/TodayEpisode';
 import { activityBatchManager } from '../../utils/activityBatchManager';
 import BadgeSystem from '../../utils/badgeSystem';
@@ -61,47 +62,22 @@ export const SeriesGrid = ({
     sessionStorage.setItem('todayDialogShownThisSession', 'true');
   };
 
-  // Freund-Serien State
-  const [friendSeriesList, setFriendSeriesList] = useState<any[]>([]);
-  const [friendSeriesLoading, setFriendSeriesLoading] = useState(false);
+  // Freund-Serien über optimierten Cache laden
+  const { data: friendSeriesData, loading: friendSeriesLoading } =
+    useFirebaseCache<Record<string, any>>(
+      targetUserId ? `${targetUserId}/serien` : '',
+      {
+        ttl: 2 * 60 * 1000, // 2 Minuten Cache
+        useRealtimeListener: true, // Realtime für Live-Updates
+      }
+    );
+
+  const friendSeriesList = friendSeriesData
+    ? Object.values(friendSeriesData)
+    : [];
 
   // Verwende entweder Freund-Serien oder eigene Serien
-  // Aber nur wenn Freund-Daten geladen wurden oder kein targetUserId gesetzt ist
-  const seriesList = targetUserId
-    ? friendSeriesLoading
-      ? []
-      : friendSeriesList
-    : contextSeriesList;
-
-  // Lade Freund-Serien wenn targetUserId gesetzt ist
-  useEffect(() => {
-    if (!targetUserId) {
-      setFriendSeriesList([]);
-      return;
-    }
-
-    setFriendSeriesLoading(true);
-    const friendSeriesRef = firebase.database().ref(`${targetUserId}/serien`);
-
-    const listener = friendSeriesRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-
-      if (data === null && !snapshot.exists()) {
-        setFriendSeriesList([]);
-      } else if (data) {
-        const seriesArray = Object.values(data);
-        setFriendSeriesList(seriesArray);
-      } else {
-        setFriendSeriesList([]);
-      }
-
-      setFriendSeriesLoading(false);
-    });
-
-    return () => {
-      friendSeriesRef.off('value', listener);
-    };
-  }, [targetUserId]);
+  const seriesList = targetUserId ? friendSeriesList : contextSeriesList;
 
   // Finde die aktuelle Serie für den Dialog aus der aktuellen seriesList
   const [watchedDialogSeries, setWatchedDialogSeries] = useState<any>(null);

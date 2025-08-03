@@ -8,9 +8,9 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material';
-import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
+import { useFirebaseCache } from '../../hooks/useFirebaseCache';
 import { ProfileDialog } from './ProfileDialog';
 
 export const UsernameRequiredDialog: React.FC = () => {
@@ -18,22 +18,25 @@ export const UsernameRequiredDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
+  // 🚀 Optimierte User-Profile-Überwachung mit Cache
+  const { data: userData } = useFirebaseCache<any>(
+    user ? `users/${user.uid}` : '',
+    {
+      ttl: 30 * 1000, // 30 Sekunden Cache - Username-Check soll responsive sein
+      useRealtimeListener: true, // Realtime für Profile-Updates
+    }
+  );
+
   useEffect(() => {
-    if (!user) return;
+    if (!user || !userData) return;
 
-    const checkUserProfile = async () => {
-      const userRef = firebase.database().ref(`users/${user.uid}`);
-      const snapshot = await userRef.once('value');
-      const userData = snapshot.val();
-
-      // Zeige Dialog wenn User existiert aber keinen Username hat
-      if (userData && !userData.username) {
-        setOpen(true);
-      }
-    };
-
-    checkUserProfile();
-  }, [user]);
+    // Zeige Dialog wenn User existiert aber keinen Username hat
+    if (userData && !userData.username) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }, [user, userData]);
 
   const handleSetupProfile = () => {
     setOpen(false);
