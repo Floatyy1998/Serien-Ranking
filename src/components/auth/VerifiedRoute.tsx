@@ -15,10 +15,28 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   useEffect(() => {
     const user = firebase.auth().currentUser;
     if (user) {
-      user.reload().then(() => {
+      // Offline-freundliche Version - reload nur wenn online
+      if (navigator.onLine) {
+        user
+          .reload()
+          .then(() => {
+            setIsVerified(user.emailVerified);
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.warn(
+              'User reload fehlgeschlagen (offline?), verwende cached Daten:',
+              error
+            );
+            // Bei Offline-Fehler cached Email-Verified Status verwenden
+            setIsVerified(user.emailVerified);
+            setLoading(false);
+          });
+      } else {
+        // Offline: Verwende cached Daten direkt
         setIsVerified(user.emailVerified);
         setLoading(false);
-      });
+      }
     } else {
       navigate('/login');
     }
@@ -72,7 +90,38 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
       });
   };
   if (loading) {
-    return null; // Lass das GlobalLoadingProvider das Skeleton zeigen
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#000',
+          color: '#00fed7',
+          flexDirection: 'column',
+          gap: '20px',
+        }}
+      >
+        <div
+          style={{
+            width: '50px',
+            height: '50px',
+            border: '4px solid #00fed7',
+            borderTop: '4px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
+        <div>Verifizierung wird geprüft...</div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
   }
 
   if (!isVerified) {

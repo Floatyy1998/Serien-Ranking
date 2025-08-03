@@ -35,7 +35,7 @@ import {
   providerMenuItems,
 } from '../constants/menuItems';
 import { useDebounce } from '../hooks/useDebounce';
-import { useFirebaseCache } from '../hooks/useFirebaseCache';
+import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { calculateCorrectAverageRating } from '../utils/rating';
 
 interface UserProfileData {
@@ -104,20 +104,22 @@ export const UserProfilePage: React.FC = () => {
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
 
-  // 🚀 Optimierte Online-Status Überwachung mit Cache
-  const { data: onlineStatus } = useFirebaseCache<boolean>(
+  // 🚀 Enhanced Online-Status Überwachung mit Cache & Offline-Support
+  const { data: onlineStatus } = useEnhancedFirebaseCache<boolean>(
     userId ? `users/${userId}/isOnline` : '',
     {
       ttl: 30 * 1000, // 30 Sekunden Cache für Online-Status
       useRealtimeListener: true, // Realtime für Live-Status
+      enableOfflineSupport: true, // Offline-Unterstützung
     }
   );
 
-  const { data: lastActiveTimestamp } = useFirebaseCache<number>(
+  const { data: lastActiveTimestamp } = useEnhancedFirebaseCache<number>(
     userId ? `users/${userId}/lastActive` : '',
     {
       ttl: 60 * 1000, // 1 Minute Cache für LastActive
       useRealtimeListener: true,
+      enableOfflineSupport: true, // Offline-Unterstützung
     }
   );
 

@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
-import { useFirebaseCache } from '../../hooks/useFirebaseCache';
+import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { ProfileDialog } from './ProfileDialog';
 
 export const UsernameRequiredDialog: React.FC = () => {
@@ -18,12 +18,13 @@ export const UsernameRequiredDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
-  // 🚀 Optimierte User-Profile-Überwachung mit Cache
-  const { data: userData } = useFirebaseCache<any>(
+  // 🚀 Enhanced User-Profile-Überwachung mit Offline-Support
+  const { data: userData } = useEnhancedFirebaseCache<any>(
     user ? `users/${user.uid}` : '',
     {
-      ttl: 30 * 1000, // 30 Sekunden Cache - Username-Check soll responsive sein
+      ttl: 30 * 1000, // 30 Sekunden für responsive Username-Check
       useRealtimeListener: true, // Realtime für Profile-Updates
+      enableOfflineSupport: true, // Offline-Unterstützung
     }
   );
 

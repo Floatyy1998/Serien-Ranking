@@ -14,8 +14,8 @@ import { useAuth } from '../../../App';
 // import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider'; // Nicht mehr benötigt
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
 import { useDataProtection } from '../../../hooks/useDataProtection';
+import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCache';
 import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
-import { useFirebaseCache } from '../../../hooks/useFirebaseCache';
 import { Series } from '../../../interfaces/Series';
 import {
   logBadgeRewatch,
@@ -63,13 +63,15 @@ const WatchlistDialog = ({
   // 🛡️ Datenschutz bei Seitenwechsel/Schließung
   const { addProtectedUpdate } = useDataProtection();
 
-  // 🚀 Optimierte Watchlist-Order mit Cache
-  const { data: watchlistOrder, refetch: refetchOrder } = useFirebaseCache<
-    number[]
-  >(user ? `${user.uid}/watchlistOrder` : '', {
-    ttl: 2 * 60 * 1000, // 2 Minuten Cache für Order
-    useRealtimeListener: false, // Polling für Order ist OK
-  });
+  // 🚀 Enhanced Watchlist-Order mit Cache & Offline-Support
+  const { data: watchlistOrder } = useEnhancedFirebaseCache<number[]>(
+    user ? `${user.uid}/watchlistOrder` : '',
+    {
+      ttl: 2 * 60 * 1000, // 2 Minuten Cache für Order
+      useRealtimeListener: false, // Polling für Order ist OK
+      enableOfflineSupport: true, // Offline-Unterstützung für Watchlist
+    }
+  );
 
   // 🚀 Batch-Updates für bessere Performance
   const { addUpdate: addBatchUpdate } = useFirebaseBatch({

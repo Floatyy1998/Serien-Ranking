@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import { useAuth } from '../App';
-import { useFirebaseCache } from '../hooks/useFirebaseCache';
+import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { Friend, FriendActivity, FriendRequest } from '../interfaces/Friend';
 import { limitActivities } from '../utils/activityCleanup';
 
@@ -58,16 +58,18 @@ export const OptimizedFriendsProvider = ({
 }) => {
   const { user } = useAuth()!;
 
-  // 🚀 Optimale Cache-Konfiguration für Freunde
+  // 🚀 Enhanced Cache mit Offline-Support für Freunde
   const {
     data: friendsData,
     loading: friendsLoading,
     refetch: refetchFriends,
-  } = useFirebaseCache<Record<string, Friend>>(
+  } = useEnhancedFirebaseCache<Record<string, Friend>>(
     user ? `users/${user.uid}/friends` : '',
     {
-      ttl: 2 * 60 * 1000, // 2 Minuten - Friends ändern sich selten
-      useRealtimeListener: true, // Nutze realtime listener für beste Performance
+      ttl: 2 * 60 * 1000, // 2 Minuten Cache
+      useRealtimeListener: true, // Realtime für sofortige Updates
+      enableOfflineSupport: true, // Offline-First Unterstützung
+      syncOnReconnect: true, // Auto-Sync bei Reconnect
     }
   );
 

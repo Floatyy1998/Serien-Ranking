@@ -32,7 +32,7 @@ import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useFirebaseCache } from '../../hooks/useFirebaseCache';
+import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { Movie } from '../../interfaces/Movie';
 import { Series } from '../../interfaces/Series';
 import MovieDialog from './MovieDialog';
@@ -87,12 +87,13 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
   const { movieList } = useMovieList();
   const { seriesList } = useSeriesList();
 
-  // 🚀 Optimierte Friend-Activities mit Cache
-  const { data: activitiesData, loading } = useFirebaseCache<
+  // 🚀 Enhanced Friend-Activities mit Cache & Offline-Support
+  const { data: activitiesData, loading } = useEnhancedFirebaseCache<
     Record<string, ActivityItem>
   >(open && friendId ? `activities/${friendId}` : '', {
     ttl: 2 * 60 * 1000, // 2 Minuten Cache für Friend-Activities
     useRealtimeListener: true,
+    enableOfflineSupport: true, // Offline-Unterstützung für Friend-Activities
   });
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);

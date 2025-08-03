@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 import { useAuth } from '../App';
-import { useFirebaseCache } from '../hooks/useFirebaseCache';
+import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { Series } from '../interfaces/Series';
 import { detectNewSeasons } from '../utils/newSeasonDetection';
 
@@ -18,6 +18,8 @@ interface SeriesListContextType {
   clearNewSeasons: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
+  isOffline: boolean;
+  isStale: boolean;
 }
 
 export const SeriesListContext = createContext<SeriesListContextType>({
@@ -27,6 +29,8 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   clearNewSeasons: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
+  isOffline: false,
+  isStale: false,
 });
 
 export const SeriesListProvider = ({
@@ -42,16 +46,20 @@ export const SeriesListProvider = ({
   const detectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🚀 Optimale Cache-Konfiguration für Serien
+  // 🚀 Enhanced Cache mit Offline-Support für Serien
   const {
     data: seriesData,
     loading,
     refetch,
-  } = useFirebaseCache<Record<string, Series>>(
+    isStale,
+    isOffline,
+  } = useEnhancedFirebaseCache<Record<string, Series>>(
     user ? `${user.uid}/serien` : '',
     {
-      ttl: 5 * 60 * 1000, // 5 Minuten - sinnvoller für Seriendaten
-      useRealtimeListener: true, // Nutze realtime listener für beste Performance
+      ttl: 5 * 60 * 1000, // 5 Minuten Cache
+      useRealtimeListener: true, // Realtime für sofortige Updates
+      enableOfflineSupport: true, // Offline-First Unterstützung
+      syncOnReconnect: true, // Auto-Sync bei Reconnect
     }
   );
 
@@ -89,12 +97,19 @@ export const SeriesListProvider = ({
     []
   );
 
-  // New season detection nur beim ersten Load
+  // New season detection nur beim ersten Load und wenn online
   useEffect(() => {
-    if (!user || !seriesList.length || hasCheckedForNewSeasons) return;
+    if (!user || !seriesList.length || hasCheckedForNewSeasons || isOffline)
+      return;
 
     runNewSeasonDetection(seriesList, user.uid);
-  }, [user, seriesList, hasCheckedForNewSeasons, runNewSeasonDetection]);
+  }, [
+    user,
+    seriesList,
+    hasCheckedForNewSeasons,
+    isOffline,
+    runNewSeasonDetection,
+  ]);
 
   // Reset bei User-Wechsel
   useEffect(() => {
@@ -137,6 +152,8 @@ export const SeriesListProvider = ({
         clearNewSeasons,
         recheckForNewSeasons,
         refetchSeries,
+        isOffline,
+        isStale,
       }}
     >
       {children}
