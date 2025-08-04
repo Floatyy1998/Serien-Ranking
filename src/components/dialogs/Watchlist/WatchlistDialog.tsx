@@ -188,7 +188,15 @@ const WatchlistDialog = ({
       .filter((series) => series.watchlist)
       .filter((series) => {
         const nextEpisode = getNextUnwatchedEpisode(series);
-        return nextEpisode && new Date(nextEpisode.air_date) <= new Date();
+        const hasAvailableEpisode = nextEpisode && new Date(nextEpisode.air_date) <= new Date();
+        
+        // Wenn Rewatches aktiv sind, prüfe auch auf verfügbare Rewatch-Episoden
+        if (!hideRewatches && !hasAvailableEpisode && hasActiveRewatch(series)) {
+          const rewatchEpisode = getNextRewatchEpisode(series);
+          return rewatchEpisode && new Date(rewatchEpisode.air_date) <= new Date();
+        }
+        
+        return hasAvailableEpisode;
       });
   }, [seriesList, hideRewatches]); // hideRewatches beeinflusst getNextUnwatchedEpisode
 
