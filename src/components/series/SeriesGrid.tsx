@@ -211,7 +211,7 @@ export const SeriesGrid = ({
     }
   }, [contextSeriesList, user, targetUserId]);
 
-  // 🏆 EINMALIGE BADGE-MIGRATION für Explorer & Collector Badges
+  // 🏆 BADGE-MIGRATION TEMPORARILY DISABLED (prevents activity spam)
   useEffect(() => {
     const runBadgeMigration = async () => {
       if (!user || targetUserId) return;
@@ -224,99 +224,13 @@ export const SeriesGrid = ({
         return;
       }
 
-      try {
-        // 1️⃣ SCHRITT: Migriere bestehende Ratings zu Badge-Activities
-        await migrateExistingRatings();
-
-        // 2️⃣ SCHRITT: Führe Badge-Neukalkulation durch
-        const { getOfflineBadgeSystem } = await import(
-          '../../utils/offlineBadgeSystem'
-        );
-        const badgeSystem = getOfflineBadgeSystem(user.uid);
-        const newBadges = await badgeSystem.recalculateAllBadges();
-
-        if (newBadges.length > 0) {
-          // Badge-System Activity logging
-        }
-
-        // Markiere Migration als abgeschlossen
-        localStorage.setItem(migrationKey, 'completed');
-      } catch (error) {
-        // Badge-Migration Fehler
-      }
+      // MIGRATION TEMPORARILY DISABLED to prevent activity spam
+      console.log('Badge migration disabled to prevent activity spam');
+      localStorage.setItem(migrationKey, 'disabled_spam_prevention');
+      return;
     };
 
     // Funktion zum Migrieren bestehender Ratings
-    const migrateExistingRatings = async () => {
-      if (!user) return;
-
-      try {
-        // Lade alle Serien
-        const seriesSnapshot = await firebase
-          .database()
-          .ref(`${user.uid}/serien`)
-          .once('value');
-
-        // Lade alle Filme
-        const moviesSnapshot = await firebase
-          .database()
-          .ref(`${user.uid}/filme`)
-          .once('value');
-
-        let ratingCount = 0;
-
-        // Migriere Serien-Ratings
-        if (seriesSnapshot.exists()) {
-          const seriesData = seriesSnapshot.val();
-          for (const series of Object.values(seriesData) as any[]) {
-            if (series.rating && typeof series.rating === 'object') {
-              // Jede bewertete Serie als rating_added Activity loggen
-              const overallRating = calculateOverallRating(series);
-              if (parseFloat(overallRating) > 0) {
-                // Import der minimalActivityLogger Funktion direkt
-                const { logRatingAdded } = await import(
-                  '../../utils/minimalActivityLogger'
-                );
-                await logRatingAdded(
-                  user.uid,
-                  series.title || 'Unbekannte Serie',
-                  'series',
-                  parseFloat(overallRating),
-                  series.id || 0
-                );
-                ratingCount++;
-              }
-            }
-          }
-        }
-
-        // Migriere Film-Ratings
-        if (moviesSnapshot.exists()) {
-          const moviesData = moviesSnapshot.val();
-          for (const movie of Object.values(moviesData) as any[]) {
-            if (movie.rating && typeof movie.rating === 'object') {
-              // Jeden bewerteten Film als rating_added Activity loggen
-              const overallRating = calculateOverallRating(movie);
-              if (parseFloat(overallRating) > 0) {
-                const { logRatingAdded } = await import(
-                  '../../utils/minimalActivityLogger'
-                );
-                await logRatingAdded(
-                  user.uid,
-                  movie.title || 'Unbekannter Film',
-                  'movie',
-                  parseFloat(overallRating),
-                  movie.id || 0
-                );
-                ratingCount++;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        // Fehler bei Rating-Migration
-      }
-    };
 
     // Verzögerung um sicherzustellen, dass Serien geladen sind
     if (contextSeriesList.length > 0) {

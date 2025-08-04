@@ -477,6 +477,7 @@ export const OptimizedFriendsProvider = ({
     try {
       const activitiesRef = firebase.database().ref(`activities/${user.uid}`);
 
+      // Add new activity
       const newActivityRef = activitiesRef.push();
       await newActivityRef.set({
         ...activity,
@@ -485,7 +486,30 @@ export const OptimizedFriendsProvider = ({
         timestamp: firebase.database.ServerValue.TIMESTAMP,
       });
 
-      // 🧹 Activity limiting entfernt - wird in cleanup gehandhabt
+      // Limit to max 20 activities
+      const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
+      const activities = snapshot.val();
+      
+      if (activities) {
+        const activityKeys = Object.keys(activities);
+        if (activityKeys.length > 20) {
+          // Sort by timestamp and remove oldest entries
+          const sortedKeys = activityKeys.sort((a, b) => {
+            const timestampA = activities[a].timestamp || 0;
+            const timestampB = activities[b].timestamp || 0;
+            return timestampA - timestampB;
+          });
+          
+          // Remove excess activities (keep only newest 20)
+          const toRemove = sortedKeys.slice(0, activityKeys.length - 20);
+          const updates: { [key: string]: null } = {};
+          toRemove.forEach(key => {
+            updates[key] = null;
+          });
+          
+          await activitiesRef.update(updates);
+        }
+      }
     } catch (error) {
       console.warn('Failed to update user activity:', error);
     }
