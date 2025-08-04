@@ -34,7 +34,6 @@ const MovieDialog = ({
   allGenres,
   ratings,
   setRatings,
-  handleDeleteMovie,
   handleUpdateRatings,
   isReadOnly = false,
 }: MovieDialogProps) => {
@@ -106,9 +105,7 @@ const MovieDialog = ({
         ))}
       </DialogContent>
       {!isReadOnly && (
-        <DialogActions
-          sx={{ display: 'flex', justifyContent: 'center' }}
-        >
+        <DialogActions sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button
             onClick={handleUpdateRatings}
             variant='outlined'

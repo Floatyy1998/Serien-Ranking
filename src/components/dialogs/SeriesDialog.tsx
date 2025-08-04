@@ -32,7 +32,6 @@ const SeriesDialog = ({
   allGenres,
   ratings,
   setRatings,
-  handleDeleteSeries,
   handleUpdateRatings,
   isReadOnly = false,
 }: SeriesDialogProps) => {
@@ -72,17 +71,19 @@ const SeriesDialog = ({
           Genre:
         </Typography>
         <Box className='flex flex-wrap gap-2 mb-4 justify-center'>
-          {series.genre?.genres?.length > 0 ? series.genre.genres.map((g) => (
-            <Chip
-              key={g}
-              label={g}
-              onClick={() => handleChipClick(g)}
-              sx={{
-                fontSize: '1rem',
-                borderRadius: theme.shape.borderRadius,
-              }}
-            />
-          )) : (
+          {series.genre?.genres?.length > 0 ? (
+            series.genre.genres.map((g) => (
+              <Chip
+                key={g}
+                label={g}
+                onClick={() => handleChipClick(g)}
+                sx={{
+                  fontSize: '1rem',
+                  borderRadius: theme.shape.borderRadius,
+                }}
+              />
+            ))
+          ) : (
             <Typography variant='body2' color='text.secondary'>
               Keine Genres verfügbar
             </Typography>
@@ -105,9 +106,7 @@ const SeriesDialog = ({
         ))}
       </DialogContent>
       {!isReadOnly && (
-        <DialogActions
-          sx={{ display: 'flex', justifyContent: 'center' }}
-        >
+        <DialogActions sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button
             onClick={handleUpdateRatings}
             variant='outlined'
