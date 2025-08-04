@@ -478,7 +478,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     tier: 'gold',
     name: 'Rating-Meister',
     description: '300 Serien oder Filme bewertet',
-    emoji: '⭐',
+    emoji: '🎯',
     color: '#ffd700',
     requirements: { ratings: 300 },
     rarity: 'epic',
