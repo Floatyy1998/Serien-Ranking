@@ -1,4 +1,6 @@
 import BookmarkIcon from '@mui/icons-material/Bookmark';
+import ThreeDotMenu, { StarIcon, InfoIcon, PlaylistPlayIcon, DeleteIcon } from '../common/ThreeDotMenu';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {
   Alert,
   Button,
@@ -117,6 +119,7 @@ export const SeriesCard = ({
   const [confirmDialogCallback, setConfirmDialogCallback] = useState<
     (() => void) | null
   >(null);
+  const [confirmDialogMessage, setConfirmDialogMessage] = useState('');
 
   // React 19: Automatische Memoization - kein useCallback nötig
   const handleTitleClick = () => {
@@ -159,6 +162,14 @@ export const SeriesCard = ({
     }
 
     setOpen(false);
+  };
+
+  const handleDeleteConfirmation = () => {
+    setConfirmDialogMessage(
+      `Möchten Sie die Serie "${currentSeries.title || currentSeries.original_name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`
+    );
+    setConfirmDialogCallback(() => handleDeleteSeries);
+    setConfirmDialogOpen(true);
   };
   const handleUpdateRatings = async () => {
     const ref = firebase
@@ -309,7 +320,7 @@ export const SeriesCard = ({
           },
         }}
       >
-        <Box className='relative aspect-2/3' onClick={handlePosterClick}>
+        <Box className='relative aspect-2/3'>
           <CardMedia
             sx={{
               height: '100%',
@@ -345,8 +356,7 @@ export const SeriesCard = ({
             <>
               <Box
                 className='absolute top-20 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
-                sx={{ height: '50px', cursor: 'pointer' }}
-                onClick={() => setOpenEpisodes(true)}
+                sx={{ height: '50px' }}
               >
                 <Typography
                   variant='body2'
@@ -361,8 +371,7 @@ export const SeriesCard = ({
               </Box>
               <Box
                 className='absolute bottom-20 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center flex items-center justify-center'
-                sx={{ height: '70px', cursor: 'pointer' }}
-                onClick={() => setOpenEpisodes(true)}
+                sx={{ height: '70px' }}
               >
                 <Typography
                   variant='body2'
@@ -384,10 +393,7 @@ export const SeriesCard = ({
           )}
           <Tooltip title={currentSeries.beschreibung} arrow>
             <Box
-              className={`absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 ${
-                !disableRatingDialog ? 'cursor-pointer' : 'cursor-default'
-              }`}
-              onClick={handleRatingClick}
+              className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1'
               aria-label='Bewertung anzeigen'
             >
               <Typography variant='body1' className='text-white'>
@@ -395,28 +401,52 @@ export const SeriesCard = ({
               </Typography>
             </Box>
           </Tooltip>
-          <Tooltip title='Zur Watchlist hinzufügen' arrow>
-            <Box
-              className='absolute bottom-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg p-1 cursor-pointer'
-              onClick={handleWatchlistToggle}
-              aria-label='Zur Watchlist hinzufügen'
-              role='button'
-            >
-              <BookmarkIcon
-                sx={{
-                  color: currentSeries.watchlist ? '#22c55e' : '#9e9e9e',
-                  width: '24px',
-                  height: '24px',
-                }}
-              />
-            </Box>
-          </Tooltip>
+          <Box className='absolute bottom-2 right-2'>
+            <ThreeDotMenu
+              options={[
+                {
+                  label: 'Rating anpassen',
+                  icon: <StarIcon />,
+                  onClick: handleRatingClick,
+                  disabled: disableRatingDialog,
+                },
+                {
+                  label: 'Gesehene Episoden bearbeiten',
+                  icon: <CheckCircleIcon />, 
+                  onClick: handleTitleClick,
+                },
+                {
+                  label: 'Kommende Episoden anzeigen', 
+                  icon: <PlaylistPlayIcon />,
+                  onClick: () => setOpenEpisodes(true),
+                },
+                {
+                  label: 'Details anzeigen',
+                  icon: <InfoIcon />,
+                  onClick: handlePosterClick,
+                },
+                {
+                  label: currentSeries.watchlist ? 'Von Watchlist entfernen' : 'Zur Watchlist hinzufügen',
+                  icon: <BookmarkIcon sx={{ color: currentSeries.watchlist ? '#22c55e' : '#9e9e9e' }} />,
+                  onClick: handleWatchlistToggle,
+                },
+                {
+                  label: 'Serie löschen',
+                  icon: <DeleteIcon sx={{ color: '#f87171' }} />,
+                  onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation();
+                    handleDeleteConfirmation();
+                  },
+                },
+              ]}
+            />
+          </Box>
         </Box>
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={currentSeries.title} arrow>
             <Typography
               variant='body1'
-              className='text-white text-center cursor-pointer'
+              className='text-white text-center'
               sx={{
                 maxWidth: '100%',
                 display: '-webkit-box',
@@ -432,7 +462,6 @@ export const SeriesCard = ({
                 justifyContent: 'center',
                 fontSize: '1.2rem',
               }}
-              onClick={handleTitleClick}
             >
               {shouldNumber && `${index}. `}
               {currentSeries.title}
@@ -469,8 +498,7 @@ export const SeriesCard = ({
         <DialogTitle>Bestätigung</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Es gibt vorherige Episoden, die nicht als gesehen markiert sind.
-            Möchten Sie alle vorherigen Episoden auch als gesehen markieren?
+            {confirmDialogMessage || 'Es gibt vorherige Episoden, die nicht als gesehen markiert sind. Möchten Sie alle vorherigen Episoden auch als gesehen markieren?'}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -479,10 +507,11 @@ export const SeriesCard = ({
           </Button>
           <Button
             onClick={handleConfirmDialogConfirm}
-            color='primary'
+            color='error'
+            variant='contained'
             autoFocus
           >
-            Bestätigen
+            Löschen
           </Button>
         </DialogActions>
       </Dialog>

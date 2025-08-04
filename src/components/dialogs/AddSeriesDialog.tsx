@@ -140,6 +140,43 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
   >('success');
   const [keepOpen, setKeepOpen] = useState(false);
 
+  // Fokus beim Öffnen des Dialogs
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        if (activeTab === 0 && inputRef.current) {
+          let attempts = 0;
+          const maxAttempts = 10;
+          
+          const focusInterval = setInterval(() => {
+            if (inputRef.current && document.activeElement !== inputRef.current) {
+              inputRef.current.focus();
+              attempts++;
+            }
+            
+            if (document.activeElement === inputRef.current || attempts >= maxAttempts) {
+              clearInterval(focusInterval);
+            }
+          }, 50);
+        }
+      }, 300); // Warten bis Dialog vollständig geladen ist
+
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  // Fokus beim Tab-Wechsel
+  useEffect(() => {
+    if (open && activeTab === 0) {
+      const timer = setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
+
   // Filter-Funktion für bereits hinzugefügte Serien
   const filterAlreadyAdded = useCallback(
     (items: Serien[]) => {
@@ -576,6 +613,13 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
         setActiveTab(0);
         if (!keepOpen) {
           onClose();
+        } else {
+          // Input fokussieren wenn Dialog offen bleibt
+          setTimeout(() => {
+            if (inputRef.current) {
+              inputRef.current.focus();
+            }
+          }, 100);
         }
       } else {
         const msgJson = await res.json();
@@ -603,12 +647,15 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
     onClose();
   };
 
-  // Load recommendations when dialog opens or user lists change
+  // Load recommendations only when dialog opens for the first time
   useEffect(() => {
     if (open) {
-      loadRecommendations();
+      // Nur laden wenn noch keine Empfehlungen vorhanden sind
+      if (trendingSeries.length === 0 && popularSeries.length === 0 && topRatedSeries.length === 0) {
+        loadRecommendations();
+      }
     }
-  }, [open, loadRecommendations, seriesList, movieList]);
+  }, [open, loadRecommendations]);
 
   useEffect(() => {
     if (open && inputRef.current) {
@@ -624,8 +671,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
         maxWidth='xl'
         fullWidth
         disableAutoFocus={true}
-        disableEnforceFocus={false}
-        disableRestoreFocus={false}
+        disableEnforceFocus={true}
+        disableRestoreFocus={true}
         keepMounted={false}
         sx={{
           '& .MuiDialog-paper': {

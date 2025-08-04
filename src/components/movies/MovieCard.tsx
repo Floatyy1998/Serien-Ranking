@@ -1,9 +1,16 @@
+import ThreeDotMenu, { StarIcon, InfoIcon, DeleteIcon } from '../common/ThreeDotMenu';
 import {
   Alert,
   Box,
+  Button,
   Card,
   CardContent,
   CardMedia,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Snackbar,
   Tooltip,
   Typography,
@@ -92,6 +99,11 @@ export const MovieCard = ({
   const [snackbarSeverity, setSnackbarSeverity] = useState<
     'success' | 'error' | 'warning'
   >('warning');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmDialogCallback, setConfirmDialogCallback] = useState<
+    (() => void) | null
+  >(null);
+  const [confirmDialogMessage, setConfirmDialogMessage] = useState('');
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -216,6 +228,27 @@ export const MovieCard = ({
     setSnackbarOpen(false);
   };
 
+  const handleDeleteConfirmation = () => {
+    setConfirmDialogMessage(
+      `Möchten Sie den Film "${currentMovie.title}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`
+    );
+    setConfirmDialogCallback(() => handleDeleteMovie);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirmDialogClose = () => {
+    setConfirmDialogOpen(false);
+    setConfirmDialogCallback(null);
+    setConfirmDialogMessage('');
+  };
+
+  const handleConfirmDialogConfirm = () => {
+    if (confirmDialogCallback) {
+      confirmDialogCallback();
+    }
+    handleConfirmDialogClose();
+  };
+
   return (
     <>
       <Card
@@ -227,7 +260,7 @@ export const MovieCard = ({
           },
         }}
       >
-        <Box className='relative aspect-2/3' onClick={handlePosterClick}>
+        <Box className='relative aspect-2/3'>
           <CardMedia
             sx={{
               height: '100%',
@@ -280,10 +313,7 @@ export const MovieCard = ({
           )}
           <Tooltip title={currentMovie.beschreibung} arrow>
             <Box
-              className={`absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 ${
-                !disableRatingDialog ? 'cursor-pointer' : 'cursor-default'
-              }`}
-              onClick={handleRatingClick}
+              className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1'
               aria-label='Bewertung anzeigen'
             >
               <Typography variant='body1' className='text-white'>
@@ -291,12 +321,37 @@ export const MovieCard = ({
               </Typography>
             </Box>
           </Tooltip>
+          <Box className='absolute bottom-2 right-2'>
+            <ThreeDotMenu
+              options={[
+                {
+                  label: 'Rating anpassen',
+                  icon: <StarIcon />,
+                  onClick: handleRatingClick,
+                  disabled: disableRatingDialog,
+                },
+                {
+                  label: 'Details anzeigen',
+                  icon: <InfoIcon />,
+                  onClick: handlePosterClick,
+                },
+                {
+                  label: 'Film löschen',
+                  icon: <DeleteIcon sx={{ color: '#f87171' }} />,
+                  onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation();
+                    handleDeleteConfirmation();
+                  },
+                },
+              ]}
+            />
+          </Box>
         </Box>
         <CardContent className='grow flex items-center justify-center '>
           <Tooltip title={currentMovie.title} arrow>
             <Typography
               variant='body1'
-              className='text-white text-center cursor-pointer'
+              className='text-white text-center'
               sx={{
                 maxWidth: '100%',
                 display: '-webkit-box',
@@ -351,6 +406,29 @@ export const MovieCard = ({
           setAdding(false);
         }}
       />
+
+      {/* Bestätigungs Dialog */}
+      <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
+        <DialogTitle>Bestätigung</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {confirmDialogMessage}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmDialogClose} color='primary'>
+            Abbrechen
+          </Button>
+          <Button
+            onClick={handleConfirmDialogConfirm}
+            color='error'
+            variant='contained'
+            autoFocus
+          >
+            Löschen
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

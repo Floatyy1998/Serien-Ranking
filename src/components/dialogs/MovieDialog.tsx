@@ -107,18 +107,16 @@ const MovieDialog = ({
       </DialogContent>
       {!isReadOnly && (
         <DialogActions
-          sx={{ display: 'flex', justifyContent: 'space-around' }}
-          className='flex justify-between'
+          sx={{ display: 'flex', justifyContent: 'center' }}
         >
-          <Button onClick={handleDeleteMovie} variant='outlined' color='error'>
-            Film löschen
-          </Button>
           <Button
             onClick={handleUpdateRatings}
             variant='outlined'
             color='primary'
+            fullWidth
+            sx={{ maxWidth: 200 }}
           >
-            Rating ändern
+            Rating speichern
           </Button>
         </DialogActions>
       )}
