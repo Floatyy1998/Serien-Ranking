@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { allGenresForMovies } from '../../../constants/seriesCard.constants';
 import { useAuth } from '../../App';
@@ -104,6 +104,38 @@ export const MovieCard = ({
     (() => void) | null
   >(null);
   const [confirmDialogMessage, setConfirmDialogMessage] = useState('');
+  const [providerTooltipOpen, setProviderTooltipOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Check if desktop
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Close tooltip when clicking anywhere (mobile only)
+  useEffect(() => {
+    if (isDesktop) return; // Don't add click listener on desktop
+    
+    const handleClickOutside = () => {
+      if (providerTooltipOpen) {
+        setProviderTooltipOpen(false);
+      }
+    };
+
+    if (providerTooltipOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [providerTooltipOpen, isDesktop]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -252,20 +284,63 @@ export const MovieCard = ({
   return (
     <>
       <Card
-        className='h-full transition-shadow duration-300 flex flex-col series-card hover:animate-rgbShadow'
+        className='h-full transition-all duration-500 flex flex-col series-card group'
         sx={{
-          boxShadow: ` ${shadowColor} 8px 8px 20px 0px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px;`,
-          '&:hover': {
-            boxShadow: `${shadowColor} 8px 8px 20px 5px, rgba(255, 255, 255, 0.2) -5px -5px 20px 0px;`,
+          background: 'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+          borderRadius: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          overflow: 'hidden',
+          position: 'relative',
+          boxShadow: `0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(${shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'}, 0.5), 0 0 60px rgba(${shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'}, 0.2), 0 0 0 2px rgba(${shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'}, 0.3)`,
+          '@media (min-width: 768px)': {
+            '&:hover': {
+              transform: 'translateY(-8px) scale(1.02)',
+              boxShadow: `0 25px 80px rgba(0, 0, 0, 0.6), 0 0 50px rgba(${shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'}, 0.7), 0 0 100px rgba(${shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'}, 0.3), 0 0 0 2px rgba(${shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'}, 0.4)`,
+            },
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: shadowColor === '#a855f7' 
+              ? 'linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.8), transparent)'
+              : 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.8), transparent)',
+            opacity: 0,
+            transition: 'opacity 0.3s ease',
+          },
+          '&:hover::before': {
+            opacity: 1,
           },
         }}
       >
-        <Box className='relative aspect-2/3'>
+        <Box 
+          className='relative aspect-2/3 overflow-hidden'
+          sx={{
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '60px',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
+              pointerEvents: 'none',
+            },
+          }}
+        >
           <CardMedia
             sx={{
               height: '100%',
               objectFit: 'cover',
-              cursor: 'pointer',
+              transition: 'transform 0.5s ease',
+              '@media (min-width: 768px)': {
+                '.group:hover &': {
+                  transform: 'scale(1.05)',
+                },
+              },
             }}
             image={
               currentMovie.poster.poster.substring(
@@ -276,53 +351,292 @@ export const MovieCard = ({
             }
           />
           {uniqueProviders.length > 0 && (
-            <Box className='absolute top-2 left-2 flex gap-1'>
-              {uniqueProviders.map((provider) => (
+            <Box 
+              className='absolute top-3 left-1 flex gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300'
+              sx={{
+                transform: 'translateY(-10px)',
+                '@media (min-width: 768px)': {
+                  '.group:hover &': {
+                    transform: 'translateY(0)',
+                  },
+                },
+                '@media (max-width: 767px)': {
+                  transform: 'translateY(0)',
+                },
+              }}
+            >
+              {uniqueProviders.slice(0, 2).map((provider) => (
                 <Box
                   key={provider?.id}
-                  className='bg-black/50 backdrop-blur-xs rounded-lg p-1 w-9 h-9'
+                  sx={{
+                    background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '10px',
+                    p: 0.25,
+                    width: 40,
+                    height: 40,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.1)',
+                    },
+                  }}
                 >
                   <img
                     src={provider?.logo}
                     alt={provider?.name}
-                    className='h-7 rounded-lg'
+                    style={{
+                      height: '32px',
+                      width: '32px',
+                      borderRadius: '4px',
+                      objectFit: 'cover',
+                    }}
                   />
                 </Box>
               ))}
+              {uniqueProviders.length > 2 && (
+                <Tooltip 
+                  title={
+                    <Box sx={{ p: 0 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {uniqueProviders.slice(2).map((provider, index) => (
+                          <Box
+                            key={provider?.id || index}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.5,
+                              p: 1,
+                              borderRadius: '12px',
+                              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.08) 100%)',
+                                border: '1px solid rgba(255,255,255,0.15)',
+                                transform: 'translateX(2px)',
+                              },
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                flexShrink: 0,
+                                background: 'rgba(255,255,255,0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <img
+                                src={provider?.logo}
+                                alt={provider?.name}
+                                style={{
+                                  height: '24px',
+                                  width: '24px',
+                                  borderRadius: '6px',
+                                  objectFit: 'cover',
+                                }}
+                              />
+                            </Box>
+                            <Typography
+                              variant='body2'
+                              sx={{ 
+                                fontSize: '0.875rem', 
+                                color: '#ffffff', 
+                                fontWeight: 500,
+                                letterSpacing: '0.01em',
+                              }}
+                            >
+                              {provider?.name}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  }
+                  arrow
+                  placement='bottom-start'
+                  open={providerTooltipOpen}
+                  onClose={() => setProviderTooltipOpen(false)}
+                  disableHoverListener={!isDesktop}
+                  disableFocusListener
+                  disableTouchListener={isDesktop}
+                  PopperProps={{
+                    disablePortal: false,
+                    modifiers: [
+                      {
+                        name: 'preventOverflow',
+                        enabled: true,
+                        options: {
+                          altAxis: true,
+                          altBoundary: true,
+                          tether: true,
+                          rootBoundary: 'viewport',
+                        },
+                      },
+                      {
+                        name: 'flip',
+                        enabled: true,
+                        options: {
+                          altBoundary: true,
+                          rootBoundary: 'viewport',
+                          padding: 8,
+                        },
+                      },
+                    ],
+                  }}
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        background: 'linear-gradient(145deg, rgba(0,0,0,0.98) 0%, rgba(15,15,15,0.95) 50%, rgba(0,0,0,0.98) 100%)',
+                        backdropFilter: 'blur(24px)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: '16px',
+                        maxWidth: '280px',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.4), 0 8px 25px rgba(0,0,0,0.15)',
+                        p: 1.5,
+                      },
+                    },
+                  }}
+                >
+                  <Box
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isDesktop) {
+                        setProviderTooltipOpen(!providerTooltipOpen);
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      if (isDesktop) {
+                        setProviderTooltipOpen(true);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (isDesktop) {
+                        setProviderTooltipOpen(false);
+                      }
+                    }}
+                    sx={{
+                      background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '10px',
+                      width: 40,
+                      height: 40,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      '@media (min-width: 768px)': {
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                          background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%)',
+                        },
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant='caption'
+                      sx={{ fontSize: '0.7rem', fontWeight: 600, color: '#ffffff' }}
+                    >
+                      +{uniqueProviders.length - 2}
+                    </Typography>
+                  </Box>
+                </Tooltip>
+              )}
             </Box>
           )}
           {currentMovie.status !== 'Released' && (
             <Box
-              className='absolute top-60 left-0 w-full bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1 text-center'
+              className='absolute bottom-2 left-2 right-2'
               sx={{
-                height: '50px',
+                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.9) 0%, rgba(139, 69, 197, 0.8) 100%)',
+                backdropFilter: 'blur(15px)',
+                borderRadius: '12px',
+                p: 1.5,
+                border: '1px solid rgba(255,255,255,0.2)',
                 cursor: 'pointer',
+                transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                boxShadow: '0 4px 20px rgba(168, 85, 247, 0.3)',
+                '&:hover': {
+                  transform: 'scale(1.02)',
+                  boxShadow: '0 6px 30px rgba(168, 85, 247, 0.4)',
+                },
               }}
             >
               <Typography
                 variant='body2'
-                className='text-center'
-                sx={{ fontSize: '1.1rem' }}
+                sx={{ 
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  textAlign: 'center',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                }}
               >
-                Erscheint am {dateString}
+                🎬 Erscheint am {dateString}
               </Typography>
             </Box>
           )}
-          <Tooltip title={currentMovie.beschreibung} arrow>
-            <Box
-              className='absolute top-2 right-2 bg-black/50 backdrop-blur-xs rounded-lg px-2 py-1'
-              aria-label='Bewertung anzeigen'
+          <Box
+            className='absolute top-3 right-1'
+            sx={{
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '12px',
+              px: 2,
+              py: 1,
+              transition: 'all 0.3s ease',
+              '@media (min-width: 768px)': {
+                '&:hover': {
+                  background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%)',
+                  transform: 'scale(1.05)',
+                },
+              },
+            }}
+            aria-label='Bewertung anzeigen'
+          >
+            <Typography 
+              variant='body1' 
+              sx={{ 
+                fontSize: '0.9rem',
+                color: '#ffffff',
+                fontWeight: 600,
+                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+              }}
             >
-              <Typography variant='body1' className='text-white'>
-                {rating}
-              </Typography>
-            </Box>
-          </Tooltip>
-          <Box className='absolute bottom-2 right-2'>
+              ⭐ {rating}
+            </Typography>
+          </Box>
+          <Box 
+            className={`absolute bottom-3 right-3 transition-all duration-300 ${
+              isMenuOpen 
+                ? 'opacity-100' 
+                : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
+            }`}
+            sx={{
+              transform: 'translateY(10px)',
+              '@media (min-width: 768px)': {
+                '.group:hover &': {
+                  transform: 'translateY(0)',
+                },
+              },
+              '@media (max-width: 767px)': {
+                transform: 'translateY(0)',
+              },
+            }}
+          >
             <ThreeDotMenu
+              onMenuStateChange={setIsMenuOpen}
               options={[
                 {
                   label: 'Rating anpassen',
@@ -347,7 +661,13 @@ export const MovieCard = ({
             />
           </Box>
         </Box>
-        <CardContent className='grow flex items-center justify-center '>
+        <CardContent 
+          className='grow flex items-center justify-center p-4'
+          sx={{
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 100%)',
+            borderTop: '1px solid rgba(255,255,255,0.05)',
+          }}
+        >
           <Tooltip title={currentMovie.title} arrow>
             <Typography
               variant='body1'
@@ -362,10 +682,15 @@ export const MovieCard = ({
                 height: '3em',
                 lineHeight: '1.5em',
                 wordBreak: 'break-word',
-                textDecoration: 'underline',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.2rem',
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: shadowColor === '#a855f7' ? '#c084fc' : '#4ade80',
+                },
               }}
             >
               {index}. {currentMovie.title}

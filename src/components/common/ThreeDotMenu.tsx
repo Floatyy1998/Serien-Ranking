@@ -22,15 +22,17 @@ interface MenuOption {
 
 interface ThreeDotMenuProps {
   options: MenuOption[];
+  onMenuStateChange?: (isOpen: boolean) => void;
 }
 
-const ThreeDotMenu: React.FC<ThreeDotMenuProps> = ({ options }) => {
+const ThreeDotMenu: React.FC<ThreeDotMenuProps> = ({ options, onMenuStateChange }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
+    onMenuStateChange?.(true);
   };
 
   const handleClose = (event?: React.MouseEvent) => {
@@ -38,6 +40,7 @@ const ThreeDotMenu: React.FC<ThreeDotMenuProps> = ({ options }) => {
       event.stopPropagation();
     }
     setAnchorEl(null);
+    onMenuStateChange?.(false);
   };
 
   const handleMenuItemClick = (optionClick: (event: React.MouseEvent) => void) => (event: React.MouseEvent) => {
@@ -63,12 +66,12 @@ const ThreeDotMenu: React.FC<ThreeDotMenuProps> = ({ options }) => {
             transform: 'scale(1.05)',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
           },
-          width: 36,
-          height: 36,
+          width: 44,
+          height: 44,
         }}
         aria-label="Optionen"
       >
-        <MoreVertIcon sx={{ fontSize: 22 }} />
+        <MoreVertIcon sx={{ fontSize: 24 }} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
