@@ -131,9 +131,6 @@ export class OfflineBadgeSystem {
           movies
         );
 
-      case 'completion':
-        return this.checkCompletionBadge(badge, series);
-
       case 'binge':
         return this.checkBingeBadgeFromSeries(badge, series, activities);
 
@@ -148,9 +145,6 @@ export class OfflineBadgeSystem {
 
       case 'rewatch':
         return this.checkRewatchBadgeFromSeries(badge, series);
-
-      case 'dedication':
-        return this.checkDedicationBadgeFromSeries(badge, series);
 
       default:
         return null;
@@ -316,38 +310,6 @@ export class OfflineBadgeSystem {
     return latestWatchTime || Date.now();
   }
 
-  /**
-   * 🏁 Completion Badges - Komplett geschaute Serien
-   */
-  private checkCompletionBadge(
-    badge: Badge,
-    series: any[]
-  ): { earned: boolean; details?: string } | null {
-    let completedCount = 0;
-
-    series.forEach((s: any) => {
-      if (this.isSeriesCompleted(s)) {
-        completedCount++;
-      }
-    });
-
-    if (completedCount >= badge.requirements.series!) {
-      return {
-        earned: true,
-        details: `${completedCount} Serien komplett abgeschlossen`,
-      };
-    }
-    return null;
-  }
-
-  private isSeriesCompleted(series: any): boolean {
-    if (!series.seasons || !Array.isArray(series.seasons)) return false;
-
-    return series.seasons.every((season: any) => {
-      if (!season.episodes || !Array.isArray(season.episodes)) return false;
-      return season.episodes.every((ep: any) => ep.watched === true);
-    });
-  }
 
   /**
    * 🍿 Binge Badges - Counter-basierte Prüfung
@@ -398,32 +360,28 @@ export class OfflineBadgeSystem {
     _series: any[],
     _activities: any[]
   ): { earned: boolean; details?: string } | null {
-    // Marathon = Episoden in der aktuellen Woche
-    const currentWeekKey = this.getCurrentWeekKey();
+    // Marathon = Beste Woche aller Zeiten (nicht nur aktuelle Woche!)
     const marathonWeeks = this.getCounterValue('marathonWeeks') || {};
-    const currentWeekEpisodes = (marathonWeeks as any)[currentWeekKey] || 0;
+    let maxWeeklyEpisodes = 0;
+    let bestWeek = '';
 
-    if (currentWeekEpisodes >= badge.requirements.episodes!) {
+    // Finde die Woche mit den meisten Episoden
+    Object.entries(marathonWeeks as any).forEach(([weekKey, episodes]) => {
+      if ((episodes as number) > maxWeeklyEpisodes) {
+        maxWeeklyEpisodes = episodes as number;
+        bestWeek = weekKey;
+      }
+    });
+
+    if (maxWeeklyEpisodes >= badge.requirements.episodes!) {
       return {
         earned: true,
-        details: `${currentWeekEpisodes} Episoden in einer Woche`,
+        details: `${maxWeeklyEpisodes} Episoden in einer Woche (${bestWeek})`,
       };
     }
     return null;
   }
 
-  /**
-   * Helper: Aktuelle Woche als Key
-   */
-  private getCurrentWeekKey(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const week = Math.ceil(
-      (now.getTime() - new Date(year, 0, 1).getTime()) /
-        (7 * 24 * 60 * 60 * 1000)
-    );
-    return `${year}-W${week}`;
-  }
 
   /**
    * 🔥 Streak Badges - Aus Badge-Counters
@@ -498,38 +456,6 @@ export class OfflineBadgeSystem {
     return null;
   }
 
-  /**
-   * ⏰ Dedication Badges - Aus Serien-Daten berechnen
-   */
-  private checkDedicationBadgeFromSeries(
-    badge: Badge,
-    series: any[]
-  ): { earned: boolean; details?: string } | null {
-    // Dedication = Gesamte geschaute Episoden (ähnlich wie Marathon)
-    let totalWatchedEpisodes = 0;
-
-    series.forEach((s) => {
-      if (s.seasons && Array.isArray(s.seasons)) {
-        s.seasons.forEach((season: any) => {
-          if (season.episodes && Array.isArray(season.episodes)) {
-            const watchedInSeason = season.episodes.filter(
-              (ep: any) => ep.watched
-            ).length;
-            totalWatchedEpisodes += watchedInSeason;
-          }
-        });
-      }
-    });
-
-    if (totalWatchedEpisodes >= badge.requirements.episodes!) {
-      const timeText = badge.requirements.timeframe || 'insgesamt';
-      return {
-        earned: true,
-        details: `${totalWatchedEpisodes} Episoden (${timeText})`,
-      };
-    }
-    return null;
-  }
 
   // Helper Methods
   private getTimeWindowMs(timeframe?: string): number | null {
