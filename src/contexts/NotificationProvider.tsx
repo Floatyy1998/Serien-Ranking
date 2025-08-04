@@ -65,15 +65,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
             ? Object.keys(activitiesData).length
             : 0;
 
-          unreadCounts[friend.uid] = unreadCount;
-          total += unreadCount;
+          // Cap individual friend unread count at 20
+          const cappedUnreadCount = Math.min(unreadCount, 20);
+          unreadCounts[friend.uid] = cappedUnreadCount;
+          total += cappedUnreadCount;
         } catch (error) {
           unreadCounts[friend.uid] = 0;
         }
       }
 
       setFriendUnreadActivities(unreadCounts);
-      setTotalUnreadActivities(total);
+      // Cap total unread activities at 20
+      setTotalUnreadActivities(Math.min(total, 20));
     };
 
     loadUnreadActivities();
@@ -103,14 +106,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (activityTime > lastReadTime) {
           setFriendUnreadActivities((prev) => {
-            const newCount = (prev[friend.uid] || 0) + 1;
+            const newCount = Math.min((prev[friend.uid] || 0) + 1, 20);
             const updated = { ...prev, [friend.uid]: newCount };
 
-            // Update total
-            const newTotal = Object.values(updated).reduce(
+            // Update total with cap at 20
+            const newTotal = Math.min(Object.values(updated).reduce(
               (sum, count) => sum + count,
               0
-            );
+            ), 20);
             setTotalUnreadActivities(newTotal);
 
             return updated;
@@ -138,10 +141,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setFriendUnreadActivities((prev) => {
         const updated = { ...prev, [friendId]: 0 };
-        const newTotal = Object.values(updated).reduce(
+        const newTotal = Math.min(Object.values(updated).reduce(
           (sum, count) => sum + count,
           0
-        );
+        ), 20);
         setTotalUnreadActivities(newTotal);
         return updated;
       });
