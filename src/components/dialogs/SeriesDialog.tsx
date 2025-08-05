@@ -194,25 +194,31 @@ const SeriesDialog = ({
               margin='normal'
               inputMode='decimal'
               disabled={isReadOnly}
+              InputLabelProps={{ shrink: true }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   background: 'rgba(45,45,48,0.8)',
                   backdropFilter: 'blur(10px)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255,255,255,0.2)',
                   color: '#ffffff',
+                  transition: 'all 0.3s ease',
                   '& fieldset': {
                     border: 'none',
+                    borderRadius: '12px',
                   },
-                  transition: 'all 0.3s ease',
+                  '&:hover fieldset': {
+                    border: '1.5px solid rgba(255,255,255,0.3)',
+                    borderRadius: '12px',
+                  },
+                  '&.Mui-focused fieldset': {
+                    border: '2px solid #00fed7',
+                    boxShadow: '0 0 20px #00fed7, 0.3)',
+                    borderRadius: '12px',
+                  },
                   '&:hover': {
                     background: 'rgba(55,55,58,0.9)',
-                    border: '1px solid rgba(255,255,255,0.3)',
                   },
                   '&.Mui-focused': {
                     background: 'rgba(65,65,68,0.95)',
-                    border: '1px solid #00fed7',
-                    boxShadow: '0 0 20px #00fed7, 0.3)',
                   },
                 },
                 '& .MuiInputLabel-root': {
@@ -223,6 +229,14 @@ const SeriesDialog = ({
                 },
                 '& .MuiOutlinedInput-input': {
                   color: '#ffffff',
+                },
+                '& .MuiFormHelperText-root': {
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.7)',
+                  margin: '3px 0 0 0',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
                 },
               }}
             />

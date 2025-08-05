@@ -851,6 +851,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                 value={searchValue}
                 onChange={(e) => handleSearch(e.target.value)}
                 inputRef={inputRef}
+                InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position='start'>
@@ -864,19 +865,23 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                     background: 'rgba(45,45,48,0.8)',
                     backdropFilter: 'blur(10px)',
                     borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.2)',
                     color: '#ffffff',
                     '& fieldset': {
-                      border: 'none',
+                      borderColor: 'rgba(255,255,255,0.2)',
+                      borderWidth: '1px',
                     },
                     '&:hover': {
                       background: 'rgba(55,55,58,0.9)',
-                      border: '1px solid rgba(255,255,255,0.3)',
+                      '& fieldset': {
+                        borderColor: 'rgba(255,255,255,0.3)',
+                      },
                     },
                     '&.Mui-focused': {
                       background: 'rgba(65,65,68,0.95)',
-                      border: '1px solid #00fed7',
-                      boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                      boxShadow: '0 0 20px #00fed7, 0.3)',
+                      '& fieldset': {
+                        borderColor: '#00fed7',
+                      },
                     },
                   },
                   '& .MuiInputLabel-root': {
@@ -1392,7 +1397,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                 background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
                 borderRadius: '12px',
                 padding: '12px 24px',
-                color: '#ffffff',
+                color: '#000',
                 fontWeight: 600,
                 textTransform: 'none',
                 border: '1px solid rgba(255,255,255,0.1)',
