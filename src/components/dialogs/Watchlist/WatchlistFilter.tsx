@@ -33,24 +33,29 @@ const WatchlistFilter: React.FC<FilterProps> = ({
             placeholder='Nach Namen filtern'
             value={filterInput}
             onChange={(e) => setFilterInput(e.target.value)}
+            InputLabelProps={{ shrink: true }}
             sx={{
               '& .MuiOutlinedInput-root': {
                 background: 'rgba(45,45,48,0.8)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.2)',
                 color: '#ffffff',
                 '& fieldset': {
-                  border: 'none',
+                  borderColor: 'rgba(255,255,255,0.2)',
+                  borderWidth: '1px',
                 },
                 '&:hover': {
                   background: 'rgba(55,55,58,0.9)',
-                  border: '1px solid rgba(255,255,255,0.3)',
+                  '& fieldset': {
+                    borderColor: 'rgba(255,255,255,0.3)',
+                  },
                 },
                 '&.Mui-focused': {
                   background: 'rgba(65,65,68,0.95)',
-                  border: '1px solid #00fed7',
-                  boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                  boxShadow: '0 0 20px #00fed7, 0.3)',
+                  '& fieldset': {
+                    borderColor: '#00fed7',
+                  },
                 },
               },
               '& .MuiInputLabel-root': {
@@ -67,44 +72,62 @@ const WatchlistFilter: React.FC<FilterProps> = ({
             sx={{
               width: 'auto',
               fontSize: '0.75rem',
-              background: customOrderActive ? 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+              background: customOrderActive
+                ? 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)'
+                : 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
               borderRadius: '12px',
               padding: '8px 16px',
-              color: customOrderActive ? '#ffffff' : '#ffffff',
+              color: customOrderActive ? '#000' : '#ffffff',
               fontWeight: customOrderActive ? 600 : 500,
               textTransform: 'none',
               border: '1px solid rgba(255,255,255,0.1)',
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background: customOrderActive ? 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
+                background: customOrderActive
+                  ? 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)'
+                  : 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
                 transform: 'translateY(-2px)',
-                boxShadow: customOrderActive ? '0 8px 25px rgba(0, 254, 215, 0.4)' : '0 8px 25px rgba(255,255,255,0.2)',
+                boxShadow: customOrderActive
+                  ? '0 8px 25px rgba(0, 254, 215, 0.4)'
+                  : '0 8px 25px rgba(255,255,255,0.2)',
               },
             }}
           >
             Benutzerdefiniert
           </Button>
-          <Tooltip title={hideRewatches ? 'Rewatches anzeigen' : 'Rewatches ausblenden'}>
+          <Tooltip
+            title={
+              hideRewatches ? 'Rewatches anzeigen' : 'Rewatches ausblenden'
+            }
+          >
             <Button
               variant={!hideRewatches ? 'contained' : 'outlined'}
               onClick={() => setHideRewatches(!hideRewatches)}
               sx={{
                 width: 'auto',
                 fontSize: '0.75rem',
-                background: !hideRewatches ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                background: !hideRewatches
+                  ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)'
+                  : 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
                 borderRadius: '12px',
                 padding: '8px 16px',
-                color: '#ffffff',
+                color: !hideRewatches ? '#000' : '#ffffff',
                 fontWeight: !hideRewatches ? 600 : 500,
                 textTransform: 'none',
-                border: !hideRewatches ? '1px solid rgba(255,152,0,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                border: !hideRewatches
+                  ? '1px solid rgba(255,152,0,0.3)'
+                  : '1px solid rgba(255,255,255,0.1)',
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: !hideRewatches ? 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
+                  background: !hideRewatches
+                    ? 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)'
+                    : 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
                   transform: 'translateY(-2px)',
-                  boxShadow: !hideRewatches ? '0 8px 25px rgba(255, 152, 0, 0.4)' : '0 8px 25px rgba(255,255,255,0.2)',
+                  boxShadow: !hideRewatches
+                    ? '0 8px 25px rgba(255, 152, 0, 0.4)'
+                    : '0 8px 25px rgba(255,255,255,0.2)',
                 },
               }}
             >
@@ -117,7 +140,8 @@ const WatchlistFilter: React.FC<FilterProps> = ({
               sx={{
                 minWidth: '80px',
                 fontSize: '0.75rem',
-                background: 'linear-gradient(135deg, rgba(0,254,215,0.1) 0%, rgba(0,254,215,0.05) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(0,254,215,0.1) 0%, rgba(0,254,215,0.05) 100%)',
                 borderRadius: '12px',
                 padding: '8px 16px',
                 color: '#00fed7',
@@ -127,7 +151,8 @@ const WatchlistFilter: React.FC<FilterProps> = ({
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(0,254,215,0.1) 100%)',
+                  background:
+                    'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(0,254,215,0.1) 100%)',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 25px rgba(0, 254, 215, 0.3)',
                 },
@@ -155,7 +180,8 @@ const WatchlistFilter: React.FC<FilterProps> = ({
               sx={{
                 minWidth: '80px',
                 fontSize: '0.75rem',
-                background: 'linear-gradient(135deg, rgba(0,254,215,0.1) 0%, rgba(0,254,215,0.05) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(0,254,215,0.1) 0%, rgba(0,254,215,0.05) 100%)',
                 borderRadius: '12px',
                 padding: '8px 16px',
                 color: '#00fed7',
@@ -165,7 +191,8 @@ const WatchlistFilter: React.FC<FilterProps> = ({
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(0,254,215,0.1) 100%)',
+                  background:
+                    'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(0,254,215,0.1) 100%)',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 25px rgba(0, 254, 215, 0.3)',
                 },

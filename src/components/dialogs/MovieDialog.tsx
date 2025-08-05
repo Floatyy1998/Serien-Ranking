@@ -246,7 +246,7 @@ const MovieDialog = ({
               background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
               borderRadius: '12px',
               padding: '12px 24px',
-              color: '#ffffff',
+              color: '#000',
               fontWeight: 600,
               textTransform: 'none',
               border: '1px solid rgba(255,255,255,0.1)',

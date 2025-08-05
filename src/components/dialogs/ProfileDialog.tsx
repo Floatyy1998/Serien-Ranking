@@ -454,7 +454,11 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
             </Box>
 
             {/* Username */}
-            <Box sx={{ position: 'relative' }}>
+            <Box
+              sx={{
+                position: 'relative',
+              }}
+            >
               <TextField
                 label='Benutzername *'
                 value={username}
@@ -525,7 +529,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
             </Box>
 
             {/* Display Name */}
-            <Box sx={{ position: 'relative' }}>
+            <Box
+              sx={{
+                position: 'relative',
+                backgroundColor: 'rgba(45,45,48,0.8)',
+              }}
+            >
               <TextField
                 label='Anzeigename (optional)'
                 value={displayName}
@@ -895,7 +904,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
               sx={{
                 background: 'linear-gradient(135deg, #00fed7 0%, #00b196 100%)',
                 borderRadius: '12px',
-                color: '#ffffff',
+                color: '#000',
                 fontWeight: 600,
                 textTransform: 'none',
                 border: '1px solid rgba(255,255,255,0.1)',
