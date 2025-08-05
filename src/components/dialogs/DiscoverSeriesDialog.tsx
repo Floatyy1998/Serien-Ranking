@@ -1,5 +1,6 @@
 import {
   Clear as ClearIcon,
+  Close as CloseIcon,
   FilterAlt as FilterIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
@@ -11,7 +12,9 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Paper,
@@ -31,7 +34,6 @@ import { useAuth } from '../../App';
 import { genreIdMapForSeries } from '../../constants/menuItems';
 import { Series } from '../../interfaces/Series';
 import DiscoverSeriesCard from '../series/DiscoverSeriesCard';
-import { DialogHeader } from './shared/SharedDialogComponents';
 
 interface DiscoverSeriesDialogProps {
   open: boolean;
@@ -288,23 +290,87 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
       disableEnforceFocus={false}
       disableRestoreFocus={false}
       keepMounted={false}
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          backgroundColor: '#1a1a1a',
-        },
+      slotProps={{
+        paper: {
+          sx: {
+            minHeight: '80vh',
+            background: 'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden',
+            boxShadow: '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+            color: 'white',
+          },
+        }
       }}
     >
-      <DialogHeader title='📺 Neue Serien entdecken' onClose={handleClose} />
-      <DialogContent>
+      <DialogTitle
+        sx={{
+          textAlign: 'center',
+          position: 'relative',
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          backdropFilter: 'blur(15px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          color: '#ffffff',
+          fontWeight: 600,
+          fontSize: '1.25rem',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <Typography
+            component='div'
+            variant='h4'
+            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+          >
+            Neue Serien entdecken
+          </Typography>
+        </Box>
+
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 16,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'rgba(255,255,255,0.7)',
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            '&:hover': {
+              background: 'rgba(255,255,255,0.1)',
+              color: '#ffffff',
+              transform: 'translateY(-50%) scale(1.05)',
+            },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ 
+        p: 0, 
+        background: 'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+        backdropFilter: 'blur(10px)',
+        color: '#ffffff' 
+      }}>
+        <Box sx={{ p: 3 }}>
         {/* Filter Sektion */}
         <Paper
           elevation={2}
           sx={{
             p: 3,
             mb: 3,
-            backgroundColor: '#2a2a2a',
-            border: '1px solid #444',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.1)',
           }}
         >
           <Typography
@@ -324,14 +390,39 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               }}
             >
               <Box sx={{ flex: 1 }}>
-                <FormControl fullWidth>
-                  <InputLabel
-                    sx={{
-                      backgroundColor: '#2a2a2a',
-                      paddingLeft: '4px',
-                      paddingRight: '4px',
-                    }}
-                  >
+                <FormControl fullWidth
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      background: 'rgba(45,45,48,0.8)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      color: '#ffffff',
+                      '& fieldset': {
+                        border: 'none',
+                      },
+                      '&:hover': {
+                        background: 'rgba(55,55,58,0.9)',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                      },
+                      '&.Mui-focused': {
+                        background: 'rgba(65,65,68,0.95)',
+                        border: '1px solid #00fed7',
+                        boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'rgba(255,255,255,0.7)',
+                      '&.Mui-focused': {
+                        color: '#00fed7',
+                      },
+                    },
+                    '& .MuiSelect-icon': {
+                      color: 'rgba(255,255,255,0.7)',
+                    },
+                  }}
+                >
+                  <InputLabel>
                     Genre auswählen
                   </InputLabel>
                   <Select
@@ -379,6 +470,33 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                       slotProps={{
                         textField: {
                           size: 'medium',
+                          sx: {
+                            '& .MuiOutlinedInput-root': {
+                              background: 'rgba(255,255,255,0.05)',
+                              backdropFilter: 'blur(10px)',
+                              borderRadius: '12px',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              color: '#ffffff',
+                              '& fieldset': {
+                                border: 'none',
+                              },
+                              '&:hover': {
+                                background: 'rgba(255,255,255,0.08)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                              },
+                              '&.Mui-focused': {
+                                background: 'rgba(255,255,255,0.1)',
+                                border: '1px solid #00fed7',
+                                boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              color: 'rgba(255,255,255,0.7)',
+                              '&.Mui-focused': {
+                                color: '#00fed7',
+                              },
+                            },
+                          },
                         },
                       }}
                     />
@@ -391,6 +509,33 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                       slotProps={{
                         textField: {
                           size: 'medium',
+                          sx: {
+                            '& .MuiOutlinedInput-root': {
+                              background: 'rgba(255,255,255,0.05)',
+                              backdropFilter: 'blur(10px)',
+                              borderRadius: '12px',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              color: '#ffffff',
+                              '& fieldset': {
+                                border: 'none',
+                              },
+                              '&:hover': {
+                                background: 'rgba(255,255,255,0.08)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                              },
+                              '&.Mui-focused': {
+                                background: 'rgba(255,255,255,0.1)',
+                                border: '1px solid #00fed7',
+                                boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              color: 'rgba(255,255,255,0.7)',
+                              '&.Mui-focused': {
+                                color: '#00fed7',
+                              },
+                            },
+                          },
                         },
                       }}
                     />
@@ -408,14 +553,39 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               }}
             >
               <Box sx={{ flex: 1 }}>
-                <FormControl fullWidth>
-                  <InputLabel
-                    sx={{
-                      backgroundColor: '#2a2a2a',
-                      paddingLeft: '4px',
-                      paddingRight: '4px',
-                    }}
-                  >
+                <FormControl fullWidth
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      background: 'rgba(45,45,48,0.8)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      color: '#ffffff',
+                      '& fieldset': {
+                        border: 'none',
+                      },
+                      '&:hover': {
+                        background: 'rgba(55,55,58,0.9)',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                      },
+                      '&.Mui-focused': {
+                        background: 'rgba(65,65,68,0.95)',
+                        border: '1px solid #00fed7',
+                        boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'rgba(255,255,255,0.7)',
+                      '&.Mui-focused': {
+                        color: '#00fed7',
+                      },
+                    },
+                    '& .MuiSelect-icon': {
+                      color: 'rgba(255,255,255,0.7)',
+                    },
+                  }}
+                >
+                  <InputLabel>
                     Länder auswählen
                   </InputLabel>
                   <Select
@@ -453,14 +623,39 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               </Box>
 
               <Box sx={{ flex: 1 }}>
-                <FormControl fullWidth>
-                  <InputLabel
-                    sx={{
-                      backgroundColor: '#2a2a2a',
-                      paddingLeft: '4px',
-                      paddingRight: '4px',
-                    }}
-                  >
+                <FormControl fullWidth
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      background: 'rgba(45,45,48,0.8)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      color: '#ffffff',
+                      '& fieldset': {
+                        border: 'none',
+                      },
+                      '&:hover': {
+                        background: 'rgba(55,55,58,0.9)',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                      },
+                      '&.Mui-focused': {
+                        background: 'rgba(65,65,68,0.95)',
+                        border: '1px solid #00fed7',
+                        boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'rgba(255,255,255,0.7)',
+                      '&.Mui-focused': {
+                        color: '#00fed7',
+                      },
+                    },
+                    '& .MuiSelect-icon': {
+                      color: 'rgba(255,255,255,0.7)',
+                    },
+                  }}
+                >
+                  <InputLabel>
                     Sortieren nach
                   </InputLabel>
                   <Select
@@ -497,7 +692,22 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 startIcon={<SearchIcon />}
                 onClick={() => handleSearch()}
                 size='large'
-                sx={{ px: 4 }}
+                sx={{
+                  background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                  },
+                }}
               >
                 Serien suchen
               </Button>
@@ -506,6 +716,22 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 startIcon={<ClearIcon />}
                 onClick={handleClearFilters}
                 size='large'
+                sx={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  color: '#ffffff',
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
               >
                 Filter zurücksetzen
               </Button>
@@ -518,8 +744,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
             elevation={1}
             sx={{
               p: 3,
-              backgroundColor: '#2a2a2a',
-              border: '1px solid #444',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.1)',
             }}
           >
             <Typography variant='h6' sx={{ mb: 2 }}>
@@ -564,8 +792,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
             sx={{
               p: 4,
               textAlign: 'center',
-              backgroundColor: '#2a2a2a',
-              border: '1px solid #444',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.1)',
             }}
           >
             <Typography variant='h6' color='text.secondary'>
@@ -576,9 +806,30 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
             </Typography>
           </Paper>
         )}
+        </Box>
       </DialogContent>
-      <DialogActions sx={{ p: 3, justifyContent: 'space-between' }}>
-        <Button variant='outlined' onClick={handleClose} sx={{ px: 3 }}>
+      <DialogActions sx={{ 
+        p: 3, 
+        justifyContent: 'space-between',
+        background: 'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+        backdropFilter: 'blur(10px)',
+      }}>
+        <Button variant='outlined' onClick={handleClose} sx={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+          borderRadius: '12px',
+          padding: '12px 24px',
+          color: '#ffffff',
+          fontWeight: 500,
+          textTransform: 'none',
+          border: '1px solid rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            transform: 'translateY(-2px)',
+          },
+        }}>
           Schließen
         </Button>
 
@@ -597,7 +848,23 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               size='medium'
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              sx={{ minWidth: '50px' }}
+              sx={{
+                background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'none',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                minWidth: '50px',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                },
+              }}
             >
               ‹ Zurück
             </Button>
@@ -606,8 +873,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               sx={{
                 px: 2,
                 py: 1,
-                backgroundColor: '#333',
-                borderRadius: 1,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,255,255,0.1)',
               }}
             >
               <Typography variant='body2' sx={{ whiteSpace: 'nowrap' }}>
@@ -619,7 +888,23 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               size='medium'
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              sx={{ minWidth: '50px' }}
+              sx={{
+                background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'none',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                minWidth: '50px',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                },
+              }}
             >
               Weiter ›
             </Button>

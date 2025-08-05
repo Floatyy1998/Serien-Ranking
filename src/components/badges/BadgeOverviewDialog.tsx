@@ -58,14 +58,14 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
   const [tabValue, setTabValue] = useState(0);
 
   const categories: { key: BadgeCategory; label: string; icon: string }[] = [
-    { key: 'binge', label: 'Binge-Watching', icon: '🍿' },
-    { key: 'quickwatch', label: 'Quickwatch', icon: '⚡' },
-    { key: 'marathon', label: 'Marathon', icon: '📺' },
-    { key: 'streak', label: 'Streak', icon: '🔥' },
-    { key: 'rewatch', label: 'Rewatch', icon: '🔄' },
-    { key: 'series_explorer', label: 'Explorer', icon: '🗺️' },
-    { key: 'collector', label: 'Collector', icon: '⭐' },
-    { key: 'social', label: 'Social', icon: '🤝' },
+    { key: 'binge', label: 'Binge-Watching', icon: '' },
+    { key: 'quickwatch', label: 'Quickwatch', icon: '' },
+    { key: 'marathon', label: 'Marathon', icon: '' },
+    { key: 'streak', label: 'Streak', icon: '' },
+    { key: 'rewatch', label: 'Rewatch', icon: '' },
+    { key: 'series_explorer', label: 'Explorer', icon: '' },
+    { key: 'collector', label: 'Collector', icon: '' },
+    { key: 'social', label: 'Social', icon: '' },
   ];
 
   useEffect(() => {
@@ -79,7 +79,9 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
     setLoading(true);
     try {
-      const { getOfflineBadgeSystem } = await import('../../utils/offlineBadgeSystem');
+      const { getOfflineBadgeSystem } = await import(
+        '../../utils/offlineBadgeSystem'
+      );
       const badgeSystem = getOfflineBadgeSystem(user.uid);
       const earned = await badgeSystem.getUserBadges();
       setEarnedBadges(earned);
@@ -289,7 +291,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
               <Typography
                 variant='caption'
                 sx={{
-                  color: '#00fed7',
+                  color: '#fff',
                   backgroundColor: 'rgba(0, 254, 215, 0.1)',
                   padding: '4px 8px',
                   borderRadius: '8px',
@@ -355,11 +357,19 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
       onClose={onClose}
       maxWidth='lg'
       fullWidth
-      PaperProps={{
-        sx: {
-          minHeight: '80vh',
-          backgroundColor: theme.palette.grey[900],
-          color: 'white',
+      slotProps={{
+        paper: {
+          sx: {
+            minHeight: '80vh',
+            background:
+              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden',
+            boxShadow:
+              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+            color: 'white',
+          },
         },
       }}
     >
@@ -367,8 +377,13 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
         sx={{
           textAlign: 'center',
           position: 'relative',
-          background: `linear-gradient(135deg, ${theme.palette.grey[800]} 0%, ${theme.palette.grey[900]} 100%)`,
-          borderBottom: `1px solid ${theme.palette.grey[700]}`,
+          background:
+            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          backdropFilter: 'blur(15px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          color: '#ffffff',
+          fontWeight: 600,
+          fontSize: '1.25rem',
         }}
       >
         <Box
@@ -384,7 +399,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             variant='h4'
             sx={{ fontWeight: 'bold', color: '#ffd700' }}
           >
-            🏆 Meine Badges
+            Meine Badges
           </Typography>
         </Box>
         <Typography
@@ -399,18 +414,35 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
           onClick={onClose}
           sx={{
             position: 'absolute',
-            right: 8,
-            top: 8,
-            color: 'white',
+            right: 16,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'rgba(255,255,255,0.7)',
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            '&:hover': {
+              background: 'rgba(255,255,255,0.1)',
+              color: '#ffffff',
+              transform: 'translateY(-50%) scale(1.05)',
+            },
           }}
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0 }}>
+      <DialogContent
+        sx={{
+          p: 0,
+          background:
+            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+          backdropFilter: 'blur(10px)',
+          color: '#ffffff',
+        }}
+      >
         {/* Category Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: theme.palette.grey[700] }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
           <Tabs
             value={tabValue}
             onChange={(_, newValue) => setTabValue(newValue)}
@@ -418,13 +450,29 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             scrollButtons='auto'
             sx={{
               '& .MuiTab-root': {
-                color: theme.palette.grey[400],
+                color: 'rgba(255,255,255,0.7)',
+                background:
+                  'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px 12px 0 0',
+                margin: '0 4px',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background:
+                    'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                  color: '#ffffff',
+                },
                 '&.Mui-selected': {
                   color: '#00fed7',
+                  background:
+                    'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
+                  boxShadow: '0 8px 25px #00fed7, 0.2)',
                 },
               },
               '& .MuiTabs-indicator': {
                 backgroundColor: '#00fed7',
+                height: '3px',
+                borderRadius: '2px',
               },
             }}
           >
@@ -433,16 +481,22 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                 key={category.key}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <span>{category.icon}</span>
                     <span>{category.label}</span>
                     <Chip
                       label={getEarnedCount(category.key)}
                       size='small'
                       sx={{
-                        backgroundColor: theme.palette.grey[700],
-                        color: 'white',
+                        background:
+                          'linear-gradient(135deg, rgba(0, 254, 215, 0.2) 0%, rgba(0, 212, 170, 0.15) 100%)',
+                        border: '1px solid rgba(0, 254, 215, 0.3)',
+                        color: '#ffffff',
                         height: 20,
                         fontSize: '0.7rem',
+                        '&:hover': {
+                          background:
+                            'linear-gradient(135deg, rgba(0, 254, 215, 0.3) 0%, rgba(0, 212, 170, 0.25) 100%)',
+                          border: '1px solid rgba(0, 254, 215, 0.4)',
+                        },
                       }}
                     />
                   </Box>

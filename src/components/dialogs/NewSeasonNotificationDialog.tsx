@@ -144,40 +144,53 @@ const NewSeasonNotificationDialog = ({
       onClose={onClose}
       maxWidth='md'
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          color: 'white',
-          maxHeight: '90vh',
-          overflow: 'hidden',
+      slotProps={{
+        paper: {
+          sx: {
+            minHeight: '80vh',
+            background: 'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden',
+            boxShadow: '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+            color: 'white',
+          },
         },
       }}
     >
       <DialogTitle
         sx={{
-          background: 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
-          color: 'white',
+          textAlign: 'center',
           position: 'relative',
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          backdropFilter: 'blur(15px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          color: '#ffffff',
+          fontWeight: 600,
+          fontSize: '1.25rem',
         }}
       >
-        <IconButton
-          aria-label='close'
-          onClick={onClose}
-          sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            flexDirection: 'column',
+          }}
         >
-          <CloseIcon />
-        </IconButton>
-        <Box>
-          <Typography variant='h5' component='div' sx={{ fontWeight: 'bold' }}>
-            🎉 Neue Staffel verfügbar!
+          <Typography
+            component='div'
+            variant='h4'
+            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+          >
+            Neue Staffel verfügbar!
           </Typography>
           {remainingCount > 0 && (
             <Chip
               label={`+${remainingCount} weitere`}
               size='small'
               sx={{
-                mt: 1,
                 backgroundColor: '#00fed7',
                 color: '#000',
                 fontWeight: 'bold',
@@ -185,9 +198,36 @@ const NewSeasonNotificationDialog = ({
             />
           )}
         </Box>
+
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 16,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'rgba(255,255,255,0.7)',
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            '&:hover': {
+              background: 'rgba(255,255,255,0.1)',
+              color: '#ffffff',
+              transform: 'translateY(-50%) scale(1.05)',
+            },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3, backgroundColor: '#1e1e1e' }}>
+      <DialogContent sx={{ 
+        p: 0, 
+        background: 'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+        backdropFilter: 'blur(10px)',
+        color: '#ffffff' 
+      }}>
+        <Box sx={{ p: 3 }}>
         <Box display='flex' gap={3} flexDirection={{ xs: 'column', md: 'row' }}>
           {currentSeries.poster?.poster && (
             <Box sx={{ flexShrink: 0 }} mt={2}>
@@ -346,18 +386,52 @@ const NewSeasonNotificationDialog = ({
             </Box>
           </Box>
         </Box>
+        </Box>
       </DialogContent>
-      <DialogActions sx={{ p: 3, backgroundColor: '#1e1e1e', gap: 2 }}>
-        <Button onClick={() => handleSkip()}>Überspringen</Button>
+      <DialogActions sx={{ 
+        p: 3, 
+        gap: 2, 
+        background: 'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+        backdropFilter: 'blur(10px)',
+      }}>
+        <Button 
+          onClick={() => handleSkip()}
+          sx={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+            borderRadius: '12px',
+            padding: '12px 24px',
+            color: '#ffffff',
+            fontWeight: 600,
+            textTransform: 'none',
+            border: '1px solid rgba(255,255,255,0.2)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 25px rgba(255,255,255,0.2)',
+            },
+          }}
+        >
+          Überspringen
+        </Button>
         <Button
           variant='contained'
           onClick={() => handleAddToWatchlist(currentSeries)}
           sx={{
-            backgroundColor: '#00fed7',
-            color: '#000',
-            fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+            borderRadius: '12px',
+            padding: '12px 24px',
+            color: '#ffffff',
+            fontWeight: 600,
+            textTransform: 'none',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease',
             '&:hover': {
-              backgroundColor: '#00d4b8',
+              background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
             },
           }}
         >

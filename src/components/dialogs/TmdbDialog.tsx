@@ -1,4 +1,4 @@
-import CloseIcon from '@mui/icons-material/Close';
+import { Close as CloseIcon } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -38,16 +38,20 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth='md'
+      maxWidth='lg'
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          color: 'white',
-          maxHeight: '90vh',
-          overflow: 'hidden',
-        },
+      slotProps={{
+        paper: {
+          sx: {
+            minHeight: '80vh',
+            background: 'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden',
+            boxShadow: '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+            color: 'white',
+          },
+        }
       }}
     >
       {loading ? (
@@ -61,25 +65,31 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         <>
           <DialogTitle
             sx={{
-              background: 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
-              color: 'white',
+              textAlign: 'center',
               position: 'relative',
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+              backdropFilter: 'blur(15px)',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: '1.25rem',
             }}
           >
-            <IconButton
-              aria-label='close'
-              onClick={onClose}
-              sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2,
+                flexDirection: 'column',
+              }}
             >
-              <CloseIcon />
-            </IconButton>
-            <Box>
               <Typography
-                variant='h5'
                 component='div'
-                sx={{ fontWeight: 'bold' }}
+                variant='h4'
+                sx={{ fontWeight: 'bold', color: '#ffd700' }}
               >
-                {type === 'tv' ? data.name : data.title}
+                🎬 {type === 'tv' ? data.name : data.title}
                 {data.first_air_date &&
                   ` (${new Date(data.first_air_date).getFullYear()})`}
                 {data.release_date &&
@@ -89,15 +99,40 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 label={type === 'tv' ? '📺 Serie' : '🎬 Film'}
                 size='small'
                 sx={{
-                  mt: 1,
                   backgroundColor: '#00fed7',
                   color: '#000',
                   fontWeight: 'bold',
                 }}
               />
             </Box>
+
+            <IconButton
+              onClick={onClose}
+              sx={{
+                position: 'absolute',
+                right: 16,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'rgba(255,255,255,0.7)',
+                background: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px',
+                '&:hover': {
+                  background: 'rgba(255,255,255,0.1)',
+                  color: '#ffffff',
+                  transform: 'translateY(-50%) scale(1.05)',
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
           </DialogTitle>
-          <DialogContent sx={{ p: 3, backgroundColor: '#1e1e1e' }}>
+          <DialogContent sx={{ 
+            p: 0, 
+            background: 'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+            backdropFilter: 'blur(10px)',
+            color: '#ffffff' 
+          }}>
             <Box
               display='flex'
               gap={3}
@@ -205,7 +240,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               </Box>
             </Box>
           </DialogContent>
-          <DialogActions sx={{ p: 3, backgroundColor: '#1e1e1e', gap: 2 }}>
+          <DialogActions sx={{ 
+            p: 3, 
+            gap: 2, 
+            background: 'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+            backdropFilter: 'blur(10px)',
+          }}>
             {showAddButton && onAdd && (
               <Button
                 variant='contained'

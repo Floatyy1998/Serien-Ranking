@@ -1,8 +1,12 @@
+import { Close as CloseIcon } from '@mui/icons-material';
 import {
   Box,
   Button,
   Dialog,
   DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -17,15 +21,12 @@ import { useDataProtection } from '../../../hooks/useDataProtection';
 import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCache';
 import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
 import { Series } from '../../../interfaces/Series';
-import {
-  updateEpisodeCounters,
-} from '../../../utils/minimalActivityLogger';
+import { updateEpisodeCounters } from '../../../utils/minimalActivityLogger';
 import {
   getNextRewatchEpisode,
   hasActiveRewatch,
 } from '../../../utils/rewatch.utils';
 import SeriesWatchedDialog from '../SeriesWatchedDialog';
-import { DialogHeader } from '../shared/SharedDialogComponents';
 import SeriesListItem from './SeriesListItem';
 import WatchlistFilter from './WatchlistFilter';
 
@@ -188,14 +189,21 @@ const WatchlistDialog = ({
       .filter((series) => series.watchlist)
       .filter((series) => {
         const nextEpisode = getNextUnwatchedEpisode(series);
-        const hasAvailableEpisode = nextEpisode && new Date(nextEpisode.air_date) <= new Date();
-        
+        const hasAvailableEpisode =
+          nextEpisode && new Date(nextEpisode.air_date) <= new Date();
+
         // Wenn Rewatches aktiv sind, prüfe auch auf verfügbare Rewatch-Episoden
-        if (!hideRewatches && !hasAvailableEpisode && hasActiveRewatch(series)) {
+        if (
+          !hideRewatches &&
+          !hasAvailableEpisode &&
+          hasActiveRewatch(series)
+        ) {
           const rewatchEpisode = getNextRewatchEpisode(series);
-          return rewatchEpisode && new Date(rewatchEpisode.air_date) <= new Date();
+          return (
+            rewatchEpisode && new Date(rewatchEpisode.air_date) <= new Date()
+          );
         }
-        
+
         return hasAvailableEpisode;
       });
   }, [seriesList, hideRewatches]); // hideRewatches beeinflusst getNextUnwatchedEpisode
@@ -372,14 +380,16 @@ const WatchlistDialog = ({
       ? series.title.toLowerCase().includes(filterInput.toLowerCase())
       : true;
 
-    // Rewatch-Filter: Blende Serien aus, die nur Rewatch-Episoden haben
-    if (hideRewatches) {
-      const nextEpisode = getNextUnwatchedEpisode(series);
-      const hasUnwatchedEpisodes = nextEpisode && !nextEpisode.isRewatch;
-      return matchesTitle && hasUnwatchedEpisodes;
+    // Wenn Rewatch-Button aktiv ist (hideRewatches == false):
+    // Zeige NUR Serien mit aktivem Rewatch
+    if (!hideRewatches) {
+      return matchesTitle && hasActiveRewatch(series);
     }
 
-    return matchesTitle;
+    // Standard: Zeige Serien mit ungesehenen Episoden (keine Rewatches)
+    const nextEpisode = getNextUnwatchedEpisode(series);
+    const hasUnwatchedEpisodes = nextEpisode && !nextEpisode.isRewatch;
+    return matchesTitle && hasUnwatchedEpisodes;
   });
 
   const moveItem = (from: number, to: number) => {
@@ -527,43 +537,162 @@ const WatchlistDialog = ({
         onClose={handleDialogClose}
         fullWidth
         container={document.body}
+        slotProps={{
+          paper: {
+            sx: {
+              minHeight: '80vh',
+              background:
+                'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              overflow: 'hidden',
+              boxShadow:
+                '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+              color: 'white',
+            },
+          },
+        }}
       >
-        <DialogHeader title='Weiterschauen' onClose={handleDialogClose} />
+        <DialogTitle
+          sx={{
+            textAlign: 'center',
+            position: 'relative',
+            background:
+              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+            backdropFilter: 'blur(15px)',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            color: '#ffffff',
+            fontWeight: 600,
+            fontSize: '1.25rem',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+            }}
+          >
+            <Typography
+              component='div'
+              variant='h4'
+              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            >
+              Weiterschauen
+            </Typography>
+          </Box>
+
+          <IconButton
+            onClick={handleDialogClose}
+            sx={{
+              position: 'absolute',
+              right: 16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'rgba(255,255,255,0.7)',
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '12px',
+              '&:hover': {
+                background: 'rgba(255,255,255,0.1)',
+                color: '#ffffff',
+                transform: 'translateY(-50%) scale(1.05)',
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         {dialogContentVisible && (
           <DialogContent
             sx={{
-              minHeight: '80vh',
-              overflowY: 'auto',
-              p: isMobile ? '0px 12px' : '20px 24px',
+              p: 0,
+              background:
+                'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+              backdropFilter: 'blur(10px)',
+              color: '#ffffff',
             }}
           >
-            {(!isMobile || showFilter) && (
-              <WatchlistFilter
-                filterInput={filterInput}
-                setFilterInput={setFilterInput}
-                customOrderActive={customOrderActive}
-                setCustomOrderActive={setCustomOrderActive}
-                sortOption={sortOption}
-                toggleSort={toggleSort}
-                hideRewatches={hideRewatches}
-                setHideRewatches={setHideRewatches}
-              />
-            )}
-            {isMobile && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                <Button
-                  variant='outlined'
-                  onClick={() => setShowFilter((prev) => !prev)}
-                  sx={{ fontSize: '0.75rem' }}
-                >
-                  {showFilter ? 'Filter ausblenden' : 'Filter anzeigen'}
-                </Button>
-              </Box>
-            )}
-            {customOrderActive ? (
-              <DndProvider backend={HTML5Backend}>
-                <div style={{ minHeight: '350px' }}>
-                  {displayedSeries.map((series, index) => {
+            <Box
+              sx={{ p: isMobile ? '0px 12px' : '20px 24px', minHeight: '80vh' }}
+            >
+              {(!isMobile || showFilter) && (
+                <WatchlistFilter
+                  filterInput={filterInput}
+                  setFilterInput={setFilterInput}
+                  customOrderActive={customOrderActive}
+                  setCustomOrderActive={setCustomOrderActive}
+                  sortOption={sortOption}
+                  toggleSort={toggleSort}
+                  hideRewatches={hideRewatches}
+                  setHideRewatches={setHideRewatches}
+                />
+              )}
+              {isMobile && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                  <Button
+                    variant='outlined'
+                    onClick={() => setShowFilter((prev) => !prev)}
+                    sx={{
+                      fontSize: '0.75rem',
+                      background:
+                        'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        background:
+                          'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+                        border: '1px solid rgba(255,255,255,0.25)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+                      },
+                    }}
+                  >
+                    {showFilter ? 'Filter ausblenden' : 'Filter anzeigen'}
+                  </Button>
+                </Box>
+              )}
+              {customOrderActive ? (
+                <DndProvider backend={HTML5Backend}>
+                  <div style={{ minHeight: '350px' }}>
+                    {displayedSeries.map((series, index) => {
+                      const { nextEpisode, rewatchInfo } =
+                        getEpisodeInfo(series);
+                      // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
+                      const priorityEpisode =
+                        !hideRewatches && rewatchInfo
+                          ? rewatchInfo
+                          : nextEpisode || rewatchInfo;
+                      return (
+                        <SeriesListItem
+                          key={series.id}
+                          series={series}
+                          index={index}
+                          draggable={true}
+                          moveItem={moveItem}
+                          nextUnwatchedEpisode={priorityEpisode}
+                          rewatchInfo={null} // Keine separate Rewatch-Info mehr, da priorityEpisode das schon abdeckt
+                          onTitleClick={(s) => setSelectedSeries(s)}
+                          onWatchedToggle={() => {
+                            if (priorityEpisode) {
+                              handleWatchedToggleWithDebounce(
+                                series,
+                                priorityEpisode
+                              );
+                            }
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </DndProvider>
+              ) : (
+                <div>
+                  {displayedSeries.map((series) => {
                     const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
                     // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
                     const priorityEpisode =
@@ -574,9 +703,6 @@ const WatchlistDialog = ({
                       <SeriesListItem
                         key={series.id}
                         series={series}
-                        index={index}
-                        draggable={true}
-                        moveItem={moveItem}
                         nextUnwatchedEpisode={priorityEpisode}
                         rewatchInfo={null} // Keine separate Rewatch-Info mehr, da priorityEpisode das schon abdeckt
                         onTitleClick={(s) => setSelectedSeries(s)}
@@ -592,36 +718,8 @@ const WatchlistDialog = ({
                     );
                   })}
                 </div>
-              </DndProvider>
-            ) : (
-              <div>
-                {displayedSeries.map((series) => {
-                  const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
-                  // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
-                  const priorityEpisode =
-                    !hideRewatches && rewatchInfo
-                      ? rewatchInfo
-                      : nextEpisode || rewatchInfo;
-                  return (
-                    <SeriesListItem
-                      key={series.id}
-                      series={series}
-                      nextUnwatchedEpisode={priorityEpisode}
-                      rewatchInfo={null} // Keine separate Rewatch-Info mehr, da priorityEpisode das schon abdeckt
-                      onTitleClick={(s) => setSelectedSeries(s)}
-                      onWatchedToggle={() => {
-                        if (priorityEpisode) {
-                          handleWatchedToggleWithDebounce(
-                            series,
-                            priorityEpisode
-                          );
-                        }
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            )}
+              )}
+            </Box>
           </DialogContent>
         )}
       </Dialog>
