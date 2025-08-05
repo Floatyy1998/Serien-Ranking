@@ -1,3 +1,4 @@
+import { Close as CloseIcon } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import SearchIcon from '@mui/icons-material/Search';
@@ -13,7 +14,9 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
   FormControlLabel,
+  IconButton,
   InputAdornment,
   Skeleton,
   Snackbar,
@@ -21,6 +24,8 @@ import {
   Tabs,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
@@ -28,9 +33,8 @@ import notFound from '../../assets/notFound.jpg';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { generateRecommendations } from '../../utils/recommendationEngine';
 import { logMovieAdded } from '../../utils/minimalActivityLogger';
-import { DialogHeader } from './shared/SharedDialogComponents';
+import { generateRecommendations } from '../../utils/recommendationEngine';
 
 export interface Filme {
   adult: boolean;
@@ -138,6 +142,8 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
     'success' | 'error' | 'warning'
   >('success');
   const [keepOpen, setKeepOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Fokus beim Öffnen des Dialogs
   useEffect(() => {
@@ -146,14 +152,20 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
         if (activeTab === 0 && inputRef.current) {
           let attempts = 0;
           const maxAttempts = 10;
-          
+
           const focusInterval = setInterval(() => {
-            if (inputRef.current && document.activeElement !== inputRef.current) {
+            if (
+              inputRef.current &&
+              document.activeElement !== inputRef.current
+            ) {
               inputRef.current.focus();
               attempts++;
             }
-            
-            if (document.activeElement === inputRef.current || attempts >= maxAttempts) {
+
+            if (
+              document.activeElement === inputRef.current ||
+              attempts >= maxAttempts
+            ) {
               clearInterval(focusInterval);
             }
           }, 50);
@@ -650,7 +662,11 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
   useEffect(() => {
     if (open) {
       // Nur laden wenn noch keine Empfehlungen vorhanden sind
-      if (trendingMovies.length === 0 && popularMovies.length === 0 && topRatedMovies.length === 0) {
+      if (
+        trendingMovies.length === 0 &&
+        popularMovies.length === 0 &&
+        topRatedMovies.length === 0
+      ) {
         loadRecommendations();
       }
     }
@@ -673,23 +689,93 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
         disableEnforceFocus={true}
         disableRestoreFocus={true}
         keepMounted={false}
-        sx={{
-          '& .MuiDialog-paper': {
-            height: { xs: '90vh', sm: '90vh' }, // Reduzierte Höhe für bessere DialogActions Darstellung
-            maxHeight: '900px',
-            m: { xs: 0.5, sm: 2 }, // Weniger Margin auf mobile
-            display: 'flex',
-            flexDirection: 'column',
+        slotProps={{
+          paper: {
+            sx: {
+              minHeight: '80vh',
+              background:
+                'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              overflow: 'hidden',
+              boxShadow:
+                '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+              color: 'white',
+              display: 'flex',
+              flexDirection: 'column',
+            },
           },
+        }}
+        sx={{
           '& .MuiDialogContent-root': {
             flex: 1,
             overflow: 'auto',
           },
         }}
       >
-        <DialogHeader title='Film hinzufügen' onClose={handleDialogClose} />
+        <DialogTitle
+          sx={{
+            textAlign: 'center',
+            position: 'relative',
+            background:
+              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+            backdropFilter: 'blur(15px)',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            color: '#ffffff',
+            fontWeight: 600,
+            fontSize: '1.25rem',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+            }}
+          >
+            <Typography
+              component='div'
+              variant='h4'
+              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            >
+              Film hinzufügen
+            </Typography>
+          </Box>
 
-        <DialogContent dividers sx={{ p: 0, overflow: 'auto', height: '100%' }}>
+          <IconButton
+            onClick={handleDialogClose}
+            sx={{
+              position: 'absolute',
+              right: 16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'rgba(255,255,255,0.7)',
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '12px',
+              '&:hover': {
+                background: 'rgba(255,255,255,0.1)',
+                color: '#ffffff',
+                transform: 'translateY(-50%) scale(1.05)',
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent
+          sx={{
+            p: 0,
+            background:
+              'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+            backdropFilter: 'blur(10px)',
+            color: '#ffffff',
+            overflow: 'auto',
+            height: '100%',
+          }}
+        >
           <Box
             sx={{
               borderBottom: 1,
@@ -705,12 +791,35 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
             <Tabs
               value={activeTab}
               onChange={(_, newValue) => setActiveTab(newValue)}
-              variant='fullWidth'
+              variant={isMobile ? 'scrollable' : 'fullWidth'}
+              scrollButtons={isMobile ? 'auto' : false}
               sx={{
+                width: '100%',
                 '& .MuiTab-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                  background: 'rgba(255,255,255,0.05)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '12px 12px 0 0',
+                  margin: '0 4px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  transition: 'all 0.3s ease',
                   minHeight: { xs: 44, sm: 48, md: 64 },
                   fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
                   px: { xs: 0.25, sm: 0.5, md: 1 },
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.1)',
+                    color: '#ffffff',
+                  },
+                  '&.Mui-selected': {
+                    color: '#00fed7',
+                    background: 'rgba(0, 254, 215, 0.15)',
+                    boxShadow: '0 8px 25px rgba(0, 254, 215, 0.2)',
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#00fed7',
+                  height: '3px',
+                  borderRadius: '2px',
                 },
                 '& .MuiTab-iconWrapper': {
                   fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
@@ -749,7 +858,34 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                     </InputAdornment>
                   ),
                 }}
-                sx={{ mb: 3 }}
+                sx={{
+                  mb: 3,
+                  '& .MuiOutlinedInput-root': {
+                    background: 'rgba(45,45,48,0.8)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#ffffff',
+                    '& fieldset': {
+                      border: 'none',
+                    },
+                    '&:hover': {
+                      background: 'rgba(55,55,58,0.9)',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                    },
+                    '&.Mui-focused': {
+                      background: 'rgba(65,65,68,0.95)',
+                      border: '1px solid #00fed7',
+                      boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'rgba(255,255,255,0.7)',
+                    '&.Mui-focused': {
+                      color: '#00fed7',
+                    },
+                  },
+                }}
               />
 
               {isSearching && (
@@ -783,10 +919,23 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                           loadingSearch ? <CircularProgress size={20} /> : null
                         }
                         sx={{
-                          borderRadius: 2,
-                          px: 4,
-                          py: 1.5,
+                          background:
+                            'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                          borderRadius: '12px',
+                          padding: '12px 24px',
+                          color: '#ffffff',
+                          fontWeight: 600,
+                          textTransform: 'none',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          backdropFilter: 'blur(10px)',
+                          transition: 'all 0.3s ease',
                           fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          '&:hover': {
+                            background:
+                              'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                          },
                         }}
                       >
                         {loadingSearch ? 'Lädt...' : 'Mehr Suchergebnisse'}
@@ -1099,6 +1248,8 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
               borderTop: 1,
               borderColor: 'divider',
               bgcolor: 'action.hover',
+              background:
+                'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
             }}
           >
             <Typography variant='subtitle2' color='primary' gutterBottom>
@@ -1167,6 +1318,9 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
             gap: { xs: 1, sm: 2 },
             flexDirection: { xs: 'column', sm: 'row' }, // Vertikale Anordnung auf mobile
             alignItems: 'stretch',
+            background:
+              'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+            backdropFilter: 'blur(10px)',
           }}
         >
           <Box
@@ -1206,6 +1360,22 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
               sx={{
                 flex: { xs: 1, sm: 'none' },
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                background:
+                  'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'none',
+                border: '1px solid rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background:
+                    'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(255,255,255,0.2)',
+                },
               }}
             >
               Abbrechen
@@ -1219,6 +1389,21 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
               sx={{
                 flex: { xs: 1, sm: 'none' },
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'none',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background:
+                    'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                },
               }}
             >
               {/* Kurzer Text auf mobile, langer auf Desktop */}

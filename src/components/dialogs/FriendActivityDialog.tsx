@@ -14,7 +14,6 @@ import {
 } from '@mui/icons-material';
 import {
   Alert,
-  Avatar,
   Box,
   Card,
   CardContent,
@@ -83,7 +82,6 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
   onClose,
   friendId,
   friendName,
-  friendPhotoURL,
 }) => {
   // Eigene Movie/Series-Listen aus Context
   const { movieList } = useMovieList();
@@ -702,13 +700,19 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       onClose={onClose}
       maxWidth='sm'
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          maxHeight: '85vh',
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+      slotProps={{
+        paper: {
+          sx: {
+            minHeight: '80vh',
+            background:
+              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden',
+            boxShadow:
+              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+            color: 'white',
+          },
         },
       }}
       TransitionComponent={Slide}
@@ -716,56 +720,67 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     >
       <DialogTitle
         sx={{
-          background: 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
-          color: 'white',
           textAlign: 'center',
-          py: 3,
           position: 'relative',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          background:
+            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          backdropFilter: 'blur(15px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          color: '#ffffff',
+          fontWeight: 600,
+          fontSize: '1.25rem',
         }}
       >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              component='div'
+              variant='h4'
+              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            >
+              {friendName}s Aktivitäten
+            </Typography>
+          </Box>
+        </Box>
+
         <IconButton
-          aria-label='close'
           onClick={onClose}
-          sx={{ position: 'absolute', right: 8, top: 8, color: 'red' }}
+          sx={{
+            position: 'absolute',
+            right: 16,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'rgba(255,255,255,0.7)',
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            '&:hover': {
+              background: 'rgba(255,255,255,0.1)',
+              color: '#ffffff',
+              transform: 'translateY(-50%) scale(1.05)',
+            },
+          }}
         >
           <CloseIcon />
         </IconButton>
-
-        <Box display='flex' alignItems='center' justifyContent='center' gap={2}>
-          <Avatar
-            src={friendPhotoURL || undefined}
-            sx={{
-              width: 50,
-              height: 50,
-              border: '3px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-              bgcolor: '#00fed7',
-              color: 'white',
-              fontWeight: 'bold',
-            }}
-          >
-            {friendName.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box>
-            <Typography variant='h5' fontWeight='700' sx={{ mb: 0.5 }}>
-              {getActivityEmoji('default')} {friendName}s Aktivitäten
-            </Typography>
-            <Chip
-              label='Die letzten 20 Aktivitäten'
-              size='small'
-              sx={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-              }}
-            />
-          </Box>
-        </Box>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0, backgroundColor: '#1e1e1e' }}>
+      <DialogContent
+        sx={{
+          p: 0,
+          background:
+            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+          backdropFilter: 'blur(10px)',
+          color: '#ffffff',
+        }}
+      >
         {loading ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Box

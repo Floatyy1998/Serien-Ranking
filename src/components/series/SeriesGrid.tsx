@@ -754,6 +754,7 @@ export const SeriesGrid = ({
                 index={index + 1}
                 disableRatingDialog={viewOnlyMode}
                 forceReadOnlyDialogs={viewOnlyMode}
+                disableDeleteDialog={viewOnlyMode}
               />
             </Box>
           ))}

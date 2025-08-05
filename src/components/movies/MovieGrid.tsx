@@ -220,6 +220,7 @@ export const MovieGrid = ({
                 genre={selectedGenre}
                 index={index + 1}
                 disableRatingDialog={viewOnlyMode}
+                disableDeleteDialog={viewOnlyMode}
               />
             </Box>
           ))}
