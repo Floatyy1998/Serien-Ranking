@@ -757,6 +757,7 @@ export const UserProfilePage: React.FC = () => {
         </Box>
       </Box>
 
+
       {/* Statistiken - je nach Tab unterschiedlich */}
       <Box
         sx={{

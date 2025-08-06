@@ -29,11 +29,7 @@ import { logMovieDeleted } from '../../utils/activityLogger';
 import { getFormattedDate } from '../../utils/date.utils';
 import { logRatingAdded } from '../../utils/minimalActivityLogger';
 import { calculateOverallRating } from '../../utils/rating';
-import ThreeDotMenu, {
-  DeleteIcon,
-  InfoIcon,
-  StarIcon,
-} from '../common/ThreeDotMenu';
+import ThreeDotMenu, { DeleteIcon, StarIcon } from '../common/ThreeDotMenu';
 import MovieDialog from '../dialogs/MovieDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
 
@@ -43,6 +39,7 @@ interface MovieCardProps {
   index: number;
   disableRatingDialog?: boolean;
   disableDeleteDialog?: boolean;
+  forceReadOnlyDialogs?: boolean;
 }
 
 export const MovieCard = ({
@@ -50,8 +47,11 @@ export const MovieCard = ({
   index,
   disableRatingDialog = false,
   disableDeleteDialog = false,
+  forceReadOnlyDialogs = false,
 }: MovieCardProps) => {
   const { movieList } = useMovieList();
+  const auth = useAuth();
+  const user = auth?.user;
   const location = useLocation();
   const isUserProfilePage =
     location.pathname.includes('/user/') ||
@@ -64,8 +64,6 @@ export const MovieCard = ({
 
   const shadowColor =
     currentMovie.status === 'Released' ? '#a855f7' : '#22c55e';
-  const auth = useAuth();
-  const user = auth?.user;
   const {} = useOptimizedFriends();
   const uniqueProviders = currentMovie.provider
     ? Array.from(
@@ -156,7 +154,7 @@ export const MovieCard = ({
   const [tmdbDialogOpen, setTmdbDialogOpen] = useState(false);
   const [tmdbData, setTmdbData] = useState<any>(null);
   const [tmdbLoading, setTmdbLoading] = useState(false);
-  const [, setAdding] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const fetchTMDBData = async (tmdbId: number) => {
     try {
@@ -173,6 +171,63 @@ export const MovieCard = ({
       setSnackbarOpen(true);
     } finally {
       setTmdbLoading(false);
+    }
+  };
+
+  const handleAddMovie = async () => {
+    if (!user || !tmdbData) return;
+
+    try {
+      setAdding(true);
+
+      const movieData = {
+        user: import.meta.env.VITE_USER,
+        id: tmdbData.id,
+        uuid: user.uid,
+      };
+
+      const res = await fetch(`https://serienapi.konrad-dinges.de/addMovie`, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(movieData),
+      });
+
+      if (res.ok) {
+        // Activity-Logging für Friend + Badge-System
+        const { logMovieAdded } = await import(
+          '../../utils/minimalActivityLogger'
+        );
+        await logMovieAdded(
+          user.uid,
+          tmdbData.title || 'Unbekannter Film',
+          tmdbData.id
+        );
+
+        setSnackbarMessage('Film erfolgreich hinzugefügt!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        setTmdbDialogOpen(false);
+      } else {
+        const msgJson = await res.json();
+        if (msgJson.error === 'Film bereits vorhanden') {
+          setSnackbarMessage('Film bereits vorhanden');
+          setSnackbarSeverity('error');
+        } else {
+          throw new Error('Fehler beim Hinzufügen des Films.');
+        }
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage('Fehler beim Hinzufügen des Films');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -298,6 +353,8 @@ export const MovieCard = ({
           border: '1px solid rgba(255, 255, 255, 0.1)',
           overflow: 'hidden',
           position: 'relative',
+          contain: 'layout style paint',
+          willChange: 'transform, box-shadow',
           boxShadow: `0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(${
             shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'
           }, 0.5), 0 0 60px rgba(${
@@ -315,6 +372,7 @@ export const MovieCard = ({
               }, 0.3), 0 0 0 2px rgba(${
                 shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'
               }, 0.4)`,
+              willChange: 'transform, box-shadow',
             },
           },
           '&::before': {
@@ -342,21 +400,31 @@ export const MovieCard = ({
             '&::after': {
               content: '""',
               position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '60px',
+              bottom: '-2px',
+              left: '-2px',
+              right: '-2px',
+              height: '65px',
               background:
                 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
               pointerEvents: 'none',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'center bottom',
+            },
+            '@media (min-width: 768px)': {
+              '.group:hover &::after': {
+                transform: 'scale(1.06)',
+              },
             },
           }}
         >
           <CardMedia
+            onClick={handlePosterClick}
             sx={{
               height: '100%',
               objectFit: 'cover',
-              transition: 'transform 0.5s ease',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              backfaceVisibility: 'hidden',
+              cursor: 'pointer',
               '@media (min-width: 768px)': {
                 '.group:hover &': {
                   transform: 'scale(1.05)',
@@ -592,37 +660,34 @@ export const MovieCard = ({
           )}
           {currentMovie.status !== 'Released' && (
             <Box
-              className='absolute bottom-2 left-2 right-2'
+              className='absolute bottom-16 left-0 right-0'
               sx={{
                 background:
-                  'linear-gradient(135deg, rgba(168, 85, 247, 0.9) 0%, rgba(139, 69, 197, 0.8) 100%)',
+                  'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
                 backdropFilter: 'blur(15px)',
-                borderRadius: '12px',
+                borderRadius: '0px',
                 p: 1.5,
-                border: '1px solid rgba(255,255,255,0.2)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 20px rgba(168, 85, 247, 0.3)',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: '0 6px 30px rgba(168, 85, 247, 0.4)',
+                '@media (min-width: 768px)': {
+                  '&:hover': {
+                    background:
+                      'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)',
+                  },
                 },
               }}
             >
               <Typography
                 variant='body2'
                 sx={{
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
                   color: '#ffffff',
                   textAlign: 'center',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                 }}
               >
-                🎬 Erscheint am {dateString}
+                🎬 {dateString}
               </Typography>
             </Box>
           )}
@@ -684,11 +749,6 @@ export const MovieCard = ({
                   icon: <StarIcon />,
                   onClick: handleRatingClick,
                   disabled: disableRatingDialog,
-                },
-                {
-                  label: 'Details anzeigen',
-                  icon: <InfoIcon />,
-                  onClick: handlePosterClick,
                 },
                 {
                   label: 'Film löschen',
@@ -768,6 +828,9 @@ export const MovieCard = ({
         loading={tmdbLoading}
         data={tmdbData}
         type='movie'
+        viewOnlyMode={forceReadOnlyDialogs}
+        onAdd={handleAddMovie}
+        adding={adding}
         onClose={() => {
           setTmdbDialogOpen(false);
           setTmdbData(null);

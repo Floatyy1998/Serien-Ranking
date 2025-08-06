@@ -11,7 +11,10 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useAuth } from '../../App';
+import { useMovieList } from '../../contexts/MovieListProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 
 interface TmdbDialogProps {
   open: boolean;
@@ -22,6 +25,7 @@ interface TmdbDialogProps {
   onAdd?: () => void;
   adding?: boolean;
   showAddButton?: boolean;
+  viewOnlyMode?: boolean;
 }
 
 const TmdbDialog: React.FC<TmdbDialogProps> = ({
@@ -32,26 +36,45 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   onClose,
   onAdd,
   adding = false,
-  showAddButton = false,
 }) => {
+  const auth = useAuth();
+  const user = auth?.user;
+  const { seriesList } = useSeriesList();
+  const { movieList } = useMovieList();
+
+  // Prüfe ob bereits in eigener Liste hinzugefügt
+  const alreadyAdded = useMemo(() => {
+    if (!data || !user) return false;
+
+    if (type === 'tv') {
+      return seriesList.some((series) => series.id === data.id);
+    } else {
+      return movieList.some((movie) => movie.id === data.id);
+    }
+  }, [data, type, seriesList, movieList, user]);
+
+  // Zeige Add-Button nur wenn User eingeloggt und noch nicht hinzugefügt
+  const canAdd = user && !alreadyAdded;
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth='lg'
+      maxWidth='sm'
       fullWidth
       slotProps={{
         paper: {
           sx: {
-            minHeight: '80vh',
-            background: 'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            maxHeight: '70vh',
+            background:
+              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
             borderRadius: '20px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             overflow: 'hidden',
-            boxShadow: '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+            boxShadow:
+              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
             color: 'white',
           },
-        }
+        },
       }}
     >
       {loading ? (
@@ -67,7 +90,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             sx={{
               textAlign: 'center',
               position: 'relative',
-              background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+              background:
+                'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
               backdropFilter: 'blur(15px)',
               borderBottom: '1px solid rgba(255,255,255,0.05)',
               color: '#ffffff',
@@ -127,12 +151,15 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               <CloseIcon />
             </IconButton>
           </DialogTitle>
-          <DialogContent sx={{ 
-            p: 0, 
-            background: 'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
-            backdropFilter: 'blur(10px)',
-            color: '#ffffff' 
-          }}>
+          <DialogContent
+            sx={{
+              p: 0,
+              background:
+                'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+              backdropFilter: 'blur(10px)',
+              color: '#ffffff',
+            }}
+          >
             <Box
               display='flex'
               gap={3}
@@ -240,17 +267,36 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               </Box>
             </Box>
           </DialogContent>
-          <DialogActions sx={{ 
-            p: 3, 
-            gap: 2, 
-            background: 'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
-            backdropFilter: 'blur(10px)',
-          }}>
-            {showAddButton && onAdd && (
+          <DialogActions
+            sx={{
+              p: 3,
+              gap: 2,
+              background:
+                'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            {!user ? (
+              <Typography
+                variant='body2'
+                sx={{ color: '#9e9e9e', fontStyle: 'italic' }}
+              >
+                Zum Hinzufügen bitte einloggen
+              </Typography>
+            ) : alreadyAdded ? (
+              <Typography
+                variant='body2'
+                sx={{ color: '#4caf50', fontWeight: 'bold' }}
+              >
+                ✅ Bereits in deiner Liste
+              </Typography>
+            ) : canAdd ? (
               <Button
                 variant='contained'
-                onClick={onAdd}
-                disabled={adding}
+                onClick={
+                  onAdd || (() => console.log('onAdd not implemented yet'))
+                }
+                disabled={adding || !onAdd}
                 sx={{
                   backgroundColor: '#00fed7',
                   color: '#000',
@@ -266,11 +312,13 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               >
                 {adding
                   ? 'Wird hinzugefügt...'
+                  : !onAdd
+                  ? 'Hinzufügen (noch nicht implementiert)'
                   : `${
                       type === 'tv' ? 'Serie' : 'Film'
                     } zu meiner Liste hinzufügen`}
               </Button>
-            )}
+            ) : null}
           </DialogActions>
         </>
       ) : null}

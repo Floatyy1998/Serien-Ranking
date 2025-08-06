@@ -28,7 +28,6 @@ import { logRatingAdded } from '../../utils/minimalActivityLogger';
 import { calculateOverallRating } from '../../utils/rating';
 import ThreeDotMenu, {
   DeleteIcon,
-  InfoIcon,
   PlaylistPlayIcon,
   StarIcon,
 } from '../common/ThreeDotMenu';
@@ -274,7 +273,7 @@ export const SeriesCard = ({
   const [tmdbDialogOpen, setTmdbDialogOpen] = useState(false);
   const [tmdbData, setTmdbData] = useState<any>(null);
   const [tmdbLoading, setTmdbLoading] = useState(false);
-  const [, setAdding] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const fetchTMDBData = async (tmdbId: number) => {
     try {
@@ -291,6 +290,63 @@ export const SeriesCard = ({
       setSnackbarOpen(true);
     } finally {
       setTmdbLoading(false);
+    }
+  };
+
+  const handleAddSeries = async () => {
+    if (!user || !tmdbData) return;
+
+    try {
+      setAdding(true);
+
+      const seriesData = {
+        user: import.meta.env.VITE_USER,
+        id: tmdbData.id,
+        uuid: user.uid,
+      };
+
+      const res = await fetch(`https://serienapi.konrad-dinges.de/add`, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(seriesData),
+      });
+
+      if (res.ok) {
+        // Activity-Logging für Friend + Badge-System
+        const { logSeriesAdded } = await import(
+          '../../utils/minimalActivityLogger'
+        );
+        await logSeriesAdded(
+          user.uid,
+          tmdbData.name || tmdbData.title || 'Unbekannte Serie',
+          tmdbData.id
+        );
+
+        setSnackbarMessage('Serie erfolgreich hinzugefügt!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        setTmdbDialogOpen(false);
+      } else {
+        const msgJson = await res.json();
+        if (msgJson.error === 'Serie bereits vorhanden') {
+          setSnackbarMessage('Serie bereits vorhanden');
+          setSnackbarSeverity('error');
+        } else {
+          throw new Error('Fehler beim Hinzufügen der Serie.');
+        }
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage('Fehler beim Hinzufügen der Serie');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -359,6 +415,8 @@ export const SeriesCard = ({
           border: '1px solid rgba(255, 255, 255, 0.1)',
           overflow: 'hidden',
           position: 'relative',
+          contain: 'layout style paint',
+          willChange: 'transform, box-shadow',
           boxShadow: `0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(${
             shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'
           }, 0.5), 0 0 60px rgba(${
@@ -376,6 +434,7 @@ export const SeriesCard = ({
               }, 0.3), 0 0 0 2px rgba(${
                 shadowColor === '#a855f7' ? '168, 85, 247' : '34, 197, 94'
               }, 0.4)`,
+              willChange: 'transform, box-shadow',
             },
           },
           '&::before': {
@@ -403,21 +462,31 @@ export const SeriesCard = ({
             '&::after': {
               content: '""',
               position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '60px',
+              bottom: '-2px',
+              left: '-2px',
+              right: '-2px',
+              height: '65px',
               background:
                 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
               pointerEvents: 'none',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'center bottom',
+            },
+            '@media (min-width: 768px)': {
+              '.group:hover &::after': {
+                transform: 'scale(1.06)',
+              },
             },
           }}
         >
           <CardMedia
+            onClick={handlePosterClick}
             sx={{
               height: '100%',
               objectFit: 'cover',
-              transition: 'transform 0.5s ease',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              backfaceVisibility: 'hidden',
+              cursor: 'pointer',
               '@media (min-width: 768px)': {
                 '.group:hover &': {
                   transform: 'scale(1.05)',
@@ -688,7 +757,9 @@ export const SeriesCard = ({
             </Box>
           )}
 
-          {typeof currentSeries.nextEpisode?.episode === 'number' && (
+          {typeof currentSeries.nextEpisode?.episode === 'number' &&
+            currentSeries.nextEpisode?.nextEpisode &&
+            new Date(currentSeries.nextEpisode.nextEpisode).getTime() >= new Date().setHours(0, 0, 0, 0) && (
             <Box
               className='absolute bottom-16 left-0 right-0'
               onClick={() => setOpenEpisodes(true)}
@@ -788,16 +859,15 @@ export const SeriesCard = ({
                   icon: <CheckCircleIcon />,
                   onClick: handleTitleClick,
                 },
-                {
-                  label: 'Kommende Episoden anzeigen',
-                  icon: <PlaylistPlayIcon />,
-                  onClick: () => setOpenEpisodes(true),
-                },
-                {
-                  label: 'Details anzeigen',
-                  icon: <InfoIcon />,
-                  onClick: handlePosterClick,
-                },
+                ...(typeof currentSeries.nextEpisode?.episode === 'number'
+                  ? [
+                      {
+                        label: 'Kommende Episoden anzeigen',
+                        icon: <PlaylistPlayIcon />,
+                        onClick: () => setOpenEpisodes(true),
+                      },
+                    ]
+                  : []),
                 {
                   label: 'Serie löschen',
                   icon: <DeleteIcon sx={{ color: '#f87171' }} />,
@@ -895,7 +965,7 @@ export const SeriesCard = ({
         <DialogTitle
           sx={{
             background:
-              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.9) 100%)',
             backdropFilter: 'blur(15px)',
             borderBottom: '1px solid rgba(255, 152, 0, 0.2)',
             color: '#ffffff',
@@ -909,7 +979,7 @@ export const SeriesCard = ({
         <DialogContent
           sx={{
             background:
-              'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.9) 100%)',
             borderTop: '1px solid rgba(255,255,255,0.05)',
             color: '#ffffff',
             padding: '24px',
@@ -935,7 +1005,7 @@ export const SeriesCard = ({
             padding: '24px',
             borderTop: '1px solid rgba(255,255,255,0.1)',
             background:
-              'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.9) 100%)',
           }}
         >
           <Button
@@ -993,6 +1063,9 @@ export const SeriesCard = ({
         loading={tmdbLoading}
         data={tmdbData}
         type='tv'
+        viewOnlyMode={forceReadOnlyDialogs}
+        onAdd={handleAddSeries}
+        adding={adding}
         onClose={() => {
           setTmdbDialogOpen(false);
           setTmdbData(null);

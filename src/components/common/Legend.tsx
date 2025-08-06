@@ -25,66 +25,109 @@ export const Legend = () => {
         </div>
         <Tooltip
           title={
-            <>
-              <Typography style={{ textDecoration: 'underline' }}>
-                <b>LEGENDE</b>
+            <Box sx={{ 
+              p: 2,
+              maxWidth: 400,
+              background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
+              borderRadius: 2,
+              border: '1px solid rgba(0, 254, 215, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+            }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: '#00fed7', 
+                  fontWeight: 'bold', 
+                  mb: 2,
+                  textAlign: 'center',
+                  fontSize: '1.1rem'
+                }}
+              >
+                📺 Serien & Filme Guide
               </Typography>
-              <br></br>
-              <span style={{ color: '#b103fc' }}>
-                <b>beendet:</b> Es kommen{' '}
-                <strong>
-                  <u style={{ textDecoration: 'underline' }}>keine</u>
-                </strong>{' '}
-                weiteren Episoden.
-              </span>
-              <br></br>
-              <br></br>
-              <span style={{ color: '#42d10f' }}>
-                <b>laufend:</b> Es kommen weitere Folgen.
-              </span>
-              <br></br>
-              <br></br>
-              <span>
-                Klicke auf ein Poster, , um zu erfahren, wo du die Serie schauen
-                kannst.
-              </span>
-              <br></br>
-              <br></br>
-              <span>Klicke auf ein Rating, um das Rating anzupassen.</span>
-              <br></br>
-              <br></br>
-              <span>
-                Klicke auf den Titel, um gehsehene Episoden zu markieren.
-              </span>
-              <br></br>
-              <br></br>
-              <span>
-                Klicke auf das Bookmark-Symbol, um die Serie auf deiner
-                Watchlist zu speichern.
-              </span>
-              <br></br>
-              <br></br>
-              <span>
-                Nutze die Suchleiste, um nach Serien zu suchen und Filter, um
-                Ergebnisse einzugrenzen.
-              </span>
-              <br></br>
-              <br></br>
-              <span>
-                Klicke auf das Statistik-Symbol, um detaillierte Statistiken zu
-                deinen Serien zu sehen.
-              </span>
-              <br></br>
-              <br></br>
-              <span style={{ color: '#00fed7' }}>
-                Daten bereitgestellt von TMDB und JustWatch
-              </span>
-              <br></br>
-              <br></br>
-            </>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography sx={{ color: '#b103fc', fontWeight: 'bold', mb: 0.5 }}>
+                  🟣 Beendet:
+                </Typography>
+                <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem', mb: 1 }}>
+                  Serie ist abgeschlossen - keine neuen Folgen
+                </Typography>
+                
+                <Typography sx={{ color: '#42d10f', fontWeight: 'bold', mb: 0.5 }}>
+                  🟢 Laufend:
+                </Typography>
+                <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem', mb: 2 }}>
+                  Serie läuft noch - neue Folgen kommen
+                </Typography>
+              </Box>
+
+              <Box sx={{ 
+                borderTop: '1px solid rgba(255,255,255,0.1)', 
+                pt: 2,
+                '& > div': { mb: 1.5 }
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography sx={{ color: '#00fed7', fontSize: '1rem' }}>🖼️</Typography>
+                  <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem' }}>
+                    <strong>Poster:</strong> Details anzeigen
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography sx={{ color: '#ffd700', fontSize: '1rem' }}>🔖</Typography>
+                  <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem' }}>
+                    <strong>Watchlist-Icon:</strong> Toggle Watchlist
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography sx={{ color: '#ff6b6b', fontSize: '1rem' }}>⋮</Typography>
+                  <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem' }}>
+                    <strong>3-Punkte-Menü:</strong> Rating ändern, gesehene Episoden, kommende Episoden, löschen
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Typography 
+                sx={{ 
+                  color: '#00fed7', 
+                  fontSize: '0.8rem', 
+                  textAlign: 'center', 
+                  mt: 2,
+                  fontStyle: 'italic',
+                  opacity: 0.8
+                }}
+              >
+                💡 Nutze Filter & Suche für bessere Übersicht
+              </Typography>
+              
+              <Typography 
+                sx={{ 
+                  color: '#9e9e9e', 
+                  fontSize: '0.75rem', 
+                  textAlign: 'center', 
+                  mt: 1,
+                  borderTop: '1px solid rgba(255,255,255,0.05)',
+                  pt: 1
+                }}
+              >
+                Powered by TMDB & JustWatch
+              </Typography>
+            </Box>
           }
           arrow
           placement='bottom'
+          componentsProps={{
+            tooltip: {
+              sx: {
+                bgcolor: 'transparent',
+                '& .MuiTooltip-arrow': {
+                  color: '#1a1a1a',
+                },
+              },
+            },
+          }}
         >
           <IconButton size='small' className='text-gray-400' aria-label='info'>
             <Info size={16} />

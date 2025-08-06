@@ -38,6 +38,7 @@ export const MovieGrid = ({
 
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
+  const [startIndex, setStartIndex] = useState(0);
   const [filteredMovies, setFilteredMovies] = useState<any[]>([]);
 
   // Lade Freund-Filme wenn targetUserId gesetzt ist
@@ -128,26 +129,54 @@ export const MovieGrid = ({
 
     const currentMovies =
       filteredMovies?.length > 0 ? filteredMovies : movieList || [];
-
-    if (
-      scrollTop + windowHeight >= fullHeight - 1000 &&
-      visibleCount < currentMovies?.length
-    ) {
-      const cardWidth = 230;
-      const gap = 75;
-      let columns = Math.floor(window.innerWidth / (cardWidth + gap));
-      if (columns < 1) columns = 1;
-      const remainder = visibleCount % columns;
-      const itemsToAdd = remainder === 0 ? columns : columns - remainder;
-      setVisibleCount((prev) =>
-        Math.min(prev + itemsToAdd, currentMovies?.length)
-      );
+      
+    // Berechne Grid-Parameter
+    const cardWidth = 230;
+    const cardHeight = 444;
+    const gap = 75;
+    let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+    if (columns < 1) columns = 1;
+    
+    const rowHeight = cardHeight + gap;
+    const viewportStart = Math.max(0, scrollTop - windowHeight);
+    const viewportEnd = scrollTop + windowHeight * 2; // Buffer für smooth scrolling
+    
+    // Berechne sichtbare Reihen
+    const startRow = Math.floor(viewportStart / rowHeight);
+    const endRow = Math.ceil(viewportEnd / rowHeight);
+    
+    const newStartIndex = Math.max(0, startRow * columns);
+    const newEndIndex = Math.min(currentMovies?.length || 0, (endRow + 1) * columns);
+    const newVisibleCount = newEndIndex - newStartIndex;
+    
+    // Virtualization: Nur bei vielen Filmen aktivieren
+    if (currentMovies?.length > 60) {
+      setStartIndex(newStartIndex);
+      setVisibleCount(Math.min(newVisibleCount, 80)); // Max 80 Cards gleichzeitig
+    } else {
+      // Bei wenigen Filmen: normales infinite scroll
+      if (scrollTop + windowHeight >= fullHeight - 1000 && visibleCount < (currentMovies?.length || 0)) {
+        const itemsToAdd = Math.min(columns, 12);
+        setVisibleCount((prev) => Math.min(prev + itemsToAdd, currentMovies?.length || 0));
+      }
     }
-  }, [visibleCount, filteredMovies, movieList]);
+  }, [visibleCount, startIndex, filteredMovies, movieList]);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleWindowScroll);
-    return () => window.removeEventListener('scroll', handleWindowScroll);
+    // Debounced scroll handler für bessere Performance
+    let ticking = false;
+    const debouncedHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleWindowScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', debouncedHandleScroll);
   }, [handleWindowScroll]);
 
   useEffect(() => {
@@ -201,6 +230,24 @@ export const MovieGrid = ({
 
   return (
     <Box sx={{ width: '100%', m: 0, p: 0 }}>
+      {/* Top Spacer für Virtualization */}
+      {(() => {
+        const currentMovies = filteredMovies?.length > 0 ? filteredMovies : movieList || [];
+        const cardHeight = 444;
+        const gap = 75;
+        const cardWidth = 230;
+        const columns = Math.max(1, Math.floor(window.innerWidth / (cardWidth + gap)));
+        const rowHeight = cardHeight + gap;
+        
+        const topSpacerHeight = currentMovies?.length > 60 
+          ? Math.floor(startIndex / columns) * rowHeight 
+          : 0;
+          
+        return topSpacerHeight > 0 && (
+          <Box sx={{ height: `${topSpacerHeight}px`, width: '100%' }} />
+        );
+      })()}
+      
       <Box
         sx={{
           display: 'flex',
@@ -211,20 +258,46 @@ export const MovieGrid = ({
           boxSizing: 'border-box',
         }}
       >
-        {(filteredMovies?.length > 0 ? filteredMovies : movieList || [])
-          ?.slice(0, visibleCount)
-          .map((movie: any, index: number) => (
-            <Box key={index} sx={{ width: '230px', height: '444px' }}>
+        {(() => {
+          // Berechne welche Filme gerendert werden sollen
+          const currentMovies = filteredMovies?.length > 0 ? filteredMovies : movieList || [];
+          const visibleMovies = currentMovies?.length > 60 
+            ? currentMovies.slice(startIndex, startIndex + visibleCount)
+            : currentMovies?.slice(0, visibleCount);
+
+          return visibleMovies?.map((movie: any, index: number) => (
+            <Box key={movie.id || movie.nmr || (startIndex + index)} sx={{ width: '230px', height: '444px' }}>
               <MovieCard
                 movie={movie}
                 genre={selectedGenre}
-                index={index + 1}
+                index={startIndex + index + 1}
                 disableRatingDialog={viewOnlyMode}
+                forceReadOnlyDialogs={viewOnlyMode}
                 disableDeleteDialog={viewOnlyMode}
               />
             </Box>
-          ))}
+          ));
+        })()}
       </Box>
+      
+      {/* Bottom Spacer für Virtualization */}
+      {(() => {
+        const currentMovies = filteredMovies?.length > 0 ? filteredMovies : movieList || [];
+        const cardHeight = 444;
+        const gap = 75;
+        const cardWidth = 230;
+        const columns = Math.max(1, Math.floor(window.innerWidth / (cardWidth + gap)));
+        const rowHeight = cardHeight + gap;
+        
+        const remainingItems = currentMovies?.length - startIndex - visibleCount;
+        const bottomSpacerHeight = currentMovies?.length > 60 && remainingItems > 0
+          ? Math.ceil(remainingItems / columns) * rowHeight
+          : 0;
+          
+        return bottomSpacerHeight > 0 && (
+          <Box sx={{ height: `${bottomSpacerHeight}px`, width: '100%' }} />
+        );
+      })()}
     </Box>
   );
 };

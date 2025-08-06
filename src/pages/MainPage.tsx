@@ -872,6 +872,16 @@ export const MainPage: React.FC = () => {
           )}
         </Box>
 
+        {/* Trennlinie */}
+        <Box
+          sx={{
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+            mx: { xs: 2, md: 4 },
+            my: { xs: 2, md: 3 },
+          }}
+        />
+
         {/* Tabs für Serien und Filme */}
         <Card>
           <Tabs
