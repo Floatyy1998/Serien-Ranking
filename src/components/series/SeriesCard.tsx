@@ -521,9 +521,9 @@ export const SeriesCard = ({
                 <Box
                   key={provider?.id}
                   sx={{
-                    background:
-                      'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
-                    backdropFilter: 'blur(10px)',
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '10px',
                     p: 0.25,
                     width: 40,
@@ -531,9 +531,11 @@ export const SeriesCard = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.3s ease',
+                    transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                     '&:hover': {
-                      transform: 'scale(1.1)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
                     },
                   }}
                 >
@@ -686,22 +688,22 @@ export const SeriesCard = ({
                       }
                     }}
                     sx={{
-                      background:
-                        'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
-                      backdropFilter: 'blur(10px)',
+                      background: 'rgba(0, 0, 0, 0.6)',
+                      backdropFilter: 'blur(8px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
                       borderRadius: '10px',
                       width: 40,
                       height: 40,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      transition: 'all 0.3s ease',
+                      transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                       cursor: 'pointer',
                       '@media (min-width: 768px)': {
                         '&:hover': {
-                          transform: 'scale(1.1)',
-                          background:
-                            'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%)',
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          borderColor: 'rgba(255, 255, 255, 0.3)',
+                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
                         },
                       },
                     }}
@@ -727,9 +729,9 @@ export const SeriesCard = ({
               className='absolute bottom-2 left-2'
               onClick={handleWatchlistToggle}
               sx={{
-                background:
-                  'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
-                backdropFilter: 'blur(10px)',
+                background: 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '12px',
                 p: 1,
                 width: 44,
@@ -738,12 +740,12 @@ export const SeriesCard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                 '@media (min-width: 768px)': {
                   '&:hover': {
-                    background:
-                      'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%)',
-                    transform: 'scale(1.1)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 6px 24px rgba(0, 0, 0, 0.4)',
                   },
                 },
               }}
@@ -798,18 +800,18 @@ export const SeriesCard = ({
           <Box
             className='absolute top-3 right-1'
             sx={{
-              background:
-                'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
-              backdropFilter: 'blur(10px)',
+              background: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '12px',
               px: 2,
               py: 1,
-              transition: 'all 0.3s ease',
+              transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
               '@media (min-width: 768px)': {
                 '&:hover': {
-                  background:
-                    'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%)',
-                  transform: 'scale(1.05)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
                 },
               },
             }}
