@@ -503,10 +503,7 @@ export const UserProfilePage: React.FC = () => {
   const isOwnProfile = userId === user?.uid;
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{ px: { xs: 1, sm: 2, md: 3 }, py: { xs: 2, md: 4 } }}
-    >
+    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
       {/* Header */}
       <Box
         sx={{
@@ -516,8 +513,10 @@ export const UserProfilePage: React.FC = () => {
           background: isOwnProfile
             ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)'
             : 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
-          borderRadius: 2,
           p: { xs: 1.5, sm: 2, md: 3 },
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '0 0 8px 8px',
           color: 'white',
           mb: { xs: 2, md: 4 },
           boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
@@ -565,7 +564,11 @@ export const UserProfilePage: React.FC = () => {
               variant='h5'
               component='h1'
               fontWeight='bold'
-              sx={{ fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' }, mb: { xs: 0.25, md: 0.5 }, lineHeight: 1.2 }}
+              sx={{
+                fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' },
+                mb: { xs: 0.25, md: 0.5 },
+                lineHeight: 1.2,
+              }}
             >
               {isOwnProfile
                 ? 'Mein Profil'
@@ -598,7 +601,10 @@ export const UserProfilePage: React.FC = () => {
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 14, md: 20 },
                     minHeight: { xs: 14, md: 20 },
-                    '& .MuiChip-label': { px: { xs: 0.5, md: 1 }, py: { xs: 0, md: 0.25 } },
+                    '& .MuiChip-label': {
+                      px: { xs: 0.5, md: 1 },
+                      py: { xs: 0, md: 0.25 },
+                    },
                   }}
                 />
               )}
@@ -613,7 +619,10 @@ export const UserProfilePage: React.FC = () => {
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 14, md: 20 },
                     minHeight: { xs: 14, md: 20 },
-                    '& .MuiChip-label': { px: { xs: 0.5, md: 1 }, py: { xs: 0, md: 0.25 } },
+                    '& .MuiChip-label': {
+                      px: { xs: 0.5, md: 1 },
+                      py: { xs: 0, md: 0.25 },
+                    },
                   }}
                 />
               )}
@@ -763,7 +772,6 @@ export const UserProfilePage: React.FC = () => {
           </Button>
         </Box>
       </Box>
-
 
       {/* Statistiken - je nach Tab unterschiedlich */}
       <Box

@@ -20,8 +20,6 @@ import { VerifiedRoute } from './components/auth/VerifiedRoute';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
 // Badge Migration Tools für Development
-import './utils/migrateBadgeSystem';
-import './utils/testMigration';
 import { BadgeProvider } from './contexts/BadgeProvider';
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
@@ -31,12 +29,13 @@ import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
 import { StatsProvider } from './contexts/StatsProvider';
 import { FriendsPage } from './pages/FriendsPage';
 import MainPage from './pages/MainPage';
-import MoviePage from './pages/MoviePage';
 import { PublicListPage } from './pages/PublicListPage';
 import StartPage from './pages/StartPage'; // Eager loading für bessere Offline-Performance
 import { UserProfilePage } from './pages/UserProfilePage';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { theme } from './theme';
+import './utils/migrateBadgeSystem';
+import './utils/testMigration';
 
 // Nur diese bleiben lazy
 const LoginPage = lazy(() => import('./components/auth/LoginPage'));
@@ -264,150 +263,131 @@ function AppContent() {
           <MovieListProvider>
             <StatsProvider>
               <BadgeProvider>
-                  <Helmet>
-                    <title>
-                      TV-RANK - Entdecke, bewerte und verwalte deine
-                      Lieblingsserien
-                    </title>
-                    <meta
-                      name='description'
-                      content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-                    />
-                    <meta
-                      name='keywords'
-                      content='Serien, TV, Bewertung, Watchlist, TV-RANK'
-                    />
-                    <meta
-                      property='og:title'
-                      content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
-                    />
-                    <meta
-                      property='og:description'
-                      content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-                    />
-                    <meta property='og:image' content='/favicon.ico' />
-                    <meta property='og:url' content='https://tv-rank.de' />
-                    <meta name='twitter:card' content='summary_large_image' />
-                  </Helmet>
-                  <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    <div className='w-full'>
-                      <UsernameRequiredDialog />
-                      <main className='w-full'>
-                        <Suspense
-                          fallback={
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                minHeight: '50vh',
-                                color: '#00fed7',
-                              }}
-                            >
-                              ⏳ Lade Komponente...
-                            </div>
-                          }
-                        >
-                          <Routes>
-                            <Route path='/login' element={<LoginPage />} />
-                            <Route
-                              path='/register'
-                              element={<RegisterPage />}
-                            />
-                            <Route
-                              path='/'
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) => {
-                                    if (!auth?.authStateResolved) {
-                                      return (
-                                        <div
-                                          style={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            minHeight: '50vh',
-                                            color: '#00fed7',
-                                          }}
-                                        >
-                                          ⏳ Wird geladen...
-                                        </div>
-                                      );
-                                    }
+                <Helmet>
+                  <title>
+                    TV-RANK - Entdecke, bewerte und verwalte deine
+                    Lieblingsserien
+                  </title>
+                  <meta
+                    name='description'
+                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+                  />
+                  <meta
+                    name='keywords'
+                    content='Serien, TV, Bewertung, Watchlist, TV-RANK'
+                  />
+                  <meta
+                    property='og:title'
+                    content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
+                  />
+                  <meta
+                    property='og:description'
+                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+                  />
+                  <meta property='og:image' content='/favicon.ico' />
+                  <meta property='og:url' content='https://tv-rank.de' />
+                  <meta name='twitter:card' content='summary_large_image' />
+                </Helmet>
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <div className='w-full'>
+                    <UsernameRequiredDialog />
+                    <main className='w-full'>
+                      <Suspense
+                        fallback={
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              minHeight: '50vh',
+                              color: '#00fed7',
+                            }}
+                          >
+                            ⏳ Lade Komponente...
+                          </div>
+                        }
+                      >
+                        <Routes>
+                          <Route path='/login' element={<LoginPage />} />
+                          <Route path='/register' element={<RegisterPage />} />
+                          <Route
+                            path='/'
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => {
+                                  if (!auth?.authStateResolved) {
+                                    return (
+                                      <div
+                                        style={{
+                                          display: 'flex',
+                                          justifyContent: 'center',
+                                          alignItems: 'center',
+                                          minHeight: '50vh',
+                                          color: '#00fed7',
+                                        }}
+                                      >
+                                        ⏳ Wird geladen...
+                                      </div>
+                                    );
+                                  }
 
-                                    if (auth?.user) {
-                                      return (
-                                        <VerifiedRoute>
-                                          <MainPage />
-                                        </VerifiedRoute>
-                                      );
-                                    } else {
-                                      return <StartPage />;
-                                    }
-                                  }}
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route
-                              path='/friends'
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) =>
-                                    auth?.user ? (
+                                  if (auth?.user) {
+                                    return (
                                       <VerifiedRoute>
-                                        <FriendsPage />
+                                        <MainPage />
                                       </VerifiedRoute>
-                                    ) : (
-                                      <Navigate to='/login' />
-                                    )
+                                    );
+                                  } else {
+                                    return <StartPage />;
                                   }
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route
-                              path='/public/:friendId'
-                              element={<PublicListPage />}
-                            />
-                            <Route
-                              path='/profile/:userId'
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) =>
-                                    auth?.user ? (
-                                      <VerifiedRoute>
-                                        <UserProfilePage />
-                                      </VerifiedRoute>
-                                    ) : (
-                                      <Navigate to='/login' />
-                                    )
-                                  }
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route path='/duckfacts' element={<DuckFacts />} />
-                            <Route
-                              path='/movies'
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) =>
-                                    auth?.user ? (
-                                      <VerifiedRoute>
-                                        <MoviePage />
-                                      </VerifiedRoute>
-                                    ) : (
-                                      <StartPage />
-                                    )
-                                  }
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route path='*' element={<Navigate to='/' />} />
-                          </Routes>
-                        </Suspense>
-                      </main>
-                    </div>
-                  </ThemeProvider>
+                                }}
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route
+                            path='/friends'
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) =>
+                                  auth?.user ? (
+                                    <VerifiedRoute>
+                                      <FriendsPage />
+                                    </VerifiedRoute>
+                                  ) : (
+                                    <Navigate to='/login' />
+                                  )
+                                }
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route
+                            path='/public/:friendId'
+                            element={<PublicListPage />}
+                          />
+                          <Route
+                            path='/profile/:userId'
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) =>
+                                  auth?.user ? (
+                                    <VerifiedRoute>
+                                      <UserProfilePage />
+                                    </VerifiedRoute>
+                                  ) : (
+                                    <Navigate to='/login' />
+                                  )
+                                }
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route path='/duckfacts' element={<DuckFacts />} />
+                          <Route path='*' element={<Navigate to='/' />} />
+                        </Routes>
+                      </Suspense>
+                    </main>
+                  </div>
+                </ThemeProvider>
               </BadgeProvider>
             </StatsProvider>
           </MovieListProvider>

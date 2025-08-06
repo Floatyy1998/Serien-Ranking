@@ -25,7 +25,6 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { Movie } from '../../interfaces/Movie';
 import '../../styles/animations.css';
-import { logMovieDeleted } from '../../utils/activityLogger';
 import { getFormattedDate } from '../../utils/date.utils';
 import { logRatingAdded } from '../../utils/minimalActivityLogger';
 import { calculateOverallRating } from '../../utils/rating';
@@ -253,15 +252,6 @@ export const MovieCard = ({
       .database()
       .ref(`${user?.uid}/filme/${currentMovie.nmr}`);
     await ref.remove();
-
-    // Activity für Badge-System loggen (ersetzt Friend-Activity)
-    if (user?.uid) {
-      await logMovieDeleted(
-        user.uid,
-        currentMovie.title || 'Unbekannter Film',
-        currentMovie.id
-      );
-    }
 
     setOpen(false);
   };
@@ -851,7 +841,7 @@ export const MovieCard = ({
             border: '1px solid rgba(255, 255, 255, 0.1)',
             overflow: 'hidden',
             boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(244, 67, 54, 0.3), 0 0 60px rgba(244, 67, 54, 0.1)',
+              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 152, 0, 0.3), 0 0 60px rgba(255, 152, 0, 0.1)',
             color: '#ffffff',
           },
         }}
@@ -859,9 +849,9 @@ export const MovieCard = ({
         <DialogTitle
           sx={{
             background:
-              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(9, 24, 21, 1) 100%)',
             backdropFilter: 'blur(15px)',
-            borderBottom: '1px solid rgba(244, 67, 54, 0.2)',
+            borderBottom: '1px solid rgba(255, 152, 0, 0.2)',
             color: '#ffffff',
             fontWeight: 600,
             fontSize: '1.25rem',
@@ -873,7 +863,7 @@ export const MovieCard = ({
         <DialogContent
           sx={{
             background:
-              'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(9, 24, 21, 1) 100%)',
             borderTop: '1px solid rgba(255,255,255,0.05)',
             color: '#ffffff',
             padding: '24px',
@@ -884,9 +874,15 @@ export const MovieCard = ({
               color: 'rgba(255,255,255,0.9)',
               fontSize: '1rem',
               textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              lineHeight: '1.5',
             }}
           >
-            {confirmDialogMessage}
+            {confirmDialogMessage ||
+              'Es gibt vorherige Episoden, die nicht als gesehen markiert sind. Möchten Sie alle vorherigen Episoden auch als gesehen markieren?'}
           </DialogContentText>
         </DialogContent>
         <DialogActions
@@ -897,7 +893,7 @@ export const MovieCard = ({
             padding: '24px',
             borderTop: '1px solid rgba(255,255,255,0.1)',
             background:
-              'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(9, 24, 21, 1) 100%)',
           }}
         >
           <Button
@@ -944,7 +940,7 @@ export const MovieCard = ({
               },
             }}
           >
-            🗑️ Löschen
+            Löschen
           </Button>
         </DialogActions>
       </Dialog>

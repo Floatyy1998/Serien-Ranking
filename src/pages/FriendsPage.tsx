@@ -321,10 +321,7 @@ export const FriendsPage: React.FC = () => {
   };
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{ px: { xs: 1, sm: 2, md: 3 }, py: { xs: 2, md: 4 } }}
-    >
+    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
       {/* Header */}
       <Box
         display='flex'
@@ -335,7 +332,9 @@ export const FriendsPage: React.FC = () => {
           top: 0,
           zIndex: 100,
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          borderRadius: 2,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '0 0 8px 8px',
           p: { xs: 1, sm: 1.5, md: 3 },
           color: 'white',
           flexDirection: { xs: 'column', md: 'row' },
