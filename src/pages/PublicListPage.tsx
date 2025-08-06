@@ -215,7 +215,7 @@ export const PublicListPage: React.FC = () => {
               if (season.episodes) {
                 Object.values(season.episodes).forEach((ep: any) => {
                   if (ep.watched) {
-                    total += (ep.watchCount || 1);
+                    total += ep.watchCount || 1;
                   }
                 });
               }
@@ -231,7 +231,8 @@ export const PublicListPage: React.FC = () => {
               if (season.episodes) {
                 Object.values(season.episodes).forEach((ep: any) => {
                   if (ep.watched) {
-                    watchedEpisodeTime += (ep.watchCount || 1) * (series.episodeRuntime || 0);
+                    watchedEpisodeTime +=
+                      (ep.watchCount || 1) * (series.episodeRuntime || 0);
                   }
                 });
               }
@@ -360,7 +361,8 @@ export const PublicListPage: React.FC = () => {
             favoriteProvider: favoriteMovieProvider,
           },
         });
-      } catch (error) {setError('Fehler beim Laden des Profils');
+      } catch (error) {
+        setError('Fehler beim Laden des Profils');
       } finally {
         setLoading(false);
       }
@@ -550,10 +552,7 @@ export const PublicListPage: React.FC = () => {
   }
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{ px: { xs: 1, sm: 2, md: 3 }, py: { xs: 2, md: 4 } }}
-    >
+    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
       {/* Header - ähnlich wie UserProfilePage aber als öffentliche Ansicht */}
       <Box
         sx={{
@@ -561,7 +560,9 @@ export const PublicListPage: React.FC = () => {
           top: 0,
           zIndex: 100,
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          borderRadius: 2,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '0 0 8px 8px',
           p: { xs: 1.5, sm: 2, md: 3 },
           color: 'white',
           mb: { xs: 2, md: 4 },
@@ -591,7 +592,11 @@ export const PublicListPage: React.FC = () => {
               variant='h5'
               component='h1'
               fontWeight='bold'
-              sx={{ fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' }, mb: { xs: 0.25, md: 0.5 }, lineHeight: 1.2 }}
+              sx={{
+                fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' },
+                mb: { xs: 0.25, md: 0.5 },
+                lineHeight: 1.2,
+              }}
             >
               🌍{' '}
               {profileData.profile.displayName || profileData.profile.username}s
@@ -617,7 +622,10 @@ export const PublicListPage: React.FC = () => {
                   fontSize: { xs: '0.75rem', md: '0.875rem' },
                   height: { xs: 14, md: 20 },
                   minHeight: { xs: 14, md: 20 },
-                  '& .MuiChip-label': { px: { xs: 0.5, md: 1 }, py: { xs: 0, md: 0.25 } },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.5, md: 1 },
+                    py: { xs: 0, md: 0.25 },
+                  },
                 }}
               />
               {profileData.profile.isOnline && (
@@ -631,7 +639,10 @@ export const PublicListPage: React.FC = () => {
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 18, md: 24 },
                     minHeight: { xs: 18, md: 24 },
-                    '& .MuiChip-label': { px: { xs: 0.5, md: 1 }, py: { xs: 0, md: 0.25 } },
+                    '& .MuiChip-label': {
+                      px: { xs: 0.5, md: 1 },
+                      py: { xs: 0, md: 0.25 },
+                    },
                   }}
                 />
               )}

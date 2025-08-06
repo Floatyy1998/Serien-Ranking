@@ -22,7 +22,6 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
-import { logSeriesDeleted } from '../../utils/activityLogger';
 import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
 import { logRatingAdded } from '../../utils/minimalActivityLogger';
 import { calculateOverallRating } from '../../utils/rating';
@@ -185,17 +184,6 @@ export const SeriesCard = ({
       .database()
       .ref(`${user?.uid}/serien/${currentSeries.nmr}`);
     await ref.remove();
-
-    // Activity für Badge-System loggen (ersetzt Friend-Activity)
-    if (user?.uid) {
-      await logSeriesDeleted(
-        user.uid,
-        currentSeries.title ||
-          currentSeries.original_name ||
-          'Unbekannte Serie',
-        currentSeries.id
-      );
-    }
 
     setOpen(false);
   };
@@ -531,7 +519,8 @@ export const SeriesCard = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
+                    transition:
+                      'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                     '&:hover': {
                       backgroundColor: 'rgba(0, 0, 0, 0.8)',
                       borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -697,7 +686,8 @@ export const SeriesCard = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
+                      transition:
+                        'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                       cursor: 'pointer',
                       '@media (min-width: 768px)': {
                         '&:hover': {
@@ -740,7 +730,8 @@ export const SeriesCard = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
+                transition:
+                  'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                 '@media (min-width: 768px)': {
                   '&:hover': {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -761,42 +752,43 @@ export const SeriesCard = ({
 
           {typeof currentSeries.nextEpisode?.episode === 'number' &&
             currentSeries.nextEpisode?.nextEpisode &&
-            new Date(currentSeries.nextEpisode.nextEpisode).getTime() >= new Date().setHours(0, 0, 0, 0) && (
-            <Box
-              className='absolute bottom-16 left-0 right-0'
-              onClick={() => setOpenEpisodes(true)}
-              sx={{
-                background:
-                  'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
-                backdropFilter: 'blur(15px)',
-                borderRadius: '0px',
-                p: 1.5,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                '@media (min-width: 768px)': {
-                  '&:hover': {
-                    background:
-                      'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)',
-                  },
-                },
-              }}
-            >
-              <Typography
-                variant='body2'
+            new Date(currentSeries.nextEpisode.nextEpisode).getTime() >=
+              new Date().setHours(0, 0, 0, 0) && (
+              <Box
+                className='absolute bottom-16 left-0 right-0'
+                onClick={() => setOpenEpisodes(true)}
                 sx={{
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  color: '#ffffff',
-                  textAlign: 'center',
-                  textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                  background:
+                    'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+                  backdropFilter: 'blur(15px)',
+                  borderRadius: '0px',
+                  p: 1.5,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '@media (min-width: 768px)': {
+                    '&:hover': {
+                      background:
+                        'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)',
+                    },
+                  },
                 }}
               >
-                S{currentSeries.nextEpisode?.season}E
-                {currentSeries.nextEpisode?.episode} • {dateString} um{' '}
-                {timeString}
-              </Typography>
-            </Box>
-          )}
+                <Typography
+                  variant='body2'
+                  sx={{
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    color: '#ffffff',
+                    textAlign: 'center',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                  }}
+                >
+                  S{currentSeries.nextEpisode?.season}E
+                  {currentSeries.nextEpisode?.episode} • {dateString} um{' '}
+                  {timeString}
+                </Typography>
+              </Box>
+            )}
           <Box
             className='absolute top-3 right-1'
             sx={{
@@ -806,7 +798,8 @@ export const SeriesCard = ({
               borderRadius: '12px',
               px: 2,
               py: 1,
-              transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
+              transition:
+                'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
               '@media (min-width: 768px)': {
                 '&:hover': {
                   backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -967,7 +960,7 @@ export const SeriesCard = ({
         <DialogTitle
           sx={{
             background:
-              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.9) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(9, 24, 21, 1) 100%)',
             backdropFilter: 'blur(15px)',
             borderBottom: '1px solid rgba(255, 152, 0, 0.2)',
             color: '#ffffff',
@@ -981,7 +974,7 @@ export const SeriesCard = ({
         <DialogContent
           sx={{
             background:
-              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.9) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(9, 24, 21, 1) 100%)',
             borderTop: '1px solid rgba(255,255,255,0.05)',
             color: '#ffffff',
             padding: '24px',
@@ -992,7 +985,11 @@ export const SeriesCard = ({
               color: 'rgba(255,255,255,0.9)',
               fontSize: '1rem',
               textAlign: 'center',
-              lineHeight: 1.5,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              lineHeight: '1.5',
             }}
           >
             {confirmDialogMessage ||
@@ -1007,7 +1004,7 @@ export const SeriesCard = ({
             padding: '24px',
             borderTop: '1px solid rgba(255,255,255,0.1)',
             background:
-              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.9) 100%)',
+              'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(9, 24, 21, 1) 100%)',
           }}
         >
           <Button
@@ -1037,24 +1034,24 @@ export const SeriesCard = ({
             variant='contained'
             autoFocus
             sx={{
-              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+              background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
               borderRadius: '12px',
               padding: '10px 20px',
               fontSize: '1rem',
               fontWeight: 600,
               textTransform: 'none',
-              boxShadow: '0 8px 32px rgba(255, 152, 0, 0.3)',
+              boxShadow: '0 8px 32px rgba(244, 67, 54, 0.3)',
               border: '1px solid rgba(255,255,255,0.1)',
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
+                background: 'linear-gradient(135deg, #d32f2f 0%, #c62828 100%)',
                 transform: 'translateY(-2px)',
-                boxShadow: '0 12px 40px rgba(255, 152, 0, 0.4)',
+                boxShadow: '0 12px 40px rgba(244, 67, 54, 0.4)',
               },
             }}
           >
-            ✅ Bestätigen
+            Löschen
           </Button>
         </DialogActions>
       </Dialog>

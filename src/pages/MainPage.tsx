@@ -289,11 +289,7 @@ export const MainPage: React.FC = () => {
   }, [user, user?.photoURL]); // Explizit user.photoURL als Dependency hinzufügen
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{ px: { xs: 1, sm: 2, md: 3 }, py: { xs: 2, md: 4 } }}
-    >
-      {/* �🚀 Offline/Cache Debug Indicator */}
+    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
       {(isOffline || isStale) && (
         <Box
           sx={{
@@ -316,6 +312,7 @@ export const MainPage: React.FC = () => {
       {/* 🚀 Hauptinhalt */}
       <>
         {/* Header */}
+
         <Box
           display='flex'
           justifyContent='space-between'
@@ -325,9 +322,11 @@ export const MainPage: React.FC = () => {
             top: 0,
             zIndex: 100,
             background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-            borderRadius: 2,
             p: { xs: 1, sm: 1.5, md: 3 },
             color: 'white',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '0 0 8px 8px',
             flexDirection: { xs: 'column', md: 'row' },
             gap: { xs: 1, md: 0 },
             minHeight: { xs: 'auto', sm: 'auto', md: '120px' },
@@ -364,8 +363,8 @@ export const MainPage: React.FC = () => {
               onClick={() => setProfileDialogOpen(true)}
               className='main-header-avatar'
               sx={{
-                width: { xs: 40, sm: 50, md: 80 },
-                height: { xs: 40, sm: 50, md: 80 },
+                width: { xs: 50, sm: 50, md: 80 },
+                height: { xs: 50, sm: 50, md: 80 },
                 cursor: 'pointer',
                 border: { xs: '2px solid #00fed7', md: '3px solid #00fed7' },
                 boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)',
@@ -879,7 +878,8 @@ export const MainPage: React.FC = () => {
         <Box
           sx={{
             height: '1px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+            background:
+              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
             mx: { xs: 2, md: 4 },
             my: { xs: 2, md: 3 },
           }}

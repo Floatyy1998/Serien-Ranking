@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useAuth } from '../App';
 import { EarnedBadge } from '../utils/badgeDefinitions';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
@@ -31,12 +37,17 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
     if (user) {
       const handleNewBadges = (badges: EarnedBadge[]) => {
         // Zusätzliche Duplikat-Filterung auf UI-Ebene
-        setNewBadges(prev => {
-          const existingBadgeIds = new Set(prev.map(b => b.id));
-          const newUniqueBadges = badges.filter(badge => !existingBadgeIds.has(badge.id));
-          
+        setNewBadges((prev) => {
+          const existingBadgeIds = new Set(prev.map((b) => b.id));
+          const newUniqueBadges = badges.filter(
+            (badge) => !existingBadgeIds.has(badge.id)
+          );
+
           if (newUniqueBadges.length > 0) {
-            console.log('🎉 New badges received:', newUniqueBadges.map(b => b.name));
+            console.log(
+              '🎉 New badges received:',
+              newUniqueBadges.map((b) => b.name)
+            );
             return [...prev, ...newUniqueBadges];
           }
           return prev;
@@ -46,15 +57,15 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
       let cleanup: (() => void) | null = null;
 
       // Dynamischer Import um zirkuläre Abhängigkeiten zu vermeiden
-      import('../utils/minimalActivityLogger').then(({ registerBadgeCallback, removeBadgeCallback }) => {
-        registerBadgeCallback(user.uid, handleNewBadges);
-        console.log('🎯 Badge callback registered for user:', user.uid);
+      import('../utils/minimalActivityLogger').then(
+        ({ registerBadgeCallback, removeBadgeCallback }) => {
+          registerBadgeCallback(user.uid, handleNewBadges);
 
-        cleanup = () => {
-          removeBadgeCallback(user.uid);
-          console.log('🎯 Badge callback removed for user:', user.uid);
-        };
-      });
+          cleanup = () => {
+            removeBadgeCallback(user.uid);
+          };
+        }
+      );
 
       // Korrekte Cleanup-Funktion
       return () => {
@@ -76,7 +87,7 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
 
   const handleCloseNotification = () => {
     setShowNotification(false);
-    
+
     // Zeige nächstes Badge nach kurzer Verzögerung
     setTimeout(() => {
       const nextIndex = currentBadgeIndex + 1;
@@ -105,13 +116,13 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
   const contextValue: BadgeContextType = {
     showBadgeOverview,
     newBadges,
-    clearNewBadges
+    clearNewBadges,
   };
 
   return (
     <BadgeContext.Provider value={contextValue}>
       {children}
-      
+
       {/* Badge Notification Popup */}
       <BadgeNotification
         badge={currentBadge}
