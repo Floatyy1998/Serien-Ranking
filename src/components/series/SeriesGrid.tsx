@@ -36,6 +36,7 @@ export const SeriesGrid = ({
   // const { updateUserActivity } = useOptimizedFriends(); // Nicht mehr benötigt - keine Friend-Activities für Episodes
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const [visibleCount, setVisibleCount] = useState(20);
+  const [startIndex, setStartIndex] = useState(0);
   const [showTodayDialog, setShowTodayDialog] = useState(false);
   const [todayEpisodes, setTodayEpisodes] = useState<TodayEpisode[]>([]);
   const [watchedDialogSeriesId, setWatchedDialogSeriesId] = useState<
@@ -105,7 +106,9 @@ export const SeriesGrid = ({
       const matchesGenre =
         selectedGenre === 'All' ||
         (selectedGenre === 'Neue Episoden' &&
-          typeof series.nextEpisode?.episode === 'number') ||
+          typeof series.nextEpisode?.episode === 'number' &&
+          series.nextEpisode?.nextEpisode &&
+          new Date(series.nextEpisode.nextEpisode).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
         (selectedGenre === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
         selectedGenre === 'Zuletzt Hinzugefügt' ||
@@ -665,27 +668,54 @@ export const SeriesGrid = ({
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
       const fullHeight = document.body.offsetHeight;
-
-      if (
-        scrollTop + windowHeight >= fullHeight - 1000 &&
-        visibleCount < (filteredSeries?.length || 0)
-      ) {
-        const cardWidth = 230;
-        const gap = 75;
-        let columns = Math.floor(window.innerWidth / (cardWidth + gap));
-        if (columns < 1) columns = 1;
-        const remainder = visibleCount % columns;
-        const itemsToAdd = remainder === 0 ? columns : columns - remainder;
-
-        setVisibleCount((prev) =>
-          Math.min(prev + itemsToAdd, filteredSeries?.length || 0)
-        );
+      
+      // Berechne Grid-Parameter
+      const cardWidth = 230;
+      const cardHeight = 444;
+      const gap = 75;
+      let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+      if (columns < 1) columns = 1;
+      
+      const rowHeight = cardHeight + gap;
+      const viewportStart = Math.max(0, scrollTop - windowHeight);
+      const viewportEnd = scrollTop + windowHeight * 2; // Buffer für smooth scrolling
+      
+      // Berechne sichtbare Reihen
+      const startRow = Math.floor(viewportStart / rowHeight);
+      const endRow = Math.ceil(viewportEnd / rowHeight);
+      
+      const newStartIndex = Math.max(0, startRow * columns);
+      const newEndIndex = Math.min(filteredSeries?.length || 0, (endRow + 1) * columns);
+      const newVisibleCount = newEndIndex - newStartIndex;
+      
+      // Virtualization: Nur bei vielen Serien aktivieren
+      if (filteredSeries?.length > 60) {
+        setStartIndex(newStartIndex);
+        setVisibleCount(Math.min(newVisibleCount, 80)); // Max 80 Cards gleichzeitig
+      } else {
+        // Bei wenigen Serien: normales infinite scroll
+        if (scrollTop + windowHeight >= fullHeight - 1000 && visibleCount < (filteredSeries?.length || 0)) {
+          const itemsToAdd = Math.min(columns, 12);
+          setVisibleCount((prev) => Math.min(prev + itemsToAdd, filteredSeries?.length || 0));
+        }
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [visibleCount, filteredSeries?.length]);
+    // Debounced scroll handler für bessere Performance
+    let ticking = false;
+    const debouncedHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', debouncedHandleScroll);
+  }, [visibleCount, startIndex, filteredSeries?.length]);
 
   // Kein Loading-State mehr - das globale Skeleton regelt das
   if (targetUserId && friendSeriesLoading) {
@@ -730,9 +760,35 @@ export const SeriesGrid = ({
       </Box>
     );
   }
+  // Berechne welche Serien gerendert werden sollen
+  const visibleSeries = filteredSeries?.length > 60 
+    ? filteredSeries.slice(startIndex, startIndex + visibleCount)
+    : filteredSeries?.slice(0, visibleCount);
+
+  // Berechne Spacer-Höhen für Virtualization
+  const cardHeight = 444;
+  const gap = 75;
+  const cardWidth = 230;
+  const columns = Math.max(1, Math.floor(window.innerWidth / (cardWidth + gap)));
+  const rowHeight = cardHeight + gap;
+  
+  const topSpacerHeight = filteredSeries?.length > 60 
+    ? Math.floor(startIndex / columns) * rowHeight 
+    : 0;
+    
+  const remainingItems = filteredSeries?.length - startIndex - visibleCount;
+  const bottomSpacerHeight = filteredSeries?.length > 60 && remainingItems > 0
+    ? Math.ceil(remainingItems / columns) * rowHeight
+    : 0;
+
   return (
     <>
       <Box sx={{ width: '100%', m: 0, p: 0 }}>
+        {/* Top Spacer für Virtualization */}
+        {topSpacerHeight > 0 && (
+          <Box sx={{ height: `${topSpacerHeight}px`, width: '100%' }} />
+        )}
+        
         <Box
           sx={{
             display: 'flex',
@@ -743,15 +799,15 @@ export const SeriesGrid = ({
             boxSizing: 'border-box',
           }}
         >
-          {filteredSeries?.slice(0, visibleCount).map((series, index) => (
+          {visibleSeries?.map((series, index) => (
             <Box
-              key={series.id || series.nmr || index}
+              key={series.id || series.nmr || (startIndex + index)}
               sx={{ width: '230px', height: '444px' }}
             >
               <SeriesCard
                 series={series}
                 genre={selectedGenre}
-                index={index + 1}
+                index={startIndex + index + 1}
                 disableRatingDialog={viewOnlyMode}
                 forceReadOnlyDialogs={viewOnlyMode}
                 disableDeleteDialog={viewOnlyMode}
@@ -759,6 +815,11 @@ export const SeriesGrid = ({
             </Box>
           ))}
         </Box>
+        
+        {/* Bottom Spacer für Virtualization */}
+        {bottomSpacerHeight > 0 && (
+          <Box sx={{ height: `${bottomSpacerHeight}px`, width: '100%' }} />
+        )}
       </Box>
       <TodayEpisodesDialog
         open={showTodayDialog}
