@@ -517,9 +517,9 @@ export const UserProfilePage: React.FC = () => {
             ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)'
             : 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
           borderRadius: 2,
-          p: { xs: 2, sm: 2.5, md: 3 },
+          p: { xs: 1.5, sm: 2, md: 3 },
           color: 'white',
-          mb: 4,
+          mb: { xs: 2, md: 4 },
           boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
           cursor: 'pointer',
           transition: 'background 0.2s',
@@ -542,17 +542,17 @@ export const UserProfilePage: React.FC = () => {
         {/* Mobile Layout */}
         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
           {/* Avatar zentriert */}
-          <Box sx={{ textAlign: 'center', mb: 2 }}>
+          <Box sx={{ textAlign: 'center', mb: 1 }}>
             <Avatar
               className='profile-header-avatar'
               src={profileData.profile.photoURL}
               sx={{
-                width: 80,
-                height: 80,
-                border: '3px solid #00fed7',
+                width: { xs: 60, sm: 70, md: 80 },
+                height: { xs: 60, sm: 70, md: 80 },
+                border: { xs: '2px solid #00fed7', md: '3px solid #00fed7' },
                 boxShadow: '0 0 15px rgba(0, 254, 215, 0.4)',
                 mx: 'auto',
-                mb: 1.5,
+                mb: 1,
               }}
             >
               {(profileData.profile.displayName || profileData.profile.username)
@@ -565,7 +565,7 @@ export const UserProfilePage: React.FC = () => {
               variant='h5'
               component='h1'
               fontWeight='bold'
-              sx={{ fontSize: '1.5rem', mb: 0.5 }}
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.375rem', md: '1.5rem' }, mb: { xs: 0.25, md: 0.5 }, lineHeight: 1.2 }}
             >
               {isOwnProfile
                 ? 'Mein Profil'
@@ -581,9 +581,10 @@ export const UserProfilePage: React.FC = () => {
             <Box
               sx={{
                 display: 'flex',
-                gap: 1,
+                gap: 0.5,
                 justifyContent: 'center',
                 flexWrap: 'wrap',
+                mt: 0.5,
               }}
             >
               {profileData.profile.isOnline && (
@@ -594,7 +595,10 @@ export const UserProfilePage: React.FC = () => {
                     backgroundColor: '#00fed7',
                     color: '#000',
                     fontWeight: 'bold',
-                    fontSize: '0.75rem',
+                    fontSize: { xs: '0.75rem', md: '0.875rem' },
+                    height: { xs: 14, md: 20 },
+                    minHeight: { xs: 14, md: 20 },
+                    '& .MuiChip-label': { px: { xs: 0.5, md: 1 }, py: { xs: 0, md: 0.25 } },
                   }}
                 />
               )}
@@ -606,7 +610,10 @@ export const UserProfilePage: React.FC = () => {
                   sx={{
                     borderColor: profileData.isFriend ? '#00fed7' : '#666',
                     color: profileData.isFriend ? '#00fed7' : '#ccc',
-                    fontSize: '0.75rem',
+                    fontSize: { xs: '0.75rem', md: '0.875rem' },
+                    height: { xs: 14, md: 20 },
+                    minHeight: { xs: 14, md: 20 },
+                    '& .MuiChip-label': { px: { xs: 0.5, md: 1 }, py: { xs: 0, md: 0.25 } },
                   }}
                 />
               )}
@@ -727,7 +734,7 @@ export const UserProfilePage: React.FC = () => {
           sx={{
             display: { xs: 'block', md: 'none' },
             textAlign: 'center',
-            mt: 2,
+            mt: 1.5,
           }}
         >
           <Button
@@ -745,11 +752,11 @@ export const UserProfilePage: React.FC = () => {
                 boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
                 transform: 'translateY(-2px)',
               },
-              fontSize: '0.875rem',
-              padding: '10px 24px',
+              fontSize: { xs: '0.75rem', md: '0.875rem' },
+              padding: { xs: '6px 16px', md: '10px 24px' },
               transition: 'all 0.3s ease',
               width: 'auto',
-              minWidth: '150px',
+              minWidth: { xs: '120px', md: '150px' },
             }}
           >
             {isOwnProfile ? 'Zurück' : 'Zu Freunden'}

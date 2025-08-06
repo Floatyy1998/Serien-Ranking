@@ -326,11 +326,11 @@ export const MainPage: React.FC = () => {
             zIndex: 100,
             background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
             borderRadius: 2,
-            p: { xs: 1.5, sm: 2, md: 3 },
+            p: { xs: 1, sm: 1.5, md: 3 },
             color: 'white',
             flexDirection: { xs: 'column', md: 'row' },
-            gap: { xs: 1.5, md: 0 },
-            minHeight: { xs: 'auto', md: '120px' },
+            gap: { xs: 1, md: 0 },
+            minHeight: { xs: 'auto', sm: 'auto', md: '120px' },
             boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
             cursor: 'pointer',
             transition: 'background 0.2s',
@@ -364,10 +364,10 @@ export const MainPage: React.FC = () => {
               onClick={() => setProfileDialogOpen(true)}
               className='main-header-avatar'
               sx={{
-                width: { xs: 50, sm: 60, md: 80 },
-                height: { xs: 50, sm: 60, md: 80 },
+                width: { xs: 40, sm: 50, md: 80 },
+                height: { xs: 40, sm: 50, md: 80 },
                 cursor: 'pointer',
-                border: '3px solid #00fed7',
+                border: { xs: '2px solid #00fed7', md: '3px solid #00fed7' },
                 boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
@@ -386,8 +386,9 @@ export const MainPage: React.FC = () => {
                 gutterBottom
                 fontWeight='bold'
                 sx={{
-                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' },
-                  mb: { xs: 0.5, md: 1 },
+                  fontSize: { xs: '1.1rem', sm: '1.25rem', md: '2.125rem' },
+                  mb: { xs: 0.25, sm: 0.5, md: 1 },
+                  lineHeight: { xs: 1.2, md: 1.2 },
                 }}
               >
                 📺 Meine Serien & Filme
@@ -397,8 +398,9 @@ export const MainPage: React.FC = () => {
                 variant='body2'
                 sx={{
                   opacity: 0.8,
-                  mt: 1,
-                  fontSize: { xs: '0.75rem', md: '0.875rem' },
+                  mt: { xs: 0.5, md: 1 },
+                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
+                  display: { xs: 'none', sm: 'block' },
                 }}
               >
                 Entdecke, bewerte und verwalte deine Lieblingsserien und -filme
@@ -407,9 +409,10 @@ export const MainPage: React.FC = () => {
                 variant='caption'
                 sx={{
                   opacity: 0.6,
-                  mt: 0.5,
-                  fontSize: { xs: '0.625rem', md: '0.75rem' },
+                  mt: { xs: 0.25, md: 0.5 },
+                  fontSize: { xs: '0.6rem', sm: '0.625rem', md: '0.75rem' },
                   fontStyle: 'italic',
+                  display: { xs: 'none', sm: 'block' },
                 }}
               >
                 💡 Klicke auf dein Profilbild für Einstellungen

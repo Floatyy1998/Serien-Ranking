@@ -98,11 +98,11 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
         alignItems='center'
         sx={{
           background: getGradientForRoute(),
-          p: { xs: 2, md: 3 },
+          p: { xs: 1, sm: 1.5, md: 3 },
           color: 'white',
           width: '100%',
           flexDirection: { xs: 'column', md: 'row' },
-          gap: { xs: 2, md: 0 },
+          gap: { xs: 1, md: 0 },
         }}
       >
         <Box
@@ -114,7 +114,7 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
           {userProfile && (
             <Avatar
               src={userProfile.photoURL}
-              sx={{ width: { xs: 60, md: 80 }, height: { xs: 60, md: 80 } }}
+              sx={{ width: { xs: 40, sm: 50, md: 80 }, height: { xs: 40, sm: 50, md: 80 }, border: { xs: '2px solid #00fed7', md: '3px solid #00fed7' }, boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)' }}
             >
               {userProfile.username?.charAt(0).toUpperCase()}
             </Avatar>
@@ -125,14 +125,14 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               component='h1'
               gutterBottom
               fontWeight='bold'
-              sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' }, lineHeight: { xs: 1.2, md: 1.2 }, mb: { xs: 0.25, sm: 0.5, md: 1 } }}
             >
               {title}
             </Typography>
             {subtitle && (
               <Typography
                 variant='h6'
-                sx={{ opacity: 0.9, fontSize: { xs: '1rem', md: '1.25rem' } }}
+                sx={{ opacity: 0.9, fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' }, display: { xs: 'none', sm: 'block' } }}
               >
                 {subtitle}
               </Typography>

@@ -336,11 +336,11 @@ export const FriendsPage: React.FC = () => {
           zIndex: 100,
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
           borderRadius: 2,
-          p: { xs: 1.5, sm: 2, md: 3 },
+          p: { xs: 1, sm: 1.5, md: 3 },
           color: 'white',
           flexDirection: { xs: 'column', md: 'row' },
-          gap: { xs: 1.5, md: 0 },
-          minHeight: { xs: 'auto', md: '120px' },
+          gap: { xs: 1, md: 0 },
+          minHeight: { xs: 'auto', sm: 'auto', md: '120px' },
           boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
           cursor: 'pointer',
           transition: 'background 0.2s',
@@ -370,8 +370,9 @@ export const FriendsPage: React.FC = () => {
             gutterBottom
             fontWeight='bold'
             sx={{
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
-              mb: { xs: 0.5, md: 1 },
+              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' },
+              mb: { xs: 0.25, sm: 0.5, md: 1 },
+              lineHeight: { xs: 1.2, md: 1.2 },
             }}
           >
             🫂 Freunde
@@ -380,8 +381,9 @@ export const FriendsPage: React.FC = () => {
             variant='body1'
             sx={{
               opacity: 0.9,
-              fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+              fontSize: { xs: '0.7rem', sm: '0.75rem', md: '1rem' },
               display: { xs: 'none', sm: 'block' },
+              mt: { xs: 0.25, md: 0.5 },
             }}
           >
             Verwalte deine Freundschaften und finde neue Freunde
