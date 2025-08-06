@@ -88,13 +88,43 @@ const WatchlistDialog = ({
     if (open) {
       setWatchlistDialogOpen(true);
       // Kleiner Delay um sicherzustellen, dass Dialog vollständig geöffnet ist
-      const timer = setTimeout(() => setDialogContentVisible(true), 50);
+      const timer = setTimeout(() => {
+        setDialogContentVisible(true);
+        // Forced Repaint: window resize event
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 30);
+        // Forced Layout-Shift: padding kurz ändern
+        const dialog = document.querySelector('.MuiDialogContent-root');
+        if (dialog) {
+          const dialogEl = dialog as HTMLElement;
+          const oldPadding = dialogEl.style.padding;
+          dialogEl.style.padding = '1.1px';
+          setTimeout(() => {
+            dialogEl.style.padding = oldPadding;
+          }, 40);
+        }
+      }, 50);
       return () => clearTimeout(timer);
     } else {
       setDialogContentVisible(false);
       setWatchlistDialogOpen(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+    .MuiDialogContent-root, .MuiDialogContent-root .MuiBox-root {
+      transform: translateZ(0) !important;
+      will-change: transform;
+    }
+  `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   useEffect(() => {
     // Wenn SeriesWatchedDialog geöffnet wird, schließe WatchlistDialog temporär
@@ -612,10 +642,15 @@ const WatchlistDialog = ({
                 'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
               backdropFilter: 'blur(10px)',
               color: '#ffffff',
+              transform: 'translateZ(0) !important',
             }}
           >
             <Box
-              sx={{ p: isMobile ? '0px 12px' : '20px 24px', minHeight: '80vh' }}
+              sx={{
+                p: isMobile ? '0px 12px' : '20px 24px',
+                minHeight: '80vh',
+                transform: 'translateZ(0) !important',
+              }}
             >
               {(!isMobile || showFilter) && (
                 <WatchlistFilter
