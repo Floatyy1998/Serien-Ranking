@@ -8,16 +8,26 @@ import { DraggableSeriesItem } from './DraggableSeriesItem';
 // Hilfsfunktion für Rewatch-Farben
 const getRewatchColor = (watchCount: number): string => {
   switch (watchCount) {
-    case 2: return '#ff9800'; // Orange
-    case 3: return '#f44336'; // Rot
-    case 4: return '#9c27b0'; // Lila
-    case 5: return '#3f51b5'; // Indigo
-    case 6: return '#2196f3'; // Blau
-    case 7: return '#00bcd4'; // Cyan
-    case 8: return '#4caf50'; // Grün
-    case 9: return '#8bc34a'; // Hellgrün
-    case 10: return '#cddc39'; // Lime
-    default: return watchCount > 10 ? '#ffc107' : '#00fed7'; // Gold für >10, sonst Standard
+    case 2:
+      return '#ff9800'; // Orange
+    case 3:
+      return '#f44336'; // Rot
+    case 4:
+      return '#9c27b0'; // Lila
+    case 5:
+      return '#3f51b5'; // Indigo
+    case 6:
+      return '#2196f3'; // Blau
+    case 7:
+      return '#00bcd4'; // Cyan
+    case 8:
+      return '#4caf50'; // Grün
+    case 9:
+      return '#8bc34a'; // Hellgrün
+    case 10:
+      return '#cddc39'; // Lime
+    default:
+      return watchCount > 10 ? '#ffc107' : '#00fed7'; // Gold für >10, sonst Standard
   }
 };
 
@@ -133,34 +143,99 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
                 </div>
               </>
             )}
-            
+
             {/* Zeige Rewatch-Info (zusätzlich oder alleine) */}
             {rewatchInfo && (
               <>
                 <div className='mt-1 text-xs text-gray-400'>
-                  <span style={{ color: getRewatchColor(rewatchInfo.targetWatchCount || 2) }}>Rewatch:</span> S{rewatchInfo.seasonNumber + 1} E
-                  {rewatchInfo.episodeIndex + 1} -{' '}
-                  {rewatchInfo.name}
+                  <span
+                    style={{
+                      color: getRewatchColor(rewatchInfo.targetWatchCount || 2),
+                    }}
+                  >
+                    Rewatch:
+                  </span>{' '}
+                  S{rewatchInfo.seasonNumber + 1} E
+                  {rewatchInfo.episodeIndex + 1} - {rewatchInfo.name}
                 </div>
-                <div className='mt-1 text-xs' style={{ color: getRewatchColor(rewatchInfo.targetWatchCount || 2) }}>
-                  Fortschritt: <span style={{ color: getRewatchColor(rewatchInfo.currentWatchCount || 1) }}>{rewatchInfo.currentWatchCount}x</span> → <span style={{ color: getRewatchColor(rewatchInfo.targetWatchCount || 2) }}>{rewatchInfo.targetWatchCount}x</span>
+                <div
+                  className='mt-1 text-xs'
+                  style={{
+                    color: getRewatchColor(rewatchInfo.targetWatchCount || 2),
+                  }}
+                >
+                  Fortschritt:{' '}
+                  <span
+                    style={{
+                      color: getRewatchColor(
+                        rewatchInfo.currentWatchCount || 1
+                      ),
+                    }}
+                  >
+                    {rewatchInfo.currentWatchCount}x
+                  </span>{' '}
+                  →{' '}
+                  <span
+                    style={{
+                      color: getRewatchColor(rewatchInfo.targetWatchCount || 2),
+                    }}
+                  >
+                    {rewatchInfo.targetWatchCount}x
+                  </span>
                 </div>
               </>
             )}
-            
+
             {/* Fallback: Nur Rewatch als nächste Episode */}
-            {nextUnwatchedEpisode && nextUnwatchedEpisode.isRewatch && !rewatchInfo && (
-              <>
-                <div className='mt-1 text-xs text-gray-400'>
-                  <span style={{ color: getRewatchColor(nextUnwatchedEpisode.targetWatchCount || 2) }}>Rewatch:</span> S{nextUnwatchedEpisode.seasonNumber + 1} E
-                  {nextUnwatchedEpisode.episodeIndex + 1} -{' '}
-                  {nextUnwatchedEpisode.name}
-                </div>
-                <div className='mt-1 text-xs' style={{ color: getRewatchColor(nextUnwatchedEpisode.targetWatchCount || 2) }}>
-                  Fortschritt: <span style={{ color: getRewatchColor(nextUnwatchedEpisode.currentWatchCount || 1) }}>{nextUnwatchedEpisode.currentWatchCount}x</span> → <span style={{ color: getRewatchColor(nextUnwatchedEpisode.targetWatchCount || 2) }}>{nextUnwatchedEpisode.targetWatchCount}x</span>
-                </div>
-              </>
-            )}
+            {nextUnwatchedEpisode &&
+              nextUnwatchedEpisode.isRewatch &&
+              !rewatchInfo && (
+                <>
+                  <div className='mt-1 text-xs text-gray-400'>
+                    <span
+                      style={{
+                        color: getRewatchColor(
+                          nextUnwatchedEpisode.targetWatchCount || 2
+                        ),
+                      }}
+                    >
+                      Rewatch:
+                    </span>{' '}
+                    S{nextUnwatchedEpisode.seasonNumber + 1} E
+                    {nextUnwatchedEpisode.episodeIndex + 1} -{' '}
+                    {nextUnwatchedEpisode.name}
+                  </div>
+                  <div
+                    className='mt-1 text-xs'
+                    style={{
+                      color: getRewatchColor(
+                        nextUnwatchedEpisode.targetWatchCount || 2
+                      ),
+                    }}
+                  >
+                    Fortschritt:{' '}
+                    <span
+                      style={{
+                        color: getRewatchColor(
+                          nextUnwatchedEpisode.currentWatchCount || 1
+                        ),
+                      }}
+                    >
+                      {nextUnwatchedEpisode.currentWatchCount}x
+                    </span>{' '}
+                    →{' '}
+                    <span
+                      style={{
+                        color: getRewatchColor(
+                          nextUnwatchedEpisode.targetWatchCount || 2
+                        ),
+                      }}
+                    >
+                      {nextUnwatchedEpisode.targetWatchCount}x
+                    </span>
+                  </div>
+                </>
+              )}
           </>
         ) : (
           <div className='mt-1 text-xs text-gray-400'>

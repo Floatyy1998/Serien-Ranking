@@ -4,7 +4,7 @@
  */
 
 // Cache Versionen
-const CACHE_VERSION = 'v2025.08.04.2236';
+const CACHE_VERSION = 'v2025.08.05.2333';
 const STATIC_CACHE = `serien-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `serien-dynamic-${CACHE_VERSION}`;
 const API_CACHE = `serien-api-${CACHE_VERSION}`;
