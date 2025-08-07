@@ -218,9 +218,20 @@ const WatchlistDialog = ({
     return (seriesList || [])
       .filter((series) => series.watchlist)
       .filter((series) => {
+        // Prüfe ob für diese Serie gerade Updates pending sind
+        const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
+          key.startsWith(`${series.id}-`)
+        );
+
         const nextEpisode = getNextUnwatchedEpisode(series);
         const hasAvailableEpisode =
           nextEpisode && new Date(nextEpisode.air_date) <= new Date();
+
+        // Wenn Updates pending sind, behalte die Serie in der Liste
+        // um Flickering zu vermeiden
+        if (hasPendingUpdates) {
+          return true;
+        }
 
         // Wenn Rewatches aktiv sind, prüfe auch auf verfügbare Rewatch-Episoden
         if (
@@ -236,7 +247,7 @@ const WatchlistDialog = ({
 
         return hasAvailableEpisode;
       });
-  }, [seriesList, hideRewatches]); // hideRewatches beeinflusst getNextUnwatchedEpisode
+  }, [seriesList, hideRewatches, pendingUpdates]); // pendingUpdates hinzugefügt für Anti-Flickering
 
   // Hauptlogik für Sortierung und benutzerdefinierte Reihenfolge
   useEffect(() => {
@@ -409,6 +420,16 @@ const WatchlistDialog = ({
     const matchesTitle = filterInput
       ? series.title.toLowerCase().includes(filterInput.toLowerCase())
       : true;
+
+    // Prüfe ob für diese Serie gerade Updates pending sind
+    const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
+      key.startsWith(`${series.id}-`)
+    );
+
+    // Wenn Updates pending sind, behalte die Serie sichtbar um Flickering zu vermeiden
+    if (hasPendingUpdates && matchesTitle) {
+      return true;
+    }
 
     // Wenn Rewatch-Button aktiv ist (hideRewatches == false):
     // Zeige NUR Serien mit aktivem Rewatch
@@ -697,11 +718,24 @@ const WatchlistDialog = ({
                     {displayedSeries.map((series, index) => {
                       const { nextEpisode, rewatchInfo } =
                         getEpisodeInfo(series);
-                      // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
-                      const priorityEpisode =
-                        !hideRewatches && rewatchInfo
-                          ? rewatchInfo
-                          : nextEpisode || rewatchInfo;
+                      
+                      // Prüfe ob für diese Serie gerade Updates pending sind
+                      const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
+                        key.startsWith(`${series.id}-`)
+                      );
+                      
+                      // Wenn Updates pending sind und nextEpisode unausgestrahlt ist, verwende null
+                      let safePriorityEpisode = null;
+                      if (!hideRewatches && rewatchInfo) {
+                        safePriorityEpisode = rewatchInfo;
+                      } else if (nextEpisode) {
+                        // Nur verwenden wenn Episode bereits ausgestrahlt ist ODER keine Updates pending
+                        if (!hasPendingUpdates || new Date(nextEpisode.air_date) <= new Date()) {
+                          safePriorityEpisode = nextEpisode;
+                        }
+                      } else if (rewatchInfo) {
+                        safePriorityEpisode = rewatchInfo;
+                      }
                       return (
                         <SeriesListItem
                           key={series.id}
@@ -709,14 +743,14 @@ const WatchlistDialog = ({
                           index={index}
                           draggable={true}
                           moveItem={moveItem}
-                          nextUnwatchedEpisode={priorityEpisode}
-                          rewatchInfo={null} // Keine separate Rewatch-Info mehr, da priorityEpisode das schon abdeckt
+                          nextUnwatchedEpisode={safePriorityEpisode}
+                          rewatchInfo={null} // Keine separate Rewatch-Info mehr, da safePriorityEpisode das schon abdeckt
                           onTitleClick={(s) => setSelectedSeries(s)}
                           onWatchedToggle={() => {
-                            if (priorityEpisode) {
+                            if (safePriorityEpisode) {
                               handleWatchedToggleWithDebounce(
                                 series,
-                                priorityEpisode
+                                safePriorityEpisode
                               );
                             }
                           }}
@@ -729,23 +763,37 @@ const WatchlistDialog = ({
                 <div>
                   {displayedSeries.map((series) => {
                     const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
-                    // Wenn hideRewatches false ist (Rewatches aktiv), prioritisiere Rewatch über neue Episoden
-                    const priorityEpisode =
-                      !hideRewatches && rewatchInfo
-                        ? rewatchInfo
-                        : nextEpisode || rewatchInfo;
+                    
+                    // Prüfe ob für diese Serie gerade Updates pending sind
+                    const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
+                      key.startsWith(`${series.id}-`)
+                    );
+                    
+                    // Wenn Updates pending sind und nextEpisode unausgestrahlt ist, verwende null
+                    let safePriorityEpisode = null;
+                    if (!hideRewatches && rewatchInfo) {
+                      safePriorityEpisode = rewatchInfo;
+                    } else if (nextEpisode) {
+                      // Nur verwenden wenn Episode bereits ausgestrahlt ist ODER keine Updates pending
+                      if (!hasPendingUpdates || new Date(nextEpisode.air_date) <= new Date()) {
+                        safePriorityEpisode = nextEpisode;
+                      }
+                    } else if (rewatchInfo) {
+                      safePriorityEpisode = rewatchInfo;
+                    }
+                    
                     return (
                       <SeriesListItem
                         key={series.id}
                         series={series}
-                        nextUnwatchedEpisode={priorityEpisode}
-                        rewatchInfo={null} // Keine separate Rewatch-Info mehr, da priorityEpisode das schon abdeckt
+                        nextUnwatchedEpisode={safePriorityEpisode}
+                        rewatchInfo={null} // Keine separate Rewatch-Info mehr, da safePriorityEpisode das schon abdeckt
                         onTitleClick={(s) => setSelectedSeries(s)}
                         onWatchedToggle={() => {
-                          if (priorityEpisode) {
+                          if (safePriorityEpisode) {
                             handleWatchedToggleWithDebounce(
                               series,
-                              priorityEpisode
+                              safePriorityEpisode
                             );
                           }
                         }}
