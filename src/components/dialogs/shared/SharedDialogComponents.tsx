@@ -1,6 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, DialogTitle, IconButton } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
+import { getUnifiedEpisodeDate } from '../../../utils/episodeDate.utils';
 
 export const DialogHeader = ({
   title,
@@ -55,20 +56,6 @@ export const TabPanel = (props: {
 
 export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
   // React 19 optimiert Funktionen automatisch - kein useMemo/useCallback nötig
-  const formatDate = (dateInput: string | Date) => {
-    try {
-      const d = new Date(dateInput);
-      // Prüfe ob das Datum valid ist
-      if (isNaN(d.getTime())) {
-        return 'Unbekanntes Datum';
-      }
-      return `${String(d.getDate()).padStart(2, '0')}.${String(
-        d.getMonth() + 1
-      ).padStart(2, '0')}.${d.getFullYear()}`;
-    } catch (error) {
-      return 'Unbekanntes Datum';
-    }
-  };
   return (
     <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
       <div className='font-medium text-[#00fed7]'>
@@ -76,7 +63,7 @@ export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
         {episode.name}
       </div>
       <div className='mt-1 text-xs text-gray-400'>
-        Erscheinungsdatum: {formatDate(episode.air_date)}
+        Erscheinungsdatum: {getUnifiedEpisodeDate(episode.air_date)}
       </div>
     </Box>
   );
