@@ -142,8 +142,48 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       const personResult = await personResponse.json();
       const creditsResult = await creditsResponse.json();
 
-      // Sortiere Credits nach Popularität und Datum
+      // Sortiere Credits nach Popularität und Datum, aber filtere Talkshows aus
       const sortedCast = (creditsResult.cast || [])
+        .filter((credit: any) => {
+          // Filtere den aktuellen Film/Serie aus (über den der Dialog geöffnet wurde)
+          if (credit.id === data.id) {
+            return false;
+          }
+
+          // Filtere Talkshows aus basierend auf Genre-IDs
+          // Genre ID 10767 = Talk, 10763 = News
+          if (credit.genre_ids && Array.isArray(credit.genre_ids)) {
+            if (
+              credit.genre_ids.includes(10767) ||
+              credit.genre_ids.includes(10763)
+            ) {
+              return false;
+            }
+          }
+
+          // Filtere auch "Self" und "Guest" Auftritte aus (deutsch und englisch)
+          if (credit.character) {
+            const character = credit.character.toLowerCase();
+            if (
+              character === 'self' ||
+              character === 'guest' ||
+              character === 'herself' ||
+              character === 'himself' ||
+              character === 'sie selbst' ||
+              character === 'er selbst' ||
+              character === 'gast' ||
+              character === 'moderator' ||
+              character.includes('guest') ||
+              character.includes('self') ||
+              character.includes('gast') ||
+              character.includes('moderator')
+            ) {
+              return false;
+            }
+          }
+
+          return true;
+        })
         .sort((a: any, b: any) => {
           // Erst nach Popularität, dann nach Datum
           if (b.popularity !== a.popularity) {
@@ -153,7 +193,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
           const dateB = b.release_date || b.first_air_date || '0000';
           return dateB.localeCompare(dateA);
         })
-        .slice(0, 12); // Begrenzen auf 12 bekannteste
+        .slice(0, 20); // Begrenzen auf 20 bekannteste
 
       setSelectedPerson(personResult);
       setPersonCredits({ cast: sortedCast, crew: creditsResult.crew || [] });
@@ -378,7 +418,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 flexDirection={{ xs: 'column', md: 'row' }}
               >
                 {data.poster_path && (
-                  <Box sx={{ flexShrink: 0 }} mt={2}>
+                  <Box sx={{ flexShrink: 0 }} mt={1.5}>
                     <Box
                       component='img'
                       src={`https://image.tmdb.org/t/p/w300${data.poster_path}`}
@@ -396,7 +436,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 )}
                 <Box flex={1}>
                   {data.overview && (
-                    <Box mb={3} mt={2}>
+                    <Box mb={2} mt={1.5}>
                       <Typography
                         variant='h4'
                         gutterBottom
@@ -409,7 +449,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       </Typography>
                     </Box>
                   )}
-                  <Box display='flex' flexDirection='column' gap={2}>
+                  <Box display='flex' flexDirection='column' gap={1.5}>
                     {data.vote_average !== undefined &&
                       data.vote_average !== null && (
                         <Box>
@@ -480,7 +520,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               </Box>
             )}
             {currentTab === 1 && (
-              <Box p={3}>
+              <Box px={2} py={3}>
                 <Typography
                   variant='h4'
                   gutterBottom
@@ -489,24 +529,24 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   Cast & Crew
                 </Typography>
                 {castLoading ? (
-                  <Box textAlign='center' py={4}>
+                  <Box textAlign='center' py={3}>
                     <CircularProgress sx={{ color: '#00fed7', mb: 2 }} />
                     <Typography variant='body1'>Lade Cast-Daten...</Typography>
                   </Box>
                 ) : (
                   <Box
                     display='grid'
-                    gap={3}
-                    gridTemplateColumns='repeat(auto-fill, minmax(200px, 1fr))'
+                    gap={2}
+                    gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
                   >
-                    {castData.slice(0, 12).map((actor: any) => (
+                    {castData.slice(0, 20).map((actor: any) => (
                       <Box
                         key={actor.id}
                         onClick={() => handlePersonClick(actor)}
                         sx={{
                           background: 'rgba(255,255,255,0.05)',
                           borderRadius: 2,
-                          p: 2,
+                          p: 1.5,
                           textAlign: 'center',
                           backdropFilter: 'blur(10px)',
                           border: '1px solid rgba(255,255,255,0.1)',
@@ -544,7 +584,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           variant='body2'
                           sx={{ color: '#00fed7', fontStyle: 'italic' }}
                         >
-                          {actor.character}
+                          {actor.character?.replace(/\(voice\)/gi, '(Stimme)')}
                         </Typography>
                       </Box>
                     ))}
@@ -553,7 +593,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               </Box>
             )}
             {currentTab === 2 && (
-              <Box p={3}>
+              <Box px={2} py={3}>
                 <Typography
                   variant='h4'
                   gutterBottom
@@ -562,18 +602,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   Videos & Trailer
                 </Typography>
                 {videosLoading ? (
-                  <Box textAlign='center' py={4}>
+                  <Box textAlign='center' py={3}>
                     <CircularProgress sx={{ color: '#00fed7', mb: 2 }} />
                     <Typography variant='body1'>Lade Videos...</Typography>
                   </Box>
                 ) : videosData.length > 0 ? (
                   <Box
                     display='grid'
-                    gap={3}
+                    gap={2}
                     sx={{
                       gridTemplateColumns: {
                         xs: '1fr',
-                        md: 'repeat(auto-fit, minmax(350px, 1fr))',
+                        md: 'repeat(auto-fit, minmax(320px, 1fr))',
                       },
                     }}
                   >
@@ -631,7 +671,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             }}
                           />
                         </Box>
-                        <Box p={2}>
+                        <Box p={1.5}>
                           <Typography
                             variant='subtitle1'
                             sx={{ fontWeight: 'bold', color: '#ffffff', mb: 1 }}
@@ -691,8 +731,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
           </DialogContent>
           <DialogActions
             sx={{
-              p: 3,
-              gap: 2,
+              p: 2,
+              gap: 1.5,
               background:
                 'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
               backdropFilter: 'blur(10px)',
@@ -818,7 +858,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             </DialogTitle>
             <DialogContent
               sx={{
-                p: 3,
+                p: 2,
+                pt: 3,
                 background:
                   'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
                 backdropFilter: 'blur(10px)',
@@ -831,7 +872,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 flexDirection={{ xs: 'column', md: 'row' }}
               >
                 {selectedPerson.profile_path && (
-                  <Box sx={{ flexShrink: 0 }}>
+                  <Box sx={{ flexShrink: 0 }} pt={3}>
                     <Box
                       component='img'
                       src={`https://image.tmdb.org/t/p/w300${selectedPerson.profile_path}`}
@@ -840,20 +881,28 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         width: { xs: '200px', md: '250px' },
                         height: 'auto',
                         borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        boxShadow:
+                          '0 10px 30px rgba(0,0,0,0.5), 0 5px 15px rgba(0,254,215,0.2)',
                         mx: { xs: 'auto', md: 0 },
                         display: 'block',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        transformOrigin: 'center',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                          boxShadow:
+                            '0 15px 40px rgba(0,0,0,0.6), 0 10px 25px rgba(0,254,215,0.3)',
+                        },
                       }}
                     />
                   </Box>
                 )}
                 <Box flex={1}>
                   {selectedPerson.biography && (
-                    <Box mb={3}>
+                    <Box my={3}>
                       <Typography
-                        variant='h5'
+                        variant='h4'
                         gutterBottom
-                        sx={{ color: '#00fed7' }}
+                        sx={{ color: '#00fed7', mb: 3 }}
                       >
                         Biographie
                       </Typography>
@@ -862,7 +911,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       </Typography>
                     </Box>
                   )}
-                  <Box display='flex' flexDirection='column' gap={2}>
+                  <Box display='flex' flexDirection='column' gap={2} mb={3}>
                     {selectedPerson.birthday && (
                       <Box>
                         <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
@@ -895,7 +944,31 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           Bekannt für
                         </Typography>
                         <Typography variant='body1'>
-                          {selectedPerson.known_for_department}
+                          {selectedPerson.known_for_department === 'Acting'
+                            ? 'Schauspielerei'
+                            : selectedPerson.known_for_department ===
+                              'Directing'
+                            ? 'Regie'
+                            : selectedPerson.known_for_department === 'Writing'
+                            ? 'Drehbuch'
+                            : selectedPerson.known_for_department ===
+                              'Production'
+                            ? 'Produktion'
+                            : selectedPerson.known_for_department === 'Sound'
+                            ? 'Ton'
+                            : selectedPerson.known_for_department === 'Camera'
+                            ? 'Kamera'
+                            : selectedPerson.known_for_department === 'Editing'
+                            ? 'Schnitt'
+                            : selectedPerson.known_for_department === 'Art'
+                            ? 'Kunst'
+                            : selectedPerson.known_for_department ===
+                              'Costume & Make-Up'
+                            ? 'Kostüm & Make-Up'
+                            : selectedPerson.known_for_department ===
+                              'Visual Effects'
+                            ? 'Visuelle Effekte'
+                            : selectedPerson.known_for_department}
                         </Typography>
                       </Box>
                     )}
@@ -914,16 +987,16 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               </Box>
 
               {/* Filmographie Sektion */}
-              <Box p={3} pt={0}>
+              <Box px={3} py={3} pt={2}>
                 <Typography
-                  variant='h5'
+                  variant='h4'
                   gutterBottom
-                  sx={{ color: '#00fed7', mb: 3 }}
+                  sx={{ color: '#00fed7', mb: 1.5 }}
                 >
                   Bekannte Filme & Serien
                 </Typography>
                 {creditsLoading ? (
-                  <Box textAlign='center' py={2}>
+                  <Box textAlign='center' py={1.5}>
                     <CircularProgress
                       size={24}
                       sx={{ color: '#00fed7', mb: 1 }}
@@ -938,7 +1011,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 1.5,
-                      maxHeight: '400px',
+                      maxHeight: '350px',
                       overflowY: 'auto',
                       pr: 1,
                       '&::-webkit-scrollbar': {
@@ -966,7 +1039,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           background:
                             'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
                           borderRadius: 2,
-                          p: 2,
+                          p: 1.5,
                           backdropFilter: 'blur(10px)',
                           border: '1px solid rgba(255,255,255,0.1)',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1078,7 +1151,11 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               overflow: 'hidden',
                             }}
                           >
-                            als {credit.character}
+                            als{' '}
+                            {credit.character?.replace(
+                              /\(voice\)/gi,
+                              '(Stimme)'
+                            )}
                           </Typography>
 
                           <Box

@@ -6,7 +6,7 @@ declare const self: any;
  */
 
 // Cache Versionen
-const CACHE_VERSION = 'v2025.08.06.1846';
+const CACHE_VERSION = 'v2025.08.07.1239';
 const STATIC_CACHE = `serien-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `serien-dynamic-${CACHE_VERSION}`;
 const FIREBASE_CACHE = `serien-firebase-${CACHE_VERSION}`;
