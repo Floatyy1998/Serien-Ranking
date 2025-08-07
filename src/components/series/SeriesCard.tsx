@@ -22,7 +22,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { Series } from '../../interfaces/Series';
 import '../../styles/animations.css';
-import { getFormattedDate, getFormattedTime } from '../../utils/date.utils';
+import { getUnifiedEpisodeDateTime } from '../../utils/episodeDate.utils';
 import { logRatingAdded } from '../../utils/minimalActivityLogger';
 import { calculateOverallRating } from '../../utils/rating';
 import ThreeDotMenu, {
@@ -129,32 +129,15 @@ export const SeriesCard = ({
     : [];
   const rating = calculateOverallRating(currentSeries);
 
-  // Nur berechnen wenn nextEpisode vorhanden ist
-  let nextEpisodeDate: Date | null = null;
+  // Einheitliche Episode-Datum Formatierung
   let dateString = '';
   let timeString = '';
 
   if (currentSeries.nextEpisode?.nextEpisode) {
-    nextEpisodeDate = new Date(currentSeries.nextEpisode.nextEpisode);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    dateString = getFormattedDate(series.nextEpisode.nextEpisode);
-
-    if (
-      nextEpisodeDate.getDate() === today.getDate() &&
-      nextEpisodeDate.getMonth() === today.getMonth() &&
-      nextEpisodeDate.getFullYear() === today.getFullYear()
-    ) {
-      dateString = 'Heute';
-    } else if (
-      nextEpisodeDate.getDate() === tomorrow.getDate() &&
-      nextEpisodeDate.getMonth() === tomorrow.getMonth() &&
-      nextEpisodeDate.getFullYear() === tomorrow.getFullYear()
-    ) {
-      dateString = 'Morgen';
-    }
-    timeString = getFormattedTime(series.nextEpisode.nextEpisode);
+    const { dateString: unifiedDate, timeString: unifiedTime } =
+      getUnifiedEpisodeDateTime(currentSeries.nextEpisode.nextEpisode);
+    dateString = unifiedDate;
+    timeString = unifiedTime;
   }
   const [open, setOpen] = useState(false);
   const [ratings, setRatings] = useState<{ [key: string]: number | string }>(

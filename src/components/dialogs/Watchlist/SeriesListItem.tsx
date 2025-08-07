@@ -2,7 +2,7 @@ import { Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { Check } from 'lucide-react';
 import React from 'react';
 import { Series } from '../../../interfaces/Series';
-import { getFormattedDate } from '../../../utils/date.utils';
+import { getUnifiedEpisodeDate } from '../../../utils/episodeDate.utils';
 import { DraggableSeriesItem } from './DraggableSeriesItem';
 
 // Hilfsfunktion für Rewatch-Farben
@@ -139,7 +139,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
                 </div>
                 <div className='mt-1 text-xs text-gray-400'>
                   Erscheinungsdatum:{' '}
-                  {getFormattedDate(nextUnwatchedEpisode.air_date)}
+                  {getUnifiedEpisodeDate(nextUnwatchedEpisode.air_date)}
                 </div>
               </>
             )}

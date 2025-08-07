@@ -17,7 +17,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../interfaces/Series';
-import { getFormattedDate } from '../../utils/date.utils';
+import { getUnifiedEpisodeDate } from '../../utils/episodeDate.utils';
 import RewatchDialog from './RewatchDialog';
 import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
 
@@ -445,7 +445,7 @@ const SeriesWatchedDialog = ({
                           {episode.name}
                         </span>
                         <span className='text-sm text-gray-500'>
-                          {getFormattedDate(episode.air_date)}
+                          {getUnifiedEpisodeDate(episode.air_date)}
                         </span>
                       </div>
                       <div
