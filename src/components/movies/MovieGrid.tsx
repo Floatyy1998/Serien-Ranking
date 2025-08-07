@@ -149,15 +149,15 @@ export const MovieGrid = ({
     const newEndIndex = Math.min(currentMovies?.length || 0, (endRow + 1) * columns);
     const newVisibleCount = newEndIndex - newStartIndex;
     
-    // Virtualization: Nur bei vielen Filmen aktivieren
-    if (currentMovies?.length > 60) {
+    // Virtualization: Aktiviere bei mehr als 40 Filmen für bessere Performance
+    if (currentMovies?.length > 40) {
       setStartIndex(newStartIndex);
-      setVisibleCount(Math.min(newVisibleCount, 80)); // Max 80 Cards gleichzeitig
+      setVisibleCount(Math.min(newVisibleCount, 60)); // Max 60 Cards gleichzeitig (reduziert von 80)
     } else {
-      // Bei wenigen Filmen: normales infinite scroll
-      if (scrollTop + windowHeight >= fullHeight - 1000 && visibleCount < (currentMovies?.length || 0)) {
-        const itemsToAdd = Math.min(columns, 12);
-        setVisibleCount((prev) => Math.min(prev + itemsToAdd, currentMovies?.length || 0));
+      // Bei wenigen Filmen: normales infinite scroll, aber limitiert auf 40 max
+      if (scrollTop + windowHeight >= fullHeight - 1000 && visibleCount < Math.min(40, currentMovies?.length || 0)) {
+        const itemsToAdd = Math.min(columns, 8); // Reduziert von 12 auf 8
+        setVisibleCount((prev) => Math.min(prev + itemsToAdd, 40, currentMovies?.length || 0));
       }
     }
   }, [visibleCount, startIndex, filteredMovies, movieList]);
@@ -239,7 +239,8 @@ export const MovieGrid = ({
         const columns = Math.max(1, Math.floor(window.innerWidth / (cardWidth + gap)));
         const rowHeight = cardHeight + gap;
         
-        const topSpacerHeight = currentMovies?.length > 60 
+        const shouldVirtualize = currentMovies?.length > 40;
+        const topSpacerHeight = shouldVirtualize
           ? Math.floor(startIndex / columns) * rowHeight 
           : 0;
           
@@ -261,9 +262,10 @@ export const MovieGrid = ({
         {(() => {
           // Berechne welche Filme gerendert werden sollen
           const currentMovies = filteredMovies?.length > 0 ? filteredMovies : movieList || [];
-          const visibleMovies = currentMovies?.length > 60 
+          const shouldVirtualize = currentMovies?.length > 40;
+          const visibleMovies = shouldVirtualize
             ? currentMovies.slice(startIndex, startIndex + visibleCount)
-            : currentMovies?.slice(0, visibleCount);
+            : currentMovies?.slice(0, Math.min(visibleCount, 40)); // Max 40 Movies ohne Virtualizierung
 
           return visibleMovies?.map((movie: any, index: number) => (
             <Box key={movie.id || movie.nmr || (startIndex + index)} sx={{ width: '230px', height: '444px' }}>
@@ -289,8 +291,9 @@ export const MovieGrid = ({
         const columns = Math.max(1, Math.floor(window.innerWidth / (cardWidth + gap)));
         const rowHeight = cardHeight + gap;
         
+        const shouldVirtualize = currentMovies?.length > 40;
         const remainingItems = currentMovies?.length - startIndex - visibleCount;
-        const bottomSpacerHeight = currentMovies?.length > 60 && remainingItems > 0
+        const bottomSpacerHeight = shouldVirtualize && remainingItems > 0
           ? Math.ceil(remainingItems / columns) * rowHeight
           : 0;
           

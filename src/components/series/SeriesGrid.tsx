@@ -688,15 +688,15 @@ export const SeriesGrid = ({
       const newEndIndex = Math.min(filteredSeries?.length || 0, (endRow + 1) * columns);
       const newVisibleCount = newEndIndex - newStartIndex;
       
-      // Virtualization: Nur bei vielen Serien aktivieren
-      if (filteredSeries?.length > 60) {
+      // Virtualization: Aktiviere bei mehr als 40 Serien für bessere Performance
+      if (filteredSeries?.length > 40) {
         setStartIndex(newStartIndex);
-        setVisibleCount(Math.min(newVisibleCount, 80)); // Max 80 Cards gleichzeitig
+        setVisibleCount(Math.min(newVisibleCount, 60)); // Max 60 Cards gleichzeitig (reduziert von 80)
       } else {
-        // Bei wenigen Serien: normales infinite scroll
-        if (scrollTop + windowHeight >= fullHeight - 1000 && visibleCount < (filteredSeries?.length || 0)) {
-          const itemsToAdd = Math.min(columns, 12);
-          setVisibleCount((prev) => Math.min(prev + itemsToAdd, filteredSeries?.length || 0));
+        // Bei wenigen Serien: normales infinite scroll, aber limitiert auf 40 max
+        if (scrollTop + windowHeight >= fullHeight - 1000 && visibleCount < Math.min(40, filteredSeries?.length || 0)) {
+          const itemsToAdd = Math.min(columns, 8); // Reduziert von 12 auf 8
+          setVisibleCount((prev) => Math.min(prev + itemsToAdd, 40, filteredSeries?.length || 0));
         }
       }
     };
@@ -761,9 +761,11 @@ export const SeriesGrid = ({
     );
   }
   // Berechne welche Serien gerendert werden sollen
-  const visibleSeries = filteredSeries?.length > 60 
+  // Aktiviere Virtualisierung bei mehr als 40 Serien (war 60, jetzt niedriger für bessere Performance)
+  const shouldVirtualize = filteredSeries?.length > 40;
+  const visibleSeries = shouldVirtualize
     ? filteredSeries.slice(startIndex, startIndex + visibleCount)
-    : filteredSeries?.slice(0, visibleCount);
+    : filteredSeries?.slice(0, Math.min(visibleCount, 40)); // Max 40 Cards ohne Virtualizierung
 
   // Berechne Spacer-Höhen für Virtualization
   const cardHeight = 444;
@@ -772,12 +774,12 @@ export const SeriesGrid = ({
   const columns = Math.max(1, Math.floor(window.innerWidth / (cardWidth + gap)));
   const rowHeight = cardHeight + gap;
   
-  const topSpacerHeight = filteredSeries?.length > 60 
+  const topSpacerHeight = shouldVirtualize
     ? Math.floor(startIndex / columns) * rowHeight 
     : 0;
     
   const remainingItems = filteredSeries?.length - startIndex - visibleCount;
-  const bottomSpacerHeight = filteredSeries?.length > 60 && remainingItems > 0
+  const bottomSpacerHeight = shouldVirtualize && remainingItems > 0
     ? Math.ceil(remainingItems / columns) * rowHeight
     : 0;
 
