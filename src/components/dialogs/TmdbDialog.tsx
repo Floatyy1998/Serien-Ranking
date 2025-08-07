@@ -827,7 +827,6 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 color: '#ffffff',
                 fontWeight: 600,
                 fontSize: '1.25rem',
-                mb: 2,
               }}
             >
               <Typography
@@ -859,8 +858,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             </DialogTitle>
             <DialogContent
               sx={{
-                p: 2,
-                pt: 3,
+                px: 2,
+                pt: '24px !important',
                 background:
                   'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
                 backdropFilter: 'blur(10px)',
@@ -899,7 +898,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 )}
                 <Box flex={1}>
                   {selectedPerson.biography && (
-                    <Box mt={3}>
+                    <Box>
                       <Typography
                         variant='h4'
                         gutterBottom
