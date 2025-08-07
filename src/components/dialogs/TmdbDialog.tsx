@@ -827,6 +827,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 color: '#ffffff',
                 fontWeight: 600,
                 fontSize: '1.25rem',
+                mb: 2,
               }}
             >
               <Typography
@@ -872,7 +873,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 flexDirection={{ xs: 'column', md: 'row' }}
               >
                 {selectedPerson.profile_path && (
-                  <Box sx={{ flexShrink: 0 }} pt={3}>
+                  <Box sx={{ flexShrink: 0 }}>
                     <Box
                       component='img'
                       src={`https://image.tmdb.org/t/p/w300${selectedPerson.profile_path}`}
@@ -898,7 +899,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 )}
                 <Box flex={1}>
                   {selectedPerson.biography && (
-                    <Box my={3}>
+                    <Box mt={3}>
                       <Typography
                         variant='h4'
                         gutterBottom
