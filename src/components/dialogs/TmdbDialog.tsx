@@ -53,6 +53,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   // Tab State
   const [currentTab, setCurrentTab] = useState(0);
   const [castData, setCastData] = useState<any[]>([]);
+  const [crewData, setCrewData] = useState<any[]>([]);
   const [castLoading, setCastLoading] = useState(false);
   const [videosData, setVideosData] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(false);
@@ -88,9 +89,11 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       const response = await fetch(url);
       const result = await response.json();
       setCastData(result.cast || []);
+      setCrewData(result.crew || []);
     } catch (error) {
       console.error('Error fetching cast data:', error);
       setCastData([]);
+      setCrewData([]);
     } finally {
       setCastLoading(false);
     }
@@ -123,7 +126,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     }
   };
 
-  const fetchPersonData = async (personId: number) => {
+  const fetchPersonData = async (personId: number, isCrewMember: boolean = false) => {
     try {
       setPersonLoading(true);
       setCreditsLoading(true);
@@ -195,8 +198,35 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         })
         .slice(0, 20); // Begrenzen auf 20 bekannteste
 
+      // Sortiere Crew Credits nach Popularität und filtere
+      const sortedCrew = (creditsResult.crew || [])
+        .filter((credit: any) => {
+          // Filtere den aktuellen Film/Serie aus
+          if (credit.id === data.id) {
+            return false;
+          }
+          return true;
+        })
+        .sort((a: any, b: any) => {
+          // Erst nach Popularität, dann nach Datum
+          if (b.popularity !== a.popularity) {
+            return (b.popularity || 0) - (a.popularity || 0);
+          }
+          const dateA = a.release_date || a.first_air_date || '0000';
+          const dateB = b.release_date || b.first_air_date || '0000';
+          return dateB.localeCompare(dateA);
+        })
+        .slice(0, 20);
+
       setSelectedPerson(personResult);
-      setPersonCredits({ cast: sortedCast, crew: creditsResult.crew || [] });
+      // Zeige nur relevante Credits basierend auf Click-Kontext
+      if (isCrewMember) {
+        // Bei Crew-Mitgliedern: Nur Crew Credits anzeigen
+        setPersonCredits({ crew: sortedCrew, cast: [] });
+      } else {
+        // Bei Cast-Mitgliedern: Nur Cast Credits anzeigen
+        setPersonCredits({ cast: sortedCast, crew: [] });
+      }
       setPersonDialogOpen(true);
     } catch (error) {
       console.error('Error fetching person data:', error);
@@ -206,8 +236,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     }
   };
 
-  const handlePersonClick = (actor: any) => {
-    fetchPersonData(actor.id);
+  const handlePersonClick = (person: any, isCrewMember: boolean = false) => {
+    fetchPersonData(person.id, isCrewMember);
   };
 
   // Prüfe ob Titel bereits in Liste ist
@@ -534,60 +564,206 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     <Typography variant='body1'>Lade Cast-Daten...</Typography>
                   </Box>
                 ) : (
-                  <Box
-                    display='grid'
-                    gap={2}
-                    gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
-                  >
-                    {castData.slice(0, 20).map((actor: any) => (
-                      <Box
-                        key={actor.id}
-                        onClick={() => handlePersonClick(actor)}
-                        sx={{
-                          background: 'rgba(255,255,255,0.05)',
-                          borderRadius: 2,
-                          p: 1.5,
-                          textAlign: 'center',
-                          backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          transition: 'all 0.3s ease',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            background: 'rgba(255,255,255,0.1)',
-                            transform: 'translateY(-5px)',
-                            borderColor: '#00fed7',
-                          },
-                        }}
-                      >
-                        <Avatar
-                          src={
-                            actor.profile_path
-                              ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
-                              : undefined
-                          }
-                          alt={actor.name}
-                          sx={{
-                            width: 80,
-                            height: 80,
-                            mx: 'auto',
-                            mb: 2,
-                            border: '2px solid #00fed7',
-                          }}
-                        />
+                  <Box sx={{ maxHeight: '600px', overflowY: 'auto', pr: 1 }}>
+                    {/* Cast Sektion */}
+                    {castData.filter((actor: any) => actor.profile_path).length > 0 && (
+                      <Box mb={4}>
                         <Typography
-                          variant='subtitle1'
-                          sx={{ fontWeight: 'bold', color: '#ffffff', mb: 1 }}
+                          variant='h5'
+                          sx={{ color: '#ffd700', mb: 2, fontWeight: 'bold' }}
                         >
-                          {actor.name}
+                          🎭 Schauspieler ({castData.filter((actor: any) => actor.profile_path).length})
                         </Typography>
-                        <Typography
-                          variant='body2'
-                          sx={{ color: '#00fed7', fontStyle: 'italic' }}
+                        <Box
+                          display='grid'
+                          gap={2}
+                          gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
                         >
-                          {actor.character?.replace(/\(voice\)/gi, '(Stimme)')}
-                        </Typography>
+                          {castData.filter((actor: any) => actor.profile_path).map((actor: any) => (
+                            <Box
+                              key={`cast-${actor.id}-${actor.credit_id}`}
+                              onClick={() => handlePersonClick(actor, false)}
+                              sx={{
+                                background: 'rgba(255,255,255,0.05)',
+                                borderRadius: 2,
+                                p: 1.5,
+                                textAlign: 'center',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  background: 'rgba(255,255,255,0.1)',
+                                  transform: 'translateY(-5px)',
+                                  borderColor: '#00fed7',
+                                },
+                              }}
+                            >
+                              <Avatar
+                                src={
+                                  actor.profile_path
+                                    ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
+                                    : undefined
+                                }
+                                alt={actor.name}
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  mx: 'auto',
+                                  mb: 2,
+                                  border: '2px solid #00fed7',
+                                }}
+                              />
+                              <Typography
+                                variant='subtitle1'
+                                sx={{ fontWeight: 'bold', color: '#ffffff', mb: 1 }}
+                              >
+                                {actor.name}
+                              </Typography>
+                              <Typography
+                                variant='body2'
+                                sx={{ color: '#00fed7', fontStyle: 'italic' }}
+                              >
+                                {actor.character?.replace(/\(voice\)/gi, '(Stimme)')}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
                       </Box>
-                    ))}
+                    )}
+
+                    {/* Crew Sektion */}
+                    {crewData.filter((person: any) => person.profile_path).length > 0 && (
+                      <Box>
+                        <Typography
+                          variant='h5'
+                          sx={{ color: '#ffd700', mb: 2, fontWeight: 'bold' }}
+                        >
+                          🎬 Crew ({crewData.filter((person: any) => person.profile_path).length})
+                        </Typography>
+                        <Box
+                          display='grid'
+                          gap={2}
+                          gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
+                        >
+                          {crewData
+                            .filter((person: any) => person.profile_path)
+                            .sort((a: any, b: any) => {
+                              // Definiere Wichtigkeits-Ranking (niedrigere Zahl = wichtiger)
+                              const getJobPriority = (job: string) => {
+                                switch (job) {
+                                  case 'Director': return 1;
+                                  case 'Producer': return 2;
+                                  case 'Executive Producer': return 3;
+                                  case 'Co-Executive Producer': return 4;
+                                  case 'Writer': return 5;
+                                  case 'Screenplay': return 6;
+                                  case 'Story': return 7;
+                                  case 'Novel': return 8;
+                                  case 'Director of Photography': return 9;
+                                  case 'Editor': return 10;
+                                  case 'Original Music Composer': return 11;
+                                  case 'Music': return 12;
+                                  case 'Production Designer': return 13;
+                                  case 'Production Design': return 14;
+                                  case 'Production Manager': return 15;
+                                  case 'Casting': return 16;
+                                  case 'Camera Operator': return 17;
+                                  case 'Additional Music': return 18;
+                                  case 'Assistant Editor': return 19;
+                                  case 'Costume Design': return 20;
+                                  case 'Makeup Artist': return 21;
+                                  case 'Sound': return 22;
+                                  case 'Visual Effects Supervisor': return 23;
+                                  case 'Stunt Coordinator': return 24;
+                                  case 'Stunt Double': return 25;
+                                  case 'Stand In': return 26;
+                                  case 'Post Production Consulting': return 27;
+                                  default: return 99; // Unbekannte Jobs am Ende
+                                }
+                              };
+                              
+                              return getJobPriority(a.job) - getJobPriority(b.job);
+                            })
+                            .map((person: any) => (
+                            <Box
+                              key={`crew-${person.id}-${person.credit_id}`}
+                              onClick={() => handlePersonClick(person, true)}
+                              sx={{
+                                background: 'rgba(255,165,0,0.05)',
+                                borderRadius: 2,
+                                p: 1.5,
+                                textAlign: 'center',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255,165,0,0.2)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  background: 'rgba(255,165,0,0.1)',
+                                  transform: 'translateY(-5px)',
+                                  borderColor: '#ffa500',
+                                },
+                              }}
+                            >
+                              <Avatar
+                                src={
+                                  person.profile_path
+                                    ? `https://image.tmdb.org/t/p/w200${person.profile_path}`
+                                    : undefined
+                                }
+                                alt={person.name}
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  mx: 'auto',
+                                  mb: 2,
+                                  border: '2px solid #ffa500',
+                                }}
+                              />
+                              <Typography
+                                variant='subtitle1'
+                                sx={{ fontWeight: 'bold', color: '#ffffff', mb: 1 }}
+                              >
+                                {person.name}
+                              </Typography>
+                              <Typography
+                                variant='body2'
+                                sx={{ color: '#ffa500', fontStyle: 'italic' }}
+                              >
+                                {person.job === 'Director' ? 'Regisseur' :
+                                 person.job === 'Producer' ? 'Produzent' :
+                                 person.job === 'Executive Producer' ? 'Ausführender Produzent' :
+                                 person.job === 'Co-Executive Producer' ? 'Co-Ausführender Produzent' :
+                                 person.job === 'Production Manager' ? 'Produktionsleiter' :
+                                 person.job === 'Writer' ? 'Drehbuchautor' :
+                                 person.job === 'Screenplay' ? 'Drehbuch' :
+                                 person.job === 'Story' ? 'Geschichte' :
+                                 person.job === 'Novel' ? 'Roman/Buchvorlage' :
+                                 person.job === 'Director of Photography' ? 'Kameramann' :
+                                 person.job === 'Camera Operator' ? 'Kameraoperateur' :
+                                 person.job === 'Editor' ? 'Cutter' :
+                                 person.job === 'Assistant Editor' ? 'Schnittassistent' :
+                                 person.job === 'Music' ? 'Musik' :
+                                 person.job === 'Original Music Composer' ? 'Filmmusik-Komponist' :
+                                 person.job === 'Additional Music' ? 'Zusätzliche Musik' :
+                                 person.job === 'Sound' ? 'Ton' :
+                                 person.job === 'Production Designer' ? 'Produktionsdesigner' :
+                                 person.job === 'Production Design' ? 'Produktionsdesign' :
+                                 person.job === 'Costume Design' ? 'Kostümdesign' :
+                                 person.job === 'Makeup Artist' ? 'Maskenbildner' :
+                                 person.job === 'Casting' ? 'Casting' :
+                                 person.job === 'Stunt Coordinator' ? 'Stunt-Koordinator' :
+                                 person.job === 'Stunt Double' ? 'Stunt-Double' :
+                                 person.job === 'Stand In' ? 'Stand-In' :
+                                 person.job === 'Visual Effects Supervisor' ? 'VFX Supervisor' :
+                                 person.job === 'Post Production Consulting' ? 'Postproduktions-Beratung' :
+                                 person.job}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
                 )}
               </Box>
@@ -1005,7 +1181,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       Lade Filmographie...
                     </Typography>
                   </Box>
-                ) : personCredits.cast.length > 0 ? (
+                ) : personCredits.cast.length > 0 || personCredits.crew.length > 0 ? (
                   <Box
                     sx={{
                       display: 'flex',
@@ -1030,9 +1206,578 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       },
                     }}
                   >
-                    {personCredits.cast.map((credit: any) => (
+                    {/* Crew Credits - zeige zuerst wenn auf Crew geklickt */}
+                    {Object.keys(personCredits)[0] === 'crew' && personCredits.crew.map((credit: any) => (
+                          <Box
+                            key={`crew-first-${credit.id}-${credit.credit_id}`}
+                            sx={{
+                              display: 'flex',
+                              gap: 2,
+                              background:
+                                'linear-gradient(135deg, rgba(255,165,0,0.08) 0%, rgba(255,165,0,0.02) 100%)',
+                              borderRadius: 2,
+                              p: 1.5,
+                              backdropFilter: 'blur(10px)',
+                              border: '1px solid rgba(255,165,0,0.2)',
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                background:
+                                  'linear-gradient(135deg, rgba(255,165,0,0.15) 0%, rgba(255,165,0,0.05) 100%)',
+                                borderColor: 'rgba(255,165,0,0.4)',
+                                transform: 'translateX(8px)',
+                                boxShadow: '0 8px 32px rgba(255,165,0,0.2)',
+                              },
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                position: 'relative',
+                                flexShrink: 0,
+                                width: 60,
+                                height: 90,
+                                borderRadius: 1.5,
+                                overflow: 'hidden',
+                                background:
+                                  'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                              }}
+                            >
+                              {credit.poster_path ? (
+                                <Box
+                                  component='img'
+                                  src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
+                                  alt={credit.title || credit.name}
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transition: 'transform 0.3s ease',
+                                  }}
+                                />
+                              ) : (
+                                <Box
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background:
+                                      'linear-gradient(145deg, #333, #1a1a1a)',
+                                    color: '#666',
+                                    fontSize: '1.5rem',
+                                  }}
+                                >
+                                  {credit.media_type === 'movie' ? '🎬' : '📺'}
+                                </Box>
+                              )}
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  top: 4,
+                                  right: 4,
+                                  background:
+                                    credit.media_type === 'movie'
+                                      ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
+                                      : 'linear-gradient(135deg, #00fed7, #00d4b8)',
+                                  borderRadius: '12px',
+                                  px: 0.8,
+                                  py: 0.3,
+                                  fontSize: '0.65rem',
+                                  fontWeight: 'bold',
+                                  color:
+                                    credit.media_type === 'movie' ? '#fff' : '#000',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: 0.5,
+                                }}
+                              >
+                                {credit.media_type === 'movie' ? 'Film' : 'Serie'}
+                              </Box>
+                            </Box>
+
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography
+                                variant='subtitle1'
+                                sx={{
+                                  fontWeight: 700,
+                                  color: '#ffffff',
+                                  mb: 0.5,
+                                  lineHeight: 1.2,
+                                  fontSize: '0.95rem',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                {credit.title || credit.name}
+                              </Typography>
+
+                              <Typography
+                                variant='body2'
+                                sx={{
+                                  color: '#ffa500',
+                                  fontStyle: 'italic',
+                                  mb: 0.8,
+                                  fontSize: '0.8rem',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                als{' '}
+                                {credit.job === 'Director' ? 'Regisseur' :
+                                 credit.job === 'Producer' ? 'Produzent' :
+                                 credit.job === 'Executive Producer' ? 'Ausführender Produzent' :
+                                 credit.job === 'Co-Executive Producer' ? 'Co-Ausführender Produzent' :
+                                 credit.job === 'Production Manager' ? 'Produktionsleiter' :
+                                 credit.job === 'Writer' ? 'Drehbuchautor' :
+                                 credit.job === 'Screenplay' ? 'Drehbuch' :
+                                 credit.job === 'Story' ? 'Geschichte' :
+                                 credit.job === 'Novel' ? 'Roman/Buchvorlage' :
+                                 credit.job === 'Director of Photography' ? 'Kameramann' :
+                                 credit.job === 'Camera Operator' ? 'Kameraoperateur' :
+                                 credit.job === 'Editor' ? 'Cutter' :
+                                 credit.job === 'Assistant Editor' ? 'Schnittassistent' :
+                                 credit.job === 'Music' ? 'Musik' :
+                                 credit.job === 'Original Music Composer' ? 'Filmmusik-Komponist' :
+                                 credit.job === 'Additional Music' ? 'Zusätzliche Musik' :
+                                 credit.job === 'Sound' ? 'Ton' :
+                                 credit.job === 'Production Designer' ? 'Produktionsdesigner' :
+                                 credit.job === 'Production Design' ? 'Produktionsdesign' :
+                                 credit.job === 'Costume Design' ? 'Kostümdesign' :
+                                 credit.job === 'Makeup Artist' ? 'Maskenbildner' :
+                                 credit.job === 'Casting' ? 'Casting' :
+                                 credit.job === 'Stunt Coordinator' ? 'Stunt-Koordinator' :
+                                 credit.job === 'Stunt Double' ? 'Stunt-Double' :
+                                 credit.job === 'Stand In' ? 'Stand-In' :
+                                 credit.job === 'Visual Effects Supervisor' ? 'VFX Supervisor' :
+                                 credit.job === 'Post Production Consulting' ? 'Postproduktions-Beratung' :
+                                 credit.job}
+                              </Typography>
+
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: { xs: 'flex-start', sm: 'center' },
+                                  justifyContent: 'space-between',
+                                  flexDirection: { xs: 'column', sm: 'row' },
+                                  gap: { xs: 1, sm: 0 },
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    flexWrap: 'wrap',
+                                  }}
+                                >
+                                  <Typography
+                                    variant='caption'
+                                    sx={{
+                                      color: '#9e9e9e',
+                                      fontWeight: 500,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    📅{' '}
+                                    {credit.release_date
+                                      ? new Date(credit.release_date).getFullYear()
+                                      : credit.first_air_date
+                                      ? new Date(
+                                          credit.first_air_date
+                                        ).getFullYear()
+                                      : 'Unbekannt'}
+                                  </Typography>
+
+                                  {credit.vote_average &&
+                                  typeof credit.vote_average === 'number' &&
+                                  credit.vote_average > 1 &&
+                                  credit.vote_count &&
+                                  credit.vote_count > 0 ? (
+                                    <Typography
+                                      variant='caption'
+                                      sx={{
+                                        color: '#ffd700',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.3,
+                                      }}
+                                    >
+                                      ⭐ {credit.vote_average.toFixed(1)}
+                                    </Typography>
+                                  ) : null}
+                                </Box>
+
+                                {/* Add Button für Crew Credits */}
+                                {user && (
+                                  <Box sx={{ flexShrink: 0 }}>
+                                    {isTitleInList(credit) ? (
+                                      <Tooltip title='Bereits in deiner Liste'>
+                                        <Chip
+                                          icon={
+                                            <CheckIcon
+                                              sx={{ fontSize: '16px !important' }}
+                                            />
+                                          }
+                                          label='In Liste'
+                                          size='small'
+                                          sx={{
+                                            backgroundColor:
+                                              'rgba(76, 175, 80, 0.2)',
+                                            color: '#4caf50',
+                                            border: '1px solid #4caf50',
+                                            fontSize: '0.7rem',
+                                            height: '24px',
+                                          }}
+                                        />
+                                      </Tooltip>
+                                    ) : (
+                                      <Tooltip
+                                        title={`${
+                                          credit.media_type === 'movie'
+                                            ? 'Film'
+                                            : 'Serie'
+                                        } zu meiner Liste hinzufügen`}
+                                      >
+                                        <Chip
+                                          icon={
+                                            addingTitles.has(credit.id) ? (
+                                              <CircularProgress
+                                                size={14}
+                                                sx={{ color: '#ffa500' }}
+                                              />
+                                            ) : (
+                                              <AddIcon
+                                                sx={{ fontSize: '16px !important' }}
+                                              />
+                                            )
+                                          }
+                                          label={
+                                            addingTitles.has(credit.id)
+                                              ? 'Hinzufügen...'
+                                              : 'Hinzufügen'
+                                          }
+                                          size='small'
+                                          clickable
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddTitle(credit);
+                                          }}
+                                          disabled={addingTitles.has(credit.id)}
+                                          sx={{
+                                            backgroundColor: 'rgba(255,165,0,0.2)',
+                                            color: '#ffa500',
+                                            border: '1px solid #ffa500',
+                                            fontSize: '0.7rem',
+                                            height: '24px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            '&:hover': {
+                                              backgroundColor:
+                                                'rgba(255,165,0,0.3)',
+                                              transform: 'scale(1.05)',
+                                            },
+                                            '&:disabled': {
+                                              backgroundColor:
+                                                'rgba(255,255,255,0.05)',
+                                              color: '#666',
+                                              borderColor: 'rgba(255,255,255,0.1)',
+                                              cursor: 'not-allowed',
+                                            },
+                                          }}
+                                        />
+                                      </Tooltip>
+                                    )}
+                                  </Box>
+                                )}
+                              </Box>
+                            </Box>
+                          </Box>
+                        ))}
+                        {/* Cast Credits als zweites - nur Credits mit Charaktername anzeigen */}
+                        {personCredits.cast.filter((credit: any) => credit.character).map((credit: any) => (
+                          <Box
+                            key={`cast-second-${credit.id}-${credit.credit_id}`}
+                            sx={{
+                              display: 'flex',
+                              gap: 2,
+                              background:
+                                'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+                              borderRadius: 2,
+                              p: 1.5,
+                              backdropFilter: 'blur(10px)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                background:
+                                  'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(255,255,255,0.05) 100%)',
+                                borderColor: 'rgba(0,254,215,0.3)',
+                                transform: 'translateX(8px)',
+                                boxShadow: '0 8px 32px rgba(0,254,215,0.2)',
+                              },
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                position: 'relative',
+                                flexShrink: 0,
+                                width: 60,
+                                height: 90,
+                                borderRadius: 1.5,
+                                overflow: 'hidden',
+                                background:
+                                  'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                              }}
+                            >
+                              {credit.poster_path ? (
+                                <Box
+                                  component='img'
+                                  src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
+                                  alt={credit.title || credit.name}
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transition: 'transform 0.3s ease',
+                                  }}
+                                />
+                              ) : (
+                                <Box
+                                  sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background:
+                                      'linear-gradient(145deg, #333, #1a1a1a)',
+                                    color: '#666',
+                                    fontSize: '1.5rem',
+                                  }}
+                                >
+                                  {credit.media_type === 'movie' ? '🎬' : '📺'}
+                                </Box>
+                              )}
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  top: 4,
+                                  right: 4,
+                                  background:
+                                    credit.media_type === 'movie'
+                                      ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
+                                      : 'linear-gradient(135deg, #00fed7, #00d4b8)',
+                                  borderRadius: '12px',
+                                  px: 0.8,
+                                  py: 0.3,
+                                  fontSize: '0.65rem',
+                                  fontWeight: 'bold',
+                                  color:
+                                    credit.media_type === 'movie' ? '#fff' : '#000',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: 0.5,
+                                }}
+                              >
+                                {credit.media_type === 'movie' ? 'Film' : 'Serie'}
+                              </Box>
+                            </Box>
+
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography
+                                variant='subtitle1'
+                                sx={{
+                                  fontWeight: 700,
+                                  color: '#ffffff',
+                                  mb: 0.5,
+                                  lineHeight: 1.2,
+                                  fontSize: '0.95rem',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                {credit.title || credit.name}
+                              </Typography>
+
+                              <Typography
+                                variant='body2'
+                                sx={{
+                                  color: '#00fed7',
+                                  fontStyle: 'italic',
+                                  mb: 0.8,
+                                  fontSize: '0.8rem',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                als{' '}
+                                {credit.character?.replace(
+                                  /\(voice\)/gi,
+                                  '(Stimme)'
+                                )}
+                              </Typography>
+
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: { xs: 'flex-start', sm: 'center' },
+                                  justifyContent: 'space-between',
+                                  flexDirection: { xs: 'column', sm: 'row' },
+                                  gap: { xs: 1, sm: 0 },
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    flexWrap: 'wrap',
+                                  }}
+                                >
+                                  <Typography
+                                    variant='caption'
+                                    sx={{
+                                      color: '#9e9e9e',
+                                      fontWeight: 500,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    📅{' '}
+                                    {credit.release_date
+                                      ? new Date(credit.release_date).getFullYear()
+                                      : credit.first_air_date
+                                      ? new Date(
+                                          credit.first_air_date
+                                        ).getFullYear()
+                                      : 'Unbekannt'}
+                                  </Typography>
+
+                                  {credit.vote_average &&
+                                  typeof credit.vote_average === 'number' &&
+                                  credit.vote_average > 1 &&
+                                  credit.vote_count &&
+                                  credit.vote_count > 0 ? (
+                                    <Typography
+                                      variant='caption'
+                                      sx={{
+                                        color: '#ffd700',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 0.3,
+                                      }}
+                                    >
+                                      ⭐ {credit.vote_average.toFixed(1)}
+                                    </Typography>
+                                  ) : null}
+                                </Box>
+
+                                {user && (
+                                  <Box sx={{ flexShrink: 0 }}>
+                                    {isTitleInList(credit) ? (
+                                      <Tooltip title='Bereits in deiner Liste'>
+                                        <Chip
+                                          icon={
+                                            <CheckIcon
+                                              sx={{ fontSize: '16px !important' }}
+                                            />
+                                          }
+                                          label='In Liste'
+                                          size='small'
+                                          sx={{
+                                            backgroundColor:
+                                              'rgba(76, 175, 80, 0.2)',
+                                            color: '#4caf50',
+                                            border: '1px solid #4caf50',
+                                            fontSize: '0.7rem',
+                                            height: '24px',
+                                          }}
+                                        />
+                                      </Tooltip>
+                                    ) : (
+                                      <Tooltip
+                                        title={`${
+                                          credit.media_type === 'movie'
+                                            ? 'Film'
+                                            : 'Serie'
+                                        } zu meiner Liste hinzufügen`}
+                                      >
+                                        <Chip
+                                          icon={
+                                            addingTitles.has(credit.id) ? (
+                                              <CircularProgress
+                                                size={14}
+                                                sx={{ color: '#00fed7' }}
+                                              />
+                                            ) : (
+                                              <AddIcon
+                                                sx={{ fontSize: '16px !important' }}
+                                              />
+                                            )
+                                          }
+                                          label={
+                                            addingTitles.has(credit.id)
+                                              ? 'Hinzufügen...'
+                                              : 'Hinzufügen'
+                                          }
+                                          size='small'
+                                          clickable
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddTitle(credit);
+                                          }}
+                                          disabled={addingTitles.has(credit.id)}
+                                          sx={{
+                                            backgroundColor: 'rgba(0,254,215,0.2)',
+                                            color: '#00fed7',
+                                            border: '1px solid #00fed7',
+                                            fontSize: '0.7rem',
+                                            height: '24px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            '&:hover': {
+                                              backgroundColor:
+                                                'rgba(0,254,215,0.3)',
+                                              transform: 'scale(1.05)',
+                                            },
+                                            '&:disabled': {
+                                              backgroundColor:
+                                                'rgba(255,255,255,0.05)',
+                                              color: '#666',
+                                              borderColor: 'rgba(255,255,255,0.1)',
+                                              cursor: 'not-allowed',
+                                            },
+                                          }}
+                                        />
+                                      </Tooltip>
+                                    )}
+                                  </Box>
+                                )}
+                              </Box>
+                            </Box>
+                          </Box>
+                        ))}
+
+                    {/* Cast Credits - nur Credits mit Charaktername anzeigen */}
+                    {personCredits.cast.filter((credit: any) => credit.character).map((credit: any) => (
                       <Box
-                        key={`${credit.id}-${credit.credit_id}`}
+                        key={`cast-${credit.id}-${credit.credit_id}`}
                         sx={{
                           display: 'flex',
                           gap: 2,
@@ -1152,7 +1897,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             }}
                           >
                             als{' '}
-                            {credit.character?.replace(
+                            {credit.character.replace(
                               /\(voice\)/gi,
                               '(Stimme)'
                             )}
@@ -1216,6 +1961,279 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             </Box>
 
                             {/* Status und Add Button */}
+                            {user && (
+                              <Box sx={{ flexShrink: 0 }}>
+                                {isTitleInList(credit) ? (
+                                  <Tooltip title='Bereits in deiner Liste'>
+                                    <Chip
+                                      icon={
+                                        <CheckIcon
+                                          sx={{ fontSize: '16px !important' }}
+                                        />
+                                      }
+                                      label='In Liste'
+                                      size='small'
+                                      sx={{
+                                        backgroundColor:
+                                          'rgba(76, 175, 80, 0.2)',
+                                        color: '#4caf50',
+                                        border: '1px solid #4caf50',
+                                        fontSize: '0.7rem',
+                                        height: '24px',
+                                      }}
+                                    />
+                                  </Tooltip>
+                                ) : (
+                                  <Tooltip
+                                    title={`${
+                                      credit.media_type === 'movie'
+                                        ? 'Film'
+                                        : 'Serie'
+                                    } zu meiner Liste hinzufügen`}
+                                  >
+                                    <Chip
+                                      icon={
+                                        addingTitles.has(credit.id) ? (
+                                          <CircularProgress
+                                            size={14}
+                                            sx={{ color: '#00fed7' }}
+                                          />
+                                        ) : (
+                                          <AddIcon
+                                            sx={{ fontSize: '16px !important' }}
+                                          />
+                                        )
+                                      }
+                                      label={
+                                        addingTitles.has(credit.id)
+                                          ? 'Hinzufügen...'
+                                          : 'Hinzufügen'
+                                      }
+                                      size='small'
+                                      clickable
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddTitle(credit);
+                                      }}
+                                      disabled={addingTitles.has(credit.id)}
+                                      sx={{
+                                        backgroundColor: 'rgba(0,254,215,0.2)',
+                                        color: '#00fed7',
+                                        border: '1px solid #00fed7',
+                                        fontSize: '0.7rem',
+                                        height: '24px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                          backgroundColor:
+                                            'rgba(0,254,215,0.3)',
+                                          transform: 'scale(1.05)',
+                                        },
+                                        '&:disabled': {
+                                          backgroundColor:
+                                            'rgba(255,255,255,0.05)',
+                                          color: '#666',
+                                          borderColor: 'rgba(255,255,255,0.1)',
+                                          cursor: 'not-allowed',
+                                        },
+                                      }}
+                                    />
+                                  </Tooltip>
+                                )}
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+                      </Box>
+                    ))}
+                    
+                    {/* Cast Credits - nur Credits mit Charaktername anzeigen */}
+                    {personCredits.cast.filter((credit: any) => credit.character).map((credit: any) => (
+                      <Box
+                        key={`cast-${credit.id}-${credit.credit_id}`}
+                        sx={{
+                          display: 'flex',
+                          gap: 2,
+                          background:
+                            'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+                          borderRadius: 2,
+                          p: 1.5,
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            background:
+                              'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(255,255,255,0.05) 100%)',
+                            borderColor: 'rgba(0,254,215,0.3)',
+                            transform: 'translateX(8px)',
+                            boxShadow: '0 8px 32px rgba(0,254,215,0.2)',
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            position: 'relative',
+                            flexShrink: 0,
+                            width: 60,
+                            height: 90,
+                            borderRadius: 1.5,
+                            overflow: 'hidden',
+                            background:
+                              'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                          }}
+                        >
+                          {credit.poster_path ? (
+                            <Box
+                              component='img'
+                              src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
+                              alt={credit.title || credit.name}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                transition: 'transform 0.3s ease',
+                              }}
+                            />
+                          ) : (
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background:
+                                  'linear-gradient(145deg, #333, #1a1a1a)',
+                                color: '#666',
+                                fontSize: '1.5rem',
+                              }}
+                            >
+                              {credit.media_type === 'movie' ? '🎬' : '📺'}
+                            </Box>
+                          )}
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              background:
+                                credit.media_type === 'movie'
+                                  ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
+                                  : 'linear-gradient(135deg, #00fed7, #00d4b8)',
+                              borderRadius: '12px',
+                              px: 0.8,
+                              py: 0.3,
+                              fontSize: '0.65rem',
+                              fontWeight: 'bold',
+                              color:
+                                credit.media_type === 'movie' ? '#fff' : '#000',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                              textTransform: 'uppercase',
+                              letterSpacing: 0.5,
+                            }}
+                          >
+                            {credit.media_type === 'movie' ? 'Film' : 'Serie'}
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant='subtitle1'
+                            sx={{
+                              fontWeight: 700,
+                              color: '#ffffff',
+                              mb: 0.5,
+                              lineHeight: 1.2,
+                              fontSize: '0.95rem',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 1,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {credit.title || credit.name}
+                          </Typography>
+
+                          <Typography
+                            variant='body2'
+                            sx={{
+                              color: '#00fed7',
+                              fontStyle: 'italic',
+                              mb: 0.8,
+                              fontSize: '0.8rem',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 1,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            als{' '}
+                            {credit.character.replace(
+                              /\(voice\)/gi,
+                              '(Stimme)'
+                            )}
+                          </Typography>
+
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: { xs: 'flex-start', sm: 'center' },
+                              justifyContent: 'space-between',
+                              flexDirection: { xs: 'column', sm: 'row' },
+                              gap: { xs: 1, sm: 0 },
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              <Typography
+                                variant='caption'
+                                sx={{
+                                  color: '#9e9e9e',
+                                  fontWeight: 500,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.5,
+                                }}
+                              >
+                                📅{' '}
+                                {credit.release_date
+                                  ? new Date(credit.release_date).getFullYear()
+                                  : credit.first_air_date
+                                  ? new Date(
+                                      credit.first_air_date
+                                    ).getFullYear()
+                                  : 'Unbekannt'}
+                              </Typography>
+
+                              {credit.vote_average &&
+                              typeof credit.vote_average === 'number' &&
+                              credit.vote_average > 1 &&
+                              credit.vote_count &&
+                              credit.vote_count > 0 ? (
+                                <Typography
+                                  variant='caption'
+                                  sx={{
+                                    color: '#ffd700',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.3,
+                                  }}
+                                >
+                                  ⭐ {credit.vote_average.toFixed(1)}
+                                </Typography>
+                              ) : null}
+                            </Box>
+
+                            {/* Status und Add Button für Crew */}
                             {user && (
                               <Box sx={{ flexShrink: 0 }}>
                                 {isTitleInList(credit) ? (
