@@ -76,6 +76,31 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
     }
   }, [open, user]);
 
+  // Badge Progress Update Event Listener
+  useEffect(() => {
+    if (!open) return;
+
+    const handleBadgeUpdate = async (event: CustomEvent) => {
+      const { newBadges } = event.detail;
+      if (newBadges && newBadges.length > 0) {
+        console.log('🏆 Badge Dialog: Neue Badges erkannt, Cache invalidieren');
+        
+        // Badge-System Cache invalidieren für frische Daten
+        const { getOfflineBadgeSystem } = await import('../../utils/offlineBadgeSystem');
+        const badgeSystem = getOfflineBadgeSystem(user!.uid);
+        badgeSystem.invalidateCache();
+        
+        loadBadgeData(); // Cache refresh bei neuen Badges
+      }
+    };
+
+    window.addEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
+    
+    return () => {
+      window.removeEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
+    };
+  }, [open]);
+
   // Auto-refresh für laufende Sessions (jede Sekunde)
   useEffect(() => {
     if (!open) return;

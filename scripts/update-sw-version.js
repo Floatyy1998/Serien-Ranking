@@ -15,9 +15,9 @@ const __dirname = path.dirname(__filename);
 const SW_PATH = path.join(__dirname, '../public/service-worker.js');
 const ADVANCED_SW_PATH = path.join(__dirname, '../src/workers/advanced-service-worker.ts');
 
-// Generiere neue Version basierend auf Zeitstempel
+// Generiere neue Version basierend auf Zeitstempel (inkl. Sekunden für mehrere Builds/Minute)
 const now = new Date();
-const buildVersion = `v${now.getFullYear()}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getDate().toString().padStart(2, '0')}.${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+const buildVersion = `v${now.getFullYear()}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getDate().toString().padStart(2, '0')}.${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
 
 console.log(`🔄 Updating Service Worker version to: ${buildVersion}`);
 
