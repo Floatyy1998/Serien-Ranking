@@ -10,6 +10,8 @@ import {
   BADGE_DEFINITIONS,
   type Badge,
   type EarnedBadge,
+  type BadgeProgress,
+  type BadgeCategory,
 } from './badgeDefinitions';
 
 export class OfflineBadgeSystem {
@@ -17,6 +19,8 @@ export class OfflineBadgeSystem {
   private cachedData: any = null;
   private lastCacheTime: number = 0;
   private CACHE_DURATION = 5 * 60 * 1000; // 5 Minuten Cache
+  private cachedBadges: EarnedBadge[] | null = null;
+  private cachedProgress: Record<string, BadgeProgress> | null = null;
 
   constructor(userId: string) {
     this.userId = userId;
@@ -245,10 +249,9 @@ export class OfflineBadgeSystem {
    */
   private getTimeframeDescription(timeframe: string): string {
     switch (timeframe) {
-      case '2hours': return '2 Stunden';
       case '4hours': return '4 Stunden';
       case '1day': return 'einem Tag';
-      case '2days': return 'einem Wochenende';
+      case '2days': return 'zwei Tagen';
       default: return 'einer Session';
     }
   }
@@ -332,15 +335,18 @@ export class OfflineBadgeSystem {
     _series: any[],
     _activities: any[]
   ): { earned: boolean; details?: string } | null {
-    // Für Episode-basierte Binge-Badges: Nutze timeframe-spezifische Counter
+    // Für Episode-basierte Binge-Badges: Nutze aktuelle Sessions
     if (badge.requirements.episodes && badge.requirements.timeframe) {
       const timeframe = badge.requirements.timeframe;
-      const maxBingeForTimeframe = this.getCounterValue(`maxBingeByTimeframe.${timeframe}`);
+      const badgeCounters = this.cachedData?.badgeCounters || {};
+      
+      // Prüfe nur aktuelle Session
+      const currentBinge = badgeCounters.bingeWindows?.[timeframe]?.count || 0;
 
-      if (maxBingeForTimeframe && maxBingeForTimeframe >= badge.requirements.episodes) {
+      if (currentBinge >= badge.requirements.episodes) {
         return {
           earned: true,
-          details: `${maxBingeForTimeframe} Episoden in ${this.getTimeframeDescription(timeframe)}`,
+          details: `${currentBinge} Episoden in ${this.getTimeframeDescription(timeframe)}`,
         };
       }
     }
@@ -485,7 +491,6 @@ export class OfflineBadgeSystem {
   private getTimeWindowMs(timeframe?: string): number | null {
     if (!timeframe) return null;
     const map: Record<string, number> = {
-      '2hours': 2 * 60 * 60 * 1000,
       '4hours': 4 * 60 * 60 * 1000,
       '1day': 24 * 60 * 60 * 1000,
       '2days': 2 * 24 * 60 * 60 * 1000,
@@ -498,11 +503,17 @@ export class OfflineBadgeSystem {
 
   // Badge Management
   async getUserBadges(): Promise<EarnedBadge[]> {
+    if (this.isCacheValid() && this.cachedBadges) {
+      return this.cachedBadges;
+    }
+    
     const snapshot = await firebase
       .database()
       .ref(`badges/${this.userId}`)
       .once('value');
-    return snapshot.exists() ? Object.values(snapshot.val()) : [];
+    
+    this.cachedBadges = snapshot.exists() ? Object.values(snapshot.val()) : [];
+    return this.cachedBadges;
   }
 
   private async saveBadge(badge: EarnedBadge): Promise<void> {
@@ -513,6 +524,300 @@ export class OfflineBadgeSystem {
         ...badge,
         earnedAt: firebase.database.ServerValue.TIMESTAMP,
       });
+  }
+
+  /**
+   * 📊 Badge-Fortschritt berechnen für nicht erreichte Badges
+   */
+  async getBadgeProgress(badgeId: string): Promise<BadgeProgress | null> {
+    const badge = BADGE_DEFINITIONS.find(b => b.id === badgeId);
+    if (!badge) return null;
+
+    // Prüfe ob Badge bereits erreicht
+    const currentBadges = await this.getUserBadges();
+    if (currentBadges.some(b => b.id === badgeId)) return null;
+
+    const userData = await this.getUserData();
+    const { series, movies, badgeCounters } = userData;
+
+    switch (badge.category) {
+      case 'binge':
+        return this.getBingeProgress(badge, badgeCounters);
+      
+      case 'quickwatch':
+        return this.getQuickwatchProgress(badge, badgeCounters);
+      
+      case 'marathon':
+        return this.getMarathonProgress(badge, badgeCounters);
+      
+      case 'streak':
+        return this.getStreakProgress(badge, badgeCounters);
+      
+      case 'rewatch':
+        return this.getRewatchProgress(badge, series);
+      
+      case 'series_explorer':
+        return this.getExplorerProgress(badge, series);
+      
+      case 'collector':
+        return this.getCollectorProgress(badge, series, movies);
+      
+      case 'social':
+        return await this.getSocialProgress(badge);
+      
+      default:
+        return null;
+    }
+  }
+
+  private getBingeProgress(badge: Badge, badgeCounters: any): BadgeProgress | null {
+    if (!badge.requirements.episodes || !badge.requirements.timeframe) return null;
+
+    const timeframe = badge.requirements.timeframe;
+    const bingeWindow = badgeCounters.bingeWindows?.[timeframe];
+    
+    let current = 0;
+    let timeRemaining: number | undefined;
+    let sessionActive = false;
+
+    // Prüfe aktive Session
+    if (bingeWindow?.windowEnd) {
+      const now = Date.now();
+      if (now < bingeWindow.windowEnd) {
+        // Session läuft noch
+        current = bingeWindow.count || 0;
+        timeRemaining = Math.ceil((bingeWindow.windowEnd - now) / 1000);
+        sessionActive = true;
+      } else {
+        // Session abgelaufen - Progress ist 0 (Badge nicht erreicht)
+        current = 0;
+      }
+    }
+
+    return {
+      badgeId: badge.id,
+      current,
+      total: badge.requirements.episodes,
+      lastUpdated: Date.now(),
+      timeRemaining,
+      sessionActive
+    };
+  }
+
+  private getQuickwatchProgress(badge: Badge, badgeCounters: any): BadgeProgress | null {
+    if (!badge.requirements.episodes) return null;
+
+    return {
+      badgeId: badge.id,
+      current: badgeCounters.quickwatchEpisodes || 0,
+      total: badge.requirements.episodes,
+      lastUpdated: Date.now()
+    };
+  }
+
+  private getMarathonProgress(badge: Badge, badgeCounters: any): BadgeProgress | null {
+    if (!badge.requirements.episodes) return null;
+
+    const marathonWeeks = badgeCounters.marathonWeeks || {};
+    const weeklyEpisodes = Object.values(marathonWeeks as Record<string, number>);
+    const maxWeeklyEpisodes = weeklyEpisodes.length > 0 ? Math.max(...weeklyEpisodes) : 0;
+
+    return {
+      badgeId: badge.id,
+      current: maxWeeklyEpisodes,
+      total: badge.requirements.episodes,
+      lastUpdated: Date.now()
+    };
+  }
+
+  private getStreakProgress(badge: Badge, badgeCounters: any): BadgeProgress | null {
+    if (!badge.requirements.days) return null;
+
+    return {
+      badgeId: badge.id,
+      current: badgeCounters.currentStreak || 0,
+      total: badge.requirements.days,
+      lastUpdated: Date.now()
+    };
+  }
+
+  private getRewatchProgress(badge: Badge, series: any[]): BadgeProgress | null {
+    if (!badge.requirements.episodes) return null;
+
+    let rewatchCount = 0;
+    series.forEach((s) => {
+      if (s.seasons && Array.isArray(s.seasons)) {
+        s.seasons.forEach((season: any) => {
+          if (season.episodes && Array.isArray(season.episodes)) {
+            season.episodes.forEach((ep: any) => {
+              if (ep.watchCount && ep.watchCount > 1) {
+                rewatchCount += ep.watchCount - 1;
+              }
+            });
+          }
+        });
+      }
+    });
+
+    return {
+      badgeId: badge.id,
+      current: rewatchCount,
+      total: badge.requirements.episodes,
+      lastUpdated: Date.now()
+    };
+  }
+
+  private getExplorerProgress(badge: Badge, series: any[]): BadgeProgress | null {
+    if (!badge.requirements.series) return null;
+
+    return {
+      badgeId: badge.id,
+      current: series.length,
+      total: badge.requirements.series,
+      lastUpdated: Date.now()
+    };
+  }
+
+  private getCollectorProgress(badge: Badge, series: any[], movies: any[]): BadgeProgress | null {
+    if (!badge.requirements.ratings) return null;
+
+    let ratingCount = 0;
+    series.forEach((s: any) => {
+      if (s.rating && this.hasValidRating(s.rating)) {
+        ratingCount++;
+      }
+    });
+    movies.forEach((m: any) => {
+      if (m.rating && this.hasValidRating(m.rating)) {
+        ratingCount++;
+      }
+    });
+
+    return {
+      badgeId: badge.id,
+      current: ratingCount,
+      total: badge.requirements.ratings,
+      lastUpdated: Date.now()
+    };
+  }
+
+  private async getSocialProgress(badge: Badge): Promise<BadgeProgress | null> {
+    if (!badge.requirements.friends) return null;
+
+    const friendsSnapshot = await firebase
+      .database()
+      .ref(`users/${this.userId}/friends`)
+      .once('value');
+    const friendsCount = friendsSnapshot.exists()
+      ? Object.keys(friendsSnapshot.val()).length
+      : 0;
+
+    return {
+      badgeId: badge.id,
+      current: friendsCount,
+      total: badge.requirements.friends,
+      lastUpdated: Date.now()
+    };
+  }
+
+  /**
+   * 📈 Fortschritt für alle nicht-erreichten Badges
+   */
+  async getAllBadgeProgress(): Promise<Record<string, BadgeProgress>> {
+    // Return cached progress if valid (but always refresh active sessions)
+    if (this.isCacheValid() && this.cachedProgress) {
+      // Update nur aktive Sessions (Countdown kann sich ändern)
+      const updatedProgress = { ...this.cachedProgress };
+      const userData = this.cachedData;
+      
+      if (userData?.badgeCounters) {
+        Object.keys(updatedProgress).forEach(badgeId => {
+          const badge = BADGE_DEFINITIONS.find(b => b.id === badgeId);
+          if (badge?.category === 'binge' && badge.requirements.timeframe) {
+            const newProgress = this.getBingeProgress(badge, userData.badgeCounters);
+            if (newProgress) {
+              updatedProgress[badgeId] = newProgress;
+            }
+          }
+        });
+      }
+      
+      return updatedProgress;
+    }
+    
+    const currentBadges = await this.getUserBadges();
+    const earnedIds = new Set(currentBadges.map(b => b.id));
+    
+    // Nur benötigte Daten laden (ohne activities) und Cache befüllen
+    const [series, movies, badgeCounters] = await Promise.all([
+      this.getSeriesData(),
+      this.getMoviesData(), 
+      this.getBadgeCounters(),
+    ]);
+    
+    // Cache befüllen für nächsten Aufruf
+    this.cachedData = { series, movies, badgeCounters };
+    this.lastCacheTime = Date.now();
+    
+    const progressData: Record<string, BadgeProgress> = {};
+
+    for (const badge of BADGE_DEFINITIONS) {
+      if (earnedIds.has(badge.id)) continue;
+      
+      let progress: BadgeProgress | null = null;
+      
+      switch (badge.category) {
+        case 'binge':
+          progress = this.getBingeProgress(badge, badgeCounters);
+          break;
+        case 'quickwatch':
+          progress = this.getQuickwatchProgress(badge, badgeCounters);
+          break;
+        case 'marathon':
+          progress = this.getMarathonProgress(badge, badgeCounters);
+          break;
+        case 'streak':
+          progress = this.getStreakProgress(badge, badgeCounters);
+          break;
+        case 'rewatch':
+          progress = this.getRewatchProgress(badge, series);
+          break;
+        case 'series_explorer':
+          progress = this.getExplorerProgress(badge, series);
+          break;
+        case 'collector':
+          progress = this.getCollectorProgress(badge, series, movies);
+          break;
+        case 'social':
+          progress = await this.getSocialProgress(badge);
+          break;
+      }
+      
+      if (progress) {
+        progressData[badge.id] = progress;
+      }
+    }
+
+    // Cache das Ergebnis
+    this.cachedProgress = progressData;
+    return progressData;
+  }
+
+  /**
+   * 📈 Fortschritt für alle Badges einer Kategorie
+   */
+  async getCategoryProgress(category: BadgeCategory): Promise<BadgeProgress[]> {
+    const categoryBadges = BADGE_DEFINITIONS.filter(b => b.category === category);
+    const progressList: BadgeProgress[] = [];
+
+    for (const badge of categoryBadges) {
+      const progress = await this.getBadgeProgress(badge.id);
+      if (progress) {
+        progressList.push(progress);
+      }
+    }
+
+    return progressList;
   }
 
   /**
@@ -529,7 +834,17 @@ export class OfflineBadgeSystem {
    */
   invalidateCache(): void {
     this.cachedData = null;
+    this.cachedBadges = null;
+    this.cachedProgress = null;
     this.lastCacheTime = 0;
+  }
+
+  /**
+   * 🔍 Prüfe ob Cache noch gültig ist
+   */
+  isCacheValid(): boolean {
+    const now = Date.now();
+    return this.cachedData && (now - this.lastCacheTime < this.CACHE_DURATION);
   }
 
   /**

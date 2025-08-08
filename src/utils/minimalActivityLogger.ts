@@ -176,6 +176,11 @@ export const updateEpisodeCounters = async (
     // 6. Badge-Callback triggern
     await triggerBadgeCallback(userId, newBadges);
 
+    // Progress Update Event für UI
+    window.dispatchEvent(new CustomEvent('badgeProgressUpdate', {
+      detail: { userId, type: 'episode', newBadges }
+    }));
+
     return newBadges;
   } catch (error) {
     console.error('❌ Episode counter update failed:', error);

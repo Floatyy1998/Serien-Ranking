@@ -48,6 +48,8 @@ export interface BadgeProgress {
   current: number;
   total: number;
   lastUpdated: number;
+  timeRemaining?: number; // Sekunden bis Session abläuft
+  sessionActive?: boolean; // Ob gerade eine Session läuft
 }
 
 // 🏆 Badge-Definitionen (kompakt)
@@ -61,7 +63,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     description: '3 Episoden hintereinander geschaut',
     emoji: '🍿',
     color: '#cd7f32',
-    requirements: { episodes: 3, timeframe: '2hours' },
+    requirements: { episodes: 3, timeframe: '4hours' },
     rarity: 'common',
   },
   {
@@ -72,7 +74,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     description: '5 Episoden hintereinander geschaut',
     emoji: '🥨',
     color: '#cd7f32',
-    requirements: { episodes: 5, timeframe: '2hours' },
+    requirements: { episodes: 5, timeframe: '4hours' },
     rarity: 'common',
   },
   {
@@ -135,7 +137,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     category: 'binge',
     tier: 'diamond',
     name: 'Binge-Gott',
-    description: '35 Episoden an einem Wochenende beendet',
+    description: '35 Episoden in zwei Tagen geschaut',
     emoji: '🔥',
     color: '#b9f2ff',
     requirements: { episodes: 35, timeframe: '2days' },
@@ -146,7 +148,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     category: 'binge',
     tier: 'diamond',
     name: 'Binge-Titan',
-    description: '50 Episoden in einem Wochenende geschaut',
+    description: '50 Episoden in zwei Tagen geschaut',
     emoji: '⚡',
     color: '#b9f2ff',
     requirements: { episodes: 50, timeframe: '2days' },
