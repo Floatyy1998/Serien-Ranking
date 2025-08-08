@@ -241,6 +241,19 @@ export class OfflineBadgeSystem {
   }
 
   /**
+   * Hilfsfunktion: Beschreibung für Zeitfenster
+   */
+  private getTimeframeDescription(timeframe: string): string {
+    switch (timeframe) {
+      case '2hours': return '2 Stunden';
+      case '4hours': return '4 Stunden';
+      case '1day': return 'einem Tag';
+      case '2days': return 'einem Wochenende';
+      default: return 'einer Session';
+    }
+  }
+
+  /**
    * 🏆 Season-Badges aus echten Serien-Completion-Daten
    */
   private checkSeasonBadgeFromRealData(
@@ -319,11 +332,22 @@ export class OfflineBadgeSystem {
     _series: any[],
     _activities: any[]
   ): { earned: boolean; details?: string } | null {
-    // Für Episode-basierte Binge-Badges: Nutze maxBingeEpisodes Counter
-    if (badge.requirements.episodes) {
-      // Verwende Counter-Daten
-      const maxBingeEpisodes = this.getCounterValue('maxBingeEpisodes');
+    // Für Episode-basierte Binge-Badges: Nutze timeframe-spezifische Counter
+    if (badge.requirements.episodes && badge.requirements.timeframe) {
+      const timeframe = badge.requirements.timeframe;
+      const maxBingeForTimeframe = this.getCounterValue(`maxBingeByTimeframe.${timeframe}`);
 
+      if (maxBingeForTimeframe && maxBingeForTimeframe >= badge.requirements.episodes) {
+        return {
+          earned: true,
+          details: `${maxBingeForTimeframe} Episoden in ${this.getTimeframeDescription(timeframe)}`,
+        };
+      }
+    }
+    
+    // Fallback für Badges ohne timeframe (falls vorhanden)
+    if (badge.requirements.episodes && !badge.requirements.timeframe) {
+      const maxBingeEpisodes = this.getCounterValue('maxBingeEpisodes');
       if (maxBingeEpisodes >= badge.requirements.episodes) {
         return {
           earned: true,
@@ -595,14 +619,13 @@ if (typeof window !== 'undefined') {
       return counters;
     },
 
-    // Binge-Session simulieren
+    // Binge-Session simulieren - über zeitbasierte Episode-Erkennung
     simulateBinge: async (userId: string, episodeCount: number = 5) => {
       const { badgeCounterService } = await import('./badgeCounterService');
-      await badgeCounterService.recordBingeSession(
-        userId,
-        episodeCount,
-        '2hours'
-      );
+      // Simuliere mehrere Episoden in schneller Folge
+      for (let i = 0; i < episodeCount; i++) {
+        await badgeCounterService.recordBingeEpisode(userId);
+      }
     },
 
     // Streak simulieren

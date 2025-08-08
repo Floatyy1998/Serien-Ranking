@@ -544,7 +544,6 @@ const WatchlistDialog = ({
         // Counter-Updates für beide Fälle: neue Episode und Rewatch
         await updateEpisodeCounters(
           user.uid,
-          series.id,
           wasWatched, // isRewatch = true wenn Episode bereits gesehen war
           episodeData.air_date
         );
