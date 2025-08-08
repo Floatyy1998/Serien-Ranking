@@ -63,7 +63,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     description: '3 Episoden hintereinander geschaut',
     emoji: '🍿',
     color: '#cd7f32',
-    requirements: { episodes: 3, timeframe: '4hours' },
+    requirements: { episodes: 3, timeframe: '10hours' },
     rarity: 'common',
   },
   {
@@ -74,7 +74,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     description: '5 Episoden hintereinander geschaut',
     emoji: '🥨',
     color: '#cd7f32',
-    requirements: { episodes: 5, timeframe: '4hours' },
+    requirements: { episodes: 5, timeframe: '10hours' },
     rarity: 'common',
   },
   {
@@ -85,7 +85,7 @@ export const BADGE_DEFINITIONS: Badge[] = [
     description: '8 Episoden hintereinander geschaut',
     emoji: '🛋️',
     color: '#c0c0c0',
-    requirements: { episodes: 8, timeframe: '4hours' },
+    requirements: { episodes: 8, timeframe: '10hours' },
     rarity: 'rare',
   },
   {
@@ -93,10 +93,10 @@ export const BADGE_DEFINITIONS: Badge[] = [
     category: 'binge',
     tier: 'silver',
     name: 'Serien-Schnürer',
-    description: '12 Episoden hintereinander geschaut',
+    description: '10 Episoden hintereinander geschaut',
     emoji: '📺',
     color: '#c0c0c0',
-    requirements: { episodes: 12, timeframe: '4hours' },
+    requirements: { episodes: 10, timeframe: '10hours' },
     rarity: 'rare',
   },
   {

@@ -249,7 +249,7 @@ export class OfflineBadgeSystem {
    */
   private getTimeframeDescription(timeframe: string): string {
     switch (timeframe) {
-      case '4hours': return '4 Stunden';
+      case '10hours': return '10 Stunden';
       case '1day': return 'einem Tag';
       case '2days': return 'zwei Tagen';
       default: return 'einer Session';
@@ -491,7 +491,7 @@ export class OfflineBadgeSystem {
   private getTimeWindowMs(timeframe?: string): number | null {
     if (!timeframe) return null;
     const map: Record<string, number> = {
-      '4hours': 4 * 60 * 60 * 1000,
+      '10hours': 10 * 60 * 60 * 1000,
       '1day': 24 * 60 * 60 * 1000,
       '2days': 2 * 24 * 60 * 60 * 1000,
       '1week': 7 * 24 * 60 * 60 * 1000,

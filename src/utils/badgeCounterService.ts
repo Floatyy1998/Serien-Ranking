@@ -97,36 +97,50 @@ class BadgeCounterService {
   }
 
   /**
-   * 🍿 Multi-Timeframe Binge-Session Counter
+   * 🍿 Multi-Timeframe Binge-Session Counter mit 2-Step Process
    */
   async recordBingeEpisode(userId: string): Promise<void> {
     try {
       const now = Date.now();
       const timeframes = [
-        { key: '4hours', duration: 4 * 60 * 60 * 1000 },      // 4h für Binge-Sessions
+        { key: '10hours', duration: 10 * 60 * 60 * 1000 },    // 10h für Binge-Sessions
         { key: '1day', duration: 24 * 60 * 60 * 1000 },       // 1 Tag
         { key: '2days', duration: 48 * 60 * 60 * 1000 }       // Wochenende
       ];
 
-      // Parallel alle Zeitfenster aktualisieren
+      // STEP 1: Erst alle abgelaufenen Sessions auf 0 setzen
       for (const timeframe of timeframes) {
         const bingeRef = firebase.database().ref(`badgeCounters/${userId}/bingeWindows/${timeframe.key}`);
         
         await bingeRef.transaction((current) => {
-          const windowEnd = (current?.windowEnd || 0);
+          if (!current) return current; // Keine Session vorhanden
           
+          const windowEnd = current.windowEnd || 0;
           if (now > windowEnd) {
-            // Window abgelaufen - starte neu
+            // Session abgelaufen → auf 0 setzen (Session beenden)
+            return null; // Session löschen = count 0
+          }
+          return current; // Session läuft noch, nichts ändern
+        });
+      }
+
+      // STEP 2: Dann neue Episode hinzufügen (neue Session starten wenn nötig)
+      for (const timeframe of timeframes) {
+        const bingeRef = firebase.database().ref(`badgeCounters/${userId}/bingeWindows/${timeframe.key}`);
+        
+        await bingeRef.transaction((current) => {
+          if (!current) {
+            // Keine aktive Session → neue Session mit erster Episode starten
             return {
               count: 1,
               windowEnd: now + timeframe.duration,
               startTime: now
             };
           } else {
-            // Window läuft noch - Episode hinzufügen
+            // Session läuft noch → Episode hinzufügen
             return {
               ...current,
-              count: (current?.count || 0) + 1
+              count: current.count + 1
             };
           }
         });
@@ -143,7 +157,7 @@ class BadgeCounterService {
   async finalizeBingeSession(userId: string): Promise<void> {
     try {
       const now = Date.now();
-      const timeframes = ['4hours', '1day', '2days'];
+      const timeframes = ['10hours', '1day', '2days'];
       
       for (const timeframe of timeframes) {
         const bingeRef = firebase.database().ref(`badgeCounters/${userId}/bingeWindows/${timeframe}`);
