@@ -103,8 +103,7 @@ class BadgeCounterService {
     try {
       const now = Date.now();
       const timeframes = [
-        { key: '2hours', duration: 2 * 60 * 60 * 1000 },      // 2h für "hintereinander" 
-        { key: '4hours', duration: 4 * 60 * 60 * 1000 },      // 4h für "hintereinander"
+        { key: '4hours', duration: 4 * 60 * 60 * 1000 },      // 4h für Binge-Sessions
         { key: '1day', duration: 24 * 60 * 60 * 1000 },       // 1 Tag
         { key: '2days', duration: 48 * 60 * 60 * 1000 }       // Wochenende
       ];
@@ -117,13 +116,7 @@ class BadgeCounterService {
           const windowEnd = (current?.windowEnd || 0);
           
           if (now > windowEnd) {
-            // Window abgelaufen - prüfe Rekord und starte neu
-            if (current?.count > 0) {
-              this.updateMaxBingeForTimeframe(userId, timeframe.key, current.count).catch(error =>
-                console.error(`❌ Fehler beim ${timeframe.key}-Binge-Update:`, error)
-              );
-            }
-            
+            // Window abgelaufen - starte neu
             return {
               count: 1,
               windowEnd: now + timeframe.duration,
@@ -143,18 +136,6 @@ class BadgeCounterService {
     }
   }
 
-  /**
-   * Aktualisiere Max-Binge für spezifischen Timeframe
-   */
-  private async updateMaxBingeForTimeframe(userId: string, timeframe: string, count: number): Promise<void> {
-    const maxBingeRef = firebase.database().ref(`badgeCounters/${userId}/maxBingeByTimeframe/${timeframe}`);
-    await maxBingeRef.transaction((current) => {
-      return Math.max(current || 0, count);
-    });
-    
-    // Auch globales maxBingeEpisodes aktualisieren
-    await this.updateMaxBingeIfHigher(userId, count);
-  }
 
   /**
    * 🧹 Manuelle Cleanup-Funktion für abgelaufene Binge-Sessions
@@ -162,16 +143,15 @@ class BadgeCounterService {
   async finalizeBingeSession(userId: string): Promise<void> {
     try {
       const now = Date.now();
-      const timeframes = ['2hours', '4hours', '1day', '2days'];
+      const timeframes = ['4hours', '1day', '2days'];
       
       for (const timeframe of timeframes) {
         const bingeRef = firebase.database().ref(`badgeCounters/${userId}/bingeWindows/${timeframe}`);
         const snapshot = await bingeRef.once('value');
         const current = snapshot.val();
         
-        if (current?.windowEnd && now > current.windowEnd && current.count > 0) {
-          await this.updateMaxBingeForTimeframe(userId, timeframe, current.count);
-          await bingeRef.remove(); // Session beenden
+        if (current?.windowEnd && now > current.windowEnd) {
+          await bingeRef.remove(); // Abgelaufene Session entfernen
         }
       }
     } catch (error) {
@@ -179,15 +159,6 @@ class BadgeCounterService {
     }
   }
 
-  /**
-   * Hilfsfunktion: Aktualisiere maxBingeEpisodes nur wenn höher
-   */
-  private async updateMaxBingeIfHigher(userId: string, sessionCount: number): Promise<void> {
-    const maxBingeRef = firebase.database().ref(`badgeCounters/${userId}/maxBingeEpisodes`);
-    await maxBingeRef.transaction((current) => {
-      return Math.max(current || 0, sessionCount);
-    });
-  }
 
 
   /**
