@@ -108,7 +108,8 @@ export const SeriesGrid = ({
         (selectedGenre === 'Neue Episoden' &&
           typeof series.nextEpisode?.episode === 'number' &&
           series.nextEpisode?.nextEpisode &&
-          new Date(series.nextEpisode.nextEpisode).getTime() >= new Date().setHours(0, 0, 0, 0)) ||
+          new Date(series.nextEpisode.nextEpisode).getTime() >=
+            new Date().setHours(0, 0, 0, 0)) ||
         (selectedGenre === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
         selectedGenre === 'Zuletzt Hinzugefügt' ||
@@ -399,25 +400,17 @@ export const SeriesGrid = ({
               } else {
                 // Teilweise Staffel geschaut - Nur Badge-System Logging
                 // 🏆 Badge für einzelne Episoden loggen (KEINE Friend-Activities)
-                const { updateEpisodeCounters, recordBingeSession } =
-                  await import('../../utils/minimalActivityLogger');
+                const { updateEpisodeCounters } = await import(
+                  '../../utils/minimalActivityLogger'
+                );
 
-                // Batch-Binge-Detection für mehrere Episoden
-                if (previouslyUnwatched.length >= 3) {
-                  await recordBingeSession(
+                // Alle Episoden einzeln durchgehen für zeitbasierte Binge-Erkennung
+                for (const episode of previouslyUnwatched) {
+                  await updateEpisodeCounters(
                     user.uid,
-                    previouslyUnwatched.length
+                    false, // nicht rewatch
+                    episode.air_date || episode.airDate
                   );
-                } else {
-                  // Einzelne Episode-Counter-Updates
-                  for (const episode of previouslyUnwatched) {
-                    await updateEpisodeCounters(
-                      user.uid,
-                      series.id,
-                      false, // nicht rewatch
-                      episode.air_date || episode.airDate
-                    );
-                  }
                 }
               }
             }
@@ -485,12 +478,7 @@ export const SeriesGrid = ({
           const { updateEpisodeCounters } = await import(
             '../../utils/minimalActivityLogger'
           );
-          await updateEpisodeCounters(
-            user.uid,
-            series.id,
-            true,
-            episode.air_date
-          );
+          await updateEpisodeCounters(user.uid, true, episode.air_date);
         } else if (forceUnwatch && episode.watched) {
           // Unwatch-Activity: Keine Badge-Updates
           return; // Kein Batch für Unwatch
@@ -501,7 +489,6 @@ export const SeriesGrid = ({
           );
           await updateEpisodeCounters(
             user.uid,
-            series.id,
             isRewatch, // Rewatch-Flag korrekt setzen
             episode.air_date || episode.airDate
           );
@@ -668,35 +655,43 @@ export const SeriesGrid = ({
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
       const fullHeight = document.body.offsetHeight;
-      
+
       // Berechne Grid-Parameter
       const cardWidth = 230;
       const cardHeight = 444;
       const gap = 75;
       let columns = Math.floor(window.innerWidth / (cardWidth + gap));
       if (columns < 1) columns = 1;
-      
+
       const rowHeight = cardHeight + gap;
       const viewportStart = Math.max(0, scrollTop - windowHeight);
       const viewportEnd = scrollTop + windowHeight * 2; // Buffer für smooth scrolling
-      
+
       // Berechne sichtbare Reihen
       const startRow = Math.floor(viewportStart / rowHeight);
       const endRow = Math.ceil(viewportEnd / rowHeight);
-      
+
       const newStartIndex = Math.max(0, startRow * columns);
-      const newEndIndex = Math.min(filteredSeries?.length || 0, (endRow + 1) * columns);
+      const newEndIndex = Math.min(
+        filteredSeries?.length || 0,
+        (endRow + 1) * columns
+      );
       const newVisibleCount = newEndIndex - newStartIndex;
-      
+
       // Virtualization: Aktiviere bei mehr als 40 Serien für bessere Performance
       if (filteredSeries?.length > 40) {
         setStartIndex(newStartIndex);
         setVisibleCount(Math.min(newVisibleCount, 60)); // Max 60 Cards gleichzeitig (reduziert von 80)
       } else {
         // Bei wenigen Serien: normales infinite scroll, aber limitiert auf 40 max
-        if (scrollTop + windowHeight >= fullHeight - 1000 && visibleCount < Math.min(40, filteredSeries?.length || 0)) {
+        if (
+          scrollTop + windowHeight >= fullHeight - 1000 &&
+          visibleCount < Math.min(40, filteredSeries?.length || 0)
+        ) {
           const itemsToAdd = Math.min(columns, 8); // Reduziert von 12 auf 8
-          setVisibleCount((prev) => Math.min(prev + itemsToAdd, 40, filteredSeries?.length || 0));
+          setVisibleCount((prev) =>
+            Math.min(prev + itemsToAdd, 40, filteredSeries?.length || 0)
+          );
         }
       }
     };
@@ -771,17 +766,21 @@ export const SeriesGrid = ({
   const cardHeight = 444;
   const gap = 75;
   const cardWidth = 230;
-  const columns = Math.max(1, Math.floor(window.innerWidth / (cardWidth + gap)));
+  const columns = Math.max(
+    1,
+    Math.floor(window.innerWidth / (cardWidth + gap))
+  );
   const rowHeight = cardHeight + gap;
-  
+
   const topSpacerHeight = shouldVirtualize
-    ? Math.floor(startIndex / columns) * rowHeight 
+    ? Math.floor(startIndex / columns) * rowHeight
     : 0;
-    
+
   const remainingItems = filteredSeries?.length - startIndex - visibleCount;
-  const bottomSpacerHeight = shouldVirtualize && remainingItems > 0
-    ? Math.ceil(remainingItems / columns) * rowHeight
-    : 0;
+  const bottomSpacerHeight =
+    shouldVirtualize && remainingItems > 0
+      ? Math.ceil(remainingItems / columns) * rowHeight
+      : 0;
 
   return (
     <>
@@ -790,7 +789,7 @@ export const SeriesGrid = ({
         {topSpacerHeight > 0 && (
           <Box sx={{ height: `${topSpacerHeight}px`, width: '100%' }} />
         )}
-        
+
         <Box
           sx={{
             display: 'flex',
@@ -803,7 +802,7 @@ export const SeriesGrid = ({
         >
           {visibleSeries?.map((series, index) => (
             <Box
-              key={series.id || series.nmr || (startIndex + index)}
+              key={series.id || series.nmr || startIndex + index}
               sx={{ width: '230px', height: '444px' }}
             >
               <SeriesCard
@@ -817,7 +816,7 @@ export const SeriesGrid = ({
             </Box>
           ))}
         </Box>
-        
+
         {/* Bottom Spacer für Virtualization */}
         {bottomSpacerHeight > 0 && (
           <Box sx={{ height: `${bottomSpacerHeight}px`, width: '100%' }} />

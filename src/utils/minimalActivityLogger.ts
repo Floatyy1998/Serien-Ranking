@@ -31,102 +31,6 @@ export const removeBadgeCallback = (userId: string) => {
 };
 
 /**
- * 🍿 Zeitbasierte Binge-Session Erkennung
- * Prüft ob Episodes in kurzer Zeit abgehakt wurden (auch einzeln)
- */
-const checkForTimeBingeSession = async (
-  userId: string,
-  tmdbId: number
-): Promise<void> => {
-  try {
-    const now = Date.now();
-    const timeWindows = [
-      { window: 2 * 60 * 60 * 1000, name: '2hours' }, // 2 Stunden
-      { window: 4 * 60 * 60 * 1000, name: '4hours' }, // 4 Stunden
-      { window: 24 * 60 * 60 * 1000, name: '1day' }, // 1 Tag
-    ];
-
-    // Hole letzte Episode-Aktivitäten des Users
-    const episodeActivitiesRef = firebase
-      .database()
-      .ref(`episodeActivity/${userId}`);
-    const snapshot = await episodeActivitiesRef
-      .orderByChild('timestamp')
-      .startAt(now - 24 * 60 * 60 * 1000)
-      .once('value');
-
-    const activities = snapshot.exists()
-      ? (Object.values(snapshot.val()) as any[])
-      : [];
-
-    // Aktueller Zeitstempel hinzufügen
-    activities.push({
-      tmdbId,
-      timestamp: now,
-      episodeId: `${tmdbId}-episode-${now}`,
-    });
-
-    // Prüfe verschiedene Zeitfenster
-    for (const { window, name } of timeWindows) {
-      const cutoff = now - window;
-      const recentEpisodes = activities.filter((a) => a.timestamp >= cutoff);
-
-      if (recentEpisodes.length >= 3) {
-        // Mindestens 3 Episoden für Binge
-
-        // Prüfe ob es eine neue Binge-Session ist (nicht schon erkannt)
-        const bingeKey = `${name}-${Math.floor(now / window)}`;
-        const existingBinge = await firebase
-          .database()
-          .ref(`badgeCounters/${userId}/timeBingeSessions/${bingeKey}`)
-          .once('value');
-
-        if (!existingBinge.exists()) {
-          // Neue Binge-Session!
-          await badgeCounterService.recordBingeSession(
-            userId,
-            recentEpisodes.length,
-            name
-          );
-
-          // Speichere diese Binge-Session um Duplikate zu vermeiden
-          await firebase
-            .database()
-            .ref(`badgeCounters/${userId}/timeBingeSessions/${bingeKey}`)
-            .set({
-              episodes: recentEpisodes.length,
-              timeframe: name,
-              timestamp: now,
-            });
-
-          break; // Nur eine Binge-Session pro Episode-Update
-        }
-      }
-    }
-
-    // Speichere aktuelle Episode-Aktivität (NUR für Binge-Tracking, wird nach 24h gelöscht)
-    await episodeActivitiesRef.push({
-      tmdbId,
-      timestamp: now,
-      episodeId: `${tmdbId}-episode-${now}`,
-    });
-
-    // Cleanup alte Aktivitäten (älter als 24h) - nur wenn wir Activities haben
-    if (snapshot.exists()) {
-      const oldActivities = Object.entries(snapshot.val()).filter(
-        ([_key, activity]: [string, any]) =>
-          activity.timestamp < now - 24 * 60 * 60 * 1000
-      );
-      for (const [key, _activity] of oldActivities) {
-        await episodeActivitiesRef.child(key).remove();
-      }
-    }
-  } catch (error) {
-    console.error('❌ Time-based binge check failed:', error);
-  }
-};
-
-/**
  * 🏠 Friend-Activity Logger (nur für Freunde-Feed)
  */
 const logFriendActivity = async (
@@ -135,18 +39,20 @@ const logFriendActivity = async (
 ): Promise<void> => {
   try {
     const activitiesRef = firebase.database().ref(`activities/${userId}`);
-    
+
     // Add new activity
     const newActivityRef = activitiesRef.push();
     await newActivityRef.set({
       ...activityData,
       timestamp: firebase.database.ServerValue.TIMESTAMP,
     });
-    
+
     // Limit to max 20 activities
-    const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
+    const snapshot = await activitiesRef
+      .orderByChild('timestamp')
+      .once('value');
     const activities = snapshot.val();
-    
+
     if (activities) {
       const activityKeys = Object.keys(activities);
       if (activityKeys.length > 20) {
@@ -156,14 +62,14 @@ const logFriendActivity = async (
           const timestampB = activities[b].timestamp || 0;
           return timestampA - timestampB;
         });
-        
+
         // Remove excess activities (keep only newest 20)
         const toRemove = sortedKeys.slice(0, activityKeys.length - 20);
         const updates: { [key: string]: null } = {};
-        toRemove.forEach(key => {
+        toRemove.forEach((key) => {
           updates[key] = null;
         });
-        
+
         await activitiesRef.update(updates);
       }
     }
@@ -186,7 +92,7 @@ const triggerBadgeCallback = async (
   // Filtere Badges die bereits in den letzten 5 Sekunden getriggert wurden
   const now = Date.now();
   const userRecentBadges = recentlyTriggeredBadges.get(userId) || new Set();
-  const filteredBadges = newBadges.filter(badge => {
+  const filteredBadges = newBadges.filter((badge) => {
     const badgeKey = `${badge.id}-${Math.floor(now / 5000)}`; // 5-Sekunden-Fenster
     return !userRecentBadges.has(badgeKey);
   });
@@ -197,7 +103,7 @@ const triggerBadgeCallback = async (
   }
 
   // Merke getriggerte Badges
-  filteredBadges.forEach(badge => {
+  filteredBadges.forEach((badge) => {
     const badgeKey = `${badge.id}-${Math.floor(now / 5000)}`;
     userRecentBadges.add(badgeKey);
   });
@@ -209,7 +115,7 @@ const triggerBadgeCallback = async (
     const currentUserBadges = recentlyTriggeredBadges.get(userId);
     if (currentUserBadges) {
       const cleanedBadges = new Set(
-        Array.from(currentUserBadges).filter(key => {
+        Array.from(currentUserBadges).filter((key) => {
           const keyTime = parseInt(key.split('-').pop() || '0');
           return keyTime > cleanupTime;
         })
@@ -235,7 +141,6 @@ const triggerBadgeCallback = async (
  */
 export const updateEpisodeCounters = async (
   userId: string,
-  tmdbId: number,
   isRewatch: boolean = false,
   airDate?: string
 ): Promise<EarnedBadge[]> => {
@@ -260,8 +165,8 @@ export const updateEpisodeCounters = async (
     // 4. Marathon-Counter (wöchentlich)
     await badgeCounterService.recordMarathonProgress(userId, 1);
 
-    // 4.5. Zeitbasierte Binge-Erkennung (neue Funktion)
-    await checkForTimeBingeSession(userId, tmdbId);
+    // 5. Zeitbasierte Binge-Session-Erkennung (48h-Window)
+    await badgeCounterService.recordBingeEpisode(userId);
 
     // 5. Badge-Check (Cache invalidieren für frische Counter-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);
@@ -281,40 +186,6 @@ export const updateEpisodeCounters = async (
 /**
  * Binge-Session für mehrere schnell geschaute Episoden
  */
-export const recordBingeSession = async (
-  userId: string,
-  episodeCount: number
-): Promise<EarnedBadge[]> => {
-  try {
-    let timeframe = '';
-    if (episodeCount >= 3 && episodeCount < 8) {
-      timeframe = '2hours';
-    } else if (episodeCount >= 8 && episodeCount < 12) {
-      timeframe = '4hours';
-    } else if (episodeCount >= 12) {
-      timeframe = '1day';
-    }
-
-    if (timeframe) {
-      await badgeCounterService.recordBingeSession(
-        userId,
-        episodeCount,
-        timeframe
-      );
-    }
-
-    // Badge-Check (Cache invalidieren für frische Counter-Daten)
-    const badgeSystem = getOfflineBadgeSystem(userId);
-    badgeSystem.invalidateCache(); // WICHTIG: Frische Daten nach Counter-Updates!
-    const newBadges = await badgeSystem.checkForNewBadges();
-    await triggerBadgeCallback(userId, newBadges);
-
-    return newBadges;
-  } catch (error) {
-    console.error('❌ Binge session recording failed:', error);
-    return [];
-  }
-};
 
 // =============================================================================
 // 📋 FRIEND-ACTIVITIES (NUR diese 4 werden noch geloggt)
@@ -463,19 +334,13 @@ export const logBatchEpisodesWatchedClean = async (
   episodes: any[]
 ): Promise<EarnedBadge[]> => {
   try {
-    // Behandle als Binge-Session wenn genug Episoden
-    if (episodes.length >= 3) {
-      return await recordBingeSession(userId, episodes.length);
-    }
-
-    // Bei weniger als 3 Episoden: Einzelne Episode-Counter-Updates
+    // Alle Episoden einzeln durchgehen für zeitbasierte Binge-Erkennung
     let allNewBadges: EarnedBadge[] = [];
 
     for (let i = 0; i < episodes.length; i++) {
       const episode = episodes[i];
       const newBadges = await updateEpisodeCounters(
         userId,
-        episode.tmdbId || 0,
         episode.isRewatch || false,
         episode.airDate
       );
@@ -504,12 +369,8 @@ export const logSeasonWatchedClean = async (
   seasonEpisodeCount: number = 1
 ): Promise<EarnedBadge[]> => {
   try {
-    // Behandle als Binge-Session wenn genug Episoden
-    if (seasonEpisodeCount >= 3) {
-      return await recordBingeSession(userId, seasonEpisodeCount);
-    }
-
-    // Sonst normale Episode-Counter-Updates
+    // Season-Complete ist nachträgliches Hinzufügen bereits gesehener Serien
+    // KEINE Binge-Session, nur normale Counter-Updates
     await badgeCounterService.updateStreakCounter(userId);
     await badgeCounterService.recordMarathonProgress(
       userId,
