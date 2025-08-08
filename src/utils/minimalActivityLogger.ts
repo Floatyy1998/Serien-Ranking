@@ -312,6 +312,7 @@ export const logRatingAdded = async (
 
     // Badge-Check (Collector-Badges basieren auf echten Rating-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);
+    badgeSystem.invalidateCache(); // WICHTIG: Cache invalidieren für frische Rating-Daten!
     const newBadges = await badgeSystem.checkForNewBadges();
     await triggerBadgeCallback(userId, newBadges);
 
