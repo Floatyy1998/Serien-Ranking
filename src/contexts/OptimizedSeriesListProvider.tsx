@@ -56,7 +56,7 @@ export const SeriesListProvider = ({
   } = useEnhancedFirebaseCache<Record<string, Series>>(
     user ? `${user.uid}/serien` : '',
     {
-      ttl: 5 * 60 * 1000, // 5 Minuten Cache
+      ttl: 24 * 60 * 60 * 1000, // 24h Cache - offline kann eh nichts geändert werden
       useRealtimeListener: true, // Realtime für sofortige Updates
       enableOfflineSupport: true, // Offline-First Unterstützung
       syncOnReconnect: true, // Auto-Sync bei Reconnect

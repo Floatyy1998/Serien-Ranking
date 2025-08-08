@@ -305,7 +305,7 @@ export const MainPage: React.FC = () => {
           {isOffline
             ? '📱 OFFLINE MODUS - Zeige gecachte Daten'
             : '📦 CACHE MODUS - Daten aus Cache geladen'}{' '}
-          ({seriesList.length} Serien verfügbar)
+          ({seriesList.length + movieList.length} Serien und Filme verfügbar)
         </Box>
       )}
 

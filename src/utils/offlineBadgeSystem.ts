@@ -18,7 +18,7 @@ export class OfflineBadgeSystem {
   private userId: string;
   private cachedData: any = null;
   private lastCacheTime: number = 0;
-  private CACHE_DURATION = 5 * 60 * 1000; // 5 Minuten Cache
+  private CACHE_DURATION = 30 * 60 * 1000; // 30 Minuten Cache
   private cachedBadges: EarnedBadge[] | null = null;
   private cachedProgress: Record<string, BadgeProgress> | null = null;
 

@@ -1,17 +1,22 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { useAuth } from '../App';
+import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { Movie } from '../interfaces/Movie';
 
 interface MovieListContextType {
   movieList: Movie[];
   loading: boolean;
+  refetchMovies: () => void;
+  isOffline: boolean;
+  isStale: boolean;
 }
 
 export const MovieListContext = createContext<MovieListContextType>({
   movieList: [],
   loading: true,
+  refetchMovies: () => {},
+  isOffline: false,
+  isStale: false,
 });
 
 export const MovieListProvider = ({
@@ -20,68 +25,37 @@ export const MovieListProvider = ({
   children: React.ReactNode;
 }) => {
   const { user } = useAuth()!;
-  const [movieList, setMovieList] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-      setMovieList([]);
-      setLoading(false);
-      return;
+  // 🚀 Enhanced Cache mit Offline-Support für Filme
+  const {
+    data: movieData,
+    loading,
+    refetch,
+    isStale,
+    isOffline,
+  } = useEnhancedFirebaseCache<Record<string, Movie>>(
+    user ? `${user.uid}/filme` : '',
+    {
+      ttl: 24 * 60 * 60 * 1000, // 24h Cache - offline kann eh nichts geändert werden
+      useRealtimeListener: true, // Realtime für sofortige Updates
+      enableOfflineSupport: true, // Offline-First Unterstützung
+      syncOnReconnect: true, // Auto-Sync bei Reconnect
     }
+  );
 
-    // 🚀 Smart Loading: Erst cached Daten laden, dann Firebase Listener
-    let cachedData: Movie[] = [];
-    try {
-      const cached = localStorage.getItem(`movieCache_${user.uid}`);
-      if (cached) {
-        cachedData = JSON.parse(cached);
-        setMovieList(cachedData);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.warn('Failed to load cached movies:', error);
-    }
-
-    setLoading(cachedData.length === 0); // Nur loading wenn kein Cache
-    const ref = firebase.database().ref(`${user.uid}/filme`);
-
-    let lastUpdateTime = 0;
-    const UPDATE_THROTTLE = 1000; // Max 1 Update pro Sekunde
-
-    ref.on('value', (snapshot) => {
-      const now = Date.now();
-      if (now - lastUpdateTime < UPDATE_THROTTLE) return;
-      lastUpdateTime = now;
-
-      const data = snapshot.val();
-      const newMovieList = data ? (Object.values(data) as Movie[]) : [];
-
-      // Nur Update wenn sich Daten wirklich geändert haben
-      if (JSON.stringify(newMovieList) !== JSON.stringify(cachedData)) {
-        setMovieList(newMovieList);
-
-        // Cache aktualisieren (async)
-        try {
-          localStorage.setItem(
-            `movieCache_${user.uid}`,
-            JSON.stringify(newMovieList)
-          );
-        } catch (error) {
-          console.warn('Failed to cache movies:', error);
-        }
-      }
-
-      setLoading(false);
-    });
-
-    return () => {
-      ref.off();
-    };
-  }, [user]);
+  // Konvertiere Object zu Array
+  const movieList: Movie[] = movieData ? Object.values(movieData) : [];
 
   return (
-    <MovieListContext.Provider value={{ movieList, loading }}>
+    <MovieListContext.Provider
+      value={{
+        movieList,
+        loading,
+        refetchMovies: refetch,
+        isOffline,
+        isStale,
+      }}
+    >
       {children}
     </MovieListContext.Provider>
   );
