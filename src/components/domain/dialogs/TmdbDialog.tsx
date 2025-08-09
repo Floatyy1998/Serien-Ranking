@@ -46,6 +46,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   onAdd,
   adding = false,
 }) => {
+  // Suchfeld für Cast/Crew
+  const [searchTerm, setSearchTerm] = useState('');
   const auth = useAuth();
   const user = auth?.user;
   const { seriesList } = useSeriesList();
@@ -562,6 +564,27 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             )}
             {currentTab === 1 && (
               <Box px={2} py={3}>
+                {/* Suchfeld für Cast/Crew */}
+                <Box mb={2} display='flex' justifyContent='center'>
+                  <input
+                    type='text'
+                    placeholder='Suche nach Name oder Rolle...'
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      maxWidth: 400,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: '1px solid #00fed7',
+                      outline: 'none',
+                      fontSize: 16,
+                      background: '#181818',
+                      color: '#fff',
+                      boxShadow: '0 2px 8px rgba(0,254,215,0.08)',
+                    }}
+                  />
+                </Box>
                 <Typography
                   variant='h4'
                   gutterBottom
@@ -597,8 +620,27 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
                         >
                           {castData
-                            .filter((actor: any) => actor.profile_path)
-                            .slice(0, 50)
+                            .filter((actor: any) => {
+                              if (!actor.profile_path) return false;
+                              if (!searchTerm) return true;
+                              const name = (actor.name || '').toLowerCase();
+                              // Rolle kann je nach API unterschiedlich sein
+                              let role = '';
+                              if (
+                                Array.isArray(actor.roles) &&
+                                actor.roles.length > 0 &&
+                                typeof actor.roles[0]?.character === 'string'
+                              ) {
+                                role = actor.roles[0].character.toLowerCase();
+                              } else if (typeof actor.character === 'string') {
+                                role = actor.character.toLowerCase();
+                              }
+                              return (
+                                name.includes(searchTerm.toLowerCase()) ||
+                                role.includes(searchTerm.toLowerCase())
+                              );
+                            })
+                            .slice(0, 40)
                             .map((actor: any) => (
                               <Box
                                 key={`cast-${actor.id}-${actor.credit_id}`}
@@ -690,8 +732,27 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
                         >
                           {crewData
-                            .filter((person: any) => person.profile_path)
-                            .slice(0, 50)
+                            .filter((person: any) => {
+                              if (!person.profile_path) return false;
+                              if (!searchTerm) return true;
+                              const name = (person.name || '').toLowerCase();
+                              // Job kann je nach API unterschiedlich sein
+                              let job = '';
+                              if (
+                                person.jobs &&
+                                person.jobs[0] &&
+                                person.jobs[0].job
+                              ) {
+                                job = person.jobs[0].job.toLowerCase();
+                              } else if (person.job) {
+                                job = person.job.toLowerCase();
+                              }
+                              return (
+                                name.includes(searchTerm.toLowerCase()) ||
+                                job.includes(searchTerm.toLowerCase())
+                              );
+                            })
+                            .slice(0, 40)
                             .sort((a: any, b: any) => {
                               // Definiere Wichtigkeits-Ranking (niedrigere Zahl = wichtiger)
                               const getJobPriority = (job: string) => {
