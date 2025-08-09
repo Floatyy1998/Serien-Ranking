@@ -31,17 +31,78 @@ const getRewatchColor = (watchCount: number): string => {
   }
 };
 
-// Neue Hilfsfunktion, um verbleibende Folgen zu zählen
+// Hilfsfunktion um überlappende Episoden zwischen Staffeln zu bereinigen (TMDB-Problem)
+const cleanOverlappingEpisodes = (series: Series) => {
+  if (!series.seasons || series.seasons.length <= 1) return series.seasons || [];
+  
+  // Sammle alle Episode-IDs und Daten aus späteren Staffeln
+  const laterSeasonEpisodes = new Set<number>();
+  const laterSeasonDates = new Set<string>();
+  
+  // Durchlaufe Staffeln von hinten nach vorne (Staffel 2, 3, etc.)
+  for (let i = series.seasons.length - 1; i >= 1; i--) {
+    const season = series.seasons[i];
+    if (season.episodes && Array.isArray(season.episodes)) {
+      season.episodes.forEach(episode => {
+        laterSeasonEpisodes.add(episode.id);
+        if (episode.air_date) {
+          laterSeasonDates.add(episode.air_date);
+        }
+      });
+    }
+  }
+  
+  // Bereinige jede Staffel
+  return series.seasons.map((season, seasonIndex) => {
+    if (!season.episodes || !Array.isArray(season.episodes)) {
+      return season;
+    }
+    
+    if (seasonIndex === 0) {
+      // Staffel 1: Entferne Episoden, die in späteren Staffeln vorkommen
+      const cleanedEpisodes = season.episodes.filter(episode => {
+        // Behalte Episode nur wenn sie nicht in späteren Staffeln vorkommt
+        const hasIdConflict = laterSeasonEpisodes.has(episode.id);
+        const hasDateConflict = episode.air_date && laterSeasonDates.has(episode.air_date);
+        
+        return !hasIdConflict && !hasDateConflict;
+      });
+      
+      return {
+        ...season,
+        episodes: cleanedEpisodes
+      };
+    }
+    
+    // Andere Staffeln: Dedupliziere nur nach Datum innerhalb der Staffel
+    const seenDates = new Set<string>();
+    const cleanedEpisodes = season.episodes.filter(episode => {
+      if (!episode.air_date) return true;
+      
+      if (seenDates.has(episode.air_date)) {
+        return false;
+      }
+      
+      seenDates.add(episode.air_date);
+      return true;
+    });
+    
+    return {
+      ...season,
+      episodes: cleanedEpisodes
+    };
+  });
+};
+
+// Neue Hilfsfunktion, um verbleibende Folgen zu zählen (mit Bereinigung)
 const countRemainingEpisodes = (series: Series): number => {
   const now = new Date();
   let count = 0;
 
-  // Überprüfung, ob seasons existiert und ein Array ist
-  if (!series.seasons || !Array.isArray(series.seasons)) {
-    return count;
-  }
+  // Verwende bereinigte Staffeln statt der Original-Staffeln
+  const cleanedSeasons = cleanOverlappingEpisodes(series);
 
-  for (const season of series.seasons) {
+  for (const season of cleanedSeasons) {
     // Überprüfung, ob episodes existiert und ein Array ist
     if (!season.episodes || !Array.isArray(season.episodes)) {
       continue;
