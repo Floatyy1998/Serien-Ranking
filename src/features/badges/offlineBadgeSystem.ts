@@ -622,12 +622,44 @@ export class OfflineBadgeSystem {
     const weeklyEpisodes = Object.values(marathonWeeks as Record<string, number>);
     const maxWeeklyEpisodes = weeklyEpisodes.length > 0 ? Math.max(...weeklyEpisodes) : 0;
 
+    // Aktuelle Woche berechnen und Timer hinzufügen
+    const currentWeekKey = this.getCurrentWeekKey();
+    const currentWeekEpisodes = marathonWeeks[currentWeekKey] || 0;
+    const timeRemainingInWeek = this.getTimeRemainingInWeek();
+
     return {
       badgeId: badge.id,
-      current: maxWeeklyEpisodes,
+      current: Math.max(maxWeeklyEpisodes, currentWeekEpisodes), // Zeige das bessere von beiden
       total: badge.requirements.episodes,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
+      timeRemaining: timeRemainingInWeek,
+      sessionActive: currentWeekEpisodes > 0 // Marathon-Session ist aktiv wenn diese Woche Episoden geschaut wurden
     };
+  }
+
+  /**
+   * 🕰️ Berechne verbleibende Zeit bis Wochenende
+   */
+  private getTimeRemainingInWeek(): number {
+    const now = new Date();
+    const endOfWeek = new Date(now);
+    
+    // Setze auf Sonntag 23:59:59
+    const daysUntilSunday = 7 - now.getDay(); // 0 = Sonntag, 1 = Montag, etc.
+    endOfWeek.setDate(now.getDate() + (daysUntilSunday === 7 ? 0 : daysUntilSunday));
+    endOfWeek.setHours(23, 59, 59, 999);
+    
+    return Math.max(0, Math.ceil((endOfWeek.getTime() - now.getTime()) / 1000));
+  }
+
+  /**
+   * 📅 Aktueller Wochenschlüssel
+   */
+  private getCurrentWeekKey(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const week = Math.ceil((now.getTime() - new Date(year, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
+    return `${year}-W${week}`;
   }
 
   private getStreakProgress(badge: Badge, badgeCounters: any): BadgeProgress | null {
