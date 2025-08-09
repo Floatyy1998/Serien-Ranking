@@ -86,7 +86,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     try {
       setCastLoading(true);
       const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-      const url = `https://api.themoviedb.org/3/${type}/${tmdbId}/aggregate_credits?api_key=${TMDB_API_KEY}&language=de-DE`;
+      let url = '';
+      if (type === 'tv') {
+        url = `https://api.themoviedb.org/3/tv/${tmdbId}/aggregate_credits?api_key=${TMDB_API_KEY}&language=de-DE`;
+      } else {
+        url = `https://api.themoviedb.org/3/movie/${tmdbId}/credits?api_key=${TMDB_API_KEY}&language=de-DE`;
+      }
       const response = await fetch(url);
       const result = await response.json();
       setCastData(result.cast || []);
