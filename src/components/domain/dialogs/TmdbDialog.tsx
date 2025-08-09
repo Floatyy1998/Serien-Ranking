@@ -98,8 +98,6 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       const result = await response.json();
       setCastData(result.cast || []);
       setCrewData(result.crew || []);
-      console.log('Cast Data:', result.cast);
-      console.log('Crew Data:', result.crew);
     } catch (error) {
       console.error('Error fetching cast data:', error);
       setCastData([]);
