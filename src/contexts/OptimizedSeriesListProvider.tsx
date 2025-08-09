@@ -8,8 +8,8 @@ import {
 } from 'react';
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { Series } from '../interfaces/Series';
-import { detectNewSeasons } from '../utils/newSeasonDetection';
+import { Series } from '../types/Series';
+import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
 
 interface SeriesListContextType {
   seriesList: Series[];

@@ -16,17 +16,17 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom';
-import { VerifiedRoute } from './components/auth/VerifiedRoute';
+import { VerifiedRoute } from './features/auth/VerifiedRoute';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
-import { UsernameRequiredDialog } from './components/dialogs/UsernameRequiredDialog';
+import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
 // Badge Migration Tools für Development
-import { BadgeProvider } from './contexts/BadgeProvider';
+import { BadgeProvider } from './features/badges/BadgeProvider';
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider } from './contexts/NotificationProvider';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
-import { StatsProvider } from './contexts/StatsProvider';
+import { StatsProvider } from './features/stats/StatsProvider';
 import { FriendsPage } from './pages/FriendsPage';
 import MainPage from './pages/MainPage';
 import { PublicListPage } from './pages/PublicListPage';
@@ -34,13 +34,13 @@ import StartPage from './pages/StartPage'; // Eager loading für bessere Offline
 import { UserProfilePage } from './pages/UserProfilePage';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { theme } from './theme';
-import './utils/migrateBadgeSystem';
-import './utils/testMigration';
+import './features/badges/migrateBadgeSystem';
+import './features/badges/testMigration';
 
 // Nur diese bleiben lazy
-const LoginPage = lazy(() => import('./components/auth/LoginPage'));
-const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
-const DuckFacts = lazy(() => import('./components/DuckFacts'));
+const LoginPage = lazy(() => import('./features/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./features/auth/RegisterPage'));
+const DuckFacts = lazy(() => import('./features/DuckFacts'));
 export const AuthContext = createContext<{
   user: Firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<Firebase.User | null>>;

@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { Movie } from '../interfaces/Movie';
+import { Movie } from '../types/Movie';
 
 interface MovieListContextType {
   movieList: Movie[];

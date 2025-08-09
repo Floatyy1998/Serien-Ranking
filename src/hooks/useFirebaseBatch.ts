@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import { useCallback, useRef } from 'react';
-import { performanceTracker } from '../components/dev/PerformanceMonitor';
+import { performanceTracker } from '../components/ui/PerformanceMonitor';
 
 interface BatchUpdate {
   path: string;

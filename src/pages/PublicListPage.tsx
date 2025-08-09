@@ -21,9 +21,9 @@ import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../App';
-import MovieGrid from '../components/movies/MovieGrid';
-import SeriesGrid from '../components/series/SeriesGrid';
-import { calculateCorrectAverageRating } from '../utils/rating';
+import MovieGrid from '../components/domain/movies/MovieGrid';
+import SeriesGrid from '../components/domain/series/SeriesGrid';
+import { calculateCorrectAverageRating } from '../lib/rating/rating';
 
 interface UserProfileData {
   profile: {

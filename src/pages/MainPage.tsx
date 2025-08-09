@@ -21,19 +21,19 @@ import {
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
-import BadgeButton from '../components/badges/BadgeButton';
-import Legend from '../components/common/Legend';
-import NewSeasonNotificationDialog from '../components/dialogs/NewSeasonNotificationDialog';
-import { ProfileDialog } from '../components/dialogs/ProfileDialog';
-import MovieSearchFilters from '../components/filters/MovieSearchFilters';
-import SearchFilters from '../components/filters/SearchFilters';
-import MovieGrid from '../components/movies/MovieGrid';
-import SeriesGrid from '../components/series/SeriesGrid';
+import BadgeButton from '../features/badges/BadgeButton';
+import Legend from '../components/ui/Legend';
+import NewSeasonNotificationDialog from '../components/domain/dialogs/NewSeasonNotificationDialog';
+import { ProfileDialog } from '../components/domain/dialogs/ProfileDialog';
+import MovieSearchFilters from '../components/forms/MovieSearchFilters';
+import SearchFilters from '../components/forms/SearchFilters';
+import MovieGrid from '../components/domain/movies/MovieGrid';
+import SeriesGrid from '../components/domain/series/SeriesGrid';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useNotifications } from '../contexts/NotificationProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
-import { calculateCorrectAverageRating } from '../utils/rating';
+import { calculateCorrectAverageRating } from '../lib/rating/rating';
 
 interface TabPanelProps {
   children?: React.ReactNode;

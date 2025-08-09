@@ -9,8 +9,8 @@ import {
 } from 'react';
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { Friend, FriendActivity, FriendRequest } from '../interfaces/Friend';
-import { getOfflineBadgeSystem } from '../utils/offlineBadgeSystem';
+import { Friend, FriendActivity, FriendRequest } from '../types/Friend';
+import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 
 interface OptimizedFriendsContextType {
   friends: Friend[];
