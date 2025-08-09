@@ -828,9 +828,11 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 getJobPriority(jobA) - getJobPriority(jobB)
                               );
                             })
-                            .map((person: any) => (
+                            .map((person: any, idx: number) => (
                               <Box
-                                key={`crew-${person.id}-${person.credit_id}`}
+                                key={`crew-${person.id}-${
+                                  person.credit_id || idx
+                                }`}
                                 onClick={() => handlePersonClick(person, true)}
                                 sx={{
                                   background: 'rgba(255,165,0,0.05)',
