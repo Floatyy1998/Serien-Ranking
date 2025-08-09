@@ -143,17 +143,81 @@ const WatchlistDialog = ({
     localStorage.setItem('hideRewatches', hideRewatches.toString());
   }, [hideRewatches]);
 
+  // Hilfsfunktion um überlappende Episoden zwischen Staffeln zu bereinigen (TMDB-Problem)
+  const cleanOverlappingEpisodes = (series: Series) => {
+    if (series.seasons.length <= 1) return series.seasons;
+    
+    // Sammle alle Episode-IDs und Daten aus späteren Staffeln
+    const laterSeasonEpisodes = new Set<number>();
+    const laterSeasonDates = new Set<string>();
+    
+    // Durchlaufe Staffeln von hinten nach vorne (Staffel 2, 3, etc.)
+    for (let i = series.seasons.length - 1; i >= 1; i--) {
+      const season = series.seasons[i];
+      season.episodes.forEach(episode => {
+        laterSeasonEpisodes.add(episode.id);
+        if (episode.air_date) {
+          laterSeasonDates.add(episode.air_date);
+        }
+      });
+    }
+    
+    // Bereinige jede Staffel
+    return series.seasons.map((season, seasonIndex) => {
+      if (seasonIndex === 0) {
+        // Staffel 1: Entferne Episoden, die in späteren Staffeln vorkommen
+        const cleanedEpisodes = season.episodes.filter(episode => {
+          // Behalte Episode nur wenn sie nicht in späteren Staffeln vorkommt
+          const hasIdConflict = laterSeasonEpisodes.has(episode.id);
+          const hasDateConflict = episode.air_date && laterSeasonDates.has(episode.air_date);
+          
+          return !hasIdConflict && !hasDateConflict;
+        });
+        
+        return {
+          ...season,
+          episodes: cleanedEpisodes
+        };
+      }
+      
+      // Andere Staffeln: Dedupliziere nur nach Datum innerhalb der Staffel
+      const seenDates = new Set<string>();
+      const cleanedEpisodes = season.episodes.filter(episode => {
+        if (!episode.air_date) return true;
+        
+        if (seenDates.has(episode.air_date)) {
+          return false;
+        }
+        
+        seenDates.add(episode.air_date);
+        return true;
+      });
+      
+      return {
+        ...season,
+        episodes: cleanedEpisodes
+      };
+    });
+  };
+
   // Definiere getNextUnwatchedEpisode ZUERST, bevor es verwendet wird
   const getNextUnwatchedEpisode = (series: Series) => {
+    // Bereinige überlappende Episoden zwischen Staffeln (TMDB-Problem)
+    const cleanedSeasons = cleanOverlappingEpisodes(series);
+    
     // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
-    for (const season of series.seasons) {
+    for (const season of cleanedSeasons) {
       for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
         if (!episode.watched) {
+          // Finde den Original-Index in der unbereinigten Serie
+          const originalSeason = series.seasons.find(s => s.seasonNumber === season.seasonNumber);
+          const originalIndex = originalSeason ? originalSeason.episodes.findIndex(e => e.id === episode.id) : i;
+          
           return {
             ...episode,
             seasonNumber: season.seasonNumber,
-            episodeIndex: i,
+            episodeIndex: originalIndex,
             isRewatch: false,
           };
         }
@@ -382,15 +446,22 @@ const WatchlistDialog = ({
     let nextEpisode = null;
     let rewatchInfo = null;
 
-    // Finde nächste ungesehene Episode
-    for (const season of series.seasons) {
+    // Bereinige überlappende Episoden zwischen Staffeln (TMDB-Problem)
+    const cleanedSeasons = cleanOverlappingEpisodes(series);
+
+    // Finde nächste ungesehene Episode mit bereinigten Staffeln
+    for (const season of cleanedSeasons) {
       for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
         if (!episode.watched) {
+          // Finde den Original-Index in der unbereinigten Serie
+          const originalSeason = series.seasons.find(s => s.seasonNumber === season.seasonNumber);
+          const originalIndex = originalSeason ? originalSeason.episodes.findIndex(e => e.id === episode.id) : i;
+          
           nextEpisode = {
             ...episode,
             seasonNumber: season.seasonNumber,
-            episodeIndex: i,
+            episodeIndex: originalIndex,
             isRewatch: false,
           };
           break;
