@@ -726,10 +726,20 @@ export class OfflineBadgeSystem {
   async getAllBadgeProgress(): Promise<Record<string, BadgeProgress>> {
     // Return cached progress if valid (but always refresh active sessions)
     if (this.isCacheValid() && this.cachedProgress) {
-      // Update nur aktive Sessions (Countdown kann sich ändern)
-      const updatedProgress = { ...this.cachedProgress };
-      const userData = this.cachedData;
+      // WICHTIG: Prüfe zuerst ob inzwischen Badges erreicht wurden
+      const currentBadges = await this.getUserBadges();
+      const earnedIds = new Set(currentBadges.map(b => b.id));
       
+      // Entferne erreichte Badges aus dem Progress
+      const updatedProgress: Record<string, BadgeProgress> = {};
+      Object.keys(this.cachedProgress).forEach(badgeId => {
+        if (!earnedIds.has(badgeId)) {
+          updatedProgress[badgeId] = this.cachedProgress![badgeId];
+        }
+      });
+      
+      // Update aktive Sessions (Countdown kann sich ändern)
+      const userData = this.cachedData;
       if (userData?.badgeCounters) {
         Object.keys(updatedProgress).forEach(badgeId => {
           const badge = BADGE_DEFINITIONS.find(b => b.id === badgeId);
@@ -737,6 +747,9 @@ export class OfflineBadgeSystem {
             const newProgress = this.getBingeProgress(badge, userData.badgeCounters);
             if (newProgress) {
               updatedProgress[badgeId] = newProgress;
+            } else {
+              // Kein Progress mehr (Session beendet) -> entfernen
+              delete updatedProgress[badgeId];
             }
           }
         });

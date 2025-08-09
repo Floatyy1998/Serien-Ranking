@@ -54,6 +54,17 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         });
       };
 
+      // Event-Handler für Badge-Dialog-Opening (leert newBadges State)
+      const handleBadgeDialogOpened = (event: CustomEvent) => {
+        const { userId, newBadges: earnedBadges } = event.detail;
+        if (userId === user.uid && earnedBadges?.length > 0) {
+          console.log('🏆 Badge Dialog geöffnet - newBadges State leeren');
+          setNewBadges([]);
+          setCurrentBadgeIndex(0);
+          setShowNotification(false);
+        }
+      };
+
       let cleanup: (() => void) | null = null;
 
       // Dynamischer Import um zirkuläre Abhängigkeiten zu vermeiden
@@ -67,8 +78,12 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         }
       );
 
+      // Event-Listener für Badge-Dialog-Events
+      window.addEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
+
       // Korrekte Cleanup-Funktion
       return () => {
+        window.removeEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
         if (cleanup) {
           cleanup();
         }
@@ -101,7 +116,24 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
     }, 500);
   };
 
-  const showBadgeOverview = () => {
+  const showBadgeOverview = async () => {
+    // Leere newBadges wenn der Dialog geöffnet wird
+    setNewBadges([]);
+    setCurrentBadgeIndex(0);
+    setShowNotification(false);
+    
+    // Cache invalidieren damit aktuelle Badge-Daten geladen werden
+    if (user) {
+      try {
+        const { getOfflineBadgeSystem } = await import('../utils/offlineBadgeSystem');
+        const badgeSystem = getOfflineBadgeSystem(user.uid);
+        badgeSystem.invalidateCache();
+        console.log('🔄 Badge-Overview: Cache invalidiert beim Öffnen');
+      } catch (error) {
+        console.warn('Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:', error);
+      }
+    }
+    
     setShowOverviewDialog(true);
   };
 
