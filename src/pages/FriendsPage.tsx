@@ -35,11 +35,11 @@ import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
-import FriendActivityDialog from '../components/dialogs/FriendActivityDialog';
-import { ProfileDialog } from '../components/dialogs/ProfileDialog';
+import FriendActivityDialog from '../components/domain/dialogs/FriendActivityDialog';
+import { ProfileDialog } from '../components/domain/dialogs/ProfileDialog';
 import { useNotifications } from '../contexts/NotificationProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
-import { Friend, FriendRequest, UserSearchResult } from '../interfaces/Friend';
+import { Friend, FriendRequest, UserSearchResult } from '../types/Friend';
 
 // 🚀 Custom Hook für effizientes Friend Online-Status Tracking
 const useFriendsOnlineStatus = (friends: Friend[]) => {
