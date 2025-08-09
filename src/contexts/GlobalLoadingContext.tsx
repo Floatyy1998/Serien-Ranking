@@ -55,18 +55,25 @@ export const GlobalLoadingProvider = ({
         {/* Material-UI Theme-basierte Skeleton-Struktur */}
         <div
           style={{
-            width: '100%',
-            minHeight: '100vh',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
             backgroundColor: '#121212', // Material-UI dark theme background
+            overflow: 'hidden',
+            zIndex: 9999,
           }}
         >
           {/* Container wie in der neuen MainPage */}
           <div
             style={{
               maxWidth: '100%',
+              height: '100%',
               margin: '0 auto',
               padding:
                 location.pathname === '/' ? '16px 8px 64px' : '16px 24px',
+              overflow: 'auto',
             }}
           >
             {/* Header Skeleton - nur für MainPage (/) */}
@@ -638,14 +645,14 @@ export const GlobalLoadingProvider = ({
                       display: 'flex',
                       flexWrap: 'wrap',
                       justifyContent: 'center',
-                      gap: '20px',
+                      gap: '75px',
                     }}
                   >
-                    {Array.from({ length: 12 }, (_, index) => (
+                    {Array.from({ length: 40 }, (_, index) => (
                       <div key={index} style={{ width: '230px' }}>
                         <div
                           style={{
-                            height: '385px', // SeriesCard height
+                            height: '444px', // Korrekte SeriesCard height
                             backgroundColor: '#1e1e1e',
                             border: '1px solid rgba(255, 255, 255, 0.12)',
                             borderRadius: '4px',
@@ -816,14 +823,14 @@ export const GlobalLoadingProvider = ({
                     display: 'flex',
                     flexWrap: 'wrap',
                     justifyContent: 'center',
-                    gap: '20px',
+                    gap: '75px',
                   }}
                 >
-                  {Array.from({ length: 20 }, (_, index) => (
+                  {Array.from({ length: 40 }, (_, index) => (
                     <div key={index} style={{ width: '230px' }}>
                       <div
                         style={{
-                          height: '385px',
+                          height: '444px',
                           backgroundColor: '#1e1e1e',
                           border: '1px solid rgba(255, 255, 255, 0.12)',
                           borderRadius: '4px',

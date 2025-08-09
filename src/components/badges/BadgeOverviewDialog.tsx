@@ -90,6 +90,27 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
         const badgeSystem = getOfflineBadgeSystem(user!.uid);
         badgeSystem.invalidateCache();
         
+        // Neue Badges sofort in den State übernehmen für sofortige UI-Update
+        setEarnedBadges(prevBadges => {
+          const existingIds = new Set(prevBadges.map(b => b.id));
+          const uniqueNewBadges = newBadges.filter((badge: any) => !existingIds.has(badge.id));
+          if (uniqueNewBadges.length > 0) {
+            return [...prevBadges, ...uniqueNewBadges];
+          }
+          return prevBadges;
+        });
+        
+        // KRITISCH: Badge-Provider State leeren, da Badges jetzt als "erreicht" gelten
+        // Importiere BadgeProvider dynamisch um zirkuläre Abhängigkeiten zu vermeiden
+        try {
+          // Löse das Badge-Button Problem: Leere den newBadges State im BadgeProvider
+          window.dispatchEvent(new CustomEvent('badgeDialogOpened', {
+            detail: { userId: user!.uid, newBadges }
+          }));
+        } catch (error) {
+          console.warn('Badge-Provider State konnte nicht geleert werden:', error);
+        }
+        
         loadBadgeData(); // Cache refresh bei neuen Badges
       }
     };
@@ -99,7 +120,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
     return () => {
       window.removeEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
     };
-  }, [open]);
+  }, [open, user]);
 
   // Auto-refresh für laufende Sessions (jede Sekunde)
   useEffect(() => {
