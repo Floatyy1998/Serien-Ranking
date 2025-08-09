@@ -163,7 +163,7 @@ export const updateEpisodeCounters = async (
     }
 
     // 4. Marathon-Counter (wöchentlich)
-    await badgeCounterService.recordMarathonProgress(userId, 1);
+    await badgeCounterService.recordMarathonEpisode(userId);
 
     // 5. Zeitbasierte Binge-Session-Erkennung (48h-Window)
     await badgeCounterService.recordBingeEpisode(userId);

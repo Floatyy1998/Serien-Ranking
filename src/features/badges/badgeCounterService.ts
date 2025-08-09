@@ -176,7 +176,21 @@ class BadgeCounterService {
 
 
   /**
-   * 🏃 Marathon-Session Counter (wöchentlich)
+   * 🏃 Marathon-Session Counter (wöchentlich) - Ein Episode zur aktuellen Woche hinzufügen
+   */
+  async recordMarathonEpisode(userId: string): Promise<void> {
+    try {
+      const weekKey = this.getWeekKey();
+      const marathonRef = firebase.database().ref(`badgeCounters/${userId}/marathonWeeks/${weekKey}`);
+      
+      await marathonRef.transaction((current) => (current || 0) + 1);
+    } catch (error) {
+      console.error('Fehler beim Marathon-Counter:', error);
+    }
+  }
+
+  /**
+   * 🏃 Marathon-Session Counter (wöchentlich) - LEGACY: Mehrere Episoden hinzufügen
    */
   async recordMarathonProgress(userId: string, episodeCount: number): Promise<void> {
     try {
@@ -187,6 +201,57 @@ class BadgeCounterService {
     } catch (error) {
       console.error('Fehler beim Marathon-Counter:', error);
     }
+  }
+
+  /**
+   * 📊 Aktuelle Marathon-Statistiken für Timer-Anzeige
+   */
+  async getMarathonStats(userId: string): Promise<{
+    currentWeekEpisodes: number;
+    bestWeekEpisodes: number;
+    timeRemainingInWeek: number;
+    currentWeekKey: string;
+  }> {
+    try {
+      const weekKey = this.getWeekKey();
+      const marathonWeeksRef = firebase.database().ref(`badgeCounters/${userId}/marathonWeeks`);
+      const snapshot = await marathonWeeksRef.once('value');
+      const marathonWeeks = snapshot.val() || {};
+      
+      const currentWeekEpisodes = marathonWeeks[weekKey] || 0;
+      const allWeeklyEpisodes = Object.values(marathonWeeks) as number[];
+      const bestWeekEpisodes = allWeeklyEpisodes.length > 0 ? Math.max(...allWeeklyEpisodes) : 0;
+      
+      return {
+        currentWeekEpisodes,
+        bestWeekEpisodes: Math.max(bestWeekEpisodes, currentWeekEpisodes),
+        timeRemainingInWeek: this.getTimeRemainingInWeek(),
+        currentWeekKey: weekKey
+      };
+    } catch (error) {
+      console.error('Fehler beim Lesen der Marathon-Stats:', error);
+      return {
+        currentWeekEpisodes: 0,
+        bestWeekEpisodes: 0,
+        timeRemainingInWeek: 0,
+        currentWeekKey: this.getWeekKey()
+      };
+    }
+  }
+
+  /**
+   * 🕰️ Berechne verbleibende Zeit bis Wochenende
+   */
+  private getTimeRemainingInWeek(): number {
+    const now = new Date();
+    const endOfWeek = new Date(now);
+    
+    // Setze auf Sonntag 23:59:59
+    const daysUntilSunday = 7 - now.getDay(); // 0 = Sonntag, 1 = Montag, etc.
+    endOfWeek.setDate(now.getDate() + (daysUntilSunday === 7 ? 0 : daysUntilSunday));
+    endOfWeek.setHours(23, 59, 59, 999);
+    
+    return Math.max(0, Math.ceil((endOfWeek.getTime() - now.getTime()) / 1000));
   }
 
   /**

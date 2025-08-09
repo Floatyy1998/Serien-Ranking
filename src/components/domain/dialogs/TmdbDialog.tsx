@@ -23,6 +23,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../App';
 import { useMovieList } from '../../../contexts/MovieListProvider';
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
+import { translateJob } from '../../../services/tmdbJobTranslations';
 
 interface TmdbDialogProps {
   open: boolean;
@@ -730,34 +731,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 variant='body2'
                                 sx={{ color: '#ffa500', fontStyle: 'italic' }}
                               >
-                                {person.job === 'Director' ? 'Regisseur' :
-                                 person.job === 'Producer' ? 'Produzent' :
-                                 person.job === 'Executive Producer' ? 'Ausführender Produzent' :
-                                 person.job === 'Co-Executive Producer' ? 'Co-Ausführender Produzent' :
-                                 person.job === 'Production Manager' ? 'Produktionsleiter' :
-                                 person.job === 'Writer' ? 'Drehbuchautor' :
-                                 person.job === 'Screenplay' ? 'Drehbuch' :
-                                 person.job === 'Story' ? 'Geschichte' :
-                                 person.job === 'Novel' ? 'Roman/Buchvorlage' :
-                                 person.job === 'Director of Photography' ? 'Kameramann' :
-                                 person.job === 'Camera Operator' ? 'Kameraoperateur' :
-                                 person.job === 'Editor' ? 'Cutter' :
-                                 person.job === 'Assistant Editor' ? 'Schnittassistent' :
-                                 person.job === 'Music' ? 'Musik' :
-                                 person.job === 'Original Music Composer' ? 'Filmmusik-Komponist' :
-                                 person.job === 'Additional Music' ? 'Zusätzliche Musik' :
-                                 person.job === 'Sound' ? 'Ton' :
-                                 person.job === 'Production Designer' ? 'Produktionsdesigner' :
-                                 person.job === 'Production Design' ? 'Produktionsdesign' :
-                                 person.job === 'Costume Design' ? 'Kostümdesign' :
-                                 person.job === 'Makeup Artist' ? 'Maskenbildner' :
-                                 person.job === 'Casting' ? 'Casting' :
-                                 person.job === 'Stunt Coordinator' ? 'Stunt-Koordinator' :
-                                 person.job === 'Stunt Double' ? 'Stunt-Double' :
-                                 person.job === 'Stand In' ? 'Stand-In' :
-                                 person.job === 'Visual Effects Supervisor' ? 'VFX Supervisor' :
-                                 person.job === 'Post Production Consulting' ? 'Postproduktions-Beratung' :
-                                 person.job}
+                                {translateJob(person.job)}
                               </Typography>
                             </Box>
                           ))}
@@ -1328,35 +1302,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   overflow: 'hidden',
                                 }}
                               >
-                                als{' '}
-                                {credit.job === 'Director' ? 'Regisseur' :
-                                 credit.job === 'Producer' ? 'Produzent' :
-                                 credit.job === 'Executive Producer' ? 'Ausführender Produzent' :
-                                 credit.job === 'Co-Executive Producer' ? 'Co-Ausführender Produzent' :
-                                 credit.job === 'Production Manager' ? 'Produktionsleiter' :
-                                 credit.job === 'Writer' ? 'Drehbuchautor' :
-                                 credit.job === 'Screenplay' ? 'Drehbuch' :
-                                 credit.job === 'Story' ? 'Geschichte' :
-                                 credit.job === 'Novel' ? 'Roman/Buchvorlage' :
-                                 credit.job === 'Director of Photography' ? 'Kameramann' :
-                                 credit.job === 'Camera Operator' ? 'Kameraoperateur' :
-                                 credit.job === 'Editor' ? 'Cutter' :
-                                 credit.job === 'Assistant Editor' ? 'Schnittassistent' :
-                                 credit.job === 'Music' ? 'Musik' :
-                                 credit.job === 'Original Music Composer' ? 'Filmmusik-Komponist' :
-                                 credit.job === 'Additional Music' ? 'Zusätzliche Musik' :
-                                 credit.job === 'Sound' ? 'Ton' :
-                                 credit.job === 'Production Designer' ? 'Produktionsdesigner' :
-                                 credit.job === 'Production Design' ? 'Produktionsdesign' :
-                                 credit.job === 'Costume Design' ? 'Kostümdesign' :
-                                 credit.job === 'Makeup Artist' ? 'Maskenbildner' :
-                                 credit.job === 'Casting' ? 'Casting' :
-                                 credit.job === 'Stunt Coordinator' ? 'Stunt-Koordinator' :
-                                 credit.job === 'Stunt Double' ? 'Stunt-Double' :
-                                 credit.job === 'Stand In' ? 'Stand-In' :
-                                 credit.job === 'Visual Effects Supervisor' ? 'VFX Supervisor' :
-                                 credit.job === 'Post Production Consulting' ? 'Postproduktions-Beratung' :
-                                 credit.job}
+                                als {translateJob(credit.job)}
                               </Typography>
 
                               <Box
