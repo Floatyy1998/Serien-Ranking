@@ -34,6 +34,7 @@ import { useNotifications } from '../contexts/NotificationProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
+import { getSeasonsArray } from '../lib/utils/seasonUtils';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -114,14 +115,14 @@ export const MainPage: React.FC = () => {
   // Separierte Statistiken für Serien und Filme
   const seriesStats = React.useMemo(() => {
     const totalWatchedEpisodes = seriesList.reduce((total, series) => {
-      if (series.seasons) {
-        return (
-          total +
-          series.seasons.reduce((seasonTotal: number, season: any) => {
+      const seasonsArray = getSeasonsArray(series.seasons);
+      return (
+        total +
+        seasonsArray.reduce((seasonTotal: number, season) => {
             return (
               seasonTotal +
-              (season.episodes || []).reduce(
-                (episodeTotal: number, ep: any) => {
+              season.episodes.reduce(
+                (episodeTotal: number, ep) => {
                   if (ep.watched) {
                     return episodeTotal + (ep.watchCount || 1);
                   }
@@ -132,17 +133,17 @@ export const MainPage: React.FC = () => {
             );
           }, 0)
         );
-      }
       return total;
     }, 0);
 
     const totalWatchtime = seriesList.reduce((total, series) => {
       if (series.seasons && series.episodeRuntime) {
-        const watchedEpisodeTime = series.seasons.reduce(
-          (seasonTotal: number, season: any) => {
+        const seasonsArray = getSeasonsArray(series.seasons);
+        const watchedEpisodeTime = seasonsArray.reduce(
+          (seasonTotal: number, season) => {
             return (
               seasonTotal +
-              (season.episodes || []).reduce((episodeTime: number, ep: any) => {
+              season.episodes.reduce((episodeTime: number, ep) => {
                 if (ep.watched) {
                   return (
                     episodeTime + (ep.watchCount || 1) * series.episodeRuntime

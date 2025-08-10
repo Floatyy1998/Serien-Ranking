@@ -8,9 +8,10 @@ import { useStats } from '../../../features/stats/StatsProvider';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCache';
 import { TodayEpisode } from '../../../types/TodayEpisode';
+import { getSeasonsArray } from '../../../lib/utils/seasonUtils';
 // Removed legacy imports - using minimalActivityLogger instead
 // Legacy import entfernt
-import { getFormattedTime } from '../../../lib/date/date.utils';
+import { getFormattedDate } from '../../../lib/date/date.utils';
 import { calculateOverallRating } from '../../../lib/rating/rating';
 import SeriesWatchedDialog from '../dialogs/SeriesWatchedDialog';
 import TodayEpisodesDialog from '../dialogs/TodayEpisodesDialog';
@@ -195,10 +196,10 @@ export const SeriesGrid = ({
             id: series.id,
             seriesTitle: series.title || 'Unbekannte Serie',
             episodeTitle: series.nextEpisode?.title || 'Unbekannte Episode',
-            releaseTime: getFormattedTime(episodeDate.toISOString()),
+            releaseTime: getFormattedDate(episodeDate.toISOString()),
             releaseTimestamp: episodeDate.getTime(),
             poster: series.poster?.poster || '',
-            seasonNumber: series.nextEpisode?.season || 0,
+            seasonNumber: series.nextEpisode?.season || 1,
             episodeNumber: series.nextEpisode?.episode || 0,
           });
         }
@@ -275,8 +276,12 @@ export const SeriesGrid = ({
     if (!user || !watchedDialogSeries || viewOnlyMode) return;
 
     const series = watchedDialogSeries;
-    const season = series.seasons.find(
-      (s: any) => s.seasonNumber === seasonNumber
+    
+    // Handle both Array and Object structure from Firebase
+    const seasonsArray = getSeasonsArray(series.seasons);
+    
+    const season = seasonsArray.find(
+      (s: any) => s && s.seasonNumber === seasonNumber
     );
     if (!season) return;
 
@@ -338,8 +343,8 @@ export const SeriesGrid = ({
         });
       }
 
-      const updatedSeasons = series.seasons.map((s: any) => {
-        if (s.seasonNumber === seasonNumber) {
+      const updatedSeasons = seasonsArray.map((s: any) => {
+        if (s && s.seasonNumber === seasonNumber) {
           return { ...s, episodes: updatedEpisodes };
         }
         return s;
@@ -409,7 +414,7 @@ export const SeriesGrid = ({
                   await updateEpisodeCounters(
                     user.uid,
                     false, // nicht rewatch
-                    episode.air_date || episode.airDate
+                    episode.air_date
                   );
                 }
               }
@@ -458,8 +463,9 @@ export const SeriesGrid = ({
       }
       return e;
     });
-    const updatedSeasons = series.seasons.map((s: any) => {
-      if (s.seasonNumber === seasonNumber) {
+    // Use the same seasonsArray from above
+    const updatedSeasons = seasonsArray.map((s: any) => {
+      if (s && s.seasonNumber === seasonNumber) {
         return { ...s, episodes: updatedEpisodes };
       }
       return s;
@@ -490,7 +496,7 @@ export const SeriesGrid = ({
           await updateEpisodeCounters(
             user.uid,
             isRewatch, // Rewatch-Flag korrekt setzen
-            episode.air_date || episode.airDate
+            episode.air_date
           );
 
           // 🎯 ZUSÄTZLICHE PRÜFUNG: Ist die ganze Staffel jetzt komplett nach einzelner Episode?
@@ -524,11 +530,14 @@ export const SeriesGrid = ({
 
     const series = watchedDialogSeries;
 
+    // Handle both Array and Object structure from Firebase
+    const seasonsArray = getSeasonsArray(series.seasons);
+
     // Sammle alle Episoden, die als gesehen markiert werden
     let episodesToMark: any[] = [];
 
-    const updatedSeasons = series.seasons.map((s: any) => {
-      if (s.seasonNumber <= confirmSeason) {
+    const updatedSeasons = seasonsArray.map((s: any) => {
+      if (s && s.seasonNumber <= confirmSeason) {
         // Sammle unwatched Episoden für Activity-Logging
         const unwatchedEpisodes = s.episodes.filter((e: any) => !e.watched);
         episodesToMark = episodesToMark.concat(
@@ -563,7 +572,7 @@ export const SeriesGrid = ({
           episodesToMark.map((episode) => ({
             tmdbId: series.id,
             isRewatch: false,
-            airDate: episode.air_date || episode.airDate || '',
+            airDate: episode.air_date || '',
           }))
         );
       }
@@ -580,11 +589,14 @@ export const SeriesGrid = ({
 
     const series = watchedDialogSeries;
 
+    // Handle both Array and Object structure from Firebase
+    const seasonsArray = getSeasonsArray(series.seasons);
+
     // Sammle alle Episoden, die als gesehen markiert werden
     let episodesToMark: any[] = [];
 
-    const updatedSeasons = series.seasons.map((s: any) => {
-      if (s.seasonNumber < seasonNumber) {
+    const updatedSeasons = seasonsArray.map((s: any) => {
+      if (s && s.seasonNumber < seasonNumber) {
         // Markiere alle Episoden in vorherigen Staffeln als gesehen
         const unwatchedEpisodes = s.episodes.filter((e: any) => !e.watched);
         episodesToMark = episodesToMark.concat(
@@ -598,7 +610,7 @@ export const SeriesGrid = ({
           ...s,
           episodes: s.episodes.map((e: any) => ({ ...e, watched: true })),
         };
-      } else if (s.seasonNumber === seasonNumber) {
+      } else if (s && s.seasonNumber === seasonNumber) {
         // Markiere alle Episoden bis zur gewählten Episode (inklusive) als gesehen
         const episodeIndex = s.episodes.findIndex(
           (e: any) => e.id === episodeId
@@ -641,7 +653,7 @@ export const SeriesGrid = ({
           episodesToMark.map((episode) => ({
             tmdbId: series.id,
             isRewatch: false,
-            airDate: episode.air_date || episode.airDate || '',
+            airDate: episode.air_date || '',
           }))
         );
       }

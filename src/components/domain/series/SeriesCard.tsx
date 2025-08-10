@@ -131,13 +131,11 @@ export const SeriesCard = ({
 
   // Einheitliche Episode-Datum Formatierung
   let dateString = '';
-  let timeString = '';
 
   if (currentSeries.nextEpisode?.nextEpisode) {
-    const { dateString: unifiedDate, timeString: unifiedTime } =
+    const { dateString: unifiedDate } =
       getUnifiedEpisodeDateTime(currentSeries.nextEpisode.nextEpisode);
     dateString = unifiedDate;
-    timeString = unifiedTime;
   }
   const [open, setOpen] = useState(false);
   const [ratings, setRatings] = useState<{ [key: string]: number | string }>(
@@ -780,8 +778,7 @@ export const SeriesCard = ({
                   }}
                 >
                   S{currentSeries.nextEpisode?.season}E
-                  {currentSeries.nextEpisode?.episode} • {dateString} um{' '}
-                  {timeString}
+                  {currentSeries.nextEpisode?.episode} • {dateString}
                 </Typography>
               </Box>
             )}

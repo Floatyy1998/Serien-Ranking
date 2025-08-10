@@ -17,6 +17,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../../types/Series';
+import { getSeasonsArray } from '../../../lib/utils/seasonUtils';
 import { getUnifiedEpisodeDate } from '../../../lib/date/episodeDate.utils';
 import RewatchDialog from './RewatchDialog';
 import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
@@ -91,19 +92,32 @@ const SeriesWatchedDialog = ({
     currentWatchCount: number;
   } | null>(null);
   // React 19: Automatische Memoization - kein useMemo nötig
-  const uniqueSeasons = (() =>
-    series?.seasons?.filter(
+  const uniqueSeasons = (() => {
+    if (!series?.seasons) return [];
+    
+    const seasonsArray = getSeasonsArray(series.seasons);
+    
+    // Remove duplicates by seasonNumber
+    return seasonsArray.filter(
       (season, index, self) =>
-        index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
-    ))();
+        index === self.findIndex((s) => s && s.seasonNumber === season.seasonNumber)
+    );
+  })();
 
-  // React 19: Automatische Memoization - kein useMemo nötig
+  // React 19: Automatische Memoization - kein useMemo nötig  
   const nextUnwatchedEpisode = (() => {
-    if (!series.seasons || series.seasons.length === 0) {
+    if (!series?.seasons) return null;
+    
+    const seasonsArray = getSeasonsArray(series.seasons);
+    
+    if (seasonsArray.length === 0) {
       return null;
     }
-    for (const season of series.seasons) {
-      for (let i = 0; i < season?.episodes?.length; i++) {
+    for (const season of seasonsArray) {
+      if (!season?.episodes || !Array.isArray(season.episodes)) {
+        continue;
+      }
+      for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
         if (!episode.watched) {
           return {
@@ -180,7 +194,7 @@ const SeriesWatchedDialog = ({
           );
           setRewatchItem({
             type: 'season',
-            name: `Staffel ${seasonNumber + 1}`,
+            name: `Staffel ${seasonNumber}`,
             seasonNumber,
             currentWatchCount: avgWatchCount,
           });
@@ -200,7 +214,9 @@ const SeriesWatchedDialog = ({
   ) => {
     if (isReadOnly) return;
 
-    const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
+    // Handle Firebase Object vs Array structure
+    const seasonsArray = getSeasonsArray(series.seasons);
+    const season = seasonsArray.find((s) => s.seasonNumber === seasonNumber);
     if (!season) return;
 
     const episode = season.episodes[episodeIndex];
@@ -226,7 +242,7 @@ const SeriesWatchedDialog = ({
       .some((e) => !e.watched);
 
     // Prüfe ob vorherige Staffeln komplett ungesehen sind
-    const hasPreviousSeasonUnwatched = series.seasons
+    const hasPreviousSeasonUnwatched = seasonsArray
       .filter((s) => s.seasonNumber < seasonNumber)
       .some((s) => s.episodes.some((e) => !e.watched));
 
@@ -367,7 +383,7 @@ const SeriesWatchedDialog = ({
                 >
                   <div className='flex items-center gap-3'>
                     <span className='text-lg font-medium'>
-                      Staffel {season.seasonNumber + 1}
+                      Staffel {season.seasonNumber}
                     </span>
                     <span
                       className='text-sm text-gray-400'

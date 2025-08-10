@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Series } from '../../../types/Series';
-import { getFormattedDate, getFormattedTime } from '../../../lib/date/date.utils';
+import { getFormattedDate } from '../../../lib/date/date.utils';
 interface SeriesEpisodesDialogProps {
   open: boolean;
   onClose: () => void;
@@ -134,8 +134,7 @@ const SeriesEpisodesDialog = ({
                     component='span'
                     sx={{ fontSize: '0.8rem', color: 'gray' }}
                   >
-                    {getFormattedDate(episode.airstamp)} |{' '}
-                    {getFormattedTime(episode.airstamp)}
+                    {getFormattedDate(episode.airstamp)}
                   </Box>
                 </Box>
               </ListItem>

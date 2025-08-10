@@ -2,6 +2,7 @@ import { Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { Check } from 'lucide-react';
 import React from 'react';
 import { Series } from '../../../../types/Series';
+import { getSeasonsArray } from '../../../../lib/utils/seasonUtils';
 import { getUnifiedEpisodeDate } from '../../../../lib/date/episodeDate.utils';
 import { DraggableSeriesItem } from './DraggableSeriesItem';
 
@@ -31,78 +32,16 @@ const getRewatchColor = (watchCount: number): string => {
   }
 };
 
-// Hilfsfunktion um überlappende Episoden zwischen Staffeln zu bereinigen (TMDB-Problem)
-const cleanOverlappingEpisodes = (series: Series) => {
-  if (!series.seasons || series.seasons.length <= 1) return series.seasons || [];
-  
-  // Sammle alle Episode-IDs und Daten aus späteren Staffeln
-  const laterSeasonEpisodes = new Set<number>();
-  const laterSeasonDates = new Set<string>();
-  
-  // Durchlaufe Staffeln von hinten nach vorne (Staffel 2, 3, etc.)
-  for (let i = series.seasons.length - 1; i >= 1; i--) {
-    const season = series.seasons[i];
-    if (season.episodes && Array.isArray(season.episodes)) {
-      season.episodes.forEach(episode => {
-        laterSeasonEpisodes.add(episode.id);
-        if (episode.air_date) {
-          laterSeasonDates.add(episode.air_date);
-        }
-      });
-    }
-  }
-  
-  // Bereinige jede Staffel
-  return series.seasons.map((season, seasonIndex) => {
-    if (!season.episodes || !Array.isArray(season.episodes)) {
-      return season;
-    }
-    
-    if (seasonIndex === 0) {
-      // Staffel 1: Entferne Episoden, die in späteren Staffeln vorkommen
-      const cleanedEpisodes = season.episodes.filter(episode => {
-        // Behalte Episode nur wenn sie nicht in späteren Staffeln vorkommt
-        const hasIdConflict = laterSeasonEpisodes.has(episode.id);
-        const hasDateConflict = episode.air_date && laterSeasonDates.has(episode.air_date);
-        
-        return !hasIdConflict && !hasDateConflict;
-      });
-      
-      return {
-        ...season,
-        episodes: cleanedEpisodes
-      };
-    }
-    
-    // Andere Staffeln: Dedupliziere nur nach Datum innerhalb der Staffel
-    const seenDates = new Set<string>();
-    const cleanedEpisodes = season.episodes.filter(episode => {
-      if (!episode.air_date) return true;
-      
-      if (seenDates.has(episode.air_date)) {
-        return false;
-      }
-      
-      seenDates.add(episode.air_date);
-      return true;
-    });
-    
-    return {
-      ...season,
-      episodes: cleanedEpisodes
-    };
-  });
-};
 
-// Neue Hilfsfunktion, um verbleibende Folgen zu zählen (mit Bereinigung)
+// Neue Hilfsfunktion, um verbleibende Folgen zu zählen
 const countRemainingEpisodes = (series: Series): number => {
   const now = new Date();
   let count = 0;
 
-  // Verwende bereinigte Staffeln statt der Original-Staffeln
-  const cleanedSeasons = cleanOverlappingEpisodes(series);
+  // Mit TVDB sind die Episoden bereits sauber, keine Bereinigung nötig
+  const seasonsArray = getSeasonsArray(series.seasons);
 
-  for (const season of cleanedSeasons) {
+  for (const season of seasonsArray) {
     // Überprüfung, ob episodes existiert und ein Array ist
     if (!season.episodes || !Array.isArray(season.episodes)) {
       continue;
@@ -194,7 +133,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
             {nextUnwatchedEpisode && !nextUnwatchedEpisode.isRewatch && (
               <>
                 <div className='mt-1 text-xs text-gray-400'>
-                  Nächste Folge: S{nextUnwatchedEpisode.seasonNumber + 1} E
+                  Nächste Folge: S{nextUnwatchedEpisode.seasonNumber} E
                   {nextUnwatchedEpisode.episodeIndex + 1} -{' '}
                   {nextUnwatchedEpisode.name}
                 </div>
@@ -216,7 +155,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
                   >
                     Rewatch:
                   </span>{' '}
-                  S{rewatchInfo.seasonNumber + 1} E
+                  S{rewatchInfo.seasonNumber} E
                   {rewatchInfo.episodeIndex + 1} - {rewatchInfo.name}
                 </div>
                 <div
@@ -262,7 +201,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
                     >
                       Rewatch:
                     </span>{' '}
-                    S{nextUnwatchedEpisode.seasonNumber + 1} E
+                    S{nextUnwatchedEpisode.seasonNumber} E
                     {nextUnwatchedEpisode.episodeIndex + 1} -{' '}
                     {nextUnwatchedEpisode.name}
                   </div>

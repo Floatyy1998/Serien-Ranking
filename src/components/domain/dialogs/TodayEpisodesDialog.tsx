@@ -302,7 +302,7 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
                     component='span'
                     sx={{ fontSize: '0.8rem', color: 'gray' }}
                   >
-                    Uhrzeit: {ep.releaseTime}
+                    Datum: {ep.releaseTime}
                   </Box>
                 </Box>
               </ListItem>

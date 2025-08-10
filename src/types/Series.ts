@@ -1,3 +1,19 @@
+export interface Episode {
+  air_date: string;
+  id: number;
+  name: string;
+  watched: boolean;
+  watchCount?: number;
+}
+
+export interface Season {
+  seasonNumber: number;
+  episodes: Episode[];
+}
+
+// Firebase kann seasons als Array oder Object speichern
+export type SeasonsData = Season[] | { [key: string]: Season | null };
+
 export interface Series {
   begründung: string;
   beschreibung: string;
@@ -61,16 +77,7 @@ export interface Series {
     [key: string]: number;
   };
   seasonCount: number;
-  seasons: {
-    seasonNumber: number;
-    episodes: {
-      air_date: string;
-      id: number;
-      name: string;
-      watched: boolean;
-      watchCount?: number;
-    }[];
-  }[];
+  seasons: SeasonsData;
   title: string;
   tvMaze: {
     tvMazeID: number;

@@ -59,7 +59,7 @@ export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
   return (
     <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
       <div className='font-medium text-[#00fed7]'>
-        Nächste Folge: S{episode.seasonNumber + 1} E{episode.episodeNumber} -{' '}
+        Nächste Folge: S{episode.seasonNumber} E{episode.episodeNumber} -{' '}
         {episode.name}
       </div>
       <div className='mt-1 text-xs text-gray-400'>

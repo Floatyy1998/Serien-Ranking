@@ -1,4 +1,5 @@
 import { Series } from '../../types/Series';
+import { getSeasonsArray } from '../utils/seasonUtils';
 
 export interface NextRewatchEpisode {
   id: number;
@@ -15,13 +16,18 @@ export interface NextRewatchEpisode {
  * Eine Serie hat aktive Rewatches wenn mindestens eine Episode öfter geschaut wurde als andere
  */
 export const hasActiveRewatch = (series: Series): boolean => {
-  if (!series.seasons || series.seasons.length === 0) return false;
+  if (!series.seasons) return false;
+  
+  const seasonsArray = getSeasonsArray(series.seasons);
+  
+  if (seasonsArray.length === 0) return false;
 
   let maxWatchCount = 0;
   let hasWatchedEpisodes = false;
 
   // Finde die höchste watchCount in der Serie
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     
     for (const episode of episodes) {
@@ -38,7 +44,8 @@ export const hasActiveRewatch = (series: Series): boolean => {
   }
 
   // Prüfe ob es Episoden gibt, die weniger oft geschaut wurden als das Maximum
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     for (const episode of episodes) {
       if (episode.watched) {
@@ -60,14 +67,23 @@ export const hasActiveRewatch = (series: Series): boolean => {
  * Logik: Episoden die am wenigsten oft geschaut wurden haben Priorität
  */
 export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null => {
-  if (!series.seasons || series.seasons.length === 0) return null;
+  if (!series.seasons) return null;
   if (!hasActiveRewatch(series)) return null;
+
+  // Handle both Array and Object structure from Firebase
+  let seasonsArray = Array.isArray(series.seasons) 
+    ? series.seasons 
+    : Object.values(series.seasons);
+  seasonsArray = seasonsArray.filter((season): season is any => season != null);
+  
+  if (seasonsArray.length === 0) return null;
 
   let maxWatchCount = 0;
   let minWatchCount = Infinity;
 
   // Finde min und max watchCount
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     for (const episode of episodes) {
       if (episode.watched) {
@@ -81,7 +97,8 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
   }
 
   // Suche die erste Episode mit der niedrigsten watchCount
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     for (let i = 0; i < episodes.length; i++) {
       const episode = episodes[i];
@@ -109,11 +126,14 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
 export const isRewatchComplete = (series: Series): boolean => {
   if (!hasActiveRewatch(series)) return false;
 
+  const seasonsArray = getSeasonsArray(series.seasons);
+
   let maxWatchCount = 0;
   let hasWatchedEpisodes = false;
 
   // Finde die höchste watchCount
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     for (const episode of episodes) {
       if (episode.watched) {
@@ -127,7 +147,8 @@ export const isRewatchComplete = (series: Series): boolean => {
   if (!hasWatchedEpisodes || maxWatchCount <= 1) return false;
 
   // Prüfe ob alle Episoden die maximale watchCount haben
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     for (const episode of episodes) {
       const currentWatchCount = episode.watched ? (episode.watchCount || 1) : 0;
@@ -144,7 +165,13 @@ export const isRewatchComplete = (series: Series): boolean => {
  * Berechnet den Rewatch-Fortschritt einer Serie
  */
 export const getRewatchProgress = (series: Series): { current: number, total: number } => {
-  if (!series.seasons || series.seasons.length === 0) {
+  if (!series.seasons) {
+    return { current: 0, total: 0 };
+  }
+
+  const seasonsArray = getSeasonsArray(series.seasons);
+  
+  if (seasonsArray.length === 0) {
     return { current: 0, total: 0 };
   }
 
@@ -153,7 +180,8 @@ export const getRewatchProgress = (series: Series): { current: number, total: nu
   let episodesAtMaxCount = 0;
 
   // Finde die höchste watchCount
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     for (const episode of episodes) {
       totalEpisodes++;
@@ -165,7 +193,8 @@ export const getRewatchProgress = (series: Series): { current: number, total: nu
   }
 
   // Zähle Episoden die bereits die maximale Anzahl erreicht haben
-  for (const season of series.seasons) {
+  for (const season of seasonsArray) {
+    if (!season || !season.episodes) continue;
     const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
     for (const episode of episodes) {
       const currentWatchCount = episode.watched ? (episode.watchCount || 1) : 0;
