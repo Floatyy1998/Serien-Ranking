@@ -154,7 +154,7 @@ const WatchlistDialog = ({
     // Durchlaufe Staffeln von hinten nach vorne (Staffel 2, 3, etc.)
     for (let i = series.seasons.length - 1; i >= 1; i--) {
       const season = series.seasons[i];
-      season.episodes.forEach(episode => {
+      season.episodes?.forEach(episode => {
         laterSeasonEpisodes.add(episode.id);
         if (episode.air_date) {
           laterSeasonDates.add(episode.air_date);
@@ -166,7 +166,7 @@ const WatchlistDialog = ({
     return series.seasons.map((season, seasonIndex) => {
       if (seasonIndex === 0) {
         // Staffel 1: Entferne Episoden, die in späteren Staffeln vorkommen
-        const cleanedEpisodes = season.episodes.filter(episode => {
+        const cleanedEpisodes = season.episodes?.filter(episode => {
           // Behalte Episode nur wenn sie nicht in späteren Staffeln vorkommt
           const hasIdConflict = laterSeasonEpisodes.has(episode.id);
           const hasDateConflict = episode.air_date && laterSeasonDates.has(episode.air_date);
@@ -176,13 +176,13 @@ const WatchlistDialog = ({
         
         return {
           ...season,
-          episodes: cleanedEpisodes
+          episodes: cleanedEpisodes || []
         };
       }
       
       // Andere Staffeln: Dedupliziere nur nach Datum innerhalb der Staffel
       const seenDates = new Set<string>();
-      const cleanedEpisodes = season.episodes.filter(episode => {
+      const cleanedEpisodes = season.episodes?.filter(episode => {
         if (!episode.air_date) return true;
         
         if (seenDates.has(episode.air_date)) {
@@ -195,7 +195,7 @@ const WatchlistDialog = ({
       
       return {
         ...season,
-        episodes: cleanedEpisodes
+        episodes: cleanedEpisodes || []
       };
     });
   };
