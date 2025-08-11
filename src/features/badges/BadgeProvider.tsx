@@ -123,6 +123,19 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
     setCurrentBadgeIndex(0);
     setShowNotification(false);
 
+    // Marathon-Woche überprüfen und neue erstellen falls nötig
+    if (user) {
+      try {
+        const { badgeCounterService } = await import('./badgeCounterService');
+        await badgeCounterService.ensureCurrentMarathonWeek(user.uid);
+      } catch (error) {
+        console.warn(
+          'Marathon-Wochen-Überprüfung beim Dialog-Öffnen fehlgeschlagen:',
+          error
+        );
+      }
+    }
+
     // Cache invalidieren damit aktuelle Badge-Daten geladen werden
     if (user) {
       try {
