@@ -44,10 +44,6 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
           );
 
           if (newUniqueBadges.length > 0) {
-            console.log(
-              '🎉 New badges received:',
-              newUniqueBadges.map((b) => b.name)
-            );
             return [...prev, ...newUniqueBadges];
           }
           return prev;
@@ -58,7 +54,6 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
       const handleBadgeDialogOpened = (event: CustomEvent) => {
         const { userId, newBadges: earnedBadges } = event.detail;
         if (userId === user.uid && earnedBadges?.length > 0) {
-          console.log('🏆 Badge Dialog geöffnet - newBadges State leeren');
           setNewBadges([]);
           setCurrentBadgeIndex(0);
           setShowNotification(false);
@@ -79,11 +74,17 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
       );
 
       // Event-Listener für Badge-Dialog-Events
-      window.addEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
+      window.addEventListener(
+        'badgeDialogOpened',
+        handleBadgeDialogOpened as EventListener
+      );
 
       // Korrekte Cleanup-Funktion
       return () => {
-        window.removeEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
+        window.removeEventListener(
+          'badgeDialogOpened',
+          handleBadgeDialogOpened as EventListener
+        );
         if (cleanup) {
           cleanup();
         }
@@ -121,19 +122,21 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
     setNewBadges([]);
     setCurrentBadgeIndex(0);
     setShowNotification(false);
-    
+
     // Cache invalidieren damit aktuelle Badge-Daten geladen werden
     if (user) {
       try {
         const { getOfflineBadgeSystem } = await import('./offlineBadgeSystem');
         const badgeSystem = getOfflineBadgeSystem(user.uid);
         badgeSystem.invalidateCache();
-        console.log('🔄 Badge-Overview: Cache invalidiert beim Öffnen');
       } catch (error) {
-        console.warn('Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:', error);
+        console.warn(
+          'Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:',
+          error
+        );
       }
     }
-    
+
     setShowOverviewDialog(true);
   };
 

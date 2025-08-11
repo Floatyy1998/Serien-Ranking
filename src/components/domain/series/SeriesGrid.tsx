@@ -169,17 +169,15 @@ export const SeriesGrid = ({
     filteredSeries?.length,
   ]);
   useEffect(() => {
-    // Today Dialog nur für eigene Serien, nicht für Freunde
-    // Nur anzeigen wenn nicht durch "heute nicht mehr anzeigen" verhindert
-    // und noch nicht in dieser Session gezeigt
     if (
       !contextSeriesList.length ||
       !user ||
       isDontShowTodayActive() ||
       isDialogShownThisSession() ||
       targetUserId
-    )
+    ) {
       return;
+    }
 
     const episodesToday: TodayEpisode[] = contextSeriesList.reduce<
       TodayEpisode[]
@@ -210,7 +208,7 @@ export const SeriesGrid = ({
       setTimeout(() => {
         setTodayEpisodes(episodesToday);
         setShowTodayDialog(true);
-        setDialogShownThisSession(); // Markiere als in dieser Session gezeigt
+        // setDialogShownThisSession(); // Markiere erst beim Schließen als gezeigt
       }, 1000);
     }
   }, [contextSeriesList, user, targetUserId]);
@@ -229,7 +227,7 @@ export const SeriesGrid = ({
       }
 
       // MIGRATION TEMPORARILY DISABLED to prevent activity spam
-      console.log('Badge migration disabled to prevent activity spam');
+
       localStorage.setItem(migrationKey, 'disabled_spam_prevention');
       return;
     };
@@ -244,6 +242,7 @@ export const SeriesGrid = ({
 
   const handleDialogClose = () => {
     setShowTodayDialog(false);
+    setDialogShownThisSession(); // Jetzt erst als gezeigt markieren
   };
 
   // React 19: Automatische Memoization - kein useCallback nötig

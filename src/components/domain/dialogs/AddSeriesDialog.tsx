@@ -1296,69 +1296,105 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
             <Typography variant='subtitle2' color='primary' gutterBottom>
               Ausgewählte Serie:
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <img
-                src={
-                  selectedSeries.poster_path
-                    ? `https://image.tmdb.org/t/p/w92${selectedSeries.poster_path}`
-                    : notFound
-                }
-                alt={selectedSeries.name}
-                style={{
-                  width: 60,
-                  height: 90,
-                  objectFit: 'cover',
-                  borderRadius: 4,
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 2,
+              }}
+            >
+              {/* Content Container */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  flex: 1,
                 }}
-              />
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography variant='body1' fontWeight='bold'>
-                  {selectedSeries.name}
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  {selectedSeries.original_name !== selectedSeries.name
-                    ? selectedSeries.original_name
-                    : ''}
-                </Typography>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}
-                >
-                  <Chip
-                    size='small'
-                    label={
-                      selectedSeries.first_air_date
-                        ? new Date(selectedSeries.first_air_date).getFullYear()
-                        : 'TBA'
-                    }
-                    variant='outlined'
+              >
+                <img
+                  src={
+                    selectedSeries.poster_path
+                      ? `https://image.tmdb.org/t/p/w92${selectedSeries.poster_path}`
+                      : notFound
+                  }
+                  alt={selectedSeries.name}
+                  style={{
+                    width: 60,
+                    height: 90,
+                    objectFit: 'cover',
+                    borderRadius: 4,
+                  }}
+                />
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant='body1' fontWeight='bold'>
+                    {selectedSeries.name}
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    {selectedSeries.original_name !== selectedSeries.name
+                      ? selectedSeries.original_name
+                      : ''}
+                  </Typography>
+                  <Box
                     sx={{
-                      background:
-                        'linear-gradient(135deg, #00fed7, 0.2) 0%, #00fed7, 0.15) 100%)',
-                      border: '1px solid #00fed7, 0.3)',
-                      color: '#ffffff',
-                      '&:hover': {
-                        background:
-                          'linear-gradient(135deg, #00fed7, 0.3) 0%, #00fed7, 0.25) 100%)',
-                        border: '1px solid #00fed7, 0.4)',
-                        boxShadow: '0 8px 25px #00fed7, 0.3)',
-                      },
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      mt: 1,
                     }}
-                  />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <StarIcon sx={{ fontSize: 14, color: 'gold' }} />
-                    <Typography variant='caption'>
-                      {selectedSeries.vote_average
-                        ? selectedSeries.vote_average.toFixed(1)
-                        : 'N/A'}
-                    </Typography>
+                  >
+                    <Chip
+                      size='small'
+                      label={
+                        selectedSeries.first_air_date
+                          ? new Date(
+                              selectedSeries.first_air_date
+                            ).getFullYear()
+                          : 'TBA'
+                      }
+                      variant='outlined'
+                      sx={{
+                        background:
+                          'linear-gradient(135deg, #00fed7, 0.2) 0%, #00fed7, 0.15) 100%)',
+                        border: '1px solid #00fed7, 0.3)',
+                        color: '#ffffff',
+                        '&:hover': {
+                          background:
+                            'linear-gradient(135deg, #00fed7, 0.3) 0%, #00fed7, 0.25) 100%)',
+                          border: '1px solid #00fed7, 0.4)',
+                          boxShadow: '0 8px 25px #00fed7, 0.3)',
+                        },
+                      }}
+                    />
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <StarIcon sx={{ fontSize: 14, color: 'gold' }} />
+                      <Typography variant='caption'>
+                        {selectedSeries.vote_average
+                          ? selectedSeries.vote_average.toFixed(1)
+                          : 'N/A'}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
               </Box>
+
+              {/* Remove Button */}
               <Button
                 variant='outlined'
                 size='small'
+                startIcon={<CloseIcon />}
                 onClick={() => setSelectedSeries(null)}
                 sx={{
+                  alignSelf: { xs: 'center', sm: 'flex-start' },
+                  minWidth: { xs: 120, sm: 'auto' },
+                  px: { xs: 2, sm: 1.5 },
+                  py: 0.75,
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  borderRadius: 2,
                   background:
                     'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
                   border: '1px solid #00fed7, 0.3)',
@@ -1367,6 +1403,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                     background:
                       'linear-gradient(135deg, #00fed7, 0.25) 0%, #00fed7, 0.2) 100%)',
                     border: '1px solid #00fed7, 0.4)',
+                    transform: 'translateY(-1px)',
                   },
                 }}
               >

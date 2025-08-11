@@ -389,11 +389,6 @@ class TmdbJobsService {
       this.jobsCache = jobsByDepartment;
       this.cacheTimestamp = Date.now();
 
-      console.log(
-        `📋 ${
-          Object.keys(jobsByDepartment).length
-        } TMDB Job-Departments geladen`
-      );
       return jobsByDepartment;
     } catch (error) {
       console.error('Fehler beim Laden der TMDB Jobs:', error);
@@ -485,13 +480,6 @@ if (typeof window !== 'undefined') {
       const translated = allJobs.filter((job) => JOB_TRANSLATIONS[job]);
       const missing = allJobs.filter((job) => !JOB_TRANSLATIONS[job]);
 
-      console.log(`📊 Übersetzungs-Coverage:`);
-      console.log(`✅ Übersetzt: ${translated.length}/${allJobs.length}`);
-      console.log(`❌ Fehlt: ${missing.length}`);
-      console.log(`🔍 Fehlende Jobs:`, missing);
-      console.log(`\n📝 JavaScript Code für fehlende Übersetzungen:`);
-      console.log(missing.map((job) => `  '${job}': '${job}',`).join('\n'));
-
       return {
         translated: translated.length,
         missing: missing.length,
@@ -501,19 +489,14 @@ if (typeof window !== 'undefined') {
 
     // Sofortiger Coverage-Check mit automatischer Ausgabe
     findMissingJobs: async () => {
-      console.log('🔍 Lade TMDB Jobs...');
       const coverage = await (window as any).tmdbJobsDebug.checkCoverage();
       if (coverage && coverage.missingJobs.length > 0) {
-        console.log('\n🎯 FEHLENDE JOBS GEFUNDEN:');
-        console.log(coverage.missingJobs);
-        console.log('\n📋 JavaScript Code zum Kopieren:');
         const jsCode = coverage.missingJobs
           .map((job: string) => `  '${job}': '${job}',`)
           .join('\n');
-        console.log(jsCode);
+
         return jsCode;
       } else {
-        console.log('✅ Alle Jobs sind übersetzt!');
         return null;
       }
     },

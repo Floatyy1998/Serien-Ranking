@@ -17,15 +17,16 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAuth } from '../../../../App';
 // import { useOptimizedFriends } from '../../../../contexts/OptimizedFriendsProvider'; // Nicht mehr benötigt
 import { useSeriesList } from '../../../../contexts/OptimizedSeriesListProvider';
+import { updateEpisodeCounters } from '../../../../features/badges/minimalActivityLogger';
 import { useDataProtection } from '../../../../hooks/useDataProtection';
 import { useEnhancedFirebaseCache } from '../../../../hooks/useEnhancedFirebaseCache';
 import { useFirebaseBatch } from '../../../../hooks/useFirebaseBatch';
-import { Series } from '../../../../types/Series';
-import { updateEpisodeCounters } from '../../../../features/badges/minimalActivityLogger';
+import { cleanOverlappingEpisodes } from '../../../../lib/episode/cleanOverlappingEpisodes';
 import {
   getNextRewatchEpisode,
   hasActiveRewatch,
 } from '../../../../lib/validation/rewatch.utils';
+import { Series } from '../../../../types/Series';
 import SeriesWatchedDialog from '../SeriesWatchedDialog';
 import SeriesListItem from './SeriesListItem';
 import WatchlistFilter from './WatchlistFilter';
@@ -143,84 +144,48 @@ const WatchlistDialog = ({
     localStorage.setItem('hideRewatches', hideRewatches.toString());
   }, [hideRewatches]);
 
-  // Hilfsfunktion um überlappende Episoden zwischen Staffeln zu bereinigen (TMDB-Problem)
-  const cleanOverlappingEpisodes = (series: Series) => {
-    if (series.seasons.length <= 1) return series.seasons;
-    
-    // Sammle alle Episode-IDs und Daten aus späteren Staffeln
-    const laterSeasonEpisodes = new Set<number>();
-    const laterSeasonDates = new Set<string>();
-    
-    // Durchlaufe Staffeln von hinten nach vorne (Staffel 2, 3, etc.)
-    for (let i = series.seasons.length - 1; i >= 1; i--) {
-      const season = series.seasons[i];
-      season.episodes?.forEach(episode => {
-        laterSeasonEpisodes.add(episode.id);
-        if (episode.air_date) {
-          laterSeasonDates.add(episode.air_date);
-        }
-      });
-    }
-    
-    // Bereinige jede Staffel
-    return series.seasons.map((season, seasonIndex) => {
-      if (seasonIndex === 0) {
-        // Staffel 1: Entferne Episoden, die in späteren Staffeln vorkommen
-        const cleanedEpisodes = season.episodes?.filter(episode => {
-          // Behalte Episode nur wenn sie nicht in späteren Staffeln vorkommt
-          const hasIdConflict = laterSeasonEpisodes.has(episode.id);
-          const hasDateConflict = episode.air_date && laterSeasonDates.has(episode.air_date);
-          
-          return !hasIdConflict && !hasDateConflict;
-        });
-        
-        return {
-          ...season,
-          episodes: cleanedEpisodes || []
-        };
-      }
-      
-      // Andere Staffeln: Dedupliziere nur nach Datum innerhalb der Staffel
-      const seenDates = new Set<string>();
-      const cleanedEpisodes = season.episodes?.filter(episode => {
-        if (!episode.air_date) return true;
-        
-        if (seenDates.has(episode.air_date)) {
-          return false;
-        }
-        
-        seenDates.add(episode.air_date);
-        return true;
-      });
-      
-      return {
-        ...season,
-        episodes: cleanedEpisodes || []
-      };
-    });
-  };
+  // Bereinigung wird jetzt zentral importiert
 
   // Definiere getNextUnwatchedEpisode ZUERST, bevor es verwendet wird
   const getNextUnwatchedEpisode = (series: Series) => {
     // Bereinige überlappende Episoden zwischen Staffeln (TMDB-Problem)
     const cleanedSeasons = cleanOverlappingEpisodes(series);
-    
+
     // Prüfe zuerst auf echte ungesehene Episoden (haben immer Vorrang!)
+    if (!Array.isArray(cleanedSeasons)) return null;
     for (const season of cleanedSeasons) {
+      if (
+        !season ||
+        !season.episodes ||
+        typeof season.seasonNumber === 'undefined'
+      )
+        continue;
       for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
-        if (!episode.watched) {
-          // Finde den Original-Index in der unbereinigten Serie
-          const originalSeason = series.seasons.find(s => s.seasonNumber === season.seasonNumber);
-          const originalIndex = originalSeason ? originalSeason.episodes.findIndex(e => e.id === episode.id) : i;
-          
-          return {
-            ...episode,
-            seasonNumber: season.seasonNumber,
-            episodeIndex: originalIndex,
-            isRewatch: false,
-          };
+        if (!episode || episode.watched) continue;
+        // Finde den Original-Index in der unbereinigten Serie
+        const originalSeason = Array.isArray(series.seasons)
+          ? series.seasons.find(
+              (s) =>
+                s &&
+                typeof s.seasonNumber !== 'undefined' &&
+                s.seasonNumber === season.seasonNumber
+            )
+          : undefined;
+        let originalIndex = i;
+        if (originalSeason && Array.isArray(originalSeason.episodes)) {
+          originalIndex = originalSeason.episodes.findIndex(
+            (e) => e && e.id === episode.id
+          );
+          if (originalIndex === -1) originalIndex = i;
         }
+
+        return {
+          ...episode,
+          seasonNumber: season.seasonNumber,
+          episodeIndex: originalIndex,
+          isRewatch: false,
+        };
       }
     }
 
@@ -283,7 +248,7 @@ const WatchlistDialog = ({
       .filter((series) => series.watchlist)
       .filter((series) => {
         // Prüfe ob für diese Serie gerade Updates pending sind
-        const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
+        const hasPendingUpdates = Array.from(pendingUpdates).some((key) =>
           key.startsWith(`${series.id}-`)
         );
 
@@ -451,21 +416,39 @@ const WatchlistDialog = ({
 
     // Finde nächste ungesehene Episode mit bereinigten Staffeln
     for (const season of cleanedSeasons) {
+      if (
+        !season ||
+        !season.episodes ||
+        typeof season.seasonNumber === 'undefined'
+      )
+        continue;
       for (let i = 0; i < season.episodes.length; i++) {
         const episode = season.episodes[i];
-        if (!episode.watched) {
-          // Finde den Original-Index in der unbereinigten Serie
-          const originalSeason = series.seasons.find(s => s.seasonNumber === season.seasonNumber);
-          const originalIndex = originalSeason ? originalSeason.episodes.findIndex(e => e.id === episode.id) : i;
-          
-          nextEpisode = {
-            ...episode,
-            seasonNumber: season.seasonNumber,
-            episodeIndex: originalIndex,
-            isRewatch: false,
-          };
-          break;
+        if (!episode || episode.watched) continue;
+        // Finde den Original-Index in der unbereinigten Serie
+        const originalSeason = Array.isArray(series.seasons)
+          ? series.seasons.find(
+              (s) =>
+                s &&
+                typeof s.seasonNumber !== 'undefined' &&
+                s.seasonNumber === season.seasonNumber
+            )
+          : undefined;
+        let originalIndex = i;
+        if (originalSeason && Array.isArray(originalSeason.episodes)) {
+          originalIndex = originalSeason.episodes.findIndex(
+            (e) => e && e.id === episode.id
+          );
+          if (originalIndex === -1) originalIndex = i;
         }
+
+        nextEpisode = {
+          ...episode,
+          seasonNumber: season.seasonNumber,
+          episodeIndex: originalIndex,
+          isRewatch: false,
+        };
+        break;
       }
       if (nextEpisode) break;
     }
@@ -493,7 +476,7 @@ const WatchlistDialog = ({
       : true;
 
     // Prüfe ob für diese Serie gerade Updates pending sind
-    const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
+    const hasPendingUpdates = Array.from(pendingUpdates).some((key) =>
       key.startsWith(`${series.id}-`)
     );
 
@@ -645,7 +628,6 @@ const WatchlistDialog = ({
 
       // Das Update wird automatisch durch useDataProtection ausgeführt
       // Kein manueller Aufruf nötig - verhindert doppelte Ausführung
-      console.log(`📝 Episode ${updateKey} update queued`);
     } catch (error) {
       console.error(`❌ Episode update failed for ${updateKey}:`, error);
     }
@@ -788,19 +770,22 @@ const WatchlistDialog = ({
                     {displayedSeries.map((series, index) => {
                       const { nextEpisode, rewatchInfo } =
                         getEpisodeInfo(series);
-                      
+
                       // Prüfe ob für diese Serie gerade Updates pending sind
-                      const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
-                        key.startsWith(`${series.id}-`)
+                      const hasPendingUpdates = Array.from(pendingUpdates).some(
+                        (key) => key.startsWith(`${series.id}-`)
                       );
-                      
+
                       // Wenn Updates pending sind und nextEpisode unausgestrahlt ist, verwende null
                       let safePriorityEpisode = null;
                       if (!hideRewatches && rewatchInfo) {
                         safePriorityEpisode = rewatchInfo;
                       } else if (nextEpisode) {
                         // Nur verwenden wenn Episode bereits ausgestrahlt ist ODER keine Updates pending
-                        if (!hasPendingUpdates || new Date(nextEpisode.air_date) <= new Date()) {
+                        if (
+                          !hasPendingUpdates ||
+                          new Date(nextEpisode.air_date) <= new Date()
+                        ) {
                           safePriorityEpisode = nextEpisode;
                         }
                       } else if (rewatchInfo) {
@@ -833,25 +818,28 @@ const WatchlistDialog = ({
                 <div>
                   {displayedSeries.map((series) => {
                     const { nextEpisode, rewatchInfo } = getEpisodeInfo(series);
-                    
+
                     // Prüfe ob für diese Serie gerade Updates pending sind
-                    const hasPendingUpdates = Array.from(pendingUpdates).some(key => 
-                      key.startsWith(`${series.id}-`)
+                    const hasPendingUpdates = Array.from(pendingUpdates).some(
+                      (key) => key.startsWith(`${series.id}-`)
                     );
-                    
+
                     // Wenn Updates pending sind und nextEpisode unausgestrahlt ist, verwende null
                     let safePriorityEpisode = null;
                     if (!hideRewatches && rewatchInfo) {
                       safePriorityEpisode = rewatchInfo;
                     } else if (nextEpisode) {
                       // Nur verwenden wenn Episode bereits ausgestrahlt ist ODER keine Updates pending
-                      if (!hasPendingUpdates || new Date(nextEpisode.air_date) <= new Date()) {
+                      if (
+                        !hasPendingUpdates ||
+                        new Date(nextEpisode.air_date) <= new Date()
+                      ) {
                         safePriorityEpisode = nextEpisode;
                       }
                     } else if (rewatchInfo) {
                       safePriorityEpisode = rewatchInfo;
                     }
-                    
+
                     return (
                       <SeriesListItem
                         key={series.id}

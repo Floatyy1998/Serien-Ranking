@@ -46,10 +46,6 @@ export function useFirebaseBatch(config: BatchConfig = {}) {
       // Cleanup
       batchRef.current = [];
       firstUpdateRef.current = null;
-
-      console.log(
-        `✅ Batch update completed: ${Object.keys(updates).length} updates`
-      );
     } catch (error) {
       console.error('❌ Batch update failed:', error);
       // Bei Fehler: Versuche einzelne Updates
