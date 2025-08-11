@@ -337,6 +337,27 @@ class BadgeCounterService {
       console.error('Fehler beim Löschen aller Counter:', error);
     }
   }
+
+  /**
+   * 🏃 Marathon-Woche überprüfen und neue erstellen falls nötig
+   */
+  async ensureCurrentMarathonWeek(userId: string): Promise<void> {
+    try {
+      const currentWeekKey = this.getWeekKey();
+      const marathonWeeksRef = firebase.database().ref(`badgeCounters/${userId}/marathonWeeks`);
+      const snapshot = await marathonWeeksRef.once('value');
+      const marathonWeeks = snapshot.val() || {};
+      
+      // Prüfe ob aktuelle Woche bereits existiert
+      if (!marathonWeeks[currentWeekKey]) {
+        // Neue Woche mit 0 Episoden erstellen
+        await marathonWeeksRef.child(currentWeekKey).set(0);
+        console.log(`🏃 Neue Marathon-Woche erstellt: ${currentWeekKey}`);
+      }
+    } catch (error) {
+      console.error('Fehler beim Erstellen der Marathon-Woche:', error);
+    }
+  }
 }
 
 // Singleton Export
