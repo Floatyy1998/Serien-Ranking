@@ -1306,10 +1306,39 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                   </Box>
                 </Box>
               </Box>
+            </Box>
+            {/* Entfernen Button immer in neuer Zeile, mittig auf Mobile */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: { xs: 'center', sm: 'flex-start' },
+                mt: 2,
+              }}
+            >
               <Button
                 variant='outlined'
                 size='small'
+                startIcon={<CloseIcon />}
                 onClick={() => setSelectedMovie(null)}
+                sx={{
+                  alignSelf: { xs: 'center', sm: 'flex-start' },
+                  minWidth: { xs: 120, sm: 'auto' },
+                  px: { xs: 2, sm: 1.5 },
+                  py: 0.75,
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  borderRadius: 2,
+                  background:
+                    'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
+                  border: '1px solid #00fed7, 0.3)',
+                  color: '#ffffff',
+                  '&:hover': {
+                    background:
+                      'linear-gradient(135deg, #00fed7, 0.25) 0%, #00fed7, 0.2) 100%)',
+                    border: '1px solid #00fed7, 0.4)',
+                    transform: 'translateY(-1px)',
+                  },
+                }}
               >
                 Entfernen
               </Button>

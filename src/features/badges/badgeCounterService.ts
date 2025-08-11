@@ -181,9 +181,14 @@ class BadgeCounterService {
   async recordMarathonEpisode(userId: string): Promise<void> {
     try {
       const weekKey = this.getWeekKey();
+      console.log('🏃 recordMarathonEpisode:', { userId, weekKey });
       const marathonRef = firebase.database().ref(`badgeCounters/${userId}/marathonWeeks/${weekKey}`);
       
-      await marathonRef.transaction((current) => (current || 0) + 1);
+      await marathonRef.transaction((current) => {
+        const newValue = (current || 0) + 1;
+        console.log('🏃 Marathon transaction:', { current, newValue, weekKey });
+        return newValue;
+      });
     } catch (error) {
       console.error('Fehler beim Marathon-Counter:', error);
     }
@@ -255,13 +260,22 @@ class BadgeCounterService {
   }
 
   /**
-   * Get current week key for grouping
+   * Get current week key for grouping (ISO Week format)
    */
   private getWeekKey(): string {
     const now = new Date();
-    const year = now.getFullYear();
-    const week = Math.ceil((now.getTime() - new Date(year, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-    return `${year}-W${week}`;
+    
+    // ISO Week Calculation (Monday = Start of week)
+    const target = new Date(now.getTime());
+    const dayOfWeek = (now.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+    target.setDate(now.getDate() - dayOfWeek + 3); // Thursday of current week
+    
+    const year = target.getFullYear();
+    const firstThursday = new Date(year, 0, 4); // January 4th is always in week 1
+    const weekNumber = Math.ceil(((target.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1);
+    
+    console.log('📅 Week calculation:', { now: now.toDateString(), year, weekNumber, target: target.toDateString() });
+    return `${year}-W${weekNumber}`;
   }
 
   /**

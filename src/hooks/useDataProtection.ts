@@ -44,7 +44,6 @@ export const useDataProtection = () => {
       await update.operation();
       // Erfolgreich - entferne aus Queue
       pendingUpdatesRef.current.delete(update.id);
-      console.log(`✅ Update ${update.id} completed successfully`);
     } catch (error) {
       console.warn(
         `⚠️ Update ${update.id} failed (attempt ${update.retryCount + 1}):`,
@@ -56,7 +55,6 @@ export const useDataProtection = () => {
         // Exponential backoff: 1s, 2s, 4s
         const delay = Math.pow(2, update.retryCount - 1) * 1000;
 
-        console.log(`🔄 Retrying update ${update.id} in ${delay}ms...`);
         setTimeout(() => {
           if (
             !isUnloadingRef.current &&

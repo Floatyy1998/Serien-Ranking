@@ -55,7 +55,10 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
     Record<string, BadgeProgress>
   >({});
   const [loading, setLoading] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState<{current: number; total: number} | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [, setRefreshTick] = useState(0);
 
@@ -83,54 +86,67 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
     const handleBadgeUpdate = async (event: CustomEvent) => {
       const { newBadges } = event.detail;
       if (newBadges && newBadges.length > 0) {
-        console.log('🏆 Badge Dialog: Neue Badges erkannt, Cache invalidieren');
-        
         // Badge-System Cache invalidieren für frische Daten
         const { getOfflineBadgeSystem } = await import('./offlineBadgeSystem');
         const badgeSystem = getOfflineBadgeSystem(user!.uid);
         badgeSystem.invalidateCache();
-        
+
         // Neue Badges sofort in den State übernehmen für sofortige UI-Update
-        setEarnedBadges(prevBadges => {
-          const existingIds = new Set(prevBadges.map(b => b.id));
-          const uniqueNewBadges = newBadges.filter((badge: any) => !existingIds.has(badge.id));
+        setEarnedBadges((prevBadges) => {
+          const existingIds = new Set(prevBadges.map((b) => b.id));
+          const uniqueNewBadges = newBadges.filter(
+            (badge: any) => !existingIds.has(badge.id)
+          );
           if (uniqueNewBadges.length > 0) {
             return [...prevBadges, ...uniqueNewBadges];
           }
           return prevBadges;
         });
-        
+
         // KRITISCH: Badge-Provider State leeren, da Badges jetzt als "erreicht" gelten
         // Importiere BadgeProvider dynamisch um zirkuläre Abhängigkeiten zu vermeiden
         try {
           // Löse das Badge-Button Problem: Leere den newBadges State im BadgeProvider
-          window.dispatchEvent(new CustomEvent('badgeDialogOpened', {
-            detail: { userId: user!.uid, newBadges }
-          }));
+          window.dispatchEvent(
+            new CustomEvent('badgeDialogOpened', {
+              detail: { userId: user!.uid, newBadges },
+            })
+          );
         } catch (error) {
-          console.warn('Badge-Provider State konnte nicht geleert werden:', error);
+          console.warn(
+            'Badge-Provider State konnte nicht geleert werden:',
+            error
+          );
         }
-        
+
         loadBadgeData(); // Cache refresh bei neuen Badges
       }
     };
 
-    window.addEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
-    
+    window.addEventListener(
+      'badgeProgressUpdate',
+      handleBadgeUpdate as unknown as EventListener
+    );
+
     return () => {
-      window.removeEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
+      window.removeEventListener(
+        'badgeProgressUpdate',
+        handleBadgeUpdate as unknown as EventListener
+      );
     };
   }, [open, user]);
 
   // Auto-refresh für laufende Sessions (jede Sekunde)
   useEffect(() => {
     if (!open) return;
-    
-    const hasActiveSessions = Object.values(badgeProgress).some(p => p.sessionActive);
+
+    const hasActiveSessions = Object.values(badgeProgress).some(
+      (p) => p.sessionActive
+    );
     if (!hasActiveSessions) return;
 
     const interval = setInterval(() => {
-      setRefreshTick(tick => tick + 1);
+      setRefreshTick((tick) => tick + 1);
       loadBadgeData(); // Refresh progress data
     }, 1000);
 
@@ -142,7 +158,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
     const { getOfflineBadgeSystem } = await import('./offlineBadgeSystem');
     const badgeSystem = getOfflineBadgeSystem(user.uid);
-    
+
     // Prüfe Cache mit öffentlicher Methode
     const isCached = badgeSystem.isCacheValid();
 
@@ -150,12 +166,12 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
       // Nur bei fehlenden/alten Daten Loading zeigen
       setLoading(true);
       setLoadingProgress({ current: 0, total: 4 });
-      
+
       // Step 1: Cleanup abgelaufener Sessions
       setLoadingProgress({ current: 1, total: 4 });
       const { badgeCounterService } = await import('./badgeCounterService');
       await badgeCounterService.finalizeBingeSession(user.uid);
-      
+
       // Step 2: Badge System bereit
       setLoadingProgress({ current: 2, total: 4 });
     } else {
@@ -163,7 +179,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
       const { badgeCounterService } = await import('./badgeCounterService');
       badgeCounterService.finalizeBingeSession(user.uid); // Ohne await - läuft im Hintergrund
     }
-    
+
     try {
       // Step 3: Erreichte Badges laden
       if (!isCached) setLoadingProgress({ current: 3, total: 4 });
@@ -174,7 +190,6 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
       if (!isCached) setLoadingProgress({ current: 4, total: 4 });
       const progressData = await badgeSystem.getAllBadgeProgress();
       setBadgeProgress(progressData);
-      
     } catch (error) {
       console.error('Error loading badge data:', error);
     } finally {
@@ -244,37 +259,49 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
 
     // Multi-Tier Progress: Zeige auch Fortschritt zu höheren Tiers
     const getSameCategoryBadges = () => {
-      return BADGE_DEFINITIONS.filter(b => 
-        b.category === badge.category && 
-        b.requirements.episodes === badge.requirements.episodes &&
-        b.requirements.timeframe === badge.requirements.timeframe &&
-        b.requirements.series === badge.requirements.series &&
-        b.requirements.ratings === badge.requirements.ratings &&
-        b.requirements.friends === badge.requirements.friends &&
-        b.requirements.days === badge.requirements.days
+      return BADGE_DEFINITIONS.filter(
+        (b) =>
+          b.category === badge.category &&
+          b.requirements.episodes === badge.requirements.episodes &&
+          b.requirements.timeframe === badge.requirements.timeframe &&
+          b.requirements.series === badge.requirements.series &&
+          b.requirements.ratings === badge.requirements.ratings &&
+          b.requirements.friends === badge.requirements.friends &&
+          b.requirements.days === badge.requirements.days
       ).sort((a, b) => {
-        const tierOrder = { bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5 };
+        const tierOrder = {
+          bronze: 1,
+          silver: 2,
+          gold: 3,
+          platinum: 4,
+          diamond: 5,
+        };
         return tierOrder[a.tier] - tierOrder[b.tier];
       });
     };
 
     const getNextTierInfo = () => {
       if (earned) return null;
-      
+
       const sameCategoryBadges = getSameCategoryBadges();
       if (sameCategoryBadges.length <= 1) return null;
-      
-      const currentIndex = sameCategoryBadges.findIndex(b => b.id === badge.id);
+
+      const currentIndex = sameCategoryBadges.findIndex(
+        (b) => b.id === badge.id
+      );
       if (currentIndex === -1 || currentIndex === 0) return null;
-      
+
       // Prüfe ob niedrigere Tiers erreicht sind
       const lowerTiers = sameCategoryBadges.slice(0, currentIndex);
-      const earnedLowerTiers = lowerTiers.filter(b => isBadgeEarned(b.id));
-      
+      const earnedLowerTiers = lowerTiers.filter((b) => isBadgeEarned(b.id));
+
       if (earnedLowerTiers.length === lowerTiers.length) {
-        return { isNextTier: true, prevTier: lowerTiers[lowerTiers.length - 1] };
+        return {
+          isNextTier: true,
+          prevTier: lowerTiers[lowerTiers.length - 1],
+        };
       }
-      
+
       return null;
     };
 
@@ -345,7 +372,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             )}
             {nextTierInfo?.isNextTier && (
               <Chip
-                label="NÄCHSTES ZIEL"
+                label='NÄCHSTES ZIEL'
                 size='small'
                 sx={{
                   backgroundColor: `${badge.color}20`,
@@ -364,9 +391,9 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                 width: 64,
                 height: 64,
                 fontSize: '2rem',
-                backgroundColor: earned 
-                  ? badge.color 
-                  : nextTierInfo?.isNextTier 
+                backgroundColor: earned
+                  ? badge.color
+                  : nextTierInfo?.isNextTier
                   ? `${badge.color}40`
                   : theme.palette.grey[700],
                 margin: '0 auto',
@@ -383,7 +410,9 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: nextTierInfo?.isNextTier ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.7)',
+                    backgroundColor: nextTierInfo?.isNextTier
+                      ? 'rgba(0,0,0,0.4)'
+                      : 'rgba(0,0,0,0.7)',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -403,7 +432,11 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
               sx={{
                 fontWeight: 'bold',
                 mb: 1,
-                color: earned ? badge.color : nextTierInfo?.isNextTier ? `${badge.color}80` : theme.palette.grey[400],
+                color: earned
+                  ? badge.color
+                  : nextTierInfo?.isNextTier
+                  ? `${badge.color}80`
+                  : theme.palette.grey[400],
               }}
             >
               {badge.name}
@@ -425,39 +458,48 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
               <Box sx={{ mb: 2 }}>
                 <LinearProgress
                   variant='determinate'
-                  value={Math.min((progress.current / progress.total) * 100, 100)}
+                  value={Math.min(
+                    (progress.current / progress.total) * 100,
+                    100
+                  )}
                   sx={{
                     height: 8,
                     borderRadius: 4,
                     backgroundColor: theme.palette.grey[700],
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: progress.sessionActive 
-                        ? badge.color 
-                        : nextTierInfo?.isNextTier 
-                        ? badge.color 
+                      backgroundColor: progress.sessionActive
+                        ? badge.color
+                        : nextTierInfo?.isNextTier
+                        ? badge.color
                         : `${badge.color}60`,
                       borderRadius: 4,
-                      animation: progress.sessionActive ? 'pulse 2s infinite' : 'none',
+                      animation: progress.sessionActive
+                        ? 'pulse 2s infinite'
+                        : 'none',
                     },
                   }}
                 />
                 <Typography
                   variant='caption'
                   sx={{
-                    color: progress.sessionActive 
-                      ? badge.color 
-                      : nextTierInfo?.isNextTier 
-                      ? badge.color 
+                    color: progress.sessionActive
+                      ? badge.color
+                      : nextTierInfo?.isNextTier
+                      ? badge.color
                       : theme.palette.grey[400],
                     mt: 0.5,
                     display: 'block',
-                    fontWeight: progress.sessionActive || nextTierInfo?.isNextTier ? 'bold' : 'normal',
+                    fontWeight:
+                      progress.sessionActive || nextTierInfo?.isNextTier
+                        ? 'bold'
+                        : 'normal',
                   }}
                 >
                   {progress.current} / {progress.total}
-                  {nextTierInfo?.isNextTier && ` (noch ${progress.total - progress.current})`}
+                  {nextTierInfo?.isNextTier &&
+                    ` (noch ${progress.total - progress.current})`}
                 </Typography>
-                
+
                 {/* Countdown Timer */}
                 {progress.sessionActive && progress.timeRemaining && (
                   <Typography
@@ -470,10 +512,11 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                       mt: 0.5,
                     }}
                   >
-                    🔥 Session endet in: {formatTimeRemaining(progress.timeRemaining)}
+                    🔥 Session endet in:{' '}
+                    {formatTimeRemaining(progress.timeRemaining)}
                   </Typography>
                 )}
-                
+
                 {nextTierInfo?.isNextTier && (
                   <Typography
                     variant='caption'
@@ -732,13 +775,15 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
               >
                 🏆 Badges werden geladen...
               </Typography>
-              
+
               {loadingProgress && (
                 <>
                   <Box sx={{ width: '300px' }}>
                     <LinearProgress
                       variant='determinate'
-                      value={(loadingProgress.current / loadingProgress.total) * 100}
+                      value={
+                        (loadingProgress.current / loadingProgress.total) * 100
+                      }
                       sx={{
                         height: 8,
                         borderRadius: 4,
@@ -750,7 +795,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                       }}
                     />
                   </Box>
-                  
+
                   <Typography
                     variant='body1'
                     sx={{
@@ -758,9 +803,10 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                       textAlign: 'center',
                     }}
                   >
-                    Schritt {loadingProgress.current} von {loadingProgress.total}
+                    Schritt {loadingProgress.current} von{' '}
+                    {loadingProgress.total}
                   </Typography>
-                  
+
                   <Typography
                     variant='caption'
                     sx={{
@@ -769,9 +815,12 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                     }}
                   >
                     {loadingProgress.current === 1 && 'Sessions aufräumen...'}
-                    {loadingProgress.current === 2 && 'Badge-System initialisieren...'}
-                    {loadingProgress.current === 3 && 'Erreichte Badges laden...'}
-                    {loadingProgress.current === 4 && 'Fortschritt berechnen...'}
+                    {loadingProgress.current === 2 &&
+                      'Badge-System initialisieren...'}
+                    {loadingProgress.current === 3 &&
+                      'Erreichte Badges laden...'}
+                    {loadingProgress.current === 4 &&
+                      'Fortschritt berechnen...'}
                   </Typography>
                 </>
               )}

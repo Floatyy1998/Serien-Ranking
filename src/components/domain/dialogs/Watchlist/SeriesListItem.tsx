@@ -1,8 +1,8 @@
 import { Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { Check } from 'lucide-react';
 import React from 'react';
-import { Series } from '../../../../types/Series';
 import { getUnifiedEpisodeDate } from '../../../../lib/date/episodeDate.utils';
+import { Series } from '../../../../types/Series';
 import { DraggableSeriesItem } from './DraggableSeriesItem';
 
 // Hilfsfunktion für Rewatch-Farben
@@ -31,68 +31,8 @@ const getRewatchColor = (watchCount: number): string => {
   }
 };
 
-// Hilfsfunktion um überlappende Episoden zwischen Staffeln zu bereinigen (TMDB-Problem)
-const cleanOverlappingEpisodes = (series: Series) => {
-  if (!series.seasons || series.seasons.length <= 1) return series.seasons || [];
-  
-  // Sammle alle Episode-IDs und Daten aus späteren Staffeln
-  const laterSeasonEpisodes = new Set<number>();
-  const laterSeasonDates = new Set<string>();
-  
-  // Durchlaufe Staffeln von hinten nach vorne (Staffel 2, 3, etc.)
-  for (let i = series.seasons.length - 1; i >= 1; i--) {
-    const season = series.seasons[i];
-    if (season.episodes && Array.isArray(season.episodes)) {
-      season.episodes.forEach(episode => {
-        laterSeasonEpisodes.add(episode.id);
-        if (episode.air_date) {
-          laterSeasonDates.add(episode.air_date);
-        }
-      });
-    }
-  }
-  
-  // Bereinige jede Staffel
-  return series.seasons.map((season, seasonIndex) => {
-    if (!season.episodes || !Array.isArray(season.episodes)) {
-      return season;
-    }
-    
-    if (seasonIndex === 0) {
-      // Staffel 1: Entferne Episoden, die in späteren Staffeln vorkommen
-      const cleanedEpisodes = season.episodes.filter(episode => {
-        // Behalte Episode nur wenn sie nicht in späteren Staffeln vorkommt
-        const hasIdConflict = laterSeasonEpisodes.has(episode.id);
-        const hasDateConflict = episode.air_date && laterSeasonDates.has(episode.air_date);
-        
-        return !hasIdConflict && !hasDateConflict;
-      });
-      
-      return {
-        ...season,
-        episodes: cleanedEpisodes
-      };
-    }
-    
-    // Andere Staffeln: Dedupliziere nur nach Datum innerhalb der Staffel
-    const seenDates = new Set<string>();
-    const cleanedEpisodes = season.episodes.filter(episode => {
-      if (!episode.air_date) return true;
-      
-      if (seenDates.has(episode.air_date)) {
-        return false;
-      }
-      
-      seenDates.add(episode.air_date);
-      return true;
-    });
-    
-    return {
-      ...season,
-      episodes: cleanedEpisodes
-    };
-  });
-};
+// Bereinigung wird jetzt zentral importiert
+import { cleanOverlappingEpisodes } from '../../../../lib/episode/cleanOverlappingEpisodes';
 
 // Neue Hilfsfunktion, um verbleibende Folgen zu zählen (mit Bereinigung)
 const countRemainingEpisodes = (series: Series): number => {

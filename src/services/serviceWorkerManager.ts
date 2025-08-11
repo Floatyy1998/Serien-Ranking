@@ -45,7 +45,6 @@ class ServiceWorkerManager {
     try {
       await this.register();
       this.setupEventListeners();
-      console.log('✅ Service Worker Manager initialisiert');
     } catch (error) {
       console.error(
         '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
@@ -72,8 +71,6 @@ class ServiceWorkerManager {
 
     const registration = await this.registrationPromise;
 
-    console.log('✅ Service Worker registriert:', registration.scope);
-
     // Check for updates
     if (registration.waiting) {
       this.showUpdateAvailable();
@@ -89,7 +86,6 @@ class ServiceWorkerManager {
     if (!navigator.serviceWorker) return;
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('🔄 Service Worker Controller geändert');
       window.location.reload();
     });
 
@@ -104,14 +100,11 @@ class ServiceWorkerManager {
   private handleWorkerMessage(data: any): void {
     switch (data.type) {
       case 'CACHE_UPDATED':
-        console.log('📦 Cache aktualisiert:', data.cacheName);
         break;
       case 'OFFLINE_READY':
-        console.log('📱 App ist offline-bereit');
         this.notifyOfflineReady();
         break;
       case 'UPDATE_AVAILABLE':
-        console.log('🔄 Update verfügbar');
         this.showUpdateAvailable();
         break;
     }
@@ -181,7 +174,6 @@ class ServiceWorkerManager {
 
       if ('sync' in registration) {
         await (registration as any).sync.register(tag);
-        console.log(`🔄 Background Sync registriert: ${tag}`);
       }
     } catch (error) {
       console.error('❌ Background Sync Registration fehlgeschlagen:', error);
@@ -203,7 +195,6 @@ class ServiceWorkerManager {
     try {
       await this.storeInIndexedDB('pendingUpdates', pendingUpdate);
       await this.registerBackgroundSync('firebase-sync');
-      console.log('📤 Firebase Update in Queue gespeichert:', pendingUpdate.id);
     } catch (error) {
       console.error('❌ Failed to queue Firebase update:', error);
     }
@@ -215,7 +206,6 @@ class ServiceWorkerManager {
   public async showInstallPrompt(): Promise<boolean> {
     if ('beforeinstallprompt' in window) {
       // PWA Install Logic hier implementieren
-      console.log('📱 PWA Install Prompt anzeigen');
       return true;
     }
     return false;
@@ -266,15 +256,12 @@ class ServiceWorkerManager {
    */
   private showUpdateAvailable(): void {
     // Hier können Sie eine UI-Benachrichtigung anzeigen
-    console.log('🔄 Neues Update verfügbar! Aktualisieren Sie die App.');
 
     // Optional: Custom Event für UI Components
     window.dispatchEvent(new CustomEvent('sw-update-available'));
   }
 
   private notifyOfflineReady(): void {
-    console.log('📱 App ist jetzt offline-bereit!');
-
     // Optional: Custom Event für UI Components
     window.dispatchEvent(new CustomEvent('sw-offline-ready'));
   }

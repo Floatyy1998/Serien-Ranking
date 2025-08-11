@@ -20,12 +20,12 @@ import { VerifiedRoute } from './features/auth/VerifiedRoute';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
 // Badge Migration Tools für Development
-import { BadgeProvider } from './features/badges/BadgeProvider';
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider } from './contexts/NotificationProvider';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
+import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
 import { FriendsPage } from './pages/FriendsPage';
 import MainPage from './pages/MainPage';
@@ -34,8 +34,6 @@ import StartPage from './pages/StartPage'; // Eager loading für bessere Offline
 import { UserProfilePage } from './pages/UserProfilePage';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { theme } from './theme';
-import './features/badges/migrateBadgeSystem';
-import './features/badges/testMigration';
 
 // Nur diese bleiben lazy
 const LoginPage = lazy(() => import('./features/auth/LoginPage'));
