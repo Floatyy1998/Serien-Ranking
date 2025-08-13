@@ -363,6 +363,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       setPersonDialogOpen(true);
     } catch (error) {
       console.error('Error fetching person data:', error);
+      setPersonDialogOpen(false);
     } finally {
       setPersonLoading(false);
       setCreditsLoading(false);
@@ -378,8 +379,16 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       setPersonLoading(true);
       setPersonDialogOpen(true);
 
+      // Validierung der Voice Actor Daten
+      if (!voiceActor?.person?.name) {
+        console.warn('Voice Actor hat keinen Namen:', voiceActor);
+        setPersonLoading(false);
+        return;
+      }
+
       // Erstmal schauen, ob der Voice Actor bereits in den TMDB Cast-Daten ist
       const tmdbCastMatch = castData.find((castMember: any) => {
+        if (!castMember?.name) return false;
         const tmdbName = castMember.name.toLowerCase();
         const voiceActorName = voiceActor.person.name.toLowerCase();
 
@@ -414,7 +423,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         // Fallback: Zeige AniList Daten
         const fallbackPersonData = {
           id: voiceActor.person.id || Math.random(),
-          name: voiceActor.person.name,
+          name: voiceActor.person.name || 'Unbekannter Sprecher',
           profile_path: voiceActor.person.images?.jpg?.image_url || null,
           biography: `Japanischer Synchronsprecher (声優, Seiyuu)\n\nNicht in TMDB Cast-Daten gefunden.`,
           known_for_department: 'Acting',
@@ -432,6 +441,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     } catch (error) {
       console.error('Error matching voice actor with TMDB cast:', error);
       setPersonLoading(false);
+      setPersonDialogOpen(false);
     }
   };
 
