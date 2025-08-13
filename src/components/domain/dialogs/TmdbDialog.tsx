@@ -69,13 +69,27 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   });
   const [creditsLoading, setCreditsLoading] = useState(false);
   const [addingTitles, setAddingTitles] = useState<Set<number>>(new Set());
+  const [animeCharacters, setAnimeCharacters] = useState<any[]>([]);
+  const [animeLoading, setAnimeLoading] = useState(false);
 
-  // Cast Data laden
+  // Cast Data vorab laden beim Dialog öffnen
   useEffect(() => {
-    if (data?.id && open && currentTab === 1) {
-      fetchCastData(data.id);
+    if (data?.id && open) {
+      // Anime-Erkennung - Japanische, chinesische und koreanische Animation
+      const isAnime = data.origin_country?.some((country: string) =>
+        ['JP', 'CN', 'KR'].includes(country)
+      );
+
+      if (isAnime) {
+        // Bei Anime: Charaktere + Crew laden
+        fetchAnimeCharacters();
+        fetchCastData(data.id); // Für Crew-Daten
+      } else {
+        // Bei Non-Anime: Normal Cast + Crew laden
+        fetchCastData(data.id);
+      }
     }
-  }, [data?.id, open, currentTab, type]);
+  }, [data?.id, open, type]);
 
   // Videos Data laden
   useEffect(() => {
@@ -104,6 +118,114 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       setCrewData([]);
     } finally {
       setCastLoading(false);
+    }
+  };
+
+  const fetchAnimeCharacters = async () => {
+    try {
+      setAnimeLoading(true);
+
+      // AniList GraphQL Query
+      const query = `
+        query ($search: String) {
+          Media(search: $search, type: ANIME) {
+            id
+            title {
+              romaji
+              english
+              native
+            }
+            characters(sort: ROLE, perPage: 20) {
+              edges {
+                node {
+                  id
+                  name {
+                    first
+                    last
+                    native
+                  }
+                  image {
+                    large
+                  }
+                }
+                role
+                voiceActors(language: JAPANESE, sort: LANGUAGE) {
+                  id
+                  name {
+                    first
+                    last
+                    native
+                  }
+                  image {
+                    large
+                  }
+                  languageV2
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          variables: {
+            search: data.name || data.title,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`AniList API Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.data?.Media?.characters?.edges) {
+        // Transformiere AniList Daten ins erwartete Format
+        const transformedCharacters = result.data.Media.characters.edges
+          .filter(
+            (edge: any) => edge.voiceActors && edge.voiceActors.length > 0
+          )
+          .map((edge: any) => ({
+            character: {
+              name: `${edge.node.name.first || ''} ${
+                edge.node.name.last || ''
+              }`.trim(),
+              images: {
+                jpg: {
+                  image_url: edge.node.image.large,
+                },
+              },
+            },
+            role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
+            voice_actors: edge.voiceActors.map((va: any) => ({
+              person: {
+                name: `${va.name.first || ''} ${va.name.last || ''}`.trim(),
+                images: {
+                  jpg: {
+                    image_url: va.image.large,
+                  },
+                },
+              },
+              language: 'Japanese',
+            })),
+          }));
+
+        setAnimeCharacters(transformedCharacters);
+      }
+    } catch (error) {
+      console.error('Error fetching anime characters from AniList:', error);
+      console.log('Fallback: Zeige TMDB Cast statt Anime Charaktere');
+      setAnimeCharacters([]);
+      // Cast-Daten sind bereits geladen, werden normal angezeigt
+    } finally {
+      setAnimeLoading(false);
     }
   };
 
@@ -249,6 +371,68 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
   const handlePersonClick = (person: any, isCrewMember: boolean = false) => {
     fetchPersonData(person.id, isCrewMember);
+  };
+
+  const handleVoiceActorClick = async (voiceActor: any) => {
+    try {
+      setPersonLoading(true);
+      setPersonDialogOpen(true);
+
+      // Erstmal schauen, ob der Voice Actor bereits in den TMDB Cast-Daten ist
+      const tmdbCastMatch = castData.find((castMember: any) => {
+        const tmdbName = castMember.name.toLowerCase();
+        const voiceActorName = voiceActor.person.name.toLowerCase();
+
+        // Exakte Übereinstimmung
+        if (tmdbName === voiceActorName) return true;
+
+        // Gedrehte Namen (Vor-/Nachname)
+        const tmdbParts = tmdbName.split(' ');
+        const vaParts = voiceActorName.split(' ');
+        if (tmdbParts.length === 2 && vaParts.length === 2) {
+          if (tmdbParts[0] === vaParts[1] && tmdbParts[1] === vaParts[0]) {
+            return true;
+          }
+        }
+
+        // Bekannte Varianten
+        const knownVariants: { [key: string]: string[] } = {
+          'yuuki kaji': ['yuki kaji', 'kaji yuki'],
+          'yui ishikawa': ['ishikawa yui'],
+          'marina inoue': ['inoue marina'],
+          'yuu kobayashi': ['yu kobayashi', 'kobayashi yu'],
+        };
+
+        const variants = knownVariants[voiceActorName] || [];
+        return variants.includes(tmdbName);
+      });
+
+      if (tmdbCastMatch) {
+        // Perfekt! Voice Actor ist bereits in TMDB Cast-Daten
+        await fetchPersonData(tmdbCastMatch.id, false);
+      } else {
+        // Fallback: Zeige AniList Daten
+        const fallbackPersonData = {
+          id: voiceActor.person.id || Math.random(),
+          name: voiceActor.person.name,
+          profile_path: voiceActor.person.images?.jpg?.image_url || null,
+          biography: `Japanischer Synchronsprecher (声優, Seiyuu)\n\nNicht in TMDB Cast-Daten gefunden.`,
+          known_for_department: 'Acting',
+          birthday: null,
+          deathday: null,
+          place_of_birth: 'Japan',
+          popularity: 1.0,
+        };
+
+        setSelectedPerson(fallbackPersonData);
+        setPersonCredits({ cast: [], crew: [] });
+        setPersonLoading(false);
+        setCreditsLoading(false);
+      }
+    } catch (error) {
+      console.error('Error matching voice actor with TMDB cast:', error);
+      setPersonLoading(false);
+    }
   };
 
   // Prüfe ob Titel bereits in Liste ist
@@ -597,9 +781,250 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   </Box>
                 ) : (
                   <Box sx={{ maxHeight: '600px', overflowY: 'auto', pr: 1 }}>
-                    {/* Cast Sektion */}
-                    {castData.filter((actor: any) => actor.profile_path)
-                      .length > 0 && (
+                    {/* Anime Charaktere Sektion - höchste Priorität */}
+                    {animeCharacters.length > 0 && (
+                      <Box mb={4}>
+                        <Typography
+                          variant='h5'
+                          sx={{ color: '#ffd700', mb: 2, fontWeight: 'bold' }}
+                        >
+                          🎨 Anime-Charaktere ({animeCharacters.length})
+                        </Typography>
+                        <Box
+                          display='grid'
+                          gap={2}
+                          gridTemplateColumns='repeat(auto-fill, minmax(200px, 1fr))'
+                        >
+                          {animeCharacters
+                            .filter((char: any) => {
+                              // Nur japanische Voice Actors
+                              const hasJapaneseVA = char.voice_actors?.some(
+                                (va: any) => va.language === 'Japanese'
+                              );
+                              if (!hasJapaneseVA) return false;
+
+                              if (!searchTerm) return true;
+                              const characterName = (
+                                char.character?.name || ''
+                              ).toLowerCase();
+                              const japaneseVA = char.voice_actors?.find(
+                                (va: any) => va.language === 'Japanese'
+                              );
+                              const voiceActor = japaneseVA?.person?.name || '';
+                              const role = (char.role || '').toLowerCase();
+                              const searchLower = searchTerm.toLowerCase();
+
+                              // Deutsche Suchbegriffe unterstützen
+                              const roleMatches =
+                                role.includes(searchLower) ||
+                                (searchLower.includes('haupt') &&
+                                  role.includes('hauptrolle')) ||
+                                (searchLower.includes('neben') &&
+                                  role.includes('nebenrolle')) ||
+                                (searchLower.includes('main') &&
+                                  role.includes('hauptrolle')) ||
+                                (searchLower.includes('supporting') &&
+                                  role.includes('nebenrolle'));
+
+                              return (
+                                characterName.includes(searchLower) ||
+                                voiceActor
+                                  .toLowerCase()
+                                  .includes(searchLower) ||
+                                roleMatches
+                              );
+                            })
+                            .slice(0, 20)
+                            .map((char: any, idx: number) => (
+                              <Box
+                                key={`anime-char-${
+                                  char.character?.mal_id || idx
+                                }`}
+                                onClick={() => {
+                                  const japaneseVA = char.voice_actors?.find(
+                                    (va: any) => va.language === 'Japanese'
+                                  );
+                                  if (japaneseVA) {
+                                    handleVoiceActorClick(japaneseVA);
+                                  }
+                                }}
+                                sx={{
+                                  background:
+                                    'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                                  borderRadius: 3,
+                                  p: 2,
+                                  textAlign: 'center',
+                                  backdropFilter: 'blur(10px)',
+                                  border: '2px solid rgba(255,215,0,0.3)',
+                                  transition: 'all 0.3s ease',
+                                  cursor: 'pointer',
+                                  '&:hover': {
+                                    background:
+                                      'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,255,255,0.1) 100%)',
+                                    transform: 'translateY(-5px) scale(1.02)',
+                                    borderColor: '#ffd700',
+                                  },
+                                }}
+                              >
+                                {/* Charakterbild und Voice Actor nebeneinander */}
+                                <Box
+                                  display='flex'
+                                  justifyContent='center'
+                                  gap={1}
+                                  mb={2}
+                                >
+                                  <Box sx={{ position: 'relative' }}>
+                                    <Avatar
+                                      src={
+                                        char.character?.images?.jpg?.image_url
+                                      }
+                                      alt={char.character?.name}
+                                      sx={{
+                                        width: 80,
+                                        height: 80,
+                                        border: '2px solid #ffd700',
+                                      }}
+                                    />
+                                  </Box>
+
+                                  {(() => {
+                                    const japaneseVA = char.voice_actors?.find(
+                                      (va: any) => va.language === 'Japanese'
+                                    );
+                                    return japaneseVA ? (
+                                      <Box sx={{ position: 'relative' }}>
+                                        <Avatar
+                                          src={
+                                            japaneseVA.person?.images?.jpg
+                                              ?.image_url
+                                          }
+                                          alt={japaneseVA.person?.name}
+                                          sx={{
+                                            width: 80,
+                                            height: 80,
+                                            border: '2px solid #00fed7',
+                                          }}
+                                        />
+                                      </Box>
+                                    ) : null;
+                                  })()}
+                                </Box>
+
+                                {/* Charaktername */}
+                                <Typography
+                                  variant='subtitle1'
+                                  sx={{
+                                    fontWeight: 'bold',
+                                    color: '#ffd700',
+                                    mb: 0.5,
+                                    fontSize: '0.9rem',
+                                  }}
+                                >
+                                  {char.character?.name}
+                                </Typography>
+
+                                {/* Rolle */}
+                                <Typography
+                                  variant='body2'
+                                  sx={{
+                                    color: '#ffa500',
+                                    fontWeight: 'bold',
+                                    mb: 1,
+                                    fontSize: '0.75rem',
+                                  }}
+                                >
+                                  {char.role}
+                                </Typography>
+
+                                {/* Voice Actor Info - Nur Japanisch */}
+                                {(() => {
+                                  const japaneseVA = char.voice_actors?.find(
+                                    (va: any) => va.language === 'Japanese'
+                                  );
+                                  return japaneseVA ? (
+                                    <Box>
+                                      <Typography
+                                        variant='body2'
+                                        sx={{
+                                          color: '#00fed7',
+                                          fontWeight: 'bold',
+                                          mb: 0.5,
+                                          fontSize: '0.75rem',
+                                        }}
+                                      >
+                                        {japaneseVA.person?.name}
+                                      </Typography>
+                                    </Box>
+                                  ) : null;
+                                })()}
+                              </Box>
+                            ))}
+                        </Box>
+                      </Box>
+                    )}
+
+                    {animeLoading && (
+                      <Box textAlign='center' py={2} mb={3}>
+                        <CircularProgress
+                          size={24}
+                          sx={{ color: '#ffd700', mb: 1 }}
+                        />
+                        <Typography variant='body2' sx={{ color: '#ffd700' }}>
+                          Lade Anime-Charaktere von AniList...
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {/* Hinweis wenn AniList fehlgeschlagen bei Anime */}
+                    {(() => {
+                      const isAnime = data.origin_country?.some(
+                        (country: string) =>
+                          ['JP', 'CN', 'KR'].includes(country)
+                      );
+
+                      return (
+                        isAnime &&
+                        animeCharacters.length === 0 &&
+                        !animeLoading &&
+                        castData.length > 0
+                      );
+                    })() && (
+                      <Box
+                        textAlign='center'
+                        py={2}
+                        mb={3}
+                        sx={{
+                          background: 'rgba(255,165,0,0.1)',
+                          borderRadius: 2,
+                          border: '1px solid rgba(255,165,0,0.3)',
+                        }}
+                      >
+                        <Typography variant='body2' sx={{ color: '#ffa500' }}>
+                          ⚠️ AniList nicht erreichbar - Zeige TMDB Cast-Daten
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {/* Cast Sektion - Bei Non-Anime ODER wenn Anime Charaktere fehlgeschlagen */}
+                    {(() => {
+                      const isAnime = data.origin_country?.some(
+                        (country: string) =>
+                          ['JP', 'CN', 'KR'].includes(country)
+                      );
+
+                      // Zeige Cast wenn: Nicht-Anime ODER (Anime aber keine Charaktere geladen)
+                      const showCast =
+                        !isAnime ||
+                        (isAnime &&
+                          animeCharacters.length === 0 &&
+                          !animeLoading);
+
+                      return (
+                        showCast &&
+                        castData.filter((actor: any) => actor.profile_path)
+                          .length > 0
+                      );
+                    })() && (
                       <Box mb={4}>
                         <Typography
                           variant='h5'
@@ -708,7 +1133,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       </Box>
                     )}
 
-                    {/* Crew Sektion */}
+                    {/* Crew Sektion - Bei allen Filmen/Serien */}
                     {crewData.filter((person: any) => person.profile_path)
                       .length > 0 && (
                       <Box>
@@ -1110,9 +1535,37 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         }}
       >
         {personLoading ? (
-          <DialogContent sx={{ textAlign: 'center', py: 8 }}>
-            <CircularProgress sx={{ color: '#00fed7', mb: 2 }} />
-            <Typography variant='h6' color='#00fed7'>
+          <DialogContent
+            sx={{
+              textAlign: 'center',
+              py: 8,
+              background: 'rgba(0,0,0,0.9)',
+              backdropFilter: 'blur(10px)',
+              minHeight: '400px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <CircularProgress
+              size={60}
+              sx={{
+                color: '#00fed7',
+                mb: 3,
+                '& .MuiCircularProgress-circle': {
+                  strokeWidth: 3,
+                },
+              }}
+            />
+            <Typography
+              variant='h5'
+              sx={{
+                color: '#00fed7',
+                fontWeight: 'bold',
+                textShadow: '0 2px 10px rgba(0,254,215,0.5)',
+              }}
+            >
               Lade Person-Details...
             </Typography>
           </DialogContent>
@@ -1177,7 +1630,11 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   <Box sx={{ flexShrink: 0 }}>
                     <Box
                       component='img'
-                      src={`https://image.tmdb.org/t/p/w300${selectedPerson.profile_path}`}
+                      src={
+                        selectedPerson.profile_path?.startsWith('http')
+                          ? selectedPerson.profile_path
+                          : `https://image.tmdb.org/t/p/w300${selectedPerson.profile_path}`
+                      }
                       alt={selectedPerson.name}
                       sx={{
                         width: { xs: '200px', md: '250px' },
