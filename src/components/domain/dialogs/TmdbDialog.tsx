@@ -135,7 +135,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               english
               native
             }
-            characters(sort: ROLE, perPage: 20) {
+            characters(sort: ROLE, perPage: 30) {
               edges {
                 node {
                   id
