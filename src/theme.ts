@@ -61,6 +61,22 @@ export const theme = createTheme({
         root: {
           borderRadius: 8,
         },
+        containedPrimary: {
+          backgroundColor: '#00fed7',
+          color: '#000000',
+          fontWeight: 600,
+          '&:hover': {
+            backgroundColor: '#00e6c3',
+          },
+        },
+        outlinedPrimary: {
+          borderColor: '#00fed7',
+          color: '#00fed7',
+          '&:hover': {
+            borderColor: '#00fed7',
+            backgroundColor: 'rgba(0, 254, 215, 0.08)',
+          },
+        },
       },
     },
     MuiCard: {
@@ -133,11 +149,43 @@ export const theme = createTheme({
         },
       },
     },
+    MuiTabs: {
+      styleOverrides: {
+        indicator: {
+          backgroundColor: '#00fed7',
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          '&.Mui-selected': {
+            color: '#00fed7',
+          },
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
           borderRadius: 8,
           backgroundColor: '#090909',
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: '#404040',
+            },
+            '&:hover fieldset': {
+              borderColor: '#00fed7',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#00fed7',
+            },
+          },
+          '& .MuiInputLabel-root': {
+            '&.Mui-focused': {
+              color: '#00fed7',
+            },
+          },
         },
       },
     },

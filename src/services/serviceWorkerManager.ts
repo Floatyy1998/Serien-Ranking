@@ -1,0 +1,318 @@
+/**
+ * 🚀 Service Worker Manager für Serien-Ranking
+ * Koordiniert Service Worker Registration und Cache-Management
+ */
+
+interface CacheStatus {
+  caches: Array<{
+    name: string;
+    size: number;
+    items: string[];
+  }>;
+  timestamp: number;
+}
+
+interface PendingUpdate {
+  id: string;
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  body?: string;
+  timestamp: number;
+}
+
+class ServiceWorkerManager {
+  private worker: ServiceWorker | null = null;
+  private isSupported: boolean = false;
+  private registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
+
+  constructor() {
+    this.isSupported = 'serviceWorker' in navigator;
+    this.init();
+  }
+
+  /**
+   * 🔧 Service Worker Initialisierung
+   */
+  private async init(): Promise<void> {
+    if (!this.isSupported) {
+      console.warn(
+        '⚠️ Service Worker wird von diesem Browser nicht unterstützt'
+      );
+      return;
+    }
+
+    try {
+      await this.register();
+      this.setupEventListeners();
+    } catch (error) {
+      console.error(
+        '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
+        error
+      );
+    }
+  }
+
+  /**
+   * 📝 Service Worker Registration
+   */
+  private async register(): Promise<ServiceWorkerRegistration> {
+    if (this.registrationPromise) {
+      return this.registrationPromise;
+    }
+
+    this.registrationPromise = navigator.serviceWorker.register(
+      '/service-worker.js',
+      {
+        scope: '/',
+        updateViaCache: 'imports',
+      }
+    );
+
+    const registration = await this.registrationPromise;
+
+    // Check for updates
+    if (registration.waiting) {
+      this.showUpdateAvailable();
+    }
+
+    return registration;
+  }
+
+  /**
+   * 🎧 Event Listeners Setup
+   */
+  private setupEventListeners(): void {
+    if (!navigator.serviceWorker) return;
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      this.handleWorkerMessage(event.data);
+    });
+  }
+
+  /**
+   * 💬 Worker Message Handler
+   */
+  private handleWorkerMessage(data: any): void {
+    switch (data.type) {
+      case 'CACHE_UPDATED':
+        break;
+      case 'OFFLINE_READY':
+        this.notifyOfflineReady();
+        break;
+      case 'UPDATE_AVAILABLE':
+        this.showUpdateAvailable();
+        break;
+    }
+  }
+
+  /**
+   * 🔄 Service Worker Update
+   */
+  public async updateServiceWorker(): Promise<void> {
+    try {
+      const registration = await this.registrationPromise;
+      if (!registration) return;
+
+      if (registration.waiting) {
+        this.postMessage({ type: 'SKIP_WAITING' });
+      } else {
+        await registration.update();
+      }
+    } catch (error) {
+      console.error('❌ Service Worker Update fehlgeschlagen:', error);
+    }
+  }
+
+  /**
+   * 📦 Firebase Daten Cache Management
+   */
+  public cacheFirebaseData(path: string, data: any): void {
+    this.postMessage({
+      type: 'CACHE_FIREBASE_DATA',
+      data: { path, data },
+    });
+  }
+
+  /**
+   * 🗑️ Cache Management
+   */
+  public async clearCache(cacheName?: string): Promise<void> {
+    this.postMessage({
+      type: 'CLEAR_CACHE',
+      data: { cacheName },
+    });
+  }
+
+  /**
+   * 📊 Cache Status abrufen
+   */
+  public async getCacheStatus(): Promise<CacheStatus | null> {
+    if (!this.worker) return null;
+
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = (event) => {
+        resolve(event.data);
+      };
+
+      this.postMessage({ type: 'GET_CACHE_STATUS' }, [channel.port2]);
+    });
+  }
+
+  /**
+   * 🔄 Background Sync registrieren
+   */
+  public async registerBackgroundSync(tag: string): Promise<void> {
+    try {
+      const registration = await this.registrationPromise;
+      if (!registration) return;
+
+      if ('sync' in registration) {
+        await (registration as any).sync.register(tag);
+      }
+    } catch (error) {
+      console.error('❌ Background Sync Registration fehlgeschlagen:', error);
+    }
+  }
+
+  /**
+   * 💾 Offline Update Queue Management
+   */
+  public async queueFirebaseUpdate(
+    update: Omit<PendingUpdate, 'id' | 'timestamp'>
+  ): Promise<void> {
+    const pendingUpdate: PendingUpdate = {
+      ...update,
+      id: `update_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+    };
+
+    try {
+      await this.storeInIndexedDB('pendingUpdates', pendingUpdate);
+      await this.registerBackgroundSync('firebase-sync');
+    } catch (error) {
+      console.error('❌ Failed to queue Firebase update:', error);
+    }
+  }
+
+  /**
+   * 📱 PWA Install Prompt
+   */
+  public async showInstallPrompt(): Promise<boolean> {
+    if ('beforeinstallprompt' in window) {
+      // PWA Install Logic hier implementieren
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 🗄️ IndexedDB Helper
+   */
+  private async storeInIndexedDB(storeName: string, data: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('SerienRankingDB', 1);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+
+        const addRequest = store.add(data);
+        addRequest.onsuccess = () => resolve();
+        addRequest.onerror = () => reject(addRequest.error);
+      };
+
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(storeName)) {
+          db.createObjectStore(storeName, { keyPath: 'id' });
+        }
+      };
+    });
+  }
+
+  /**
+   * 💬 Message an Service Worker senden
+   */
+  private postMessage(message: any, transfer?: Transferable[]): void {
+    if (navigator.serviceWorker.controller) {
+      if (transfer) {
+        navigator.serviceWorker.controller.postMessage(message, { transfer });
+      } else {
+        navigator.serviceWorker.controller.postMessage(message);
+      }
+    }
+  }
+
+  /**
+   * 🔔 UI Notifications
+   */
+  private showUpdateAvailable(): void {
+    // Hier können Sie eine UI-Benachrichtigung anzeigen
+
+    // Optional: Custom Event für UI Components
+    window.dispatchEvent(new CustomEvent('sw-update-available'));
+  }
+
+  private notifyOfflineReady(): void {
+    // Optional: Custom Event für UI Components
+    window.dispatchEvent(new CustomEvent('sw-offline-ready'));
+  }
+
+  /**
+   * 📊 Public API für Cache Statistics
+   */
+  public async getCacheStatistics(): Promise<{
+    totalSize: number;
+    cacheCount: number;
+    lastUpdate: number;
+  }> {
+    const status = await this.getCacheStatus();
+    if (!status) {
+      return { totalSize: 0, cacheCount: 0, lastUpdate: 0 };
+    }
+
+    const totalSize = status.caches.reduce((sum, cache) => sum + cache.size, 0);
+    return {
+      totalSize,
+      cacheCount: status.caches.length,
+      lastUpdate: status.timestamp,
+    };
+  }
+
+  /**
+   * 🎯 Public API für Online/Offline Status
+   */
+  public get isOnline(): boolean {
+    return navigator.onLine;
+  }
+
+  public onOnlineStatusChange(
+    callback: (isOnline: boolean) => void
+  ): () => void {
+    const handleOnline = () => callback(true);
+    const handleOffline = () => callback(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Return cleanup function
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }
+}
+
+// Singleton Instance
+export const serviceWorkerManager = new ServiceWorkerManager();
+
+// Type Exports
+export type { CacheStatus, PendingUpdate };
