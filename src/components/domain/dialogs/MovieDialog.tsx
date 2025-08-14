@@ -48,7 +48,12 @@ const MovieDialog = ({
     genre: string
   ) => {
     const value = event.target.value;
-    setRatings({ ...ratings, [genre]: value === '' ? '' : parseFloat(value) });
+    let numericValue = value === '' ? 0 : parseFloat(value);
+    
+    if (numericValue < 0) numericValue = 0;
+    if (numericValue > 10) numericValue = 10;
+    
+    setRatings({ ...ratings, [genre]: numericValue });
   };
 
   return (
@@ -182,6 +187,27 @@ const MovieDialog = ({
           >
             Bewertungen:
           </Typography>
+          <Box
+            sx={{
+              p: 2,
+              mb: 2,
+              backgroundColor: 'rgba(0, 254, 215, 0.05)',
+              border: '1px solid rgba(0, 254, 215, 0.2)',
+              borderRadius: '8px',
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: '0.85rem',
+                color: 'rgba(255,255,255,0.7)',
+                lineHeight: 1.4,
+              }}
+            >
+              💡 <strong>Neues Rating-System:</strong> Bewerte beliebige Genres von 0.00-10.00. 
+              Nur bewertete Genres ({">"} 0) fließen in die Gesamtbewertung ein. 
+              Unbewertete Genres werden ignoriert.
+            </Typography>
+          </Box>
           {allGenres.map((g) => (
             <TextField
               key={g}
@@ -194,30 +220,50 @@ const MovieDialog = ({
               margin='normal'
               inputMode='decimal'
               disabled={isReadOnly}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ 
+                min: 0, 
+                max: 10, 
+                step: 0.01 
+              }}
+              placeholder="0.00 - 10.00"
               sx={{
+                backgroundColor: 'transparent',
                 '& .MuiOutlinedInput-root': {
-                  background: 'rgba(45,45,48,0.8)',
+                  backgroundColor: 'rgba(45,45,48,0.3)',
                   backdropFilter: 'blur(10px)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255,255,255,0.2)',
                   color: '#ffffff',
+                  borderRadius: '12px !important',
+                  transition: 'all 0.3s ease',
                   '& fieldset': {
-                    border: 'none',
+                    borderColor: 'rgba(255,255,255,0.2)',
+                    borderRadius: '12px !important',
                   },
                   '&:hover': {
-                    background: 'rgba(55,55,58,0.9)',
-                    border: '1px solid rgba(255,255,255,0.3)',
+                    backgroundColor: 'rgba(55,55,58,0.4)',
+                    '& fieldset': {
+                      borderColor: 'rgba(255,255,255,0.4)',
+                    },
                   },
                   '&.Mui-focused': {
-                    background: 'rgba(65,65,68,0.95)',
-                    border: '1px solid #00fed7',
-                    boxShadow: '0 0 20px #00fed7, 0.3)',
+                    backgroundColor: 'rgba(65,65,68,0.5)',
+                    '& fieldset': {
+                      borderColor: '#00fed7',
+                      boxShadow: '0 0 15px rgba(0, 254, 215, 0.3)',
+                    },
                   },
                 },
                 '& .MuiInputLabel-root': {
                   color: 'rgba(255,255,255,0.7)',
                   '&.Mui-focused': {
                     color: '#00fed7',
+                  },
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: '#ffffff',
+                  '&::placeholder': {
+                    color: 'rgba(255,255,255,0.4)',
+                    opacity: 1,
                   },
                 },
               }}
