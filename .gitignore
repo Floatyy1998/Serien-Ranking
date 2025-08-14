@@ -26,3 +26,8 @@ dist-ssr
 .firebase*
 firebase.json
 database.rules.json
+
+# Service Worker Builds
+src/workers/advanced-service-worker.ts
+public/service-worker.js
+

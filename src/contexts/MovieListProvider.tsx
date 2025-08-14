@@ -1,17 +1,22 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { useAuth } from '../App';
-import { Movie } from '../interfaces/Movie';
+import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
+import { Movie } from '../types/Movie';
 
 interface MovieListContextType {
   movieList: Movie[];
   loading: boolean;
+  refetchMovies: () => void;
+  isOffline: boolean;
+  isStale: boolean;
 }
 
 export const MovieListContext = createContext<MovieListContextType>({
   movieList: [],
   loading: true,
+  refetchMovies: () => {},
+  isOffline: false,
+  isStale: false,
 });
 
 export const MovieListProvider = ({
@@ -20,31 +25,37 @@ export const MovieListProvider = ({
   children: React.ReactNode;
 }) => {
   const { user } = useAuth()!;
-  const [movieList, setMovieList] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-      setMovieList([]);
-      setLoading(false);
-      return;
+  // 🚀 Enhanced Cache mit Offline-Support für Filme
+  const {
+    data: movieData,
+    loading,
+    refetch,
+    isStale,
+    isOffline,
+  } = useEnhancedFirebaseCache<Record<string, Movie>>(
+    user ? `${user.uid}/filme` : '',
+    {
+      ttl: 24 * 60 * 60 * 1000, // 24h Cache - offline kann eh nichts geändert werden
+      useRealtimeListener: true, // Realtime für sofortige Updates
+      enableOfflineSupport: true, // Offline-First Unterstützung
+      syncOnReconnect: true, // Auto-Sync bei Reconnect
     }
+  );
 
-    setLoading(true);
-    const ref = firebase.database().ref(`${user.uid}/filme`);
-    ref.on('value', (snapshot) => {
-      const data = snapshot.val();
-      setMovieList(data ? (Object.values(data) as Movie[]) : []);
-      setLoading(false);
-    });
-
-    return () => {
-      ref.off();
-    };
-  }, [user]);
+  // Konvertiere Object zu Array
+  const movieList: Movie[] = movieData ? Object.values(movieData) : [];
 
   return (
-    <MovieListContext.Provider value={{ movieList, loading }}>
+    <MovieListContext.Provider
+      value={{
+        movieList,
+        loading,
+        refetchMovies: refetch,
+        isOffline,
+        isStale,
+      }}
+    >
       {children}
     </MovieListContext.Provider>
   );

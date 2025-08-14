@@ -48,392 +48,863 @@ export const GlobalLoadingProvider = ({
   const shouldShowSkeleton =
     !location.pathname.includes('/login') &&
     !location.pathname.includes('/register');
-  const isSharedListPage = location.pathname.startsWith('/shared-list');
 
   if (isGlobalLoading && shouldShowSkeleton) {
     return (
       <GlobalLoadingContext.Provider value={contextValue}>
-        {/* EXAKT wie die echte App - Header + Nav + Main */}
+        {/* Material-UI Theme-basierte Skeleton-Struktur */}
         <div
-          className='w-full min-h-screen'
-          style={{ backgroundColor: '#000' }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#121212', // Material-UI dark theme background
+            overflow: 'hidden',
+            zIndex: 9999,
+          }}
         >
-          {/* ECHTER Header - genau wie in der App */}
+          {/* Container wie in der neuen MainPage */}
           <div
-            className='w-full h-16 flex items-center justify-center'
             style={{
-              backgroundColor: '#1e1e1e',
-              borderBottom: '1px solid #333',
+              maxWidth: '100%',
+              height: '100%',
+              margin: '0 auto',
+              padding:
+                location.pathname === '/' ? '16px 8px 64px' : '16px 24px',
+              overflow: 'auto',
             }}
           >
-            <div
-              className='skeleton-wave'
-              style={{
-                width: '120px',
-                height: '2px',
-                backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                background:
-                  'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                backgroundSize: '200% 100%',
-                animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                borderRadius: '4px',
-              }}
-            />
-          </div>
-
-          {/* ECHTE Navigation - nur für Hauptseiten */}
-          {!isSharedListPage && (
-            <div
-              className='w-full flex justify-center'
-              style={{
-                backgroundColor: '#0000',
-                padding: '8px',
-              }}
-            >
-              <div className='flex gap-4'>
+            {/* Header Skeleton - nur für MainPage (/) */}
+            {location.pathname === '/' && (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '32px',
+                  background:
+                    'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
+                  borderRadius: '8px',
+                  padding: '24px',
+                  color: 'white',
+                  minHeight: '120px',
+                  flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                  gap: window.innerWidth < 768 ? '16px' : '0',
+                }}
+              >
+                {/* User Avatar und Info */}
                 <div
-                  className='skeleton-wave'
                   style={{
-                    width: '60px',
-                    height: '36px',
-                    backgroundColor: 'rgba(0, 0, 0, 1)',
-                    background:
-                      'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '24px',
+                    width: window.innerWidth < 768 ? '100%' : 'auto',
+                    justifyContent:
+                      window.innerWidth < 768 ? 'center' : 'flex-start',
+                    flexDirection: window.innerWidth < 640 ? 'column' : 'row',
                   }}
-                />
-                <div
-                  className='skeleton-wave'
-                  style={{
-                    width: '60px',
-                    height: '36px',
-                    backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                    background:
-                      'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                    borderRadius: '4px',
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* ECHTES Main Layout */}
-          <main
-            className='w-full px-4 py-6'
-            style={{ backgroundColor: '#000' }}
-          >
-            <div className='mx-auto'>
-              {' '}
-              {/* ECHTE Filter - exakt wie SearchFilters.tsx mit korrektem mobilen Layout */}
-              <div className='flex flex-col gap-4 xl:flex-row md:items-center justify-center mb-6 max-w-[1400px] mx-auto'>
-                {/* Erste Box: Search + Add Buttons */}
-                <div className='flex flex-col lg:flex-row items-center gap-2'>
-                  {/* Search Field */}
-                  <div style={{ width: '250px', flexShrink: 0 }}>
-                    <div
-                      className='skeleton-wave'
-                      style={{
-                        width: '100%',
-                        height: '56px',
-                        backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        background:
-                          'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                        borderRadius: '4px',
-                        border: '1px solid rgba(255, 255, 255, 0.23)',
-                      }}
-                    />
-                  </div>
-
-                  {/* Add Button Container - responsive wie im echten Layout */}
-                  <div className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
-                    {/* Add Button (nur für Hauptseiten) */}
-                    {!isSharedListPage && (
-                      <div style={{ flexShrink: 0 }}>
-                        <div
-                          className='skeleton-wave'
-                          style={{
-                            width: '56px',
-                            height: '56px',
-                            backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                            background:
-                              'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                            backgroundSize: '200% 100%',
-                            animation:
-                              'skeleton-wave 1.5s ease-in-out infinite',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Discover Button (nur für Hauptseiten) */}
-                    {!isSharedListPage && (
-                      <div style={{ flexShrink: 0 }}>
-                        <div
-                          className='skeleton-wave'
-                          style={{
-                            width: '56px',
-                            height: '56px',
-                            backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                            background:
-                              'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                            backgroundSize: '200% 100%',
-                            animation:
-                              'skeleton-wave 1.5s ease-in-out infinite',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Recommendations Button (nur für Hauptseiten) */}
-                    {!isSharedListPage && (
-                      <div style={{ flexShrink: 0 }}>
-                        <div
-                          className='skeleton-wave'
-                          style={{
-                            width: '56px',
-                            height: '56px',
-                            backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                            background:
-                              'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                            backgroundSize: '200% 100%',
-                            animation:
-                              'skeleton-wave 1.5s ease-in-out infinite',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Zweite Box: Genre/Provider Selects */}
-                <div className='flex flex-col lg:flex-row items-center gap-2'>
-                  {/* Genre Select */}
-                  <div className='w-[250px]'>
-                    <div
-                      className='skeleton-wave'
-                      style={{
-                        width: '100%',
-                        height: '56px',
-                        backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        background:
-                          'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                        borderRadius: '4px',
-                        border: '1px solid rgba(255, 255, 255, 0.23)',
-                      }}
-                    />
-                  </div>
-
-                  {/* Provider Select */}
-                  <div className='w-[250px]'>
-                    <div
-                      className='skeleton-wave'
-                      style={{
-                        width: '100%',
-                        height: '56px',
-                        backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        background:
-                          'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                        borderRadius: '4px',
-                        border: '1px solid rgba(255, 255, 255, 0.23)',
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Dritte Box: Action Buttons (nur für Hauptseiten) - nur 2 Buttons */}
-                {!isSharedListPage && (
-                  <div className='flex gap-3 justify-center md:justify-start mt-0'>
-                    {/* Watchlist Button */}
-                    <div
-                      className='skeleton-wave'
-                      style={{
-                        width: '56px',
-                        height: '56px',
-                        backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        background:
-                          'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255, 255, 255, 0.23)',
-                      }}
-                    />
-                    {/* Next Watch Button */}
-                    <div
-                      className='skeleton-wave'
-                      style={{
-                        width: '56px',
-                        height: '56px',
-                        backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        background:
-                          'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255, 255, 255, 0.23)',
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-              {/* ECHTE Legende - horizontal zentriert wie im echten Layout */}
-              {!isSharedListPage && (
-                <div className='flex items-center justify-center gap-6 max-w-[1400px] mx-auto mb-6'>
+                >
                   <div
                     className='skeleton-wave'
                     style={{
-                      width: '90px',
-                      height: '14px',
-                      backgroundColor: 'rgba(80, 80, 80, 0.4)',
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      border: '3px solid rgba(255, 255, 255, 0.2)',
                       background:
-                        'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
+                        'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                    }}
+                  />
+                  <div
+                    style={{
+                      textAlign: window.innerWidth < 640 ? 'center' : 'left',
+                    }}
+                  >
+                    <div
+                      className='skeleton-wave'
+                      style={{
+                        width: '280px',
+                        height: '34px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        background:
+                          'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                        borderRadius: '4px',
+                        marginBottom: '8px',
+                      }}
+                    />
+                    <div
+                      className='skeleton-wave'
+                      style={{
+                        width: '350px',
+                        height: '14px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        background:
+                          'linear-gradient(90deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                        borderRadius: '4px',
+                        marginTop: '16px',
+                      }}
+                    />
+                    <div
+                      className='skeleton-wave'
+                      style={{
+                        width: '280px',
+                        height: '12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                        background:
+                          'linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                        borderRadius: '4px',
+                        marginTop: '8px',
+                      }}
+                    />
+                  </div>
+                </div>
+                {/* Freunde Button - neutrale Farben */}
+                <div
+                  className='skeleton-wave'
+                  style={{
+                    width: '100px',
+                    height: '48px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    background:
+                      'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Statistiken Grid - nur für MainPage (/) */}
+            {location.pathname === '/' && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns:
+                    window.innerWidth < 640
+                      ? 'repeat(2, 1fr)'
+                      : 'repeat(6, 1fr)',
+                  gap: '24px',
+                  marginBottom: '32px',
+                }}
+              >
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      backgroundColor: '#1e1e1e',
+                      borderRadius: '4px',
+                      padding: '24px',
+                      textAlign: 'center',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      display:
+                        window.innerWidth < 640 && index >= 2
+                          ? 'none'
+                          : 'block',
+                    }}
+                  >
+                    <div
+                      className='skeleton-wave'
+                      style={{
+                        width: '60px',
+                        height: '34px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        background:
+                          'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                        borderRadius: '4px',
+                        margin: '0 auto 16px',
+                      }}
+                    />
+                    <div
+                      className='skeleton-wave'
+                      style={{
+                        width: '80px',
+                        height: '14px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        background:
+                          'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                        borderRadius: '4px',
+                        margin: '0 auto',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Tabs Skeleton - nur für MainPage (/) */}
+            {location.pathname === '/' && (
+              <div
+                style={{
+                  backgroundColor: '#1e1e1e',
+                  borderRadius: '4px',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Tab Header - Material-UI Tab style */}
+                <div
+                  style={{
+                    display: 'flex',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+                    height: '72px',
+                  }}
+                >
+                  <div
+                    className='skeleton-wave'
+                    style={{
+                      flex: 1,
+                      height: '100%',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      background:
+                        'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                      borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: '1px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    }}
+                  />
+                  <div
+                    className='skeleton-wave'
+                    style={{
+                      flex: 1,
+                      height: '100%',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      background:
+                        'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'skeleton-wave 1.5s ease-in-out infinite',
+                    }}
+                  />
+                </div>
+
+                {/* Tab Content */}
+                <div style={{ padding: '16px' }}>
+                  {/* Material-UI Filter Layout - responsive */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                      alignItems: 'center',
+                      gap: window.innerWidth < 768 ? '16px' : '8px',
+                      marginBottom: '24px',
+                      maxWidth: '1400px',
+                      margin: '0 auto 24px',
+                      padding: '16px',
+                      flexWrap: window.innerWidth >= 768 ? 'wrap' : 'nowrap',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {window.innerWidth < 768 ? (
+                      <>
+                        {/* Mobile Layout - vertikal */}
+                        {/* Suchfeld */}
+                        <div style={{ width: '100%', maxWidth: '400px' }}>
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '100%',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '4px',
+                            }}
+                          />
+                        </div>
+
+                        {/* Add, Discover, Recommendations Buttons */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '16px',
+                            justifyContent: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {/* Add Button */}
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '56px',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '8px',
+                              flexShrink: 0,
+                            }}
+                          />
+
+                          {/* Discover Button */}
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '56px',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '8px',
+                              flexShrink: 0,
+                            }}
+                          />
+
+                          {/* Recommendations Button */}
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '56px',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '8px',
+                              flexShrink: 0,
+                            }}
+                          />
+                        </div>
+
+                        {/* Genre Select */}
+                        <div style={{ width: '100%', maxWidth: '400px' }}>
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '100%',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '4px',
+                            }}
+                          />
+                        </div>
+
+                        {/* Provider Select */}
+                        <div style={{ width: '100%', maxWidth: '400px' }}>
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '100%',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '4px',
+                            }}
+                          />
+                        </div>
+
+                        {/* Watchlist und Next Watch Buttons */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '16px',
+                            justifyContent: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {/* Watchlist Button */}
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '56px',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '8px',
+                              flexShrink: 0,
+                            }}
+                          />
+
+                          {/* Next Watch Button */}
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '56px',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '8px',
+                              flexShrink: 0,
+                            }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Desktop Layout - horizontal nebeneinander */}
+                        {/* Suchfeld */}
+                        <div style={{ width: '250px', flexShrink: 0 }}>
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '100%',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '4px',
+                            }}
+                          />
+                        </div>
+
+                        {/* Add Button */}
+                        <div
+                          className='skeleton-wave'
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            background:
+                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                            backgroundSize: '200% 100%',
+                            animation:
+                              'skeleton-wave 1.5s ease-in-out infinite',
+                            borderRadius: '8px',
+                            flexShrink: 0,
+                          }}
+                        />
+
+                        {/* Discover Button */}
+                        <div
+                          className='skeleton-wave'
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            background:
+                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                            backgroundSize: '200% 100%',
+                            animation:
+                              'skeleton-wave 1.5s ease-in-out infinite',
+                            borderRadius: '8px',
+                            flexShrink: 0,
+                          }}
+                        />
+
+                        {/* Recommendations Button */}
+                        <div
+                          className='skeleton-wave'
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            background:
+                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                            backgroundSize: '200% 100%',
+                            animation:
+                              'skeleton-wave 1.5s ease-in-out infinite',
+                            borderRadius: '8px',
+                            flexShrink: 0,
+                          }}
+                        />
+
+                        {/* Genre Select */}
+                        <div style={{ width: '250px', flexShrink: 0 }}>
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '100%',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '4px',
+                            }}
+                          />
+                        </div>
+
+                        {/* Provider Select */}
+                        <div style={{ width: '250px', flexShrink: 0 }}>
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '100%',
+                              height: '56px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                              borderRadius: '4px',
+                            }}
+                          />
+                        </div>
+
+                        {/* Watchlist Button */}
+                        <div
+                          className='skeleton-wave'
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            background:
+                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                            backgroundSize: '200% 100%',
+                            animation:
+                              'skeleton-wave 1.5s ease-in-out infinite',
+                            borderRadius: '8px',
+                            flexShrink: 0,
+                          }}
+                        />
+
+                        {/* Next Watch Button */}
+                        <div
+                          className='skeleton-wave'
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            background:
+                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                            backgroundSize: '200% 100%',
+                            animation:
+                              'skeleton-wave 1.5s ease-in-out infinite',
+                            borderRadius: '8px',
+                            flexShrink: 0,
+                          }}
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Material-UI Cards Grid - wie SeriesCard.tsx */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      gap: '75px',
+                    }}
+                  >
+                    {Array.from({ length: 40 }, (_, index) => (
+                      <div key={index} style={{ width: '230px' }}>
+                        <div
+                          style={{
+                            height: '444px', // Korrekte SeriesCard height
+                            backgroundColor: '#1e1e1e',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            borderRadius: '4px',
+                            boxShadow:
+                              'rgba(255, 255, 255, 0.1) 8px 8px 20px 0px, rgba(255, 255, 255, 0.1) -5px -5px 20px 0px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {/* Poster Bereich - aspect ratio 2:3 */}
+                          <div
+                            style={{
+                              aspectRatio: '2/3',
+                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              position: 'relative',
+                            }}
+                          >
+                            <div
+                              className='skeleton-wave'
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                background:
+                                  'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                backgroundSize: '200% 100%',
+                                animation:
+                                  'skeleton-wave 1.5s ease-in-out infinite',
+                              }}
+                            />
+                            {/* Rating Badge */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '8px',
+                                left: '8px',
+                                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                backdropFilter: 'blur(10px)',
+                                borderRadius: '12px',
+                                padding: '4px 8px',
+                              }}
+                            >
+                              <div
+                                className='skeleton-wave'
+                                style={{
+                                  width: '30px',
+                                  height: '16px',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  background:
+                                    'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                                  backgroundSize: '200% 100%',
+                                  animation:
+                                    'skeleton-wave 1.5s ease-in-out infinite',
+                                  borderRadius: '2px',
+                                }}
+                              />
+                            </div>
+                            {/* Watchlist Icon */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '8px',
+                                right: '8px',
+                                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                backdropFilter: 'blur(10px)',
+                                borderRadius: '50%',
+                                padding: '8px',
+                                width: '32px',
+                                height: '32px',
+                              }}
+                            >
+                              <div
+                                className='skeleton-wave'
+                                style={{
+                                  width: '16px',
+                                  height: '16px',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  background:
+                                    'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                                  backgroundSize: '200% 100%',
+                                  animation:
+                                    'skeleton-wave 1.5s ease-in-out infinite',
+                                  borderRadius: '2px',
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Titel Bereich - CardContent */}
+                          <div
+                            style={{
+                              padding: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flex: 1,
+                            }}
+                          >
+                            <div
+                              className='skeleton-wave'
+                              style={{
+                                width: '80%',
+                                height: '20px',
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                borderRadius: '4px',
+                                background:
+                                  'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                                backgroundSize: '200% 100%',
+                                animation:
+                                  'skeleton-wave 1.5s ease-in-out infinite',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Für andere Seiten - vereinfachtes Layout */}
+            {location.pathname !== '/' && (
+              <div style={{ padding: '16px' }}>
+                {/* Filter Area für andere Seiten */}
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '16px',
+                    marginBottom: '24px',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div
+                    className='skeleton-wave'
+                    style={{
+                      width: '250px',
+                      height: '56px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.23)',
+                      background:
+                        'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
                       backgroundSize: '200% 100%',
                       animation: 'skeleton-wave 1.5s ease-in-out infinite',
                       borderRadius: '4px',
                     }}
                   />
-                  <div className='flex items-center gap-2'>
-                    <div
-                      style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        backgroundColor: '#9c27b0',
-                      }}
-                    />
-                    <div
-                      className='skeleton-wave'
-                      style={{
-                        width: '50px',
-                        height: '14px',
-                        backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        background:
-                          'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                        borderRadius: '4px',
-                      }}
-                    />
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <div
-                      style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        backgroundColor: '#4caf50',
-                      }}
-                    />
-                    <div
-                      className='skeleton-wave'
-                      style={{
-                        width: '50px',
-                        height: '14px',
-                        backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        background:
-                          'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                        borderRadius: '4px',
-                      }}
-                    />
-                  </div>
                   <div
                     className='skeleton-wave'
                     style={{
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: 'rgba(80, 80, 80, 0.4)',
+                      width: '56px',
+                      height: '56px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.23)',
                       background:
-                        'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
+                        'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
                       backgroundSize: '200% 100%',
                       animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                      borderRadius: '50%',
+                      borderRadius: '8px',
                     }}
                   />
                 </div>
-              )}
-              {/* ECHTES Grid Layout - exakt wie die echten Cards */}
-              <div className='flex flex-row flex-wrap justify-center gap-20'>
-                {Array.from({ length: 20 }, (_, index) => (
-                  <div key={index} className='w-[230px]'>
-                    <div
-                      style={{
-                        height: '445px',
-                        backgroundColor: 'rgba(40, 40, 40, 0.8)',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        borderRadius: '4px',
-                        boxShadow:
-                          'rgba(255, 255, 255, 0.1) 8px 8px 20px 0px, rgba(255, 255, 255, 0.1) -5px -5px 20px 0px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      {/* Poster Bereich */}
-                      <div
-                        style={{
-                          flex: '1',
-                          aspectRatio: '2/3',
-                          backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                        }}
-                      >
-                        <div
-                          className='w-full h-full'
-                          style={{
-                            background:
-                              'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                            backgroundSize: '200% 100%',
-                            animation:
-                              'skeleton-wave 1.5s ease-in-out infinite',
-                          }}
-                        />
-                      </div>
 
-                      {/* Titel Bereich */}
+                {/* Grid für andere Seiten */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    gap: '75px',
+                  }}
+                >
+                  {Array.from({ length: 40 }, (_, index) => (
+                    <div key={index} style={{ width: '230px' }}>
                       <div
                         style={{
-                          padding: '16px',
+                          height: '444px',
+                          backgroundColor: '#1e1e1e',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          borderRadius: '4px',
+                          boxShadow:
+                            'rgba(255, 255, 255, 0.1) 8px 8px 20px 0px, rgba(255, 255, 255, 0.1) -5px -5px 20px 0px',
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          flexDirection: 'column',
+                          overflow: 'hidden',
                         }}
                       >
                         <div
                           style={{
-                            width: '80%',
-                            height: '24px',
-                            backgroundColor: 'rgba(80, 80, 80, 0.4)',
-                            borderRadius: '4px',
-                            background:
-                              'linear-gradient(90deg, rgba(80, 80, 80, 0.4) 25%, rgba(100, 100, 100, 0.3) 50%, rgba(80, 80, 80, 0.4) 75%)',
-                            backgroundSize: '200% 100%',
-                            animation:
-                              'skeleton-wave 1.5s ease-in-out infinite',
+                            aspectRatio: '2/3',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
                           }}
-                        />
+                        >
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            padding: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flex: 1,
+                          }}
+                        >
+                          <div
+                            className='skeleton-wave'
+                            style={{
+                              width: '80%',
+                              height: '20px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              borderRadius: '4px',
+                              background:
+                                'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                              backgroundSize: '200% 100%',
+                              animation:
+                                'skeleton-wave 1.5s ease-in-out infinite',
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </main>
+            )}
+          </div>
+
+          {/* CSS Animations */}
+          <style>
+            {`
+              @keyframes skeleton-wave {
+                0% {
+                  background-position: -200px 0;
+                }
+                100% {
+                  background-position: calc(200px + 100%) 0;
+                }
+              }
+            `}
+          </style>
 
           {/* Hidden App loading in background */}
           <div

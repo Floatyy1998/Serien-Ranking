@@ -1,41 +1,44 @@
-import { Box, Button, CssBaseline, ThemeProvider, styled } from '@mui/material';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import Firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 import {
   createContext,
   lazy,
-  useCallback,
+  Suspense,
   useContext,
   useEffect,
   useState,
 } from 'react';
 import { Helmet } from 'react-helmet';
 import {
-  Link,
   Navigate,
   Route,
   BrowserRouter as Router,
   Routes,
-  useLocation,
-  useNavigate,
 } from 'react-router-dom';
-import { VerifiedRoute } from './components/auth/VerifiedRoute';
-import Legend from './components/common/Legend';
-import MovieSearchFilters from './components/filters/MovieSearchFilters';
-import SearchFilters from './components/filters/SearchFilters';
-import Header from './components/layout/Header';
-import MovieGrid from './components/movies/MovieGrid';
-import SeriesGrid from './components/series/SeriesGrid';
+import { VerifiedRoute } from './features/auth/VerifiedRoute';
+// BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
+import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
+// Badge Migration Tools für Development
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
-import { SeriesListProvider } from './contexts/SeriesListProvider';
-import { StatsProvider } from './contexts/StatsProvider';
-import SharedSeriesList from './pages/SharedSeriesList';
+import { NotificationProvider } from './contexts/NotificationProvider';
+import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
+import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
+import { BadgeProvider } from './features/badges/BadgeProvider';
+import { StatsProvider } from './features/stats/StatsProvider';
+import { FriendsPage } from './pages/FriendsPage';
+import MainPage from './pages/MainPage';
+import { PublicListPage } from './pages/PublicListPage';
+import StartPage from './pages/StartPage'; // Eager loading für bessere Offline-Performance
+import { UserProfilePage } from './pages/UserProfilePage';
+import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { theme } from './theme';
+
 // Nur diese bleiben lazy
-const LoginPage = lazy(() => import('./components/auth/LoginPage'));
-const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
-const StartPage = lazy(() => import('./pages/StartPage'));
-const DuckFacts = lazy(() => import('./components/DuckFacts'));
+const LoginPage = lazy(() => import('./features/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./features/auth/RegisterPage'));
+const DuckFacts = lazy(() => import('./features/DuckFacts'));
 export const AuthContext = createContext<{
   user: Firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<Firebase.User | null>>;
@@ -45,19 +48,192 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<Firebase.User | null>(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
   const [authStateResolved, setAuthStateResolved] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
   useEffect(() => {
-    import('./firebase/initFirebase').then((module) => {
-      module.initFirebase();
-      Firebase.auth().onAuthStateChanged((user) => {
-        setUser(user);
+    // Online/Offline Status überwachen
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    import('./firebase/initFirebase')
+      .then((module) => {
+        try {
+          module.initFirebase();
+          setFirebaseInitialized(true);
+
+          // Service Worker initialisieren
+          if ('serviceWorker' in navigator) {
+            // Service Worker Manager ist bereits als Singleton initialisiert
+          }
+
+          const authTimeout = setTimeout(
+            () => {
+              setAuthStateResolved(true);
+
+              // Wenn offline, versuche gespeicherten User zu laden
+              if (isOffline) {
+                const savedUser = localStorage.getItem('cachedUser');
+                if (savedUser) {
+                  try {
+                    const parsedUser = JSON.parse(savedUser);
+                    setUser(parsedUser);
+                  } catch (error) {
+                    console.error(
+                      'Fehler beim Laden des gespeicherten Users:',
+                      error
+                    );
+                  }
+                }
+              }
+            },
+            isOffline ? 2000 : 5000
+          ); // Kürzerer Timeout wenn offline
+
+          Firebase.auth().onAuthStateChanged(async (user) => {
+            clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
+            setUser(user);
+            setAuthStateResolved(true);
+
+            // User für Offline-Zugriff speichern
+            if (user) {
+              localStorage.setItem(
+                'cachedUser',
+                JSON.stringify({
+                  uid: user.uid,
+                  email: user.email,
+                  displayName: user.displayName,
+                  photoURL: user.photoURL,
+                })
+              );
+            } else {
+              localStorage.removeItem('cachedUser');
+            }
+
+            // User Profile in Firebase initialisieren falls noch nicht vorhanden
+            if (user) {
+              const userRef = Firebase.database().ref(`users/${user.uid}`);
+              const snapshot = await userRef.once('value');
+
+              if (!snapshot.exists()) {
+                // Neuer Benutzer - nur grundlegende Daten setzen (Username wird in ProfileDialog gesetzt)
+                const userData = {
+                  uid: user.uid,
+                  email: user.email,
+                  displayName:
+                    user.displayName ||
+                    user.email?.split('@')[0] ||
+                    'Unbekannt',
+                  photoURL: user.photoURL || null,
+                  createdAt: Firebase.database.ServerValue.TIMESTAMP,
+                  lastActive: Firebase.database.ServerValue.TIMESTAMP,
+                  isOnline: true,
+                  // username wird beim ersten Profil-Setup gesetzt
+                };
+
+                await userRef.set(userData);
+
+                // 🚀 Cache User-Daten für Offline-Zugriff
+                await offlineFirebaseService.cacheData(
+                  `users/${user.uid}`,
+                  userData,
+                  60 * 60 * 1000 // 1 Stunde Cache
+                );
+              } else {
+                // Bestehender Benutzer - Online-Status aktualisieren
+                const updateData = {
+                  lastActive: Firebase.database.ServerValue.TIMESTAMP,
+                  isOnline: true,
+                };
+
+                await userRef.update(updateData);
+
+                // 🚀 Cache aktualisierte User-Daten
+                const userData = snapshot.val();
+                await offlineFirebaseService.cacheData(
+                  `users/${user.uid}`,
+                  { ...userData, ...updateData },
+                  60 * 60 * 1000 // 1 Stunde Cache
+                );
+              }
+
+              // Bei Disconnect offline setzen
+              userRef.child('isOnline').onDisconnect().set(false);
+              userRef
+                .child('lastActive')
+                .onDisconnect()
+                .set(Firebase.database.ServerValue.TIMESTAMP);
+            }
+          });
+        } catch (error) {
+          console.error('Fehler bei Firebase-Initialisierung:', error);
+          setAuthStateResolved(true); // Auch bei Fehler Auth-State als resolved setzen
+        }
+      })
+      .catch((error) => {
+        console.error('Fehler beim Laden des Firebase-Moduls:', error);
         setAuthStateResolved(true);
       });
-      setFirebaseInitialized(true);
-    });
   }, []);
+
   if (!firebaseInitialized || !authStateResolved) {
-    return null; // Lass das GlobalLoadingProvider das Skeleton zeigen
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#0a0a0a',
+          color: '#00fed7',
+          flexDirection: 'column',
+          gap: '20px',
+        }}
+      >
+        <div
+          style={{
+            width: '50px',
+            height: '50px',
+            border: '4px solid #00fed7',
+            borderTop: '4px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
+        <div>Initialisierung...</div>
+        {isOffline && (
+          <div
+            style={{
+              color: '#ff9800',
+              fontSize: '0.9rem',
+              textAlign: 'center',
+              marginTop: '10px',
+            }}
+          >
+            Offline-Modus aktiv
+            <br />
+            Gespeicherte Daten werden geladen...
+          </div>
+        )}
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
   }
+
   return (
     <AuthContext.Provider value={{ user, setUser, authStateResolved }}>
       {children}
@@ -69,192 +245,153 @@ export function App() {
   return (
     <Router>
       <GlobalLoadingProvider>
-        <AppContent />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </GlobalLoadingProvider>
     </Router>
   );
 }
 
-const NavBar = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.background.paper,
-  padding: theme.spacing(1),
-}));
-
-const NavButton = styled(Button)(({ theme }) => ({
-  textTransform: 'none',
-  fontWeight: theme.typography.fontWeightRegular,
-  fontSize: theme.typography.pxToRem(15),
-  margin: theme.spacing(1),
-  color: 'rgba(255, 255, 255, 0.7)',
-  '&.active': {
-    color: '#fff',
-    borderBottom: `2px solid ${theme.palette.primary.main}`,
-  },
-}));
-
 function AppContent() {
-  const [, setIsStatsOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState('All');
-  const [selectedProvider, setSelectedProvider] = useState('All');
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchValue(value);
-  }, []);
-  const handleGenreChange = useCallback((value: string) => {
-    setSelectedGenre(value);
-  }, []);
-  const handleProviderChange = useCallback((value: string) => {
-    setSelectedProvider(value);
-  }, []);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-  const handleNavClick = (path: string) => {
-    navigate(path);
-  };
-
-  const showNavBar =
-    !location.pathname.startsWith('/shared-list') &&
-    location.pathname !== '/duckfacts';
-
   return (
-    <AuthProvider>
-      <SeriesListProvider>
-        <MovieListProvider>
-          <StatsProvider>
-            <Helmet>
-              <title>
-                TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien
-              </title>
-              <meta
-                name='description'
-                content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-              />
-              <meta
-                name='keywords'
-                content='Serien, TV, Bewertung, Watchlist, TV-RANK'
-              />
-              <meta
-                property='og:title'
-                content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
-              />
-              <meta
-                property='og:description'
-                content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-              />
-              <meta property='og:image' content='/favicon.ico' />
-              <meta property='og:url' content='https://tv-rank.de' />
-              <meta name='twitter:card' content='summary_large_image' />
-            </Helmet>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />{' '}
-              <div className='w-full'>
-                <Header setIsStatsOpen={setIsStatsOpen} />
-                <AuthContext.Consumer>
-                  {(auth) =>
-                    auth?.user &&
-                    showNavBar && (
-                      <NavBar>
-                        <NavButton
-                          className={location.pathname === '/' ? 'active' : ''}
-                          onClick={() => handleNavClick('/')}
-                        >
-                          Serien
-                        </NavButton>
-                        <NavButton
-                          className={
-                            location.pathname === '/movies' ? 'active' : ''
-                          }
-                          onClick={() => handleNavClick('/movies')}
-                        >
-                          Filme
-                        </NavButton>
-                      </NavBar>
-                    )
-                  }
-                </AuthContext.Consumer>
-                <main className='w-full px-4 py-6'>
-                  <div className='mx-auto'>
-                    <Link to='/' className='mb-12' aria-label='Zur Startseite'>
-                      <span className='sr-only'>Zur Startseite</span>
-                    </Link>
-                    <Routes>
-                      <Route path='/login' element={<LoginPage />} />
-                      <Route path='/register' element={<RegisterPage />} />
-                      <Route
-                        path='/'
-                        element={
-                          <AuthContext.Consumer>
-                            {(auth) =>
-                              auth?.user ? (
-                                <VerifiedRoute>
-                                  <div className='flex flex-col gap-4 items-start'>
-                                    {/* Suchfilter und Legende untereinander, linksbündig */}
-                                    <SearchFilters
-                                      onSearchChange={handleSearchChange}
-                                      onGenreChange={handleGenreChange}
-                                      onProviderChange={handleProviderChange}
-                                    />
-                                    <Legend />
-                                    <SeriesGrid
-                                      searchValue={searchValue}
-                                      selectedGenre={selectedGenre}
-                                      selectedProvider={selectedProvider}
-                                    />
-                                  </div>
-                                </VerifiedRoute>
-                              ) : (
-                                <StartPage />
-                              )
-                            }
-                          </AuthContext.Consumer>
+    <OptimizedFriendsProvider>
+      <NotificationProvider>
+        <SeriesListProvider>
+          <MovieListProvider>
+            <StatsProvider>
+              <BadgeProvider>
+                <Helmet>
+                  <title>
+                    TV-RANK - Entdecke, bewerte und verwalte deine
+                    Lieblingsserien
+                  </title>
+                  <meta
+                    name='description'
+                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+                  />
+                  <meta
+                    name='keywords'
+                    content='Serien, TV, Bewertung, Watchlist, TV-RANK'
+                  />
+                  <meta
+                    property='og:title'
+                    content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
+                  />
+                  <meta
+                    property='og:description'
+                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+                  />
+                  <meta property='og:image' content='/favicon.ico' />
+                  <meta property='og:url' content='https://tv-rank.de' />
+                  <meta name='twitter:card' content='summary_large_image' />
+                </Helmet>
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <div className='w-full'>
+                    <UsernameRequiredDialog />
+                    <main className='w-full'>
+                      <Suspense
+                        fallback={
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              minHeight: '50vh',
+                              color: '#00fed7',
+                            }}
+                          >
+                            ⏳ Lade Komponente...
+                          </div>
                         }
-                      />
-                      <Route
-                        path='/shared-list/:linkId'
-                        element={<SharedSeriesList />}
-                      />
-                      <Route path='/duckfacts' element={<DuckFacts />} />
-                      <Route
-                        path='/movies'
-                        element={
-                          <AuthContext.Consumer>
-                            {(auth) =>
-                              auth?.user ? (
-                                <VerifiedRoute>
-                                  <div className='flex flex-col gap-4 items-start'>
-                                    <MovieSearchFilters
-                                      onSearchChange={handleSearchChange}
-                                      onGenreChange={handleGenreChange}
-                                      onProviderChange={handleProviderChange}
-                                    />
+                      >
+                        <Routes>
+                          <Route path='/login' element={<LoginPage />} />
+                          <Route path='/register' element={<RegisterPage />} />
+                          <Route
+                            path='/'
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => {
+                                  if (!auth?.authStateResolved) {
+                                    return (
+                                      <div
+                                        style={{
+                                          display: 'flex',
+                                          justifyContent: 'center',
+                                          alignItems: 'center',
+                                          minHeight: '50vh',
+                                          color: '#00fed7',
+                                        }}
+                                      >
+                                        ⏳ Wird geladen...
+                                      </div>
+                                    );
+                                  }
 
-                                    <MovieGrid
-                                      searchValue={searchValue}
-                                      selectedGenre={selectedGenre}
-                                      selectedProvider={selectedProvider}
-                                    />
-                                  </div>
-                                </VerifiedRoute>
-                              ) : (
-                                <StartPage />
-                              )
+                                  if (auth?.user) {
+                                    return (
+                                      <VerifiedRoute>
+                                        <MainPage />
+                                      </VerifiedRoute>
+                                    );
+                                  } else {
+                                    return <StartPage />;
+                                  }
+                                }}
+                              </AuthContext.Consumer>
                             }
-                          </AuthContext.Consumer>
-                        }
-                      />{' '}
-                      <Route path='*' element={<Navigate to='/' />} />
-                    </Routes>
+                          />
+                          <Route
+                            path='/friends'
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) =>
+                                  auth?.user ? (
+                                    <VerifiedRoute>
+                                      <FriendsPage />
+                                    </VerifiedRoute>
+                                  ) : (
+                                    <Navigate to='/login' />
+                                  )
+                                }
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route
+                            path='/public/:friendId'
+                            element={<PublicListPage />}
+                          />
+                          <Route
+                            path='/profile/:userId'
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) =>
+                                  auth?.user ? (
+                                    <VerifiedRoute>
+                                      <UserProfilePage />
+                                    </VerifiedRoute>
+                                  ) : (
+                                    <Navigate to='/login' />
+                                  )
+                                }
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route path='/duckfacts' element={<DuckFacts />} />
+                          <Route path='*' element={<Navigate to='/' />} />
+                        </Routes>
+                      </Suspense>
+                    </main>
                   </div>
-                </main>
-              </div>
-            </ThemeProvider>
-          </StatsProvider>
-        </MovieListProvider>
-      </SeriesListProvider>
-    </AuthProvider>
+                </ThemeProvider>
+              </BadgeProvider>
+            </StatsProvider>
+          </MovieListProvider>
+        </SeriesListProvider>
+      </NotificationProvider>
+    </OptimizedFriendsProvider>
   );
 }
 

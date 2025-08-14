@@ -8,23 +8,32 @@ dotenv.config();
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Nur spezifische Umgebungsvariablen definieren für Sicherheit
-    'process.env.VITE_APIKEY': JSON.stringify(process.env.VITE_APIKEY),
-    'process.env.VITE_AUTHDOMAIN': JSON.stringify(process.env.VITE_AUTHDOMAIN),
-    'process.env.VITE_DATABASEURL': JSON.stringify(
-      process.env.VITE_DATABASEURL
+    // Firebase Umgebungsvariablen - korrigierte Namen
+    'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(
+      process.env.VITE_FIREBASE_API_KEY
     ),
-    'process.env.VITE_PROJECTID': JSON.stringify(process.env.VITE_PROJECTID),
-    'process.env.VITE_STORAGEBUCKET': JSON.stringify(
-      process.env.VITE_STORAGEBUCKET
+    'process.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(
+      process.env.VITE_FIREBASE_AUTH_DOMAIN
     ),
-    'process.env.VITE_MESSAGINGSENDERID': JSON.stringify(
-      process.env.VITE_MESSAGINGSENDERID
+    'process.env.VITE_FIREBASE_DATABASE_URL': JSON.stringify(
+      process.env.VITE_FIREBASE_DATABASE_URL
     ),
-    'process.env.VITE_APPID': JSON.stringify(process.env.VITE_APPID),
-    'process.env.VITE_MEASUREMENTID': JSON.stringify(
-      process.env.VITE_MEASUREMENTID
+    'process.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(
+      process.env.VITE_FIREBASE_PROJECT_ID
     ),
+    'process.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(
+      process.env.VITE_FIREBASE_STORAGE_BUCKET
+    ),
+    'process.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(
+      process.env.VITE_FIREBASE_MESSAGING_SENDER_ID
+    ),
+    'process.env.VITE_FIREBASE_APP_ID': JSON.stringify(
+      process.env.VITE_FIREBASE_APP_ID
+    ),
+    'process.env.VITE_FIREBASE_MEASUREMENT_ID': JSON.stringify(
+      process.env.VITE_FIREBASE_MEASUREMENT_ID
+    ),
+    // TMDB API
     'process.env.VITE_API_TMDB': JSON.stringify(process.env.VITE_API_TMDB),
   },
   publicDir: 'public', // Stellen Sie sicher, dass dies korrekt konfiguriert ist
