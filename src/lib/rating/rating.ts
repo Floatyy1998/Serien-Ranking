@@ -64,21 +64,19 @@ export const calculateOverallRating = (series: Series | Movie) => {
   let genreCount = 0;
 
   try {
-    Object.entries(series.rating).forEach(([key, value]) => {
-      if (series.genre.genres.includes(key)) {
+    Object.entries(series.rating).forEach(([, value]) => {
+      if (value > 0) {
         totalRating += value;
         genreCount += 1;
-      } else {
-        totalRating += value * 0.002;
-        genreCount += 0.002;
       }
     });
 
+    if (genreCount === 0) return '0.00';
+    
     const overallRating = totalRating / genreCount;
     const roundedRating = addZeroes(round(overallRating, 0.01));
     return roundedRating;
   } catch (error) {
-    const roundedRating = addZeroes(round(totalRating / genreCount, 0.01));
-    return roundedRating;
+    return '0.00';
   }
 };
