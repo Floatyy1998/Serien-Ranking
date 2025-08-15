@@ -34,6 +34,7 @@ import { useNotifications } from '../contexts/NotificationProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
+import { WelcomeTour } from '../components/tour/WelcomeTour';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -76,6 +77,8 @@ export const MainPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState('All');
   const [tabValue, setTabValue] = useState(0);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [, setShowTourComplete] = useState(false);
+  const [shouldRestartTour, setShouldRestartTour] = useState(false);
 
   // Separate states für Filme
   const [movieSearchValue, setMovieSearchValue] = useState('');
@@ -106,6 +109,15 @@ export const MainPage: React.FC = () => {
   const handleMovieProviderChange = useCallback((value: string) => {
     setMovieSelectedProvider(value);
   }, []);
+
+  const handleTourComplete = () => {
+    setShowTourComplete(true);
+    setShouldRestartTour(false);
+  };
+
+  const handleRestartTour = () => {
+    setShouldRestartTour(true);
+  };
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -419,8 +431,20 @@ export const MainPage: React.FC = () => {
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <BadgeButton />
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: { xs: 1, md: 2 },
+              flexShrink: 0,
+              width: { xs: '100%', md: 'auto' },
+              justifyContent: { xs: 'center', md: 'flex-end' },
+              px: { xs: 1, md: 0 },
+            }}
+          >
+            <div data-tour="badge-button">
+              <BadgeButton />
+            </div>
 
             <Badge
               badgeContent={totalUnreadActivities + friendRequests.length}
@@ -434,6 +458,8 @@ export const MainPage: React.FC = () => {
                   minWidth: '20px',
                   height: '20px',
                   fontSize: '0.75rem',
+                  right: { xs: 6, md: 8 },
+                  top: { xs: 6, md: 8 },
                 },
               }}
             >
@@ -454,8 +480,9 @@ export const MainPage: React.FC = () => {
                     transform: 'translateY(-2px)',
                   },
                   fontSize: { xs: '0.75rem', md: '0.875rem' },
-                  padding: { xs: '8px 16px', md: '10px 20px' },
+                  padding: { xs: '6px 12px', md: '10px 20px' },
                   transition: 'all 0.3s ease',
+                  minWidth: 'auto',
                 }}
               >
                 Freunde
@@ -466,6 +493,7 @@ export const MainPage: React.FC = () => {
 
         {/* Statistiken - je nach Tab unterschiedlich */}
         <Box
+          data-tour="stats-grid"
           sx={{
             display: 'grid',
             gridTemplateColumns: {
@@ -888,6 +916,7 @@ export const MainPage: React.FC = () => {
         {/* Tabs für Serien und Filme */}
         <Card>
           <Tabs
+            data-tour="tabs"
             value={tabValue}
             onChange={handleTabChange}
             variant='fullWidth'
@@ -928,21 +957,23 @@ export const MainPage: React.FC = () => {
 
           <TabPanel value={tabValue} index={0}>
             <Box sx={{ p: { xs: 1, md: 2 } }}>
-              <Box sx={{ mb: { xs: 2, md: 3 } }}>
+              <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour="search-filters">
                 <SearchFilters
                   onSearchChange={handleSearchChange}
                   onGenreChange={handleGenreChange}
                   onProviderChange={handleProviderChange}
                 />
               </Box>
-              <Box sx={{ mb: { xs: 2, md: 3 } }}>
+              <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour="legend">
                 <Legend />
               </Box>
-              <SeriesGrid
-                searchValue={searchValue}
-                selectedGenre={selectedGenre}
-                selectedProvider={selectedProvider}
-              />
+              <div data-tour="series-grid">
+                <SeriesGrid
+                  searchValue={searchValue}
+                  selectedGenre={selectedGenre}
+                  selectedProvider={selectedProvider}
+                />
+              </div>
             </Box>
           </TabPanel>
 
@@ -968,6 +999,7 @@ export const MainPage: React.FC = () => {
         <ProfileDialog
           open={profileDialogOpen}
           onClose={() => setProfileDialogOpen(false)}
+          onRestartTour={handleRestartTour}
         />
 
         {/* New Season Notification Dialog */}
@@ -975,6 +1007,12 @@ export const MainPage: React.FC = () => {
           open={seriesWithNewSeasons.length > 0}
           onClose={clearNewSeasons}
           seriesWithNewSeasons={seriesWithNewSeasons}
+        />
+
+        {/* Welcome Tour */}
+        <WelcomeTour 
+          onTourComplete={handleTourComplete} 
+          shouldRestart={shouldRestartTour}
         />
       </>
     </Container>

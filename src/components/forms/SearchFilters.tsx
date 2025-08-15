@@ -252,7 +252,7 @@ export const SearchFilters = ({
   return (
     <Box className='flex flex-col gap-4 xl:flex-row md:items-center justify-center mb-6 max-w-[1400px] m-auto'>
       <Box className='flex flex-col lg:flex-row items-center gap-2'>
-        <Box sx={{ width: '250px', flexShrink: 0 }}>
+        <Box sx={{ width: '250px', flexShrink: 0 }} data-tour="search-input">
           <TextField
             label='Suchen'
             variant='outlined'
@@ -264,7 +264,7 @@ export const SearchFilters = ({
           />
         </Box>
         <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
-          <Box sx={{ flexShrink: 0 }}>
+          <Box sx={{ flexShrink: 0 }} data-tour="add-button">
             <Tooltip title='Serie hinzufügen'>
               <Button
                 variant='outlined'
@@ -307,7 +307,7 @@ export const SearchFilters = ({
             </Tooltip>
           </Box>
           <>
-            <Tooltip title='Unveröffentlichte Serien entdecken'>
+            <Tooltip title='Unveröffentlichte Serien entdecken' data-tour="discover-button">
               <Button
                 variant='outlined'
                 onClick={handleDialogDiscoverOpen}
@@ -347,7 +347,7 @@ export const SearchFilters = ({
                 </Box>
               </Button>
             </Tooltip>
-            <Tooltip title='Empfehlungen anzeigen'>
+            <Tooltip title='Empfehlungen anzeigen' data-tour="recommendations-button">
               <Button
                 variant='outlined'
                 onClick={handleDialogRecommendationsOpen}
@@ -397,7 +397,7 @@ export const SearchFilters = ({
         </Box>
       </Box>
       <Box className='flex flex-col lg:flex-row items-center gap-2'>
-        <FormControl className='w-[250px]' disabled={isWatchlist}>
+        <FormControl className='w-[250px]' disabled={isWatchlist} data-tour="genre-filter">
           <InputLabel id='genre-label'>Genre</InputLabel>
           <Select
             labelId='genre-label'
@@ -412,7 +412,7 @@ export const SearchFilters = ({
             ))}
           </Select>
         </FormControl>
-        <FormControl className='w-[250px]' disabled={isWatchlist}>
+        <FormControl className='w-[250px]' disabled={isWatchlist} data-tour="provider-filter">
           <InputLabel id='provider-label'>Provider</InputLabel>
           <Select
             labelId='provider-label'
@@ -438,6 +438,7 @@ export const SearchFilters = ({
         <Box className='flex gap-3 justify-center md:justify-start mt-0'>
           <Tooltip
             title={isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'}
+            data-tour="watchlist-button"
           >
             <Button
               variant={isWatchlist ? 'contained' : 'outlined'}
@@ -480,7 +481,7 @@ export const SearchFilters = ({
               </Box>
             </Button>
           </Tooltip>
-          <Tooltip title='Als nächstes schauen'>
+          <Tooltip title='Als nächstes schauen' data-tour="next-watch-button">
             <Button
               variant='outlined'
               onClick={handleDialogOpen}
