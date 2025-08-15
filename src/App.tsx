@@ -16,7 +16,7 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom';
-import { VerifiedRoute } from './features/auth/VerifiedRoute';
+import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
 // Badge Migration Tools für Development
@@ -332,9 +332,9 @@ function AppContent() {
 
                                   if (auth?.user) {
                                     return (
-                                      <VerifiedRoute>
+                                      <EmailVerificationBanner>
                                         <MainPage />
-                                      </VerifiedRoute>
+                                      </EmailVerificationBanner>
                                     );
                                   } else {
                                     return <StartPage />;
@@ -349,9 +349,9 @@ function AppContent() {
                               <AuthContext.Consumer>
                                 {(auth) =>
                                   auth?.user ? (
-                                    <VerifiedRoute>
+                                    <EmailVerificationBanner>
                                       <FriendsPage />
-                                    </VerifiedRoute>
+                                    </EmailVerificationBanner>
                                   ) : (
                                     <Navigate to='/login' />
                                   )
@@ -369,9 +369,9 @@ function AppContent() {
                               <AuthContext.Consumer>
                                 {(auth) =>
                                   auth?.user ? (
-                                    <VerifiedRoute>
+                                    <EmailVerificationBanner>
                                       <UserProfilePage />
-                                    </VerifiedRoute>
+                                    </EmailVerificationBanner>
                                   ) : (
                                     <Navigate to='/login' />
                                   )

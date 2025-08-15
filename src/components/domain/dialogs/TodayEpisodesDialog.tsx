@@ -46,126 +46,266 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
       const booksRead = Math.floor(totalHours / 6);
       const marsTrip = (totalHours / 6570).toFixed(2);
       const totalKM = totalHours * 5;
+      // Zusätzliche Berechnungen für mehr Variety - KORRIGIERT
+      const totalDays = Math.floor(totalHours / 24);
+      const episodesPerDay = totalDays > 0 ? (userStats.episodesWatched / totalDays).toFixed(1) : userStats.episodesWatched;
+      const averageEpisodeLength = totalHours / Math.max(1, userStats.episodesWatched);
+      const sleepTimeEquivalent = Math.floor(totalHours / 8); // 8h Schlaf pro Nacht
+      const workYearsEquivalent = (totalHours / (40 * 52 * 8)).toFixed(2); // 40h/Woche, 52 Wochen, 8h/Tag
+      const universityDegreesEquivalent = Math.floor(totalHours / (4 * 365 * 2)); // 4 Jahre, 2h täglich studieren
+      const olympicMarathonsEquivalent = Math.floor(totalKM / 42.195); // Exakte Marathon-Distanz
+      const moonTripsEquivalent = (totalKM / 384400).toFixed(4); // Distanz zur Mond
+      const netflixSeriesEquivalent = Math.floor(totalHours / 20); // Durchschnittsserie ~20h
+      const languageLearningEquivalent = Math.floor(totalHours / 600); // 600h für Grundkenntnisse
+      const cookingMealsEquivalent = Math.floor(totalHours / 0.5); // 30min pro Mahlzeit
+      const musicListeningEquivalent = Math.floor(totalHours * 20); // 3min pro Song
+      const videoGameBeatingEquivalent = Math.floor(totalHours / 50); // 50h pro AAA-Game
+      const hairGrowthMM = (totalDays * 0.3).toFixed(1); // 0.3mm pro Tag
+      const breathsEquivalent = Math.floor(totalHours * 60 * 15); // 15 Atemzüge/Min
+      const heartbeatsEquivalent = Math.floor(totalHours * 60 * 70); // 70 Schläge/Min
+      const blinkingEquivalent = Math.floor(totalHours * 60 * 15); // 15 Blinzeln/Min
+      const powerNapsEquivalent = Math.floor(totalHours / 0.25); // 15min Power-Nap
+      const daysInSpaceEquivalent = totalDays;
+      const treesPlantedEquivalent = Math.floor(totalHours / 0.1); // 6min pro Baum
+      const coffeeBrewingEquivalent = Math.floor(totalHours / 0.083); // 5min pro Tasse
+      const dogWalksEquivalent = Math.floor(totalHours); // 1h pro Spaziergang
+      const museumsVisitedEquivalent = Math.floor(totalHours / 3); // 3h pro Museum
+      const boardGamesEquivalent = Math.floor(totalHours / 2); // 2h pro Spiel
       const funFacts = [
+        // Originale Facts erweitert
         <>
           🐋 Du hast{' '}
           <strong>
             <u>{percentageOfSharkLife}%</u>
           </strong>{' '}
-          der Lebenszeit eines Grönlandhais mit Serien verbracht.
+          der Lebenszeit eines Grönlandhais mit Serien verbracht. Das sind über{' '}
+          <strong>{Math.floor(totalHours / 24)}</strong> Tage durchgehend!
         </>,
         <>
           📚 Hättest du stattdessen Bücher gelesen, wären das etwa{' '}
           <strong>
             <u>{booksRead}</u>
           </strong>{' '}
-          Romane gewesen.
+          Romane gewesen – das entspricht einer ganzen Bibliothek!
         </>,
         <>
           🚀 Du hättest in der Zeit schon{' '}
           <strong>
             <u>{marsTrip}</u>
           </strong>{' '}
-          mal zum Mars fliegen können.
+          mal zum Mars fliegen können – oder{' '}
+          <strong>{moonTripsEquivalent}</strong> mal zum Mond!
         </>,
         <>
-          🚶‍♂️ Du hättest bei einer Geschwindigkeit von 5Km/h{' '}
+          🚶‍♂️ Du hättest bei 5 km/h{' '}
           <strong>
             <u>{totalKM.toFixed(2)}</u>
           </strong>{' '}
-          Km weit laufen können.
+          km laufen können – das sind{' '}
+          <strong>{olympicMarathonsEquivalent}</strong> olympische Marathons!
         </>,
         <>
           🌍 Du hättest die Erde{' '}
           <strong>
             <u>{(totalKM / 40075).toFixed(2)}</u>
           </strong>{' '}
-          mal umrundet bei 5Km/h.
+          mal umrundet oder könntest von Berlin nach Tokyo{' '}
+          <strong>{Math.floor(totalKM / 8918)}</strong> mal hin und zurück!
+        </>,
+        // Neue kreative Facts
+        <>
+          💤 Du hättest{' '}
+          <strong>
+            <u>{sleepTimeEquivalent}</u>
+          </strong>{' '}
+          Nächte schlafen können – das sind über{' '}
+          <strong>{Math.floor(sleepTimeEquivalent / 365)}</strong> Jahre!
         </>,
         <>
-          🍿 Du hättest in dieser Zeit etwa{' '}
+          💼 Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours / 2)}</u>
+            <u>{workYearsEquivalent}</u>
           </strong>{' '}
-          Filme schauen können.
+          Jahre Vollzeit arbeiten können und dabei{' '}
+          <strong>{Math.floor(parseFloat(workYearsEquivalent) * 50000)}€</strong>{' '}
+          verdient!
+        </>,
+        <>
+          🎓 Du hättest{' '}
+          <strong>
+            <u>{universityDegreesEquivalent || "mindestens einen"}</u>
+          </strong>{' '}
+          Universitätsabschluss machen können und wärst jetzt Dr. der Serienwissenschaften!
+        </>,
+        <>
+          🎬 Du hast durchschnittlich{' '}
+          <strong>
+            <u>{episodesPerDay}</u>
+          </strong>{' '}
+          Episoden pro Tag geschaut – ein echter Binge-Watching Champion!
+        </>,
+        <>
+          ⏱️ Deine durchschnittliche Episode dauert{' '}
+          <strong>
+            <u>{(averageEpisodeLength * 60).toFixed(0)}</u>
+          </strong>{' '}
+          Minuten – du liebst {averageEpisodeLength > 1 ? "längere" : "kürzere"} Formate!
+        </>,
+        <>
+          🌱 In der Zeit sind deine Haare um{' '}
+          <strong>
+            <u>{hairGrowthMM} mm</u>
+          </strong>{' '}
+          gewachsen – genug für {Math.floor(parseFloat(hairGrowthMM) / 150)} Friseurbesuche!
+        </>,
+        <>
+          💓 Dein Herz hat in dieser Zeit{' '}
+          <strong>
+            <u>{(heartbeatsEquivalent / 1000000).toFixed(1)} Millionen</u>
+          </strong>{' '}
+          mal geschlagen – alle für Serien!
+        </>,
+        <>
+          👀 Du hast dabei etwa{' '}
+          <strong>
+            <u>{(blinkingEquivalent / 1000).toFixed(0)}k</u>
+          </strong>{' '}
+          mal geblinzelt – und trotzdem keine Szene verpasst!
+        </>,
+        <>
+          🍳 Du hättest{' '}
+          <strong>
+            <u>{cookingMealsEquivalent}</u>
+          </strong>{' '}
+          Mahlzeiten kochen können – das sind {Math.floor(cookingMealsEquivalent / 365)} Jahre Essen!
         </>,
         <>
           🎮 Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours / 4)}</u>
+            <u>{videoGameBeatingEquivalent}</u>
           </strong>{' '}
-          spannende Gaming-Sessions genießen können.
+          AAA-Videospiele durchspielen können – aber Serien sind cooler!
         </>,
         <>
-          📰 Du hättest etwa{' '}
+          🌳 Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours / 0.16)}</u>
+            <u>{treesPlantedEquivalent}</u>
           </strong>{' '}
-          Nachrichtenartikel lesen können.
+          Bäume pflanzen können und damit {Math.floor(treesPlantedEquivalent * 22)} kg CO2 pro Jahr binden!
         </>,
         <>
-          🏋️‍♂️ Du hättest{' '}
+          ☕ Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours)}</u>
+            <u>{coffeeBrewingEquivalent}</u>
           </strong>{' '}
-          Fitness-Sessions absolvieren können – und wärst trotzdem fit
-          geblieben.
+          Tassen Kaffee zubereiten können – genug Koffein für 10 Lifetime!
         </>,
         <>
-          🍕 Du hättest etwa{' '}
+          🐕 Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours * 2)}</u>
+            <u>{dogWalksEquivalent}</u>
           </strong>{' '}
-          Pizzen bestellen können – lecker und episch!
+          Spaziergänge mit einem Hund machen können – der wäre super glücklich!
         </>,
         <>
-          🚴‍♀️ Du hättest in dieser Zeit{' '}
+          🏛️ Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalKM / 15)}</u>
+            <u>{museumsVisitedEquivalent}</u>
           </strong>{' '}
-          Radtouren machen können.
+          Museen besuchen können und wärst kulturell hypergebildet!
         </>,
         <>
-          🌍 Du hättest{' '}
+          🎲 Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours / 24)}</u>
+            <u>{boardGamesEquivalent}</u>
           </strong>{' '}
-          Tagesausflüge rund um den Globus unternehmen können.
+          Brettspiele spielen können – genug für eine eigene Spielesammlung!
         </>,
         <>
-          ✈️ Du hättest in dieser Zeit fast{' '}
+          🧘‍♀️ Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalKM / 800)}</u>
+            <u>{powerNapsEquivalent}</u>
           </strong>{' '}
-          Kurzflüge absolvieren können.
+          Power-Naps (15min) machen können und wärst der entspannteste Mensch der Welt!
         </>,
         <>
-          💡 Mit dieser Watchtime hättest du genügend Ideen für{' '}
+          🎵 Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours * 0.1)}</u>
+            <u>{musicListeningEquivalent}</u>
           </strong>{' '}
-          neue Projekte gesammelt.
+          Songs hören können – das sind ganze{' '}
+          <strong>{Math.floor(musicListeningEquivalent / 12)} Alben</strong>!
         </>,
         <>
-          🎭 Du hättest in dieser Zeit etwa{' '}
+          ☕ Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours)}</u>
+            <u>{coffeeBrewingEquivalent}</u>
           </strong>{' '}
-          Theaterstücke aufführen können.
+          Tassen Kaffee zubereiten können – genug Koffein für mehrere Leben!
         </>,
         <>
-          🎤 Du hättest in dieser Zeit etwa{' '}
+          🌌 Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours / 2)}</u>
+            <u>{daysInSpaceEquivalent}</u>
           </strong>{' '}
-          Konzerte geben können.
+          Tage im Weltall verbringen können – länger als die meisten Astronauten!
         </>,
         <>
-          🎤 Du hättest in dieser Zeit etwa{' '}
+          🗣️ Du hättest{' '}
           <strong>
-            <u>{Math.floor(totalHours / 2.2)}</u>
+            <u>{languageLearningEquivalent}</u>
           </strong>{' '}
-          Podcast-Episoden aufnehmen können.
+          neue Sprachen lernen können und wärst polyglott geworden!
+        </>,
+        <>
+          📺 Du hast{' '}
+          <strong>
+            <u>{userStats.episodesWatched}</u>
+          </strong>{' '}
+          Episoden geschaut – das sind mehr als{' '}
+          <strong>{netflixSeriesEquivalent}</strong> komplette Netflix-Serien!
+        </>,
+        <>
+          🌟 Du hast{' '}
+          <strong>
+            <u>{userStats.seriesRated}</u>
+          </strong>{' '}
+          Serien bewertet – du bist ein echter Kritiker mit Geschmack!
+        </>,
+        <>
+          💨 Du hast dabei{' '}
+          <strong>
+            <u>{(breathsEquivalent / 1000000).toFixed(1)} Millionen</u>
+          </strong>{' '}
+          mal geatmet – reine Sauerstoffverschwendung für Entertainment!
+        </>,
+        <>
+          🏃‍♂️ Mit der gesparten Zeit hättest du{' '}
+          <strong>
+            <u>{Math.floor(totalHours / 3)}</u>
+          </strong>{' '}
+          Halbmarathons laufen können – aber wer braucht schon Fitness?
+        </>,
+        <>
+          📖 Du hättest{' '}
+          <strong>
+            <u>{Math.floor(totalHours / 100)}</u>
+          </strong>{' '}
+          Sachbücher lesen und ein Experte in {Math.floor(totalHours / 100)} Bereichen werden können!
+        </>,
+        <>
+          🎨 Du hättest{' '}
+          <strong>
+            <u>{Math.floor(totalHours / 5)}</u>
+          </strong>{' '}
+          Kunstwerke malen können und wärst der nächste Picasso geworden!
+        </>,
+        <>
+          🧑‍🍳 Du hättest{' '}
+          <strong>
+            <u>{Math.floor(totalHours / 40)}</u>
+          </strong>{' '}
+          Kochkurse machen können und alle Küchen der Welt beherrscht!
         </>,
       ];
       const randomIndex = Math.floor(Math.random() * funFacts.length);
