@@ -4,6 +4,7 @@ import {
   ExitToApp,
   PhotoCamera,
   Share,
+  Tour,
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
@@ -36,11 +37,13 @@ import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
 interface ProfileDialogProps {
   open: boolean;
   onClose: () => void;
+  onRestartTour?: () => void;
 }
 
 export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   open,
   onClose,
+  onRestartTour,
 }) => {
   const { user } = useAuth()!;
   const [username, setUsername] = useState('');
@@ -280,6 +283,32 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
     const link = `${window.location.origin}/public/${user?.uid}`;
     navigator.clipboard.writeText(link);
     setSuccess('Dein öffentlicher Link wurde kopiert!');
+  };
+
+  const handleRestartTour = async () => {
+    if (!user) return;
+
+    try {
+      // Tour-Status in Firebase zurücksetzen
+      await firebase.database().ref(`users/${user.uid}`).update({
+        hasCompletedTour: false,
+        tourCompletedAt: null,
+        tourSkippedAt: null,
+      });
+
+      onClose(); // Dialog schließen
+      
+      // Tour starten wenn Callback verfügbar
+      if (onRestartTour) {
+        setTimeout(() => {
+          onRestartTour();
+        }, 500);
+      }
+      
+      setSuccess('Tour wird neu gestartet...');
+    } catch (error) {
+      setError('Fehler beim Starten der Tour');
+    }
   };
 
   const handleLogout = async () => {
@@ -709,6 +738,78 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 )}
               </CardContent>
             </Card>
+
+            {/* Tour Button */}
+            {onRestartTour && (
+              <Card
+                variant='outlined'
+                sx={{
+                  borderRadius: { xs: 2, sm: 1 },
+                  background:
+                    'linear-gradient(135deg, rgba(0, 254, 215, 0.08) 0%, rgba(0, 254, 215, 0.04) 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(0, 254, 215, 0.2)',
+                }}
+              >
+                <CardContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 3 } }}>
+                  <Box
+                    display='flex'
+                    flexDirection={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    justifyContent='space-between'
+                    gap={{ xs: 2, sm: 0 }}
+                  >
+                    <Box sx={{ flex: { xs: 1, sm: 'auto' } }}>
+                      <Typography
+                        variant='h6'
+                        gutterBottom
+                        sx={{ 
+                          fontSize: { xs: '1rem', sm: '1.25rem' },
+                          color: '#00fed7'
+                        }}
+                      >
+                        Geführte Tour
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                      >
+                        Starte die Tour erneut, um alle Features kennenzulernen
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant='outlined'
+                      onClick={handleRestartTour}
+                      disabled={saving}
+                      startIcon={<Tour />}
+                      sx={{
+                        minHeight: { xs: 48, sm: 40 },
+                        fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                        background:
+                          'linear-gradient(135deg, rgba(0, 254, 215, 0.1) 0%, rgba(0, 254, 215, 0.05) 100%)',
+                        borderRadius: '12px',
+                        padding: '12px 24px',
+                        color: '#00fed7',
+                        fontWeight: 500,
+                        textTransform: 'none',
+                        border: '1px solid rgba(0, 254, 215, 0.3)',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background:
+                            'linear-gradient(135deg, rgba(0, 254, 215, 0.15) 0%, rgba(0, 254, 215, 0.1) 100%)',
+                          border: '1px solid rgba(0, 254, 215, 0.5)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      Tour starten
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Feedback */}
             {error && (
