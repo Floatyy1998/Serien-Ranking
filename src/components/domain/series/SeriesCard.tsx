@@ -15,6 +15,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { colors } from '../../../theme';
 import {
   allGenres,
   genreDisplayNames,
@@ -85,9 +86,9 @@ export const SeriesCard = ({
   const cardStyles = useMemo(
     () => ({
       background:
-        'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+        `linear-gradient(145deg, ${colors.background.default} 0%, ${colors.background.surface} 50%, ${colors.background.default} 100%)`,
       borderRadius: '20px',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
+      border: `1px solid ${colors.overlay.white}`,
       overflow: 'hidden',
       position: 'relative',
       contain: 'layout style paint',

@@ -5,6 +5,7 @@ import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { colors } from '../../theme';
 import { AuthLayout } from './Authlayout';
 
 const RegisterPage = () => {
@@ -192,14 +193,42 @@ const RegisterPage = () => {
           whileTap={{
             scale: 0.98,
           }}
-          className='w-full bg-[#00fed7] text-black py-2 rounded-lg font-semibold hover:bg-[#00fed7]/90 transition-colors'
+          style={{
+            width: '100%',
+            backgroundColor: 'var(--theme-primary)',
+            color: colors.background.default,
+            padding: '8px 0',
+            borderRadius: '8px',
+            fontWeight: '600',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--theme-primary-hover)';
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--theme-primary)';
+          }}
         >
           Konto erstellen
         </motion.button>
       </form>
-      <p className='mt-4 text-center text-gray-400'>
+      <p style={{ 
+        marginTop: '16px', 
+        textAlign: 'center', 
+        color: colors.text.muted 
+      }}>
         Bereits registriert?{' '}
-        <Link to='/login' className='text-[#00fed7] hover:underline'>
+        <Link 
+          to='/login' 
+          style={{ 
+            color: 'var(--theme-primary)', 
+            textDecoration: 'none' 
+          }}
+          onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+          onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
+        >
           Login
         </Link>
       </p>

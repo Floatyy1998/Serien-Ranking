@@ -1,7 +1,8 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
-import Firebase from 'firebase/compat/app';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import {
+import React, {
   createContext,
   lazy,
   Suspense,
@@ -34,19 +35,19 @@ import { PublicListPage } from './pages/PublicListPage';
 import StartPage from './pages/StartPage'; // Eager loading für bessere Offline-Performance
 import { UserProfilePage } from './pages/UserProfilePage';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
-import { theme } from './theme';
+import { updateTheme } from './theme';
 
 // Nur diese bleiben lazy
 const LoginPage = lazy(() => import('./features/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./features/auth/RegisterPage'));
 const DuckFacts = lazy(() => import('./features/DuckFacts'));
 export const AuthContext = createContext<{
-  user: Firebase.User | null;
-  setUser: React.Dispatch<React.SetStateAction<Firebase.User | null>>;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   authStateResolved: boolean;
 } | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<Firebase.User | null>(null);
+  const [user, setUser] = useState<firebase.User | null>(null);
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
   const [authStateResolved, setAuthStateResolved] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -100,7 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             isOffline ? 2000 : 5000
           ); // Kürzerer Timeout wenn offline
 
-          Firebase.auth().onAuthStateChanged(async (user) => {
+          firebase.auth().onAuthStateChanged(async (user) => {
             clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
             setUser(user);
             setAuthStateResolved(true);
@@ -122,7 +123,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
             // User Profile in Firebase initialisieren falls noch nicht vorhanden
             if (user) {
-              const userRef = Firebase.database().ref(`users/${user.uid}`);
+              // WICHTIG: Lokales Theme hat Vorrang - Cloud-Theme nur als Fallback
+              const localTheme = localStorage.getItem('customTheme');
+              
+              if (!localTheme) {
+                // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
+                console.log('No local theme found, checking for cloud theme as fallback...');
+                const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
+                try {
+                  const themeSnapshot = await themeRef.once('value');
+                  const cloudTheme = themeSnapshot.val();
+                  
+                  if (cloudTheme) {
+                    console.log('Cloud theme found as fallback, applying...');
+                    // Cloud-Theme als Fallback verwenden
+                    const root = document.documentElement;
+                    root.style.setProperty('--theme-primary', cloudTheme.primaryColor || '#00fed7');
+                    const primaryHover = adjustBrightness(cloudTheme.primaryColor || '#00fed7', 10);
+                    root.style.setProperty('--theme-primary-hover', primaryHover);
+                    root.style.setProperty('--theme-accent', cloudTheme.accentColor || '#ff6b6b');
+                    root.style.setProperty('--theme-background', cloudTheme.backgroundColor || '#000000');
+                    root.style.setProperty('--theme-surface', cloudTheme.surfaceColor || '#2d2d30');
+                    root.style.setProperty('--theme-text-primary', cloudTheme.primaryColor || '#00fed7');
+                    root.style.setProperty('--theme-text-secondary', '#ffffff');
+                    
+                    // Update theme-color Meta-Tag für PWA Status Bar
+                    updateThemeColorMeta(cloudTheme.backgroundColor || '#000000');
+                    
+                    // WICHTIG: Cloud-Theme NICHT automatisch lokal speichern
+                    // Sonst würde es zum lokalen Theme werden und könnte nicht mehr überschrieben werden
+                    // User muss explizit im Theme-Editor "Speichern" klicken um ein lokales Theme zu erstellen
+                    
+                    window.dispatchEvent(new CustomEvent('themeChanged'));
+                  }
+                } catch (error) {
+                  console.error('Error loading cloud theme:', error);
+                }
+              } else {
+                console.log('Local theme exists, keeping it (has priority over cloud theme - cloud updates are ignored)');
+              }
+              
+              const userRef = firebase.database().ref(`users/${user.uid}`);
               const snapshot = await userRef.once('value');
 
               if (!snapshot.exists()) {
@@ -135,8 +176,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     user.email?.split('@')[0] ||
                     'Unbekannt',
                   photoURL: user.photoURL || null,
-                  createdAt: Firebase.database.ServerValue.TIMESTAMP,
-                  lastActive: Firebase.database.ServerValue.TIMESTAMP,
+                  createdAt: firebase.database.ServerValue.TIMESTAMP,
+                  lastActive: firebase.database.ServerValue.TIMESTAMP,
                   isOnline: true,
                   // username wird beim ersten Profil-Setup gesetzt
                 };
@@ -152,7 +193,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               } else {
                 // Bestehender Benutzer - Online-Status aktualisieren
                 const updateData = {
-                  lastActive: Firebase.database.ServerValue.TIMESTAMP,
+                  lastActive: firebase.database.ServerValue.TIMESTAMP,
                   isOnline: true,
                 };
 
@@ -172,7 +213,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               userRef
                 .child('lastActive')
                 .onDisconnect()
-                .set(Firebase.database.ServerValue.TIMESTAMP);
+                .set(firebase.database.ServerValue.TIMESTAMP);
             }
           });
         } catch (error) {
@@ -188,50 +229,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   if (!firebaseInitialized || !authStateResolved) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          backgroundColor: '#0a0a0a',
-          color: '#00fed7',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        <div
-          style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid #00fed7',
-            borderTop: '4px solid transparent',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
-        <div>Initialisierung...</div>
-        {isOffline && (
-          <div
-            style={{
-              color: '#ff9800',
-              fontSize: '0.9rem',
-              textAlign: 'center',
-              marginTop: '10px',
-            }}
-          >
-            Offline-Modus aktiv
-            <br />
-            Gespeicherte Daten werden geladen...
-          </div>
-        )}
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
+      <LoadingSpinner 
+        text="Initialisierung..." 
+        showOfflineMessage={isOffline}
+      />
     );
   }
 
@@ -242,7 +243,115 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 export const useAuth = () => useContext(AuthContext);
+// Theme beim App-Start laden
+// Funktion um eine Farbe heller oder dunkler zu machen
+const adjustBrightness = (color: string, percent: number) => {
+  const num = parseInt(color.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = (num >> 8 & 0x00FF) + amt;
+  const B = (num & 0x0000FF) + amt;
+  return '#' + (0x1000000 + (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 + 
+    (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 + 
+    (B < 255 ? (B < 1 ? 0 : B) : 255)).toString(16).slice(1);
+};
+
+// Funktion zum Updaten des theme-color Meta-Tags
+const updateThemeColorMeta = (backgroundColor: string) => {
+  const metaThemeColor = document.getElementById('theme-color-meta') as HTMLMetaElement;
+  if (metaThemeColor) {
+    metaThemeColor.content = backgroundColor;
+  }
+};
+
+const loadSavedTheme = async (userId?: string) => {
+  let theme = null;
+  
+  // WICHTIG: Lokales Theme hat Vorrang vor Cloud-Theme
+  // Erst lokales Theme versuchen
+  const savedTheme = localStorage.getItem('customTheme');
+  if (savedTheme) {
+    try {
+      theme = JSON.parse(savedTheme);
+      console.log('Lokales Theme geladen (hat Vorrang):', theme);
+    } catch (error) {
+      console.error('Fehler beim Laden des lokalen Themes:', error);
+    }
+  }
+  
+  // Falls kein lokales Theme, Cloud-Theme als Fallback laden
+  if (!theme && userId) {
+    try {
+      const themeRef = firebase.database().ref(`users/${userId}/theme`);
+      const snapshot = await themeRef.once('value');
+      theme = snapshot.val();
+      if (theme) {
+        console.log('Cloud-Theme als Fallback geladen:', theme);
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden des Cloud-Themes:', error);
+    }
+  }
+  
+  // Theme anwenden oder Defaults verwenden
+  const root = document.documentElement;
+  
+  if (theme) {
+    root.style.setProperty('--theme-primary', theme.primaryColor || '#00fed7');
+    // Hover-Farbe automatisch berechnen (etwas heller/dunkler)
+    const primaryHover = adjustBrightness(theme.primaryColor || '#00fed7', 10);
+    root.style.setProperty('--theme-primary-hover', primaryHover);
+    root.style.setProperty('--theme-accent', theme.accentColor || '#ff6b6b');
+    root.style.setProperty('--theme-background', theme.backgroundColor || '#000000');
+    root.style.setProperty('--theme-surface', theme.surfaceColor || '#2d2d30');
+    root.style.setProperty('--theme-text-primary', theme.primaryColor || '#00fed7');
+    root.style.setProperty('--theme-text-secondary', '#ffffff');
+    
+    // Update theme-color Meta-Tag für PWA Status Bar
+    updateThemeColorMeta(theme.backgroundColor || '#000000');
+  } else {
+    // Stelle sicher, dass Default-Werte gesetzt sind
+    root.style.setProperty('--theme-primary', '#00fed7');
+    root.style.setProperty('--theme-primary-hover', adjustBrightness('#00fed7', 10));
+    root.style.setProperty('--theme-accent', '#ff6b6b');
+    root.style.setProperty('--theme-background', '#000000');
+    root.style.setProperty('--theme-surface', '#2d2d30');
+    root.style.setProperty('--theme-text-primary', '#00fed7');
+    root.style.setProperty('--theme-text-secondary', '#ffffff');
+    
+    // Update theme-color Meta-Tag für PWA Status Bar
+    updateThemeColorMeta('#000000');
+  }
+};
+
 export function App() {
+  const [isThemeLoaded, setIsThemeLoaded] = React.useState(false);
+  
+  // Theme beim App-Start laden - aber NACH Firebase Initialisierung
+  React.useEffect(() => {
+    // Sofort lokales Theme laden für schnellen Start (braucht kein Firebase)
+    const initializeTheme = async () => {
+      // Erst mal lokales Theme laden (sofort verfügbar, braucht kein Firebase)
+      await loadSavedTheme();
+      
+      // Theme wurde geladen - State setzen
+      setIsThemeLoaded(true);
+      
+      // Wichtig: Theme-Change Event nach kurzer Verzögerung auslösen
+      // damit Material-UI Zeit hat sich zu initialisieren
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('themeChanged'));
+      }, 100);
+    };
+    
+    initializeTheme();
+  }, []);
+
+  // Warte bis Theme geladen ist bevor App gerendert wird
+  if (!isThemeLoaded) {
+    return <LoadingSpinner text="Lade Theme..." />;
+  }
+
   return (
     <Router>
       <GlobalLoadingProvider>
@@ -255,6 +364,27 @@ export function App() {
 }
 
 function AppContent() {
+  // Theme initial mit updateTheme erstellen um CSS-Variablen zu lesen
+  const [currentTheme, setCurrentTheme] = React.useState(() => updateTheme());
+
+  // Theme bei Änderungen aktualisieren
+  React.useEffect(() => {
+    const handleThemeChange = () => {
+      const newTheme = updateTheme();
+      setCurrentTheme(newTheme);
+    };
+
+    // Event Listener für Theme-Änderungen
+    window.addEventListener('themeChanged', handleThemeChange);
+    
+    // Initiales Theme nochmal updaten falls CSS-Variablen sich geändert haben
+    handleThemeChange();
+    
+    return () => {
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
+  }, []);
+
   return (
     <OptimizedFriendsProvider>
       <NotificationProvider>
@@ -287,7 +417,7 @@ function AppContent() {
                   <meta property='og:url' content='https://tv-rank.de' />
                   <meta name='twitter:card' content='summary_large_image' />
                 </Helmet>
-                <ThemeProvider theme={theme}>
+                <ThemeProvider theme={currentTheme}>
                   <CssBaseline />
                   <div className='w-full'>
                     <UsernameRequiredDialog />
@@ -295,17 +425,10 @@ function AppContent() {
                     <main className='w-full'>
                       <Suspense
                         fallback={
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              minHeight: '50vh',
-                              color: '#00fed7',
-                            }}
-                          >
-                            ⏳ Lade Komponente...
-                          </div>
+                          <LoadingSpinner 
+                            text="⏳ Lade Komponente..." 
+                            variant="centered"
+                          />
                         }
                       >
                         <Routes>
@@ -318,17 +441,10 @@ function AppContent() {
                                 {(auth) => {
                                   if (!auth?.authStateResolved) {
                                     return (
-                                      <div
-                                        style={{
-                                          display: 'flex',
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          minHeight: '50vh',
-                                          color: '#00fed7',
-                                        }}
-                                      >
-                                        ⏳ Wird geladen...
-                                      </div>
+                                      <LoadingSpinner 
+                                        text="⏳ Wird geladen..." 
+                                        variant="centered"
+                                      />
                                     );
                                   }
 

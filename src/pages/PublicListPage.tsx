@@ -6,6 +6,7 @@ import {
   Star,
   TrendingUp,
 } from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Avatar,
   Box,
@@ -15,6 +16,8 @@ import {
   Chip,
   Collapse,
   Container,
+  Dialog,
+  IconButton,
   Tab,
   Tabs,
   Tooltip,
@@ -29,6 +32,7 @@ import SeriesGrid from '../components/domain/series/SeriesGrid';
 import { QuickFilterChips } from '../components/ui/QuickFilterChips';
 import { ScrollArrows } from '../components/ui/ScrollArrows';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
+import { colors } from '../theme';
 
 interface UserProfileData {
   profile: {
@@ -96,6 +100,7 @@ export const PublicListPage: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [mobileStatsExpanded, setMobileStatsExpanded] = useState(false);
   const [selectedSpecialFilter, setSelectedSpecialFilter] = useState('');
+  const [imageModalOpen, setImageModalOpen] = useState(false);
   // Zugriff verweigern, wenn man selbst eingeloggt ist (eigene UID)
   if (user && friendId === user.uid) {
     return (
@@ -105,14 +110,14 @@ export const PublicListPage: React.FC = () => {
       >
         <Card
           sx={{
-            background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-            color: '#00fed7',
+            background: `var(--theme-primary)`,
+            color: 'var(--theme-primary)',
             fontWeight: 'bold',
             borderRadius: 2,
-            boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+            boxShadow: `0 4px 12px ${colors.overlay.medium}`,
             '&:hover': {
-              background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-              boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+              background: 'var(--theme-primary-hover)',
+              boxShadow: `0 6px 16px ${colors.overlay.medium}`,
               transform: 'translateY(-2px)',
             },
             fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -123,13 +128,13 @@ export const PublicListPage: React.FC = () => {
           <CardContent sx={{ textAlign: 'center', py: 7 }}>
             <Avatar
               sx={{
-                bgcolor: '#fff',
-                color: '#00c5a3',
+                bgcolor: colors.text.secondary,
+                color: 'var(--theme-primary-hover)',
                 width: 70,
                 height: 70,
                 mx: 'auto',
                 mb: 2,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+                boxShadow: `0 2px 12px ${colors.overlay.dark}`,
               }}
             >
               <Star sx={{ fontSize: 40 }} />
@@ -145,14 +150,14 @@ export const PublicListPage: React.FC = () => {
               onClick={() => navigate('/')}
               startIcon={<ArrowBack />}
               sx={{
-                background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-                color: '#000',
+                background: `var(--theme-primary)`,
+                color: colors.background.default,
                 fontWeight: 'bold',
                 borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+                boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                  boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                  background: 'var(--theme-primary-hover)',
+                  boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                   transform: 'translateY(-2px)',
                 },
                 fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -411,22 +416,22 @@ export const PublicListPage: React.FC = () => {
       >
         <Card
           sx={{
-            background: 'linear-gradient(135deg, #00fed7 0%, #00bcd4 100%)',
-            color: 'white',
+            background: `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
+            color: colors.text.secondary,
             borderRadius: 3,
-            boxShadow: '0 4px 24px rgba(0,254,215,0.13)',
+            boxShadow: `0 4px 24px ${colors.overlay.medium}`,
           }}
         >
           <CardContent sx={{ textAlign: 'center', py: 7 }}>
             <Avatar
               sx={{
-                bgcolor: '#fff',
-                color: '#00bcd4',
+                bgcolor: colors.text.secondary,
+                color: 'var(--theme-primary-hover)',
                 width: 70,
                 height: 70,
                 mx: 'auto',
                 mb: 2,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+                boxShadow: `0 2px 12px ${colors.overlay.dark}`,
               }}
             >
               <Star sx={{ fontSize: 40 }} />
@@ -435,13 +440,13 @@ export const PublicListPage: React.FC = () => {
               variant='h5'
               fontWeight='bold'
               gutterBottom
-              sx={{ color: '#ff1744' }}
+              sx={{ color: colors.status.error }}
             >
               Fehler beim Laden
             </Typography>
             <Typography
               variant='body1'
-              sx={{ mb: 3, opacity: 0.9, color: '#00fed7' }}
+              sx={{ mb: 3, opacity: 0.9, color: 'var(--theme-primary)' }}
             >
               {error || 'Es ist ein unbekannter Fehler aufgetreten.'}
             </Typography>
@@ -450,14 +455,14 @@ export const PublicListPage: React.FC = () => {
               onClick={() => navigate('/')}
               startIcon={<ArrowBack />}
               sx={{
-                background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-                color: '#000',
+                background: `var(--theme-primary)`,
+                color: colors.background.default,
                 fontWeight: 'bold',
                 borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+                boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                  boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                  background: 'var(--theme-primary-hover)',
+                  boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                   transform: 'translateY(-2px)',
                 },
                 fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -481,10 +486,10 @@ export const PublicListPage: React.FC = () => {
       >
         <Card
           sx={{
-            background: 'linear-gradient(135deg, #00bcd4 0%, #4dd0e1 100%)',
-            color: 'white',
+            background: `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%)`,
+            color: colors.text.secondary,
             borderRadius: 3,
-            boxShadow: '0 4px 24px rgba(0,188,212,0.13)',
+            boxShadow: `0 4px 24px ${colors.overlay.medium}`,
           }}
         >
           <CardContent sx={{ textAlign: 'center', py: 7 }}>
@@ -494,11 +499,22 @@ export const PublicListPage: React.FC = () => {
                 width: 80,
                 height: 80,
                 mx: 'auto',
+                cursor: profileData?.profile.photoURL ? 'pointer' : 'default',
+                '&:hover': profileData?.profile.photoURL
+                  ? {
+                      opacity: 0.8,
+                      transform: 'scale(1.05)',
+                    }
+                  : {},
+                transition: 'all 0.2s ease',
                 mb: 2,
-                bgcolor: '#fff',
-                color: '#00bcd4',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+                bgcolor: colors.text.secondary,
+                color: 'var(--theme-primary-hover)',
+                boxShadow: `0 2px 12px ${colors.overlay.dark}`,
               }}
+              onClick={() =>
+                profileData?.profile.photoURL && setImageModalOpen(true)
+              }
             >
               {(
                 profileData?.profile.displayName ||
@@ -517,8 +533,8 @@ export const PublicListPage: React.FC = () => {
                 label='Nicht öffentlich'
                 size='small'
                 sx={{
-                  backgroundColor: '#fff',
-                  color: '#00bcd4',
+                  backgroundColor: colors.text.secondary,
+                  color: 'var(--theme-primary-hover)',
                   fontWeight: 'bold',
                   fontSize: '0.85rem',
                   px: 1.5,
@@ -533,14 +549,14 @@ export const PublicListPage: React.FC = () => {
               onClick={() => navigate('/')}
               startIcon={<ArrowBack />}
               sx={{
-                background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-                color: '#000',
+                background: `var(--theme-primary)`,
+                color: colors.background.default,
                 fontWeight: 'bold',
                 borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+                boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                  boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                  background: 'var(--theme-primary-hover)',
+                  boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                   transform: 'translateY(-2px)',
                 },
                 fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -564,14 +580,12 @@ export const PublicListPage: React.FC = () => {
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '0 0 8px 8px',
-          p: { xs: 1.5, sm: 2, md: 3 },
-          color: 'white',
+          background: 'var(--theme-background)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          p: { xs: 2, sm: 2, md: 3 },
+          color: colors.text.secondary,
           mb: { xs: 2, md: 4 },
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
         }}
       >
         {/* Mobile Layout */}
@@ -582,11 +596,25 @@ export const PublicListPage: React.FC = () => {
               sx={{
                 width: { xs: 60, sm: 70, md: 80 },
                 height: { xs: 60, sm: 70, md: 80 },
-                border: { xs: '2px solid #00fed7', md: '3px solid #00fed7' },
-                boxShadow: '0 0 15px rgba(0,254,215,0.3)',
+                cursor: profileData.profile.photoURL ? 'pointer' : 'default',
+                '&:hover': profileData.profile.photoURL
+                  ? {
+                      opacity: 0.8,
+                      transform: 'scale(1.05)',
+                    }
+                  : {},
+                transition: 'all 0.2s ease',
+                border: {
+                  xs: `2px solid var(--theme-primary)`,
+                  md: `3px solid var(--theme-primary)`,
+                },
+                boxShadow: `0 0 15px ${colors.overlay.medium}`,
                 mx: 'auto',
                 mb: 1,
               }}
+              onClick={() =>
+                profileData.profile.photoURL && setImageModalOpen(true)
+              }
             >
               {(profileData.profile.displayName || profileData.profile.username)
                 ?.charAt(0)
@@ -621,8 +649,8 @@ export const PublicListPage: React.FC = () => {
                 label='Öffentlich'
                 size='small'
                 sx={{
-                  backgroundColor: '#00fed7',
-                  color: '#000',
+                  backgroundColor: 'var(--theme-primary)',
+                  color: colors.background.default,
                   fontWeight: 'bold',
                   fontSize: { xs: '0.75rem', md: '0.875rem' },
                   height: { xs: 14, md: 20 },
@@ -639,8 +667,8 @@ export const PublicListPage: React.FC = () => {
                   size='small'
                   variant='outlined'
                   sx={{
-                    borderColor: '#00fed7',
-                    color: '#00fed7',
+                    borderColor: 'var(--theme-primary)',
+                    color: 'var(--theme-primary)',
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 18, md: 24 },
                     minHeight: { xs: 18, md: 24 },
@@ -669,9 +697,20 @@ export const PublicListPage: React.FC = () => {
               sx={{
                 width: 80,
                 height: 80,
-                border: '2px solid #00fed7',
-                boxShadow: '0 0 10px rgba(0,254,215,0.3)',
+                cursor: profileData.profile.photoURL ? 'pointer' : 'default',
+                '&:hover': profileData.profile.photoURL
+                  ? {
+                      opacity: 0.8,
+                      transform: 'scale(1.05)',
+                    }
+                  : {},
+                transition: 'all 0.2s ease',
+                border: `2px solid var(--theme-primary)`,
+                boxShadow: `0 0 10px ${colors.overlay.medium}`,
               }}
+              onClick={() =>
+                profileData.profile.photoURL && setImageModalOpen(true)
+              }
             >
               {(profileData.profile.displayName || profileData.profile.username)
                 ?.charAt(0)
@@ -695,8 +734,8 @@ export const PublicListPage: React.FC = () => {
                   label='Öffentlich'
                   size='small'
                   sx={{
-                    backgroundColor: '#00fed7',
-                    color: '#000',
+                    backgroundColor: 'var(--theme-primary)',
+                    color: colors.background.default,
                     fontWeight: 'bold',
                   }}
                 />
@@ -706,8 +745,8 @@ export const PublicListPage: React.FC = () => {
                     size='small'
                     variant='outlined'
                     sx={{
-                      borderColor: '#00fed7',
-                      color: '#00fed7',
+                      borderColor: 'var(--theme-primary)',
+                      color: 'var(--theme-primary)',
                     }}
                   />
                 )}
@@ -737,14 +776,14 @@ export const PublicListPage: React.FC = () => {
             onClick={() => navigate('/')}
             startIcon={<ArrowBack />}
             sx={{
-              background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-              color: '#000',
+              background: `var(--theme-primary)`,
+              color: '#ffffff',
               fontWeight: 'bold',
               borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+              boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                background: 'var(--theme-primary-hover)',
+                boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },
               fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -769,14 +808,14 @@ export const PublicListPage: React.FC = () => {
             onClick={() => navigate('/')}
             startIcon={<ArrowBack />}
             sx={{
-              background: 'linear-gradient(45deg, #4caf50, #388e3c)',
-              color: '#000',
+              background: `linear-gradient(45deg, ${colors.status.success}, var(--theme-primary-hover))`,
+              color: colors.background.default,
               fontWeight: 'bold',
               borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+              boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: 'linear-gradient(45deg, #388e3c, #4caf50)',
-                boxShadow: '0 6px 16px rgba(76, 175, 80, 0.4)',
+                background: `linear-gradient(45deg, var(--theme-primary-hover), ${colors.status.success})`,
+                boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },
               fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -805,12 +844,13 @@ export const PublicListPage: React.FC = () => {
             justifyContent: 'space-between',
             height: '48px',
             fontSize: '0.875rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            borderColor: 'rgba(255, 255, 255, 0.2)',
-            color: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'var(--theme-surface)',
+            borderColor: 'var(--theme-primary)',
+            color: 'var(--theme-text-secondary)',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(0, 254, 215, 0.5)',
+              backgroundColor:
+                'color-mix(in srgb, var(--theme-primary) 10%, var(--theme-surface))',
+              borderColor: 'var(--theme-primary)',
             },
           }}
         >
@@ -837,8 +877,8 @@ export const PublicListPage: React.FC = () => {
               <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                 <Typography
                   variant='h4'
-                  color='primary'
                   gutterBottom
+                  color='info.main'
                   sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                 >
                   {profileData.seriesStats.count}
@@ -869,6 +909,7 @@ export const PublicListPage: React.FC = () => {
                   <Typography
                     variant='h4'
                     gutterBottom
+                    color='warning.main'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {profileData.seriesStats.totalWatchedEpisodes}
@@ -876,10 +917,9 @@ export const PublicListPage: React.FC = () => {
                 </Box>
                 <Typography
                   variant='body2'
-                  color='text.secondary'
                   sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                 >
-                  Episoden gesehen
+                  Episoden
                 </Typography>
               </CardContent>
             </Card>
@@ -900,6 +940,7 @@ export const PublicListPage: React.FC = () => {
                   <Typography
                     variant='h4'
                     gutterBottom
+                    color='secondary'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {profileData.seriesStats.averageRating > 0
@@ -961,7 +1002,7 @@ export const PublicListPage: React.FC = () => {
                 >
                   <Typography
                     variant='h4'
-                    color='secondary'
+                    color='warning.main'
                     gutterBottom
                     sx={{
                       fontSize: { sm: '1.75rem', md: '2.125rem' },
@@ -1135,6 +1176,7 @@ export const PublicListPage: React.FC = () => {
                   <Typography
                     variant='h4'
                     gutterBottom
+                    color='secondary'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {profileData.movieStats.averageRating > 0
@@ -1155,7 +1197,6 @@ export const PublicListPage: React.FC = () => {
               <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                 <Typography
                   variant='h4'
-                  color='primary'
                   gutterBottom
                   sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                 >
@@ -1227,9 +1268,12 @@ export const PublicListPage: React.FC = () => {
               gap: 1.5,
               px: 1,
               mb: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              backgroundColor:
+                'color-mix(in srgb, var(--theme-surface) 50%, transparent)',
               borderRadius: 2,
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--theme-primary)',
+              borderColor:
+                'color-mix(in srgb, var(--theme-primary) 30%, transparent)',
               p: 2,
             }}
           >
@@ -1240,7 +1284,6 @@ export const PublicListPage: React.FC = () => {
                   <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                     <Typography
                       variant='h5'
-                      color='primary'
                       gutterBottom
                       sx={{ fontSize: '1.25rem' }}
                     >
@@ -1260,6 +1303,7 @@ export const PublicListPage: React.FC = () => {
                     <Typography
                       variant='h5'
                       gutterBottom
+                      color='warning.main'
                       sx={{ fontSize: '1.25rem' }}
                     >
                       {profileData.seriesStats.totalWatchedEpisodes}
@@ -1298,7 +1342,7 @@ export const PublicListPage: React.FC = () => {
                   <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                     <Typography
                       variant='h5'
-                      color='info.main'
+                      color='warning.main'
                       gutterBottom
                       sx={{ fontSize: '1.25rem' }}
                     >
@@ -1447,8 +1491,8 @@ export const PublicListPage: React.FC = () => {
                   <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                     <Typography
                       variant='h5'
-                      color='primary'
                       gutterBottom
+                      color='secondary'
                       sx={{ fontSize: '1.25rem' }}
                     >
                       {profileData.movieStats.averageRating > 0
@@ -1615,6 +1659,71 @@ export const PublicListPage: React.FC = () => {
 
       {/* Scroll Arrows */}
       <ScrollArrows />
+
+      {/* Profilbild Modal */}
+      <Dialog
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            bgcolor: 'transparent',
+            boxShadow: 'none',
+            background: 'none',
+            overflow: 'visible',
+          },
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <IconButton
+            onClick={() => setImageModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: { xs: 10, sm: -40 },
+              right: { xs: 10, sm: -40 },
+              color: 'white',
+              bgcolor: 'rgba(0, 0, 0, 0.5)',
+              '&:hover': {
+                bgcolor: 'rgba(0, 0, 0, 0.7)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          {profileData?.profile.photoURL && (
+            <Box
+              sx={{
+                border: '3px solid var(--theme-primary)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 0 30px var(--theme-primary)',
+              }}
+            >
+              <img
+                src={profileData.profile.photoURL}
+                alt={
+                  profileData.profile.displayName ||
+                  profileData.profile.username
+                }
+                style={{
+                  maxWidth: '85vw',
+                  maxHeight: '85vh',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
+              />
+            </Box>
+          )}
+        </Box>
+      </Dialog>
     </Container>
   );
 };

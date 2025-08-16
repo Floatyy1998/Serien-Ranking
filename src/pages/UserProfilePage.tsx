@@ -7,6 +7,7 @@ import {
   Star,
   TrendingUp,
 } from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Avatar,
   Box,
@@ -16,7 +17,9 @@ import {
   Chip,
   Collapse,
   Container,
+  Dialog,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -43,6 +46,7 @@ import {
 import { useDebounce } from '../hooks/useDebounce';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
+import { colors } from '../theme';
 
 interface UserProfileData {
   profile: {
@@ -111,6 +115,7 @@ export const UserProfilePage: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [mobileStatsExpanded, setMobileStatsExpanded] = useState(false);
   const [mobileFiltersExpanded, setMobileFiltersExpanded] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   // 🚀 Enhanced Online-Status Überwachung mit Cache & Offline-Support
   const { data: onlineStatus } = useEnhancedFirebaseCache<boolean>(
@@ -481,7 +486,23 @@ export const UserProfilePage: React.FC = () => {
           <CardContent sx={{ textAlign: 'center', py: 6 }}>
             <Avatar
               src={profileData.profile.photoURL}
-              sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
+              sx={{
+                width: 80,
+                height: 80,
+                mx: 'auto',
+                mb: 2,
+                cursor: profileData.profile.photoURL ? 'pointer' : 'default',
+                '&:hover': profileData.profile.photoURL
+                  ? {
+                      opacity: 0.8,
+                      transform: 'scale(1.05)',
+                    }
+                  : {},
+                transition: 'all 0.2s ease',
+              }}
+              onClick={() =>
+                profileData.profile.photoURL && setImageModalOpen(true)
+              }
             >
               {(profileData.profile.displayName || profileData.profile.username)
                 ?.charAt(0)
@@ -517,16 +538,12 @@ export const UserProfilePage: React.FC = () => {
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          background: isOwnProfile
-            ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)'
-            : 'linear-gradient(135deg, #333333 0%, #1a1a1a 100%)',
-          p: { xs: 1.5, sm: 2, md: 3 },
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '0 0 8px 8px',
-          color: 'white',
+          background: 'var(--theme-background)',
+          backdropFilter: 'blur(20px)',
+          p: { xs: 2, sm: 2, md: 3 },
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          color: colors.text.secondary,
           mb: { xs: 2, md: 4 },
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
         }}
       >
         {/* Mobile Layout */}
@@ -539,11 +556,21 @@ export const UserProfilePage: React.FC = () => {
               sx={{
                 width: { xs: 60, sm: 70, md: 80 },
                 height: { xs: 60, sm: 70, md: 80 },
-                border: { xs: '2px solid #00fed7', md: '3px solid #00fed7' },
-                boxShadow: '0 0 15px rgba(0, 254, 215, 0.4)',
+                cursor: profileData.profile.photoURL ? 'pointer' : 'default',
+                '&:hover': profileData.profile.photoURL
+                  ? {
+                      opacity: 0.8,
+                      transform: 'scale(1.05)',
+                    }
+                  : {},
+                transition: 'all 0.2s ease',
+                border: '2px solid var(--theme-primary)',
                 mx: 'auto',
                 mb: 1,
               }}
+              onClick={() =>
+                profileData.profile.photoURL && setImageModalOpen(true)
+              }
             >
               {(profileData.profile.displayName || profileData.profile.username)
                 ?.charAt(0)
@@ -586,8 +613,8 @@ export const UserProfilePage: React.FC = () => {
                   label='Online'
                   size='small'
                   sx={{
-                    backgroundColor: '#00fed7',
-                    color: '#000',
+                    backgroundColor: 'var(--theme-primary)',
+                    color: colors.background.default,
                     fontWeight: 'bold',
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 14, md: 20 },
@@ -605,8 +632,12 @@ export const UserProfilePage: React.FC = () => {
                   size='small'
                   variant='outlined'
                   sx={{
-                    borderColor: profileData.isFriend ? '#00fed7' : '#666',
-                    color: profileData.isFriend ? '#00fed7' : '#ccc',
+                    borderColor: profileData.isFriend
+                      ? 'var(--theme-primary)'
+                      : colors.border.default,
+                    color: profileData.isFriend
+                      ? 'var(--theme-primary)'
+                      : colors.text.muted,
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 14, md: 20 },
                     minHeight: { xs: 14, md: 20 },
@@ -635,9 +666,20 @@ export const UserProfilePage: React.FC = () => {
               sx={{
                 width: 80,
                 height: 80,
-                border: '2px solid #00fed7',
-                boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)',
+                border: `2px solid var(--theme-primary)`,
+                cursor: profileData.profile.photoURL ? 'pointer' : 'default',
+                '&:hover': profileData.profile.photoURL
+                  ? {
+                      opacity: 0.8,
+                      transform: 'scale(1.05)',
+                    }
+                  : {},
+                transition: 'all 0.2s ease',
+                boxShadow: `0 0 10px ${colors.overlay.medium}`,
               }}
+              onClick={() =>
+                profileData.profile.photoURL && setImageModalOpen(true)
+              }
             >
               {(profileData.profile.displayName || profileData.profile.username)
                 ?.charAt(0)
@@ -665,8 +707,8 @@ export const UserProfilePage: React.FC = () => {
                     label='Online'
                     size='small'
                     sx={{
-                      backgroundColor: '#00fed7',
-                      color: '#000',
+                      backgroundColor: 'var(--theme-primary)',
+                      color: '#ffffff',
                       fontWeight: 'bold',
                     }}
                   />
@@ -677,8 +719,12 @@ export const UserProfilePage: React.FC = () => {
                     size='small'
                     variant='outlined'
                     sx={{
-                      borderColor: profileData.isFriend ? '#00fed7' : '#666',
-                      color: profileData.isFriend ? '#00fed7' : '#ccc',
+                      borderColor: profileData.isFriend
+                        ? 'var(--theme-primary)'
+                        : '#666',
+                      color: profileData.isFriend
+                        ? 'var(--theme-primary)'
+                        : '#ccc',
                     }}
                   />
                 )}
@@ -710,14 +756,14 @@ export const UserProfilePage: React.FC = () => {
             onClick={() => navigate(isOwnProfile ? '/' : '/friends')}
             startIcon={<ArrowBack />}
             sx={{
-              background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-              color: '#000',
+              background: 'var(--theme-primary)',
+              color: colors.background.default,
               fontWeight: 'bold',
               borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+              boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                background: 'var(--theme-primary-hover)',
+                boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },
               fontSize: '0.875rem',
@@ -742,14 +788,14 @@ export const UserProfilePage: React.FC = () => {
             onClick={() => navigate(isOwnProfile ? '/' : '/friends')}
             startIcon={<ArrowBack />}
             sx={{
-              background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-              color: '#000',
+              background: 'var(--theme-primary)',
+              color: colors.background.default,
               fontWeight: 'bold',
               borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+              boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                background: 'var(--theme-primary-hover)',
+                boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },
               fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -778,12 +824,13 @@ export const UserProfilePage: React.FC = () => {
             justifyContent: 'space-between',
             height: '48px',
             fontSize: '0.875rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            borderColor: 'rgba(255, 255, 255, 0.2)',
-            color: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'var(--theme-surface)',
+            borderColor: 'var(--theme-primary)',
+            color: 'var(--theme-text-secondary)',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(0, 254, 215, 0.5)',
+              backgroundColor:
+                'color-mix(in srgb, var(--theme-primary) 10%, var(--theme-surface))',
+              borderColor: 'var(--theme-primary)',
             },
           }}
         >
@@ -810,8 +857,8 @@ export const UserProfilePage: React.FC = () => {
               <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                 <Typography
                   variant='h4'
-                  color='primary'
                   gutterBottom
+                  color='info.main'
                   sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                 >
                   {profileData.seriesStats.count}
@@ -842,6 +889,7 @@ export const UserProfilePage: React.FC = () => {
                   <Typography
                     variant='h4'
                     gutterBottom
+                    color='warning.main'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {profileData.seriesStats.totalWatchedEpisodes}
@@ -873,6 +921,7 @@ export const UserProfilePage: React.FC = () => {
                   <Typography
                     variant='h4'
                     gutterBottom
+                    color='secondary'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {profileData.seriesStats.averageRating > 0
@@ -934,8 +983,8 @@ export const UserProfilePage: React.FC = () => {
                 >
                   <Typography
                     variant='h4'
-                    color='secondary'
                     gutterBottom
+                    color='warning.main'
                     sx={{
                       fontSize: { sm: '1.75rem', md: '2.125rem' },
                       cursor: 'help',
@@ -1077,6 +1126,7 @@ export const UserProfilePage: React.FC = () => {
                   <Typography
                     variant='h4'
                     gutterBottom
+                    color='warning.main'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {profileData.movieStats.watchedCount}
@@ -1108,6 +1158,7 @@ export const UserProfilePage: React.FC = () => {
                   <Typography
                     variant='h4'
                     gutterBottom
+                    color='secondary'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {profileData.movieStats.averageRating > 0
@@ -1128,7 +1179,6 @@ export const UserProfilePage: React.FC = () => {
               <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                 <Typography
                   variant='h4'
-                  color='primary'
                   gutterBottom
                   sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                 >
@@ -1200,9 +1250,12 @@ export const UserProfilePage: React.FC = () => {
               gap: 1.5,
               px: 1,
               mb: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              backgroundColor:
+                'color-mix(in srgb, var(--theme-surface) 50%, transparent)',
               borderRadius: 2,
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--theme-primary)',
+              borderColor:
+                'color-mix(in srgb, var(--theme-primary) 30%, transparent)',
               p: 2,
             }}
           >
@@ -1213,8 +1266,8 @@ export const UserProfilePage: React.FC = () => {
                   <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                     <Typography
                       variant='h5'
-                      color='primary'
                       gutterBottom
+                      color='info.main'
                       sx={{ fontSize: '1.25rem' }}
                     >
                       {profileData.seriesStats.count}
@@ -1233,6 +1286,7 @@ export const UserProfilePage: React.FC = () => {
                     <Typography
                       variant='h5'
                       gutterBottom
+                      color='warning.main'
                       sx={{ fontSize: '1.25rem' }}
                     >
                       {profileData.seriesStats.totalWatchedEpisodes}
@@ -1271,7 +1325,7 @@ export const UserProfilePage: React.FC = () => {
                   <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                     <Typography
                       variant='h5'
-                      color='info.main'
+                      color='warning.main'
                       gutterBottom
                       sx={{ fontSize: '1.25rem' }}
                     >
@@ -1403,6 +1457,7 @@ export const UserProfilePage: React.FC = () => {
                     <Typography
                       variant='h5'
                       gutterBottom
+                      color='warning.main'
                       sx={{ fontSize: '1.25rem' }}
                     >
                       {profileData.movieStats.watchedCount}
@@ -1420,8 +1475,8 @@ export const UserProfilePage: React.FC = () => {
                   <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                     <Typography
                       variant='h5'
-                      color='primary'
                       gutterBottom
+                      color='secondary'
                       sx={{ fontSize: '1.25rem' }}
                     >
                       {profileData.movieStats.averageRating > 0
@@ -1522,12 +1577,13 @@ export const UserProfilePage: React.FC = () => {
             justifyContent: 'space-between',
             height: '48px',
             fontSize: '0.875rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            borderColor: 'rgba(255, 255, 255, 0.2)',
-            color: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'var(--theme-surface)',
+            borderColor: 'var(--theme-primary)',
+            color: 'var(--theme-text-secondary)',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(0, 254, 215, 0.5)',
+              backgroundColor:
+                'color-mix(in srgb, var(--theme-primary) 10%, var(--theme-surface))',
+              borderColor: 'var(--theme-primary)',
             },
           }}
         >
@@ -1623,12 +1679,14 @@ export const UserProfilePage: React.FC = () => {
           <Box
             sx={{
               p: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+              backgroundColor:
+                'color-mix(in srgb, var(--theme-surface) 50%, transparent)',
               borderRadius: 2,
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid var(--theme-primary)',
+              borderColor:
+                'color-mix(in srgb, var(--theme-primary) 30%, transparent)',
               m: 2,
               borderBottom: 1,
-              borderColor: 'divider',
             }}
           >
             {/* Suchfeld */}
@@ -1780,6 +1838,71 @@ export const UserProfilePage: React.FC = () => {
 
       {/* Scroll Arrows */}
       <ScrollArrows />
+
+      {/* Profilbild Modal */}
+      <Dialog
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            bgcolor: 'transparent',
+            boxShadow: 'none',
+            background: 'none',
+            overflow: 'visible',
+          },
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <IconButton
+            onClick={() => setImageModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: { xs: 10, sm: -40 },
+              right: { xs: 10, sm: -40 },
+              color: 'white',
+              bgcolor: 'rgba(0, 0, 0, 0.5)',
+              '&:hover': {
+                bgcolor: 'rgba(0, 0, 0, 0.7)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          {profileData?.profile.photoURL && (
+            <Box
+              sx={{
+                border: '3px solid var(--theme-primary)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 0 30px var(--theme-primary)',
+              }}
+            >
+              <img
+                src={profileData.profile.photoURL}
+                alt={
+                  profileData.profile.displayName ||
+                  profileData.profile.username
+                }
+                style={{
+                  maxWidth: '85vw',
+                  maxHeight: '85vh',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
+              />
+            </Box>
+          )}
+        </Box>
+      </Dialog>
     </Container>
   );
 };

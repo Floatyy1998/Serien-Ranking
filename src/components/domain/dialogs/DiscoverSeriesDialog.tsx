@@ -415,14 +415,14 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                         },
                         '&.Mui-focused': {
                           background: 'rgba(65,65,68,0.95)',
-                          border: '1px solid #00fed7',
+                          border: '1px solid var(--theme-primary)',
                           boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
                         },
                       },
                       '& .MuiInputLabel-root': {
                         color: 'rgba(255,255,255,0.7)',
                         '&.Mui-focused': {
-                          color: '#00fed7',
+                          color: 'var(--theme-primary)',
                         },
                       },
                       '& .MuiSelect-icon': {
@@ -494,14 +494,14 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                                 },
                                 '&.Mui-focused': {
                                   background: 'rgba(255,255,255,0.1)',
-                                  border: '1px solid #00fed7',
+                                  border: '1px solid var(--theme-primary)',
                                   boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
                                 },
                               },
                               '& .MuiInputLabel-root': {
                                 color: 'rgba(255,255,255,0.7)',
                                 '&.Mui-focused': {
-                                  color: '#00fed7',
+                                  color: 'var(--theme-primary)',
                                 },
                               },
                             },
@@ -533,14 +533,14 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                                 },
                                 '&.Mui-focused': {
                                   background: 'rgba(255,255,255,0.1)',
-                                  border: '1px solid #00fed7',
+                                  border: '1px solid var(--theme-primary)',
                                   boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
                                 },
                               },
                               '& .MuiInputLabel-root': {
                                 color: 'rgba(255,255,255,0.7)',
                                 '&.Mui-focused': {
-                                  color: '#00fed7',
+                                  color: 'var(--theme-primary)',
                                 },
                               },
                             },
@@ -579,14 +579,14 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                         },
                         '&.Mui-focused': {
                           background: 'rgba(65,65,68,0.95)',
-                          border: '1px solid #00fed7',
+                          border: '1px solid var(--theme-primary)',
                           boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
                         },
                       },
                       '& .MuiInputLabel-root': {
                         color: 'rgba(255,255,255,0.7)',
                         '&.Mui-focused': {
-                          color: '#00fed7',
+                          color: 'var(--theme-primary)',
                         },
                       },
                       '& .MuiSelect-icon': {
@@ -650,14 +650,14 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                         },
                         '&.Mui-focused': {
                           background: 'rgba(65,65,68,0.95)',
-                          border: '1px solid #00fed7',
+                          border: '1px solid var(--theme-primary)',
                           boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
                         },
                       },
                       '& .MuiInputLabel-root': {
                         color: 'rgba(255,255,255,0.7)',
                         '&.Mui-focused': {
-                          color: '#00fed7',
+                          color: 'var(--theme-primary)',
                         },
                       },
                       '& .MuiSelect-icon': {
@@ -704,10 +704,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                   size='large'
                   sx={{
                     background:
-                      'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                      'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
                     borderRadius: '12px',
                     padding: '12px 24px',
-                    color: '#000',
+                    color: '#ffffff',
                     fontWeight: 600,
                     textTransform: 'none',
                     border: '1px solid rgba(255,255,255,0.1)',
@@ -874,7 +874,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
               sx={{
-                background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                background: 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
                 borderRadius: '12px',
                 padding: '12px 24px',
                 color: '#ffffff',
@@ -916,7 +916,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
               sx={{
-                background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                background: 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
                 borderRadius: '12px',
                 padding: '12px 24px',
                 color: '#ffffff',

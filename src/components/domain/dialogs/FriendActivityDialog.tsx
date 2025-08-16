@@ -38,6 +38,7 @@ import { Series } from '../../../types/Series';
 import MovieDialog from './MovieDialog';
 import SeriesDialog from './SeriesDialog';
 import TmdbDialog from './TmdbDialog';
+import { colors } from '../../../theme';
 
 interface ActivityItem {
   id: string;
@@ -335,9 +336,9 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
         case 'binge':
           return <FastForward sx={{ ...iconStyle, fontSize: 22 }} />; // Größer für Binge
         case 'quickwatch':
-          return <PlayArrow sx={{ ...iconStyle, color: '#ffd700' }} />; // Gold für Quickwatch
+          return <PlayArrow sx={{ ...iconStyle, color: colors.text.accent }} />; // Gold für Quickwatch
         case 'season_complete':
-          return <Tv sx={{ ...iconStyle, color: '#00fed7' }} />; // Türkis für Season complete
+          return <Tv sx={{ ...iconStyle, color: 'var(--theme-primary)' }} />; // Türkis für Season complete
       }
     }
 
@@ -383,9 +384,9 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
         case 'binge':
           return '#ff6b35'; // Orange-Rot für Binge
         case 'quickwatch':
-          return '#ffd700'; // Gold für Quickwatch
+          return colors.text.accent; // Gold für Quickwatch
         case 'season_complete':
-          return '#00fed7'; // Türkis für Season complete
+          return 'var(--theme-primary)'; // Türkis für Season complete
       }
     }
 
@@ -399,7 +400,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
         return '#f44336';
       case 'episode_watched':
       case 'episodes_watched':
-        return '#00fed7';
+        return 'var(--theme-primary)';
       case 'series_rated':
       case 'rating_updated':
       case 'rating_added':
@@ -474,7 +475,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       <Box
         component='span'
         sx={{
-          color: '#00fed7',
+          color: 'var(--theme-primary)',
           cursor: 'pointer',
           textDecoration: 'underline',
           '&:hover': {
@@ -704,14 +705,12 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
         paper: {
           sx: {
             minHeight: '80vh',
-            background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            background: colors.background.gradient.dark,
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${colors.border.light}`,
             overflow: 'hidden',
-            boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
-            color: 'white',
+            boxShadow: colors.shadow.card,
+            color: colors.text.primary,
           },
         },
       }}
@@ -722,11 +721,10 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
         sx={{
           textAlign: 'center',
           position: 'relative',
-          background:
-            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          background: colors.overlay.dark,
           backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          borderBottom: `1px solid ${colors.border.subtle}`,
+          color: colors.text.primary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -743,7 +741,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
             <Typography
               component='div'
               variant='h4'
-              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+              sx={{ fontWeight: 'bold', color: colors.text.accent }}
             >
               {friendName}s Aktivitäten
             </Typography>
@@ -757,13 +755,13 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
             right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
+            color: colors.text.secondary,
+            background: colors.overlay.light,
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              background: colors.overlay.medium,
+              color: colors.text.primary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -793,9 +791,9 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
                 },
               }}
             >
-              <Timeline sx={{ fontSize: 80, color: '#00fed7', mb: 2 }} />
+              <Timeline sx={{ fontSize: 80, color: 'var(--theme-primary)', mb: 2 }} />
             </Box>
-            <Typography variant='h6' color='#00fed7'>
+            <Typography variant='h6' color={'var(--theme-primary)'}>
               Lade Aktivitäten...
             </Typography>
           </Box>
@@ -879,7 +877,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
                         >
                           <Box
                             component='span'
-                            sx={{ fontWeight: 700, color: '#00fed7' }}
+                            sx={{ fontWeight: 700, color: 'var(--theme-primary)' }}
                           >
                             {friendName}
                           </Box>{' '}

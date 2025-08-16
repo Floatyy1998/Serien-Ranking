@@ -406,7 +406,7 @@ const RecommendationsDialog = ({
         <Box sx={{ p: 3 }}>
           {loading ? (
             <Box display='flex' justifyContent='center' mt={2}>
-              <div className='w-12 h-12 border-2 border-[#00fed7] border-t-transparent rounded-full animate-spin' />
+              <div className='w-12 h-12 border-2 border-[var(--theme-primary)] border-t-transparent rounded-full animate-spin' />
             </Box>
           ) : recommendations.length === 0 ? (
             <Box display='flex' justifyContent='center' mt={2}>

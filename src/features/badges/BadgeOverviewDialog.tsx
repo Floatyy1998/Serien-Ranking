@@ -24,6 +24,7 @@ import {
   BadgeProgress,
   EarnedBadge,
 } from './badgeDefinitions';
+import { colors } from '../../theme';
 
 interface BadgeOverviewDialogProps {
   open: boolean;
@@ -203,15 +204,15 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
       case 'common':
-        return '#9e9e9e';
+        return colors.text.muted;
       case 'rare':
         return '#2196f3';
       case 'epic':
         return '#9c27b0';
       case 'legendary':
-        return '#ff9800';
+        return colors.status.warning;
       default:
-        return '#9e9e9e';
+        return colors.text.muted;
     }
   };
 
@@ -419,7 +420,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                     justifyContent: 'center',
                   }}
                 >
-                  <Lock sx={{ color: 'white', fontSize: '1.5rem' }} />
+                  <Lock sx={{ color: colors.text.secondary, fontSize: '1.5rem' }} />
                 </Box>
               )}
             </Avatar>
@@ -537,8 +538,8 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
               <Typography
                 variant='caption'
                 sx={{
-                  color: '#fff',
-                  backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                  color: colors.text.secondary,
+                  backgroundColor: colors.overlay.medium,
                   padding: '4px 8px',
                   borderRadius: '8px',
                   display: 'inline-block',
@@ -627,7 +628,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
           backdropFilter: 'blur(15px)',
           borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          color: colors.text.secondary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -669,7 +670,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             borderRadius: '12px',
             '&:hover': {
               background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              color: colors.text.secondary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -684,7 +685,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
           background:
             'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
           backdropFilter: 'blur(10px)',
-          color: '#ffffff',
+          color: colors.text.secondary,
         }}
       >
         {/* Category Tabs */}
@@ -706,17 +707,17 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                 '&:hover': {
                   background:
                     'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-                  color: '#ffffff',
+                  color: colors.text.secondary,
                 },
                 '&.Mui-selected': {
-                  color: '#00fed7',
+                  color: 'var(--theme-primary)',
                   background:
-                    'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
-                  boxShadow: '0 8px 25px #00fed7, 0.2)',
+                    `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
+                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.2)',
                 },
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#00fed7',
+                backgroundColor: 'var(--theme-primary)',
                 height: '3px',
                 borderRadius: '2px',
               },
@@ -733,15 +734,15 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                       size='small'
                       sx={{
                         background:
-                          'linear-gradient(135deg, rgba(0, 254, 215, 0.2) 0%, rgba(0, 212, 170, 0.15) 100%)',
-                        border: '1px solid rgba(0, 254, 215, 0.3)',
-                        color: '#ffffff',
+                          `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
+                        border: `1px solid ${colors.border.primary}`,
+                        color: colors.text.secondary,
                         height: 20,
                         fontSize: '0.7rem',
                         '&:hover': {
                           background:
-                            'linear-gradient(135deg, rgba(0, 254, 215, 0.3) 0%, rgba(0, 212, 170, 0.25) 100%)',
-                          border: '1px solid rgba(0, 254, 215, 0.4)',
+                            `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
+                          border: `1px solid ${colors.border.primary}`,
                         },
                       }}
                     />
@@ -768,7 +769,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
               <Typography
                 variant='h5'
                 sx={{
-                  color: '#00fed7',
+                  color: 'var(--theme-primary)',
                   fontWeight: 'bold',
                   textAlign: 'center',
                 }}
@@ -789,7 +790,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                         borderRadius: 4,
                         backgroundColor: theme.palette.grey[700],
                         '& .MuiLinearProgress-bar': {
-                          backgroundColor: '#00fed7',
+                          backgroundColor: 'var(--theme-primary)',
                           borderRadius: 4,
                         },
                       }}

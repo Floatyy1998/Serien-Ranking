@@ -1,6 +1,7 @@
 import { Close, Refresh } from '@mui/icons-material';
 import { Alert, Button, IconButton, Snackbar } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { colors } from '../../theme';
 
 export const UpdateNotification: React.FC = () => {
   const [showUpdate, setShowUpdate] = useState(false);
@@ -58,11 +59,11 @@ export const UpdateNotification: React.FC = () => {
       <Alert
         severity="info"
         sx={{
-          backgroundColor: 'rgba(0, 254, 215, 0.1)',
-          border: '1px solid rgba(0, 254, 215, 0.3)',
-          color: '#ffffff',
+          backgroundColor: colors.overlay.light,
+          border: `1px solid rgba(0, 254, 215, 0.3)`,
+          color: colors.text.secondary,
           '& .MuiAlert-icon': {
-            color: '#00fed7',
+            color: 'var(--theme-primary)',
           },
         }}
         action={
@@ -73,9 +74,9 @@ export const UpdateNotification: React.FC = () => {
               onClick={handleUpdate}
               startIcon={<Refresh />}
               sx={{
-                color: '#00fed7',
+                color: 'var(--theme-primary)',
                 '&:hover': {
-                  backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                  backgroundColor: colors.overlay.light,
                 },
               }}
             >
@@ -88,7 +89,7 @@ export const UpdateNotification: React.FC = () => {
               sx={{
                 color: 'rgba(255, 255, 255, 0.7)',
                 '&:hover': {
-                  color: '#ffffff',
+                  color: colors.text.secondary,
                 },
               }}
             >

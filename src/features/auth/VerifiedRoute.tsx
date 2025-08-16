@@ -98,7 +98,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
           alignItems: 'center',
           minHeight: '100vh',
           backgroundColor: '#000',
-          color: '#00fed7',
+          color: 'var(--theme-primary)',
           flexDirection: 'column',
           gap: '20px',
         }}
@@ -107,7 +107,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
           style={{
             width: '50px',
             height: '50px',
-            border: '4px solid #00fed7',
+            border: '4px solid var(--theme-primary)',
             borderTop: '4px solid transparent',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
@@ -142,10 +142,10 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
             }}
           >
             <main className='p-8 text-center'>
-              <h1 className='text-[#00fed7] text-4xl mb-8'>
+              <h1 className='text-[var(--theme-primary)] text-4xl mb-8'>
                 Email nicht verifiziert
               </h1>
-              <p className='text-[#00fed7] text-lg mb-12 leading-relaxed'>
+              <p className='text-[var(--theme-primary)] text-lg mb-12 leading-relaxed'>
                 Es sieht so aus, als ob Ihre Email noch nicht verifiziert wurde.
                 Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den
                 Verifizierungslink.
@@ -154,7 +154,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
                 <Button
                   variant='contained'
                   onClick={() => resendVerification()}
-                  className='bg-[#00fed7] text-black font-medium px-8 py-3 rounded-lg hover:bg-[#00d4b4] transition-colors'
+                  className='bg-[var(--theme-primary)] text-black font-medium px-8 py-3 rounded-lg hover:bg-[var(--theme-primary-hover)] transition-colors'
                 >
                   LINK ERNEUT SENDEN
                 </Button>
@@ -162,8 +162,8 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
                   variant='outlined'
                   onClick={handleLogout}
                   sx={{
-                    color: '#00fed7',
-                    borderColor: '#00fed7',
+                    color: 'var(--theme-primary)',
+                    borderColor: 'var(--theme-primary)',
                     '&:hover': {
                       borderColor: '#00d4b4',
                       backgroundColor: 'rgba(0, 254, 215, 0.1)',

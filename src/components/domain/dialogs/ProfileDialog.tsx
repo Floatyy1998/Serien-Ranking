@@ -7,6 +7,7 @@ import {
   Tour,
   Visibility,
   VisibilityOff,
+  Palette as PaletteIcon,
 } from '@mui/icons-material';
 import {
   Alert,
@@ -33,6 +34,8 @@ import React, { useRef, useState } from 'react';
 import { useAuth } from '../../../App';
 import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCache';
 import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
+import { colors } from '../../../theme';
+import { ThemeEditor } from '../../admin/ThemeEditor';
 
 interface ProfileDialogProps {
   open: boolean;
@@ -56,6 +59,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
   const [isPublic, setIsPublic] = useState(false);
   const [usernameEditable, setUsernameEditable] = useState(false);
   const [displayNameEditable, setDisplayNameEditable] = useState(false);
+  const [themeEditorOpen, setThemeEditorOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { addUpdate: addBatchUpdate } = useFirebaseBatch({
@@ -346,14 +350,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           sx: {
             mx: { xs: 2, sm: 3 },
             my: { xs: 2, sm: 4 },
-            background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            background: colors.background.gradient.dark,
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${colors.border.light}`,
             overflow: 'hidden',
-            boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 254, 215, 0.3), 0 0 60px rgba(0, 254, 215, 0.1)',
-            color: '#ffffff',
+            boxShadow: colors.shadow.card,
+            color: colors.text.primary,
           },
         },
       }}
@@ -362,11 +364,10 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
         sx={{
           textAlign: 'center',
           position: 'relative',
-          background:
-            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          background: colors.overlay.dark,
           backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          borderBottom: `1px solid ${colors.border.subtle}`,
+          color: colors.text.primary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -382,7 +383,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            sx={{ fontWeight: 'bold', color: colors.text.accent }}
           >
             Profil bearbeiten
           </Typography>
@@ -395,13 +396,13 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
             right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
+            color: colors.text.secondary,
+            background: colors.overlay.light,
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              background: colors.overlay.medium,
+              color: colors.text.primary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -413,10 +414,9 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
       <DialogContent
         sx={{
           p: 0,
-          background:
-            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+          background: colors.background.gradient.light,
           backdropFilter: 'blur(10px)',
-          color: '#ffffff',
+          color: colors.text.primary,
           borderBottom: 'none',
         }}
       >
@@ -500,30 +500,30 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 sx={{
                   backgroundColor: 'transparent',
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(45,45,48,0.3)',
+                    backgroundColor: colors.background.card,
                     backdropFilter: 'blur(10px)',
-                    color: '#ffffff',
+                    color: colors.text.primary,
                     borderRadius: '12px !important',
                     transition: 'all 0.3s ease',
                     paddingRight: '48px',
                     '&:hover fieldset': {
-                      borderColor: 'rgba(0,254,215,0.5)',
+                      borderColor: 'var(--theme-primary)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#00fed7',
+                      borderColor: 'var(--theme-primary)',
                       borderWidth: '2px',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    color: 'rgba(255,255,255,0.7)',
+                    color: colors.text.secondary,
                     '&.Mui-focused': {
-                      color: '#00fed7',
+                      color: 'var(--theme-primary)',
                     },
                   },
                   '& .MuiOutlinedInput-input': {
-                    color: '#ffffff',
+                    color: colors.text.primary,
                     '&::placeholder': {
-                      color: 'rgba(255,255,255,0.4)',
+                      color: colors.text.placeholder,
                       opacity: 1,
                     },
                   },
@@ -536,10 +536,10 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                   right: 8,
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: usernameEditable ? '#00fed7' : 'rgba(255,255,255,0.6)',
+                  color: usernameEditable ? 'var(--theme-primary)' : colors.text.secondary,
                   '&:hover': {
-                    color: '#00fed7',
-                    backgroundColor: 'rgba(0,254,215,0.1)',
+                    color: 'var(--theme-primary)',
+                    backgroundColor: `var(--theme-primary)10`,
                   },
                 }}
                 size='small'
@@ -564,30 +564,30 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 sx={{
                   backgroundColor: 'transparent',
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(45,45,48,0.3)',
+                    backgroundColor: colors.background.card,
                     backdropFilter: 'blur(10px)',
-                    color: '#ffffff',
+                    color: colors.text.primary,
                     borderRadius: '12px !important',
                     transition: 'all 0.3s ease',
                     paddingRight: '48px',
                     '&:hover fieldset': {
-                      borderColor: 'rgba(0,254,215,0.5)',
+                      borderColor: 'var(--theme-primary)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#00fed7',
+                      borderColor: 'var(--theme-primary)',
                       borderWidth: '2px',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    color: 'rgba(255,255,255,0.7)',
+                    color: colors.text.secondary,
                     '&.Mui-focused': {
-                      color: '#00fed7',
+                      color: 'var(--theme-primary)',
                     },
                   },
                   '& .MuiOutlinedInput-input': {
-                    color: '#ffffff',
+                    color: colors.text.primary,
                     '&::placeholder': {
-                      color: 'rgba(255,255,255,0.4)',
+                      color: colors.text.placeholder,
                       opacity: 1,
                     },
                   },
@@ -600,10 +600,10 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                   right: 8,
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: displayNameEditable ? '#00fed7' : 'rgba(255,255,255,0.6)',
+                  color: displayNameEditable ? 'var(--theme-primary)' : colors.text.secondary,
                   '&:hover': {
-                    color: '#00fed7',
-                    backgroundColor: 'rgba(0,254,215,0.1)',
+                    color: 'var(--theme-primary)',
+                    backgroundColor: `var(--theme-primary)10`,
                   },
                 }}
                 size='small'
@@ -617,10 +617,9 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
               variant='outlined'
               sx={{
                 borderRadius: { xs: 2, sm: 1 },
-                background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                background: colors.background.cardGradient,
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: `1px solid ${colors.border.light}`,
               }}
             >
               <CardContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 3 } }}>
@@ -693,19 +692,19 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                         minHeight: { xs: 48, sm: 40 },
                         fontSize: { xs: '0.9rem', sm: '0.875rem' },
                         background:
-                          'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                          colors.button.secondary.gradient,
                         borderRadius: '12px',
                         padding: '12px 24px',
-                        color: '#ffffff',
+                        color: colors.text.primary,
                         fontWeight: 500,
                         textTransform: 'none',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        border: `1px solid ${colors.border.light}`,
                         backdropFilter: 'blur(10px)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           background:
-                            'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
-                          border: '1px solid rgba(255,255,255,0.2)',
+                            colors.button.secondary.gradientHover,
+                          border: `1px solid ${colors.border.light}`,
                           transform: 'translateY(-2px)',
                         },
                       }}
@@ -724,9 +723,9 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 sx={{
                   borderRadius: { xs: 2, sm: 1 },
                   background:
-                    'linear-gradient(135deg, rgba(0, 254, 215, 0.08) 0%, rgba(0, 254, 215, 0.04) 100%)',
+                    `linear-gradient(135deg, var(--theme-primary)08 0%, var(--theme-primary)04 100%)`,
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(0, 254, 215, 0.2)',
+                  border: `1px solid var(--theme-primary)20`,
                 }}
               >
                 <CardContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 3 } }}>
@@ -743,7 +742,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                         gutterBottom
                         sx={{ 
                           fontSize: { xs: '1rem', sm: '1.25rem' },
-                          color: '#00fed7'
+                          color: 'var(--theme-primary)'
                         }}
                       >
                         Geführte Tour
@@ -765,19 +764,19 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                         minHeight: { xs: 48, sm: 40 },
                         fontSize: { xs: '0.9rem', sm: '0.875rem' },
                         background:
-                          'linear-gradient(135deg, rgba(0, 254, 215, 0.1) 0%, rgba(0, 254, 215, 0.05) 100%)',
+                          `linear-gradient(135deg, var(--theme-primary)10 0%, var(--theme-primary)05 100%)`,
                         borderRadius: '12px',
                         padding: '12px 24px',
-                        color: '#00fed7',
+                        color: 'var(--theme-primary)',
                         fontWeight: 500,
                         textTransform: 'none',
-                        border: '1px solid rgba(0, 254, 215, 0.3)',
+                        border: `1px solid var(--theme-primary)30`,
                         backdropFilter: 'blur(10px)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           background:
-                            'linear-gradient(135deg, rgba(0, 254, 215, 0.15) 0%, rgba(0, 254, 215, 0.1) 100%)',
-                          border: '1px solid rgba(0, 254, 215, 0.5)',
+                            `linear-gradient(135deg, var(--theme-primary)15 0%, var(--theme-primary)10 100%)`,
+                          border: `1px solid var(--theme-primary)50`,
                           transform: 'translateY(-2px)',
                         },
                       }}
@@ -788,6 +787,70 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 </CardContent>
               </Card>
             )}
+
+            {/* Theme-Editor Button */}
+            <Card
+              variant='outlined'
+              sx={{
+                borderRadius: { xs: 2, sm: 1 },
+                backgroundColor: colors.background.surface,
+                backdropFilter: 'blur(10px)',
+                border: `1px solid var(--theme-primary)20`,
+              }}
+            >
+              <CardContent sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 3 } }}>
+                <Box
+                  display='flex'
+                  flexDirection={{ xs: 'column', sm: 'row' }}
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  justifyContent='space-between'
+                  gap={{ xs: 2, sm: 0 }}
+                >
+                  <Box sx={{ flex: { xs: 1, sm: 'auto' } }}>
+                    <Typography
+                      variant='h6'
+                      gutterBottom
+                      sx={{ 
+                        fontSize: { xs: '1rem', sm: '1.25rem' },
+                        color: 'var(--theme-primary)'
+                      }}
+                    >
+                      🎨 Theme-Anpassung
+                    </Typography>
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                    >
+                      Erstelle dein eigenes Farbschema mit Color Pickern
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant='outlined'
+                    onClick={() => setThemeEditorOpen(true)}
+                    disabled={saving}
+                    startIcon={<PaletteIcon />}
+                    sx={{
+                      minHeight: { xs: 48, sm: 40 },
+                      fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                      backgroundColor: 'transparent',
+                      borderRadius: '12px',
+                      padding: '12px 24px',
+                      color: 'var(--theme-primary)',
+                      fontWeight: 500,
+                      textTransform: 'none',
+                      borderColor: 'var(--theme-primary)',
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        borderColor: 'var(--theme-primary-hover)',
+                      },
+                    }}
+                  >
+                    Theme bearbeiten
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
 
             {/* Feedback */}
             {error && (
@@ -809,8 +872,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
         sx={{
           px: { xs: 2, sm: 3 },
           py: { xs: 2, sm: 2 },
-          background:
-            'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+          background: colors.background.gradient.dark,
           backdropFilter: 'blur(10px)',
           borderTop: 'none',
           margin: 0,
@@ -837,20 +899,18 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
             sx={{
               minHeight: 48,
               fontSize: '0.9rem',
-              background:
-                'linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(244, 67, 54, 0.05) 100%)',
+              background: 'rgba(255, 68, 68, 0.1)',
               borderRadius: '12px',
-              border: '1px solid rgba(244, 67, 54, 0.3)',
-              color: '#f44336',
+              border: `1px solid ${colors.status.error}30`,
+              color: colors.status.error,
               fontWeight: 600,
               textTransform: 'none',
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background:
-                  'linear-gradient(135deg, rgba(244, 67, 54, 0.15) 0%, rgba(244, 67, 54, 0.08) 100%)',
+                background: 'rgba(255, 68, 68, 0.2)',
                 transform: 'translateY(-2px)',
-                boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
+                boxShadow: colors.shadow.error,
               },
             }}
           >
@@ -867,20 +927,18 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 flex: 1,
                 minHeight: 48,
                 fontSize: '0.9rem',
-                background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                background: 'rgba(255,255,255,0.05)',
                 borderRadius: '12px',
                 border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff',
+                color: 'var(--theme-primary)',
                 fontWeight: 600,
                 textTransform: 'none',
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background:
-                    'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+                  background: 'rgba(255,255,255,0.1)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(255,255,255,0.2)',
+                  boxShadow: colors.shadow.light,
                 },
               }}
             >
@@ -896,19 +954,18 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 flex: 1,
                 minHeight: 48,
                 fontSize: '0.9rem',
-                background: 'linear-gradient(135deg, #00fed7 0%, #00b196 100%)',
+                background: 'var(--theme-primary)',
                 borderRadius: '12px',
-                color: '#ffffff',
+                color: '#000',
                 fontWeight: 600,
                 textTransform: 'none',
                 border: '1px solid rgba(255,255,255,0.1)',
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background:
-                    'linear-gradient(135deg, #00b196 0%, #00fed7 100%)',
+                  background: 'var(--theme-primary-hover)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px #00fed7, 0.4)',
+                  boxShadow: colors.shadow.buttonHover,
                 },
               }}
             >
@@ -933,20 +990,18 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
             startIcon={<ExitToApp />}
             disabled={saving}
             sx={{
-              background:
-                'linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(244, 67, 54, 0.05) 100%)',
+              background: 'rgba(255, 68, 68, 0.1)',
               borderRadius: '12px',
-              border: '1px solid rgba(244, 67, 54, 0.3)',
-              color: '#f44336',
+              border: `1px solid ${colors.status.error}30`,
+              color: colors.status.error,
               fontWeight: 600,
               textTransform: 'none',
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background:
-                  'linear-gradient(135deg, rgba(244, 67, 54, 0.15) 0%, rgba(244, 67, 54, 0.08) 100%)',
+                background: 'rgba(255, 68, 68, 0.2)',
                 transform: 'translateY(-2px)',
-                boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
+                boxShadow: colors.shadow.error,
               },
             }}
           >
@@ -958,20 +1013,18 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
               onClick={onClose}
               disabled={saving}
               sx={{
-                background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                background: 'rgba(255,255,255,0.05)',
                 borderRadius: '12px',
                 border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff',
+                color: 'var(--theme-primary)',
                 fontWeight: 600,
                 textTransform: 'none',
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background:
-                    'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+                  background: 'rgba(255,255,255,0.1)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(255,255,255,0.2)',
+                  boxShadow: colors.shadow.light,
                 },
               }}
             >
@@ -984,7 +1037,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 saving || !username.trim() || !isUsernameValid(username)
               }
               sx={{
-                background: 'linear-gradient(135deg, #00fed7 0%, #00b196 100%)',
+                background: 'var(--theme-primary)',
                 borderRadius: '12px',
                 color: '#000',
                 fontWeight: 600,
@@ -993,10 +1046,9 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background:
-                    'linear-gradient(135deg, #00b196 0%, #00fed7 100%)',
+                  background: 'var(--theme-primary-hover)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px #00fed7, 0.4)',
+                  boxShadow: colors.shadow.buttonHover,
                 },
               }}
             >
@@ -1005,6 +1057,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           </Box>
         </Box>
       </DialogActions>
+      
+      {/* Theme-Editor Dialog */}
+      <ThemeEditor 
+        open={themeEditorOpen} 
+        onClose={() => setThemeEditorOpen(false)} 
+      />
     </Dialog>
   );
 };

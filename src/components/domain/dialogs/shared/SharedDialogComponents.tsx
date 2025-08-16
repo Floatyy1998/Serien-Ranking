@@ -57,8 +57,8 @@ export const TabPanel = (props: {
 export const NextEpisodeDisplay = ({ episode }: { episode: any }) => {
   // React 19 optimiert Funktionen automatisch - kein useMemo/useCallback nötig
   return (
-    <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
-      <div className='font-medium text-[#00fed7]'>
+    <Box className='mb-6 rounded-xl border border-[var(--theme-primary)]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
+      <div className='font-medium text-[var(--theme-primary)]'>
         Nächste Folge: S{episode.seasonNumber + 1} E{episode.episodeNumber} -{' '}
         {episode.name}
       </div>

@@ -31,6 +31,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { colors } from '../theme';
 import firebase from 'firebase/compat/app';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -288,8 +289,8 @@ export const FriendsPage: React.FC = () => {
           label='Anfrage gesendet'
           size='small'
           sx={{
-            backgroundColor: '#00fed7',
-            color: 'white',
+            backgroundColor: 'var(--theme-primary)',
+            color: colors.text.secondary,
             fontWeight: 500,
           }}
         />
@@ -331,21 +332,14 @@ export const FriendsPage: React.FC = () => {
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '0 0 8px 8px',
-          p: { xs: 1, sm: 1.5, md: 3 },
-          color: 'white',
+          background: 'var(--theme-background)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          p: { xs: 2, sm: 2, md: 3 },
+          color: colors.text.secondary,
           flexDirection: { xs: 'column', md: 'row' },
           gap: { xs: 1, md: 0 },
-          minHeight: { xs: 'auto', sm: 'auto', md: '120px' },
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-          cursor: 'pointer',
-          transition: 'background 0.2s',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)',
-          },
+          minHeight: { xs: 'auto', sm: 'auto', md: '100px' },
         }}
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           if (
@@ -395,14 +389,14 @@ export const FriendsPage: React.FC = () => {
             <ArrowBack sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
           }
           sx={{
-            background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-            color: '#000',
+            background: 'var(--theme-primary)',
+            color: colors.background.default,
             fontWeight: 'bold',
             borderRadius: 2,
-            boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+            boxShadow: `0 4px 12px ${colors.overlay.medium}`,
             '&:hover': {
-              background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-              boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+              background: 'var(--theme-primary-hover)',
+              boxShadow: `0 6px 16px ${colors.overlay.medium}`,
               transform: 'translateY(-2px)',
             },
             fontSize: { xs: '0.75rem', sm: '0.875rem', md: '0.875rem' },
@@ -437,7 +431,7 @@ export const FriendsPage: React.FC = () => {
         sx={{
           mb: 3,
           mt: 2,
-          backgroundColor: '#2d2d30',
+          backgroundColor: colors.background.surface,
           borderRadius: 2,
         }}
       >
@@ -450,9 +444,9 @@ export const FriendsPage: React.FC = () => {
               fontSize: { xs: '0.75rem', md: '0.875rem' },
               minHeight: { xs: 48, md: 72 },
               padding: { xs: '6px 8px', md: '12px 16px' },
-              color: '#b0b0b0',
+              color: colors.text.muted,
               '&.Mui-selected': {
-                color: '#00fed7',
+                color: 'var(--theme-primary)',
               },
               '&:hover': {
                 backgroundColor: 'transparent',
@@ -460,7 +454,7 @@ export const FriendsPage: React.FC = () => {
               },
             },
             '& .MuiTabs-indicator': {
-              backgroundColor: '#00fed7',
+              backgroundColor: 'var(--theme-primary)',
               height: 3,
               borderRadius: '2px 2px 0 0',
               transform: 'scaleX(0.85)',
@@ -498,14 +492,14 @@ export const FriendsPage: React.FC = () => {
       <TabPanel value={tabValue} index={0}>
         {friends.length === 0 ? (
           <Card
-            sx={{ backgroundColor: '#2d2d30', border: '1px solid #404040' }}
+            sx={{ backgroundColor: colors.background.surface, border: `1px solid ${colors.border.default}` }}
           >
             <CardContent sx={{ textAlign: 'center', py: 6 }}>
-              <People sx={{ fontSize: 64, color: '#9e9e9e', mb: 2 }} />
-              <Typography variant='h6' gutterBottom sx={{ color: '#e0e0e0' }}>
+              <People sx={{ fontSize: 64, color: colors.text.muted, mb: 2 }} />
+              <Typography variant='h6' gutterBottom sx={{ color: colors.text.secondary }}>
                 Noch keine Freunde
               </Typography>
-              <Typography variant='body2' color='#9e9e9e' mb={3}>
+              <Typography variant='body2' color={colors.text.muted} mb={3}>
                 Finde deine ersten Freunde über die Suche
               </Typography>
               <Button
@@ -542,12 +536,12 @@ export const FriendsPage: React.FC = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'all 0.3s ease',
-                    backgroundColor: '#2d2d30',
-                    border: '1px solid #404040',
+                    backgroundColor: colors.background.surface,
+                    border: `1px solid ${colors.border.default}`,
                     '&:hover': {
                       transform: 'translateY(-4px)',
                       boxShadow: theme.shadows[8],
-                      backgroundColor: '#333333',
+                      backgroundColor: colors.background.surfaceHover,
                     },
                   }}
                 >
@@ -566,10 +560,9 @@ export const FriendsPage: React.FC = () => {
                           width: { xs: 60, md: 80 },
                           height: { xs: 60, md: 80 },
                           fontSize: { xs: '1.5rem', md: '2rem' },
-                          background:
-                            'linear-gradient(45deg, #00fed7, #00c5a3)',
+                          background: 'var(--theme-primary)',
                           border: '3px solid',
-                          borderColor: '#00fed7',
+                          borderColor: 'var(--theme-primary)',
                         }}
                       >
                         {currentProfile.displayName
@@ -584,7 +577,7 @@ export const FriendsPage: React.FC = () => {
                           gutterBottom
                           sx={{
                             fontSize: { xs: '1rem', md: '1.25rem' },
-                            color: '#e0e0e0',
+                            color: colors.text.secondary,
                           }}
                         >
                           {currentProfile.displayName ||
@@ -598,8 +591,8 @@ export const FriendsPage: React.FC = () => {
                             color='success'
                             sx={{
                               mt: 1,
-                              backgroundColor: '#00fed7',
-                              color: '#000',
+                              backgroundColor: 'var(--theme-primary)',
+                              color: colors.background.default,
                               fontWeight: 'bold',
                             }}
                           />
@@ -607,7 +600,7 @@ export const FriendsPage: React.FC = () => {
                           currentProfile.lastActive && (
                             <Typography
                               variant='caption'
-                              color='#9e9e9e'
+                              color={colors.text.muted}
                               sx={{ mt: 1, display: 'block' }}
                             >
                               Zuletzt online:{' '}
@@ -634,12 +627,16 @@ export const FriendsPage: React.FC = () => {
                         <Button
                           size='small'
                           variant='contained'
-                          color='primary'
                           startIcon={<Person />}
                           onClick={() => navigate(`/profile/${friend.uid}`)}
                           sx={{
                             fontSize: { xs: '0.75rem', md: '0.875rem' },
                             px: { xs: 1, md: 2 },
+                            bgcolor: 'var(--theme-primary)',
+                            color: '#000',
+                            '&:hover': {
+                              bgcolor: 'var(--theme-primary-hover)',
+                            },
                           }}
                         >
                           Profil
@@ -652,8 +649,8 @@ export const FriendsPage: React.FC = () => {
                           }
                           sx={{
                             '& .MuiBadge-badge': {
-                              backgroundColor: '#ff4444',
-                              color: 'white',
+                              backgroundColor: colors.status.error,
+                              color: colors.text.secondary,
                               fontWeight: 'bold',
                               minWidth: '18px',
                               height: '18px',
@@ -701,14 +698,14 @@ export const FriendsPage: React.FC = () => {
       <TabPanel value={tabValue} index={1}>
         {friendRequests.length === 0 ? (
           <Card
-            sx={{ backgroundColor: '#2d2d30', border: '1px solid #404040' }}
+            sx={{ backgroundColor: colors.background.surface, border: `1px solid ${colors.border.default}` }}
           >
             <CardContent sx={{ textAlign: 'center', py: 6 }}>
-              <Notifications sx={{ fontSize: 64, color: '#9e9e9e', mb: 2 }} />
-              <Typography variant='h6' gutterBottom sx={{ color: '#e0e0e0' }}>
+              <Notifications sx={{ fontSize: 64, color: colors.text.muted, mb: 2 }} />
+              <Typography variant='h6' gutterBottom sx={{ color: colors.text.secondary }}>
                 Keine neuen Anfragen
               </Typography>
-              <Typography variant='body2' color='#9e9e9e'>
+              <Typography variant='body2' color={colors.text.muted}>
                 Du hast momentan keine ausstehenden Freundschaftsanfragen
               </Typography>
             </CardContent>
@@ -722,8 +719,8 @@ export const FriendsPage: React.FC = () => {
                   key={request.id}
                   elevation={1}
                   sx={{
-                    backgroundColor: '#2d2d30',
-                    border: '1px solid #404040',
+                    backgroundColor: colors.background.surface,
+                    border: `1px solid ${colors.border.default}`,
                   }}
                 >
                   <CardContent sx={{ p: { xs: 2, md: 3 } }}>
@@ -753,7 +750,7 @@ export const FriendsPage: React.FC = () => {
                             width: { xs: 48, md: 56 },
                             height: { xs: 48, md: 56 },
                             background:
-                              'linear-gradient(45deg, #ff9800, #ffb74d)',
+                              `linear-gradient(45deg, ${colors.status.warning}, #ffb74d)`,
                           }}
                         >
                           {request.fromUsername?.charAt(0).toUpperCase() || 'U'}
@@ -764,21 +761,21 @@ export const FriendsPage: React.FC = () => {
                             gutterBottom
                             sx={{
                               fontSize: { xs: '1rem', md: '1.25rem' },
-                              color: '#e0e0e0',
+                              color: colors.text.secondary,
                             }}
                           >
                             @{request.fromUsername || 'Unbekannt'}
                           </Typography>
                           <Typography
                             variant='body2'
-                            color='#9e9e9e'
+                            color={colors.text.muted}
                             sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
                           >
                             Von: {request.fromUserEmail}
                           </Typography>
                           <Typography
                             variant='caption'
-                            color='#9e9e9e'
+                            color={colors.text.muted}
                             sx={{ fontSize: { xs: '0.6rem', md: '0.75rem' } }}
                           >
                             {new Date(request.sentAt).toLocaleDateString(
@@ -841,7 +838,7 @@ export const FriendsPage: React.FC = () => {
 
       {/* Suche Tab */}
       <TabPanel value={tabValue} index={2}>
-        <Card sx={{ backgroundColor: '#2d2d30', border: '1px solid #404040' }}>
+        <Card sx={{ backgroundColor: colors.background.surface, border: `1px solid ${colors.border.default}` }}>
           <CardContent sx={{ p: { xs: 2, md: 3 } }}>
             <TextField
               variant='outlined'
@@ -851,23 +848,23 @@ export const FriendsPage: React.FC = () => {
               fullWidth
               placeholder='Mindestens 2 Zeichen eingeben...'
               InputProps={{
-                startAdornment: <Search sx={{ mr: 1, color: '#9e9e9e' }} />,
+                startAdornment: <Search sx={{ mr: 1, color: colors.text.muted }} />,
               }}
               sx={{
                 mb: 3,
                 '& .MuiInputLabel-root': {
-                  color: '#9e9e9e',
+                  color: colors.text.muted,
                 },
                 '& .MuiOutlinedInput-root': {
-                  color: '#e0e0e0',
+                  color: colors.text.secondary,
                   '& fieldset': {
-                    borderColor: '#404040',
+                    borderColor: colors.border.default,
                   },
                   '&:hover fieldset': {
-                    borderColor: '#00fed7',
+                    borderColor: 'var(--theme-primary)',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#00fed7',
+                    borderColor: 'var(--theme-primary)',
                   },
                 },
                 '& .MuiInputBase-input': {
@@ -887,7 +884,7 @@ export const FriendsPage: React.FC = () => {
               searchResults.length === 0 && (
                 <Typography
                   variant='body2'
-                  color='#9e9e9e'
+                  color={colors.text.muted}
                   textAlign='center'
                   py={2}
                 >
@@ -917,11 +914,11 @@ export const FriendsPage: React.FC = () => {
                         secondary={user.displayName || undefined}
                         primaryTypographyProps={{
                           fontSize: { xs: '0.875rem', md: '1rem' },
-                          color: '#e0e0e0',
+                          color: colors.text.secondary,
                         }}
                         secondaryTypographyProps={{
                           fontSize: { xs: '0.75rem', md: '0.875rem' },
-                          color: '#9e9e9e',
+                          color: colors.text.muted,
                         }}
                       />
                       <ListItemSecondaryAction

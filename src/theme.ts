@@ -1,20 +1,40 @@
 import { createTheme } from '@mui/material/styles';
 import './global.css';
-export const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#00fed7',
+import { colors } from './theme/colors';
+
+// Export theme als named export aus dem Theme-Verzeichnis
+export { colors } from './theme/colors';
+export { commonStyles, styleHelpers } from './theme/styles';
+
+// Funktion zum Erstellen eines dynamischen Themes basierend auf gespeicherten Farben
+const createDynamicTheme = () => {
+  // CSS-Variablen direkt lesen für Material-UI Theme
+  const root = document.documentElement;
+  const computedStyle = getComputedStyle(root);
+  
+  // Fallback-Werte falls CSS-Variablen noch nicht gesetzt sind
+  const primaryColor = computedStyle.getPropertyValue('--theme-primary').trim() || '#00fed7';
+  const backgroundColor = computedStyle.getPropertyValue('--theme-background').trim() || '#000000';
+  const textSecondary = computedStyle.getPropertyValue('--theme-text-secondary').trim() || '#ffffff';
+
+  return createTheme({
+    palette: {
+      mode: 'dark',
+      primary: {
+        main: primaryColor,
+      },
+      secondary: {
+        main: primaryColor,
+      },
+      background: {
+        default: backgroundColor,
+        paper: backgroundColor,
+      },
+      text: {
+        primary: textSecondary,
+        secondary: textSecondary,
+      },
     },
-    background: {
-      default: '#000',
-      paper: '#000',
-    },
-    text: {
-      primary: '#00fed7',
-      secondary: '#ffffff',
-    },
-  },
   typography: {
     h1: {
       fontSize: '2rem ',
@@ -43,8 +63,8 @@ export const theme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: '#000',
-          color: '#00fed7',
+          backgroundColor: backgroundColor,
+          color: primaryColor,
           fontSize: '1rem',
         },
       },
@@ -62,19 +82,19 @@ export const theme = createTheme({
           borderRadius: 8,
         },
         containedPrimary: {
-          backgroundColor: '#00fed7',
-          color: '#000000',
+          backgroundColor: primaryColor,
+          color: backgroundColor,
           fontWeight: 600,
           '&:hover': {
-            backgroundColor: '#00e6c3',
+            backgroundColor: primaryColor,
           },
         },
         outlinedPrimary: {
-          borderColor: '#00fed7',
-          color: '#00fed7',
+          borderColor: primaryColor,
+          color: primaryColor,
           '&:hover': {
-            borderColor: '#00fed7',
-            backgroundColor: 'rgba(0, 254, 215, 0.08)',
+            borderColor: primaryColor,
+            backgroundColor: 'transparent',
           },
         },
       },
@@ -83,18 +103,18 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          backgroundColor: '#000',
+          backgroundColor: backgroundColor,
         },
       },
     },
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#0C0C0C',
+          backgroundColor: backgroundColor,
           backgroundImage: 'none',
           maxWidth: '50%',
-          boxShadow: '0 25px 50px -12px rgba(0, 254, 215, 0.15)',
-          border: '1px solid rgba(0, 254, 215, 0.05)',
+          boxShadow: `0 25px 50px -12px rgba(0, 254, 215, 0.15)`,
+          border: `1px solid ${colors.border.lighter}`,
           '@media (max-width: 600px)': {
             maxWidth: '100%',
           },
@@ -107,8 +127,8 @@ export const theme = createTheme({
     MuiAccordion: {
       styleOverrides: {
         root: {
-          backgroundColor: 'rgba(0, 254, 215, 0.02)',
-          border: '1px solid rgba(0, 254, 215, 0.08)',
+          backgroundColor: colors.overlay.light,
+          border: `1px solid ${colors.border.light}`,
           borderRadius: '12px ',
           '&:before': {
             display: 'none',
@@ -123,7 +143,7 @@ export const theme = createTheme({
     MuiAccordionSummary: {
       styleOverrides: {
         root: {
-          color: '#00fed7',
+          color: primaryColor,
           padding: '0 24px',
           minHeight: '56px',
           transition: 'all 0.2s ease-in-out',
@@ -141,8 +161,8 @@ export const theme = createTheme({
     MuiAccordionDetails: {
       styleOverrides: {
         root: {
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
-          borderTop: '1px solid rgba(0, 254, 215, 0.08)',
+          backgroundColor: colors.overlay.black,
+          borderTop: `1px solid ${colors.border.light}`,
           padding: 0,
           borderBottomLeftRadius: '12px',
           borderBottomRightRadius: '12px',
@@ -152,7 +172,7 @@ export const theme = createTheme({
     MuiTabs: {
       styleOverrides: {
         indicator: {
-          backgroundColor: '#00fed7',
+          backgroundColor: primaryColor,
         },
       },
     },
@@ -160,7 +180,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '&.Mui-selected': {
-            color: '#00fed7',
+            color: primaryColor,
           },
         },
       },
@@ -169,21 +189,21 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 8,
-          backgroundColor: '#090909',
+          backgroundColor: backgroundColor,
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              borderColor: '#404040',
+              borderColor: colors.border.default,
             },
             '&:hover fieldset': {
-              borderColor: '#00fed7',
+              borderColor: primaryColor,
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#00fed7',
+              borderColor: primaryColor,
             },
           },
           '& .MuiInputLabel-root': {
             '&.Mui-focused': {
-              color: '#00fed7',
+              color: primaryColor,
             },
           },
         },
@@ -194,8 +214,8 @@ export const theme = createTheme({
         root: {
           borderRadius: '8px !important',
           fontSize: '1rem',
-          border: '1px solid #00fed7',
-          backgroundColor: '#000',
+          border: `1px solid ${primaryColor}`,
+          backgroundColor: backgroundColor,
           minWidth: '140px !important',
           minHeight: '40px !important',
         },
@@ -219,4 +239,14 @@ export const theme = createTheme({
       },
     },
   },
-});
+  });
+};
+
+// Theme beim ersten Laden erstellen
+export let theme = createDynamicTheme();
+
+// Funktion zum Aktualisieren des Themes
+export const updateTheme = () => {
+  theme = createDynamicTheme();
+  return theme;
+};

@@ -35,6 +35,7 @@ import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider'
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
 import { logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
 import { generateRecommendations } from '../../../features/recommendations/recommendationEngine';
+import { colors } from '../../../theme';
 
 export interface Serien {
   adult: boolean;
@@ -723,7 +724,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
               'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
             backdropFilter: 'blur(15px)',
             borderBottom: '1px solid rgba(255,255,255,0.05)',
-            color: '#ffffff',
+            color: colors.text.secondary,
             fontWeight: 600,
             fontSize: '1.25rem',
           }}
@@ -758,7 +759,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
               borderRadius: '12px',
               '&:hover': {
                 background: 'rgba(255,255,255,0.1)',
-                color: '#ffffff',
+                color: colors.text.secondary,
                 transform: 'translateY(-50%) scale(1.05)',
               },
             }}
@@ -773,7 +774,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
             background:
               'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
             backdropFilter: 'blur(10px)',
-            color: '#ffffff',
+            color: colors.text.secondary,
             overflow: 'auto',
             height: '100%',
           }}
@@ -810,16 +811,16 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                   px: { xs: 0.25, sm: 0.5, md: 1 },
                   '&:hover': {
                     background: 'rgba(255,255,255,0.1)',
-                    color: '#ffffff',
+                    color: colors.text.secondary,
                   },
                   '&.Mui-selected': {
-                    color: '#00fed7',
-                    background: 'rgba(0, 254, 215, 0.15)',
-                    boxShadow: '0 8px 25px rgba(0, 254, 215, 0.2)',
+                    color: 'var(--theme-primary)',
+                    background: colors.overlay.medium,
+                    boxShadow: `0 8px 25px ${colors.overlay.medium}`,
                   },
                 },
                 '& .MuiTabs-indicator': {
-                  backgroundColor: '#00fed7',
+                  backgroundColor: 'var(--theme-primary)',
                   height: '3px',
                   borderRadius: '2px',
                 },
@@ -867,7 +868,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                     background: 'rgba(45,45,48,0.8)',
                     backdropFilter: 'blur(10px)',
                     borderRadius: '12px',
-                    color: '#ffffff',
+                    color: colors.text.secondary,
                     '& fieldset': {
                       borderColor: 'rgba(255,255,255,0.2)',
                       borderWidth: '1px',
@@ -880,16 +881,16 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                     },
                     '&.Mui-focused': {
                       background: 'rgba(65,65,68,0.95)',
-                      boxShadow: '0 0 20px #00fed7, 0.3)',
+                      boxShadow: `0 0 20px rgba(0, 254, 215, 0.3)`,
                       '& fieldset': {
-                        borderColor: '#00fed7',
+                        borderColor: 'var(--theme-primary)',
                       },
                     },
                   },
                   '& .MuiInputLabel-root': {
                     color: 'rgba(255,255,255,0.7)',
                     '&.Mui-focused': {
-                      color: '#00fed7',
+                      color: 'var(--theme-primary)',
                     },
                   },
                 }}
@@ -927,10 +928,10 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                         }
                         sx={{
                           background:
-                            'linear-gradient(135deg, #00fed7 0%, #00b196 100%)',
+                            `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
                           borderRadius: '12px',
                           padding: '12px 24px',
-                          color: '#ffffff',
+                          color: colors.text.secondary,
                           fontWeight: 600,
                           textTransform: 'none',
                           border: '1px solid rgba(255,255,255,0.1)',
@@ -939,9 +940,9 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                           fontSize: { xs: '0.75rem', sm: '0.875rem' },
                           '&:hover': {
                             background:
-                              'linear-gradient(135deg, #00b196 0%, #00fed7 100%)',
+                              `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%)`,
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 8px 25px #00fed7, 0.4)',
+                            boxShadow: `0 8px 25px rgba(0, 254, 215, 0.4)`,
                           },
                         }}
                       >
@@ -1091,7 +1092,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                         'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
                       borderRadius: '12px',
                       padding: '12px 24px',
-                      color: '#ffffff',
+                      color: colors.text.secondary,
                       fontWeight: 500,
                       textTransform: 'none',
                       border: '1px solid rgba(255,255,255,0.1)',
@@ -1171,11 +1172,11 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                       }
                       sx={{
                         background:
-                          'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
-                        border: '1px solid #00fed7, 0.3)',
+                          `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
+                        border: `1px solid ${colors.border.primary}`,
                         borderRadius: '12px',
                         padding: '12px 24px',
-                        color: '#ffffff',
+                        color: colors.text.secondary,
                         fontWeight: 500,
                         textTransform: 'none',
                         backdropFilter: 'blur(10px)',
@@ -1183,8 +1184,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         '&:hover': {
                           background:
-                            'linear-gradient(135deg, #00fed7, 0.25) 0%, #00fed7, 0.2) 100%)',
-                          border: '1px solid #00fed7, 0.4)',
+                            `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
+                          border: `1px solid ${colors.border.primary}`,
                           transform: 'translateY(-2px)',
                         },
                       }}
@@ -1254,11 +1255,11 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                       }
                       sx={{
                         background:
-                          'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
-                        border: '1px solid #00fed7, 0.3)',
+                          `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
+                        border: `1px solid ${colors.border.primary}`,
                         borderRadius: '12px',
                         padding: '12px 24px',
-                        color: '#ffffff',
+                        color: colors.text.secondary,
                         fontWeight: 500,
                         textTransform: 'none',
                         backdropFilter: 'blur(10px)',
@@ -1266,8 +1267,8 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         '&:hover': {
                           background:
-                            'linear-gradient(135deg, #00fed7, 0.25) 0%, #00fed7, 0.2) 100%)',
-                          border: '1px solid #00fed7, 0.4)',
+                            `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
+                          border: `1px solid ${colors.border.primary}`,
                           transform: 'translateY(-2px)',
                         },
                       }}
@@ -1356,14 +1357,14 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                       variant='outlined'
                       sx={{
                         background:
-                          'linear-gradient(135deg, #00fed7, 0.2) 0%, #00fed7, 0.15) 100%)',
-                        border: '1px solid #00fed7, 0.3)',
-                        color: '#ffffff',
+                          `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
+                        border: `1px solid ${colors.border.primary}`,
+                        color: colors.text.secondary,
                         '&:hover': {
                           background:
-                            'linear-gradient(135deg, #00fed7, 0.3) 0%, #00fed7, 0.25) 100%)',
-                          border: '1px solid #00fed7, 0.4)',
-                          boxShadow: '0 8px 25px #00fed7, 0.3)',
+                            `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
+                          border: `1px solid ${colors.border.primary}`,
+                          boxShadow: `0 8px 25px rgba(0, 254, 215, 0.3)`,
                         },
                       }}
                     />
@@ -1396,13 +1397,13 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                   fontSize: '0.875rem',
                   borderRadius: 2,
                   background:
-                    'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
-                  border: '1px solid #00fed7, 0.3)',
-                  color: '#ffffff',
+                    `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
+                  border: `1px solid ${colors.border.primary}`,
+                  color: colors.text.secondary,
                   '&:hover': {
                     background:
-                      'linear-gradient(135deg, #00fed7, 0.25) 0%, #00fed7, 0.2) 100%)',
-                    border: '1px solid #00fed7, 0.4)',
+                      `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
+                    border: `1px solid ${colors.border.primary}`,
                     transform: 'translateY(-1px)',
                   },
                 }}
@@ -1462,21 +1463,21 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                 flex: { xs: 1, sm: 'none' },
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 background:
-                  'linear-gradient(135deg, rgba(0, 254, 215,0,.15) 0%, #00fed7, 0.1) 100%)',
-                border: '1px solid #00fed7, 0.3)',
+                  `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
+                border: `1px solid ${colors.border.primary}`,
                 borderRadius: '12px',
                 padding: '12px 24px',
-                color: '#ffffff',
+                color: colors.text.secondary,
                 fontWeight: 600,
                 textTransform: 'none',
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   background:
-                    'linear-gradient(135deg, #00fed7, 0.25) 0%, #00fed7, 0.2) 100%)',
-                  border: '1px solid #00fed7, 0.4)',
+                    `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
+                  border: '1px solid var(--theme-primary)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px #00fed7, 0.3)',
+                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.3)',
                 },
               }}
             >
@@ -1492,10 +1493,10 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                 flex: { xs: 1, sm: 'none' },
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 background:
-                  'linear-gradient(135deg, #00fed7 0%, #00b196 100%) ',
+                  `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
                 borderRadius: '12px',
                 padding: '12px 24px',
-                color: '#000 ',
+                color: '${colors.background.default}',
                 fontWeight: 600,
                 textTransform: 'none',
                 border: '1px solid rgba(255,255,255,0.1)',
@@ -1504,9 +1505,9 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                 '&:hover': {
                   cursor: 'pointer ',
                   background:
-                    'linear-gradient(135deg, #00b196 0%, #00fed7 100%) ',
+                    `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%)`,
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px #00fed7, 0.4)',
+                  boxShadow: `0 8px 25px rgba(0, 254, 215, 0.4)`,
                 },
               }}
             >

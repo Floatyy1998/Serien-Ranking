@@ -1,3 +1,14 @@
+:root {
+  /* Theme-Variablen für dynamische Anpassung */
+  --theme-primary: #00fed7;
+  --theme-primary-hover: #33ffdf;
+  --theme-accent: #ff6b6b;
+  --theme-background: #000000;
+  --theme-surface: #2d2d30;
+  --theme-text-primary: #00fed7;
+  --theme-text-secondary: #ffffff;
+}
+
 * {
   scrollbar-width: 10px;
   scrollbar-color: #333 #000;
