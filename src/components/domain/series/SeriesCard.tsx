@@ -15,16 +15,19 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { allGenres, genreDisplayNames } from '../../../../constants/seriesCard.constants';
+import {
+  allGenres,
+  genreDisplayNames,
+} from '../../../../constants/seriesCard.constants';
 import { useAuth } from '../../../App';
 import notFound from '../../../assets/notFound.jpg';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
-import { Series } from '../../../types/Series';
-import '../../../styles/animations.css';
-import { getUnifiedEpisodeDateTime } from '../../../lib/date/episodeDate.utils';
 import { logRatingAdded } from '../../../features/badges/minimalActivityLogger';
+import { getUnifiedEpisodeDateTime } from '../../../lib/date/episodeDate.utils';
 import { calculateOverallRating } from '../../../lib/rating/rating';
+import '../../../styles/animations.css';
+import { Series } from '../../../types/Series';
 import ThreeDotMenu, {
   DeleteIcon,
   PlaylistPlayIcon,
@@ -847,9 +850,10 @@ export const SeriesCard = ({
                   disabled: disableRatingDialog,
                 },
                 {
-                  label: forceReadOnlyDialogs || isUserProfilePage 
-                    ? 'Gesehene Episoden ansehen' 
-                    : 'Gesehene Episoden bearbeiten',
+                  label:
+                    forceReadOnlyDialogs || isUserProfilePage
+                      ? 'Gesehene Episoden ansehen'
+                      : 'Gesehene Episoden bearbeiten',
                   icon: <CheckCircleIcon />,
                   onClick: handleTitleClick,
                 },
