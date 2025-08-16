@@ -18,16 +18,16 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { allGenresForMovies, genreDisplayNames } from '../../../../constants/seriesCard.constants';
+import { allGenresForMovies } from '../../../../constants/seriesCard.constants';
 import { useAuth } from '../../../App';
 import notFound from '../../../assets/notFound.jpg';
 import { useMovieList } from '../../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider';
-import { Movie } from '../../../types/Movie';
-import '../../../styles/animations.css';
-import { getFormattedDate } from '../../../lib/date/date.utils';
 import { logRatingAdded } from '../../../features/badges/minimalActivityLogger';
+import { getFormattedDate } from '../../../lib/date/date.utils';
 import { calculateOverallRating } from '../../../lib/rating/rating';
+import '../../../styles/animations.css';
+import { Movie } from '../../../types/Movie';
 import ThreeDotMenu, { DeleteIcon, StarIcon } from '../../ui/ThreeDotMenu';
 import MovieDialog from '../dialogs/MovieDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
@@ -63,7 +63,7 @@ export const MovieCard = ({
 
   const shadowColor =
     currentMovie.status === 'Released' ? '#a855f7' : '#22c55e';
-  
+
   // Memoize expensive style calculations
   const shadowColors = useMemo(() => {
     const isReleased = shadowColor === '#a855f7';
@@ -73,40 +73,44 @@ export const MovieCard = ({
     };
   }, [shadowColor]);
 
-  const cardStyles = useMemo(() => ({
-    background:
-      'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
-    borderRadius: '20px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-    position: 'relative',
-    contain: 'layout style paint',
-    boxShadow: `0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(${shadowColors.rgb}, 0.5), 0 0 60px rgba(${shadowColors.rgb}, 0.2), 0 0 0 2px rgba(${shadowColors.rgb}, 0.3)`,
-    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-    '@media (min-width: 768px)': {
-      '&:hover': {
-        transform: 'translateY(-4px)',
-        boxShadow: `0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(${shadowColors.rgb}, 0.6), 0 0 80px rgba(${shadowColors.rgb}, 0.2), 0 0 0 2px rgba(${shadowColors.rgb}, 0.4)`,
+  const cardStyles = useMemo(
+    () => ({
+      background:
+        'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+      borderRadius: '20px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      overflow: 'hidden',
+      position: 'relative',
+      contain: 'layout style paint',
+      boxShadow: `0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(${shadowColors.rgb}, 0.5), 0 0 60px rgba(${shadowColors.rgb}, 0.2), 0 0 0 2px rgba(${shadowColors.rgb}, 0.3)`,
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+      '@media (min-width: 768px)': {
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: `0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(${shadowColors.rgb}, 0.6), 0 0 80px rgba(${shadowColors.rgb}, 0.2), 0 0 0 2px rgba(${shadowColors.rgb}, 0.4)`,
+        },
       },
-    },
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '2px',
-      background: shadowColor === '#a855f7'
-        ? 'linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.8), transparent)'
-        : 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.8), transparent)',
-      opacity: 0,
-      transition: 'opacity 0.2s ease',
-    },
-    '&:hover::before': {
-      opacity: 1,
-    },
-  }), [shadowColors.rgb, shadowColor]);
-  
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '2px',
+        background:
+          shadowColor === '#a855f7'
+            ? 'linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.8), transparent)'
+            : 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.8), transparent)',
+        opacity: 0,
+        transition: 'opacity 0.2s ease',
+      },
+      '&:hover::before': {
+        opacity: 1,
+      },
+    }),
+    [shadowColors.rgb, shadowColor]
+  );
+
   const {} = useOptimizedFriends();
   const uniqueProviders = currentMovie.provider
     ? Array.from(
@@ -676,7 +680,7 @@ export const MovieCard = ({
                   textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                 }}
               >
-{dateString}
+                {dateString}
               </Typography>
             </Box>
           )}

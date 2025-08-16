@@ -12,8 +12,8 @@ import {
   Typography,
 } from '@mui/material';
 import React from 'react';
-import { Series } from '../../../types/Series';
 import { genreDisplayNames } from '../../../../constants/seriesCard.constants';
+import { Series } from '../../../types/Series';
 interface SeriesDialogProps {
   open: boolean;
   onClose: () => void;
@@ -47,10 +47,10 @@ const SeriesDialog = ({
   ) => {
     const value = event.target.value;
     let numericValue = value === '' ? 0 : parseFloat(value);
-    
+
     if (numericValue < 0) numericValue = 0;
     if (numericValue > 10) numericValue = 10;
-    
+
     setRatings({ ...ratings, [genre]: numericValue });
   };
   return (
@@ -204,9 +204,9 @@ const SeriesDialog = ({
                 lineHeight: 1.4,
               }}
             >
-              💡 <strong>Neues Rating-System:</strong> Bewerte beliebige Genres von 0.00-10.00. 
-              Nur bewertete Genres ({">"} 0) fließen in die Gesamtbewertung ein. 
-              Unbewertete Genres werden ignoriert.
+              💡 <strong>Neues Rating-System:</strong> Bewerte beliebige Genres
+              von 0.00-10.00. Nur bewertete Genres ({'>'} 0) fließen in die
+              Gesamtbewertung ein. Unbewertete Genres werden ignoriert.
             </Typography>
           </Box>
           {allGenres.map((g) => (
@@ -222,12 +222,12 @@ const SeriesDialog = ({
               inputMode='decimal'
               disabled={isReadOnly}
               InputLabelProps={{ shrink: true }}
-              inputProps={{ 
-                min: 0, 
-                max: 10, 
-                step: 0.01 
+              inputProps={{
+                min: 0,
+                max: 10,
+                step: 0.01,
               }}
-              placeholder="0.00 - 10.00"
+              placeholder='0.00 - 10.00'
               sx={{
                 backgroundColor: 'transparent',
                 '& .MuiOutlinedInput-root': {
