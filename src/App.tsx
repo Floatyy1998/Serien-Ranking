@@ -19,6 +19,7 @@ import {
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
+import { UpdateNotification } from './components/ui/UpdateNotification';
 // Badge Migration Tools für Development
 import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
@@ -290,6 +291,7 @@ function AppContent() {
                   <CssBaseline />
                   <div className='w-full'>
                     <UsernameRequiredDialog />
+                    <UpdateNotification />
                     <main className='w-full'>
                       <Suspense
                         fallback={
