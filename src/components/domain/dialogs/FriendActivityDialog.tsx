@@ -38,6 +38,7 @@ import { Series } from '../../../types/Series';
 import MovieDialog from './MovieDialog';
 import SeriesDialog from './SeriesDialog';
 import TmdbDialog from './TmdbDialog';
+import { genreDisplayNames } from '../../../../constants/seriesCard.constants';
 
 interface ActivityItem {
   id: string;

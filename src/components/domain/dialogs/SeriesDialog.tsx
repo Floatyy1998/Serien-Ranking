@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { Series } from '../../../types/Series';
+import { genreDisplayNames } from '../../../../constants/seriesCard.constants';
 interface SeriesDialogProps {
   open: boolean;
   onClose: () => void;
@@ -149,7 +150,7 @@ const SeriesDialog = ({
               series.genre.genres.map((g) => (
                 <Chip
                   key={g}
-                  label={g}
+                  label={genreDisplayNames[g] ?? g}
                   onClick={() => handleChipClick(g)}
                   sx={{
                     fontSize: '1rem',
@@ -212,7 +213,7 @@ const SeriesDialog = ({
             <TextField
               key={g}
               id={`rating-input-${g}`}
-              label={g}
+              label={genreDisplayNames[g] ?? g}
               type='number'
               value={ratings[g] === 0 ? '' : ratings[g]}
               onChange={(e) => handleRatingChange(e, g)}

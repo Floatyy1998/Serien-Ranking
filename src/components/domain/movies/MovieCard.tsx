@@ -18,7 +18,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { allGenresForMovies } from '../../../../constants/seriesCard.constants';
+import { allGenresForMovies, genreDisplayNames } from '../../../../constants/seriesCard.constants';
 import { useAuth } from '../../../App';
 import notFound from '../../../assets/notFound.jpg';
 import { useMovieList } from '../../../contexts/MovieListProvider';
