@@ -1,9 +1,12 @@
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import ExploreIcon from '@mui/icons-material/Explore';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import {
   Box,
   Button,
+  Collapse,
   Divider,
   SelectChangeEvent,
   TextField,
@@ -56,6 +59,7 @@ export const MovieSearchFilters = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const addMovieInputRef = useRef<HTMLInputElement>(null);
   const { movieList } = useMovieList();
+  const [mobileFiltersExpanded, setMobileFiltersExpanded] = useState(false);
 
   // Reset lokale Filterstates, wenn sich der Benutzer ändert
   useEffect(() => {
@@ -216,64 +220,98 @@ export const MovieSearchFilters = ({
   };
 
   return (
-    <Box className='flex flex-col gap-4 xl:flex-row md:items-center justify-center mb-6 max-w-[1400px] m-auto'>
-      <Box className='flex flex-col lg:flex-row items-center gap-2'>
-        <Box sx={{ width: '250px', flexShrink: 0 }}>
-          <TextField
-            label='Suchen'
-            variant='outlined'
-            type='search'
-            value={searchValue}
-            onChange={handleSearchChange}
-            fullWidth
-            inputRef={searchInputRef}
-          />
-        </Box>
-        <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
-          <Box sx={{ flexShrink: 0 }}>
-            <Tooltip title='Film hinzufügen'>
-              <Button
-                variant='outlined'
-                onClick={handleDialogAddOpen}
-                sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '0.5rem',
-                  overflow: 'hidden',
-                  transition: 'width 0.3s ease',
-                  justifyContent: 'flex-start',
-                  pl: '19px',
-                  '@media (min-width:900px)': {
-                    '&:hover': { width: 150 },
-                    '&:hover .text-wrapper': {
-                      opacity: 1,
-                      transition: 'opacity 0.5s ease',
-                    },
-                  },
-                }}
-                aria-label='Film hinzufügen'
-                role='button'
-              >
-                <AddIcon />
-                <Box
-                  component='span'
+    <Box className='max-w-[1400px] m-auto mb-6'>
+      {/* Mobile Filter Toggle Button */}
+      <Box sx={{ display: { xs: 'block', xl: 'none' }, mb: 2, px: '8px' }}>
+        <Button
+          onClick={() => setMobileFiltersExpanded(!mobileFiltersExpanded)}
+          variant='outlined'
+          fullWidth
+          startIcon={<FilterListIcon />}
+          endIcon={mobileFiltersExpanded ? <ExpandLess /> : <ExpandMore />}
+          sx={{
+            justifyContent: 'space-between',
+            height: '48px',
+            fontSize: '0.875rem',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            borderColor: 'rgba(255, 255, 255, 0.2)',
+            color: 'rgba(255, 255, 255, 0.9)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'rgba(0, 254, 215, 0.5)',
+            },
+          }}
+        >
+          Filter & Suche
+        </Button>
+      </Box>
+
+      {/* Desktop Layout */}
+      <Box
+        sx={{
+          display: { xs: 'none', xl: 'flex' },
+          flexDirection: { xs: 'column', xl: 'row' },
+          gap: 4,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Box className='flex flex-col lg:flex-row items-center gap-2'>
+          <Box sx={{ width: '250px', flexShrink: 0 }} data-tour='search-input'>
+            <TextField
+              label='Suchen'
+              variant='outlined'
+              type='search'
+              value={searchValue}
+              onChange={handleSearchChange}
+              fullWidth
+              inputRef={searchInputRef}
+            />
+          </Box>
+          <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
+            <Box sx={{ flexShrink: 0 }} data-tour='add-button'>
+              <Tooltip title='Film hinzufügen'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogAddOpen}
                   sx={{
-                    whiteSpace: 'nowrap',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
+                    width: 56,
+                    height: 56,
+                    borderRadius: '0.5rem',
+                    overflow: 'hidden',
+                    transition: 'width 0.3s ease',
+                    justifyContent: 'flex-start',
+                    pl: '19px',
                     '@media (min-width:900px)': {
-                      '&:hover, button:hover &': { opacity: 1 },
+                      '&:hover': { width: 150 },
+                      '&:hover .text-wrapper': {
+                        opacity: 1,
+                        transition: 'opacity 0.5s ease',
+                      },
                     },
                   }}
-                  className='text-wrapper'
+                  aria-label='Film hinzufügen'
+                  role='button'
                 >
-                  Hinzufügen
-                </Box>
-              </Button>
-            </Tooltip>
-          </Box>
-          <>
-            <Tooltip title='Unveröffentlichte Filme entdecken'>
+                  <AddIcon />
+                  <Box
+                    component='span'
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                      '@media (min-width:900px)': {
+                        '&:hover, button:hover &': { opacity: 1 },
+                      },
+                    }}
+                    className='text-wrapper'
+                  >
+                    Hinzufügen
+                  </Box>
+                </Button>
+              </Tooltip>
+            </Box>
+            <Tooltip title='Unveröffentlichte Filme entdecken' data-tour='discover-button'>
               <Button
                 variant='outlined'
                 onClick={handleDialogDiscoverOpen}
@@ -313,7 +351,7 @@ export const MovieSearchFilters = ({
                 </Box>
               </Button>
             </Tooltip>
-            <Tooltip title='Empfehlungen anzeigen'>
+            <Tooltip title='Empfehlungen anzeigen' data-tour='recommendations-button'>
               <Button
                 variant='outlined'
                 onClick={handleDialogRecommendationsOpen}
@@ -353,47 +391,151 @@ export const MovieSearchFilters = ({
                 </Box>
               </Button>
             </Tooltip>
-          </>
-          <Divider
-            className='hidden'
-            orientation='vertical'
-            flexItem
-            sx={{ display: { xl: 'block' }, ml: 1 }}
-          />
+            <Divider
+              className='hidden'
+              orientation='vertical'
+              flexItem
+              sx={{ display: { xl: 'block' }, ml: 1 }}
+            />
+          </Box>
+        </Box>
+        <Box className='flex flex-col lg:flex-row items-center gap-2'>
+          <FormControl className='w-[250px]' data-tour='genre-filter'>
+            <InputLabel id='genre-label'>Genre</InputLabel>
+            <Select
+              labelId='genre-label'
+              label='Genre'
+              value={selectedGenre}
+              onChange={handleGenreChange}
+            >
+              {genreMenuItemsForMovies.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl className='w-[250px]' data-tour='provider-filter'>
+            <InputLabel id='provider-label'>Provider</InputLabel>
+            <Select
+              labelId='provider-label'
+              label='Provider'
+              value={selectedProvider}
+              onChange={handleProviderChange}
+            >
+              {providerMenuItems.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
       </Box>
-      <Box className='flex flex-col lg:flex-row items-center gap-2'>
-        <FormControl className='w-[250px]'>
-          <InputLabel id='genre-label'>Genre</InputLabel>
-          <Select
-            labelId='genre-label'
-            label='Genre'
-            value={selectedGenre}
-            onChange={handleGenreChange}
-          >
-            {genreMenuItemsForMovies.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                {item.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl className='w-[250px]'>
-          <InputLabel id='provider-label'>Provider</InputLabel>
-          <Select
-            labelId='provider-label'
-            label='Provider'
-            value={selectedProvider}
-            onChange={handleProviderChange}
-          >
-            {providerMenuItems.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                {item.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
+
+      {/* Mobile Collapsible Layout */}
+      <Collapse
+        in={mobileFiltersExpanded}
+        sx={{ display: { xs: 'block', xl: 'none' } }}
+      >
+        <Box
+          sx={{
+            p: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+            borderRadius: 2,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          {/* Suchfeld */}
+          <Box sx={{ mb: 2 }} data-tour='search-input'>
+            <TextField
+              label='Suchen'
+              variant='outlined'
+              type='search'
+              value={searchValue}
+              onChange={handleSearchChange}
+              fullWidth
+              inputRef={searchInputRef}
+            />
+          </Box>
+
+          {/* Dropdown Filters */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+            <FormControl fullWidth data-tour='genre-filter'>
+              <InputLabel id='genre-label'>Genre</InputLabel>
+              <Select
+                labelId='genre-label'
+                label='Genre'
+                value={selectedGenre}
+                onChange={handleGenreChange}
+              >
+                {genreMenuItemsForMovies.map((item) => (
+                  <MenuItem key={item.value} value={item.value}>
+                    {item.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth data-tour='provider-filter'>
+              <InputLabel id='provider-label'>Provider</InputLabel>
+              <Select
+                labelId='provider-label'
+                label='Provider'
+                value={selectedProvider}
+                onChange={handleProviderChange}
+              >
+                {providerMenuItems.map((item) => (
+                  <MenuItem key={item.value} value={item.value}>
+                    {item.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 1,
+              }}
+            >
+              <Tooltip title='Film hinzufügen' data-tour='add-button'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogAddOpen}
+                  startIcon={<AddIcon />}
+                  fullWidth
+                >
+                  Hinzufügen
+                </Button>
+              </Tooltip>
+              <Tooltip title='Unveröffentlichte Filme entdecken' data-tour='discover-button'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogDiscoverOpen}
+                  startIcon={<ExploreIcon />}
+                  fullWidth
+                >
+                  Entdecken
+                </Button>
+              </Tooltip>
+            </Box>
+            <Tooltip title='Empfehlungen anzeigen' data-tour='recommendations-button'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogRecommendationsOpen}
+                startIcon={<RecommendIcon />}
+                fullWidth
+              >
+                Empfehlung
+              </Button>
+            </Tooltip>
+          </Box>
+        </Box>
+      </Collapse>
 
       <AddMovieDialog
         open={dialogAddOpen}

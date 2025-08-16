@@ -14,9 +14,25 @@ export const genreMenuItems = [
   { value: 'Talk', label: 'Talk' },
   { value: 'War & Politics', label: 'War & Politics' },
   { value: 'Western', label: 'Western' },
-  { value: 'Ohne Bewertung', label: 'Ohne Bewertung' },
-  { value: 'Neue Episoden', label: 'Neue Episoden' },
-  { value: 'Zuletzt Hinzugefügt', label: 'Zuletzt Hinzugefügt' },
+];
+
+// Subtile Quick-Filter als kleine Chips
+export const quickFilterChips = [
+  {
+    value: 'Ohne Bewertung',
+    label: 'Ohne Bewertung',
+    iconName: 'StarBorder',
+  },
+  {
+    value: 'Neue Episoden',
+    label: 'Neue Episoden',
+    iconName: 'Fiber New',
+  },
+  {
+    value: 'Zuletzt Hinzugefügt',
+    label: 'Zuletzt Hinzugefügt',
+    iconName: 'Schedule',
+  },
 ];
 
 export const genreMenuItemsForMovies = [
@@ -38,9 +54,25 @@ export const genreMenuItemsForMovies = [
   { value: 'Thriller', label: 'Thriller' },
   { value: 'War', label: 'War' },
   { value: 'Western', label: 'Western' },
-  { value: 'Ohne Bewertung', label: 'Ohne Bewertung' },
-  { value: 'Noch nicht Veröffentlicht', label: 'Noch nicht Veröffentlicht' },
-  { value: 'Zuletzt Hinzugefügt', label: 'Zuletzt Hinzugefügt' },
+];
+
+// Subtile Quick-Filter für Filme
+export const quickFilterChipsForMovies = [
+  {
+    value: 'Ohne Bewertung',
+    label: 'Ohne Bewertung',
+    iconName: 'StarBorder',
+  },
+  {
+    value: 'Noch nicht Veröffentlicht',
+    label: 'Unveröffentlicht',
+    iconName: 'Upcoming',
+  },
+  {
+    value: 'Zuletzt Hinzugefügt',
+    label: 'Zuletzt Hinzugefügt',
+    iconName: 'Schedule',
+  },
 ];
 
 export const genreIdMap = [
