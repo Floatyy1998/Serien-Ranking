@@ -89,7 +89,8 @@ export const MainPage: React.FC = () => {
   const [movieSearchValue, setMovieSearchValue] = useState('');
   const [movieSelectedGenre, setMovieSelectedGenre] = useState('All');
   const [movieSelectedProvider, setMovieSelectedProvider] = useState('All');
-  const [movieSelectedSpecialFilter, setMovieSelectedSpecialFilter] = useState('');
+  const [movieSelectedSpecialFilter, setMovieSelectedSpecialFilter] =
+    useState('');
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchValue(value);
@@ -211,7 +212,7 @@ export const MainPage: React.FC = () => {
 
     // Lieblings-Provider ermitteln
     const providerCounts: { [key: string]: number } = {};
-    ratedSeries.forEach((series) => {
+    seriesList.forEach((series) => {
       if (series.provider?.provider) {
         series.provider.provider.forEach((prov) => {
           providerCounts[prov.name] = (providerCounts[prov.name] || 0) + 1;
@@ -265,7 +266,7 @@ export const MainPage: React.FC = () => {
 
     // Lieblings-Provider ermitteln
     const movieProviderCounts: { [key: string]: number } = {};
-    ratedMovies.forEach((movie) => {
+    movieList.forEach((movie) => {
       if (movie.provider?.provider) {
         movie.provider.provider.forEach((prov) => {
           movieProviderCounts[prov.name] =
@@ -416,7 +417,7 @@ export const MainPage: React.FC = () => {
                   lineHeight: { xs: 1.2, md: 1.2 },
                 }}
               >
-                📺 Meine Serien & Filme
+                Meine Serien & Filme
               </Typography>
               {/* Username und Display Name entfernt - redundant auf eigener Seite */}
               <Typography
@@ -878,7 +879,7 @@ export const MainPage: React.FC = () => {
                     color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
-                    Provider
+                    Top Provider
                   </Typography>
                 </CardContent>
               </Card>
@@ -1071,7 +1072,7 @@ export const MainPage: React.FC = () => {
                         color='text.secondary'
                         sx={{ fontSize: '0.7rem' }}
                       >
-                        Provider
+                        Top Provider
                       </Typography>
                     </CardContent>
                   </Card>
@@ -1200,7 +1201,7 @@ export const MainPage: React.FC = () => {
                         color='text.secondary'
                         sx={{ fontSize: '0.7rem' }}
                       >
-                        Provider
+                        Top Provider
                       </Typography>
                     </CardContent>
                   </Card>

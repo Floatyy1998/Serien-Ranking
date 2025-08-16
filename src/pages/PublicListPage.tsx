@@ -271,7 +271,7 @@ export const PublicListPage: React.FC = () => {
 
         // Lieblings-Provider für Serien ermitteln
         const seriesProviderCounts: { [key: string]: number } = {};
-        ratedSeries.forEach((series) => {
+        seriesList.forEach((series) => {
           if (series.provider?.provider) {
             series.provider.provider.forEach(
               (prov: { id: number; logo: string; name: string }) => {
@@ -313,7 +313,7 @@ export const PublicListPage: React.FC = () => {
 
         // Lieblings-Provider für Filme ermitteln
         const movieProviderCounts: { [key: string]: number } = {};
-        ratedMovies.forEach((movie) => {
+        moviesList.forEach((movie) => {
           if (movie.provider?.provider) {
             movie.provider.provider.forEach(
               (prov: { id: number; logo: string; name: string }) => {
@@ -1214,7 +1214,7 @@ export const PublicListPage: React.FC = () => {
                   color='text.secondary'
                   sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                 >
-                  Provider
+                  Top Provider
                 </Typography>
               </CardContent>
             </Card>
@@ -1403,7 +1403,7 @@ export const PublicListPage: React.FC = () => {
                       color='text.secondary'
                       sx={{ fontSize: '0.7rem' }}
                     >
-                      Provider
+                      Top Provider
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1532,7 +1532,7 @@ export const PublicListPage: React.FC = () => {
                       color='text.secondary'
                       sx={{ fontSize: '0.7rem' }}
                     >
-                      Provider
+                      Top Provider
                     </Typography>
                   </CardContent>
                 </Card>

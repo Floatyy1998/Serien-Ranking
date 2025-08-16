@@ -374,7 +374,7 @@ export const FriendsPage: React.FC = () => {
               lineHeight: { xs: 1.2, md: 1.2 },
             }}
           >
-            🫂 Freunde
+            Freunde
           </Typography>
           <Typography
             variant='body1'

@@ -24,10 +24,10 @@ import {
   providerMenuItems,
 } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListProvider';
-import { useDebounce } from '../../hooks/useDebounce';
-import { Movie } from '../../types/Movie';
-import { calculateOverallRating } from '../../lib/rating/rating';
 import { generateRecommendations } from '../../features/recommendations/recommendationEngine';
+import { useDebounce } from '../../hooks/useDebounce';
+import { calculateOverallRating } from '../../lib/rating/rating';
+import { Movie } from '../../types/Movie';
 import AddMovieDialog from '../domain/dialogs/AddMovieDialog';
 import DiscoverMoviesDialog from '../domain/dialogs/DiscoverMoviesDialog';
 import RecommendationsDialog from '../domain/dialogs/RecommendationsDialog';
@@ -222,7 +222,7 @@ export const MovieSearchFilters = ({
   return (
     <Box className='max-w-[1400px] m-auto mb-6'>
       {/* Mobile Filter Toggle Button */}
-      <Box sx={{ display: { xs: 'block', xl: 'none' }, mb: 2, px: '8px' }}>
+      <Box sx={{ display: { xs: 'block', xl: 'none' }, mb: 2 }}>
         <Button
           onClick={() => setMobileFiltersExpanded(!mobileFiltersExpanded)}
           variant='outlined'
@@ -311,7 +311,10 @@ export const MovieSearchFilters = ({
                 </Button>
               </Tooltip>
             </Box>
-            <Tooltip title='Unveröffentlichte Filme entdecken' data-tour='discover-button'>
+            <Tooltip
+              title='Unveröffentlichte Filme entdecken'
+              data-tour='discover-button'
+            >
               <Button
                 variant='outlined'
                 onClick={handleDialogDiscoverOpen}
@@ -351,7 +354,10 @@ export const MovieSearchFilters = ({
                 </Box>
               </Button>
             </Tooltip>
-            <Tooltip title='Empfehlungen anzeigen' data-tour='recommendations-button'>
+            <Tooltip
+              title='Empfehlungen anzeigen'
+              data-tour='recommendations-button'
+            >
               <Button
                 variant='outlined'
                 onClick={handleDialogRecommendationsOpen}
@@ -512,7 +518,10 @@ export const MovieSearchFilters = ({
                   Hinzufügen
                 </Button>
               </Tooltip>
-              <Tooltip title='Unveröffentlichte Filme entdecken' data-tour='discover-button'>
+              <Tooltip
+                title='Unveröffentlichte Filme entdecken'
+                data-tour='discover-button'
+              >
                 <Button
                   variant='outlined'
                   onClick={handleDialogDiscoverOpen}
@@ -523,7 +532,10 @@ export const MovieSearchFilters = ({
                 </Button>
               </Tooltip>
             </Box>
-            <Tooltip title='Empfehlungen anzeigen' data-tour='recommendations-button'>
+            <Tooltip
+              title='Empfehlungen anzeigen'
+              data-tour='recommendations-button'
+            >
               <Button
                 variant='outlined'
                 onClick={handleDialogRecommendationsOpen}
