@@ -1,5 +1,5 @@
 export const genreMenuItems = [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'Alle' },
   { value: 'Action & Adventure', label: 'Action & Adventure' },
   { value: 'Animation', label: 'Animation' },
   { value: 'Comedy', label: 'Comedy' },
@@ -36,7 +36,7 @@ export const quickFilterChips = [
 ];
 
 export const genreMenuItemsForMovies = [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'Alle' },
   { value: 'Action', label: 'Action' },
   { value: 'Adventure', label: 'Adventure' },
   { value: 'Animation', label: 'Animation' },

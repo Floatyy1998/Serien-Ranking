@@ -15,7 +15,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { allGenres } from '../../../../constants/seriesCard.constants';
+import { allGenres, genreDisplayNames } from '../../../../constants/seriesCard.constants';
 import { useAuth } from '../../../App';
 import notFound from '../../../assets/notFound.jpg';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider';
@@ -295,10 +295,11 @@ export const SeriesCard = ({
     setOpenEpisodes(false);
   };
   const shouldNumber = ![
+    genreDisplayNames['All'] ?? 'All',
     'Zuletzt Hinzugefügt',
     'Ohne Bewertung',
     'Neue Episoden',
-  ].includes(genre);
+  ].includes(genreDisplayNames[genre] ?? genre);
   // TMDB Dialog State
   const [tmdbDialogOpen, setTmdbDialogOpen] = useState(false);
   const [tmdbData, setTmdbData] = useState<any>(null);
@@ -911,6 +912,8 @@ export const SeriesCard = ({
               {currentSeries.title}
             </Typography>
           </Tooltip>
+          {/* Genre-Anzeige Beispiel */}
+          {/* <span>{genreDisplayNames[genre] ?? genre}</span> */}
         </CardContent>
       </Card>
       <SeriesDialog

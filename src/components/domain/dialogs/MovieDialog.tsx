@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { Movie } from '../../../types/Movie';
+import { genreDisplayNames } from '../../../../constants/seriesCard.constants';
 
 interface MovieDialogProps {
   open: boolean;
@@ -154,7 +155,7 @@ const MovieDialog = ({
             {movie.genre.genres.map((g) => (
               <Chip
                 key={g}
-                label={g}
+                label={genreDisplayNames[g] ?? g}
                 onClick={() => handleChipClick(g)}
                 sx={{
                   fontSize: '1rem',
@@ -212,7 +213,7 @@ const MovieDialog = ({
             <TextField
               key={g}
               id={`rating-input-${g}`}
-              label={g}
+              label={genreDisplayNames[g] ?? g}
               type='number'
               value={ratings[g] === 0 ? '' : ratings[g]}
               onChange={(e) => handleRatingChange(e, g)}
