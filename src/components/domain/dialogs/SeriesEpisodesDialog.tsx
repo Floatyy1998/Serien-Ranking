@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { Series } from '../../../types/Series';
 import { getFormattedDate, getFormattedTime } from '../../../lib/date/date.utils';
+import { colors } from '../../../theme';
 interface SeriesEpisodesDialogProps {
   open: boolean;
   onClose: () => void;
@@ -32,12 +33,12 @@ const SeriesEpisodesDialog = ({
         paper: {
           sx: {
             minHeight: '80vh',
-            background: 'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            background: colors.background.gradient.dark,
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${colors.border.light}`,
             overflow: 'hidden',
-            boxShadow: '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
-            color: 'white',
+            boxShadow: colors.shadow.card,
+            color: colors.text.primary,
           },
         }
       }}
@@ -46,10 +47,10 @@ const SeriesEpisodesDialog = ({
         sx={{
           textAlign: 'center',
           position: 'relative',
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          background: colors.overlay.dark,
           backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          borderBottom: `1px solid ${colors.border.subtle}`,
+          color: colors.text.primary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -65,7 +66,7 @@ const SeriesEpisodesDialog = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            sx={{ fontWeight: 'bold', color: colors.text.accent }}
           >
             Kommende Episoden von {series.title}
           </Typography>
@@ -78,13 +79,13 @@ const SeriesEpisodesDialog = ({
             right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
+            color: colors.text.secondary,
+            background: colors.overlay.light,
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              background: colors.overlay.medium,
+              color: colors.text.primary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -94,9 +95,9 @@ const SeriesEpisodesDialog = ({
       </DialogTitle>
       <DialogContent sx={{ 
         p: 0, 
-        background: 'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+        background: colors.background.gradient.light,
         backdropFilter: 'blur(10px)',
-        color: '#ffffff' 
+        color: colors.text.primary 
       }}>
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {Array.isArray(series.nextEpisode?.nextEpisodes) &&
@@ -105,8 +106,8 @@ const SeriesEpisodesDialog = ({
               <ListItem
                 key={`${series.id}-${episode.season}-${episode.number}-${episode.airstamp}`}
                 sx={{
-                  border: '1px solid rgba(0,254,215,0.125)',
-                  backgroundColor: 'rgba(0,0,0,0.4)',
+                  border: `1px solid var(--theme-primary)20`,
+                  backgroundColor: colors.background.card,
                   borderRadius: 2,
                   p: 3,
                   backdropFilter: 'blur(10px)',
@@ -132,7 +133,7 @@ const SeriesEpisodesDialog = ({
                   />
                   <Box
                     component='span'
-                    sx={{ fontSize: '0.8rem', color: 'gray' }}
+                    sx={{ fontSize: '0.8rem', color: colors.text.secondary }}
                   >
                     {getFormattedDate(episode.airstamp)} |{' '}
                     {getFormattedTime(episode.airstamp)}

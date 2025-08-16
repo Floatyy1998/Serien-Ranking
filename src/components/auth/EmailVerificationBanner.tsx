@@ -3,6 +3,8 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { colors, commonStyles } from '../../theme';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;
@@ -94,38 +96,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   };
 
   if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          backgroundColor: '#000',
-          color: '#00fed7',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        <div
-          style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid #00fed7',
-            borderTop: '4px solid transparent',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
-        <div>Verifizierung wird geprüft...</div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
+    return <LoadingSpinner text="Verifizierung wird geprüft..." />;
   }
 
   if (!isVerified) {
@@ -139,12 +110,10 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
             left: 0,
             right: 0,
             zIndex: 9999,
-            background: 'linear-gradient(90deg, #ff4757, #ff6b7a)',
-            color: 'white',
+            background: `linear-gradient(90deg, ${colors.status.error}, #ff6b7a)`,
+            color: colors.text.secondary,
             padding: '12px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            ...commonStyles.flexBetween,
             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
@@ -161,7 +130,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               onClick={resendVerification}
               sx={{
                 backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
+                color: colors.text.secondary,
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.3)',
                 },
@@ -175,7 +144,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               onClick={handleLogout}
               sx={{
                 borderColor: 'rgba(255,255,255,0.5)',
-                color: 'white',
+                color: colors.text.secondary,
                 '&:hover': {
                   borderColor: 'white',
                   backgroundColor: 'rgba(255,255,255,0.1)',
@@ -206,21 +175,21 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           >
             <div
               style={{
-                backgroundColor: '#1a1a1a',
+                backgroundColor: colors.background.dialog,
                 padding: '40px',
                 borderRadius: '12px',
-                border: '2px solid #00fed7',
-                boxShadow: '0 0 30px rgba(0, 254, 215, 0.3)',
+                border: `2px solid var(--theme-primary)`,
+                boxShadow: `0 0 30px rgba(0, 254, 215, 0.3)`,
                 textAlign: 'center',
                 maxWidth: '400px',
                 margin: '0 20px',
               }}
             >
               <div style={{ fontSize: '48px', marginBottom: '20px' }}>📧</div>
-              <h2 style={{ color: '#00fed7', marginBottom: '16px' }}>
+              <h2 style={{ color: 'var(--theme-primary)', marginBottom: '16px' }}>
                 Email-Verifizierung erforderlich
               </h2>
-              <p style={{ color: '#ccc', marginBottom: '24px', lineHeight: '1.5' }}>
+              <p style={{ color: colors.text.muted, marginBottom: '24px', lineHeight: '1.5' }}>
                 Um alle Funktionen nutzen zu können, müssen Sie Ihre Email-Adresse verifizieren.
                 Überprüfen Sie Ihr Postfach und klicken Sie auf den Verifizierungslink.
               </p>
@@ -229,10 +198,10 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                   variant="contained"
                   onClick={resendVerification}
                   sx={{
-                    backgroundColor: '#00fed7',
-                    color: 'black',
+                    backgroundColor: 'var(--theme-primary)',
+                    color: colors.background.default,
                     '&:hover': {
-                      backgroundColor: '#00d4b4',
+                      backgroundColor: 'var(--theme-primary-hover)',
                     },
                   }}
                 >
@@ -242,11 +211,11 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                   variant="outlined"
                   onClick={handleLogout}
                   sx={{
-                    borderColor: '#00fed7',
-                    color: '#00fed7',
+                    borderColor: 'var(--theme-primary)',
+                    color: 'var(--theme-primary)',
                     '&:hover': {
-                      borderColor: '#00d4b4',
-                      backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                      borderColor: 'var(--theme-primary-hover)',
+                      backgroundColor: colors.overlay.medium,
                     },
                   }}
                 >

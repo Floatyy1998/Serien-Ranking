@@ -34,6 +34,7 @@ import { useAuth } from '../../../App';
 import { genreIdMap } from '../../../config/menuItems';
 import { Movie } from '../../../types/Movie';
 import DiscoverMovieCard from '../movies/DiscoverMovieCard';
+import { colors } from '../../../theme';
 
 interface DiscoverMoviesDialogProps {
   open: boolean;
@@ -296,7 +297,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
             overflow: 'hidden',
             boxShadow:
               '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
-            color: 'white',
+            color: colors.text.secondary,
           },
         },
       }}
@@ -309,7 +310,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
             'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
           backdropFilter: 'blur(15px)',
           borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          color: colors.text.secondary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -344,7 +345,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
             borderRadius: '12px',
             '&:hover': {
               background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              color: colors.text.secondary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -358,7 +359,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
           background:
             'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
           backdropFilter: 'blur(10px)',
-          color: '#ffffff',
+          color: colors.text.secondary,
         }}
       >
         {/* Filter Sektion */}
@@ -399,7 +400,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                       backdropFilter: 'blur(10px)',
                       borderRadius: '12px',
                       border: '1px solid rgba(255,255,255,0.2)',
-                      color: '#ffffff',
+                      color: colors.text.secondary,
                       '& fieldset': {
                         border: 'none',
                       },
@@ -409,14 +410,14 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                       },
                       '&.Mui-focused': {
                         background: 'rgba(65,65,68,0.95)',
-                        border: '1px solid #00fed7',
-                        boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                        border: `1px solid var(--theme-primary)`,
+                        boxShadow: `0 0 20px var(--theme-primary)4D`,
                       },
                     },
                     '& .MuiInputLabel-root': {
                       color: 'rgba(255,255,255,0.7)',
                       '&.Mui-focused': {
-                        color: '#00fed7',
+                        color: 'var(--theme-primary)',
                       },
                     },
                     '& .MuiSelect-icon': {
@@ -507,7 +508,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                       backdropFilter: 'blur(10px)',
                       borderRadius: '12px',
                       border: '1px solid rgba(255,255,255,0.2)',
-                      color: '#ffffff',
+                      color: colors.text.secondary,
                       '& fieldset': {
                         border: 'none',
                       },
@@ -517,14 +518,14 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                       },
                       '&.Mui-focused': {
                         background: 'rgba(65,65,68,0.95)',
-                        border: '1px solid #00fed7',
-                        boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                        border: `1px solid var(--theme-primary)`,
+                        boxShadow: `0 0 20px var(--theme-primary)4D`,
                       },
                     },
                     '& .MuiInputLabel-root': {
                       color: 'rgba(255,255,255,0.7)',
                       '&.Mui-focused': {
-                        color: '#00fed7',
+                        color: 'var(--theme-primary)',
                       },
                     },
                     '& .MuiSelect-icon': {
@@ -576,7 +577,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                       backdropFilter: 'blur(10px)',
                       borderRadius: '12px',
                       border: '1px solid rgba(255,255,255,0.2)',
-                      color: '#ffffff',
+                      color: colors.text.secondary,
                       '& fieldset': {
                         border: 'none',
                       },
@@ -586,14 +587,14 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                       },
                       '&.Mui-focused': {
                         background: 'rgba(65,65,68,0.95)',
-                        border: '1px solid #00fed7',
-                        boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                        border: `1px solid var(--theme-primary)`,
+                        boxShadow: `0 0 20px var(--theme-primary)4D`,
                       },
                     },
                     '& .MuiInputLabel-root': {
                       color: 'rgba(255,255,255,0.7)',
                       '&.Mui-focused': {
-                        color: '#00fed7',
+                        color: 'var(--theme-primary)',
                       },
                     },
                     '& .MuiSelect-icon': {
@@ -639,9 +640,9 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                 sx={{
                   px: 4,
                   background:
-                    'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+                    `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
                   borderRadius: '12px',
-                  color: '#000',
+                  color: colors.background.default,
                   fontWeight: 600,
                   textTransform: 'none',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -649,9 +650,9 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     background:
-                      'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                      `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary-hover) 100%)`,
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                    boxShadow: `0 8px 25px var(--theme-primary)66`,
                   },
                 }}
               >
@@ -666,7 +667,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                   background:
                     'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
                   borderRadius: '12px',
-                  color: '#ffffff',
+                  color: colors.text.secondary,
                   fontWeight: 500,
                   textTransform: 'none',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -740,8 +741,8 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
             sx={{
               p: 4,
               textAlign: 'center',
-              backgroundColor: '#2a2a2a',
-              border: '1px solid #444',
+              backgroundColor: colors.background.surface,
+              border: `1px solid ${colors.border.default}`,
             }}
           >
             <Typography variant='h6' color='text.secondary'>
@@ -790,7 +791,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
               sx={{
                 px: 2,
                 py: 1,
-                backgroundColor: '#333',
+                backgroundColor: colors.background.surface,
                 borderRadius: 1,
               }}
             >

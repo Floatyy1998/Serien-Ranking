@@ -280,12 +280,12 @@ export const SearchFilters = ({
             justifyContent: 'space-between',
             height: '48px',
             fontSize: '0.875rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            borderColor: 'rgba(255, 255, 255, 0.2)',
-            color: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'var(--theme-surface)',
+            borderColor: 'var(--theme-primary)',
+            color: 'var(--theme-text-secondary)',
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(0, 254, 215, 0.5)',
+              backgroundColor: 'color-mix(in srgb, var(--theme-primary) 10%, var(--theme-surface))',
+              borderColor: 'var(--theme-primary)',
             },
           }}
         >
@@ -595,9 +595,10 @@ export const SearchFilters = ({
         <Box
           sx={{
             p: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+            backgroundColor: 'color-mix(in srgb, var(--theme-surface) 50%, transparent)',
             borderRadius: 2,
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '1px solid var(--theme-primary)',
+            borderColor: 'color-mix(in srgb, var(--theme-primary) 30%, transparent)',
           }}
         >
           {/* Suchfeld */}

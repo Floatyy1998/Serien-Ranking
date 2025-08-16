@@ -39,6 +39,7 @@ import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import BadgeButton from '../features/badges/BadgeButton';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
+import { colors } from '../theme';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -321,8 +322,10 @@ export const MainPage: React.FC = () => {
       {(isOffline || isStale) && (
         <Box
           sx={{
-            backgroundColor: isOffline ? '#ff6b6b' : '#4ecdc4',
-            color: 'white',
+            backgroundColor: isOffline
+              ? colors.status.error
+              : colors.status.success,
+            color: colors.text.secondary,
             padding: 1,
             borderRadius: 1,
             marginBottom: 2,
@@ -349,16 +352,15 @@ export const MainPage: React.FC = () => {
             position: 'sticky',
             top: 0,
             zIndex: 100,
-            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
-            p: { xs: 1, sm: 1.5, md: 3 },
-            color: 'white',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '0 0 8px 8px',
+            background: 'var(--theme-background)',
+            backgroundColor: 'var(--theme-background)',
+            backdropFilter: 'blur(20px)',
+            p: { xs: 2, sm: 2, md: 3 },
+            color: colors.text.secondary,
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
             flexDirection: { xs: 'column', md: 'row' },
             gap: { xs: 1, md: 0 },
-            minHeight: { xs: 'auto', sm: 'auto', md: '120px' },
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            minHeight: { xs: 'auto', sm: 'auto', md: '100px' },
           }}
         >
           <Box
@@ -379,13 +381,11 @@ export const MainPage: React.FC = () => {
                 width: { xs: 50, sm: 50, md: 80 },
                 height: { xs: 50, sm: 50, md: 80 },
                 cursor: 'pointer',
-                border: { xs: '2px solid #00fed7', md: '3px solid #00fed7' },
-                boxShadow: '0 0 10px rgba(0, 254, 215, 0.3)',
+                border: '2px solid var(--theme-primary)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'scale(1.05)',
-                  boxShadow: '0 0 20px rgba(0, 254, 215, 0.5)',
-                  borderColor: '#00c5a3',
+                  borderColor: 'var(--theme-primary-hover)',
                 },
               }}
             >
@@ -453,8 +453,8 @@ export const MainPage: React.FC = () => {
               invisible={totalUnreadActivities + friendRequests.length === 0}
               sx={{
                 '& .MuiBadge-badge': {
-                  backgroundColor: '#ff4444',
-                  color: 'white',
+                  backgroundColor: colors.status.error,
+                  color: colors.text.secondary,
                   fontWeight: 'bold',
                   minWidth: '20px',
                   height: '20px',
@@ -470,14 +470,14 @@ export const MainPage: React.FC = () => {
                 startIcon={<People />}
                 className='main-header-button'
                 sx={{
-                  background: 'linear-gradient(45deg, #00fed7, #00c5a3)',
-                  color: '#000',
+                  background: `var(--theme-primary)`,
+                  color: colors.background.default,
                   fontWeight: 'bold',
                   borderRadius: 2,
-                  boxShadow: '0 4px 12px rgba(0, 254, 215, 0.3)',
+                  boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                   '&:hover': {
-                    background: 'linear-gradient(45deg, #00c5a3, #00fed7)',
-                    boxShadow: '0 6px 16px rgba(0, 254, 215, 0.4)',
+                    background: 'var(--theme-primary-hover)',
+                    boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                     transform: 'translateY(-2px)',
                   },
                   fontSize: { xs: '0.75rem', md: '0.875rem' },
@@ -493,9 +493,7 @@ export const MainPage: React.FC = () => {
         </Box>
 
         {/* Mobile Stats Toggle Button */}
-        <Box
-          sx={{ display: { xs: 'block', sm: 'none' }, mt: 2, px: 2, mb: 2 }}
-        >
+        <Box sx={{ display: { xs: 'block', sm: 'none' }, mt: 2, px: 2, mb: 2 }}>
           <Button
             onClick={() => setMobileStatsExpanded(!mobileStatsExpanded)}
             variant='outlined'
@@ -507,12 +505,13 @@ export const MainPage: React.FC = () => {
               justifyContent: 'space-between',
               height: '48px',
               fontSize: '0.875rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              borderColor: 'rgba(255, 255, 255, 0.2)',
-              color: 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: 'var(--theme-surface)',
+              borderColor: 'var(--theme-primary)',
+              color: 'var(--theme-text-secondary)',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderColor: 'rgba(0, 254, 215, 0.5)',
+                backgroundColor:
+                  'color-mix(in srgb, var(--theme-primary) 10%, var(--theme-surface))',
+                borderColor: 'var(--theme-primary)',
               },
             }}
           >
@@ -540,15 +539,14 @@ export const MainPage: React.FC = () => {
                 <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
-                    color='primary'
                     gutterBottom
+                    color='info.main'
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {seriesStats.count}
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Serien
@@ -572,6 +570,7 @@ export const MainPage: React.FC = () => {
                     <Typography
                       variant='h4'
                       gutterBottom
+                      color='warning.main'
                       sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                     >
                       {seriesStats.totalWatchedEpisodes}
@@ -579,7 +578,6 @@ export const MainPage: React.FC = () => {
                   </Box>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Episoden
@@ -603,6 +601,7 @@ export const MainPage: React.FC = () => {
                     <Typography
                       variant='h4'
                       gutterBottom
+                      color='secondary'
                       sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                     >
                       {seriesStats.averageRating > 0
@@ -612,7 +611,6 @@ export const MainPage: React.FC = () => {
                   </Box>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Ø Rating
@@ -623,7 +621,7 @@ export const MainPage: React.FC = () => {
                 <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
-                    color='secondary'
+                    color='warning.main'
                     gutterBottom
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
@@ -670,7 +668,6 @@ export const MainPage: React.FC = () => {
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Watchzeit
@@ -694,7 +691,6 @@ export const MainPage: React.FC = () => {
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Top Genre
@@ -713,7 +709,6 @@ export const MainPage: React.FC = () => {
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Top Provider
@@ -736,7 +731,6 @@ export const MainPage: React.FC = () => {
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Filme
@@ -767,7 +761,6 @@ export const MainPage: React.FC = () => {
                   </Box>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Gesehen
@@ -791,6 +784,7 @@ export const MainPage: React.FC = () => {
                     <Typography
                       variant='h4'
                       gutterBottom
+                      color='secondary'
                       sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                     >
                       {movieStats.averageRating > 0
@@ -800,7 +794,6 @@ export const MainPage: React.FC = () => {
                   </Box>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Ø Rating
@@ -811,7 +804,6 @@ export const MainPage: React.FC = () => {
                 <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
-                    color='primary'
                     gutterBottom
                     sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
@@ -819,7 +811,6 @@ export const MainPage: React.FC = () => {
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Unveröffentlicht
@@ -843,7 +834,6 @@ export const MainPage: React.FC = () => {
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Top Genre
@@ -862,7 +852,6 @@ export const MainPage: React.FC = () => {
                   </Typography>
                   <Typography
                     variant='body2'
-                    color='text.secondary'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Top Provider
@@ -886,9 +875,12 @@ export const MainPage: React.FC = () => {
                 gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: 1.5,
                 mb: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                backgroundColor:
+                  'color-mix(in srgb, var(--theme-surface) 50%, transparent)',
                 borderRadius: 2,
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid var(--theme-primary)',
+                borderColor:
+                  'color-mix(in srgb, var(--theme-primary) 30%, transparent)',
                 p: 2,
               }}
             >
@@ -899,17 +891,13 @@ export const MainPage: React.FC = () => {
                     <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                       <Typography
                         variant='h5'
-                        color='primary'
                         gutterBottom
+                        color='info.main'
                         sx={{ fontSize: '1.25rem' }}
                       >
                         {seriesStats.count}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Serien
                       </Typography>
                     </CardContent>
@@ -919,15 +907,12 @@ export const MainPage: React.FC = () => {
                       <Typography
                         variant='h5'
                         gutterBottom
+                        color='warning.main'
                         sx={{ fontSize: '1.25rem' }}
                       >
                         {seriesStats.totalWatchedEpisodes}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Episoden
                       </Typography>
                     </CardContent>
@@ -936,19 +921,15 @@ export const MainPage: React.FC = () => {
                     <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                       <Typography
                         variant='h5'
-                        color='secondary'
                         gutterBottom
+                        color='secondary'
                         sx={{ fontSize: '1.25rem' }}
                       >
                         {seriesStats.averageRating > 0
                           ? seriesStats.averageRating.toFixed(2)
                           : '0.00'}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Ø Rating
                       </Typography>
                     </CardContent>
@@ -957,8 +938,8 @@ export const MainPage: React.FC = () => {
                     <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                       <Typography
                         variant='h5'
-                        color='info.main'
                         gutterBottom
+                        color='warning.main'
                         sx={{ fontSize: '1.25rem' }}
                       >
                         {(() => {
@@ -1004,12 +985,28 @@ export const MainPage: React.FC = () => {
                           }
                         })()}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Watchzeit
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h6'
+                        color='info.main'
+                        gutterBottom
+                        sx={{
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {seriesStats.favoriteGenre}
+                      </Typography>
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
+                        Top Genre
                       </Typography>
                     </CardContent>
                   </Card>
@@ -1026,37 +1023,9 @@ export const MainPage: React.FC = () => {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {seriesStats.favoriteGenre}
-                      </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
-                        Top Genre
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
-                      <Typography
-                        variant='h6'
-                        color='success.main'
-                        gutterBottom
-                        sx={{
-                          fontSize: '0.9rem',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
                         {seriesStats.favoriteProvider}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Top Provider
                       </Typography>
                     </CardContent>
@@ -1075,11 +1044,7 @@ export const MainPage: React.FC = () => {
                       >
                         {movieStats.count}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Filme
                       </Typography>
                     </CardContent>
@@ -1093,11 +1058,7 @@ export const MainPage: React.FC = () => {
                       >
                         {movieStats.watchedCount}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Gesehen
                       </Typography>
                     </CardContent>
@@ -1106,19 +1067,15 @@ export const MainPage: React.FC = () => {
                     <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                       <Typography
                         variant='h5'
-                        color='primary'
                         gutterBottom
+                        color='secondary'
                         sx={{ fontSize: '1.25rem' }}
                       >
                         {movieStats.averageRating > 0
                           ? movieStats.averageRating.toFixed(2)
                           : '0.00'}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Ø Rating
                       </Typography>
                     </CardContent>
@@ -1127,17 +1084,12 @@ export const MainPage: React.FC = () => {
                     <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
                       <Typography
                         variant='h5'
-                        color='error.main'
                         gutterBottom
                         sx={{ fontSize: '1.25rem' }}
                       >
                         {movieStats.unreleasedCount}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Unveröffentlicht
                       </Typography>
                     </CardContent>
@@ -1157,11 +1109,7 @@ export const MainPage: React.FC = () => {
                       >
                         {movieStats.favoriteGenre}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Top Genre
                       </Typography>
                     </CardContent>
@@ -1181,11 +1129,7 @@ export const MainPage: React.FC = () => {
                       >
                         {movieStats.favoriteProvider}
                       </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{ fontSize: '0.7rem' }}
-                      >
+                      <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Top Provider
                       </Typography>
                     </CardContent>
@@ -1200,8 +1144,7 @@ export const MainPage: React.FC = () => {
         <Box
           sx={{
             height: '1px',
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%)',
+            background: `linear-gradient(90deg, transparent 0%, ${colors.overlay.light} 50%, transparent 100%)`,
             mx: { xs: 3, md: 5 },
             mt: { xs: 0, md: 4 },
             mb: { xs: 0, md: 2 },
@@ -1210,7 +1153,14 @@ export const MainPage: React.FC = () => {
         />
 
         {/* Filter oberhalb der Tabs */}
-        <Box sx={{ mb: { xs: 2, md: 3 }, px: { xs: 2, md: 0 }, mt: { xs: 0, md: 0 } }} data-tour='search-filters'>
+        <Box
+          sx={{
+            mb: { xs: 2, md: 3 },
+            px: { xs: 2, md: 0 },
+            mt: { xs: 0, md: 0 },
+          }}
+          data-tour='search-filters'
+        >
           {tabValue === 0 ? (
             <SearchFilters
               onSearchChange={handleSearchChange}
@@ -1231,8 +1181,7 @@ export const MainPage: React.FC = () => {
         <Box
           sx={{
             height: '1px',
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%)',
+            background: `linear-gradient(90deg, transparent 0%, ${colors.overlay.light} 50%, transparent 100%)`,
             mx: { xs: 3, md: 5 },
             mt: { xs: 0, md: 0 },
             mb: { xs: 2, md: 2 },

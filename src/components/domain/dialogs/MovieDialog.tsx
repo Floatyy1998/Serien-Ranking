@@ -14,6 +14,7 @@ import {
 import React from 'react';
 import { genreDisplayNames } from '../../../../constants/seriesCard.constants';
 import { Movie } from '../../../types/Movie';
+import { colors } from '../../../theme';
 
 interface MovieDialogProps {
   open: boolean;
@@ -65,14 +66,12 @@ const MovieDialog = ({
       slotProps={{
         paper: {
           sx: {
-            background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            background: colors.background.gradient.dark,
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${colors.border.light}`,
             overflow: 'hidden',
-            boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(168, 85, 247, 0.2), 0 0 60px rgba(168, 85, 247, 0.1)',
-            color: '#ffffff',
+            boxShadow: colors.shadow.card,
+            color: colors.text.primary,
           },
         },
       }}
@@ -84,11 +83,10 @@ const MovieDialog = ({
         sx={{
           textAlign: 'center',
           position: 'relative',
-          background:
-            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          background: colors.overlay.dark,
           backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          borderBottom: `1px solid ${colors.border.subtle}`,
+          color: colors.text.primary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -104,7 +102,7 @@ const MovieDialog = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            sx={{ fontWeight: 'bold', color: colors.text.accent }}
           >
             {movie.title}
           </Typography>
@@ -117,13 +115,13 @@ const MovieDialog = ({
             right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
+            color: colors.text.secondary,
+            background: colors.overlay.light,
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              background: colors.overlay.medium,
+              color: colors.text.primary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -134,10 +132,9 @@ const MovieDialog = ({
       <DialogContent
         sx={{
           p: 0,
-          background:
-            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+          background: colors.background.gradient.light,
           backdropFilter: 'blur(10px)',
-          color: '#ffffff',
+          color: colors.text.primary,
         }}
       >
         <Box sx={{ p: 3 }}>
@@ -146,7 +143,7 @@ const MovieDialog = ({
               fontSize: '1.2rem',
               fontWeight: 600,
               mb: 2,
-              color: 'rgba(255,255,255,0.9)',
+              color: colors.text.primary,
             }}
           >
             Genres:
@@ -160,18 +157,16 @@ const MovieDialog = ({
                 sx={{
                   fontSize: '1rem',
                   borderRadius: '12px',
-                  background:
-                    'linear-gradient(135deg, rgba(0, 254, 215, 0.2) 0%, rgba(0, 212, 170, 0.15) 100%)',
-                  border: '1px solid rgba(0, 254, 215, 0.3)',
-                  color: '#ffffff',
+                  background: colors.button.secondary.gradient,
+                  border: `1px solid var(--theme-primary)30`,
+                  color: colors.text.primary,
                   backdropFilter: 'blur(10px)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background:
-                      'linear-gradient(135deg, rgba(0, 254, 215, 0.3) 0%, rgba(0, 212, 170, 0.25) 100%)',
-                    border: '1px solid rgba(0, 254, 215, 0.4)',
+                    background: colors.button.secondary.gradientHover,
+                    border: `1px solid var(--theme-primary)40`,
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(0, 254, 215, 0.3)',
+                    boxShadow: colors.shadow.hover,
                   },
                 }}
               />
@@ -183,7 +178,7 @@ const MovieDialog = ({
               fontWeight: 600,
               mt: 3,
               mb: 2,
-              color: 'rgba(255,255,255,0.9)',
+              color: colors.text.primary,
             }}
           >
             Bewertungen:
@@ -192,15 +187,15 @@ const MovieDialog = ({
             sx={{
               p: 2,
               mb: 2,
-              backgroundColor: 'rgba(0, 254, 215, 0.05)',
-              border: '1px solid rgba(0, 254, 215, 0.2)',
+              backgroundColor: `var(--theme-primary)05`,
+              border: `1px solid var(--theme-primary)20`,
               borderRadius: '8px',
             }}
           >
             <Typography
               sx={{
                 fontSize: '0.85rem',
-                color: 'rgba(255,255,255,0.7)',
+                color: colors.text.secondary,
                 lineHeight: 1.4,
               }}
             >
@@ -231,39 +226,39 @@ const MovieDialog = ({
               sx={{
                 backgroundColor: 'transparent',
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(45,45,48,0.3)',
+                  backgroundColor: colors.background.card,
                   backdropFilter: 'blur(10px)',
-                  color: '#ffffff',
+                  color: colors.text.primary,
                   borderRadius: '12px !important',
                   transition: 'all 0.3s ease',
                   '& fieldset': {
-                    borderColor: 'rgba(255,255,255,0.2)',
+                    borderColor: colors.border.default,
                     borderRadius: '12px !important',
                   },
                   '&:hover': {
-                    backgroundColor: 'rgba(55,55,58,0.4)',
+                    backgroundColor: colors.background.cardHover,
                     '& fieldset': {
-                      borderColor: 'rgba(255,255,255,0.4)',
+                      borderColor: colors.border.light,
                     },
                   },
                   '&.Mui-focused': {
-                    backgroundColor: 'rgba(65,65,68,0.5)',
+                    backgroundColor: colors.background.cardFocused,
                     '& fieldset': {
-                      borderColor: '#00fed7',
-                      boxShadow: '0 0 15px rgba(0, 254, 215, 0.3)',
+                      borderColor: 'var(--theme-primary)',
+                      boxShadow: colors.shadow.focus,
                     },
                   },
                 },
                 '& .MuiInputLabel-root': {
-                  color: 'rgba(255,255,255,0.7)',
+                  color: colors.text.secondary,
                   '&.Mui-focused': {
-                    color: '#00fed7',
+                    color: 'var(--theme-primary)',
                   },
                 },
                 '& .MuiOutlinedInput-input': {
-                  color: '#ffffff',
+                  color: colors.text.primary,
                   '&::placeholder': {
-                    color: 'rgba(255,255,255,0.4)',
+                    color: colors.text.placeholder,
                     opacity: 1,
                   },
                 },
@@ -278,9 +273,8 @@ const MovieDialog = ({
             display: 'flex',
             justifyContent: 'center',
             padding: '24px',
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            background:
-              'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+            borderTop: `1px solid ${colors.border.light}`,
+            background: colors.background.gradient.dark,
             backdropFilter: 'blur(10px)',
           }}
         >
@@ -290,19 +284,19 @@ const MovieDialog = ({
             fullWidth
             sx={{
               maxWidth: 280,
-              background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+              background: colors.button.primary.gradient,
               borderRadius: '12px',
               padding: '12px 24px',
-              color: '#000',
+              color: colors.text.primary,
               fontWeight: 600,
               textTransform: 'none',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: `1px solid ${colors.border.light}`,
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                background: colors.button.primary.gradientHover,
                 transform: 'translateY(-2px)',
-                boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                boxShadow: colors.shadow.buttonHover,
               },
             }}
           >

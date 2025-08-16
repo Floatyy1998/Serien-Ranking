@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from '@mui/material';
 import React from 'react';
+import { colors } from '../../theme';
 
 interface QuickFilterChipsProps {
   activeFilter: string;
@@ -41,15 +42,15 @@ export const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
         mb: 0,
         px: 2,
         py: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+        backgroundColor: colors.overlay.light,
         borderRadius: '12px',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: `1px solid ${colors.overlay.white}`,
       }}
     >
       <Typography
         variant='caption'
         sx={{
-          color: 'rgba(255, 255, 255, 0.6)',
+          color: colors.text.muted,
           fontSize: '0.75rem',
           fontWeight: 500,
           minWidth: 'fit-content',
@@ -75,18 +76,18 @@ export const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
               textTransform: 'none',
               fontWeight: isActive ? 600 : 500,
               backgroundColor: isActive
-                ? 'rgba(0, 254, 215, 0.2)'
-                : 'rgba(255, 255, 255, 0.03)',
-              color: isActive ? '#00fed7' : 'rgba(255, 255, 255, 0.8)',
+                ? colors.overlay.medium
+                : colors.overlay.light,
+              color: isActive ? 'var(--theme-primary)' : colors.text.secondary,
               border: isActive
-                ? '1px solid rgba(0, 254, 215, 0.4)'
-                : '1px solid rgba(255, 255, 255, 0.1)',
+                ? `1px solid ${colors.border.primary}`
+                : `1px solid ${colors.overlay.white}`,
               '&:hover': {
                 backgroundColor: isActive
-                  ? 'rgba(0, 254, 215, 0.3)'
-                  : 'rgba(0, 254, 215, 0.08)',
-                color: '#00fed7',
-                borderColor: 'rgba(0, 254, 215, 0.4)',
+                  ? colors.overlay.medium
+                  : colors.overlay.medium,
+                color: 'var(--theme-primary)',
+                borderColor: colors.border.primary,
                 transform: 'translateY(-1px)',
               },
               transition: 'all 0.2s ease',
@@ -131,18 +132,18 @@ export const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
                 fontWeight: isActive ? 600 : 500,
                 flex: '0 0 auto',
                 backgroundColor: isActive
-                  ? 'rgba(0, 254, 215, 0.2)'
-                  : 'rgba(255, 255, 255, 0.05)',
+                  ? colors.overlay.medium
+                  : colors.overlay.light,
                 borderColor: isActive
-                  ? 'rgba(0, 254, 215, 0.5)'
-                  : 'rgba(255, 255, 255, 0.2)',
-                color: isActive ? '#00fed7' : 'rgba(255, 255, 255, 0.8)',
+                  ? colors.border.primary
+                  : colors.overlay.white,
+                color: isActive ? 'var(--theme-primary)' : colors.text.secondary,
                 '&:hover': {
                   backgroundColor: isActive
-                    ? 'rgba(0, 254, 215, 0.3)'
-                    : 'rgba(255, 255, 255, 0.1)',
-                  borderColor: 'rgba(0, 254, 215, 0.7)',
-                  color: '#00fed7',
+                    ? colors.overlay.medium
+                    : colors.overlay.medium,
+                  borderColor: colors.border.primary,
+                  color: 'var(--theme-primary)',
                 },
               }}
             >

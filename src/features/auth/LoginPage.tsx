@@ -4,6 +4,7 @@ import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { colors } from '../../theme';
 import { initFirebase } from '../../firebase/initFirebase';
 import { AuthLayout } from './Authlayout';
 const LoginPage = () => {
@@ -73,22 +74,61 @@ const LoginPage = () => {
           onClick={handleLogin}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className='w-full bg-[#00fed7] text-black py-2 rounded-lg font-semibold hover:bg-[#00fed7]/90 transition-colors'
+          style={{
+            width: '100%',
+            backgroundColor: 'var(--theme-primary)',
+            color: colors.background.default,
+            padding: '8px 0',
+            borderRadius: '8px',
+            fontWeight: '600',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--theme-primary-hover)';
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--theme-primary)';
+          }}
         >
           Einloggen
         </motion.button>
       </form>
-      <p className='mt-4 text-center text-gray-400'>
+      <p style={{ 
+        marginTop: '16px', 
+        textAlign: 'center', 
+        color: colors.text.muted 
+      }}>
         Noch kein Konto?{' '}
-        <Link to='/register' className='text-[#00fed7] hover:underline'>
+        <Link 
+          to='/register' 
+          style={{ 
+            color: 'var(--theme-primary)', 
+            textDecoration: 'none' 
+          }}
+          onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+          onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
+        >
           Registrieren
         </Link>
       </p>
-      <p className='mt-2 text-center'>
+      <p style={{ 
+        marginTop: '8px', 
+        textAlign: 'center' 
+      }}>
         <button
           type='button'
           onClick={handleForgotPassword}
-          className='text-[#00fed7] hover:underline'
+          style={{ 
+            color: 'var(--theme-primary)', 
+            background: 'none', 
+            border: 'none', 
+            cursor: 'pointer',
+            textDecoration: 'none'
+          }}
+          onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+          onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
         >
           Passwort vergessen?
         </button>

@@ -67,7 +67,7 @@ const StartPage = () => {
           >
             <Link
               to='/login'
-              className='block bg-[#00fed7] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[#00fed7]/90 transition-colors'
+              className='block bg-[var(--theme-primary)] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[var(--theme-primary-hover)] transition-colors'
               aria-label='Login'
             >
               LOGIN
@@ -83,7 +83,7 @@ const StartPage = () => {
           >
             <Link
               to='/register'
-              className='block border-2 border-[#00fed7] text-[#00fed7] px-8 py-3 rounded-lg font-semibold hover:bg-[#00fed7]/10 transition-colors'
+              className='block border-2 border-[var(--theme-primary)] text-[var(--theme-primary)] px-8 py-3 rounded-lg font-semibold hover:bg-[var(--theme-primary)]/10 transition-colors'
               aria-label='Registrieren'
             >
               REGISTRIEREN
@@ -99,7 +99,7 @@ const StartPage = () => {
           animate={{
             opacity: 1,
           }}
-          className='text-[#00fed7] text-xl font-semibold mb-8 text-center'
+          className='text-[var(--theme-primary)] text-xl font-semibold mb-8 text-center'
         >
           Unsere Funktionen
         </motion.h2>
@@ -111,19 +111,19 @@ const StartPage = () => {
         >
           {[
             {
-              icon: <Star className='w-8 h-8 text-[#00fed7] mx-auto mb-4' />,
+              icon: <Star className='w-8 h-8 text-[var(--theme-primary)] mx-auto mb-4' />,
               title: 'Bewertungen',
               description:
                 'Bewerte deine Lieblingsserien und -filme und teile deine Meinung.',
             },
             {
-              icon: <Tv className='w-8 h-8 text-[#00fed7] mx-auto mb-4' />,
+              icon: <Tv className='w-8 h-8 text-[var(--theme-primary)] mx-auto mb-4' />,
               title: 'Entdeckungen',
               description:
                 'Finde neue Serien und Filme, die perfekt zu deinem Geschmack passen.',
             },
             {
-              icon: <List className='w-8 h-8 text-[#00fed7] mx-auto mb-4' />,
+              icon: <List className='w-8 h-8 text-[var(--theme-primary)] mx-auto mb-4' />,
               title: 'Watchlist',
               description:
                 'Verwalte deine persönliche Watchlist und behalte den Überblick.',
@@ -135,7 +135,7 @@ const StartPage = () => {
               className='bg-gray-900/30 p-6 rounded-xl text-center hover:bg-gray-900/40 transition-colors'
             >
               {feature.icon}
-              <h3 className='text-[#00fed7] font-medium mb-2'>
+              <h3 className='text-[var(--theme-primary)] font-medium mb-2'>
                 {feature.title}
               </h3>
               <p className='text-gray-400'>{feature.description}</p>

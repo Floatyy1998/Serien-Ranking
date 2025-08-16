@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../App';
+import { colors } from '../../../theme';
 import { useMovieList } from '../../../contexts/MovieListProvider';
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
 import { translateJob } from '../../../services/tmdbJobTranslations';
@@ -543,8 +544,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     >
       {loading ? (
         <DialogContent sx={{ textAlign: 'center', py: 8 }}>
-          <CircularProgress sx={{ color: '#00fed7', mb: 2 }} />
-          <Typography variant='h6' color='#00fed7'>
+          <CircularProgress sx={{ color: 'var(--theme-primary)', mb: 2 }} />
+          <Typography variant='h6' color={'var(--theme-primary)'}>
             Lade Daten...
           </Typography>
         </DialogContent>
@@ -587,8 +588,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 label={type === 'tv' ? '📺 Serie' : '🎬 Film'}
                 size='small'
                 sx={{
-                  backgroundColor: '#00fed7',
-                  color: '#000',
+                  backgroundColor: 'var(--theme-primary)',
+                  color: colors.text.secondary,
                   fontWeight: 'bold',
                 }}
               />
@@ -625,11 +626,11 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               '& .MuiTab-root': {
                 color: 'rgba(255,255,255,0.7)',
                 '&.Mui-selected': {
-                  color: '#00fed7',
+                  color: 'var(--theme-primary)',
                 },
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#00fed7',
+                backgroundColor: 'var(--theme-primary)',
               },
             }}
           >
@@ -675,7 +676,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       <Typography
                         variant='h4'
                         gutterBottom
-                        sx={{ color: '#00fed7' }}
+                        sx={{ color: 'var(--theme-primary)' }}
                       >
                         Beschreibung
                       </Typography>
@@ -706,8 +707,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             <span
                               key={genre.id}
                               style={{
-                                background: '#00fed7',
-                                color: '#000',
+                                background: 'var(--theme-primary)',
+                                color: colors.text.secondary,
                                 borderRadius: 6,
                                 padding: '2px 8px',
                                 marginRight: 4,
@@ -768,7 +769,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       maxWidth: 400,
                       padding: '8px 12px',
                       borderRadius: 8,
-                      border: '1px solid #00fed7',
+                      border: `1px solid var(--theme-primary)`,
                       outline: 'none',
                       fontSize: 16,
                       background: '#181818',
@@ -780,13 +781,13 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 <Typography
                   variant='h4'
                   gutterBottom
-                  sx={{ color: '#00fed7', mb: 3 }}
+                  sx={{ color: 'var(--theme-primary)', mb: 3 }}
                 >
                   Cast & Crew
                 </Typography>
                 {castLoading ? (
                   <Box textAlign='center' py={3}>
-                    <CircularProgress sx={{ color: '#00fed7', mb: 2 }} />
+                    <CircularProgress sx={{ color: 'var(--theme-primary)', mb: 2 }} />
                     <Typography variant='body1'>Lade Cast-Daten...</Typography>
                   </Box>
                 ) : (
@@ -912,7 +913,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           sx={{
                                             width: 80,
                                             height: 80,
-                                            border: '2px solid #00fed7',
+                                            border: '2px solid var(--theme-primary)',
                                           }}
                                         />
                                       </Box>
@@ -956,7 +957,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                       <Typography
                                         variant='body2'
                                         sx={{
-                                          color: '#00fed7',
+                                          color: 'var(--theme-primary)',
                                           fontWeight: 'bold',
                                           mb: 0.5,
                                           fontSize: '0.75rem',
@@ -1090,7 +1091,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   '&:hover': {
                                     background: 'rgba(255,255,255,0.1)',
                                     transform: 'translateY(-5px)',
-                                    borderColor: '#00fed7',
+                                    borderColor: 'var(--theme-primary)',
                                   },
                                 }}
                               >
@@ -1106,7 +1107,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                     height: 80,
                                     mx: 'auto',
                                     mb: 2,
-                                    border: '2px solid #00fed7',
+                                    border: '2px solid var(--theme-primary)',
                                   }}
                                 />
                                 <Typography
@@ -1121,7 +1122,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 </Typography>
                                 <Typography
                                   variant='body2'
-                                  sx={{ color: '#00fed7', fontStyle: 'italic' }}
+                                  sx={{ color: 'var(--theme-primary)', fontStyle: 'italic' }}
                                 >
                                   {Array.isArray(actor.roles) &&
                                   actor.roles.length > 0 &&
@@ -1334,13 +1335,13 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 <Typography
                   variant='h4'
                   gutterBottom
-                  sx={{ color: '#00fed7', mb: 3 }}
+                  sx={{ color: 'var(--theme-primary)', mb: 3 }}
                 >
                   Videos & Trailer
                 </Typography>
                 {videosLoading ? (
                   <Box textAlign='center' py={3}>
-                    <CircularProgress sx={{ color: '#00fed7', mb: 2 }} />
+                    <CircularProgress sx={{ color: 'var(--theme-primary)', mb: 2 }} />
                     <Typography variant='body1'>Lade Videos...</Typography>
                   </Box>
                 ) : videosData.length > 0 ? (
@@ -1429,7 +1430,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               sx={{
                                 background:
                                   video.type === 'Trailer'
-                                    ? 'linear-gradient(135deg, #00fed7, #00d4b8)'
+                                    ? 'linear-gradient(135deg, var(--theme-primary), var(--theme-primary-hover))'
                                     : 'rgba(255,255,255,0.2)',
                                 color:
                                   video.type === 'Trailer' ? '#000' : '#fff',
@@ -1497,8 +1498,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 }
                 disabled={adding || !onAdd}
                 sx={{
-                  backgroundColor: '#00fed7',
-                  color: '#000',
+                  backgroundColor: 'var(--theme-primary)',
+                  color: colors.text.secondary,
                   fontWeight: 'bold',
                   '&:hover': {
                     backgroundColor: '#00d4b8',
@@ -1561,7 +1562,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             <CircularProgress
               size={60}
               sx={{
-                color: '#00fed7',
+                color: 'var(--theme-primary)',
                 mb: 3,
                 '& .MuiCircularProgress-circle': {
                   strokeWidth: 3,
@@ -1571,7 +1572,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             <Typography
               variant='h5'
               sx={{
-                color: '#00fed7',
+                color: 'var(--theme-primary)',
                 fontWeight: 'bold',
                 textShadow: '0 2px 10px rgba(0,254,215,0.5)',
               }}
@@ -1671,7 +1672,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       <Typography
                         variant='h4'
                         gutterBottom
-                        sx={{ color: '#00fed7', mb: 3 }}
+                        sx={{ color: 'var(--theme-primary)', mb: 3 }}
                       >
                         Biographie
                       </Typography>
@@ -1760,7 +1761,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 <Typography
                   variant='h4'
                   gutterBottom
-                  sx={{ color: '#00fed7', mb: 1.5 }}
+                  sx={{ color: 'var(--theme-primary)', mb: 1.5 }}
                 >
                   Bekannte Filme & Serien
                 </Typography>
@@ -1768,7 +1769,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   <Box textAlign='center' py={1.5}>
                     <CircularProgress
                       size={24}
-                      sx={{ color: '#00fed7', mb: 1 }}
+                      sx={{ color: 'var(--theme-primary)', mb: 1 }}
                     />
                     <Typography variant='body2'>
                       Lade Filmographie...
@@ -1792,7 +1793,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         borderRadius: '4px',
                       },
                       '&::-webkit-scrollbar-thumb': {
-                        background: '#00fed7',
+                        background: 'var(--theme-primary)',
                         borderRadius: '4px',
                         '&:hover': {
                           background: '#00d4b8',
@@ -1859,7 +1860,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   background:
-                                    'linear-gradient(145deg, #333, #1a1a1a)',
+                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
                                   color: '#666',
                                   fontSize: '1.5rem',
                                 }}
@@ -1875,7 +1876,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === 'movie'
                                     ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, #00fed7, #00d4b8)',
+                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
                                 borderRadius: '12px',
                                 px: 0.8,
                                 py: 0.3,
@@ -2137,7 +2138,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   background:
-                                    'linear-gradient(145deg, #333, #1a1a1a)',
+                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
                                   color: '#666',
                                   fontSize: '1.5rem',
                                 }}
@@ -2153,7 +2154,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === 'movie'
                                     ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, #00fed7, #00d4b8)',
+                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
                                 borderRadius: '12px',
                                 px: 0.8,
                                 py: 0.3,
@@ -2193,7 +2194,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             <Typography
                               variant='body2'
                               sx={{
-                                color: '#00fed7',
+                                color: 'var(--theme-primary)',
                                 fontStyle: 'italic',
                                 mb: 0.8,
                                 fontSize: '0.8rem',
@@ -2304,7 +2305,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           addingTitles.has(credit.id) ? (
                                             <CircularProgress
                                               size={14}
-                                              sx={{ color: '#00fed7' }}
+                                              sx={{ color: 'var(--theme-primary)' }}
                                             />
                                           ) : (
                                             <AddIcon
@@ -2329,8 +2330,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                         sx={{
                                           backgroundColor:
                                             'rgba(0,254,215,0.2)',
-                                          color: '#00fed7',
-                                          border: '1px solid #00fed7',
+                                          color: 'var(--theme-primary)',
+                                          border: `1px solid var(--theme-primary)`,
                                           fontSize: '0.7rem',
                                           height: '24px',
                                           cursor: 'pointer',
@@ -2419,7 +2420,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   background:
-                                    'linear-gradient(145deg, #333, #1a1a1a)',
+                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
                                   color: '#666',
                                   fontSize: '1.5rem',
                                 }}
@@ -2435,7 +2436,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === 'movie'
                                     ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, #00fed7, #00d4b8)',
+                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
                                 borderRadius: '12px',
                                 px: 0.8,
                                 py: 0.3,
@@ -2475,7 +2476,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             <Typography
                               variant='body2'
                               sx={{
-                                color: '#00fed7',
+                                color: 'var(--theme-primary)',
                                 fontStyle: 'italic',
                                 mb: 0.8,
                                 fontSize: '0.8rem',
@@ -2587,7 +2588,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           addingTitles.has(credit.id) ? (
                                             <CircularProgress
                                               size={14}
-                                              sx={{ color: '#00fed7' }}
+                                              sx={{ color: 'var(--theme-primary)' }}
                                             />
                                           ) : (
                                             <AddIcon
@@ -2612,8 +2613,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                         sx={{
                                           backgroundColor:
                                             'rgba(0,254,215,0.2)',
-                                          color: '#00fed7',
-                                          border: '1px solid #00fed7',
+                                          color: 'var(--theme-primary)',
+                                          border: `1px solid var(--theme-primary)`,
                                           fontSize: '0.7rem',
                                           height: '24px',
                                           cursor: 'pointer',
@@ -2702,7 +2703,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   background:
-                                    'linear-gradient(145deg, #333, #1a1a1a)',
+                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
                                   color: '#666',
                                   fontSize: '1.5rem',
                                 }}
@@ -2718,7 +2719,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === 'movie'
                                     ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, #00fed7, #00d4b8)',
+                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
                                 borderRadius: '12px',
                                 px: 0.8,
                                 py: 0.3,
@@ -2758,7 +2759,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             <Typography
                               variant='body2'
                               sx={{
-                                color: '#00fed7',
+                                color: 'var(--theme-primary)',
                                 fontStyle: 'italic',
                                 mb: 0.8,
                                 fontSize: '0.8rem',
@@ -2870,7 +2871,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           addingTitles.has(credit.id) ? (
                                             <CircularProgress
                                               size={14}
-                                              sx={{ color: '#00fed7' }}
+                                              sx={{ color: 'var(--theme-primary)' }}
                                             />
                                           ) : (
                                             <AddIcon
@@ -2895,8 +2896,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                         sx={{
                                           backgroundColor:
                                             'rgba(0,254,215,0.2)',
-                                          color: '#00fed7',
-                                          border: '1px solid #00fed7',
+                                          color: 'var(--theme-primary)',
+                                          border: `1px solid var(--theme-primary)`,
                                           fontSize: '0.7rem',
                                           height: '24px',
                                           cursor: 'pointer',

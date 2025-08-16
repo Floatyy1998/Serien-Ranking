@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react';
 import { lazy, Suspense } from 'react';
+import { colors } from '../../theme';
 const Box = lazy(() => import('@mui/material/Box'));
 const IconButton = lazy(() => import('@mui/material/IconButton'));
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
@@ -36,7 +37,7 @@ export const Legend = () => {
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  color: '#00fed7', 
+                  color: 'var(--theme-primary)', 
                   fontWeight: 'bold', 
                   mb: 2,
                   textAlign: 'center',
@@ -68,22 +69,22 @@ export const Legend = () => {
                 '& > div': { mb: 1.5 }
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ color: '#00fed7', fontSize: '1rem' }}>🖼️</Typography>
-                  <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem' }}>
+                  <Typography sx={{ color: 'var(--theme-primary)', fontSize: '1rem' }}>🖼️</Typography>
+                  <Typography sx={{ color: colors.text.muted, fontSize: '0.9rem' }}>
                     <strong>Poster:</strong> Details anzeigen
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography sx={{ color: '#ffd700', fontSize: '1rem' }}>🔖</Typography>
-                  <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem' }}>
+                  <Typography sx={{ color: colors.text.muted, fontSize: '0.9rem' }}>
                     <strong>Watchlist-Icon:</strong> Toggle Watchlist
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography sx={{ color: '#ff6b6b', fontSize: '1rem' }}>⋮</Typography>
-                  <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem' }}>
+                  <Typography sx={{ color: colors.text.muted, fontSize: '0.9rem' }}>
                     <strong>3-Punkte-Menü:</strong> Rating ändern, gesehene Episoden, kommende Episoden, löschen
                   </Typography>
                 </Box>
@@ -91,7 +92,7 @@ export const Legend = () => {
 
               <Typography 
                 sx={{ 
-                  color: '#00fed7', 
+                  color: 'var(--theme-primary)', 
                   fontSize: '0.8rem', 
                   textAlign: 'center', 
                   mt: 2,

@@ -12,6 +12,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../App';
 import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCache';
 import { ProfileDialog } from './ProfileDialog';
+import { colors } from '../../../theme';
 
 export const UsernameRequiredDialog: React.FC = () => {
   const { user } = useAuth()!;
@@ -60,14 +61,12 @@ export const UsernameRequiredDialog: React.FC = () => {
           paper: {
             sx: {
               minHeight: '80vh',
-              background:
-                'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+              background: colors.background.gradient.dark,
               borderRadius: '20px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: `1px solid ${colors.border.light}`,
               overflow: 'hidden',
-              boxShadow:
-                '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
-              color: 'white',
+              boxShadow: colors.shadow.card,
+              color: colors.text.primary,
             },
           },
         }}
@@ -76,11 +75,10 @@ export const UsernameRequiredDialog: React.FC = () => {
           sx={{
             textAlign: 'center',
             position: 'relative',
-            background:
-              'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+            background: colors.overlay.dark,
             backdropFilter: 'blur(15px)',
-            borderBottom: '1px solid rgba(255,255,255,0.05)',
-            color: '#ffffff',
+            borderBottom: `1px solid ${colors.border.subtle}`,
+            color: colors.text.primary,
             fontWeight: 600,
             fontSize: '1.25rem',
           }}
@@ -96,7 +94,7 @@ export const UsernameRequiredDialog: React.FC = () => {
             <Typography
               component='div'
               variant='h4'
-              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+              sx={{ fontWeight: 'bold', color: colors.text.accent }}
             >
               Benutzername erforderlich
             </Typography>
@@ -106,10 +104,9 @@ export const UsernameRequiredDialog: React.FC = () => {
         <DialogContent
           sx={{
             p: 0,
-            background:
-              'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+            background: colors.background.gradient.light,
             backdropFilter: 'blur(10px)',
-            color: '#ffffff',
+            color: colors.text.primary,
           }}
         >
           <Box sx={{ p: 3 }}>
@@ -117,14 +114,13 @@ export const UsernameRequiredDialog: React.FC = () => {
               <Alert
                 severity='info'
                 sx={{
-                  background:
-                    'linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.08) 100%)',
+                  background: colors.status.info.gradient,
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(25, 118, 210, 0.3)',
+                  border: `1px solid ${colors.status.info.main}30`,
                   borderRadius: '12px',
-                  color: '#ffffff',
+                  color: colors.text.primary,
                   '& .MuiAlert-icon': {
-                    color: '#1976d2',
+                    color: colors.status.info.main,
                   },
                 }}
               >
@@ -151,9 +147,8 @@ export const UsernameRequiredDialog: React.FC = () => {
             display: 'flex',
             justifyContent: 'center',
             padding: '24px',
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            background:
-              'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+            borderTop: `1px solid ${colors.border.light}`,
+            background: colors.background.gradient.dark,
             backdropFilter: 'blur(10px)',
           }}
         >
@@ -163,19 +158,19 @@ export const UsernameRequiredDialog: React.FC = () => {
             fullWidth
             sx={{
               maxWidth: 280,
-              background: 'linear-gradient(135deg, #00fed7 0%, #00b196 100%)',
+              background: colors.button.primary.gradient,
               borderRadius: '12px',
               padding: '12px 24px',
-              color: '#ffffff',
+              color: colors.text.primary,
               fontWeight: 600,
               textTransform: 'none',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: `1px solid ${colors.border.light}`,
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background: 'linear-gradient(135deg, #00b196 0%, #00fed7 100%)',
+                background: colors.button.primary.gradientHover,
                 transform: 'translateY(-2px)',
-                boxShadow: '0 8px 25px #00fed7, 0.4)',
+                boxShadow: colors.shadow.buttonHover,
               },
             }}
           >

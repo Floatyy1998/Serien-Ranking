@@ -43,7 +43,7 @@ const getRewatchColor = (watchCount: number): string => {
     case 10:
       return '#cddc39'; // Lime
     default:
-      return watchCount > 10 ? '#ffc107' : '#00fed7'; // Gold für >10, sonst Standard
+      return watchCount > 10 ? '#ffc107' : 'var(--theme-primary)'; // Gold für >10, sonst Standard
   }
 };
 interface SeriesWatchedDialogProps {
@@ -329,10 +329,10 @@ const SeriesWatchedDialog = ({
               numberOfPieces={1000}
               gravity={2}
             />
-            <Box className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
+            <Box className='mb-6 rounded-xl border border-[var(--theme-primary)]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
               <div
                 style={{ textDecoration: 'underline' }}
-                className='font-medium text-[#00fed7]'
+                className='font-medium text-[var(--theme-primary)]'
               >
                 Glückwunsch! Du hast alle Episoden gesehen.
               </div>
@@ -355,7 +355,7 @@ const SeriesWatchedDialog = ({
                     <ChevronDown
                       size={20}
                       style={{
-                        color: '#00fed7',
+                        color: 'var(--theme-primary)',
                         transition: 'transform 0.2s ease-in-out',
                       }}
                     />
@@ -403,7 +403,7 @@ const SeriesWatchedDialog = ({
                               );
                               return minWatchCount > 1
                                 ? getRewatchColor(minWatchCount)
-                                : '#00fed7';
+                                : 'var(--theme-primary)';
                             })()
                           : 'rgba(255, 255, 255, 0.8)',
                         transition: 'all 0.2s ease-in-out',
@@ -435,13 +435,13 @@ const SeriesWatchedDialog = ({
                   {season.episodes?.map((episode, index) => (
                     <div
                       key={episode.id}
-                      className='group flex items-center justify-between border-b border-[#00fed7]/5 p-4 last:border-0 hover:bg-[#00fed7]/[0.02]'
+                      className='group flex items-center justify-between border-b border-[var(--theme-primary)]/5 p-4 last:border-0 hover:bg-[var(--theme-primary)]/[0.02]'
                     >
                       <div className='flex items-center space-x-4'>
-                        <span className='text-sm font-medium text-[#00fed7]'>
+                        <span className='text-sm font-medium text-[var(--theme-primary)]'>
                           {index + 1}.
                         </span>
-                        <span className='font-medium text-gray-300 group-hover:text-[#00fed7]/90'>
+                        <span className='font-medium text-gray-300 group-hover:text-[var(--theme-primary)]/90'>
                           {episode.name}
                         </span>
                         <span className='text-sm text-gray-500'>
@@ -460,7 +460,7 @@ const SeriesWatchedDialog = ({
                           color: episode.watched
                             ? episode.watchCount && episode.watchCount > 1
                               ? getRewatchColor(episode.watchCount)
-                              : '#00fed7'
+                              : 'var(--theme-primary)'
                             : 'rgba(255, 255, 255, 0.8)',
                           transition: 'all 0.2s ease-in-out',
                           cursor: isReadOnly ? 'default' : 'pointer',

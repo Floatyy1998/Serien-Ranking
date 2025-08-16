@@ -1,6 +1,7 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Box, Fab } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { colors } from '../../theme';
 
 interface ScrollArrowsProps {
   target?: string; // CSS selector for scroll target, defaults to window
@@ -106,19 +107,19 @@ export const ScrollArrows: React.FC<ScrollArrowsProps> = ({ target }) => {
           size="small"
           onClick={scrollToTop}
           sx={{
-            backgroundColor: 'rgba(0,0,0,0.7)',
+            backgroundColor: colors.overlay.dark,
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: 'rgba(255,255,255,0.8)',
+            border: `1px solid ${colors.overlay.white}`,
+            color: colors.text.secondary,
             width: 40,
             height: 40,
             transition: 'all 0.3s ease',
             '&:hover': {
-              backgroundColor: 'rgba(0,254,215,0.1)',
-              color: '#00fed7',
-              border: '1px solid rgba(0,254,215,0.3)',
+              backgroundColor: colors.overlay.medium,
+              color: 'var(--theme-primary)',
+              border: `1px solid ${colors.border.primary}`,
               transform: 'translateY(-2px)',
-              boxShadow: '0 4px 12px rgba(0,254,215,0.2)',
+              boxShadow: `0 4px 12px ${colors.overlay.medium}`,
             },
           }}
         >
@@ -130,19 +131,19 @@ export const ScrollArrows: React.FC<ScrollArrowsProps> = ({ target }) => {
           size="small"
           onClick={scrollToBottom}
           sx={{
-            backgroundColor: 'rgba(0,0,0,0.7)',
+            backgroundColor: colors.overlay.dark,
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: 'rgba(255,255,255,0.8)',
+            border: `1px solid ${colors.overlay.white}`,
+            color: colors.text.secondary,
             width: 40,
             height: 40,
             transition: 'all 0.3s ease',
             '&:hover': {
-              backgroundColor: 'rgba(0,254,215,0.1)',
-              color: '#00fed7',
-              border: '1px solid rgba(0,254,215,0.3)',
+              backgroundColor: colors.overlay.medium,
+              color: 'var(--theme-primary)',
+              border: `1px solid ${colors.border.primary}`,
               transform: 'translateY(-2px)',
-              boxShadow: '0 4px 12px rgba(0,254,215,0.2)',
+              boxShadow: `0 4px 12px ${colors.overlay.medium}`,
             },
           }}
         >

@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
+import { colors } from '../../theme';
 
 export interface TourStep {
   target: string; // CSS selector
@@ -166,7 +167,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: colors.overlay.dark,
           zIndex: 9998,
           pointerEvents: 'auto',
         }}
@@ -185,9 +186,9 @@ export const TourSystem: React.FC<TourSystemProps> = ({
               position: 'fixed',
               zIndex: 10002, // Höher als Mock-Card
               backgroundColor: 'transparent',
-              border: '3px solid #00fed7',
+              border: '3px solid var(--theme-primary)',
               borderRadius: '8px',
-              boxShadow: '0 0 20px rgba(0, 254, 215, 0.6)',
+              boxShadow: `0 0 20px ${colors.overlay.medium}`,
               pointerEvents: 'none',
               ...spotlightStyle,
             }}
@@ -218,11 +219,11 @@ export const TourSystem: React.FC<TourSystemProps> = ({
           >
             <Card
               sx={{
-                background: 'rgba(26, 26, 26, 0.95)',
+                background: colors.background.surface,
                 backdropFilter: 'blur(10px)',
-                border: '2px solid #00fed7',
+                border: '2px solid var(--theme-primary)',
                 borderRadius: '12px',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
+                boxShadow: `0 10px 30px ${colors.overlay.dark}`,
                 width: '100%',
                 height: 'fit-content',
                 maxHeight: '50vh',
@@ -249,7 +250,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                   <Typography
                     variant='h6'
                     sx={{
-                      color: '#00fed7',
+                      color: 'var(--theme-primary)',
                       fontWeight: 'bold',
                       fontSize: { xs: '1.125rem', md: '1.25rem' },
                       lineHeight: 1.2,
@@ -262,11 +263,11 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                     size='small'
                     onClick={() => setShowSkipDialog(true)}
                     sx={{
-                      color: '#888',
+                      color: colors.text.muted,
                       ml: 1,
                       '&:hover': {
-                        color: '#fff',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        color: colors.text.secondary,
+                        backgroundColor: colors.overlay.medium,
                       },
                     }}
                   >
@@ -277,7 +278,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                 <Typography
                   variant='body2'
                   sx={{
-                    color: '#ccc',
+                    color: colors.text.secondary,
                     lineHeight: 1.5,
                     mb: { xs: 2, md: 3 },
                     fontSize: { xs: '1rem', md: '1.125rem' },
@@ -299,7 +300,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                   <Typography
                     variant='caption'
                     sx={{
-                      color: '#888',
+                      color: colors.text.muted,
                       fontSize: { xs: '0.7rem', md: '0.75rem' },
                       order: { xs: 2, sm: 1 },
                     }}
@@ -318,10 +319,10 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                       disabled={currentStep === 0}
                       startIcon={<NavigateBefore />}
                       sx={{
-                        color: currentStep === 0 ? '#555' : '#00fed7',
-                        borderColor: currentStep === 0 ? '#555' : '#00fed7',
+                        color: currentStep === 0 ? colors.text.muted : 'var(--theme-primary)',
+                        borderColor: currentStep === 0 ? colors.text.muted : 'var(--theme-primary)',
                         '&:hover': {
-                          backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                          backgroundColor: colors.overlay.medium,
                         },
                         fontSize: { xs: '0.75rem', md: '0.875rem' },
                         minWidth: { xs: '80px', md: 'auto' },
@@ -336,11 +337,11 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                       endIcon={<NavigateNext />}
                       variant='contained'
                       sx={{
-                        backgroundColor: '#00fed7',
-                        color: 'black',
+                        backgroundColor: 'var(--theme-primary)',
+                        color: colors.background.default,
                         fontWeight: 'bold',
                         '&:hover': {
-                          backgroundColor: '#00d4b4',
+                          backgroundColor: 'var(--theme-primary-hover)',
                         },
                         fontSize: { xs: '0.75rem', md: '0.875rem' },
                         minWidth: { xs: '80px', md: 'auto' },
@@ -364,8 +365,8 @@ export const TourSystem: React.FC<TourSystemProps> = ({
         maxWidth='sm'
         sx={{
           '& .MuiDialog-paper': {
-            background: 'linear-gradient(135deg, #1a1a1a 100%, #2d2d30 100%)',
-            border: '2px solid #00fed7',
+            background: `linear-gradient(135deg, ${colors.background.default} 100%, ${colors.background.surface} 100%)`,
+            border: `2px solid var(--theme-primary)`,
             borderRadius: '12px',
             margin: { xs: 2, md: 3 },
             width: { xs: 'calc(100% - 32px)', md: 'auto' },
@@ -373,27 +374,27 @@ export const TourSystem: React.FC<TourSystemProps> = ({
             opacity: 1,
           },
           '& .MuiBackdrop-root': {
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            backgroundColor: colors.overlay.light,
           },
         }}
       >
         <DialogTitle
           sx={{
-            color: '#00fed7',
+            color: 'var(--theme-primary)',
             fontWeight: 'bold',
             fontSize: { xs: '1.1rem', md: '1.25rem' },
-            background: 'rgba(26, 26, 26, 0.95)',
+            background: colors.background.surface,
             pb: { xs: 1, md: 2 },
           }}
         >
           Tour beenden?
         </DialogTitle>
         <DialogContent
-          sx={{ pb: { xs: 2, md: 3 }, background: 'rgba(26, 26, 26, 0.95)' }}
+          sx={{ pb: { xs: 2, md: 3 }, background: colors.background.surface }}
         >
           <Typography
             sx={{
-              color: '#ccc',
+              color: colors.text.secondary,
               fontSize: { xs: '0.875rem', md: '1rem' },
               lineHeight: 1.5,
             }}
@@ -409,7 +410,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
             flexDirection: { xs: 'column-reverse', sm: 'row' },
             gap: { xs: 1.5, sm: 1 },
             justifyContent: { sm: 'space-between' },
-            background: 'rgba(26, 26, 26, 0.95)',
+            background: colors.background.surface,
             '& .MuiButton-root': {
               margin: 0,
             },
@@ -418,10 +419,10 @@ export const TourSystem: React.FC<TourSystemProps> = ({
           <Button
             onClick={() => setShowSkipDialog(false)}
             sx={{
-              color: '#00fed7',
-              borderColor: '#00fed7',
+              color: 'var(--theme-primary)',
+              borderColor: 'var(--theme-primary)',
               '&:hover': {
-                backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                backgroundColor: colors.overlay.medium,
               },
               flex: { xs: 'none', sm: 1 },
               width: { xs: '100%', sm: 'auto' },
@@ -438,9 +439,9 @@ export const TourSystem: React.FC<TourSystemProps> = ({
             }}
             variant='contained'
             sx={{
-              backgroundColor: '#ff4444',
+              backgroundColor: colors.status.error,
               '&:hover': {
-                backgroundColor: '#cc3333',
+                backgroundColor: colors.status.errorDark,
               },
               flex: { xs: 'none', sm: 1 },
               width: { xs: '100%', sm: 'auto' },

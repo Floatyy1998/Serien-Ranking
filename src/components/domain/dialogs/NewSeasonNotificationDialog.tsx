@@ -191,8 +191,8 @@ const NewSeasonNotificationDialog = ({
               label={`+${remainingCount} weitere`}
               size='small'
               sx={{
-                backgroundColor: '#00fed7',
-                color: '#000',
+                backgroundColor: 'var(--theme-primary)',
+                color: '#ffffff',
                 fontWeight: 'bold',
               }}
             />
@@ -249,12 +249,12 @@ const NewSeasonNotificationDialog = ({
 
           <Box flex={1}>
             <Box mb={3} mt={2}>
-              <Typography variant='h4' gutterBottom sx={{ color: '#00fed7' }}>
+              <Typography variant='h4' gutterBottom sx={{ color: 'var(--theme-primary)' }}>
                 {currentSeries.title}
               </Typography>
               <Typography
                 variant='h6'
-                sx={{ color: '#00fed7', fontWeight: 'bold' }}
+                sx={{ color: 'var(--theme-primary)', fontWeight: 'bold' }}
               >
                 Jetzt {currentSeries.seasonCount} Staffeln verfügbar
               </Typography>
@@ -262,7 +262,7 @@ const NewSeasonNotificationDialog = ({
 
             {currentSeries.beschreibung && (
               <Box mb={3}>
-                <Typography variant='h4' gutterBottom sx={{ color: '#00fed7' }}>
+                <Typography variant='h4' gutterBottom sx={{ color: 'var(--theme-primary)' }}>
                   Beschreibung
                 </Typography>
                 <Typography variant='body1' sx={{ lineHeight: 1.6 }}>
@@ -287,8 +287,8 @@ const NewSeasonNotificationDialog = ({
                           <span
                             key={index}
                             style={{
-                              background: '#00fed7',
-                              color: '#000',
+                              background: 'var(--theme-primary)',
+                              color: '#ffffff',
                               borderRadius: 6,
                               padding: '2px 8px',
                               marginRight: 4,
@@ -337,7 +337,7 @@ const NewSeasonNotificationDialog = ({
                               borderRadius: 2,
                               padding: '8px 12px',
                               marginRight: '8px',
-                              border: '1px solid #00fed7',
+                              border: '1px solid var(--theme-primary)',
                             }}
                           >
                             {logoUrl ? (
@@ -376,7 +376,7 @@ const NewSeasonNotificationDialog = ({
                 p: 2,
                 borderRadius: 1,
                 mt: 3,
-                border: '1px solid #00fed7',
+                border: '1px solid var(--theme-primary)',
               }}
             >
               <Typography variant='body1'>
@@ -419,7 +419,7 @@ const NewSeasonNotificationDialog = ({
           variant='contained'
           onClick={() => handleAddToWatchlist(currentSeries)}
           sx={{
-            background: 'linear-gradient(135deg, #00fed7 0%, #00d4aa 100%)',
+            background: 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
             borderRadius: '12px',
             padding: '12px 24px',
             color: '#ffffff',

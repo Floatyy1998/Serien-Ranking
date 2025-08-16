@@ -27,7 +27,7 @@ const getRewatchColor = (watchCount: number): string => {
     case 10:
       return '#cddc39'; // Lime
     default:
-      return watchCount > 10 ? '#ffc107' : '#00fed7'; // Gold für >10, sonst Standard
+      return watchCount > 10 ? '#ffc107' : 'var(--theme-primary)'; // Gold für >10, sonst Standard
   }
 };
 
@@ -99,7 +99,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
   const remaining = countRemainingEpisodes(series);
   const content = (
     <Box
-      className='mb-6 rounded-xl border border-[#00fed7]/8 bg-black/40 p-3 text-sm backdrop-blur-sm flex items-center'
+      className='mb-6 rounded-xl border border-[var(--theme-primary)]/8 bg-black/40 p-3 text-sm backdrop-blur-sm flex items-center'
       style={{ width: '100%' }}
     >
       <img
@@ -109,7 +109,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
       />
       <div className='flex-1'>
         <div
-          className='font-medium text-[#00fed7]'
+          className='font-medium text-[var(--theme-primary)]'
           style={{ cursor: onTitleClick ? 'pointer' : 'default' }}
           onClick={(e) => {
             e.stopPropagation();
@@ -245,7 +245,7 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
         )}
       </div>
       {nextUnwatchedEpisode && (
-        <IconButton onClick={onWatchedToggle} sx={{ color: '#00fed7' }}>
+        <IconButton onClick={onWatchedToggle} sx={{ color: 'var(--theme-primary)' }}>
           <Check />
         </IconButton>
       )}
