@@ -32,6 +32,7 @@ import SearchFilters from '../components/forms/SearchFilters';
 import { WelcomeTour } from '../components/tour/WelcomeTour';
 import Legend from '../components/ui/Legend';
 import { QuickFilterChips } from '../components/ui/QuickFilterChips';
+import { ScrollArrows } from '../components/ui/ScrollArrows';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useNotifications } from '../contexts/NotificationProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
@@ -358,21 +359,6 @@ export const MainPage: React.FC = () => {
             gap: { xs: 1, md: 0 },
             minHeight: { xs: 'auto', sm: 'auto', md: '120px' },
             boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-            cursor: 'pointer',
-            transition: 'background 0.2s',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)',
-            },
-          }}
-          onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-            // Nur scrollen, wenn nicht auf Avatar oder Button geklickt
-            if (
-              e.target instanceof HTMLElement &&
-              !e.target.closest('.main-header-avatar') &&
-              !e.target.closest('.main-header-button')
-            ) {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
           }}
         >
           <Box
@@ -508,7 +494,7 @@ export const MainPage: React.FC = () => {
 
         {/* Mobile Stats Toggle Button */}
         <Box
-          sx={{ display: { xs: 'block', sm: 'none' }, mt: 3, px: '8px', mb: 2 }}
+          sx={{ display: { xs: 'block', sm: 'none' }, mt: 2, px: 2, mb: 2 }}
         >
           <Button
             onClick={() => setMobileStatsExpanded(!mobileStatsExpanded)}
@@ -890,7 +876,7 @@ export const MainPage: React.FC = () => {
         {/* Mobile Collapsible Stats */}
         <Box
           className='max-w-[1400px] m-auto'
-          sx={{ display: { xs: 'block', sm: 'none' } }}
+          sx={{ display: { xs: 'block', sm: 'none' }, px: 2 }}
         >
           <Collapse in={mobileStatsExpanded}>
             <Box
@@ -899,7 +885,6 @@ export const MainPage: React.FC = () => {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: 1.5,
-                px: 1,
                 mb: 2,
                 backgroundColor: 'rgba(255, 255, 255, 0.02)',
                 borderRadius: 2,
@@ -1211,20 +1196,52 @@ export const MainPage: React.FC = () => {
           </Collapse>
         </Box>
 
-        {/* Trennlinie */}
+        {/* Trennlinie über den Filtern */}
         <Box
           sx={{
             height: '1px',
             background:
               'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%)',
             mx: { xs: 3, md: 5 },
-            mt: { xs: 3, md: 4 },
+            mt: { xs: 0, md: 4 },
+            mb: { xs: 0, md: 2 },
+            display: { xs: 'none', md: 'block' },
+          }}
+        />
+
+        {/* Filter oberhalb der Tabs */}
+        <Box sx={{ mb: { xs: 2, md: 3 }, px: { xs: 2, md: 0 }, mt: { xs: 0, md: 0 } }} data-tour='search-filters'>
+          {tabValue === 0 ? (
+            <SearchFilters
+              onSearchChange={handleSearchChange}
+              onGenreChange={handleGenreChange}
+              onProviderChange={handleProviderChange}
+              onSpecialFilterChange={handleSpecialFilterChange}
+            />
+          ) : (
+            <MovieSearchFilters
+              onSearchChange={handleMovieSearchChange}
+              onGenreChange={handleMovieGenreChange}
+              onProviderChange={handleMovieProviderChange}
+            />
+          )}
+        </Box>
+
+        {/* Trennlinie unter den Filtern */}
+        <Box
+          sx={{
+            height: '1px',
+            background:
+              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%)',
+            mx: { xs: 3, md: 5 },
+            mt: { xs: 0, md: 0 },
             mb: { xs: 2, md: 2 },
+            display: { xs: 'none', md: 'block' },
           }}
         />
 
         {/* Tabs für Serien und Filme */}
-        <Card>
+        <Card sx={{ mt: { xs: 2, md: 0 } }}>
           <Tabs
             data-tour='tabs'
             value={tabValue}
@@ -1267,14 +1284,6 @@ export const MainPage: React.FC = () => {
 
           <TabPanel value={tabValue} index={0}>
             <Box sx={{ p: { xs: 1, md: 2 } }}>
-              <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour='search-filters'>
-                <SearchFilters
-                  onSearchChange={handleSearchChange}
-                  onGenreChange={handleGenreChange}
-                  onProviderChange={handleProviderChange}
-                  onSpecialFilterChange={handleSpecialFilterChange}
-                />
-              </Box>
               <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour='legend'>
                 <Legend />
               </Box>
@@ -1303,13 +1312,6 @@ export const MainPage: React.FC = () => {
 
           <TabPanel value={tabValue} index={1}>
             <Box sx={{ p: { xs: 1, md: 2 } }}>
-              <Box sx={{ mb: { xs: 2, md: 3 } }}>
-                <MovieSearchFilters
-                  onSearchChange={handleMovieSearchChange}
-                  onGenreChange={handleMovieGenreChange}
-                  onProviderChange={handleMovieProviderChange}
-                />
-              </Box>
               <Box
                 sx={{ mb: { xs: 1, md: 2 } }}
                 className='quickfilter-container'
@@ -1349,6 +1351,9 @@ export const MainPage: React.FC = () => {
           onTourComplete={handleTourComplete}
           shouldRestart={shouldRestartTour}
         />
+
+        {/* Scroll Arrows */}
+        <ScrollArrows />
       </>
     </Container>
   );

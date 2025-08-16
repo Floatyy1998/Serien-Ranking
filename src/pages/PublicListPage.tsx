@@ -27,6 +27,7 @@ import { useAuth } from '../App';
 import MovieGrid from '../components/domain/movies/MovieGrid';
 import SeriesGrid from '../components/domain/series/SeriesGrid';
 import { QuickFilterChips } from '../components/ui/QuickFilterChips';
+import { ScrollArrows } from '../components/ui/ScrollArrows';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
 
 interface UserProfileData {
@@ -262,12 +263,6 @@ export const PublicListPage: React.FC = () => {
           Object.entries(seriesGenreCounts).sort(
             ([, a], [, b]) => (b as number) - (a as number)
           )[0]?.[0] || 'Keine';
-
-        // Bewertete Serien ermitteln
-        const ratedSeries = seriesList.filter((series) => {
-          const rating = calculateCorrectAverageRating([series]);
-          return rating > 0;
-        });
 
         // Lieblings-Provider für Serien ermitteln
         const seriesProviderCounts: { [key: string]: number } = {};
@@ -1617,6 +1612,9 @@ export const PublicListPage: React.FC = () => {
           />
         </TabPanel>
       </Card>
+
+      {/* Scroll Arrows */}
+      <ScrollArrows />
     </Container>
   );
 };

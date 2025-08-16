@@ -34,6 +34,7 @@ import { useAuth } from '../App';
 import MovieGrid from '../components/domain/movies/MovieGrid';
 import SeriesGrid from '../components/domain/series/SeriesGrid';
 import { QuickFilterChips } from '../components/ui/QuickFilterChips';
+import { ScrollArrows } from '../components/ui/ScrollArrows';
 import {
   genreMenuItems,
   genreMenuItemsForMovies,
@@ -304,12 +305,6 @@ export const UserProfilePage: React.FC = () => {
             ([, a], [, b]) => (b as number) - (a as number)
           )[0]?.[0] || 'Keine';
 
-        // Bewertete Serien ermitteln
-        const ratedSeries = seriesList.filter((series) => {
-          const rating = calculateCorrectAverageRating([series]);
-          return rating > 0;
-        });
-
         // Lieblings-Provider für Serien ermitteln
         const seriesProviderCounts: { [key: string]: number } = {};
         seriesList.forEach((series) => {
@@ -532,22 +527,6 @@ export const UserProfilePage: React.FC = () => {
           color: 'white',
           mb: { xs: 2, md: 4 },
           boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-          cursor: 'pointer',
-          transition: 'background 0.2s',
-          '&:hover': {
-            background: isOwnProfile
-              ? 'linear-gradient(135deg, #232323 0%, #2d2d30 100%)'
-              : 'linear-gradient(135deg, #444444 0%, #232323 100%)',
-          },
-        }}
-        onClick={(e) => {
-          if (
-            e.target instanceof HTMLElement &&
-            !e.target.closest('.profile-header-avatar') &&
-            !e.target.closest('.profile-header-button')
-          ) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
         }}
       >
         {/* Mobile Layout */}
@@ -1798,6 +1777,9 @@ export const UserProfilePage: React.FC = () => {
           />
         </TabPanel>
       </Card>
+
+      {/* Scroll Arrows */}
+      <ScrollArrows />
     </Container>
   );
 };
