@@ -1,5 +1,7 @@
 import {
   CalendarToday,
+  ExpandLess,
+  ExpandMore,
   Movie,
   People,
   Star,
@@ -12,29 +14,30 @@ import {
   Button,
   Card,
   CardContent,
+  Collapse,
   Container,
   Tab,
   Tabs,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
-import BadgeButton from '../features/badges/BadgeButton';
-import Legend from '../components/ui/Legend';
 import NewSeasonNotificationDialog from '../components/domain/dialogs/NewSeasonNotificationDialog';
 import { ProfileDialog } from '../components/domain/dialogs/ProfileDialog';
-import MovieSearchFilters from '../components/forms/MovieSearchFilters';
-import SearchFilters from '../components/forms/SearchFilters';
 import MovieGrid from '../components/domain/movies/MovieGrid';
 import SeriesGrid from '../components/domain/series/SeriesGrid';
+import MovieSearchFilters from '../components/forms/MovieSearchFilters';
+import SearchFilters from '../components/forms/SearchFilters';
+import { WelcomeTour } from '../components/tour/WelcomeTour';
+import Legend from '../components/ui/Legend';
+import { QuickFilterChips } from '../components/ui/QuickFilterChips';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useNotifications } from '../contexts/NotificationProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import BadgeButton from '../features/badges/BadgeButton';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
-import { WelcomeTour } from '../components/tour/WelcomeTour';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -75,15 +78,18 @@ export const MainPage: React.FC = () => {
   const [searchValue, setSearchValue] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [selectedProvider, setSelectedProvider] = useState('All');
+  const [selectedSpecialFilter, setSelectedSpecialFilter] = useState('');
   const [tabValue, setTabValue] = useState(0);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [, setShowTourComplete] = useState(false);
   const [shouldRestartTour, setShouldRestartTour] = useState(false);
+  const [mobileStatsExpanded, setMobileStatsExpanded] = useState(false);
 
   // Separate states für Filme
   const [movieSearchValue, setMovieSearchValue] = useState('');
   const [movieSelectedGenre, setMovieSelectedGenre] = useState('All');
   const [movieSelectedProvider, setMovieSelectedProvider] = useState('All');
+  const [movieSelectedSpecialFilter, setMovieSelectedSpecialFilter] = useState('');
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchValue(value);
@@ -97,6 +103,10 @@ export const MainPage: React.FC = () => {
     setSelectedProvider(value);
   }, []);
 
+  const handleSpecialFilterChange = useCallback((value: string) => {
+    setSelectedSpecialFilter(value);
+  }, []);
+
   // Handler für Filme-Filter
   const handleMovieSearchChange = useCallback((value: string) => {
     setMovieSearchValue(value);
@@ -108,6 +118,10 @@ export const MainPage: React.FC = () => {
 
   const handleMovieProviderChange = useCallback((value: string) => {
     setMovieSelectedProvider(value);
+  }, []);
+
+  const handleMovieSpecialFilterChange = useCallback((value: string) => {
+    setMovieSelectedSpecialFilter(value);
   }, []);
 
   const handleTourComplete = () => {
@@ -431,10 +445,10 @@ export const MainPage: React.FC = () => {
             </Box>
           </Box>
 
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
               gap: { xs: 1, md: 2 },
               flexShrink: 0,
               width: { xs: '100%', md: 'auto' },
@@ -442,7 +456,7 @@ export const MainPage: React.FC = () => {
               px: { xs: 1, md: 0 },
             }}
           >
-            <div data-tour="badge-button">
+            <div data-tour='badge-button'>
               <BadgeButton />
             </div>
 
@@ -491,44 +505,71 @@ export const MainPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Statistiken - je nach Tab unterschiedlich */}
+        {/* Mobile Stats Toggle Button */}
         <Box
-          data-tour="stats-grid"
+          sx={{ display: { xs: 'block', sm: 'none' }, mt: 3, px: '8px', mb: 2 }}
+        >
+          <Button
+            onClick={() => setMobileStatsExpanded(!mobileStatsExpanded)}
+            variant='outlined'
+            fullWidth
+            startIcon={<TrendingUp />}
+            endIcon={mobileStatsExpanded ? <ExpandLess /> : <ExpandMore />}
+            data-tour='mobile-stats-button'
+            sx={{
+              justifyContent: 'space-between',
+              height: '48px',
+              fontSize: '0.875rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              color: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(0, 254, 215, 0.5)',
+              },
+            }}
+          >
+            Statistiken anzeigen
+          </Button>
+        </Box>
+
+        {/* Desktop Stats - always visible */}
+        <Box
+          data-tour='stats-grid'
           sx={{
-            display: 'grid',
+            display: { xs: 'none', sm: 'grid' },
             gridTemplateColumns: {
-              xs: 'repeat(2, 1fr)',
               sm: 'repeat(6, 1fr)',
             },
-            gap: { xs: 2, md: 3 },
-
-            px: { xs: 0.5, md: 0 },
+            gap: { sm: 2, md: 3 },
+            px: { sm: 0.5, md: 0 },
+            mb: { sm: 2, md: 3 },
           }}
         >
           {tabValue === 0 ? (
-            // Serien-spezifische Stats
+            // Serien Stats
             <>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='primary'
                     gutterBottom
-                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {seriesStats.count}
                   </Typography>
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Serien
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Box
                     display='flex'
                     alignItems='center'
@@ -538,13 +579,13 @@ export const MainPage: React.FC = () => {
                     <TrendingUp
                       sx={{
                         color: '#66bb6a',
-                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                        fontSize: { sm: '1.25rem', md: '1.5rem' },
                       }}
                     />
                     <Typography
                       variant='h4'
                       gutterBottom
-                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                      sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                     >
                       {seriesStats.totalWatchedEpisodes}
                     </Typography>
@@ -552,14 +593,14 @@ export const MainPage: React.FC = () => {
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
-                    Episoden gesehen
+                    Episoden
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Box
                     display='flex'
                     alignItems='center'
@@ -569,13 +610,13 @@ export const MainPage: React.FC = () => {
                     <Star
                       sx={{
                         color: '#ffa726',
-                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                        fontSize: { sm: '1.25rem', md: '1.5rem' },
                       }}
                     />
                     <Typography
                       variant='h4'
                       gutterBottom
-                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                      sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                     >
                       {seriesStats.averageRating > 0
                         ? seriesStats.averageRating.toFixed(2)
@@ -585,135 +626,78 @@ export const MainPage: React.FC = () => {
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
-                    Ø Bewertung
+                    Ø Rating
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
-                  <Tooltip
-                    title={(() => {
-                      const totalMinutes = seriesStats.totalWatchtime;
-                      const totalHours = Math.floor(totalMinutes / 60);
-                      const days = Math.floor(totalHours / 24);
-                      const years = Math.floor(days / 365);
-                      const months = Math.floor((days % 365) / 30);
-                      const weeks = Math.floor(((days % 365) % 30) / 7);
-                      const remainingDays = ((days % 365) % 30) % 7;
-                      const remainingHours = totalHours % 24;
-                      const remainingMinutes = totalMinutes % 60;
-
-                      const parts = [];
-                      if (years > 0)
-                        parts.push(`${years} Jahr${years !== 1 ? 'e' : ''}`);
-                      if (months > 0)
-                        parts.push(`${months} Monat${months !== 1 ? 'e' : ''}`);
-                      if (weeks > 0)
-                        parts.push(`${weeks} Woche${weeks !== 1 ? 'n' : ''}`);
-                      if (remainingDays > 0)
-                        parts.push(
-                          `${remainingDays} Tag${
-                            remainingDays !== 1 ? 'e' : ''
-                          }`
-                        );
-                      if (remainingHours > 0)
-                        parts.push(
-                          `${remainingHours} Stunde${
-                            remainingHours !== 1 ? 'n' : ''
-                          }`
-                        );
-                      if (remainingMinutes > 0)
-                        parts.push(
-                          `${remainingMinutes} Minute${
-                            remainingMinutes !== 1 ? 'n' : ''
-                          }`
-                        );
-
-                      return parts.length > 0 ? parts.join(', ') : '0 Minuten';
-                    })()}
-                    arrow
-                    placement='top'
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
+                  <Typography
+                    variant='h4'
+                    color='secondary'
+                    gutterBottom
+                    sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
-                    <Typography
-                      variant='h4'
-                      color='secondary'
-                      gutterBottom
-                      sx={{
-                        fontSize: { xs: '1.75rem', md: '2.125rem' },
-                        cursor: 'help',
-                      }}
-                    >
-                      {(() => {
-                        const totalHours = Math.floor(
-                          seriesStats.totalWatchtime / 60
-                        );
-                        const days = Math.floor(totalHours / 24);
-
-                        if (days >= 365) {
-                          const years = Math.floor(days / 365);
-                          const remainingDaysAfterYears = days % 365;
-
-                          if (remainingDaysAfterYears >= 30) {
-                            const months = Math.floor(
-                              remainingDaysAfterYears / 30
-                            );
-                            const finalDays = remainingDaysAfterYears % 30;
-                            return finalDays > 0
-                              ? `${years}J ${months}M`
-                              : `${years}J ${months}M`;
-                          } else if (remainingDaysAfterYears >= 7) {
-                            const weeks = Math.floor(
-                              remainingDaysAfterYears / 7
-                            );
-                            const finalDays = remainingDaysAfterYears % 7;
-                            return finalDays > 0
-                              ? `${years}J ${weeks}W`
-                              : `${years}J ${weeks}W`;
-                          } else {
-                            return `${years}J ${remainingDaysAfterYears}T`;
-                          }
-                        } else if (days >= 30) {
-                          const months = Math.floor(days / 30);
-                          const remainingDays = days % 30;
-                          if (remainingDays >= 7) {
-                            const weeks = Math.floor(remainingDays / 7);
-                            return `${months}M ${weeks}W`;
-                          } else {
-                            return `${months}M ${remainingDays}T`;
-                          }
-                        } else if (days >= 7) {
-                          const weeks = Math.floor(days / 7);
-                          const remainingDays = days % 7;
-                          return remainingDays > 0
-                            ? `${weeks}W ${remainingDays}T`
-                            : `${weeks}W`;
-                        } else if (days > 0) {
-                          return `${days}T`;
+                    {(() => {
+                      const totalHours = Math.floor(
+                        seriesStats.totalWatchtime / 60
+                      );
+                      const days = Math.floor(totalHours / 24);
+                      if (days >= 365) {
+                        const years = Math.floor(days / 365);
+                        const remainingDaysAfterYears = days % 365;
+                        if (remainingDaysAfterYears >= 30) {
+                          const months = Math.floor(
+                            remainingDaysAfterYears / 30
+                          );
+                          return `${years}J ${months}M`;
+                        } else if (remainingDaysAfterYears >= 7) {
+                          const weeks = Math.floor(remainingDaysAfterYears / 7);
+                          return `${years}J ${weeks}W`;
                         } else {
-                          return `${totalHours}h`;
+                          return `${years}J ${remainingDaysAfterYears}T`;
                         }
-                      })()}
-                    </Typography>
-                  </Tooltip>
+                      } else if (days >= 30) {
+                        const months = Math.floor(days / 30);
+                        const remainingDays = days % 30;
+                        if (remainingDays >= 7) {
+                          const weeks = Math.floor(remainingDays / 7);
+                          return `${months}M ${weeks}W`;
+                        } else {
+                          return `${months}M ${remainingDays}T`;
+                        }
+                      } else if (days >= 7) {
+                        const weeks = Math.floor(days / 7);
+                        const remainingDays = days % 7;
+                        return remainingDays > 0
+                          ? `${weeks}W ${remainingDays}T`
+                          : `${weeks}W`;
+                      } else if (days > 0) {
+                        return `${days}T`;
+                      } else {
+                        return `${totalHours}h`;
+                      }
+                    })()}
+                  </Typography>
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Watchzeit
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='info.main'
                     gutterBottom
                     sx={{
-                      fontSize: { xs: '1.75rem', md: '2.125rem' },
+                      fontSize: { sm: '1.75rem', md: '2.125rem' },
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -724,26 +708,26 @@ export const MainPage: React.FC = () => {
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Top Genre
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='warning.main'
                     gutterBottom
-                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {seriesStats.favoriteProvider}
                   </Typography>
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Top Provider
                   </Typography>
@@ -751,29 +735,29 @@ export const MainPage: React.FC = () => {
               </Card>
             </>
           ) : (
-            // Film-spezifische Stats
+            // Film Stats
             <>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='secondary'
                     gutterBottom
-                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {movieStats.count}
                   </Typography>
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Filme
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Box
                     display='flex'
                     alignItems='center'
@@ -783,13 +767,13 @@ export const MainPage: React.FC = () => {
                     <TrendingUp
                       sx={{
                         color: '#66bb6a',
-                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                        fontSize: { sm: '1.25rem', md: '1.5rem' },
                       }}
                     />
                     <Typography
                       variant='h4'
                       gutterBottom
-                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                      sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                     >
                       {movieStats.watchedCount}
                     </Typography>
@@ -797,14 +781,14 @@ export const MainPage: React.FC = () => {
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Gesehen
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Box
                     display='flex'
                     alignItems='center'
@@ -814,13 +798,13 @@ export const MainPage: React.FC = () => {
                     <Star
                       sx={{
                         color: '#ffa726',
-                        fontSize: { xs: '1.25rem', md: '1.5rem' },
+                        fontSize: { sm: '1.25rem', md: '1.5rem' },
                       }}
                     />
                     <Typography
                       variant='h4'
                       gutterBottom
-                      sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                      sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                     >
                       {movieStats.averageRating > 0
                         ? movieStats.averageRating.toFixed(2)
@@ -830,39 +814,39 @@ export const MainPage: React.FC = () => {
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
-                    Ø Bewertung
+                    Ø Rating
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='primary'
                     gutterBottom
-                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {movieStats.unreleasedCount}
                   </Typography>
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
-                    Unreleased
+                    Unveröffentlicht
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='info.main'
                     gutterBottom
                     sx={{
-                      fontSize: { xs: '1.75rem', md: '2.125rem' },
+                      fontSize: { sm: '1.75rem', md: '2.125rem' },
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -873,26 +857,26 @@ export const MainPage: React.FC = () => {
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Top Genre
                   </Typography>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
                   <Typography
                     variant='h4'
                     color='warning.main'
                     gutterBottom
-                    sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
+                    sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
                   >
                     {movieStats.favoriteProvider}
                   </Typography>
                   <Typography
                     variant='body2'
                     color='text.secondary'
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
                   >
                     Provider
                   </Typography>
@@ -902,21 +886,346 @@ export const MainPage: React.FC = () => {
           )}
         </Box>
 
+        {/* Mobile Collapsible Stats */}
+        <Box
+          className='max-w-[1400px] m-auto'
+          sx={{ display: { xs: 'block', sm: 'none' } }}
+        >
+          <Collapse in={mobileStatsExpanded}>
+            <Box
+              data-tour='stats-grid'
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 1.5,
+                px: 1,
+                mb: 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: 2,
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                p: 2,
+              }}
+            >
+              {tabValue === 0 ? (
+                // Mobile Serien Stats
+                <>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        color='primary'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {seriesStats.count}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Serien
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {seriesStats.totalWatchedEpisodes}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Episoden
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        color='secondary'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {seriesStats.averageRating > 0
+                          ? seriesStats.averageRating.toFixed(2)
+                          : '0.00'}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Ø Rating
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        color='info.main'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {(() => {
+                          const totalHours = Math.floor(
+                            seriesStats.totalWatchtime / 60
+                          );
+                          const days = Math.floor(totalHours / 24);
+                          if (days >= 365) {
+                            const years = Math.floor(days / 365);
+                            const remainingDaysAfterYears = days % 365;
+                            if (remainingDaysAfterYears >= 30) {
+                              const months = Math.floor(
+                                remainingDaysAfterYears / 30
+                              );
+                              return `${years}J ${months}M`;
+                            } else if (remainingDaysAfterYears >= 7) {
+                              const weeks = Math.floor(
+                                remainingDaysAfterYears / 7
+                              );
+                              return `${years}J ${weeks}W`;
+                            } else {
+                              return `${years}J ${remainingDaysAfterYears}T`;
+                            }
+                          } else if (days >= 30) {
+                            const months = Math.floor(days / 30);
+                            const remainingDays = days % 30;
+                            if (remainingDays >= 7) {
+                              const weeks = Math.floor(remainingDays / 7);
+                              return `${months}M ${weeks}W`;
+                            } else {
+                              return `${months}M ${remainingDays}T`;
+                            }
+                          } else if (days >= 7) {
+                            const weeks = Math.floor(days / 7);
+                            const remainingDays = days % 7;
+                            return remainingDays > 0
+                              ? `${weeks}W ${remainingDays}T`
+                              : `${weeks}W`;
+                          } else if (days > 0) {
+                            return `${days}T`;
+                          } else {
+                            return `${totalHours}h`;
+                          }
+                        })()}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Watchzeit
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h6'
+                        color='warning.main'
+                        gutterBottom
+                        sx={{
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {seriesStats.favoriteGenre}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Top Genre
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h6'
+                        color='success.main'
+                        gutterBottom
+                        sx={{
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {seriesStats.favoriteProvider}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Provider
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                // Mobile Film Stats
+                <>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        color='secondary'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {movieStats.count}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Filme
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {movieStats.watchedCount}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Gesehen
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        color='primary'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {movieStats.averageRating > 0
+                          ? movieStats.averageRating.toFixed(2)
+                          : '0.00'}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Ø Rating
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h5'
+                        color='error.main'
+                        gutterBottom
+                        sx={{ fontSize: '1.25rem' }}
+                      >
+                        {movieStats.unreleasedCount}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Unveröffentlicht
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h6'
+                        color='info.main'
+                        gutterBottom
+                        sx={{
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {movieStats.favoriteGenre}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Top Genre
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
+                      <Typography
+                        variant='h6'
+                        color='warning.main'
+                        gutterBottom
+                        sx={{
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {movieStats.favoriteProvider}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ fontSize: '0.7rem' }}
+                      >
+                        Provider
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+            </Box>
+          </Collapse>
+        </Box>
+
         {/* Trennlinie */}
         <Box
           sx={{
             height: '1px',
             background:
-              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-            mx: { xs: 2, md: 4 },
-            my: { xs: 2, md: 3 },
+              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%)',
+            mx: { xs: 3, md: 5 },
+            mt: { xs: 3, md: 4 },
+            mb: { xs: 2, md: 2 },
           }}
         />
 
         {/* Tabs für Serien und Filme */}
         <Card>
           <Tabs
-            data-tour="tabs"
+            data-tour='tabs'
             value={tabValue}
             onChange={handleTabChange}
             variant='fullWidth'
@@ -957,23 +1266,37 @@ export const MainPage: React.FC = () => {
 
           <TabPanel value={tabValue} index={0}>
             <Box sx={{ p: { xs: 1, md: 2 } }}>
-              <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour="search-filters">
+              <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour='search-filters'>
                 <SearchFilters
                   onSearchChange={handleSearchChange}
                   onGenreChange={handleGenreChange}
                   onProviderChange={handleProviderChange}
+                  onSpecialFilterChange={handleSpecialFilterChange}
                 />
               </Box>
-              <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour="legend">
+              <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour='legend'>
                 <Legend />
               </Box>
-              <div data-tour="series-grid">
-                <SeriesGrid
-                  searchValue={searchValue}
-                  selectedGenre={selectedGenre}
-                  selectedProvider={selectedProvider}
+              <Box
+                sx={{ mb: { xs: 1, md: 2 } }}
+                className='quickfilter-container'
+              >
+                <QuickFilterChips
+                  activeFilter={selectedSpecialFilter}
+                  onFilterChange={handleSpecialFilterChange}
+                  isMovieMode={false}
                 />
-              </div>
+              </Box>
+              <Box>
+                <div data-tour='series-grid'>
+                  <SeriesGrid
+                    searchValue={searchValue}
+                    selectedGenre={selectedGenre}
+                    selectedProvider={selectedProvider}
+                    selectedSpecialFilter={selectedSpecialFilter}
+                  />
+                </div>
+              </Box>
             </Box>
           </TabPanel>
 
@@ -986,10 +1309,21 @@ export const MainPage: React.FC = () => {
                   onProviderChange={handleMovieProviderChange}
                 />
               </Box>
+              <Box
+                sx={{ mb: { xs: 1, md: 2 } }}
+                className='quickfilter-container'
+              >
+                <QuickFilterChips
+                  activeFilter={movieSelectedSpecialFilter}
+                  onFilterChange={handleMovieSpecialFilterChange}
+                  isMovieMode={true}
+                />
+              </Box>
               <MovieGrid
                 searchValue={movieSearchValue}
                 selectedGenre={movieSelectedGenre}
                 selectedProvider={movieSelectedProvider}
+                selectedSpecialFilter={movieSelectedSpecialFilter}
               />
             </Box>
           </TabPanel>
@@ -1010,8 +1344,8 @@ export const MainPage: React.FC = () => {
         />
 
         {/* Welcome Tour */}
-        <WelcomeTour 
-          onTourComplete={handleTourComplete} 
+        <WelcomeTour
+          onTourComplete={handleTourComplete}
           shouldRestart={shouldRestartTour}
         />
       </>

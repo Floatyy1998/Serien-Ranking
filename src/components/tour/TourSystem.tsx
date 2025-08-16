@@ -258,7 +258,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                     sx={{
                       color: '#00fed7',
                       fontWeight: 'bold',
-                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      fontSize: { xs: '1.125rem', md: '1.25rem' },
                       lineHeight: 1.2,
                       pr: 1,
                     }}
@@ -287,7 +287,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                     color: '#ccc',
                     lineHeight: 1.5,
                     mb: { xs: 2, md: 3 },
-                    fontSize: { xs: '0.875rem', md: '0.875rem' },
+                    fontSize: { xs: '1rem', md: '1.125rem' },
                     flex: 1,
                     overflowY: 'auto',
                   }}

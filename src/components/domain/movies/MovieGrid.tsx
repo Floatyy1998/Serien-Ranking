@@ -11,6 +11,7 @@ interface MovieGridProps {
   searchValue: string;
   selectedGenre: string;
   selectedProvider: string;
+  selectedSpecialFilter?: string;
   viewOnlyMode?: boolean;
   targetUserId?: string;
 }
@@ -20,6 +21,7 @@ export const MovieGrid = ({
   searchValue,
   selectedGenre,
   selectedProvider,
+  selectedSpecialFilter = '',
   viewOnlyMode = false,
   targetUserId,
 }: MovieGridProps) => {
@@ -102,13 +104,20 @@ export const MovieGrid = ({
             movie.provider.provider.some(
               (p: any) => p.name === selectedProvider
             ));
-        return matchesSearch && matchesGenre && matchesProvider;
+        const matchesSpecialFilter =
+          !selectedSpecialFilter ||
+          (selectedSpecialFilter === 'Ohne Bewertung' &&
+            calculateOverallRating(movie) === '0.00') ||
+          (selectedSpecialFilter === 'Noch nicht Veröffentlicht' &&
+            movie.status !== 'Released') ||
+          selectedSpecialFilter === 'Zuletzt Hinzugefügt';
+        return matchesSearch && matchesGenre && matchesProvider && matchesSpecialFilter;
       })
       .sort((a: any, b: any) => {
-        if (selectedGenre === 'Zuletzt Hinzugefügt') {
+        if (selectedSpecialFilter === 'Zuletzt Hinzugefügt' || selectedGenre === 'Zuletzt Hinzugefügt') {
           return b.nmr - a.nmr;
         }
-        if (selectedGenre === 'Noch nicht Veröffentlicht') {
+        if (selectedSpecialFilter === 'Noch nicht Veröffentlicht' || selectedGenre === 'Noch nicht Veröffentlicht') {
           const dateA = a.release_date ? new Date(a.release_date).getTime() : 0;
           const dateB = b.release_date ? new Date(b.release_date).getTime() : 0;
           return dateA - dateB;
@@ -119,7 +128,7 @@ export const MovieGrid = ({
       });
 
     setFilteredMovies(filtered);
-  }, [movieList, debouncedSearchValue, selectedGenre, selectedProvider]);
+  }, [movieList, debouncedSearchValue, selectedGenre, selectedProvider, selectedSpecialFilter]);
 
   // React 19: Automatische Memoization - kein useCallback nötig
   const handleWindowScroll = useCallback(() => {

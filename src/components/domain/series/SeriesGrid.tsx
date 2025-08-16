@@ -19,6 +19,7 @@ interface SeriesGridProps {
   searchValue: string;
   selectedGenre: string;
   selectedProvider: string;
+  selectedSpecialFilter?: string;
   viewOnlyMode?: boolean;
   targetUserId?: string;
 }
@@ -27,6 +28,7 @@ export const SeriesGrid = ({
   searchValue,
   selectedGenre,
   selectedProvider,
+  selectedSpecialFilter = '',
   viewOnlyMode = false,
   targetUserId,
 }: SeriesGridProps) => {
@@ -105,27 +107,30 @@ export const SeriesGrid = ({
           ?.includes(debouncedSearchValue?.toLowerCase() || '') ?? true;
       const matchesGenre =
         selectedGenre === 'All' ||
-        (selectedGenre === 'Neue Episoden' &&
+        (selectedGenre === 'Watchlist' && series.watchlist) ||
+        series.genre?.genres?.includes(selectedGenre);
+
+      const matchesSpecialFilter =
+        !selectedSpecialFilter ||
+        (selectedSpecialFilter === 'Neue Episoden' &&
           typeof series.nextEpisode?.episode === 'number' &&
           series.nextEpisode?.nextEpisode &&
           new Date(series.nextEpisode.nextEpisode).getTime() >=
             new Date().setHours(0, 0, 0, 0)) ||
-        (selectedGenre === 'Ohne Bewertung' &&
+        (selectedSpecialFilter === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
-        selectedGenre === 'Zuletzt Hinzugefügt' ||
-        (selectedGenre === 'Watchlist' && series.watchlist) ||
-        series.genre?.genres?.includes(selectedGenre);
+        selectedSpecialFilter === 'Zuletzt Hinzugefügt';
       const matchesProvider =
         selectedProvider === 'All' ||
         (series.provider?.provider &&
           series.provider.provider.some(
             (p: any) => p.name === selectedProvider
           ));
-      return matchesSearch && matchesGenre && matchesProvider;
+      return matchesSearch && matchesGenre && matchesProvider && matchesSpecialFilter;
     });
 
     const sorted = filtered.sort((a, b) => {
-      if (selectedGenre === 'Neue Episoden') {
+      if (selectedSpecialFilter === 'Neue Episoden') {
         const dateA = a.nextEpisode?.nextEpisode
           ? new Date(a.nextEpisode.nextEpisode).getTime()
           : 0;
@@ -134,7 +139,7 @@ export const SeriesGrid = ({
           : 0;
         return dateA - dateB;
       }
-      if (selectedGenre === 'Zuletzt Hinzugefügt') {
+      if (selectedSpecialFilter === 'Zuletzt Hinzugefügt') {
         return b.nmr - a.nmr;
       }
       // Für Freund-Profile: immer nach Rating sortieren

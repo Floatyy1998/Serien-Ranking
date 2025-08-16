@@ -64,6 +64,8 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     }
   }, [shouldRestart]);
 
+  const isMobile = window.innerWidth < 1200;
+
   const tourSteps: TourStep[] = [
     {
       target: '.main-header-avatar',
@@ -74,12 +76,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       spotlightPadding: 12,
     },
     {
-      target: '[data-tour="stats-grid"]',
-      title: '📊 Deine Statistiken',
+      target: '[data-tour="badge-button"]',
+      title: '🏆 Badge System',
       content:
-        'Hier siehst du deine persönlichen Statistiken: Anzahl Serien, geschaute Episoden, Bewertungen und mehr. Diese werden automatisch basierend auf deiner Aktivität berechnet.',
+        'Hier findest du alle deine Achievements! Verdiene Badges durch verschiedene Aktivitäten wie das Schauen von Serien, Bewerten oder das Erreichen von Meilensteinen.',
       position: 'bottom',
-      spotlightPadding: 8,
+      spotlightPadding: 10,
     },
     {
       target: '.main-header-button',
@@ -90,12 +92,15 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       spotlightPadding: 10,
     },
     {
-      target: '[data-tour="badge-button"]',
-      title: '🏆 Badge System',
-      content:
-        'Hier findest du alle deine Achievements! Verdiene Badges durch verschiedene Aktivitäten wie das Schauen von Serien, Bewerten oder das Erreichen von Meilensteinen.',
+      target: isMobile
+        ? '[data-tour="mobile-stats-button"]'
+        : '[data-tour="stats-grid"]',
+      title: '📊 Deine Statistiken',
+      content: isMobile
+        ? 'Tippe auf diesen Button um deine persönlichen Statistiken zu sehen: Anzahl Serien, geschaute Episoden, Bewertungen und mehr. Diese werden automatisch basierend auf deiner Aktivität berechnet.'
+        : 'Hier siehst du deine persönlichen Statistiken: Anzahl Serien, geschaute Episoden, Bewertungen und mehr. Diese werden automatisch basierend auf deiner Aktivität berechnet.',
       position: 'bottom',
-      spotlightPadding: 10,
+      spotlightPadding: 8,
     },
     {
       target: '[data-tour="tabs"]',
@@ -106,78 +111,85 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       spotlightPadding: 8,
     },
     {
-      target: '[data-tour="search-filters"]',
+      target: isMobile
+        ? '[data-tour="mobile-filters-button"]'
+        : '[data-tour="search-filters"]',
       title: '🔍 Such- und Filter-System',
-      content:
-        'Hier kannst du deine Sammlung durchsuchen und filtern. Die Filter helfen dir dabei, schnell bestimmte Inhalte zu finden.',
+      content: isMobile
+        ? 'Tippe auf diesen Button um Such- und Filter-Optionen zu öffnen. Dort findest du Suchleiste, Buttons zum Hinzufügen und Entdecken von Serien, sowie verschiedene Filter-Optionen. Die Tour wird nach den wichtigsten Bereichen der App fortfahren.'
+        : 'Hier kannst du deine Sammlung durchsuchen und filtern. Die Filter helfen dir dabei, schnell bestimmte Inhalte zu finden.',
       position: 'bottom',
       spotlightPadding: 8,
     },
-    {
-      target: '[data-tour="search-input"]',
-      title: '🔤 Suchleiste',
-      content:
-        'Gib hier den Namen einer Serie ein um sie schnell zu finden. Die Suche funktioniert in Echtzeit während du tippst.',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
-
-    {
-      target: '[data-tour="add-button"]',
-      title: '➕ Serie hinzufügen',
-      content:
-        'Mit diesem Button kannst du neue Serien zu deiner Sammlung hinzufügen. Einfach den Namen eingeben und aus den Suchergebnissen auswählen.',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
-    {
-      target: '[data-tour="discover-button"]',
-      title: '🔍 Serien entdecken',
-      content:
-        'Entdecke noch unveröffentlichte Serien und füge sie zu deiner Wishlist hinzu. So verpasst du keine neuen Releases!',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
-    {
-      target: '[data-tour="recommendations-button"]',
-      title: '🎯 Empfehlungen',
-      content:
-        'Erhalte personalisierte Serienempfehlungen basierend auf deinen Bewertungen und Vorlieben. Der Algorithmus lernt deinen Geschmack!',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
-    {
-      target: '[data-tour="genre-filter"]',
-      title: '🎭 Genre-Filter',
-      content:
-        'Filtere deine Sammlung nach Genres wie Action, Comedy, Drama usw. So findest du schnell Serien eines bestimmten Typs.',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
-    {
-      target: '[data-tour="provider-filter"]',
-      title: '📺 Streaming-Anbieter Filter',
-      content:
-        'Zeige nur Serien von bestimmten Anbietern wie Netflix, Amazon Prime, Disney+ etc. Perfekt um zu sehen was auf welcher Plattform verfügbar ist.',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
-    {
-      target: '[data-tour="watchlist-button"]',
-      title: '📋 Watchlist',
-      content:
-        'Zeige nur Serien aus deiner Watchlist an. Das sind Serien die du als "Geplant" markiert hast und bald schauen möchtest.',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
-    {
-      target: '[data-tour="next-watch-button"]',
-      title: '⏭️ Als nächstes schauen',
-      content:
-        'Finde heraus welche Episoden oder Serien du als nächstes schauen könntest. Basiert auf deinem aktuellen Fortschritt.',
-      position: 'bottom',
-      spotlightPadding: 8,
-    },
+    // Conditional steps: only show these if not on mobile, or if mobile filters are expanded
+    ...(isMobile
+      ? []
+      : ([
+          {
+            target: '[data-tour="search-input"]',
+            title: '🔤 Suchleiste',
+            content:
+              'Gib hier den Namen einer Serie ein um sie schnell zu finden. Die Suche funktioniert in Echtzeit während du tippst.',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+          {
+            target: '[data-tour="add-button"]',
+            title: '➕ Serie hinzufügen',
+            content:
+              'Mit diesem Button kannst du neue Serien zu deiner Sammlung hinzufügen. Einfach den Namen eingeben und aus den Suchergebnissen auswählen.',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+          {
+            target: '[data-tour="discover-button"]',
+            title: '🔍 Serien entdecken',
+            content:
+              'Entdecke noch unveröffentlichte Serien und füge sie zu deiner Wishlist hinzu. So verpasst du keine neuen Releases!',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+          {
+            target: '[data-tour="recommendations-button"]',
+            title: '🎯 Empfehlungen',
+            content:
+              'Erhalte personalisierte Serienempfehlungen basierend auf deinen Bewertungen und Vorlieben. Der Algorithmus lernt deinen Geschmack!',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+          {
+            target: '[data-tour="genre-filter"]',
+            title: '🎭 Genre-Filter',
+            content:
+              'Filtere deine Sammlung nach Genres wie Action, Comedy, Drama usw. So findest du schnell Serien eines bestimmten Typs.',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+          {
+            target: '[data-tour="provider-filter"]',
+            title: '📺 Streaming-Anbieter Filter',
+            content:
+              'Zeige nur Serien von bestimmten Anbietern wie Netflix, Amazon Prime, Disney+ etc. Perfekt um zu sehen was auf welcher Plattform verfügbar ist.',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+          {
+            target: '[data-tour="watchlist-button"]',
+            title: '📋 Watchlist',
+            content:
+              'Zeige nur Serien aus deiner Watchlist an. Das sind Serien die du als "Geplant" markiert hast und bald schauen möchtest.',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+          {
+            target: '[data-tour="next-watch-button"]',
+            title: '⏭️ Als nächstes schauen',
+            content:
+              'Finde heraus welche Episoden oder Serien du als nächstes schauen könntest. Basiert auf deinem aktuellen Fortschritt.',
+            position: 'bottom' as const,
+            spotlightPadding: 8,
+          },
+        ] as TourStep[])),
     {
       target: '[data-tour="legend"]',
       title: '🎨 Legende & Status',
@@ -268,15 +280,24 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     onTourComplete();
   };
 
-  // Custom tour logic to show mock card when needed
+  // Custom tour logic to show mock card when needed and handle mobile filter expansion
   const customOnStepChange = (currentStep: number) => {
-    // Mock card soll nur bei Schritten 16-19 sichtbar sein (nicht bei series-grid step 15!)
-    if (currentStep >= 16 && currentStep <= 19) {
+    const currentTarget = tourSteps[currentStep]?.target;
+
+    // Mock card soll bei MockCard-relevanten Targets sichtbar sein
+    const mockCardTargets = [
+      '[data-tour="series-providers"]',
+      '[data-tour="series-watchlist-button"]',
+      '[data-tour="series-rating"]',
+      '[data-tour="series-menu"]',
+    ];
+
+    if (mockCardTargets.includes(currentTarget)) {
       setShowMockCard(true);
 
-      // Auf Mobile nach oben scrollen wenn MockCard erscheint
+      // Auf Mobile nach oben scrollen wenn MockCard erscheint (beim ersten MockCard step)
       const isMobile = window.innerWidth < 768;
-      if (isMobile && currentStep === 16) { // Jetzt bei Step 16 statt 15
+      if (isMobile && currentTarget === '[data-tour="series-providers"]') {
         setTimeout(() => {
           window.scrollTo({
             top: 0,
@@ -285,18 +306,14 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
         }, 300);
       }
 
-      // Bestimme welcher Bereich hervorgehoben werden soll
-      if (currentStep === 16) {
-        // series-providers step
+      // Bestimme welcher Bereich hervorgehoben werden soll basierend auf dem Target
+      if (currentTarget === '[data-tour="series-providers"]') {
         setCurrentHighlightArea('series-providers');
-      } else if (currentStep === 17) {
-        // series-watchlist-button step
+      } else if (currentTarget === '[data-tour="series-watchlist-button"]') {
         setCurrentHighlightArea('series-watchlist-button');
-      } else if (currentStep === 18) {
-        // series-rating step
+      } else if (currentTarget === '[data-tour="series-rating"]') {
         setCurrentHighlightArea('series-rating');
-      } else if (currentStep === 19) {
-        // series-menu step
+      } else if (currentTarget === '[data-tour="series-menu"]') {
         setCurrentHighlightArea('series-menu');
       }
     } else {
@@ -304,6 +321,8 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       setShowMockCard(false);
       setCurrentHighlightArea('');
     }
+
+    // No automatic clicking - let user manually expand filters on mobile
   };
 
   return (

@@ -1,12 +1,15 @@
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import ExploreIcon from '@mui/icons-material/Explore';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import ListIcon from '@mui/icons-material/List';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import {
   Box,
   Button,
+  Collapse,
   Divider,
   SelectChangeEvent,
   TextField,
@@ -20,24 +23,28 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useDebounce } from '../../hooks/useDebounce';
-import { Series } from '../../types/Series';
-import { calculateOverallRating } from '../../lib/rating/rating';
 import { generateRecommendations } from '../../features/recommendations/recommendationEngine';
+import { useDebounce } from '../../hooks/useDebounce';
+import { calculateOverallRating } from '../../lib/rating/rating';
+import { Series } from '../../types/Series';
 import AddSeriesDialog from '../domain/dialogs/AddSeriesDialog';
 import DiscoverSeriesDialog from '../domain/dialogs/DiscoverSeriesDialog';
 import RecommendationsDialog from '../domain/dialogs/RecommendationsDialog';
 import WatchlistDialog from '../domain/dialogs/Watchlist/WatchlistDialog';
+
 interface SearchFiltersProps {
   onSearchChange: (value: string) => void;
   onGenreChange: (value: string) => void;
   onProviderChange: (value: string) => void;
+  onSpecialFilterChange?: (value: string) => void;
 }
+
 // React 19: Automatische Memoization - kein memo nötig
 export const SearchFilters = ({
   onSearchChange,
   onGenreChange,
   onProviderChange,
+  onSpecialFilterChange,
 }: SearchFiltersProps) => {
   const [searchValue, setSearchValue] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
@@ -46,7 +53,6 @@ export const SearchFilters = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogDiscoverOpen, setDialogDiscoverOpen] = useState(false);
   const { seriesList } = useSeriesList();
-  // const { updateUserActivity } = useOptimizedFriends(); // Nicht mehr benötigt - keine Friend-Activities für Episodes
   const debouncedSearchValue = useDebounce(searchValue, 300);
   const authContext = useAuth();
   const user = authContext?.user;
@@ -58,6 +64,7 @@ export const SearchFilters = ({
   const [recommendations, setRecommendations] = useState<Series[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [basedOnSeries, setBasedOnSeries] = useState<Series[]>([]);
+  const [mobileFiltersExpanded, setMobileFiltersExpanded] = useState(false);
 
   // Reset lokale Filterstates, wenn sich der Benutzer ändert
   useEffect(() => {
@@ -67,11 +74,13 @@ export const SearchFilters = ({
     onSearchChange('');
     onGenreChange('All');
     onProviderChange('All');
-  }, [user]);
+    if (onSpecialFilterChange) onSpecialFilterChange('');
+  }, [user, onSpecialFilterChange]);
 
   useEffect(() => {
     onSearchChange(debouncedSearchValue);
   }, [debouncedSearchValue, onSearchChange]);
+
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
@@ -80,6 +89,7 @@ export const SearchFilters = ({
     },
     [onSearchChange]
   );
+
   const handleGenreChange = useCallback(
     (event: SelectChangeEvent<unknown>) => {
       const value = event.target.value as string;
@@ -88,6 +98,7 @@ export const SearchFilters = ({
     },
     [onGenreChange]
   );
+
   const handleProviderChange = useCallback(
     (event: SelectChangeEvent<unknown>) => {
       const value = event.target.value as string;
@@ -96,6 +107,7 @@ export const SearchFilters = ({
     },
     [onProviderChange]
   );
+
   const handleWatchlistToggle = useCallback(() => {
     setIsWatchlist((prev) => {
       const newState = !prev;
@@ -113,6 +125,7 @@ export const SearchFilters = ({
       return newState;
     });
   }, [onGenreChange, onProviderChange]);
+
   const handleDialogOpen = () => {
     setDialogOpen(true);
     setTimeout(() => {
@@ -121,6 +134,7 @@ export const SearchFilters = ({
       }
     }, 100);
   };
+
   const handleDialogAddOpen = () => {
     setDialogAddOpen(true);
     setTimeout(() => {
@@ -129,9 +143,11 @@ export const SearchFilters = ({
       }
     }, 100);
   };
+
   const handleDialogDiscoverOpen = () => {
     setDialogDiscoverOpen(true);
   };
+
   const handleDialogClose = () => {
     setDialogOpen(false);
   };
@@ -250,64 +266,102 @@ export const SearchFilters = ({
   };
 
   return (
-    <Box className='flex flex-col gap-4 xl:flex-row md:items-center justify-center mb-6 max-w-[1400px] m-auto'>
-      <Box className='flex flex-col lg:flex-row items-center gap-2'>
-        <Box sx={{ width: '250px', flexShrink: 0 }} data-tour="search-input">
-          <TextField
-            label='Suchen'
-            variant='outlined'
-            type='search'
-            value={searchValue}
-            onChange={handleSearchChange}
-            fullWidth
-            inputRef={searchInputRef}
-          />
-        </Box>
-        <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
-          <Box sx={{ flexShrink: 0 }} data-tour="add-button">
-            <Tooltip title='Serie hinzufügen'>
-              <Button
-                variant='outlined'
-                onClick={handleDialogAddOpen}
-                sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '0.5rem',
-                  overflow: 'hidden',
-                  transition: 'width 0.3s ease',
-                  justifyContent: 'flex-start',
-                  pl: '19px',
-                  '@media (min-width:900px)': {
-                    '&:hover': { width: 150 },
-                    '&:hover .text-wrapper': {
-                      opacity: 1,
-                      transition: 'opacity 0.5s ease',
-                    },
-                  },
-                }}
-                aria-label='Serie hinzufügen'
-                role='button'
-              >
-                <AddIcon />
-                <Box
-                  component='span'
+    <Box className='max-w-[1400px] m-auto mb-6'>
+      {/* Mobile Filter Toggle Button */}
+      <Box sx={{ display: { xs: 'block', xl: 'none' }, mb: 2 }}>
+        <Button
+          onClick={() => setMobileFiltersExpanded(!mobileFiltersExpanded)}
+          variant='outlined'
+          fullWidth
+          startIcon={<FilterListIcon />}
+          endIcon={mobileFiltersExpanded ? <ExpandLess /> : <ExpandMore />}
+          data-tour='mobile-filters-button'
+          sx={{
+            justifyContent: 'space-between',
+            height: '48px',
+            fontSize: '0.875rem',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            borderColor: 'rgba(255, 255, 255, 0.2)',
+            color: 'rgba(255, 255, 255, 0.9)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: 'rgba(0, 254, 215, 0.5)',
+            },
+          }}
+        >
+          Filter & Suche
+        </Button>
+      </Box>
+
+      {/* Desktop Layout */}
+      <Box
+        sx={{
+          display: { xs: 'none', xl: 'flex' },
+          flexDirection: { xs: 'column', xl: 'row' },
+          gap: 4,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Box className='flex flex-col lg:flex-row items-center gap-2'>
+          <Box sx={{ width: '250px', flexShrink: 0 }} data-tour='search-input'>
+            <TextField
+              label='Suchen'
+              variant='outlined'
+              type='search'
+              value={searchValue}
+              onChange={handleSearchChange}
+              fullWidth
+              inputRef={searchInputRef}
+            />
+          </Box>
+          <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
+            <Box sx={{ flexShrink: 0 }} data-tour='add-button'>
+              <Tooltip title='Serie hinzufügen'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogAddOpen}
                   sx={{
-                    whiteSpace: 'nowrap',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
+                    width: 56,
+                    height: 56,
+                    borderRadius: '0.5rem',
+                    overflow: 'hidden',
+                    transition: 'width 0.3s ease',
+                    justifyContent: 'flex-start',
+                    pl: '19px',
                     '@media (min-width:900px)': {
-                      '&:hover, button:hover &': { opacity: 1 },
+                      '&:hover': { width: 150 },
+                      '&:hover .text-wrapper': {
+                        opacity: 1,
+                        transition: 'opacity 0.5s ease',
+                      },
                     },
                   }}
-                  className='text-wrapper'
+                  aria-label='Serie hinzufügen'
+                  role='button'
                 >
-                  Hinzufügen
-                </Box>
-              </Button>
-            </Tooltip>
-          </Box>
-          <>
-            <Tooltip title='Unveröffentlichte Serien entdecken' data-tour="discover-button">
+                  <AddIcon />
+                  <Box
+                    component='span'
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                      '@media (min-width:900px)': {
+                        '&:hover, button:hover &': { opacity: 1 },
+                      },
+                    }}
+                    className='text-wrapper'
+                  >
+                    Hinzufügen
+                  </Box>
+                </Button>
+              </Tooltip>
+            </Box>
+            <Tooltip
+              title='Unveröffentlichte Serien entdecken'
+              data-tour='discover-button'
+            >
               <Button
                 variant='outlined'
                 onClick={handleDialogDiscoverOpen}
@@ -347,7 +401,10 @@ export const SearchFilters = ({
                 </Box>
               </Button>
             </Tooltip>
-            <Tooltip title='Empfehlungen anzeigen' data-tour="recommendations-button">
+            <Tooltip
+              title='Empfehlungen anzeigen'
+              data-tour='recommendations-button'
+            >
               <Button
                 variant='outlined'
                 onClick={handleDialogRecommendationsOpen}
@@ -387,48 +444,54 @@ export const SearchFilters = ({
                 </Box>
               </Button>
             </Tooltip>
-          </>
-          <Divider
-            className='hidden'
-            orientation='vertical'
-            flexItem
-            sx={{ display: { xl: 'block' }, ml: 1 }}
-          />
+            <Divider
+              className='hidden'
+              orientation='vertical'
+              flexItem
+              sx={{ display: { xl: 'block' }, ml: 1 }}
+            />
+          </Box>
         </Box>
-      </Box>
-      <Box className='flex flex-col lg:flex-row items-center gap-2'>
-        <FormControl className='w-[250px]' disabled={isWatchlist} data-tour="genre-filter">
-          <InputLabel id='genre-label'>Genre</InputLabel>
-          <Select
-            labelId='genre-label'
-            label='Genre'
-            value={selectedGenre}
-            onChange={handleGenreChange}
+        <Box className='flex flex-col lg:flex-row items-center gap-2'>
+          <FormControl
+            className='w-[250px]'
+            disabled={isWatchlist}
+            data-tour='genre-filter'
           >
-            {genreMenuItems.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                {item.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl className='w-[250px]' disabled={isWatchlist} data-tour="provider-filter">
-          <InputLabel id='provider-label'>Provider</InputLabel>
-          <Select
-            labelId='provider-label'
-            label='Provider'
-            value={selectedProvider}
-            onChange={handleProviderChange}
+            <InputLabel id='genre-label'>Genre</InputLabel>
+            <Select
+              labelId='genre-label'
+              label='Genre'
+              value={selectedGenre}
+              onChange={handleGenreChange}
+            >
+              {genreMenuItems.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl
+            className='w-[250px]'
+            disabled={isWatchlist}
+            data-tour='provider-filter'
           >
-            {providerMenuItems.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                {item.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-      <>
+            <InputLabel id='provider-label'>Provider</InputLabel>
+            <Select
+              labelId='provider-label'
+              label='Provider'
+              value={selectedProvider}
+              onChange={handleProviderChange}
+            >
+              {providerMenuItems.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
         <Divider
           className='hidden'
           orientation='vertical'
@@ -438,7 +501,7 @@ export const SearchFilters = ({
         <Box className='flex gap-3 justify-center md:justify-start mt-0'>
           <Tooltip
             title={isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'}
-            data-tour="watchlist-button"
+            data-tour='watchlist-button'
           >
             <Button
               variant={isWatchlist ? 'contained' : 'outlined'}
@@ -481,7 +544,7 @@ export const SearchFilters = ({
               </Box>
             </Button>
           </Tooltip>
-          <Tooltip title='Als nächstes schauen' data-tour="next-watch-button">
+          <Tooltip title='Als nächstes schauen' data-tour='next-watch-button'>
             <Button
               variant='outlined'
               onClick={handleDialogOpen}
@@ -522,7 +585,159 @@ export const SearchFilters = ({
             </Button>
           </Tooltip>
         </Box>
-      </>
+      </Box>
+
+      {/* Mobile Collapsible Layout */}
+      <Collapse
+        in={mobileFiltersExpanded}
+        sx={{ display: { xs: 'block', xl: 'none' } }}
+      >
+        <Box
+          sx={{
+            p: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+            borderRadius: 2,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          {/* Suchfeld */}
+          <Box sx={{ mb: 2 }} data-tour='search-input'>
+            <TextField
+              label='Suchen'
+              variant='outlined'
+              type='search'
+              value={searchValue}
+              onChange={handleSearchChange}
+              fullWidth
+              inputRef={searchInputRef}
+            />
+          </Box>
+
+          {/* Dropdown Filters */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+            <FormControl
+              fullWidth
+              disabled={isWatchlist}
+              data-tour='genre-filter'
+            >
+              <InputLabel id='genre-label'>Genre</InputLabel>
+              <Select
+                labelId='genre-label'
+                label='Genre'
+                value={selectedGenre}
+                onChange={handleGenreChange}
+              >
+                {genreMenuItems.map((item) => (
+                  <MenuItem key={item.value} value={item.value}>
+                    {item.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl
+              fullWidth
+              disabled={isWatchlist}
+              data-tour='provider-filter'
+            >
+              <InputLabel id='provider-label'>Provider</InputLabel>
+              <Select
+                labelId='provider-label'
+                label='Provider'
+                value={selectedProvider}
+                onChange={handleProviderChange}
+              >
+                {providerMenuItems.map((item) => (
+                  <MenuItem key={item.value} value={item.value}>
+                    {item.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 1,
+              }}
+            >
+              <Tooltip title='Serie hinzufügen'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogAddOpen}
+                  startIcon={<AddIcon />}
+                  fullWidth
+                  data-tour='add-button'
+                >
+                  Hinzufügen
+                </Button>
+              </Tooltip>
+              <Tooltip title='Unveröffentlichte Serien entdecken'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogDiscoverOpen}
+                  startIcon={<ExploreIcon />}
+                  fullWidth
+                  data-tour='discover-button'
+                >
+                  Entdecken
+                </Button>
+              </Tooltip>
+            </Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 1,
+              }}
+            >
+              <Tooltip title='Empfehlungen anzeigen'>
+                <Button
+                  variant='outlined'
+                  onClick={handleDialogRecommendationsOpen}
+                  startIcon={<RecommendIcon />}
+                  fullWidth
+                  data-tour='recommendations-button'
+                >
+                  Empfehlung
+                </Button>
+              </Tooltip>
+              <Tooltip
+                title={
+                  isWatchlist ? 'Watchlist ausblenden' : 'Watchlist anzeigen'
+                }
+              >
+                <Button
+                  variant={isWatchlist ? 'contained' : 'outlined'}
+                  onClick={handleWatchlistToggle}
+                  startIcon={
+                    isWatchlist ? <BookmarkIcon /> : <BookmarkBorderIcon />
+                  }
+                  fullWidth
+                  data-tour='watchlist-button'
+                >
+                  {isWatchlist ? 'Ausblenden' : 'Watchlist'}
+                </Button>
+              </Tooltip>
+            </Box>
+            <Tooltip title='Als nächstes schauen'>
+              <Button
+                variant='outlined'
+                onClick={handleDialogOpen}
+                startIcon={<ListIcon />}
+                fullWidth
+                data-tour='next-watch-button'
+              >
+                Nächstes
+              </Button>
+            </Tooltip>
+          </Box>
+        </Box>
+      </Collapse>
+
       <WatchlistDialog open={dialogOpen} onClose={handleDialogClose} />
       <AddSeriesDialog
         open={dialogAddOpen}
@@ -543,4 +758,5 @@ export const SearchFilters = ({
     </Box>
   );
 };
+
 export default SearchFilters;
