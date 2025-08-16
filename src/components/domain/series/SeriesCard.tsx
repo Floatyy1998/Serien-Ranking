@@ -846,7 +846,9 @@ export const SeriesCard = ({
                   disabled: disableRatingDialog,
                 },
                 {
-                  label: 'Gesehene Episoden bearbeiten',
+                  label: forceReadOnlyDialogs || isUserProfilePage 
+                    ? 'Gesehene Episoden ansehen' 
+                    : 'Gesehene Episoden bearbeiten',
                   icon: <CheckCircleIcon />,
                   onClick: handleTitleClick,
                 },

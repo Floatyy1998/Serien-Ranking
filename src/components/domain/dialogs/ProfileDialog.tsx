@@ -417,9 +417,10 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
             'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
           backdropFilter: 'blur(10px)',
           color: '#ffffff',
+          borderBottom: 'none',
         }}
       >
-        <Box sx={{ px: { xs: 2, sm: 3 } }}>
+        <Box sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
           <Box
             display='flex'
             flexDirection='column'
@@ -494,28 +495,23 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 onChange={(e) => setUsername(e.target.value)}
                 fullWidth
                 disabled={!usernameEditable}
-                helperText='3-20 Zeichen, nur Buchstaben, Zahlen und _'
+                placeholder='3-20 Zeichen, nur Buchstaben, Zahlen und _'
                 error={!!username && !isUsernameValid(username)}
                 sx={{
+                  backgroundColor: 'transparent',
                   '& .MuiOutlinedInput-root': {
-                    background: 'rgba(45,45,48,0.8)',
+                    backgroundColor: 'rgba(45,45,48,0.3)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.2)',
                     color: '#ffffff',
-                    minHeight: { xs: 48, sm: 40 },
-                    paddingRight: '48px', // Platz für das Edit-Icon
-                    '& fieldset': {
-                      border: 'none',
+                    borderRadius: '12px !important',
+                    transition: 'all 0.3s ease',
+                    paddingRight: '48px',
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(0,254,215,0.5)',
                     },
-                    '&:hover': {
-                      background: 'rgba(55,55,58,0.9)',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                    },
-                    '&.Mui-focused': {
-                      background: 'rgba(65,65,68,0.95)',
-                      border: '1px solid #00fed7',
-                      boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#00fed7',
+                      borderWidth: '2px',
                     },
                   },
                   '& .MuiInputLabel-root': {
@@ -524,18 +520,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                       color: '#00fed7',
                     },
                   },
-                  '& .Mui-disabled': {
-                    color: 'rgba(255,255,255,0.6) !important',
-                    '-webkit-text-fill-color':
-                      'rgba(255,255,255,0.6) !important',
-                  },
-                  '& .MuiFormHelperText-root': {
-                    backgroundColor: 'rgba(0,0,0,0.3)',
-                    margin: '3px 0 0 0',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.7)',
+                  '& .MuiOutlinedInput-input': {
+                    color: '#ffffff',
+                    '&::placeholder': {
+                      color: 'rgba(255,255,255,0.4)',
+                      opacity: 1,
+                    },
                   },
                 }}
               />
@@ -544,11 +534,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 sx={{
                   position: 'absolute',
                   right: 8,
-                  top: '32%',
+                  top: '50%',
                   transform: 'translateY(-50%)',
-                  color: usernameEditable ? 'primary.main' : 'text.secondary',
+                  color: usernameEditable ? '#00fed7' : 'rgba(255,255,255,0.6)',
                   '&:hover': {
-                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                    color: '#00fed7',
+                    backgroundColor: 'rgba(0,254,215,0.1)',
                   },
                 }}
                 size='small'
@@ -561,7 +552,6 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
             <Box
               sx={{
                 position: 'relative',
-                backgroundColor: 'rgba(45,45,48,0.8)',
               }}
             >
               <TextField
@@ -570,27 +560,22 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 onChange={(e) => setDisplayName(e.target.value)}
                 fullWidth
                 disabled={!displayNameEditable}
-                helperText='Wird anderen Nutzern angezeigt'
+                placeholder='Wird anderen Nutzern angezeigt'
                 sx={{
+                  backgroundColor: 'transparent',
                   '& .MuiOutlinedInput-root': {
-                    background: 'rgba(45,45,48,0.8)',
+                    backgroundColor: 'rgba(45,45,48,0.3)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.2)',
                     color: '#ffffff',
-                    minHeight: { xs: 48, sm: 40 },
-                    paddingRight: '48px', // Platz für das Edit-Icon
-                    '& fieldset': {
-                      border: 'none',
+                    borderRadius: '12px !important',
+                    transition: 'all 0.3s ease',
+                    paddingRight: '48px',
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(0,254,215,0.5)',
                     },
-                    '&:hover': {
-                      background: 'rgba(55,55,58,0.9)',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                    },
-                    '&.Mui-focused': {
-                      background: 'rgba(65,65,68,0.95)',
-                      border: '1px solid #00fed7',
-                      boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#00fed7',
+                      borderWidth: '2px',
                     },
                   },
                   '& .MuiInputLabel-root': {
@@ -599,18 +584,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                       color: '#00fed7',
                     },
                   },
-                  '& .Mui-disabled': {
-                    color: 'rgba(255,255,255,0.6) !important',
-                    '-webkit-text-fill-color':
-                      'rgba(255,255,255,0.6) !important',
-                  },
-                  '& .MuiFormHelperText-root': {
-                    backgroundColor: 'rgba(0,0,0,0.3)',
-                    margin: '3px 0 0 0',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.7)',
+                  '& .MuiOutlinedInput-input': {
+                    color: '#ffffff',
+                    '&::placeholder': {
+                      color: 'rgba(255,255,255,0.4)',
+                      opacity: 1,
+                    },
                   },
                 }}
               />
@@ -619,13 +598,12 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 sx={{
                   position: 'absolute',
                   right: 8,
-                  top: '32%',
+                  top: '50%',
                   transform: 'translateY(-50%)',
-                  color: displayNameEditable
-                    ? 'primary.main'
-                    : 'text.secondary',
+                  color: displayNameEditable ? '#00fed7' : 'rgba(255,255,255,0.6)',
                   '&:hover': {
-                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                    color: '#00fed7',
+                    backgroundColor: 'rgba(0,254,215,0.1)',
                   },
                 }}
                 size='small'
@@ -834,6 +812,9 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           background:
             'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
           backdropFilter: 'blur(10px)',
+          borderTop: 'none',
+          margin: 0,
+          marginTop: '-1px',
         }}
       >
         {/* Mobile Layout */}

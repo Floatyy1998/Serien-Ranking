@@ -649,6 +649,7 @@ export const MovieCard = ({
           {currentMovie.status !== 'Released' && (
             <Box
               className='absolute bottom-16 left-0 right-0'
+              onClick={() => setOpen(true)}
               sx={{
                 background:
                   'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
@@ -675,7 +676,7 @@ export const MovieCard = ({
                   textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                 }}
               >
-                🎬 {dateString}
+{dateString}
               </Typography>
             </Box>
           )}

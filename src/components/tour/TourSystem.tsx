@@ -73,7 +73,6 @@ export const TourSystem: React.FC<TourSystemProps> = ({
           // Bei MockCard steps nicht scrollen, da MockCard bereits richtig positioniert ist
           // series-grid wird normal gescrollt, da dort noch keine MockCard ist
           if (isMockCardStep) {
-            console.log('Skip scrolling for MockCard step:', currentTarget);
             return;
           }
           
@@ -81,13 +80,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
           const isMobile = window.innerWidth < 768;
           const headerOffset = isMobile ? 160 : 160;
           
-          console.log('Scroll Debug - Element top:', elementRect.top);
-          console.log('Scroll Debug - Header offset:', headerOffset);
-          console.log('Scroll Debug - Current scroll:', window.pageYOffset);
-          
           const newScrollTop = window.pageYOffset + elementRect.top - headerOffset;
-          
-          console.log('Scroll Debug - New scroll top:', newScrollTop);
           
           window.scrollTo({
             top: Math.max(0, newScrollTop),
@@ -412,9 +405,14 @@ export const TourSystem: React.FC<TourSystemProps> = ({
         <DialogActions
           sx={{
             p: { xs: 2, md: 3 },
-            gap: { xs: 1, md: 1 },
-            flexDirection: { xs: 'column', sm: 'row' },
+            display: 'flex',
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+            gap: { xs: 1.5, sm: 1 },
+            justifyContent: { sm: 'space-between' },
             background: 'rgba(26, 26, 26, 0.95)',
+            '& .MuiButton-root': {
+              margin: 0,
+            },
           }}
         >
           <Button
@@ -425,8 +423,9 @@ export const TourSystem: React.FC<TourSystemProps> = ({
               '&:hover': {
                 backgroundColor: 'rgba(0, 254, 215, 0.1)',
               },
+              flex: { xs: 'none', sm: 1 },
               width: { xs: '100%', sm: 'auto' },
-              order: { xs: 2, sm: 1 },
+              maxWidth: { sm: '200px' },
             }}
             variant='outlined'
           >
@@ -443,8 +442,9 @@ export const TourSystem: React.FC<TourSystemProps> = ({
               '&:hover': {
                 backgroundColor: '#cc3333',
               },
+              flex: { xs: 'none', sm: 1 },
               width: { xs: '100%', sm: 'auto' },
-              order: { xs: 1, sm: 2 },
+              maxWidth: { sm: '200px' },
             }}
           >
             Tour beenden
