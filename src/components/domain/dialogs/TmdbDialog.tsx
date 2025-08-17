@@ -2,7 +2,7 @@ import {
   Add as AddIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -18,19 +18,19 @@ import {
   Tabs,
   Tooltip,
   Typography,
-} from '@mui/material';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../../../App';
-import { colors } from '../../../theme';
-import { useMovieList } from '../../../contexts/MovieListProvider';
-import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
-import { translateJob } from '../../../services/tmdbJobTranslations';
+} from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../../../App";
+import { colors } from "../../../theme";
+import { useMovieList } from "../../../contexts/MovieListProvider";
+import { useSeriesList } from "../../../contexts/OptimizedSeriesListProvider";
+import { translateJob } from "../../../services/tmdbJobTranslations";
 
 interface TmdbDialogProps {
   open: boolean;
   loading: boolean;
   data: any;
-  type: 'movie' | 'tv';
+  type: "movie" | "tv";
   onClose: () => void;
   onAdd?: () => void;
   adding?: boolean;
@@ -48,7 +48,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   adding = false,
 }) => {
   // Suchfeld für Cast/Crew
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const auth = useAuth();
   const user = auth?.user;
   const { seriesList } = useSeriesList();
@@ -78,7 +78,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     if (data?.id && open) {
       // Anime-Erkennung - Japanische, chinesische und koreanische Animation
       const isAnime = data.origin_country?.some((country: string) =>
-        ['JP', 'CN', 'KR'].includes(country)
+        ["JP", "CN", "KR"].includes(country),
       );
 
       if (isAnime) {
@@ -103,8 +103,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     try {
       setCastLoading(true);
       const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-      let url = '';
-      if (type === 'tv') {
+      let url = "";
+      if (type === "tv") {
         url = `https://api.themoviedb.org/3/tv/${tmdbId}/aggregate_credits?api_key=${TMDB_API_KEY}&language=de-DE`;
       } else {
         url = `https://api.themoviedb.org/3/movie/${tmdbId}/credits?api_key=${TMDB_API_KEY}&language=de-DE`;
@@ -114,7 +114,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       setCastData(result.cast || []);
       setCrewData(result.crew || []);
     } catch (error) {
-      console.error('Error fetching cast data:', error);
+      console.error("Error fetching cast data:", error);
       setCastData([]);
       setCrewData([]);
     } finally {
@@ -168,10 +168,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         }
       `;
 
-      const response = await fetch('https://graphql.anilist.co', {
-        method: 'POST',
+      const response = await fetch("https://graphql.anilist.co", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           query,
@@ -191,12 +191,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         // Transformiere AniList Daten ins erwartete Format
         const transformedCharacters = result.data.Media.characters.edges
           .filter(
-            (edge: any) => edge.voiceActors && edge.voiceActors.length > 0
+            (edge: any) => edge.voiceActors && edge.voiceActors.length > 0,
           )
           .map((edge: any) => ({
             character: {
-              name: `${edge.node.name.first || ''} ${
-                edge.node.name.last || ''
+              name: `${edge.node.name.first || ""} ${
+                edge.node.name.last || ""
               }`.trim(),
               images: {
                 jpg: {
@@ -204,25 +204,25 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 },
               },
             },
-            role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
+            role: edge.role === "MAIN" ? "Hauptrolle" : "Nebenrolle",
             voice_actors: edge.voiceActors.map((va: any) => ({
               person: {
-                name: `${va.name.first || ''} ${va.name.last || ''}`.trim(),
+                name: `${va.name.first || ""} ${va.name.last || ""}`.trim(),
                 images: {
                   jpg: {
                     image_url: va.image.large,
                   },
                 },
               },
-              language: 'Japanese',
+              language: "Japanese",
             })),
           }));
 
         setAnimeCharacters(transformedCharacters);
       }
     } catch (error) {
-      console.error('Error fetching anime characters from AniList:', error);
-      console.log('Fallback: Zeige TMDB Cast statt Anime Charaktere');
+      console.error("Error fetching anime characters from AniList:", error);
+      console.log("Fallback: Zeige TMDB Cast statt Anime Charaktere");
       setAnimeCharacters([]);
       // Cast-Daten sind bereits geladen, werden normal angezeigt
     } finally {
@@ -240,8 +240,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
       // Sortiere Videos: Trailer zuerst, dann nach Veröffentlichungsdatum
       const sortedVideos = (result.results || []).sort((a: any, b: any) => {
-        if (a.type === 'Trailer' && b.type !== 'Trailer') return -1;
-        if (b.type === 'Trailer' && a.type !== 'Trailer') return 1;
+        if (a.type === "Trailer" && b.type !== "Trailer") return -1;
+        if (b.type === "Trailer" && a.type !== "Trailer") return 1;
         return (
           new Date(b.published_at).getTime() -
           new Date(a.published_at).getTime()
@@ -250,7 +250,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
       setVideosData(sortedVideos);
     } catch (error) {
-      console.error('Error fetching videos data:', error);
+      console.error("Error fetching videos data:", error);
       setVideosData([]);
     } finally {
       setVideosLoading(false);
@@ -259,7 +259,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
   const fetchPersonData = async (
     personId: number,
-    isCrewMember: boolean = false
+    isCrewMember: boolean = false,
   ) => {
     try {
       setPersonLoading(true);
@@ -269,10 +269,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       // Person Details und Credits parallel laden
       const [personResponse, creditsResponse] = await Promise.all([
         fetch(
-          `https://api.themoviedb.org/3/person/${personId}?api_key=${TMDB_API_KEY}&language=de-DE`
+          `https://api.themoviedb.org/3/person/${personId}?api_key=${TMDB_API_KEY}&language=de-DE`,
         ),
         fetch(
-          `https://api.themoviedb.org/3/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}&language=de-DE`
+          `https://api.themoviedb.org/3/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}&language=de-DE`,
         ),
       ]);
 
@@ -302,18 +302,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
           if (credit.character) {
             const character = credit.character.toLowerCase();
             if (
-              character === 'self' ||
-              character === 'guest' ||
-              character === 'herself' ||
-              character === 'himself' ||
-              character === 'sie selbst' ||
-              character === 'er selbst' ||
-              character === 'gast' ||
-              character === 'moderator' ||
-              character.includes('guest') ||
-              character.includes('self') ||
-              character.includes('gast') ||
-              character.includes('moderator')
+              character === "self" ||
+              character === "guest" ||
+              character === "herself" ||
+              character === "himself" ||
+              character === "sie selbst" ||
+              character === "er selbst" ||
+              character === "gast" ||
+              character === "moderator" ||
+              character.includes("guest") ||
+              character.includes("self") ||
+              character.includes("gast") ||
+              character.includes("moderator")
             ) {
               return false;
             }
@@ -326,8 +326,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
           if (b.popularity !== a.popularity) {
             return (b.popularity || 0) - (a.popularity || 0);
           }
-          const dateA = a.release_date || a.first_air_date || '0000';
-          const dateB = b.release_date || b.first_air_date || '0000';
+          const dateA = a.release_date || a.first_air_date || "0000";
+          const dateB = b.release_date || b.first_air_date || "0000";
           return dateB.localeCompare(dateA);
         })
         .slice(0, 20); // Begrenzen auf 20 bekannteste
@@ -346,8 +346,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
           if (b.popularity !== a.popularity) {
             return (b.popularity || 0) - (a.popularity || 0);
           }
-          const dateA = a.release_date || a.first_air_date || '0000';
-          const dateB = b.release_date || b.first_air_date || '0000';
+          const dateA = a.release_date || a.first_air_date || "0000";
+          const dateB = b.release_date || b.first_air_date || "0000";
           return dateB.localeCompare(dateA);
         })
         .slice(0, 20);
@@ -363,7 +363,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       }
       setPersonDialogOpen(true);
     } catch (error) {
-      console.error('Error fetching person data:', error);
+      console.error("Error fetching person data:", error);
       setPersonDialogOpen(false);
     } finally {
       setPersonLoading(false);
@@ -382,7 +382,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
       // Validierung der Voice Actor Daten
       if (!voiceActor?.person?.name) {
-        console.warn('Voice Actor hat keinen Namen:', voiceActor);
+        console.warn("Voice Actor hat keinen Namen:", voiceActor);
         setPersonLoading(false);
         return;
       }
@@ -397,8 +397,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         if (tmdbName === voiceActorName) return true;
 
         // Gedrehte Namen (Vor-/Nachname)
-        const tmdbParts = tmdbName.split(' ');
-        const vaParts = voiceActorName.split(' ');
+        const tmdbParts = tmdbName.split(" ");
+        const vaParts = voiceActorName.split(" ");
         if (tmdbParts.length === 2 && vaParts.length === 2) {
           if (tmdbParts[0] === vaParts[1] && tmdbParts[1] === vaParts[0]) {
             return true;
@@ -407,10 +407,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
         // Bekannte Varianten
         const knownVariants: { [key: string]: string[] } = {
-          'yuuki kaji': ['yuki kaji', 'kaji yuki'],
-          'yui ishikawa': ['ishikawa yui'],
-          'marina inoue': ['inoue marina'],
-          'yuu kobayashi': ['yu kobayashi', 'kobayashi yu'],
+          "yuuki kaji": ["yuki kaji", "kaji yuki"],
+          "yui ishikawa": ["ishikawa yui"],
+          "marina inoue": ["inoue marina"],
+          "yuu kobayashi": ["yu kobayashi", "kobayashi yu"],
         };
 
         const variants = knownVariants[voiceActorName] || [];
@@ -424,13 +424,13 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         // Fallback: Zeige AniList Daten
         const fallbackPersonData = {
           id: voiceActor.person.id || Math.random(),
-          name: voiceActor.person.name || 'Unbekannter Sprecher',
+          name: voiceActor.person.name || "Unbekannter Sprecher",
           profile_path: voiceActor.person.images?.jpg?.image_url || null,
           biography: `Japanischer Synchronsprecher (声優, Seiyuu)\n\nNicht in TMDB Cast-Daten gefunden.`,
-          known_for_department: 'Acting',
+          known_for_department: "Acting",
           birthday: null,
           deathday: null,
-          place_of_birth: 'Japan',
+          place_of_birth: "Japan",
           popularity: 1.0,
         };
 
@@ -440,7 +440,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         setCreditsLoading(false);
       }
     } catch (error) {
-      console.error('Error matching voice actor with TMDB cast:', error);
+      console.error("Error matching voice actor with TMDB cast:", error);
       setPersonLoading(false);
       setPersonDialogOpen(false);
     }
@@ -450,7 +450,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   const isTitleInList = (credit: any) => {
     if (!user) return false;
 
-    if (credit.media_type === 'movie') {
+    if (credit.media_type === "movie") {
       return movieList.some((movie) => movie.id === credit.id);
     } else {
       return seriesList.some((series) => series.id === credit.id);
@@ -471,17 +471,17 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       };
 
       const endpoint =
-        credit.media_type === 'movie'
-          ? 'https://serienapi.konrad-dinges.de/addMovie'
-          : 'https://serienapi.konrad-dinges.de/add';
+        credit.media_type === "movie"
+          ? "https://serienapi.konrad-dinges.de/addMovie"
+          : "https://serienapi.konrad-dinges.de/add";
 
       const res = await fetch(endpoint, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(titleData),
       });
@@ -491,13 +491,13 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         // Das passiert automatisch durch die Context Provider
         console.log(
           `${
-            credit.media_type === 'movie' ? 'Film' : 'Serie'
+            credit.media_type === "movie" ? "Film" : "Serie"
           } erfolgreich hinzugefügt:`,
-          credit.title || credit.name
+          credit.title || credit.name,
         );
       }
     } catch (error) {
-      console.error('Error adding title:', error);
+      console.error("Error adding title:", error);
     } finally {
       setAddingTitles((prev) => {
         const newSet = new Set(prev);
@@ -511,7 +511,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   const alreadyAdded = useMemo(() => {
     if (!data || !user) return false;
 
-    if (type === 'tv') {
+    if (type === "tv") {
       return seriesList.some((series) => series.id === data.id);
     } else {
       return movieList.some((movie) => movie.id === data.id);
@@ -524,28 +524,26 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth='sm'
+      maxWidth="sm"
       fullWidth
       slotProps={{
         paper: {
           sx: {
-            maxHeight: '95vh',
-            background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            overflow: 'hidden',
-            boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
-            color: 'white',
+            maxHeight: "95vh",
+            background: colors.background.gradient.dark,
+            borderRadius: "20px",
+            border: `1px solid ${colors.border.subtle}`,
+            overflow: "hidden",
+            boxShadow: `${colors.shadow.dialog}, 0 0 30px ${colors.status.warning}30`,
+            color: colors.text.secondary,
           },
         },
       }}
     >
       {loading ? (
-        <DialogContent sx={{ textAlign: 'center', py: 8 }}>
-          <CircularProgress sx={{ color: 'var(--theme-primary)', mb: 2 }} />
-          <Typography variant='h6' color={'var(--theme-primary)'}>
+        <DialogContent sx={{ textAlign: "center", py: 8 }}>
+          <CircularProgress sx={{ color: "var(--theme-primary)", mb: 2 }} />
+          <Typography variant="h6" color={"var(--theme-primary)"}>
             Lade Daten...
           </Typography>
         </DialogContent>
@@ -553,44 +551,43 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         <>
           <DialogTitle
             sx={{
-              textAlign: 'center',
-              position: 'relative',
-              background:
-                'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
-              backdropFilter: 'blur(15px)',
-              borderBottom: '1px solid rgba(255,255,255,0.05)',
-              color: '#ffffff',
+              textAlign: "center",
+              position: "relative",
+              background: colors.background.gradient.dark,
+              backdropFilter: "blur(15px)",
+              borderBottom: `1px solid ${colors.border.lighter}`,
+              color: colors.text.secondary,
               fontWeight: 600,
-              fontSize: '1.25rem',
+              fontSize: "1.25rem",
             }}
           >
             <Box
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 gap: 2,
-                flexDirection: 'column',
+                flexDirection: "column",
               }}
             >
               <Typography
-                component='div'
-                variant='h4'
-                sx={{ fontWeight: 'bold', color: '#ffd700' }}
+                component="div"
+                variant="h4"
+                sx={{ fontWeight: "bold", color: colors.status.warning }}
               >
-                🎬 {type === 'tv' ? data.name : data.title}
+                🎬 {type === "tv" ? data.name : data.title}
                 {data.first_air_date &&
                   ` (${new Date(data.first_air_date).getFullYear()})`}
                 {data.release_date &&
                   ` (${new Date(data.release_date).getFullYear()})`}
               </Typography>
               <Chip
-                label={type === 'tv' ? '📺 Serie' : '🎬 Film'}
-                size='small'
+                label={type === "tv" ? "📺 Serie" : "🎬 Film"}
+                size="small"
                 sx={{
-                  backgroundColor: 'var(--theme-primary)',
+                  backgroundColor: "var(--theme-primary)",
                   color: colors.text.secondary,
-                  fontWeight: 'bold',
+                  fontWeight: "bold",
                 }}
               />
             </Box>
@@ -598,18 +595,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             <IconButton
               onClick={onClose}
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 right: 16,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'rgba(255,255,255,0.7)',
-                background: 'rgba(255,255,255,0.05)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '12px',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.1)',
-                  color: '#ffffff',
-                  transform: 'translateY(-50%) scale(1.05)',
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: colors.text.placeholder,
+                background: colors.overlay.light,
+                backdropFilter: "blur(10px)",
+                borderRadius: "12px",
+                "&:hover": {
+                  background: colors.overlay.white,
+                  color: colors.text.secondary,
+                  transform: "translateY(-50%) scale(1.05)",
                 },
               }}
             >
@@ -621,51 +618,50 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             value={currentTab}
             onChange={(_, newValue) => setCurrentTab(newValue)}
             sx={{
-              borderBottom: '1px solid rgba(255,255,255,0.1)',
-              backgroundColor: 'rgba(26,26,26,0.95)',
-              '& .MuiTab-root': {
-                color: 'rgba(255,255,255,0.7)',
-                '&.Mui-selected': {
-                  color: 'var(--theme-primary)',
+              borderBottom: `1px solid ${colors.border.subtle}`,
+              backgroundColor: colors.background.surface,
+              "& .MuiTab-root": {
+                color: colors.text.placeholder,
+                "&.Mui-selected": {
+                  color: "var(--theme-primary)",
                 },
               },
-              '& .MuiTabs-indicator': {
-                backgroundColor: 'var(--theme-primary)',
+              "& .MuiTabs-indicator": {
+                backgroundColor: "var(--theme-primary)",
               },
             }}
           >
-            <Tab label='Details' />
-            <Tab label='Cast' />
-            <Tab label='Videos' />
+            <Tab label="Details" />
+            <Tab label="Cast" />
+            <Tab label="Videos" />
           </Tabs>
           <DialogContent
             sx={{
               p: 0,
-              background:
-                'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
-              backdropFilter: 'blur(10px)',
-              color: '#ffffff',
+              background: colors.background.gradient.light,
+              backdropFilter: "blur(10px)",
+              color: colors.text.secondary,
             }}
           >
             {currentTab === 0 && (
               <Box
-                display='flex'
+                display="flex"
                 gap={3}
-                flexDirection={{ xs: 'column', md: 'row' }}
+                flexDirection={{ xs: "column", md: "row" }}
               >
                 {data.poster_path && (
                   <Box sx={{ flexShrink: 0 }} mt={1.5}>
                     <Box
-                      component='img'
+                      component="img"
                       src={`https://image.tmdb.org/t/p/w300${data.poster_path}`}
-                      alt={type === 'tv' ? data.name : data.title}
+                      alt={type === "tv" ? data.name : data.title}
                       sx={{
-                        width: { xs: '200px', md: '250px' },
-                        height: 'auto',
+                        width: { xs: "200px", md: "250px" },
+                        height: "auto",
                         borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                        mx: { xs: 'auto', md: 0 },
-                        display: 'block',
+                        boxShadow: colors.shadow.button,
+                        mx: { xs: "auto", md: 0 },
+                        display: "block",
                       }}
                     />
                   </Box>
@@ -674,43 +670,46 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   {data.overview && (
                     <Box mb={2} mt={1.5}>
                       <Typography
-                        variant='h4'
+                        variant="h4"
                         gutterBottom
-                        sx={{ color: 'var(--theme-primary)' }}
+                        sx={{ color: "var(--theme-primary)" }}
                       >
                         Beschreibung
                       </Typography>
-                      <Typography variant='body1' sx={{ lineHeight: 1.6 }}>
+                      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                         {data.overview}
                       </Typography>
                     </Box>
                   )}
-                  <Box display='flex' flexDirection='column' gap={1.5}>
+                  <Box display="flex" flexDirection="column" gap={1.5}>
                     {data.vote_average !== undefined &&
                       data.vote_average !== null && (
                         <Box>
-                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: colors.text.muted }}
+                          >
                             TMDB Bewertung
                           </Typography>
-                          <Typography variant='body1'>
+                          <Typography variant="body1">
                             ⭐ {data.vote_average.toFixed(1)}/10
                           </Typography>
                         </Box>
                       )}
                     {data.genres && data.genres.length > 0 && (
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                        <Typography variant="body2" sx={{ color: "#9e9e9e" }}>
                           Genres
                         </Typography>
-                        <Box display='flex' gap={1} flexWrap='wrap' mt={1}>
+                        <Box display="flex" gap={1} flexWrap="wrap" mt={1}>
                           {data.genres.map((genre: any) => (
                             <span
                               key={genre.id}
                               style={{
-                                background: 'var(--theme-primary)',
+                                background: "var(--theme-primary)",
                                 color: colors.text.secondary,
                                 borderRadius: 6,
-                                padding: '2px 8px',
+                                padding: "2px 8px",
                                 marginRight: 4,
                               }}
                             >
@@ -720,15 +719,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         </Box>
                       </Box>
                     )}
-                    {type === 'tv' &&
+                    {type === "tv" &&
                       data.number_of_seasons !== undefined &&
                       data.number_of_seasons !== null &&
                       data.number_of_seasons > 0 && (
                         <Box>
-                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: colors.text.muted }}
+                          >
                             Staffeln
                           </Typography>
-                          <Typography variant='body1'>
+                          <Typography variant="body1">
                             {data.number_of_seasons} Staffel(n)
                             {data.number_of_episodes !== undefined &&
                               data.number_of_episodes !== null &&
@@ -738,15 +740,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           </Typography>
                         </Box>
                       )}
-                    {type === 'movie' &&
+                    {type === "movie" &&
                       data.runtime !== undefined &&
                       data.runtime !== null &&
                       data.runtime > 0 && (
                         <Box>
-                          <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: colors.text.muted }}
+                          >
                             Laufzeit
                           </Typography>
-                          <Typography variant='body1'>
+                          <Typography variant="body1">
                             {data.runtime} Minuten
                           </Typography>
                         </Box>
@@ -758,84 +763,90 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             {currentTab === 1 && (
               <Box px={2} py={3}>
                 {/* Suchfeld für Cast/Crew */}
-                <Box mb={2} display='flex' justifyContent='center'>
+                <Box mb={2} display="flex" justifyContent="center">
                   <input
-                    type='text'
-                    placeholder='Suche nach Name oder Rolle...'
+                    type="text"
+                    placeholder="Suche nach Name oder Rolle..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{
-                      width: '100%',
+                      width: "100%",
                       maxWidth: 400,
-                      padding: '8px 12px',
+                      padding: "8px 12px",
                       borderRadius: 8,
                       border: `1px solid var(--theme-primary)`,
-                      outline: 'none',
+                      outline: "none",
                       fontSize: 16,
-                      background: '#181818',
-                      color: '#fff',
-                      boxShadow: '0 2px 8px rgba(0,254,215,0.08)',
+                      background: colors.background.input,
+                      color: colors.text.secondary,
+                      boxShadow: colors.shadow.light,
                     }}
                   />
                 </Box>
                 <Typography
-                  variant='h4'
+                  variant="h4"
                   gutterBottom
-                  sx={{ color: 'var(--theme-primary)', mb: 3 }}
+                  sx={{ color: "var(--theme-primary)", mb: 3 }}
                 >
                   Cast & Crew
                 </Typography>
                 {castLoading ? (
-                  <Box textAlign='center' py={3}>
-                    <CircularProgress sx={{ color: 'var(--theme-primary)', mb: 2 }} />
-                    <Typography variant='body1'>Lade Cast-Daten...</Typography>
+                  <Box textAlign="center" py={3}>
+                    <CircularProgress
+                      sx={{ color: "var(--theme-primary)", mb: 2 }}
+                    />
+                    <Typography variant="body1">Lade Cast-Daten...</Typography>
                   </Box>
                 ) : (
-                  <Box sx={{ maxHeight: '600px', overflowY: 'auto', pr: 1 }}>
+                  <Box sx={{ maxHeight: "600px", overflowY: "auto", pr: 1 }}>
                     {/* Anime Charaktere Sektion - höchste Priorität */}
                     {animeCharacters.length > 0 && (
                       <Box mb={4}>
                         <Typography
-                          variant='h5'
-                          sx={{ color: '#ffd700', mb: 2, fontWeight: 'bold' }}
+                          variant="h5"
+                          sx={{
+                            color: colors.status.warning,
+                            mb: 2,
+                            fontWeight: "bold",
+                          }}
                         >
                           🎨 Anime-Charaktere ({animeCharacters.length})
                         </Typography>
                         <Box
-                          display='grid'
+                          display="grid"
                           gap={2}
-                          gridTemplateColumns='repeat(auto-fill, minmax(200px, 1fr))'
+                          gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))"
                         >
                           {animeCharacters
                             .filter((char: any) => {
                               // Nur japanische Voice Actors
                               const hasJapaneseVA = char.voice_actors?.some(
-                                (va: any) => va.language === 'Japanese'
+                                (va: any) => va.language === "Japanese",
                               );
                               if (!hasJapaneseVA) return false;
 
                               if (!searchTerm) return true;
                               const characterName = (
-                                char.character?.name || ''
+                                char.character?.name || ""
                               ).toLowerCase();
                               const japaneseVA = char.voice_actors?.find(
-                                (va: any) => va.language === 'Japanese'
+                                (va: any) => va.language === "Japanese",
                               );
-                              const voiceActor = japaneseVA?.person?.name || '';
-                              const role = (char.role || '').toLowerCase();
+                              const voiceActor = japaneseVA?.person?.name || "";
+                              const role = (char.role || "").toLowerCase();
                               const searchLower = searchTerm.toLowerCase();
 
                               // Deutsche Suchbegriffe unterstützen
                               const roleMatches =
                                 role.includes(searchLower) ||
-                                (searchLower.includes('haupt') &&
-                                  role.includes('hauptrolle')) ||
-                                (searchLower.includes('neben') &&
-                                  role.includes('nebenrolle')) ||
-                                (searchLower.includes('main') &&
-                                  role.includes('hauptrolle')) ||
-                                (searchLower.includes('supporting') &&
-                                  role.includes('nebenrolle'));
+                                (searchLower.includes("haupt") &&
+                                  role.includes("hauptrolle")) ||
+                                (searchLower.includes("neben") &&
+                                  role.includes("nebenrolle")) ||
+                                (searchLower.includes("main") &&
+                                  role.includes("hauptrolle")) ||
+                                (searchLower.includes("supporting") &&
+                                  role.includes("nebenrolle"));
 
                               return (
                                 characterName.includes(searchLower) ||
@@ -853,38 +864,37 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 }`}
                                 onClick={() => {
                                   const japaneseVA = char.voice_actors?.find(
-                                    (va: any) => va.language === 'Japanese'
+                                    (va: any) => va.language === "Japanese",
                                   );
                                   if (japaneseVA) {
                                     handleVoiceActorClick(japaneseVA);
                                   }
                                 }}
                                 sx={{
-                                  background:
-                                    'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                                  background: colors.button.secondary.gradient,
                                   borderRadius: 3,
                                   p: 2,
-                                  textAlign: 'center',
-                                  backdropFilter: 'blur(10px)',
-                                  border: '2px solid rgba(255,215,0,0.3)',
-                                  transition: 'all 0.3s ease',
-                                  cursor: 'pointer',
-                                  '&:hover': {
+                                  textAlign: "center",
+                                  backdropFilter: "blur(10px)",
+                                  border: `2px solid ${colors.status.warning}30`,
+                                  transition: "all 0.3s ease",
+                                  cursor: "pointer",
+                                  "&:hover": {
                                     background:
-                                      'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,255,255,0.1) 100%)',
-                                    transform: 'translateY(-5px) scale(1.02)',
-                                    borderColor: '#ffd700',
+                                      colors.button.secondary.gradientHover,
+                                    transform: "translateY(-5px) scale(1.02)",
+                                    borderColor: colors.status.warning,
                                   },
                                 }}
                               >
                                 {/* Charakterbild und Voice Actor nebeneinander */}
                                 <Box
-                                  display='flex'
-                                  justifyContent='center'
+                                  display="flex"
+                                  justifyContent="center"
                                   gap={1}
                                   mb={2}
                                 >
-                                  <Box sx={{ position: 'relative' }}>
+                                  <Box sx={{ position: "relative" }}>
                                     <Avatar
                                       src={
                                         char.character?.images?.jpg?.image_url
@@ -893,17 +903,17 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                       sx={{
                                         width: 80,
                                         height: 80,
-                                        border: '2px solid #ffd700',
+                                        border: `2px solid ${colors.status.warning}`,
                                       }}
                                     />
                                   </Box>
 
                                   {(() => {
                                     const japaneseVA = char.voice_actors?.find(
-                                      (va: any) => va.language === 'Japanese'
+                                      (va: any) => va.language === "Japanese",
                                     );
                                     return japaneseVA ? (
-                                      <Box sx={{ position: 'relative' }}>
+                                      <Box sx={{ position: "relative" }}>
                                         <Avatar
                                           src={
                                             japaneseVA.person?.images?.jpg
@@ -913,7 +923,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           sx={{
                                             width: 80,
                                             height: 80,
-                                            border: '2px solid var(--theme-primary)',
+                                            border:
+                                              "2px solid var(--theme-primary)",
                                           }}
                                         />
                                       </Box>
@@ -923,12 +934,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
                                 {/* Charaktername */}
                                 <Typography
-                                  variant='subtitle1'
+                                  variant="subtitle1"
                                   sx={{
-                                    fontWeight: 'bold',
-                                    color: '#ffd700',
+                                    fontWeight: "bold",
+                                    color: colors.status.warning,
                                     mb: 0.5,
-                                    fontSize: '0.9rem',
+                                    fontSize: "0.9rem",
                                   }}
                                 >
                                   {char.character?.name}
@@ -936,12 +947,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
                                 {/* Rolle */}
                                 <Typography
-                                  variant='body2'
+                                  variant="body2"
                                   sx={{
-                                    color: '#ffa500',
-                                    fontWeight: 'bold',
+                                    color: colors.status.warning,
+                                    fontWeight: "bold",
                                     mb: 1,
-                                    fontSize: '0.75rem',
+                                    fontSize: "0.75rem",
                                   }}
                                 >
                                   {char.role}
@@ -950,17 +961,17 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 {/* Voice Actor Info - Nur Japanisch */}
                                 {(() => {
                                   const japaneseVA = char.voice_actors?.find(
-                                    (va: any) => va.language === 'Japanese'
+                                    (va: any) => va.language === "Japanese",
                                   );
                                   return japaneseVA ? (
                                     <Box>
                                       <Typography
-                                        variant='body2'
+                                        variant="body2"
                                         sx={{
-                                          color: 'var(--theme-primary)',
-                                          fontWeight: 'bold',
+                                          color: "var(--theme-primary)",
+                                          fontWeight: "bold",
                                           mb: 0.5,
-                                          fontSize: '0.75rem',
+                                          fontSize: "0.75rem",
                                         }}
                                       >
                                         {japaneseVA.person?.name}
@@ -975,12 +986,15 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     )}
 
                     {animeLoading && (
-                      <Box textAlign='center' py={2} mb={3}>
+                      <Box textAlign="center" py={2} mb={3}>
                         <CircularProgress
                           size={24}
-                          sx={{ color: '#ffd700', mb: 1 }}
+                          sx={{ color: "#ffd700", mb: 1 }}
                         />
-                        <Typography variant='body2' sx={{ color: '#ffd700' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: colors.status.warning }}
+                        >
                           Lade Anime-Charaktere von AniList...
                         </Typography>
                       </Box>
@@ -990,7 +1004,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     {(() => {
                       const isAnime = data.origin_country?.some(
                         (country: string) =>
-                          ['JP', 'CN', 'KR'].includes(country)
+                          ["JP", "CN", "KR"].includes(country),
                       );
 
                       return (
@@ -1001,16 +1015,19 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       );
                     })() && (
                       <Box
-                        textAlign='center'
+                        textAlign="center"
                         py={2}
                         mb={3}
                         sx={{
-                          background: 'rgba(255,165,0,0.1)',
+                          background: `${colors.status.warning}10`,
                           borderRadius: 2,
-                          border: '1px solid rgba(255,165,0,0.3)',
+                          border: `1px solid ${colors.status.warning}30`,
                         }}
                       >
-                        <Typography variant='body2' sx={{ color: '#ffa500' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: colors.status.warning }}
+                        >
                           ⚠️ AniList nicht erreichbar - Zeige TMDB Cast-Daten
                         </Typography>
                       </Box>
@@ -1020,7 +1037,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     {(() => {
                       const isAnime = data.origin_country?.some(
                         (country: string) =>
-                          ['JP', 'CN', 'KR'].includes(country)
+                          ["JP", "CN", "KR"].includes(country),
                       );
 
                       // Zeige Cast wenn: Nicht-Anime ODER (Anime aber keine Charaktere geladen)
@@ -1038,8 +1055,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     })() && (
                       <Box mb={4}>
                         <Typography
-                          variant='h5'
-                          sx={{ color: '#ffd700', mb: 2, fontWeight: 'bold' }}
+                          variant="h5"
+                          sx={{
+                            color: colors.status.warning,
+                            mb: 2,
+                            fontWeight: "bold",
+                          }}
                         >
                           🎭 Schauspieler (
                           {
@@ -1049,24 +1070,24 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           )
                         </Typography>
                         <Box
-                          display='grid'
+                          display="grid"
                           gap={2}
-                          gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
+                          gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))"
                         >
                           {castData
                             .filter((actor: any) => {
                               if (!actor.profile_path) return false;
                               if (!searchTerm) return true;
-                              const name = (actor.name || '').toLowerCase();
+                              const name = (actor.name || "").toLowerCase();
                               // Rolle kann je nach API unterschiedlich sein
-                              let role = '';
+                              let role = "";
                               if (
                                 Array.isArray(actor.roles) &&
                                 actor.roles.length > 0 &&
-                                typeof actor.roles[0]?.character === 'string'
+                                typeof actor.roles[0]?.character === "string"
                               ) {
                                 role = actor.roles[0].character.toLowerCase();
-                              } else if (typeof actor.character === 'string') {
+                              } else if (typeof actor.character === "string") {
                                 role = actor.character.toLowerCase();
                               }
                               return (
@@ -1080,18 +1101,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 key={`cast-${actor.id}-${actor.credit_id}`}
                                 onClick={() => handlePersonClick(actor, false)}
                                 sx={{
-                                  background: 'rgba(255,255,255,0.05)',
+                                  background: "rgba(255,255,255,0.05)",
                                   borderRadius: 2,
                                   p: 1.5,
-                                  textAlign: 'center',
-                                  backdropFilter: 'blur(10px)',
-                                  border: '1px solid rgba(255,255,255,0.1)',
-                                  transition: 'all 0.3s ease',
-                                  cursor: 'pointer',
-                                  '&:hover': {
-                                    background: 'rgba(255,255,255,0.1)',
-                                    transform: 'translateY(-5px)',
-                                    borderColor: 'var(--theme-primary)',
+                                  textAlign: "center",
+                                  backdropFilter: "blur(10px)",
+                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  transition: "all 0.3s ease",
+                                  cursor: "pointer",
+                                  "&:hover": {
+                                    background: "rgba(255,255,255,0.1)",
+                                    transform: "translateY(-5px)",
+                                    borderColor: "var(--theme-primary)",
                                   },
                                 }}
                               >
@@ -1105,38 +1126,41 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   sx={{
                                     width: 80,
                                     height: 80,
-                                    mx: 'auto',
+                                    mx: "auto",
                                     mb: 2,
-                                    border: '2px solid var(--theme-primary)',
+                                    border: "2px solid var(--theme-primary)",
                                   }}
                                 />
                                 <Typography
-                                  variant='subtitle1'
+                                  variant="subtitle1"
                                   sx={{
-                                    fontWeight: 'bold',
-                                    color: '#ffffff',
+                                    fontWeight: "bold",
+                                    color: "#ffffff",
                                     mb: 1,
                                   }}
                                 >
                                   {actor.name}
                                 </Typography>
                                 <Typography
-                                  variant='body2'
-                                  sx={{ color: 'var(--theme-primary)', fontStyle: 'italic' }}
+                                  variant="body2"
+                                  sx={{
+                                    color: "var(--theme-primary)",
+                                    fontStyle: "italic",
+                                  }}
                                 >
                                   {Array.isArray(actor.roles) &&
                                   actor.roles.length > 0 &&
-                                  typeof actor.roles[0]?.character === 'string'
+                                  typeof actor.roles[0]?.character === "string"
                                     ? actor.roles[0].character.replace(
                                         /\(voice\)/gi,
-                                        '(Stimme)'
+                                        "(Stimme)",
                                       )
-                                    : typeof actor.character === 'string'
-                                    ? actor.character.replace(
-                                        /\(voice\)/gi,
-                                        '(Stimme)'
-                                      )
-                                    : ''}
+                                    : typeof actor.character === "string"
+                                      ? actor.character.replace(
+                                          /\(voice\)/gi,
+                                          "(Stimme)",
+                                        )
+                                      : ""}
                                 </Typography>
                               </Box>
                             ))}
@@ -1149,29 +1173,33 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       .length > 0 && (
                       <Box>
                         <Typography
-                          variant='h5'
-                          sx={{ color: '#ffd700', mb: 2, fontWeight: 'bold' }}
+                          variant="h5"
+                          sx={{
+                            color: colors.status.warning,
+                            mb: 2,
+                            fontWeight: "bold",
+                          }}
                         >
                           🎬 Crew (
                           {
                             crewData.filter(
-                              (person: any) => person.profile_path
+                              (person: any) => person.profile_path,
                             ).length
                           }
                           )
                         </Typography>
                         <Box
-                          display='grid'
+                          display="grid"
                           gap={2}
-                          gridTemplateColumns='repeat(auto-fill, minmax(180px, 1fr))'
+                          gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))"
                         >
                           {crewData
                             .filter((person: any) => {
                               if (!person.profile_path) return false;
                               if (!searchTerm) return true;
-                              const name = (person.name || '').toLowerCase();
+                              const name = (person.name || "").toLowerCase();
                               // Job kann je nach API unterschiedlich sein
-                              let job = '';
+                              let job = "";
                               if (
                                 person.jobs &&
                                 person.jobs[0] &&
@@ -1191,59 +1219,59 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               // Definiere Wichtigkeits-Ranking (niedrigere Zahl = wichtiger)
                               const getJobPriority = (job: string) => {
                                 switch (job) {
-                                  case 'Director':
+                                  case "Director":
                                     return 1;
-                                  case 'Producer':
+                                  case "Producer":
                                     return 2;
-                                  case 'Executive Producer':
+                                  case "Executive Producer":
                                     return 3;
-                                  case 'Co-Executive Producer':
+                                  case "Co-Executive Producer":
                                     return 4;
-                                  case 'Writer':
+                                  case "Writer":
                                     return 5;
-                                  case 'Screenplay':
+                                  case "Screenplay":
                                     return 6;
-                                  case 'Story':
+                                  case "Story":
                                     return 7;
-                                  case 'Novel':
+                                  case "Novel":
                                     return 8;
-                                  case 'Director of Photography':
+                                  case "Director of Photography":
                                     return 9;
-                                  case 'Editor':
+                                  case "Editor":
                                     return 10;
-                                  case 'Original Music Composer':
+                                  case "Original Music Composer":
                                     return 11;
-                                  case 'Music':
+                                  case "Music":
                                     return 12;
-                                  case 'Production Designer':
+                                  case "Production Designer":
                                     return 13;
-                                  case 'Production Design':
+                                  case "Production Design":
                                     return 14;
-                                  case 'Production Manager':
+                                  case "Production Manager":
                                     return 15;
-                                  case 'Casting':
+                                  case "Casting":
                                     return 16;
-                                  case 'Camera Operator':
+                                  case "Camera Operator":
                                     return 17;
-                                  case 'Additional Music':
+                                  case "Additional Music":
                                     return 18;
-                                  case 'Assistant Editor':
+                                  case "Assistant Editor":
                                     return 19;
-                                  case 'Costume Design':
+                                  case "Costume Design":
                                     return 20;
-                                  case 'Makeup Artist':
+                                  case "Makeup Artist":
                                     return 21;
-                                  case 'Sound':
+                                  case "Sound":
                                     return 22;
-                                  case 'Visual Effects Supervisor':
+                                  case "Visual Effects Supervisor":
                                     return 23;
-                                  case 'Stunt Coordinator':
+                                  case "Stunt Coordinator":
                                     return 24;
-                                  case 'Stunt Double':
+                                  case "Stunt Double":
                                     return 25;
-                                  case 'Stand In':
+                                  case "Stand In":
                                     return 26;
-                                  case 'Post Production Consulting':
+                                  case "Post Production Consulting":
                                     return 27;
                                   default:
                                     return 99; // Unbekannte Jobs am Ende
@@ -1253,11 +1281,11 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               const jobA =
                                 a.jobs && a.jobs[0] && a.jobs[0].job
                                   ? a.jobs[0].job
-                                  : a.job || '';
+                                  : a.job || "";
                               const jobB =
                                 b.jobs && b.jobs[0] && b.jobs[0].job
                                   ? b.jobs[0].job
-                                  : b.job || '';
+                                  : b.job || "";
                               return (
                                 getJobPriority(jobA) - getJobPriority(jobB)
                               );
@@ -1269,18 +1297,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 }`}
                                 onClick={() => handlePersonClick(person, true)}
                                 sx={{
-                                  background: 'rgba(255,165,0,0.05)',
+                                  background: "rgba(255,165,0,0.05)",
                                   borderRadius: 2,
                                   p: 1.5,
-                                  textAlign: 'center',
-                                  backdropFilter: 'blur(10px)',
-                                  border: '1px solid rgba(255,165,0,0.2)',
-                                  transition: 'all 0.3s ease',
-                                  cursor: 'pointer',
-                                  '&:hover': {
-                                    background: 'rgba(255,165,0,0.1)',
-                                    transform: 'translateY(-5px)',
-                                    borderColor: '#ffa500',
+                                  textAlign: "center",
+                                  backdropFilter: "blur(10px)",
+                                  border: "1px solid rgba(255,165,0,0.2)",
+                                  transition: "all 0.3s ease",
+                                  cursor: "pointer",
+                                  "&:hover": {
+                                    background: `${colors.status.warning}10`,
+                                    transform: "translateY(-5px)",
+                                    borderColor: "#ffa500",
                                   },
                                 }}
                               >
@@ -1294,31 +1322,34 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   sx={{
                                     width: 80,
                                     height: 80,
-                                    mx: 'auto',
+                                    mx: "auto",
                                     mb: 2,
-                                    border: '2px solid #ffa500',
+                                    border: "2px solid #ffa500",
                                   }}
                                 />
                                 <Typography
-                                  variant='subtitle1'
+                                  variant="subtitle1"
                                   sx={{
-                                    fontWeight: 'bold',
-                                    color: '#ffffff',
+                                    fontWeight: "bold",
+                                    color: "#ffffff",
                                     mb: 1,
                                   }}
                                 >
                                   {person.name}
                                 </Typography>
                                 <Typography
-                                  variant='body2'
-                                  sx={{ color: '#ffa500', fontStyle: 'italic' }}
+                                  variant="body2"
+                                  sx={{
+                                    color: colors.status.warning,
+                                    fontStyle: "italic",
+                                  }}
                                 >
                                   {translateJob(
                                     person.jobs &&
                                       person.jobs[0] &&
                                       person.jobs[0].job
                                       ? person.jobs[0].job
-                                      : person.job || ''
+                                      : person.job || "",
                                   )}
                                 </Typography>
                               </Box>
@@ -1333,25 +1364,27 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             {currentTab === 2 && (
               <Box px={2} py={3}>
                 <Typography
-                  variant='h4'
+                  variant="h4"
                   gutterBottom
-                  sx={{ color: 'var(--theme-primary)', mb: 3 }}
+                  sx={{ color: "var(--theme-primary)", mb: 3 }}
                 >
                   Videos & Trailer
                 </Typography>
                 {videosLoading ? (
-                  <Box textAlign='center' py={3}>
-                    <CircularProgress sx={{ color: 'var(--theme-primary)', mb: 2 }} />
-                    <Typography variant='body1'>Lade Videos...</Typography>
+                  <Box textAlign="center" py={3}>
+                    <CircularProgress
+                      sx={{ color: "var(--theme-primary)", mb: 2 }}
+                    />
+                    <Typography variant="body1">Lade Videos...</Typography>
                   </Box>
                 ) : videosData.length > 0 ? (
                   <Box
-                    display='grid'
+                    display="grid"
                     gap={2}
                     sx={{
                       gridTemplateColumns: {
-                        xs: '1fr',
-                        md: 'repeat(auto-fit, minmax(320px, 1fr))',
+                        xs: "1fr",
+                        md: "repeat(auto-fit, minmax(320px, 1fr))",
                       },
                     }}
                   >
@@ -1360,94 +1393,94 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         key={video.id}
                         sx={{
                           background:
-                            video.type === 'Trailer'
-                              ? 'linear-gradient(135deg, rgba(0,254,215,0.1) 0%, rgba(255,255,255,0.05) 100%)'
-                              : 'rgba(255,255,255,0.05)',
+                            video.type === "Trailer"
+                              ? colors.button.secondary.gradient
+                              : "rgba(255,255,255,0.05)",
                           borderRadius: 2,
-                          overflow: 'hidden',
-                          backdropFilter: 'blur(10px)',
+                          overflow: "hidden",
+                          backdropFilter: "blur(10px)",
                           border:
-                            video.type === 'Trailer'
-                              ? '2px solid rgba(0,254,215,0.3)'
-                              : '1px solid rgba(255,255,255,0.1)',
-                          transition: 'all 0.3s ease',
-                          gridColumn: 'auto',
-                          '&:hover': {
+                            video.type === "Trailer"
+                              ? `2px solid ${colors.border.primary}30`
+                              : "1px solid rgba(255,255,255,0.1)",
+                          transition: "all 0.3s ease",
+                          gridColumn: "auto",
+                          "&:hover": {
                             background:
-                              video.type === 'Trailer'
-                                ? 'linear-gradient(135deg, rgba(0,254,215,0.2) 0%, rgba(255,255,255,0.1) 100%)'
-                                : 'rgba(255,255,255,0.1)',
-                            transform: 'translateY(-5px)',
+                              video.type === "Trailer"
+                                ? colors.button.secondary.gradientHover
+                                : "rgba(255,255,255,0.1)",
+                            transform: "translateY(-5px)",
                             boxShadow:
-                              video.type === 'Trailer'
-                                ? '0 12px 40px rgba(0,254,215,0.3)'
-                                : '0 8px 25px rgba(0,0,0,0.2)',
+                              video.type === "Trailer"
+                                ? colors.shadow.hover
+                                : "0 8px 25px rgba(0,0,0,0.2)",
                           },
                         }}
                       >
                         <Box
                           sx={{
-                            position: 'relative',
-                            paddingBottom: '56.25%',
+                            position: "relative",
+                            paddingBottom: "56.25%",
                             height: 0,
-                            overflow: 'hidden',
+                            overflow: "hidden",
                           }}
                         >
                           <Box
-                            component='iframe'
+                            component="iframe"
                             src={`https://www.youtube.com/embed/${video.key}`}
                             title={video.name}
-                            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                             sx={{
-                              position: 'absolute',
+                              position: "absolute",
                               top: 0,
                               left: 0,
-                              width: '100%',
-                              height: '100%',
-                              border: 'none',
+                              width: "100%",
+                              height: "100%",
+                              border: "none",
                             }}
                           />
                         </Box>
                         <Box p={1.5}>
                           <Typography
-                            variant='subtitle1'
-                            sx={{ fontWeight: 'bold', color: '#ffffff', mb: 1 }}
+                            variant="subtitle1"
+                            sx={{ fontWeight: "bold", color: "#ffffff", mb: 1 }}
                             noWrap
                           >
                             {video.name}
                           </Typography>
                           <Box
-                            display='flex'
-                            justifyContent='space-between'
-                            alignItems='center'
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
                           >
                             <Chip
                               label={video.type}
                               size={
-                                video.type === 'Trailer' ? 'medium' : 'small'
+                                video.type === "Trailer" ? "medium" : "small"
                               }
                               sx={{
                                 background:
-                                  video.type === 'Trailer'
-                                    ? 'linear-gradient(135deg, var(--theme-primary), var(--theme-primary-hover))'
-                                    : 'rgba(255,255,255,0.2)',
+                                  video.type === "Trailer"
+                                    ? "linear-gradient(135deg, var(--theme-primary), var(--theme-primary-hover))"
+                                    : "rgba(255,255,255,0.2)",
                                 color:
-                                  video.type === 'Trailer' ? '#000' : '#fff',
+                                  video.type === "Trailer" ? "#000" : "#fff",
                                 fontWeight:
-                                  video.type === 'Trailer' ? '800' : 'bold',
+                                  video.type === "Trailer" ? "800" : "bold",
                                 boxShadow:
-                                  video.type === 'Trailer'
-                                    ? '0 4px 12px rgba(0,254,215,0.4)'
-                                    : 'none',
-                                textTransform: 'uppercase',
+                                  video.type === "Trailer"
+                                    ? colors.shadow.buttonHover
+                                    : "none",
+                                textTransform: "uppercase",
                                 letterSpacing:
-                                  video.type === 'Trailer' ? '0.5px' : 'normal',
+                                  video.type === "Trailer" ? "0.5px" : "normal",
                               }}
                             />
                             <Typography
-                              variant='caption'
-                              sx={{ color: '#9e9e9e' }}
+                              variant="caption"
+                              sx={{ color: "#9e9e9e" }}
                             >
                               {video.size}p
                             </Typography>
@@ -1458,8 +1491,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   </Box>
                 ) : (
                   <Typography
-                    variant='body1'
-                    sx={{ textAlign: 'center', color: '#9e9e9e' }}
+                    variant="body1"
+                    sx={{ textAlign: "center", color: "#9e9e9e" }}
                   >
                     Keine Videos verfügbar
                   </Typography>
@@ -1472,51 +1505,51 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               p: 2,
               gap: 1.5,
               background:
-                'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
-              backdropFilter: 'blur(10px)',
+                "linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)",
+              backdropFilter: "blur(10px)",
             }}
           >
             {!user ? (
               <Typography
-                variant='body2'
-                sx={{ color: '#9e9e9e', fontStyle: 'italic' }}
+                variant="body2"
+                sx={{ color: "#9e9e9e", fontStyle: "italic" }}
               >
                 Zum Hinzufügen bitte einloggen
               </Typography>
             ) : alreadyAdded ? (
               <Typography
-                variant='body2'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
+                variant="body2"
+                sx={{ color: "#4caf50", fontWeight: "bold" }}
               >
                 ✅ Bereits in deiner Liste
               </Typography>
             ) : canAdd ? (
               <Button
-                variant='contained'
+                variant="contained"
                 onClick={
-                  onAdd || (() => console.log('onAdd not implemented yet'))
+                  onAdd || (() => console.log("onAdd not implemented yet"))
                 }
                 disabled={adding || !onAdd}
                 sx={{
-                  backgroundColor: 'var(--theme-primary)',
+                  backgroundColor: "var(--theme-primary)",
                   color: colors.text.secondary,
-                  fontWeight: 'bold',
-                  '&:hover': {
-                    backgroundColor: '#00d4b8',
+                  fontWeight: "bold",
+                  "&:hover": {
+                    backgroundColor: colors.primary,
                   },
-                  '&:disabled': {
-                    backgroundColor: '#666',
-                    color: '#999',
+                  "&:disabled": {
+                    backgroundColor: "#666",
+                    color: "#999",
                   },
                 }}
               >
                 {adding
-                  ? 'Wird hinzugefügt...'
+                  ? "Wird hinzugefügt..."
                   : !onAdd
-                  ? 'Hinzufügen (noch nicht implementiert)'
-                  : `${
-                      type === 'tv' ? 'Serie' : 'Film'
-                    } zu meiner Liste hinzufügen`}
+                    ? "Hinzufügen (noch nicht implementiert)"
+                    : `${
+                        type === "tv" ? "Serie" : "Film"
+                      } zu meiner Liste hinzufügen`}
               </Button>
             ) : null}
           </DialogActions>
@@ -1527,20 +1560,20 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       <Dialog
         open={personDialogOpen}
         onClose={() => setPersonDialogOpen(false)}
-        maxWidth='md'
+        maxWidth="md"
         fullWidth
         slotProps={{
           paper: {
             sx: {
-              maxHeight: '80vh',
+              maxHeight: "80vh",
               background:
-                'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
-              borderRadius: '20px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              overflow: 'hidden',
+                "linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)",
+              borderRadius: "20px",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              overflow: "hidden",
               boxShadow:
-                '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)',
-              color: 'white',
+                "0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3)",
+              color: "white",
             },
           },
         }}
@@ -1548,33 +1581,33 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         {personLoading ? (
           <DialogContent
             sx={{
-              textAlign: 'center',
+              textAlign: "center",
               py: 8,
-              background: 'rgba(0,0,0,0.9)',
-              backdropFilter: 'blur(10px)',
-              minHeight: '400px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
+              background: "rgba(0,0,0,0.9)",
+              backdropFilter: "blur(10px)",
+              minHeight: "400px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <CircularProgress
               size={60}
               sx={{
-                color: 'var(--theme-primary)',
+                color: "var(--theme-primary)",
                 mb: 3,
-                '& .MuiCircularProgress-circle': {
+                "& .MuiCircularProgress-circle": {
                   strokeWidth: 3,
                 },
               }}
             />
             <Typography
-              variant='h5'
+              variant="h5"
               sx={{
-                color: 'var(--theme-primary)',
-                fontWeight: 'bold',
-                textShadow: '0 2px 10px rgba(0,254,215,0.5)',
+                color: "var(--theme-primary)",
+                fontWeight: "bold",
+                textShadow: colors.shadow.focus,
               }}
             >
               Lade Person-Details...
@@ -1584,38 +1617,38 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
           <>
             <DialogTitle
               sx={{
-                textAlign: 'center',
-                position: 'relative',
+                textAlign: "center",
+                position: "relative",
                 background:
-                  'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
-                backdropFilter: 'blur(15px)',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                color: '#ffffff',
+                  "linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)",
+                backdropFilter: "blur(15px)",
+                borderBottom: "1px solid rgba(255,255,255,0.05)",
+                color: "#ffffff",
                 fontWeight: 600,
-                fontSize: '1.25rem',
+                fontSize: "1.25rem",
               }}
             >
               <Typography
-                component='div'
-                variant='h4'
-                sx={{ fontWeight: 'bold', color: '#ffd700' }}
+                component="div"
+                variant="h4"
+                sx={{ fontWeight: "bold", color: colors.status.warning }}
               >
                 🎭 {selectedPerson.name}
               </Typography>
               <IconButton
                 onClick={() => setPersonDialogOpen(false)}
                 sx={{
-                  position: 'absolute',
+                  position: "absolute",
                   right: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'rgba(255,255,255,0.7)',
-                  background: 'rgba(255,255,255,0.05)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '12px',
-                  '&:hover': {
-                    background: 'rgba(255,255,255,0.1)',
-                    color: '#ffffff',
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "rgba(255,255,255,0.7)",
+                  background: "rgba(255,255,255,0.05)",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: "12px",
+                  "&:hover": {
+                    background: "rgba(255,255,255,0.1)",
+                    color: "#ffffff",
                   },
                 }}
               >
@@ -1625,42 +1658,42 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
             <DialogContent
               sx={{
                 px: 2,
-                pt: '24px !important',
+                pt: "24px !important",
                 background:
-                  'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
-                backdropFilter: 'blur(10px)',
-                color: '#ffffff',
+                  "linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)",
+                backdropFilter: "blur(10px)",
+                color: "#ffffff",
               }}
             >
               <Box
-                display='flex'
+                display="flex"
                 gap={3}
-                flexDirection={{ xs: 'column', md: 'row' }}
+                flexDirection={{ xs: "column", md: "row" }}
               >
                 {selectedPerson.profile_path && (
                   <Box sx={{ flexShrink: 0 }}>
                     <Box
-                      component='img'
+                      component="img"
                       src={
-                        selectedPerson.profile_path?.startsWith('http')
+                        selectedPerson.profile_path?.startsWith("http")
                           ? selectedPerson.profile_path
                           : `https://image.tmdb.org/t/p/w300${selectedPerson.profile_path}`
                       }
                       alt={selectedPerson.name}
                       sx={{
-                        width: { xs: '200px', md: '250px' },
-                        height: 'auto',
+                        width: { xs: "200px", md: "250px" },
+                        height: "auto",
                         borderRadius: 2,
                         boxShadow:
-                          '0 10px 30px rgba(0,0,0,0.5), 0 5px 15px rgba(0,254,215,0.2)',
-                        mx: { xs: 'auto', md: 0 },
-                        display: 'block',
-                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                        transformOrigin: 'center',
-                        '&:hover': {
-                          transform: 'scale(1.1)',
+                          `0 10px 30px rgba(0,0,0,0.5), ${colors.shadow.light}`,
+                        mx: { xs: "auto", md: 0 },
+                        display: "block",
+                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        transformOrigin: "center",
+                        "&:hover": {
+                          transform: "scale(1.1)",
                           boxShadow:
-                            '0 15px 40px rgba(0,0,0,0.6), 0 10px 25px rgba(0,254,215,0.3)',
+                            `0 15px 40px rgba(0,0,0,0.6), ${colors.shadow.hover}`,
                         },
                       }}
                     />
@@ -1670,26 +1703,26 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   {selectedPerson.biography && (
                     <Box>
                       <Typography
-                        variant='h4'
+                        variant="h4"
                         gutterBottom
-                        sx={{ color: 'var(--theme-primary)', mb: 3 }}
+                        sx={{ color: "var(--theme-primary)", mb: 3 }}
                       >
                         Biographie
                       </Typography>
-                      <Typography variant='body1' sx={{ lineHeight: 1.6 }}>
+                      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                         {selectedPerson.biography}
                       </Typography>
                     </Box>
                   )}
-                  <Box display='flex' flexDirection='column' gap={2} mb={3}>
+                  <Box display="flex" flexDirection="column" gap={2} mb={3}>
                     {selectedPerson.birthday && (
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                        <Typography variant="body2" sx={{ color: "#9e9e9e" }}>
                           Geboren
                         </Typography>
-                        <Typography variant='body1'>
+                        <Typography variant="body1">
                           {new Date(selectedPerson.birthday).toLocaleDateString(
-                            'de-DE'
+                            "de-DE",
                           )}
                           {selectedPerson.place_of_birth &&
                             ` in ${selectedPerson.place_of_birth}`}
@@ -1698,56 +1731,61 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     )}
                     {selectedPerson.deathday && (
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                        <Typography variant="body2" sx={{ color: "#9e9e9e" }}>
                           Verstorben
                         </Typography>
-                        <Typography variant='body1'>
+                        <Typography variant="body1">
                           {new Date(selectedPerson.deathday).toLocaleDateString(
-                            'de-DE'
+                            "de-DE",
                           )}
                         </Typography>
                       </Box>
                     )}
                     {selectedPerson.known_for_department && (
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                        <Typography variant="body2" sx={{ color: "#9e9e9e" }}>
                           Bekannt für
                         </Typography>
-                        <Typography variant='body1'>
-                          {selectedPerson.known_for_department === 'Acting'
-                            ? 'Schauspielerei'
+                        <Typography variant="body1">
+                          {selectedPerson.known_for_department === "Acting"
+                            ? "Schauspielerei"
                             : selectedPerson.known_for_department ===
-                              'Directing'
-                            ? 'Regie'
-                            : selectedPerson.known_for_department === 'Writing'
-                            ? 'Drehbuch'
-                            : selectedPerson.known_for_department ===
-                              'Production'
-                            ? 'Produktion'
-                            : selectedPerson.known_for_department === 'Sound'
-                            ? 'Ton'
-                            : selectedPerson.known_for_department === 'Camera'
-                            ? 'Kamera'
-                            : selectedPerson.known_for_department === 'Editing'
-                            ? 'Schnitt'
-                            : selectedPerson.known_for_department === 'Art'
-                            ? 'Kunst'
-                            : selectedPerson.known_for_department ===
-                              'Costume & Make-Up'
-                            ? 'Kostüm & Make-Up'
-                            : selectedPerson.known_for_department ===
-                              'Visual Effects'
-                            ? 'Visuelle Effekte'
-                            : selectedPerson.known_for_department}
+                                "Directing"
+                              ? "Regie"
+                              : selectedPerson.known_for_department ===
+                                  "Writing"
+                                ? "Drehbuch"
+                                : selectedPerson.known_for_department ===
+                                    "Production"
+                                  ? "Produktion"
+                                  : selectedPerson.known_for_department ===
+                                      "Sound"
+                                    ? "Ton"
+                                    : selectedPerson.known_for_department ===
+                                        "Camera"
+                                      ? "Kamera"
+                                      : selectedPerson.known_for_department ===
+                                          "Editing"
+                                        ? "Schnitt"
+                                        : selectedPerson.known_for_department ===
+                                            "Art"
+                                          ? "Kunst"
+                                          : selectedPerson.known_for_department ===
+                                              "Costume & Make-Up"
+                                            ? "Kostüm & Make-Up"
+                                            : selectedPerson.known_for_department ===
+                                                "Visual Effects"
+                                              ? "Visuelle Effekte"
+                                              : selectedPerson.known_for_department}
                         </Typography>
                       </Box>
                     )}
                     {selectedPerson.popularity && (
                       <Box>
-                        <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
+                        <Typography variant="body2" sx={{ color: "#9e9e9e" }}>
                           TMDB Popularität
                         </Typography>
-                        <Typography variant='body1'>
+                        <Typography variant="body1">
                           ⭐ {selectedPerson.popularity.toFixed(1)}
                         </Typography>
                       </Box>
@@ -1759,19 +1797,19 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               {/* Filmographie Sektion */}
               <Box px={3} py={3} pt={2}>
                 <Typography
-                  variant='h4'
+                  variant="h4"
                   gutterBottom
-                  sx={{ color: 'var(--theme-primary)', mb: 1.5 }}
+                  sx={{ color: "var(--theme-primary)", mb: 1.5 }}
                 >
                   Bekannte Filme & Serien
                 </Typography>
                 {creditsLoading ? (
-                  <Box textAlign='center' py={1.5}>
+                  <Box textAlign="center" py={1.5}>
                     <CircularProgress
                       size={24}
-                      sx={{ color: 'var(--theme-primary)', mb: 1 }}
+                      sx={{ color: "var(--theme-primary)", mb: 1 }}
                     />
-                    <Typography variant='body2'>
+                    <Typography variant="body2">
                       Lade Filmographie...
                     </Typography>
                   </Box>
@@ -1779,151 +1817,151 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   personCredits.crew.length > 0 ? (
                   <Box
                     sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
+                      display: "flex",
+                      flexDirection: "column",
                       gap: 1.5,
-                      maxHeight: '350px',
-                      overflowY: 'auto',
+                      maxHeight: "350px",
+                      overflowY: "auto",
                       pr: 1,
-                      '&::-webkit-scrollbar': {
-                        width: '8px',
+                      "&::-webkit-scrollbar": {
+                        width: "8px",
                       },
-                      '&::-webkit-scrollbar-track': {
-                        background: 'rgba(255,255,255,0.1)',
-                        borderRadius: '4px',
+                      "&::-webkit-scrollbar-track": {
+                        background: "rgba(255,255,255,0.1)",
+                        borderRadius: "4px",
                       },
-                      '&::-webkit-scrollbar-thumb': {
-                        background: 'var(--theme-primary)',
-                        borderRadius: '4px',
-                        '&:hover': {
-                          background: '#00d4b8',
+                      "&::-webkit-scrollbar-thumb": {
+                        background: "var(--theme-primary)",
+                        borderRadius: "4px",
+                        "&:hover": {
+                          background: colors.primary,
                         },
                       },
                     }}
                   >
                     {/* Crew Credits - zeige zuerst wenn auf Crew geklickt */}
-                    {Object.keys(personCredits)[0] === 'crew' &&
+                    {Object.keys(personCredits)[0] === "crew" &&
                       personCredits.crew.map((credit: any) => (
                         <Box
                           key={`crew-first-${credit.id}-${credit.credit_id}`}
                           sx={{
-                            display: 'flex',
+                            display: "flex",
                             gap: 2,
                             background:
-                              'linear-gradient(135deg, rgba(255,165,0,0.08) 0%, rgba(255,165,0,0.02) 100%)',
+                              "linear-gradient(135deg, rgba(255,165,0,0.08) 0%, rgba(255,165,0,0.02) 100%)",
                             borderRadius: 2,
                             p: 1.5,
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,165,0,0.2)',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            cursor: 'pointer',
-                            '&:hover': {
+                            backdropFilter: "blur(10px)",
+                            border: "1px solid rgba(255,165,0,0.2)",
+                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            cursor: "pointer",
+                            "&:hover": {
                               background:
-                                'linear-gradient(135deg, rgba(255,165,0,0.15) 0%, rgba(255,165,0,0.05) 100%)',
-                              borderColor: 'rgba(255,165,0,0.4)',
-                              transform: 'translateX(8px)',
-                              boxShadow: '0 8px 32px rgba(255,165,0,0.2)',
+                                "linear-gradient(135deg, rgba(255,165,0,0.15) 0%, rgba(255,165,0,0.05) 100%)",
+                              borderColor: "rgba(255,165,0,0.4)",
+                              transform: "translateX(8px)",
+                              boxShadow: "0 8px 32px rgba(255,165,0,0.2)",
                             },
                           }}
                         >
                           <Box
                             sx={{
-                              position: 'relative',
+                              position: "relative",
                               flexShrink: 0,
                               width: 60,
                               height: 90,
                               borderRadius: 1.5,
-                              overflow: 'hidden',
+                              overflow: "hidden",
                               background:
-                                'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                                "linear-gradient(145deg, #2a2a2a, #1a1a1a)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
                             }}
                           >
                             {credit.poster_path ? (
                               <Box
-                                component='img'
+                                component="img"
                                 src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
                                 alt={credit.title || credit.name}
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  transition: 'transform 0.3s ease',
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  transition: "transform 0.3s ease",
                                 }}
                               />
                             ) : (
                               <Box
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
+                                  width: "100%",
+                                  height: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                   background:
-                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
-                                  color: '#666',
-                                  fontSize: '1.5rem',
+                                    "linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)",
+                                  color: "#666",
+                                  fontSize: "1.5rem",
                                 }}
                               >
-                                {credit.media_type === 'movie' ? '🎬' : '📺'}
+                                {credit.media_type === "movie" ? "🎬" : "📺"}
                               </Box>
                             )}
                             <Box
                               sx={{
-                                position: 'absolute',
+                                position: "absolute",
                                 top: 4,
                                 right: 4,
                                 background:
-                                  credit.media_type === 'movie'
-                                    ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
-                                borderRadius: '12px',
+                                  credit.media_type === "movie"
+                                    ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,
-                                fontSize: '0.65rem',
-                                fontWeight: 'bold',
+                                fontSize: "0.65rem",
+                                fontWeight: "bold",
                                 color:
-                                  credit.media_type === 'movie'
-                                    ? '#fff'
-                                    : '#000',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                textTransform: 'uppercase',
+                                  credit.media_type === "movie"
+                                    ? "#fff"
+                                    : "#000",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                                textTransform: "uppercase",
                                 letterSpacing: 0.5,
                               }}
                             >
-                              {credit.media_type === 'movie' ? 'Film' : 'Serie'}
+                              {credit.media_type === "movie" ? "Film" : "Serie"}
                             </Box>
                           </Box>
 
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography
-                              variant='subtitle1'
+                              variant="subtitle1"
                               sx={{
                                 fontWeight: 700,
-                                color: '#ffffff',
+                                color: "#ffffff",
                                 mb: 0.5,
                                 lineHeight: 1.2,
-                                fontSize: '0.95rem',
-                                display: '-webkit-box',
+                                fontSize: "0.95rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
                               {credit.title || credit.name}
                             </Typography>
 
                             <Typography
-                              variant='body2'
+                              variant="body2"
                               sx={{
-                                color: '#ffa500',
-                                fontStyle: 'italic',
+                                color: "#ffa500",
+                                fontStyle: "italic",
                                 mb: 0.8,
-                                fontSize: '0.8rem',
-                                display: '-webkit-box',
+                                fontSize: "0.8rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
                               als {translateJob(credit.job)}
@@ -1931,55 +1969,55 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
                             <Box
                               sx={{
-                                display: 'flex',
-                                alignItems: { xs: 'flex-start', sm: 'center' },
-                                justifyContent: 'space-between',
-                                flexDirection: { xs: 'column', sm: 'row' },
+                                display: "flex",
+                                alignItems: { xs: "flex-start", sm: "center" },
+                                justifyContent: "space-between",
+                                flexDirection: { xs: "column", sm: "row" },
                                 gap: { xs: 1, sm: 0 },
                               }}
                             >
                               <Box
                                 sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
+                                  display: "flex",
+                                  alignItems: "center",
                                   gap: 1.5,
-                                  flexWrap: 'wrap',
+                                  flexWrap: "wrap",
                                 }}
                               >
                                 <Typography
-                                  variant='caption'
+                                  variant="caption"
                                   sx={{
-                                    color: '#9e9e9e',
+                                    color: "#9e9e9e",
                                     fontWeight: 500,
-                                    display: 'flex',
-                                    alignItems: 'center',
+                                    display: "flex",
+                                    alignItems: "center",
                                     gap: 0.5,
                                   }}
                                 >
-                                  📅{' '}
+                                  📅{" "}
                                   {credit.release_date
                                     ? new Date(
-                                        credit.release_date
+                                        credit.release_date,
                                       ).getFullYear()
                                     : credit.first_air_date
-                                    ? new Date(
-                                        credit.first_air_date
-                                      ).getFullYear()
-                                    : 'Unbekannt'}
+                                      ? new Date(
+                                          credit.first_air_date,
+                                        ).getFullYear()
+                                      : "Unbekannt"}
                                 </Typography>
 
                                 {credit.vote_average &&
-                                typeof credit.vote_average === 'number' &&
+                                typeof credit.vote_average === "number" &&
                                 credit.vote_average > 1 &&
                                 credit.vote_count &&
                                 credit.vote_count > 0 ? (
                                   <Typography
-                                    variant='caption'
+                                    variant="caption"
                                     sx={{
-                                      color: '#ffd700',
+                                      color: colors.status.warning,
                                       fontWeight: 600,
-                                      display: 'flex',
-                                      alignItems: 'center',
+                                      display: "flex",
+                                      alignItems: "center",
                                       gap: 0.3,
                                     }}
                                   >
@@ -1992,31 +2030,31 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               {user && (
                                 <Box sx={{ flexShrink: 0 }}>
                                   {isTitleInList(credit) ? (
-                                    <Tooltip title='Bereits in deiner Liste'>
+                                    <Tooltip title="Bereits in deiner Liste">
                                       <Chip
                                         icon={
                                           <CheckIcon
-                                            sx={{ fontSize: '16px !important' }}
+                                            sx={{ fontSize: "16px !important" }}
                                           />
                                         }
-                                        label='In Liste'
-                                        size='small'
+                                        label="In Liste"
+                                        size="small"
                                         sx={{
                                           backgroundColor:
-                                            'rgba(76, 175, 80, 0.2)',
-                                          color: '#4caf50',
-                                          border: '1px solid #4caf50',
-                                          fontSize: '0.7rem',
-                                          height: '24px',
+                                            "rgba(76, 175, 80, 0.2)",
+                                          color: "#4caf50",
+                                          border: "1px solid #4caf50",
+                                          fontSize: "0.7rem",
+                                          height: "24px",
                                         }}
                                       />
                                     </Tooltip>
                                   ) : (
                                     <Tooltip
                                       title={`${
-                                        credit.media_type === 'movie'
-                                          ? 'Film'
-                                          : 'Serie'
+                                        credit.media_type === "movie"
+                                          ? "Film"
+                                          : "Serie"
                                       } zu meiner Liste hinzufügen`}
                                     >
                                       <Chip
@@ -2024,22 +2062,22 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           addingTitles.has(credit.id) ? (
                                             <CircularProgress
                                               size={14}
-                                              sx={{ color: '#ffa500' }}
+                                              sx={{ color: "#ffa500" }}
                                             />
                                           ) : (
                                             <AddIcon
                                               sx={{
-                                                fontSize: '16px !important',
+                                                fontSize: "16px !important",
                                               }}
                                             />
                                           )
                                         }
                                         label={
                                           addingTitles.has(credit.id)
-                                            ? 'Hinzufügen...'
-                                            : 'Hinzufügen'
+                                            ? "Hinzufügen..."
+                                            : "Hinzufügen"
                                         }
-                                        size='small'
+                                        size="small"
                                         clickable
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2048,25 +2086,25 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                         disabled={addingTitles.has(credit.id)}
                                         sx={{
                                           backgroundColor:
-                                            'rgba(255,165,0,0.2)',
-                                          color: '#ffa500',
-                                          border: '1px solid #ffa500',
-                                          fontSize: '0.7rem',
-                                          height: '24px',
-                                          cursor: 'pointer',
-                                          transition: 'all 0.2s ease',
-                                          '&:hover': {
+                                            "rgba(255,165,0,0.2)",
+                                          color: colors.status.warning,
+                                          border: "1px solid #ffa500",
+                                          fontSize: "0.7rem",
+                                          height: "24px",
+                                          cursor: "pointer",
+                                          transition: "all 0.2s ease",
+                                          "&:hover": {
                                             backgroundColor:
-                                              'rgba(255,165,0,0.3)',
-                                            transform: 'scale(1.05)',
+                                              "rgba(255,165,0,0.3)",
+                                            transform: "scale(1.05)",
                                           },
-                                          '&:disabled': {
+                                          "&:disabled": {
                                             backgroundColor:
-                                              'rgba(255,255,255,0.05)',
-                                            color: '#666',
+                                              "rgba(255,255,255,0.05)",
+                                            color: "#666",
                                             borderColor:
-                                              'rgba(255,255,255,0.1)',
-                                            cursor: 'not-allowed',
+                                              "rgba(255,255,255,0.1)",
+                                            cursor: "not-allowed",
                                           },
                                         }}
                                       />
@@ -2085,183 +2123,183 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         <Box
                           key={`cast-second-${credit.id}-${credit.credit_id}`}
                           sx={{
-                            display: 'flex',
+                            display: "flex",
                             gap: 2,
                             background:
-                              'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+                              "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
                             borderRadius: 2,
                             p: 1.5,
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            cursor: 'pointer',
-                            '&:hover': {
+                            backdropFilter: "blur(10px)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            cursor: "pointer",
+                            "&:hover": {
                               background:
-                                'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-                              borderColor: 'rgba(0,254,215,0.3)',
-                              transform: 'translateX(8px)',
-                              boxShadow: '0 8px 32px rgba(0,254,215,0.2)',
+                                colors.status.info.gradient,
+                              borderColor: `${colors.border.primary}30`,
+                              transform: "translateX(8px)",
+                              boxShadow: colors.shadow.card,
                             },
                           }}
                         >
                           <Box
                             sx={{
-                              position: 'relative',
+                              position: "relative",
                               flexShrink: 0,
                               width: 60,
                               height: 90,
                               borderRadius: 1.5,
-                              overflow: 'hidden',
+                              overflow: "hidden",
                               background:
-                                'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                                "linear-gradient(145deg, #2a2a2a, #1a1a1a)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
                             }}
                           >
                             {credit.poster_path ? (
                               <Box
-                                component='img'
+                                component="img"
                                 src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
                                 alt={credit.title || credit.name}
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  transition: 'transform 0.3s ease',
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  transition: "transform 0.3s ease",
                                 }}
                               />
                             ) : (
                               <Box
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
+                                  width: "100%",
+                                  height: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                   background:
-                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
-                                  color: '#666',
-                                  fontSize: '1.5rem',
+                                    "linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)",
+                                  color: "#666",
+                                  fontSize: "1.5rem",
                                 }}
                               >
-                                {credit.media_type === 'movie' ? '🎬' : '📺'}
+                                {credit.media_type === "movie" ? "🎬" : "📺"}
                               </Box>
                             )}
                             <Box
                               sx={{
-                                position: 'absolute',
+                                position: "absolute",
                                 top: 4,
                                 right: 4,
                                 background:
-                                  credit.media_type === 'movie'
-                                    ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
-                                borderRadius: '12px',
+                                  credit.media_type === "movie"
+                                    ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,
-                                fontSize: '0.65rem',
-                                fontWeight: 'bold',
+                                fontSize: "0.65rem",
+                                fontWeight: "bold",
                                 color:
-                                  credit.media_type === 'movie'
-                                    ? '#fff'
-                                    : '#000',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                textTransform: 'uppercase',
+                                  credit.media_type === "movie"
+                                    ? "#fff"
+                                    : "#000",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                                textTransform: "uppercase",
                                 letterSpacing: 0.5,
                               }}
                             >
-                              {credit.media_type === 'movie' ? 'Film' : 'Serie'}
+                              {credit.media_type === "movie" ? "Film" : "Serie"}
                             </Box>
                           </Box>
 
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography
-                              variant='subtitle1'
+                              variant="subtitle1"
                               sx={{
                                 fontWeight: 700,
-                                color: '#ffffff',
+                                color: "#ffffff",
                                 mb: 0.5,
                                 lineHeight: 1.2,
-                                fontSize: '0.95rem',
-                                display: '-webkit-box',
+                                fontSize: "0.95rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
                               {credit.title || credit.name}
                             </Typography>
 
                             <Typography
-                              variant='body2'
+                              variant="body2"
                               sx={{
-                                color: 'var(--theme-primary)',
-                                fontStyle: 'italic',
+                                color: "var(--theme-primary)",
+                                fontStyle: "italic",
                                 mb: 0.8,
-                                fontSize: '0.8rem',
-                                display: '-webkit-box',
+                                fontSize: "0.8rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
-                              als{' '}
+                              als{" "}
                               {credit.character?.replace(
                                 /\(voice\)/gi,
-                                '(Stimme)'
+                                "(Stimme)",
                               )}
                             </Typography>
 
                             <Box
                               sx={{
-                                display: 'flex',
-                                alignItems: { xs: 'flex-start', sm: 'center' },
-                                justifyContent: 'space-between',
-                                flexDirection: { xs: 'column', sm: 'row' },
+                                display: "flex",
+                                alignItems: { xs: "flex-start", sm: "center" },
+                                justifyContent: "space-between",
+                                flexDirection: { xs: "column", sm: "row" },
                                 gap: { xs: 1, sm: 0 },
                               }}
                             >
                               <Box
                                 sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
+                                  display: "flex",
+                                  alignItems: "center",
                                   gap: 1.5,
-                                  flexWrap: 'wrap',
+                                  flexWrap: "wrap",
                                 }}
                               >
                                 <Typography
-                                  variant='caption'
+                                  variant="caption"
                                   sx={{
-                                    color: '#9e9e9e',
+                                    color: "#9e9e9e",
                                     fontWeight: 500,
-                                    display: 'flex',
-                                    alignItems: 'center',
+                                    display: "flex",
+                                    alignItems: "center",
                                     gap: 0.5,
                                   }}
                                 >
-                                  📅{' '}
+                                  📅{" "}
                                   {credit.release_date
                                     ? new Date(
-                                        credit.release_date
+                                        credit.release_date,
                                       ).getFullYear()
                                     : credit.first_air_date
-                                    ? new Date(
-                                        credit.first_air_date
-                                      ).getFullYear()
-                                    : 'Unbekannt'}
+                                      ? new Date(
+                                          credit.first_air_date,
+                                        ).getFullYear()
+                                      : "Unbekannt"}
                                 </Typography>
 
                                 {credit.vote_average &&
-                                typeof credit.vote_average === 'number' &&
+                                typeof credit.vote_average === "number" &&
                                 credit.vote_average > 1 &&
                                 credit.vote_count &&
                                 credit.vote_count > 0 ? (
                                   <Typography
-                                    variant='caption'
+                                    variant="caption"
                                     sx={{
-                                      color: '#ffd700',
+                                      color: colors.status.warning,
                                       fontWeight: 600,
-                                      display: 'flex',
-                                      alignItems: 'center',
+                                      display: "flex",
+                                      alignItems: "center",
                                       gap: 0.3,
                                     }}
                                   >
@@ -2273,31 +2311,31 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               {user && (
                                 <Box sx={{ flexShrink: 0 }}>
                                   {isTitleInList(credit) ? (
-                                    <Tooltip title='Bereits in deiner Liste'>
+                                    <Tooltip title="Bereits in deiner Liste">
                                       <Chip
                                         icon={
                                           <CheckIcon
-                                            sx={{ fontSize: '16px !important' }}
+                                            sx={{ fontSize: "16px !important" }}
                                           />
                                         }
-                                        label='In Liste'
-                                        size='small'
+                                        label="In Liste"
+                                        size="small"
                                         sx={{
                                           backgroundColor:
-                                            'rgba(76, 175, 80, 0.2)',
-                                          color: '#4caf50',
-                                          border: '1px solid #4caf50',
-                                          fontSize: '0.7rem',
-                                          height: '24px',
+                                            "rgba(76, 175, 80, 0.2)",
+                                          color: "#4caf50",
+                                          border: "1px solid #4caf50",
+                                          fontSize: "0.7rem",
+                                          height: "24px",
                                         }}
                                       />
                                     </Tooltip>
                                   ) : (
                                     <Tooltip
                                       title={`${
-                                        credit.media_type === 'movie'
-                                          ? 'Film'
-                                          : 'Serie'
+                                        credit.media_type === "movie"
+                                          ? "Film"
+                                          : "Serie"
                                       } zu meiner Liste hinzufügen`}
                                     >
                                       <Chip
@@ -2305,22 +2343,24 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           addingTitles.has(credit.id) ? (
                                             <CircularProgress
                                               size={14}
-                                              sx={{ color: 'var(--theme-primary)' }}
+                                              sx={{
+                                                color: "var(--theme-primary)",
+                                              }}
                                             />
                                           ) : (
                                             <AddIcon
                                               sx={{
-                                                fontSize: '16px !important',
+                                                fontSize: "16px !important",
                                               }}
                                             />
                                           )
                                         }
                                         label={
                                           addingTitles.has(credit.id)
-                                            ? 'Hinzufügen...'
-                                            : 'Hinzufügen'
+                                            ? "Hinzufügen..."
+                                            : "Hinzufügen"
                                         }
-                                        size='small'
+                                        size="small"
                                         clickable
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2329,25 +2369,25 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                         disabled={addingTitles.has(credit.id)}
                                         sx={{
                                           backgroundColor:
-                                            'rgba(0,254,215,0.2)',
-                                          color: 'var(--theme-primary)',
+                                            `${colors.primary}20`,
+                                          color: "var(--theme-primary)",
                                           border: `1px solid var(--theme-primary)`,
-                                          fontSize: '0.7rem',
-                                          height: '24px',
-                                          cursor: 'pointer',
-                                          transition: 'all 0.2s ease',
-                                          '&:hover': {
+                                          fontSize: "0.7rem",
+                                          height: "24px",
+                                          cursor: "pointer",
+                                          transition: "all 0.2s ease",
+                                          "&:hover": {
                                             backgroundColor:
-                                              'rgba(0,254,215,0.3)',
-                                            transform: 'scale(1.05)',
+                                              `${colors.primary}30`,
+                                            transform: "scale(1.05)",
                                           },
-                                          '&:disabled': {
+                                          "&:disabled": {
                                             backgroundColor:
-                                              'rgba(255,255,255,0.05)',
-                                            color: '#666',
+                                              "rgba(255,255,255,0.05)",
+                                            color: "#666",
                                             borderColor:
-                                              'rgba(255,255,255,0.1)',
-                                            cursor: 'not-allowed',
+                                              "rgba(255,255,255,0.1)",
+                                            cursor: "not-allowed",
                                           },
                                         }}
                                       />
@@ -2367,183 +2407,183 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         <Box
                           key={`cast-${credit.id}-${credit.credit_id}`}
                           sx={{
-                            display: 'flex',
+                            display: "flex",
                             gap: 2,
                             background:
-                              'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+                              "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
                             borderRadius: 2,
                             p: 1.5,
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            cursor: 'pointer',
-                            '&:hover': {
+                            backdropFilter: "blur(10px)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            cursor: "pointer",
+                            "&:hover": {
                               background:
-                                'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-                              borderColor: 'rgba(0,254,215,0.3)',
-                              transform: 'translateX(8px)',
-                              boxShadow: '0 8px 32px rgba(0,254,215,0.2)',
+                                colors.status.info.gradient,
+                              borderColor: `${colors.border.primary}30`,
+                              transform: "translateX(8px)",
+                              boxShadow: colors.shadow.card,
                             },
                           }}
                         >
                           <Box
                             sx={{
-                              position: 'relative',
+                              position: "relative",
                               flexShrink: 0,
                               width: 60,
                               height: 90,
                               borderRadius: 1.5,
-                              overflow: 'hidden',
+                              overflow: "hidden",
                               background:
-                                'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                                "linear-gradient(145deg, #2a2a2a, #1a1a1a)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
                             }}
                           >
                             {credit.poster_path ? (
                               <Box
-                                component='img'
+                                component="img"
                                 src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
                                 alt={credit.title || credit.name}
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  transition: 'transform 0.3s ease',
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  transition: "transform 0.3s ease",
                                 }}
                               />
                             ) : (
                               <Box
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
+                                  width: "100%",
+                                  height: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                   background:
-                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
-                                  color: '#666',
-                                  fontSize: '1.5rem',
+                                    "linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)",
+                                  color: "#666",
+                                  fontSize: "1.5rem",
                                 }}
                               >
-                                {credit.media_type === 'movie' ? '🎬' : '📺'}
+                                {credit.media_type === "movie" ? "🎬" : "📺"}
                               </Box>
                             )}
                             <Box
                               sx={{
-                                position: 'absolute',
+                                position: "absolute",
                                 top: 4,
                                 right: 4,
                                 background:
-                                  credit.media_type === 'movie'
-                                    ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
-                                borderRadius: '12px',
+                                  credit.media_type === "movie"
+                                    ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,
-                                fontSize: '0.65rem',
-                                fontWeight: 'bold',
+                                fontSize: "0.65rem",
+                                fontWeight: "bold",
                                 color:
-                                  credit.media_type === 'movie'
-                                    ? '#fff'
-                                    : '#000',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                textTransform: 'uppercase',
+                                  credit.media_type === "movie"
+                                    ? "#fff"
+                                    : "#000",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                                textTransform: "uppercase",
                                 letterSpacing: 0.5,
                               }}
                             >
-                              {credit.media_type === 'movie' ? 'Film' : 'Serie'}
+                              {credit.media_type === "movie" ? "Film" : "Serie"}
                             </Box>
                           </Box>
 
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography
-                              variant='subtitle1'
+                              variant="subtitle1"
                               sx={{
                                 fontWeight: 700,
-                                color: '#ffffff',
+                                color: "#ffffff",
                                 mb: 0.5,
                                 lineHeight: 1.2,
-                                fontSize: '0.95rem',
-                                display: '-webkit-box',
+                                fontSize: "0.95rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
                               {credit.title || credit.name}
                             </Typography>
 
                             <Typography
-                              variant='body2'
+                              variant="body2"
                               sx={{
-                                color: 'var(--theme-primary)',
-                                fontStyle: 'italic',
+                                color: "var(--theme-primary)",
+                                fontStyle: "italic",
                                 mb: 0.8,
-                                fontSize: '0.8rem',
-                                display: '-webkit-box',
+                                fontSize: "0.8rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
-                              als{' '}
+                              als{" "}
                               {credit.character.replace(
                                 /\(voice\)/gi,
-                                '(Stimme)'
+                                "(Stimme)",
                               )}
                             </Typography>
 
                             <Box
                               sx={{
-                                display: 'flex',
-                                alignItems: { xs: 'flex-start', sm: 'center' },
-                                justifyContent: 'space-between',
-                                flexDirection: { xs: 'column', sm: 'row' },
+                                display: "flex",
+                                alignItems: { xs: "flex-start", sm: "center" },
+                                justifyContent: "space-between",
+                                flexDirection: { xs: "column", sm: "row" },
                                 gap: { xs: 1, sm: 0 },
                               }}
                             >
                               <Box
                                 sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
+                                  display: "flex",
+                                  alignItems: "center",
                                   gap: 1.5,
-                                  flexWrap: 'wrap',
+                                  flexWrap: "wrap",
                                 }}
                               >
                                 <Typography
-                                  variant='caption'
+                                  variant="caption"
                                   sx={{
-                                    color: '#9e9e9e',
+                                    color: "#9e9e9e",
                                     fontWeight: 500,
-                                    display: 'flex',
-                                    alignItems: 'center',
+                                    display: "flex",
+                                    alignItems: "center",
                                     gap: 0.5,
                                   }}
                                 >
-                                  📅{' '}
+                                  📅{" "}
                                   {credit.release_date
                                     ? new Date(
-                                        credit.release_date
+                                        credit.release_date,
                                       ).getFullYear()
                                     : credit.first_air_date
-                                    ? new Date(
-                                        credit.first_air_date
-                                      ).getFullYear()
-                                    : 'Unbekannt'}
+                                      ? new Date(
+                                          credit.first_air_date,
+                                        ).getFullYear()
+                                      : "Unbekannt"}
                                 </Typography>
 
                                 {credit.vote_average &&
-                                typeof credit.vote_average === 'number' &&
+                                typeof credit.vote_average === "number" &&
                                 credit.vote_average > 1 &&
                                 credit.vote_count &&
                                 credit.vote_count > 0 ? (
                                   <Typography
-                                    variant='caption'
+                                    variant="caption"
                                     sx={{
-                                      color: '#ffd700',
+                                      color: colors.status.warning,
                                       fontWeight: 600,
-                                      display: 'flex',
-                                      alignItems: 'center',
+                                      display: "flex",
+                                      alignItems: "center",
                                       gap: 0.3,
                                     }}
                                   >
@@ -2556,31 +2596,31 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               {user && (
                                 <Box sx={{ flexShrink: 0 }}>
                                   {isTitleInList(credit) ? (
-                                    <Tooltip title='Bereits in deiner Liste'>
+                                    <Tooltip title="Bereits in deiner Liste">
                                       <Chip
                                         icon={
                                           <CheckIcon
-                                            sx={{ fontSize: '16px !important' }}
+                                            sx={{ fontSize: "16px !important" }}
                                           />
                                         }
-                                        label='In Liste'
-                                        size='small'
+                                        label="In Liste"
+                                        size="small"
                                         sx={{
                                           backgroundColor:
-                                            'rgba(76, 175, 80, 0.2)',
-                                          color: '#4caf50',
-                                          border: '1px solid #4caf50',
-                                          fontSize: '0.7rem',
-                                          height: '24px',
+                                            "rgba(76, 175, 80, 0.2)",
+                                          color: "#4caf50",
+                                          border: "1px solid #4caf50",
+                                          fontSize: "0.7rem",
+                                          height: "24px",
                                         }}
                                       />
                                     </Tooltip>
                                   ) : (
                                     <Tooltip
                                       title={`${
-                                        credit.media_type === 'movie'
-                                          ? 'Film'
-                                          : 'Serie'
+                                        credit.media_type === "movie"
+                                          ? "Film"
+                                          : "Serie"
                                       } zu meiner Liste hinzufügen`}
                                     >
                                       <Chip
@@ -2588,22 +2628,24 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           addingTitles.has(credit.id) ? (
                                             <CircularProgress
                                               size={14}
-                                              sx={{ color: 'var(--theme-primary)' }}
+                                              sx={{
+                                                color: "var(--theme-primary)",
+                                              }}
                                             />
                                           ) : (
                                             <AddIcon
                                               sx={{
-                                                fontSize: '16px !important',
+                                                fontSize: "16px !important",
                                               }}
                                             />
                                           )
                                         }
                                         label={
                                           addingTitles.has(credit.id)
-                                            ? 'Hinzufügen...'
-                                            : 'Hinzufügen'
+                                            ? "Hinzufügen..."
+                                            : "Hinzufügen"
                                         }
-                                        size='small'
+                                        size="small"
                                         clickable
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2612,25 +2654,25 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                         disabled={addingTitles.has(credit.id)}
                                         sx={{
                                           backgroundColor:
-                                            'rgba(0,254,215,0.2)',
-                                          color: 'var(--theme-primary)',
+                                            `${colors.primary}20`,
+                                          color: "var(--theme-primary)",
                                           border: `1px solid var(--theme-primary)`,
-                                          fontSize: '0.7rem',
-                                          height: '24px',
-                                          cursor: 'pointer',
-                                          transition: 'all 0.2s ease',
-                                          '&:hover': {
+                                          fontSize: "0.7rem",
+                                          height: "24px",
+                                          cursor: "pointer",
+                                          transition: "all 0.2s ease",
+                                          "&:hover": {
                                             backgroundColor:
-                                              'rgba(0,254,215,0.3)',
-                                            transform: 'scale(1.05)',
+                                              `${colors.primary}30`,
+                                            transform: "scale(1.05)",
                                           },
-                                          '&:disabled': {
+                                          "&:disabled": {
                                             backgroundColor:
-                                              'rgba(255,255,255,0.05)',
-                                            color: '#666',
+                                              "rgba(255,255,255,0.05)",
+                                            color: "#666",
                                             borderColor:
-                                              'rgba(255,255,255,0.1)',
-                                            cursor: 'not-allowed',
+                                              "rgba(255,255,255,0.1)",
+                                            cursor: "not-allowed",
                                           },
                                         }}
                                       />
@@ -2650,183 +2692,183 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         <Box
                           key={`cast-${credit.id}-${credit.credit_id}`}
                           sx={{
-                            display: 'flex',
+                            display: "flex",
                             gap: 2,
                             background:
-                              'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+                              "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
                             borderRadius: 2,
                             p: 1.5,
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            cursor: 'pointer',
-                            '&:hover': {
+                            backdropFilter: "blur(10px)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            cursor: "pointer",
+                            "&:hover": {
                               background:
-                                'linear-gradient(135deg, rgba(0,254,215,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-                              borderColor: 'rgba(0,254,215,0.3)',
-                              transform: 'translateX(8px)',
-                              boxShadow: '0 8px 32px rgba(0,254,215,0.2)',
+                                colors.status.info.gradient,
+                              borderColor: `${colors.border.primary}30`,
+                              transform: "translateX(8px)",
+                              boxShadow: colors.shadow.card,
                             },
                           }}
                         >
                           <Box
                             sx={{
-                              position: 'relative',
+                              position: "relative",
                               flexShrink: 0,
                               width: 60,
                               height: 90,
                               borderRadius: 1.5,
-                              overflow: 'hidden',
+                              overflow: "hidden",
                               background:
-                                'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                                "linear-gradient(145deg, #2a2a2a, #1a1a1a)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
                             }}
                           >
                             {credit.poster_path ? (
                               <Box
-                                component='img'
+                                component="img"
                                 src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
                                 alt={credit.title || credit.name}
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  transition: 'transform 0.3s ease',
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  transition: "transform 0.3s ease",
                                 }}
                               />
                             ) : (
                               <Box
                                 sx={{
-                                  width: '100%',
-                                  height: '100%',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
+                                  width: "100%",
+                                  height: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                   background:
-                                    'linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)',
-                                  color: '#666',
-                                  fontSize: '1.5rem',
+                                    "linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)",
+                                  color: "#666",
+                                  fontSize: "1.5rem",
                                 }}
                               >
-                                {credit.media_type === 'movie' ? '🎬' : '📺'}
+                                {credit.media_type === "movie" ? "🎬" : "📺"}
                               </Box>
                             )}
                             <Box
                               sx={{
-                                position: 'absolute',
+                                position: "absolute",
                                 top: 4,
                                 right: 4,
                                 background:
-                                  credit.media_type === 'movie'
-                                    ? 'linear-gradient(135deg, #ff6b6b, #ff5252)'
-                                    : 'linear-gradient(135deg, var(--theme-primary), #00d4b8)',
-                                borderRadius: '12px',
+                                  credit.media_type === "movie"
+                                    ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,
-                                fontSize: '0.65rem',
-                                fontWeight: 'bold',
+                                fontSize: "0.65rem",
+                                fontWeight: "bold",
                                 color:
-                                  credit.media_type === 'movie'
-                                    ? '#fff'
-                                    : '#000',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                textTransform: 'uppercase',
+                                  credit.media_type === "movie"
+                                    ? "#fff"
+                                    : "#000",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                                textTransform: "uppercase",
                                 letterSpacing: 0.5,
                               }}
                             >
-                              {credit.media_type === 'movie' ? 'Film' : 'Serie'}
+                              {credit.media_type === "movie" ? "Film" : "Serie"}
                             </Box>
                           </Box>
 
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography
-                              variant='subtitle1'
+                              variant="subtitle1"
                               sx={{
                                 fontWeight: 700,
-                                color: '#ffffff',
+                                color: "#ffffff",
                                 mb: 0.5,
                                 lineHeight: 1.2,
-                                fontSize: '0.95rem',
-                                display: '-webkit-box',
+                                fontSize: "0.95rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
                               {credit.title || credit.name}
                             </Typography>
 
                             <Typography
-                              variant='body2'
+                              variant="body2"
                               sx={{
-                                color: 'var(--theme-primary)',
-                                fontStyle: 'italic',
+                                color: "var(--theme-primary)",
+                                fontStyle: "italic",
                                 mb: 0.8,
-                                fontSize: '0.8rem',
-                                display: '-webkit-box',
+                                fontSize: "0.8rem",
+                                display: "-webkit-box",
                                 WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
-                              als{' '}
+                              als{" "}
                               {credit.character.replace(
                                 /\(voice\)/gi,
-                                '(Stimme)'
+                                "(Stimme)",
                               )}
                             </Typography>
 
                             <Box
                               sx={{
-                                display: 'flex',
-                                alignItems: { xs: 'flex-start', sm: 'center' },
-                                justifyContent: 'space-between',
-                                flexDirection: { xs: 'column', sm: 'row' },
+                                display: "flex",
+                                alignItems: { xs: "flex-start", sm: "center" },
+                                justifyContent: "space-between",
+                                flexDirection: { xs: "column", sm: "row" },
                                 gap: { xs: 1, sm: 0 },
                               }}
                             >
                               <Box
                                 sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
+                                  display: "flex",
+                                  alignItems: "center",
                                   gap: 1.5,
-                                  flexWrap: 'wrap',
+                                  flexWrap: "wrap",
                                 }}
                               >
                                 <Typography
-                                  variant='caption'
+                                  variant="caption"
                                   sx={{
-                                    color: '#9e9e9e',
+                                    color: "#9e9e9e",
                                     fontWeight: 500,
-                                    display: 'flex',
-                                    alignItems: 'center',
+                                    display: "flex",
+                                    alignItems: "center",
                                     gap: 0.5,
                                   }}
                                 >
-                                  📅{' '}
+                                  📅{" "}
                                   {credit.release_date
                                     ? new Date(
-                                        credit.release_date
+                                        credit.release_date,
                                       ).getFullYear()
                                     : credit.first_air_date
-                                    ? new Date(
-                                        credit.first_air_date
-                                      ).getFullYear()
-                                    : 'Unbekannt'}
+                                      ? new Date(
+                                          credit.first_air_date,
+                                        ).getFullYear()
+                                      : "Unbekannt"}
                                 </Typography>
 
                                 {credit.vote_average &&
-                                typeof credit.vote_average === 'number' &&
+                                typeof credit.vote_average === "number" &&
                                 credit.vote_average > 1 &&
                                 credit.vote_count &&
                                 credit.vote_count > 0 ? (
                                   <Typography
-                                    variant='caption'
+                                    variant="caption"
                                     sx={{
-                                      color: '#ffd700',
+                                      color: colors.status.warning,
                                       fontWeight: 600,
-                                      display: 'flex',
-                                      alignItems: 'center',
+                                      display: "flex",
+                                      alignItems: "center",
                                       gap: 0.3,
                                     }}
                                   >
@@ -2839,31 +2881,31 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               {user && (
                                 <Box sx={{ flexShrink: 0 }}>
                                   {isTitleInList(credit) ? (
-                                    <Tooltip title='Bereits in deiner Liste'>
+                                    <Tooltip title="Bereits in deiner Liste">
                                       <Chip
                                         icon={
                                           <CheckIcon
-                                            sx={{ fontSize: '16px !important' }}
+                                            sx={{ fontSize: "16px !important" }}
                                           />
                                         }
-                                        label='In Liste'
-                                        size='small'
+                                        label="In Liste"
+                                        size="small"
                                         sx={{
                                           backgroundColor:
-                                            'rgba(76, 175, 80, 0.2)',
-                                          color: '#4caf50',
-                                          border: '1px solid #4caf50',
-                                          fontSize: '0.7rem',
-                                          height: '24px',
+                                            "rgba(76, 175, 80, 0.2)",
+                                          color: "#4caf50",
+                                          border: "1px solid #4caf50",
+                                          fontSize: "0.7rem",
+                                          height: "24px",
                                         }}
                                       />
                                     </Tooltip>
                                   ) : (
                                     <Tooltip
                                       title={`${
-                                        credit.media_type === 'movie'
-                                          ? 'Film'
-                                          : 'Serie'
+                                        credit.media_type === "movie"
+                                          ? "Film"
+                                          : "Serie"
                                       } zu meiner Liste hinzufügen`}
                                     >
                                       <Chip
@@ -2871,22 +2913,24 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                           addingTitles.has(credit.id) ? (
                                             <CircularProgress
                                               size={14}
-                                              sx={{ color: 'var(--theme-primary)' }}
+                                              sx={{
+                                                color: "var(--theme-primary)",
+                                              }}
                                             />
                                           ) : (
                                             <AddIcon
                                               sx={{
-                                                fontSize: '16px !important',
+                                                fontSize: "16px !important",
                                               }}
                                             />
                                           )
                                         }
                                         label={
                                           addingTitles.has(credit.id)
-                                            ? 'Hinzufügen...'
-                                            : 'Hinzufügen'
+                                            ? "Hinzufügen..."
+                                            : "Hinzufügen"
                                         }
-                                        size='small'
+                                        size="small"
                                         clickable
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2895,25 +2939,25 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                         disabled={addingTitles.has(credit.id)}
                                         sx={{
                                           backgroundColor:
-                                            'rgba(0,254,215,0.2)',
-                                          color: 'var(--theme-primary)',
+                                            `${colors.primary}20`,
+                                          color: "var(--theme-primary)",
                                           border: `1px solid var(--theme-primary)`,
-                                          fontSize: '0.7rem',
-                                          height: '24px',
-                                          cursor: 'pointer',
-                                          transition: 'all 0.2s ease',
-                                          '&:hover': {
+                                          fontSize: "0.7rem",
+                                          height: "24px",
+                                          cursor: "pointer",
+                                          transition: "all 0.2s ease",
+                                          "&:hover": {
                                             backgroundColor:
-                                              'rgba(0,254,215,0.3)',
-                                            transform: 'scale(1.05)',
+                                              `${colors.primary}30`,
+                                            transform: "scale(1.05)",
                                           },
-                                          '&:disabled': {
+                                          "&:disabled": {
                                             backgroundColor:
-                                              'rgba(255,255,255,0.05)',
-                                            color: '#666',
+                                              "rgba(255,255,255,0.05)",
+                                            color: "#666",
                                             borderColor:
-                                              'rgba(255,255,255,0.1)',
-                                            cursor: 'not-allowed',
+                                              "rgba(255,255,255,0.1)",
+                                            cursor: "not-allowed",
                                           },
                                         }}
                                       />
@@ -2928,8 +2972,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   </Box>
                 ) : (
                   <Typography
-                    variant='body2'
-                    sx={{ textAlign: 'center', color: '#9e9e9e' }}
+                    variant="body2"
+                    sx={{ textAlign: "center", color: "#9e9e9e" }}
                   >
                     Keine Filmographie verfügbar
                   </Typography>

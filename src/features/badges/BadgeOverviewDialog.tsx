@@ -206,9 +206,9 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
       case 'common':
         return colors.text.muted;
       case 'rare':
-        return '#2196f3';
+        return colors.primary;
       case 'epic':
-        return '#9c27b0';
+        return colors.text.accent;
       case 'legendary':
         return colors.status.warning;
       default:
@@ -329,7 +329,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             transform: 'translateY(-4px)',
             boxShadow: earned
               ? `0 8px 25px ${badge.color}30`
-              : `0 8px 25px rgba(0,0,0,0.3)`,
+              : colors.shadow.button,
           },
         }}
       >
@@ -412,8 +412,8 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                     right: 0,
                     bottom: 0,
                     backgroundColor: nextTierInfo?.isNextTier
-                      ? 'rgba(0,0,0,0.4)'
-                      : 'rgba(0,0,0,0.7)',
+                      ? colors.overlay.dark
+                      : colors.overlay.black,
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -608,13 +608,11 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
         paper: {
           sx: {
             minHeight: '80vh',
-            background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            background: colors.background.gradient.dark,
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${colors.border.subtle}`,
             overflow: 'hidden',
-            boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+            boxShadow: `${colors.shadow.dialog}, 0 0 30px ${colors.status.warning}30`,
             color: 'white',
           },
         },
@@ -624,10 +622,9 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
         sx={{
           textAlign: 'center',
           position: 'relative',
-          background:
-            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          background: colors.background.gradient.dark,
           backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: `1px solid ${colors.border.lighter}`,
           color: colors.text.secondary,
           fontWeight: 600,
           fontSize: '1.25rem',
@@ -644,7 +641,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            sx={{ fontWeight: 'bold', color: colors.status.warning }}
           >
             Meine Badges
           </Typography>
@@ -664,12 +661,12 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
+            color: colors.text.placeholder,
+            background: colors.overlay.light,
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
+              background: colors.overlay.white,
               color: colors.text.secondary,
               transform: 'translateY(-50%) scale(1.05)',
             },
@@ -682,14 +679,13 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
       <DialogContent
         sx={{
           p: 0,
-          background:
-            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+          background: colors.background.gradient.light,
           backdropFilter: 'blur(10px)',
           color: colors.text.secondary,
         }}
       >
         {/* Category Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+        <Box sx={{ borderBottom: 1, borderColor: colors.border.subtle }}>
           <Tabs
             value={tabValue}
             onChange={(_, newValue) => setTabValue(newValue)}
@@ -697,23 +693,21 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             scrollButtons='auto'
             sx={{
               '& .MuiTab-root': {
-                color: 'rgba(255,255,255,0.7)',
-                background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                color: colors.text.placeholder,
+                background: colors.button.secondary.gradient,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px 12px 0 0',
                 margin: '0 4px',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background:
-                    'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                  background: colors.button.secondary.gradientHover,
                   color: colors.text.secondary,
                 },
                 '&.Mui-selected': {
                   color: 'var(--theme-primary)',
                   background:
                     `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
-                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.2)',
+                  boxShadow: colors.shadow.hover,
                 },
               },
               '& .MuiTabs-indicator': {

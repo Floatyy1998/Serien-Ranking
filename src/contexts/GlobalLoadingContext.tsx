@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react';
 import { useLocation } from 'react-router-dom';
+import { colors } from '../theme';
 
 interface GlobalLoadingState {
   isGlobalLoading: boolean;
@@ -112,10 +113,10 @@ export const GlobalLoadingProvider = ({
                       width: '80px',
                       height: '80px',
                       borderRadius: '50%',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      border: '3px solid rgba(255, 255, 255, 0.2)',
+                      backgroundColor: colors.border.subtle,
+                      border: `3px solid ${colors.overlay.white}`,
                       background:
-                        'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                        `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                       backgroundSize: '200% 100%',
                       animation: 'skeleton-wave 1.5s ease-in-out infinite',
                     }}
@@ -130,9 +131,9 @@ export const GlobalLoadingProvider = ({
                       style={{
                         width: '280px',
                         height: '34px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        backgroundColor: colors.border.subtle,
                         background:
-                          'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                          `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                         backgroundSize: '200% 100%',
                         animation: 'skeleton-wave 1.5s ease-in-out infinite',
                         borderRadius: '4px',
@@ -144,9 +145,9 @@ export const GlobalLoadingProvider = ({
                       style={{
                         width: '350px',
                         height: '14px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        backgroundColor: colors.background.cardFocused,
                         background:
-                          'linear-gradient(90deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 75%)',
+                          `linear-gradient(90deg, ${colors.background.cardFocused} 25%, ${colors.overlay.white} 50%, ${colors.background.cardFocused} 75%)`,
                         backgroundSize: '200% 100%',
                         animation: 'skeleton-wave 1.5s ease-in-out infinite',
                         borderRadius: '4px',
@@ -158,9 +159,9 @@ export const GlobalLoadingProvider = ({
                       style={{
                         width: '280px',
                         height: '12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                        backgroundColor: colors.background.cardHover,
                         background:
-                          'linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 75%)',
+                          `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                         backgroundSize: '200% 100%',
                         animation: 'skeleton-wave 1.5s ease-in-out infinite',
                         borderRadius: '4px',
@@ -175,13 +176,13 @@ export const GlobalLoadingProvider = ({
                   style={{
                     width: '100px',
                     height: '48px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    backgroundColor: colors.border.subtle,
                     background:
-                      'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                      `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                     backgroundSize: '200% 100%',
                     animation: 'skeleton-wave 1.5s ease-in-out infinite',
                     borderRadius: '8px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    border: `1px solid ${colors.overlay.white}`,
                   }}
                 />
               </div>
@@ -208,7 +209,7 @@ export const GlobalLoadingProvider = ({
                       borderRadius: '4px',
                       padding: '24px',
                       textAlign: 'center',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      border: `1px solid ${colors.border.subtle}`,
                       display:
                         window.innerWidth < 640 && index >= 2
                           ? 'none'
@@ -220,9 +221,9 @@ export const GlobalLoadingProvider = ({
                       style={{
                         width: '60px',
                         height: '34px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        backgroundColor: colors.border.subtle,
                         background:
-                          'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                          `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                         backgroundSize: '200% 100%',
                         animation: 'skeleton-wave 1.5s ease-in-out infinite',
                         borderRadius: '4px',
@@ -234,9 +235,9 @@ export const GlobalLoadingProvider = ({
                       style={{
                         width: '80px',
                         height: '14px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        backgroundColor: colors.border.subtle,
                         background:
-                          'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                          `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                         backgroundSize: '200% 100%',
                         animation: 'skeleton-wave 1.5s ease-in-out infinite',
                         borderRadius: '4px',
@@ -254,7 +255,7 @@ export const GlobalLoadingProvider = ({
                 style={{
                   backgroundColor: '#1e1e1e',
                   borderRadius: '4px',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  border: `1px solid ${colors.border.subtle}`,
                   overflow: 'hidden',
                 }}
               >
@@ -262,7 +263,7 @@ export const GlobalLoadingProvider = ({
                 <div
                   style={{
                     display: 'flex',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderBottom: `1px solid ${colors.border.subtle}`,
                     height: '72px',
                   }}
                 >
@@ -271,18 +272,18 @@ export const GlobalLoadingProvider = ({
                     style={{
                       flex: 1,
                       height: '100%',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: colors.border.subtle,
                       background:
-                        'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                        `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                       backgroundSize: '200% 100%',
                       animation: 'skeleton-wave 1.5s ease-in-out infinite',
-                      borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
+                      borderBottom: `2px solid ${colors.overlay.white}`,
                     }}
                   />
                   <div
                     style={{
                       width: '1px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                      backgroundColor: colors.border.subtle,
                     }}
                   />
                   <div
@@ -290,9 +291,9 @@ export const GlobalLoadingProvider = ({
                     style={{
                       flex: 1,
                       height: '100%',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      backgroundColor: colors.background.cardHover,
                       background:
-                        'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                        `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                       backgroundSize: '200% 100%',
                       animation: 'skeleton-wave 1.5s ease-in-out infinite',
                     }}
@@ -326,10 +327,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '100%',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -353,10 +354,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '56px',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -371,10 +372,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '56px',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -389,10 +390,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '56px',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -409,10 +410,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '100%',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -428,10 +429,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '100%',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -455,10 +456,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '56px',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -473,10 +474,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '56px',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -496,10 +497,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '100%',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -514,10 +515,10 @@ export const GlobalLoadingProvider = ({
                           style={{
                             width: '56px',
                             height: '56px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            backgroundColor: colors.background.cardHover,
+                            border: `1px solid ${colors.border.subtle}`,
                             background:
-                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                             backgroundSize: '200% 100%',
                             animation:
                               'skeleton-wave 1.5s ease-in-out infinite',
@@ -532,10 +533,10 @@ export const GlobalLoadingProvider = ({
                           style={{
                             width: '56px',
                             height: '56px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            backgroundColor: colors.background.cardHover,
+                            border: `1px solid ${colors.border.subtle}`,
                             background:
-                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                             backgroundSize: '200% 100%',
                             animation:
                               'skeleton-wave 1.5s ease-in-out infinite',
@@ -550,10 +551,10 @@ export const GlobalLoadingProvider = ({
                           style={{
                             width: '56px',
                             height: '56px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            backgroundColor: colors.background.cardHover,
+                            border: `1px solid ${colors.border.subtle}`,
                             background:
-                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                             backgroundSize: '200% 100%',
                             animation:
                               'skeleton-wave 1.5s ease-in-out infinite',
@@ -569,10 +570,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '100%',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -588,10 +589,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '100%',
                               height: '56px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(255, 255, 255, 0.23)',
+                              backgroundColor: colors.background.cardHover,
+                              border: `1px solid ${colors.border.subtle}`,
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -606,10 +607,10 @@ export const GlobalLoadingProvider = ({
                           style={{
                             width: '56px',
                             height: '56px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            backgroundColor: colors.background.cardHover,
+                            border: `1px solid ${colors.border.subtle}`,
                             background:
-                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                             backgroundSize: '200% 100%',
                             animation:
                               'skeleton-wave 1.5s ease-in-out infinite',
@@ -624,10 +625,10 @@ export const GlobalLoadingProvider = ({
                           style={{
                             width: '56px',
                             height: '56px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                            backgroundColor: colors.background.cardHover,
+                            border: `1px solid ${colors.border.subtle}`,
                             background:
-                              'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                              `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                             backgroundSize: '200% 100%',
                             animation:
                               'skeleton-wave 1.5s ease-in-out infinite',
@@ -654,10 +655,10 @@ export const GlobalLoadingProvider = ({
                           style={{
                             height: '444px', // Korrekte SeriesCard height
                             backgroundColor: '#1e1e1e',
-                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            border: `1px solid ${colors.border.subtle}`,
                             borderRadius: '4px',
                             boxShadow:
-                              'rgba(255, 255, 255, 0.1) 8px 8px 20px 0px, rgba(255, 255, 255, 0.1) -5px -5px 20px 0px',
+                              'colors.border.subtle 8px 8px 20px 0px, colors.border.subtle -5px -5px 20px 0px',
                             display: 'flex',
                             flexDirection: 'column',
                             overflow: 'hidden',
@@ -667,7 +668,7 @@ export const GlobalLoadingProvider = ({
                           <div
                             style={{
                               aspectRatio: '2/3',
-                              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                              backgroundColor: colors.background.cardHover,
                               position: 'relative',
                             }}
                           >
@@ -677,7 +678,7 @@ export const GlobalLoadingProvider = ({
                                 width: '100%',
                                 height: '100%',
                                 background:
-                                  'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                  `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                                 backgroundSize: '200% 100%',
                                 animation:
                                   'skeleton-wave 1.5s ease-in-out infinite',
@@ -689,7 +690,7 @@ export const GlobalLoadingProvider = ({
                                 position: 'absolute',
                                 top: '8px',
                                 left: '8px',
-                                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                backgroundColor: colors.overlay.white,
                                 backdropFilter: 'blur(10px)',
                                 borderRadius: '12px',
                                 padding: '4px 8px',
@@ -700,9 +701,9 @@ export const GlobalLoadingProvider = ({
                                 style={{
                                   width: '30px',
                                   height: '16px',
-                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  backgroundColor: colors.border.subtle,
                                   background:
-                                    'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                                    `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                                   backgroundSize: '200% 100%',
                                   animation:
                                     'skeleton-wave 1.5s ease-in-out infinite',
@@ -716,7 +717,7 @@ export const GlobalLoadingProvider = ({
                                 position: 'absolute',
                                 top: '8px',
                                 right: '8px',
-                                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                backgroundColor: colors.overlay.white,
                                 backdropFilter: 'blur(10px)',
                                 borderRadius: '50%',
                                 padding: '8px',
@@ -729,9 +730,9 @@ export const GlobalLoadingProvider = ({
                                 style={{
                                   width: '16px',
                                   height: '16px',
-                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  backgroundColor: colors.border.subtle,
                                   background:
-                                    'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                                    `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                                   backgroundSize: '200% 100%',
                                   animation:
                                     'skeleton-wave 1.5s ease-in-out infinite',
@@ -756,10 +757,10 @@ export const GlobalLoadingProvider = ({
                               style={{
                                 width: '80%',
                                 height: '20px',
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                backgroundColor: colors.border.subtle,
                                 borderRadius: '4px',
                                 background:
-                                  'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                                  `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                                 backgroundSize: '200% 100%',
                                 animation:
                                   'skeleton-wave 1.5s ease-in-out infinite',
@@ -792,10 +793,10 @@ export const GlobalLoadingProvider = ({
                     style={{
                       width: '250px',
                       height: '56px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.23)',
+                      backgroundColor: colors.background.cardHover,
+                      border: `1px solid ${colors.border.subtle}`,
                       background:
-                        'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                        `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                       backgroundSize: '200% 100%',
                       animation: 'skeleton-wave 1.5s ease-in-out infinite',
                       borderRadius: '4px',
@@ -806,10 +807,10 @@ export const GlobalLoadingProvider = ({
                     style={{
                       width: '56px',
                       height: '56px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.23)',
+                      backgroundColor: colors.background.cardHover,
+                      border: `1px solid ${colors.border.subtle}`,
                       background:
-                        'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                        `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                       backgroundSize: '200% 100%',
                       animation: 'skeleton-wave 1.5s ease-in-out infinite',
                       borderRadius: '8px',
@@ -832,10 +833,10 @@ export const GlobalLoadingProvider = ({
                         style={{
                           height: '444px',
                           backgroundColor: '#1e1e1e',
-                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          border: `1px solid ${colors.border.subtle}`,
                           borderRadius: '4px',
                           boxShadow:
-                            'rgba(255, 255, 255, 0.1) 8px 8px 20px 0px, rgba(255, 255, 255, 0.1) -5px -5px 20px 0px',
+                            'colors.border.subtle 8px 8px 20px 0px, colors.border.subtle -5px -5px 20px 0px',
                           display: 'flex',
                           flexDirection: 'column',
                           overflow: 'hidden',
@@ -844,7 +845,7 @@ export const GlobalLoadingProvider = ({
                         <div
                           style={{
                             aspectRatio: '2/3',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            backgroundColor: colors.background.cardHover,
                           }}
                         >
                           <div
@@ -853,7 +854,7 @@ export const GlobalLoadingProvider = ({
                               width: '100%',
                               height: '100%',
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+                                `linear-gradient(90deg, ${colors.background.cardHover} 25%, ${colors.border.subtle} 50%, ${colors.background.cardHover} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',
@@ -874,10 +875,10 @@ export const GlobalLoadingProvider = ({
                             style={{
                               width: '80%',
                               height: '20px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              backgroundColor: colors.border.subtle,
                               borderRadius: '4px',
                               background:
-                                'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%)',
+                                `linear-gradient(90deg, ${colors.border.subtle} 25%, ${colors.overlay.white} 50%, ${colors.border.subtle} 75%)`,
                               backgroundSize: '200% 100%',
                               animation:
                                 'skeleton-wave 1.5s ease-in-out infinite',

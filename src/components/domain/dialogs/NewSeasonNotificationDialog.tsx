@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../../../App';
 import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
 import { Series } from '../../../types/Series';
+import { colors } from '../../../theme';
 
 const providerLogos: { [key: number]: { name: string; logo: string } } = {
   337: {
@@ -431,7 +432,7 @@ const NewSeasonNotificationDialog = ({
             '&:hover': {
               background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
               transform: 'translateY(-2px)',
-              boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+              boxShadow: colors.shadow.buttonHover,
             },
           }}
         >

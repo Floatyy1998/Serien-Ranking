@@ -60,7 +60,7 @@ export const UpdateNotification: React.FC = () => {
         severity="info"
         sx={{
           backgroundColor: colors.overlay.light,
-          border: `1px solid rgba(0, 254, 215, 0.3)`,
+          border: `1px solid ${colors.border.primary}30`,
           color: colors.text.secondary,
           '& .MuiAlert-icon': {
             color: 'var(--theme-primary)',

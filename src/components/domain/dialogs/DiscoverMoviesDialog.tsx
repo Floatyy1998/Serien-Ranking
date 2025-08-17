@@ -326,7 +326,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            sx={{ fontWeight: 'bold', color: colors.status.warning }}
           >
             Neue Filme entdecken
           </Typography>

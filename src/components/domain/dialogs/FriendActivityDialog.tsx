@@ -479,7 +479,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
           cursor: 'pointer',
           textDecoration: 'underline',
           '&:hover': {
-            color: '#00d4b8',
+            color: colors.primary,
           },
         }}
         onClick={(e) => {

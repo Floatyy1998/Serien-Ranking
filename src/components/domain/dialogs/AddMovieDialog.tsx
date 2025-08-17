@@ -940,7 +940,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                             background:
                               `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary-hover) 100%)`,
                             transform: 'translateY(-2px)',
-                            boxShadow: `0 8px 25px rgba(0, 254, 215, 0.4)`,
+                            boxShadow: colors.shadow.buttonHover,
                           },
                         }}
                       >
@@ -1437,7 +1437,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                   background:
                     `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary-hover) 100%)`,
                   transform: 'translateY(-2px)',
-                  boxShadow: `0 8px 25px rgba(0, 254, 215, 0.4)`,
+                  boxShadow: colors.shadow.buttonHover,
                 },
               }}
             >

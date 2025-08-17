@@ -1610,7 +1610,7 @@ export const UserProfilePage: React.FC = () => {
               label='Suchen'
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className='w-[250px]'
+              className='w-[250px] search-input-field'
             />
 
             {/* Genre Filter */}

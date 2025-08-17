@@ -31,7 +31,7 @@ export const Legend = () => {
               maxWidth: 400,
               background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%)',
               borderRadius: 2,
-              border: '1px solid rgba(0, 254, 215, 0.3)',
+              border: `1px solid ${colors.border.primary}30`,
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
             }}>
               <Typography 

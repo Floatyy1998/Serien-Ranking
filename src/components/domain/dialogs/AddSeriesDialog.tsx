@@ -438,7 +438,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         '&:hover': {
           transform: { xs: 'none', sm: 'translateY(-8px)' },
-          boxShadow: { xs: 'none', sm: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' },
+          boxShadow: { xs: 'none', sm: colors.shadow.dialog },
         },
         '&:active': {
           transform: 'scale(0.95)',
@@ -525,7 +525,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
               }}
             >
               <StarIcon
-                sx={{ fontSize: { xs: 12, sm: 14 }, color: '#FFC107' }}
+                sx={{ fontSize: { xs: 12, sm: 14 }, color: colors.status.warning }}
               />
               <Typography
                 variant='caption'
@@ -740,7 +740,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
             <Typography
               component='div'
               variant='h4'
-              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+              sx={{ fontWeight: 'bold', color: colors.status.warning }}
             >
               Serie hinzufügen
             </Typography>
@@ -881,7 +881,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                     },
                     '&.Mui-focused': {
                       background: 'rgba(65,65,68,0.95)',
-                      boxShadow: `0 0 20px rgba(0, 254, 215, 0.3)`,
+                      boxShadow: colors.shadow.hover,
                       '& fieldset': {
                         borderColor: 'var(--theme-primary)',
                       },
@@ -942,7 +942,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                             background:
                               `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%)`,
                             transform: 'translateY(-2px)',
-                            boxShadow: `0 8px 25px rgba(0, 254, 215, 0.4)`,
+                            boxShadow: colors.shadow.buttonHover,
                           },
                         }}
                       >
@@ -1364,7 +1364,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                           background:
                             `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
                           border: `1px solid ${colors.border.primary}`,
-                          boxShadow: `0 8px 25px rgba(0, 254, 215, 0.3)`,
+                          boxShadow: colors.shadow.hover,
                         },
                       }}
                     />
@@ -1477,7 +1477,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                     `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
                   border: '1px solid var(--theme-primary)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.3)',
+                  boxShadow: colors.shadow.hover,
                 },
               }}
             >
@@ -1507,7 +1507,7 @@ const AddSeriesDialog: React.FC<AddSeriesDialogProps> = ({
                   background:
                     `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%)`,
                   transform: 'translateY(-2px)',
-                  boxShadow: `0 8px 25px rgba(0, 254, 215, 0.4)`,
+                  boxShadow: colors.shadow.buttonHover,
                 },
               }}
             >
