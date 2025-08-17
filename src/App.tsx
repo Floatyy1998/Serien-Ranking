@@ -1,6 +1,4 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
-import { LoadingSpinner } from './components/ui/LoadingSpinner';
-import { BackgroundMedia } from './components/ui/BackgroundMedia';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, {
@@ -19,6 +17,8 @@ import {
   Routes,
 } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
+import { BackgroundMedia } from './components/ui/BackgroundMedia';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
 import { UpdateNotification } from './components/ui/UpdateNotification';
@@ -126,44 +126,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (user) {
               // WICHTIG: Lokales Theme hat Vorrang - Cloud-Theme nur als Fallback
               const localTheme = localStorage.getItem('customTheme');
-              
+
               if (!localTheme) {
                 // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
-                console.log('No local theme found, checking for cloud theme as fallback...');
-                const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
+                console.log(
+                  'No local theme found, checking for cloud theme as fallback...'
+                );
+                const themeRef = firebase
+                  .database()
+                  .ref(`users/${user.uid}/theme`);
                 try {
                   const themeSnapshot = await themeRef.once('value');
                   const cloudTheme = themeSnapshot.val();
-                  
+
                   if (cloudTheme) {
                     console.log('Cloud theme found as fallback, applying...');
                     // Cloud-Theme als Fallback verwenden
                     const root = document.documentElement;
-                    root.style.setProperty('--theme-primary', cloudTheme.primaryColor || '#00fed7');
-                    const primaryHover = adjustBrightness(cloudTheme.primaryColor || '#00fed7', 10);
-                    root.style.setProperty('--theme-primary-hover', primaryHover);
-                    root.style.setProperty('--theme-accent', cloudTheme.accentColor || '#ff6b6b');
-                    root.style.setProperty('--theme-background', cloudTheme.backgroundColor || '#000000');
-                    root.style.setProperty('--theme-surface', cloudTheme.surfaceColor || '#2d2d30');
-                    root.style.setProperty('--theme-text-primary', cloudTheme.primaryColor || '#00fed7');
+                    root.style.setProperty(
+                      '--theme-primary',
+                      cloudTheme.primaryColor || '#00fed7'
+                    );
+                    const primaryHover = adjustBrightness(
+                      cloudTheme.primaryColor || '#00fed7',
+                      10
+                    );
+                    root.style.setProperty(
+                      '--theme-primary-hover',
+                      primaryHover
+                    );
+                    root.style.setProperty(
+                      '--theme-accent',
+                      cloudTheme.accentColor || '#ff6b6b'
+                    );
+                    root.style.setProperty(
+                      '--theme-background',
+                      cloudTheme.backgroundColor || '#000000'
+                    );
+                    root.style.setProperty(
+                      '--theme-surface',
+                      cloudTheme.surfaceColor || '#2d2d30'
+                    );
+                    root.style.setProperty(
+                      '--theme-text-primary',
+                      cloudTheme.primaryColor || '#00fed7'
+                    );
                     root.style.setProperty('--theme-text-secondary', '#ffffff');
-                    
+
                     // Update theme-color Meta-Tag für PWA Status Bar
-                    updateThemeColorMeta(cloudTheme.backgroundColor || '#000000');
-                    
+                    updateThemeColorMeta(
+                      cloudTheme.backgroundColor || '#000000'
+                    );
+
                     // WICHTIG: Cloud-Theme NICHT automatisch lokal speichern
                     // Sonst würde es zum lokalen Theme werden und könnte nicht mehr überschrieben werden
                     // User muss explizit im Theme-Editor "Speichern" klicken um ein lokales Theme zu erstellen
-                    
+
                     window.dispatchEvent(new CustomEvent('themeChanged'));
                   }
                 } catch (error) {
                   console.error('Error loading cloud theme:', error);
                 }
               } else {
-                console.log('Local theme exists, keeping it (has priority over cloud theme - cloud updates are ignored)');
+                console.log(
+                  'Local theme exists, keeping it (has priority over cloud theme - cloud updates are ignored)'
+                );
               }
-              
+
               const userRef = firebase.database().ref(`users/${user.uid}`);
               const snapshot = await userRef.once('value');
 
@@ -230,8 +259,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   if (!firebaseInitialized || !authStateResolved) {
     return (
-      <LoadingSpinner 
-        text="Initialisierung..." 
+      <LoadingSpinner
+        text='Initialisierung...'
         showOfflineMessage={isOffline}
       />
     );
@@ -250,16 +279,26 @@ const adjustBrightness = (color: string, percent: number) => {
   const num = parseInt(color.replace('#', ''), 16);
   const amt = Math.round(2.55 * percent);
   const R = (num >> 16) + amt;
-  const G = (num >> 8 & 0x00FF) + amt;
-  const B = (num & 0x0000FF) + amt;
-  return '#' + (0x1000000 + (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 + 
-    (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 + 
-    (B < 255 ? (B < 1 ? 0 : B) : 255)).toString(16).slice(1);
+  const G = ((num >> 8) & 0x00ff) + amt;
+  const B = (num & 0x0000ff) + amt;
+  return (
+    '#' +
+    (
+      0x1000000 +
+      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+      (B < 255 ? (B < 1 ? 0 : B) : 255)
+    )
+      .toString(16)
+      .slice(1)
+  );
 };
 
 // Funktion zum Updaten des theme-color Meta-Tags
 const updateThemeColorMeta = (backgroundColor: string) => {
-  const metaThemeColor = document.getElementById('theme-color-meta') as HTMLMetaElement;
+  const metaThemeColor = document.getElementById(
+    'theme-color-meta'
+  ) as HTMLMetaElement;
   if (metaThemeColor) {
     metaThemeColor.content = backgroundColor;
   }
@@ -267,7 +306,7 @@ const updateThemeColorMeta = (backgroundColor: string) => {
 
 const loadSavedTheme = async (userId?: string) => {
   let theme = null;
-  
+
   // WICHTIG: Lokales Theme hat Vorrang vor Cloud-Theme
   // Erst lokales Theme versuchen
   const savedTheme = localStorage.getItem('customTheme');
@@ -279,7 +318,7 @@ const loadSavedTheme = async (userId?: string) => {
       console.error('Fehler beim Laden des lokalen Themes:', error);
     }
   }
-  
+
   // Falls kein lokales Theme, Cloud-Theme als Fallback laden
   if (!theme && userId) {
     try {
@@ -293,33 +332,59 @@ const loadSavedTheme = async (userId?: string) => {
       console.error('Fehler beim Laden des Cloud-Themes:', error);
     }
   }
-  
+
   // Theme anwenden oder Defaults verwenden
   const root = document.documentElement;
-  
+
   if (theme) {
     root.style.setProperty('--theme-primary', theme.primaryColor || '#00fed7');
     // Hover-Farbe automatisch berechnen (etwas heller/dunkler)
     const primaryHover = adjustBrightness(theme.primaryColor || '#00fed7', 10);
     root.style.setProperty('--theme-primary-hover', primaryHover);
     root.style.setProperty('--theme-accent', theme.accentColor || '#ff6b6b');
-    root.style.setProperty('--theme-background', theme.backgroundColor || '#000000');
+    root.style.setProperty(
+      '--theme-background',
+      theme.backgroundColor || '#000000'
+    );
     root.style.setProperty('--theme-surface', theme.surfaceColor || '#2d2d30');
-    root.style.setProperty('--theme-text-primary', theme.primaryColor || '#00fed7');
+    root.style.setProperty(
+      '--theme-text-primary',
+      theme.primaryColor || '#00fed7'
+    );
     root.style.setProperty('--theme-text-secondary', '#ffffff');
-    
+
+    // Hintergrundbild sofort setzen wenn vorhanden
+    if (theme.backgroundImage && !theme.backgroundIsVideo) {
+      root.style.setProperty(
+        '--background-image',
+        `url(${theme.backgroundImage})`
+      );
+      root.style.setProperty(
+        '--background-image-opacity',
+        String(theme.backgroundImageOpacity || 0.5)
+      );
+      root.style.setProperty(
+        '--background-image-blur',
+        `${theme.backgroundImageBlur || 0}px`
+      );
+      document.body.classList.add('has-background-image');
+    }
+
     // Update theme-color Meta-Tag für PWA Status Bar
     updateThemeColorMeta(theme.backgroundColor || '#000000');
   } else {
     // Stelle sicher, dass Default-Werte gesetzt sind
     root.style.setProperty('--theme-primary', '#00fed7');
-    root.style.setProperty('--theme-primary-hover', adjustBrightness('#00fed7', 10));
+    root.style.setProperty(
+      '--theme-primary-hover',
+      adjustBrightness('#00fed7', 10)
+    );
     root.style.setProperty('--theme-accent', '#ff6b6b');
     root.style.setProperty('--theme-background', '#000000');
     root.style.setProperty('--theme-surface', '#2d2d30');
     root.style.setProperty('--theme-text-primary', '#00fed7');
     root.style.setProperty('--theme-text-secondary', '#ffffff');
-    
+
     // Update theme-color Meta-Tag für PWA Status Bar
     updateThemeColorMeta('#000000');
   }
@@ -327,30 +392,30 @@ const loadSavedTheme = async (userId?: string) => {
 
 export function App() {
   const [isThemeLoaded, setIsThemeLoaded] = React.useState(false);
-  
+
   // Theme beim App-Start laden - aber NACH Firebase Initialisierung
   React.useEffect(() => {
     // Sofort lokales Theme laden für schnellen Start (braucht kein Firebase)
     const initializeTheme = async () => {
       // Erst mal lokales Theme laden (sofort verfügbar, braucht kein Firebase)
       await loadSavedTheme();
-      
+
       // Theme wurde geladen - State setzen
       setIsThemeLoaded(true);
-      
+
       // Wichtig: Theme-Change Event nach kurzer Verzögerung auslösen
       // damit Material-UI Zeit hat sich zu initialisieren
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('themeChanged'));
       }, 100);
     };
-    
+
     initializeTheme();
   }, []);
 
   // Warte bis Theme geladen ist bevor App gerendert wird
   if (!isThemeLoaded) {
-    return <LoadingSpinner text="Lade Theme..." />;
+    return <LoadingSpinner text='Lade Theme...' />;
   }
 
   return (
@@ -378,10 +443,10 @@ function AppContent() {
 
     // Event Listener für Theme-Änderungen
     window.addEventListener('themeChanged', handleThemeChange);
-    
+
     // Initiales Theme nochmal updaten falls CSS-Variablen sich geändert haben
     handleThemeChange();
-    
+
     return () => {
       window.removeEventListener('themeChanged', handleThemeChange);
     };
@@ -427,9 +492,9 @@ function AppContent() {
                     <main className='w-full'>
                       <Suspense
                         fallback={
-                          <LoadingSpinner 
-                            text="⏳ Lade Komponente..." 
-                            variant="centered"
+                          <LoadingSpinner
+                            text='⏳ Lade Komponente...'
+                            variant='centered'
                           />
                         }
                       >
@@ -443,9 +508,9 @@ function AppContent() {
                                 {(auth) => {
                                   if (!auth?.authStateResolved) {
                                     return (
-                                      <LoadingSpinner 
-                                        text="⏳ Wird geladen..." 
-                                        variant="centered"
+                                      <LoadingSpinner
+                                        text='⏳ Wird geladen...'
+                                        variant='centered'
                                       />
                                     );
                                   }

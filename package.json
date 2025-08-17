@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/update-sw-version.js && tsc && vite build && firebase deploy",
-    "build:local": "node scripts/update-sw-version.js && tsc && vite build",
+    "bump-version": "node scripts/bump-sw-version.js",
+    "build": "npm run bump-version && tsc && vite build && firebase deploy",
+    "build:local": "npm run bump-version && tsc && vite build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "vite preview",
     "copy": "for %D in (F:\\Programme\\SerienFlo\\src F:\\Programme\\SerienDesiree\\src F:\\Programme\\SerienMick\\src) do xcopy F:\\Programme\\Serien\\src %D /E /H /C /I /Y ",

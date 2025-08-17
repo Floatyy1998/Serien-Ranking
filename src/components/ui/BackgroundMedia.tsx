@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export const BackgroundMedia: React.FC = () => {
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
@@ -19,13 +19,30 @@ export const BackgroundMedia: React.FC = () => {
             setIsVideo(theme.backgroundIsVideo || false);
             setOpacity(theme.backgroundImageOpacity || 0.5);
             setBlur(theme.backgroundImageBlur || 0);
-            
+
             // Add class to body
             document.body.classList.add('has-background-image');
             if (theme.backgroundIsVideo) {
               document.body.classList.add('has-background-video');
             } else {
               document.body.classList.remove('has-background-video');
+            }
+
+            // Für Bilder auch CSS-Variablen setzen (falls loadBackgroundImage noch nicht gelaufen ist)
+            if (!theme.backgroundIsVideo) {
+              const root = document.documentElement;
+              root.style.setProperty(
+                '--background-image',
+                `url(${theme.backgroundImage})`
+              );
+              root.style.setProperty(
+                '--background-image-opacity',
+                String(theme.backgroundImageOpacity || 0.5)
+              );
+              root.style.setProperty(
+                '--background-image-blur',
+                `${theme.backgroundImageBlur || 0}px`
+              );
             }
           } else {
             // No background image/video - clean up completely
@@ -48,15 +65,15 @@ export const BackgroundMedia: React.FC = () => {
         videoRef.current.src = '';
         videoRef.current.load();
       }
-      
+
       // Clear state
       setMediaUrl(null);
       setIsVideo(false);
-      
+
       // Remove all classes and styles
       document.body.classList.remove('has-background-image');
       document.body.classList.remove('has-background-video');
-      
+
       // Remove CSS variables
       const root = document.documentElement;
       root.style.removeProperty('--background-image');
@@ -64,6 +81,7 @@ export const BackgroundMedia: React.FC = () => {
       root.style.removeProperty('--background-image-blur');
     };
 
+    // Sofort beim Mount laden
     loadBackgroundMedia();
 
     // Listen for theme changes
@@ -72,7 +90,7 @@ export const BackgroundMedia: React.FC = () => {
     };
 
     window.addEventListener('themeChanged', handleThemeChange);
-    
+
     // Cleanup on unmount
     return () => {
       window.removeEventListener('themeChanged', handleThemeChange);
@@ -87,7 +105,7 @@ export const BackgroundMedia: React.FC = () => {
       <video
         ref={videoRef}
         key={mediaUrl} // Force re-render when URL changes
-        className="background-video"
+        className='background-video'
         src={mediaUrl}
         autoPlay
         loop
