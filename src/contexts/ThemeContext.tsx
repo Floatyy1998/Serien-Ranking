@@ -116,6 +116,17 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
     root.style.setProperty('--color-error', theme.status.error);
     root.style.setProperty('--color-warning', theme.status.warning);
     root.style.setProperty('--color-success', theme.status.success);
+    
+    // Hintergrundbild
+    if (userConfig.backgroundImage) {
+      root.style.setProperty('--background-image', `url(${userConfig.backgroundImage})`);
+      root.style.setProperty('--background-image-opacity', String(userConfig.backgroundImageOpacity || 0.3));
+      root.style.setProperty('--background-image-blur', `${userConfig.backgroundImageBlur || 0}px`);
+    } else {
+      root.style.removeProperty('--background-image');
+      root.style.removeProperty('--background-image-opacity');
+      root.style.removeProperty('--background-image-blur');
+    }
   };
 
   // Material-UI Theme erstellen

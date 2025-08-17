@@ -13,6 +13,10 @@ export interface UserThemeConfig {
   backgroundColor: string;
   surfaceColor?: string;
   accentColor?: string;
+  backgroundImage?: string;
+  backgroundImageOpacity?: number;
+  backgroundImageBlur?: number;
+  backgroundIsVideo?: boolean;
 }
 
 // Generiert ein vollständiges Theme basierend auf Benutzer-Eingaben
@@ -131,6 +135,10 @@ export const defaultThemeConfig: UserThemeConfig = {
   backgroundColor: '#000000',
   surfaceColor: '#2d2d30',
   accentColor: '#00e6c3',
+  backgroundImage: undefined,
+  backgroundImageOpacity: 0.5,
+  backgroundImageBlur: 0,
+  backgroundIsVideo: false,
 };
 
 // Generiert das Standard-Theme
@@ -143,6 +151,10 @@ export function validateThemeConfig(config: Partial<UserThemeConfig>): UserTheme
     backgroundColor: config.backgroundColor || defaultThemeConfig.backgroundColor,
     surfaceColor: config.surfaceColor || defaultThemeConfig.surfaceColor,
     accentColor: config.accentColor || defaultThemeConfig.accentColor,
+    backgroundImage: config.backgroundImage || defaultThemeConfig.backgroundImage,
+    backgroundImageOpacity: config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,
+    backgroundImageBlur: config.backgroundImageBlur ?? defaultThemeConfig.backgroundImageBlur,
+    backgroundIsVideo: config.backgroundIsVideo ?? defaultThemeConfig.backgroundIsVideo,
   };
 }
 

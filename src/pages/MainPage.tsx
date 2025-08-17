@@ -345,6 +345,7 @@ export const MainPage: React.FC = () => {
         {/* Header */}
 
         <Box
+          className='main-page-header'
           display='flex'
           justifyContent='space-between'
           alignItems='center'

@@ -325,6 +325,7 @@ export const FriendsPage: React.FC = () => {
     <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
       {/* Header */}
       <Box
+        className='main-page-header'
         display='flex'
         justifyContent='space-between'
         alignItems='center'

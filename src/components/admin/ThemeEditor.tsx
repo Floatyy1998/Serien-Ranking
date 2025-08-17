@@ -4,6 +4,7 @@ import {
   Cloud as CloudIcon,
   Computer as ComputerIcon,
 } from '@mui/icons-material';
+import { BackgroundImageFirebaseUpload } from './BackgroundImageFirebaseUpload';
 import {
   Box,
   Button,
@@ -35,6 +36,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
   const [tempBackgroundColor, setTempBackgroundColor] = useState('#000000');
   const [tempSurfaceColor, setTempSurfaceColor] = useState('#2d2d30');
   const [tempAccentColor, setTempAccentColor] = useState('#00e6c3');
+  const [tempBackgroundImage, setTempBackgroundImage] = useState<string | undefined>(undefined);
+  const [tempBackgroundImageOpacity, setTempBackgroundImageOpacity] = useState(0.5);
+  const [tempBackgroundImageBlur, setTempBackgroundImageBlur] = useState(0);
+  const [tempBackgroundIsVideo, setTempBackgroundIsVideo] = useState(false);
   
   // Sync Mode - local oder cloud
   const [syncMode, setSyncMode] = useState<'local' | 'cloud'>('local');
@@ -99,6 +104,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
           setTempBackgroundColor(theme.backgroundColor || '#000000');
           setTempSurfaceColor(theme.surfaceColor || '#2d2d30');
           setTempAccentColor(theme.accentColor || '#00e6c3');
+          setTempBackgroundImage(theme.backgroundImage);
+          setTempBackgroundImageOpacity(theme.backgroundImageOpacity ?? 0.5);
+          setTempBackgroundImageBlur(theme.backgroundImageBlur ?? 0);
+          setTempBackgroundIsVideo(theme.backgroundIsVideo ?? false);
         } else {
           // Wenn kein Theme gespeichert ist, aktuelle CSS-Variablen lesen
           const computedStyle = getComputedStyle(document.documentElement);
@@ -138,7 +147,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       primary: string,
       background: string,
       surface: string,
-      accent: string
+      accent: string,
+      backgroundImage?: string,
+      backgroundImageOpacity?: number,
+      backgroundImageBlur?: number
     ) => {
       const root = document.documentElement;
       root.style.setProperty('--theme-primary', primary);
@@ -149,6 +161,20 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       root.style.setProperty('--theme-surface', surface);
       root.style.setProperty('--theme-text-primary', primary);
       root.style.setProperty('--theme-text-secondary', '#ffffff');
+      
+      // Background image
+      if (backgroundImage) {
+        root.style.setProperty('--background-image', `url(${backgroundImage})`);
+        root.style.setProperty('--background-image-opacity', String(backgroundImageOpacity || 0.5));
+        root.style.setProperty('--background-image-blur', `${backgroundImageBlur || 0}px`);
+        document.body.classList.add('has-background-image');
+      } else {
+        root.style.removeProperty('--background-image');
+        root.style.removeProperty('--background-image-opacity');
+        root.style.removeProperty('--background-image-blur');
+        document.body.classList.remove('has-background-image');
+        document.body.classList.remove('has-background-video');
+      }
       
       // Update theme-color Meta-Tag für PWA Status Bar
       const metaThemeColor = document.getElementById('theme-color-meta') as HTMLMetaElement;
@@ -166,10 +192,21 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
     }
     
     updateTimerRef.current = setTimeout(() => {
-      updateCSSVariables(tempPrimaryColor, tempBackgroundColor, tempSurfaceColor, tempAccentColor);
+      updateCSSVariables(tempPrimaryColor, tempBackgroundColor, tempSurfaceColor, tempAccentColor, tempBackgroundImage, tempBackgroundImageOpacity, tempBackgroundImageBlur);
+      
+      // Force update theme if image was removed
+      if (!tempBackgroundImage) {
+        const root = document.documentElement;
+        root.style.removeProperty('--background-image');
+        root.style.removeProperty('--background-image-opacity');
+        root.style.removeProperty('--background-image-blur');
+        document.body.classList.remove('has-background-image');
+        document.body.classList.remove('has-background-video');
+      }
+      
       window.dispatchEvent(new CustomEvent('themeChanged'));
     }, 50);
-  }, [tempPrimaryColor, tempBackgroundColor, tempSurfaceColor, tempAccentColor, updateCSSVariables]);
+  }, [tempPrimaryColor, tempBackgroundColor, tempSurfaceColor, tempAccentColor, tempBackgroundImage, tempBackgroundImageOpacity, tempBackgroundImageBlur, updateCSSVariables]);
 
   // Live update beim Ändern - aber nur nach Initialisierung
   React.useEffect(() => {
@@ -184,6 +221,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       backgroundColor: tempBackgroundColor,
       surfaceColor: tempSurfaceColor,
       accentColor: tempAccentColor,
+      backgroundImage: tempBackgroundImage,
+      backgroundImageOpacity: tempBackgroundImageOpacity,
+      backgroundImageBlur: tempBackgroundImageBlur,
+      backgroundIsVideo: tempBackgroundIsVideo,
     };
     
     setLoading(true);
@@ -214,7 +255,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
         tempPrimaryColor,
         tempBackgroundColor,
         tempSurfaceColor,
-        tempAccentColor
+        tempAccentColor,
+        tempBackgroundImage,
+        tempBackgroundImageOpacity,
+        tempBackgroundImageBlur
       );
       
       window.dispatchEvent(new CustomEvent('themeChanged'));
@@ -231,6 +275,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
     setTempBackgroundColor('#000000');
     setTempSurfaceColor('#2d2d30');
     setTempAccentColor('#00e6c3');
+    setTempBackgroundImage(undefined);
+    setTempBackgroundImageOpacity(0.5);
+    setTempBackgroundImageBlur(0);
+    setTempBackgroundIsVideo(false);
     
     // Theme aus beiden Speichern löschen
     localStorage.removeItem('customTheme');
@@ -508,6 +556,20 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
               }}
             />
           </Stack>
+
+          {/* Background Image Upload */}
+          <BackgroundImageFirebaseUpload
+            backgroundImage={tempBackgroundImage}
+            backgroundImageOpacity={tempBackgroundImageOpacity}
+            backgroundImageBlur={tempBackgroundImageBlur}
+            primaryColor={tempPrimaryColor}
+            surfaceColor={tempSurfaceColor}
+            onImageChange={setTempBackgroundImage}
+            onOpacityChange={setTempBackgroundImageOpacity}
+            onBlurChange={setTempBackgroundImageBlur}
+            isVideo={tempBackgroundIsVideo}
+            onIsVideoChange={setTempBackgroundIsVideo}
+          />
 
           {/* Live Preview - Minimal */}
           <Box sx={{ 

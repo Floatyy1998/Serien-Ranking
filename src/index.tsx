@@ -1,6 +1,12 @@
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
 import './index.css';
+import './styles/background.css';
+import './styles/background-video.css';
+import { loadBackgroundImage } from './utils/loadBackgroundImage';
+
+// Load background image on app start
+loadBackgroundImage();
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );

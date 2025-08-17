@@ -1,5 +1,6 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { BackgroundMedia } from './components/ui/BackgroundMedia';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, {
@@ -356,6 +357,7 @@ export function App() {
     <Router>
       <GlobalLoadingProvider>
         <AuthProvider>
+          <BackgroundMedia />
           <AppContent />
         </AuthProvider>
       </GlobalLoadingProvider>

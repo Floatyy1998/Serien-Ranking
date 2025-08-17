@@ -313,6 +313,7 @@ export const SearchFilters = ({
               onChange={handleSearchChange}
               fullWidth
               inputRef={searchInputRef}
+              className='search-input-field'
             />
           </Box>
           <Box className='flex flex-row items-center gap-2 w-[250px] xl:w-auto justify-between'>
@@ -611,6 +612,7 @@ export const SearchFilters = ({
               onChange={handleSearchChange}
               fullWidth
               inputRef={searchInputRef}
+              className='search-input-field'
             />
           </Box>
 
