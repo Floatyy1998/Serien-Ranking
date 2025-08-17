@@ -2,6 +2,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { Box, Button, Divider, TextField, Tooltip } from '@mui/material';
 import React from 'react';
+import { colors } from '../../../../theme';
 interface FilterProps {
   filterInput: string;
   setFilterInput: (val: string) => void;
@@ -154,7 +155,7 @@ const WatchlistFilter: React.FC<FilterProps> = ({
                   background:
                     'linear-gradient(135deg, var(--theme-primary)26 0%, var(--theme-primary)19 100%)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.3)',
+                  boxShadow: colors.shadow.hover,
                 },
               }}
             >
@@ -194,7 +195,7 @@ const WatchlistFilter: React.FC<FilterProps> = ({
                   background:
                     'linear-gradient(135deg, var(--theme-primary)26 0%, var(--theme-primary)19 100%)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.3)',
+                  boxShadow: colors.shadow.hover,
                 },
               }}
             >

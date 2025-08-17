@@ -2,6 +2,7 @@ import { Alert, Button, Card, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import React, { useEffect, useState } from 'react';
+import { colors } from '../../theme';
 import { useNavigate } from 'react-router-dom';
 interface VerifiedRouteProps {
   children: React.ReactNode;
@@ -137,8 +138,8 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
               width: '100%',
               background: 'rgba(0,0,0,0.5)',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 0 20px rgba(0, 254, 215, 0.15)',
-              border: '1px solid rgba(0, 254, 215, 0.1)',
+              boxShadow: colors.shadow.hover,
+              border: `1px solid ${colors.border.light}`,
             }}
           >
             <main className='p-8 text-center'>
@@ -166,7 +167,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
                     borderColor: 'var(--theme-primary)',
                     '&:hover': {
                       borderColor: '#00d4b4',
-                      backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                      backgroundColor: colors.overlay.light,
                     },
                   }}
                   className='font-medium px-8 py-3 rounded-lg transition-colors'

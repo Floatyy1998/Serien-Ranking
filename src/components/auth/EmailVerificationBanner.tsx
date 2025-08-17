@@ -179,7 +179,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                 padding: '40px',
                 borderRadius: '12px',
                 border: `2px solid var(--theme-primary)`,
-                boxShadow: `0 0 30px rgba(0, 254, 215, 0.3)`,
+                boxShadow: colors.shadow.hover,
                 textAlign: 'center',
                 maxWidth: '400px',
                 margin: '0 20px',

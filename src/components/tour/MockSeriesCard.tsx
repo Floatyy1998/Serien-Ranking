@@ -14,6 +14,7 @@ import ThreeDotMenu, {
   PlaylistPlayIcon,
   StarIcon,
 } from '../ui/ThreeDotMenu';
+import { colors } from '../../theme';
 
 interface MockSeriesCardProps {
   highlightedArea?: string;
@@ -109,7 +110,7 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                     bottom: '-8px',
                     border: '3px solid var(--theme-primary)',
                     borderRadius: '8px',
-                    boxShadow: '0 0 20px rgba(0, 254, 215, 0.6)',
+                    boxShadow: colors.shadow.hover,
                     pointerEvents: 'none',
                     zIndex: 10,
                   },
@@ -171,7 +172,7 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                     bottom: '-8px',
                     border: '3px solid var(--theme-primary)',
                     borderRadius: '8px',
-                    boxShadow: '0 0 20px rgba(0, 254, 215, 0.6)',
+                    boxShadow: colors.shadow.hover,
                     pointerEvents: 'none',
                     zIndex: 10,
                   },
@@ -208,7 +209,7 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                     bottom: '-8px',
                     border: '3px solid var(--theme-primary)',
                     borderRadius: '8px',
-                    boxShadow: '0 0 20px rgba(0, 254, 215, 0.6)',
+                    boxShadow: colors.shadow.hover,
                     pointerEvents: 'none',
                     zIndex: 10,
                   },
@@ -244,7 +245,7 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                     bottom: '-8px',
                     border: '3px solid var(--theme-primary)',
                     borderRadius: '8px',
-                    boxShadow: '0 0 20px rgba(0, 254, 215, 0.6)',
+                    boxShadow: colors.shadow.hover,
                     pointerEvents: 'none',
                     zIndex: 10,
                   },

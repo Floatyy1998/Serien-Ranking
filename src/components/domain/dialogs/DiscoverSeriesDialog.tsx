@@ -33,6 +33,7 @@ import { useState } from 'react';
 import { useAuth } from '../../../App';
 import { genreIdMapForSeries } from '../../../config/menuItems';
 import { Series } from '../../../types/Series';
+import { colors } from '../../../theme';
 import DiscoverSeriesCard from '../series/DiscoverSeriesCard';
 
 interface DiscoverSeriesDialogProps {
@@ -295,12 +296,12 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
           sx: {
             minHeight: '80vh',
             background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+              colors.background.gradient.dark,
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${colors.border.subtle}`,
             overflow: 'hidden',
             boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
+              `${colors.shadow.dialog}, 0 0 30px ${colors.status.warning}30`,
             color: 'white',
           },
         },
@@ -311,10 +312,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
           textAlign: 'center',
           position: 'relative',
           background:
-            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+            colors.background.gradient.dark,
           backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          borderBottom: `1px solid ${colors.border.lighter}`,
+          color: colors.text.secondary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -330,7 +331,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            sx={{ fontWeight: 'bold', color: colors.status.warning }}
           >
             Neue Serien entdecken
           </Typography>
@@ -343,13 +344,13 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
             right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
+            color: colors.text.placeholder,
+            background: colors.overlay.light,
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              background: colors.overlay.white,
+              color: colors.text.secondary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -361,9 +362,9 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
         sx={{
           p: 0,
           background:
-            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+            colors.background.gradient.dark,
           backdropFilter: 'blur(10px)',
-          color: '#ffffff',
+          color: colors.text.secondary,
         }}
       >
         <Box sx={{ p: 3 }}>
@@ -374,10 +375,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               p: 3,
               mb: 3,
               background:
-                'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                colors.button.secondary.gradient,
               backdropFilter: 'blur(10px)',
               borderRadius: '16px',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: `1px solid ${colors.border.subtle}`,
             }}
           >
             <Typography
@@ -401,32 +402,32 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                     fullWidth
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        background: 'rgba(45,45,48,0.8)',
+                        background: colors.overlay.dark,
                         backdropFilter: 'blur(10px)',
                         borderRadius: '12px',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        color: '#ffffff',
+                        border: `1px solid ${colors.overlay.white}`,
+                        color: colors.text.secondary,
                         '& fieldset': {
                           border: 'none',
                         },
                         '&:hover': {
-                          background: 'rgba(55,55,58,0.9)',
-                          border: '1px solid rgba(255,255,255,0.3)',
+                          background: colors.overlay.dark,
+                          border: `1px solid ${colors.overlay.white}`,
                         },
                         '&.Mui-focused': {
-                          background: 'rgba(65,65,68,0.95)',
-                          border: '1px solid var(--theme-primary)',
-                          boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                          background: colors.overlay.black,
+                          border: `1px solid ${colors.primary}`,
+                          boxShadow: colors.shadow.hover,
                         },
                       },
                       '& .MuiInputLabel-root': {
-                        color: 'rgba(255,255,255,0.7)',
+                        color: colors.text.placeholder,
                         '&.Mui-focused': {
-                          color: 'var(--theme-primary)',
+                          color: colors.primary,
                         },
                       },
                       '& .MuiSelect-icon': {
-                        color: 'rgba(255,255,255,0.7)',
+                        color: colors.text.placeholder,
                       },
                     }}
                   >
@@ -480,28 +481,28 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                             size: 'medium',
                             sx: {
                               '& .MuiOutlinedInput-root': {
-                                background: 'rgba(255,255,255,0.05)',
+                                background: colors.overlay.light,
                                 backdropFilter: 'blur(10px)',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                color: '#ffffff',
+                                border: `1px solid ${colors.border.subtle}`,
+                                color: colors.text.secondary,
                                 '& fieldset': {
                                   border: 'none',
                                 },
                                 '&:hover': {
-                                  background: 'rgba(255,255,255,0.08)',
-                                  border: '1px solid rgba(255,255,255,0.2)',
+                                  background: colors.overlay.white,
+                                  border: `1px solid ${colors.overlay.white}`,
                                 },
                                 '&.Mui-focused': {
-                                  background: 'rgba(255,255,255,0.1)',
-                                  border: '1px solid var(--theme-primary)',
-                                  boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                                  background: colors.overlay.white,
+                                  border: `1px solid ${colors.primary}`,
+                                  boxShadow: colors.shadow.hover,
                                 },
                               },
                               '& .MuiInputLabel-root': {
-                                color: 'rgba(255,255,255,0.7)',
+                                color: colors.text.placeholder,
                                 '&.Mui-focused': {
-                                  color: 'var(--theme-primary)',
+                                  color: colors.primary,
                                 },
                               },
                             },
@@ -519,28 +520,28 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                             size: 'medium',
                             sx: {
                               '& .MuiOutlinedInput-root': {
-                                background: 'rgba(255,255,255,0.05)',
+                                background: colors.overlay.light,
                                 backdropFilter: 'blur(10px)',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                color: '#ffffff',
+                                border: `1px solid ${colors.border.subtle}`,
+                                color: colors.text.secondary,
                                 '& fieldset': {
                                   border: 'none',
                                 },
                                 '&:hover': {
-                                  background: 'rgba(255,255,255,0.08)',
-                                  border: '1px solid rgba(255,255,255,0.2)',
+                                  background: colors.overlay.white,
+                                  border: `1px solid ${colors.overlay.white}`,
                                 },
                                 '&.Mui-focused': {
-                                  background: 'rgba(255,255,255,0.1)',
-                                  border: '1px solid var(--theme-primary)',
-                                  boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                                  background: colors.overlay.white,
+                                  border: `1px solid ${colors.primary}`,
+                                  boxShadow: colors.shadow.hover,
                                 },
                               },
                               '& .MuiInputLabel-root': {
-                                color: 'rgba(255,255,255,0.7)',
+                                color: colors.text.placeholder,
                                 '&.Mui-focused': {
-                                  color: 'var(--theme-primary)',
+                                  color: colors.primary,
                                 },
                               },
                             },
@@ -565,32 +566,32 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                     fullWidth
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        background: 'rgba(45,45,48,0.8)',
+                        background: colors.overlay.dark,
                         backdropFilter: 'blur(10px)',
                         borderRadius: '12px',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        color: '#ffffff',
+                        border: `1px solid ${colors.overlay.white}`,
+                        color: colors.text.secondary,
                         '& fieldset': {
                           border: 'none',
                         },
                         '&:hover': {
-                          background: 'rgba(55,55,58,0.9)',
-                          border: '1px solid rgba(255,255,255,0.3)',
+                          background: colors.overlay.dark,
+                          border: `1px solid ${colors.overlay.white}`,
                         },
                         '&.Mui-focused': {
-                          background: 'rgba(65,65,68,0.95)',
-                          border: '1px solid var(--theme-primary)',
-                          boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                          background: colors.overlay.black,
+                          border: `1px solid ${colors.primary}`,
+                          boxShadow: colors.shadow.hover,
                         },
                       },
                       '& .MuiInputLabel-root': {
-                        color: 'rgba(255,255,255,0.7)',
+                        color: colors.text.placeholder,
                         '&.Mui-focused': {
-                          color: 'var(--theme-primary)',
+                          color: colors.primary,
                         },
                       },
                       '& .MuiSelect-icon': {
-                        color: 'rgba(255,255,255,0.7)',
+                        color: colors.text.placeholder,
                       },
                     }}
                   >
@@ -636,32 +637,32 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                     fullWidth
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        background: 'rgba(45,45,48,0.8)',
+                        background: colors.overlay.dark,
                         backdropFilter: 'blur(10px)',
                         borderRadius: '12px',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        color: '#ffffff',
+                        border: `1px solid ${colors.overlay.white}`,
+                        color: colors.text.secondary,
                         '& fieldset': {
                           border: 'none',
                         },
                         '&:hover': {
-                          background: 'rgba(55,55,58,0.9)',
-                          border: '1px solid rgba(255,255,255,0.3)',
+                          background: colors.overlay.dark,
+                          border: `1px solid ${colors.overlay.white}`,
                         },
                         '&.Mui-focused': {
-                          background: 'rgba(65,65,68,0.95)',
-                          border: '1px solid var(--theme-primary)',
-                          boxShadow: '0 0 20px rgba(0, 254, 215, 0.3)',
+                          background: colors.overlay.black,
+                          border: `1px solid ${colors.primary}`,
+                          boxShadow: colors.shadow.hover,
                         },
                       },
                       '& .MuiInputLabel-root': {
-                        color: 'rgba(255,255,255,0.7)',
+                        color: colors.text.placeholder,
                         '&.Mui-focused': {
-                          color: 'var(--theme-primary)',
+                          color: colors.primary,
                         },
                       },
                       '& .MuiSelect-icon': {
-                        color: 'rgba(255,255,255,0.7)',
+                        color: colors.text.placeholder,
                       },
                     }}
                   >
@@ -703,21 +704,19 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                   onClick={() => handleSearch()}
                   size='large'
                   sx={{
-                    background:
-                      'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
+                    background: colors.button.primary.gradient,
                     borderRadius: '12px',
                     padding: '12px 24px',
-                    color: '#ffffff',
+                    color: colors.background.default,
                     fontWeight: 600,
                     textTransform: 'none',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: `1px solid ${colors.border.subtle}`,
                     backdropFilter: 'blur(10px)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      background:
-                        'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                      background: colors.button.primary.gradientHover,
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                      boxShadow: colors.shadow.buttonHover,
                     },
                   }}
                 >
@@ -729,20 +728,18 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                   onClick={handleClearFilters}
                   size='large'
                   sx={{
-                    background:
-                      'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                    background: colors.button.secondary.gradient,
                     borderRadius: '12px',
                     padding: '12px 24px',
-                    color: '#ffffff',
+                    color: colors.text.secondary,
                     fontWeight: 500,
                     textTransform: 'none',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: `1px solid ${colors.border.subtle}`,
                     backdropFilter: 'blur(10px)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      background:
-                        'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
-                      border: '1px solid rgba(255,255,255,0.2)',
+                      background: colors.button.secondary.gradientHover,
+                      border: `1px solid ${colors.border.subtle}`,
                       transform: 'translateY(-2px)',
                     },
                   }}
@@ -759,10 +756,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               sx={{
                 p: 3,
                 background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                  colors.button.secondary.gradient,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: `1px solid ${colors.border.subtle}`,
               }}
             >
               <Typography variant='h6' sx={{ mb: 2 }}>
@@ -808,10 +805,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 p: 4,
                 textAlign: 'center',
                 background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                  colors.button.secondary.gradient,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: `1px solid ${colors.border.subtle}`,
               }}
             >
               <Typography variant='h6' color='text.secondary'>
@@ -829,7 +826,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
           p: 3,
           justifyContent: 'space-between',
           background:
-            'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
+            colors.background.gradient.dark,
           backdropFilter: 'blur(10px)',
         }}
       >
@@ -838,19 +835,19 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
           onClick={handleClose}
           sx={{
             background:
-              'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+              colors.button.secondary.gradient,
             borderRadius: '12px',
             padding: '12px 24px',
-            color: '#ffffff',
+            color: colors.text.secondary,
             fontWeight: 500,
             textTransform: 'none',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: `1px solid ${colors.border.subtle}`,
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease',
             '&:hover': {
               background:
-                'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
-              border: '1px solid rgba(255,255,255,0.2)',
+                colors.button.secondary.gradientHover,
+              border: `1px solid ${colors.overlay.white}`,
               transform: 'translateY(-2px)',
             },
           }}
@@ -874,21 +871,21 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
               sx={{
-                background: 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
+                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
                 borderRadius: '12px',
                 padding: '12px 24px',
-                color: '#ffffff',
+                color: colors.text.secondary,
                 fontWeight: 600,
                 textTransform: 'none',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: `1px solid ${colors.border.subtle}`,
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 minWidth: '50px',
                 '&:hover': {
                   background:
-                    'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                    `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                  boxShadow: colors.shadow.buttonHover,
                 },
               }}
             >
@@ -900,10 +897,10 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 px: 2,
                 py: 1,
                 background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                  colors.button.secondary.gradient,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: `1px solid ${colors.border.subtle}`,
               }}
             >
               <Typography variant='body2' sx={{ whiteSpace: 'nowrap' }}>
@@ -916,21 +913,21 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
               sx={{
-                background: 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
+                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
                 borderRadius: '12px',
                 padding: '12px 24px',
-                color: '#ffffff',
+                color: colors.text.secondary,
                 fontWeight: 600,
                 textTransform: 'none',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: `1px solid ${colors.border.subtle}`,
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 minWidth: '50px',
                 '&:hover': {
                   background:
-                    'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+                    `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 254, 215, 0.4)',
+                  boxShadow: colors.shadow.buttonHover,
                 },
               }}
             >

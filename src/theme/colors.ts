@@ -42,7 +42,7 @@ export const colors = {
     success: '#4caf50',
     info: {
       main: 'var(--theme-primary, #00fed7)',
-      gradient: 'linear-gradient(135deg, rgba(0, 254, 215, 0.1) 0%, rgba(0, 254, 215, 0.05) 100%)',
+      gradient: 'linear-gradient(135deg, color-mix(in srgb, var(--theme-primary, #00fed7) 10%, transparent) 0%, color-mix(in srgb, var(--theme-primary, #00fed7) 5%, transparent) 100%)',
     },
   },
   
@@ -50,15 +50,15 @@ export const colors = {
   border: {
     default: '#404040',
     primary: 'var(--theme-primary, #00fed7)',
-    light: 'rgba(0, 254, 215, 0.08)',
-    lighter: 'rgba(0, 254, 215, 0.05)',
+    light: 'color-mix(in srgb, var(--theme-primary, #00fed7) 8%, transparent)',
+    lighter: 'color-mix(in srgb, var(--theme-primary, #00fed7) 5%, transparent)',
     subtle: 'rgba(255, 255, 255, 0.1)',
   },
   
   // Transparente Overlays
   overlay: {
-    light: 'rgba(0, 254, 215, 0.02)',
-    medium: 'rgba(0, 254, 215, 0.08)',
+    light: 'color-mix(in srgb, var(--theme-primary, #00fed7) 2%, transparent)',
+    medium: 'color-mix(in srgb, var(--theme-primary, #00fed7) 8%, transparent)',
     dark: 'rgba(0, 0, 0, 0.2)',
     white: 'rgba(255, 255, 255, 0.2)',
     black: 'rgba(0, 0, 0, 0.2)',
@@ -66,12 +66,12 @@ export const colors = {
 
   // Schatten
   shadow: {
-    card: '0 25px 50px -12px rgba(0, 254, 215, 0.15)',
-    dialog: '0 25px 50px -12px rgba(0, 254, 215, 0.15)',
-    hover: '0 20px 40px -8px rgba(0, 254, 215, 0.2)',
-    focus: '0 0 0 3px rgba(0, 254, 215, 0.2)',
+    card: '0 25px 50px -12px color-mix(in srgb, var(--theme-primary, #00fed7) 15%, transparent)',
+    dialog: '0 25px 50px -12px color-mix(in srgb, var(--theme-primary, #00fed7) 15%, transparent)',
+    hover: '0 20px 40px -8px color-mix(in srgb, var(--theme-primary, #00fed7) 20%, transparent)',
+    focus: '0 0 0 3px color-mix(in srgb, var(--theme-primary, #00fed7) 20%, transparent)',
     button: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    buttonHover: '0 10px 20px -5px rgba(0, 254, 215, 0.3)',
+    buttonHover: '0 10px 20px -5px color-mix(in srgb, var(--theme-primary, #00fed7) 30%, transparent)',
     error: '0 10px 20px -5px rgba(255, 68, 68, 0.3)',
     light: '0 10px 20px -5px rgba(255, 255, 255, 0.1)',
   },
