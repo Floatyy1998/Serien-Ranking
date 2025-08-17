@@ -54,10 +54,10 @@ export interface BadgeProgress {
 
 // 🎨 Rarity-basierte Farben
 const RARITY_COLORS = {
-  common: '#8BC34A',     // Frisches Grün
-  rare: '#2196F3',       // Lebendiges Blau  
-  epic: '#FF5722',       // Kraftvolles Orange-Rot
-  legendary: '#9C27B0'   // Majestätisches Lila
+  common: '#8BC34A', // Frisches Grün
+  rare: '#2196F3', // Lebendiges Blau
+  epic: '#9C27B0', // Majestätisches Lila
+  legendary: '#FF5722', // Kraftvolles Orange-Rot
 };
 
 // 🏆 Badge-Definitionen (kompakt)
