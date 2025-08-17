@@ -1,0 +1,453 @@
+import {
+  Delete as DeleteIcon,
+  Image as ImageIcon,
+  CloudUpload as UploadIcon,
+} from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Slider,
+  Stack,
+  Typography,
+} from '@mui/material';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/storage';
+import React, { useState } from 'react';
+import { useAuth } from '../../App';
+
+interface BackgroundImageFirebaseUploadProps {
+  backgroundImage?: string;
+  backgroundImageOpacity?: number;
+  backgroundImageBlur?: number;
+  primaryColor: string;
+  surfaceColor: string;
+  onImageChange: (imageUrl: string | undefined) => void;
+  onOpacityChange: (opacity: number) => void;
+  onBlurChange: (blur: number) => void;
+  isVideo?: boolean;
+  onIsVideoChange?: (isVideo: boolean) => void;
+}
+
+export const BackgroundImageFirebaseUpload: React.FC<
+  BackgroundImageFirebaseUploadProps
+> = ({
+  backgroundImage,
+  backgroundImageOpacity = 0.5,
+  backgroundImageBlur = 0,
+  primaryColor,
+  surfaceColor,
+  onImageChange,
+  onOpacityChange,
+  onBlurChange,
+  isVideo = false,
+  onIsVideoChange,
+}) => {
+  const { user } = useAuth()!;
+  const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    const isVideoFile = file.type.startsWith('video/');
+    const isImageFile = file.type.startsWith('image/');
+
+    if (!isImageFile && !isVideoFile) {
+      setError('Bitte wähle eine Bild- oder Videodatei aus');
+      return;
+    }
+
+    // Update isVideo state
+    if (onIsVideoChange) {
+      onIsVideoChange(isVideoFile);
+    }
+
+    // Validate file size (max 300MB for both videos and images)
+    const maxSize = 300 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError(`Datei darf maximal 300MB groß sein`);
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      // Delete old image if exists
+      if (
+        backgroundImage &&
+        backgroundImage.includes('firebasestorage.googleapis.com')
+      ) {
+        await deleteOldImage(backgroundImage);
+      }
+
+      // Create a unique filename
+      const timestamp = Date.now();
+      const filename = `backgrounds/${user.uid}/${timestamp}_${file.name}`;
+
+      // Upload to Firebase Storage
+      const storageRef = firebase.storage().ref();
+      const fileRef = storageRef.child(filename);
+      const uploadTask = fileRef.put(file);
+
+      // Monitor upload progress
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(Math.round(progress));
+        },
+        (error) => {
+          console.error('Upload error:', error);
+          setError('Fehler beim Hochladen des Bildes');
+          setUploading(false);
+        },
+        async () => {
+          // Get download URL
+          const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
+          onImageChange(downloadUrl);
+          setUploading(false);
+          setUploadProgress(0);
+        }
+      );
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setError('Fehler beim Hochladen des Bildes');
+      setUploading(false);
+    }
+  };
+
+  const deleteOldImage = async (imageUrl: string) => {
+    try {
+      // Extract the path from the URL
+      const baseUrl = 'https://firebasestorage.googleapis.com/v0/b/';
+      if (imageUrl.includes(baseUrl)) {
+        const pathStart = imageUrl.indexOf('/o/') + 3;
+        const pathEnd = imageUrl.indexOf('?');
+        const encodedPath = imageUrl.substring(pathStart, pathEnd);
+        const path = decodeURIComponent(encodedPath);
+
+        // Delete the file
+        const storageRef = firebase.storage().ref();
+        const fileRef = storageRef.child(path);
+        await fileRef.delete();
+      }
+    } catch (error) {
+      console.error('Error deleting old image:', error);
+      // Continue even if delete fails
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (
+      backgroundImage &&
+      backgroundImage.includes('firebasestorage.googleapis.com')
+    ) {
+      await deleteOldImage(backgroundImage);
+    }
+
+    // Update state first
+    onImageChange(undefined);
+    if (onIsVideoChange) {
+      onIsVideoChange(false);
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    // Immediately remove CSS variables and classes
+    const root = document.documentElement;
+    root.style.removeProperty('--background-image');
+    root.style.removeProperty('--background-image-opacity');
+    root.style.removeProperty('--background-image-blur');
+    document.body.classList.remove('has-background-image');
+    document.body.classList.remove('has-background-video');
+
+    // Update localStorage immediately to persist the change
+    const savedTheme = localStorage.getItem('customTheme');
+    if (savedTheme) {
+      try {
+        const theme = JSON.parse(savedTheme);
+        delete theme.backgroundImage;
+        delete theme.backgroundIsVideo;
+        delete theme.backgroundImageOpacity;
+        delete theme.backgroundImageBlur;
+        localStorage.setItem('customTheme', JSON.stringify(theme));
+      } catch (error) {
+        console.error('Error updating theme in localStorage:', error);
+      }
+    }
+
+    // Force immediate update
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('themeChanged'));
+    }, 50);
+  };
+
+  return (
+    <Stack spacing={2}>
+      <Typography
+        sx={{
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          color: primaryColor,
+          letterSpacing: 0.5,
+        }}
+      >
+        HINTERGRUNDBILD
+      </Typography>
+
+      {error && (
+        <Alert
+          severity='error'
+          onClose={() => setError(null)}
+          sx={{
+            fontSize: '0.75rem',
+            py: 0.5,
+          }}
+        >
+          {error}
+        </Alert>
+      )}
+
+      {!backgroundImage ? (
+        <Box>
+          <input
+            ref={fileInputRef}
+            type='file'
+            accept='image/*,video/*'
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+            id='background-image-upload'
+            disabled={uploading || !user}
+          />
+          <label htmlFor='background-image-upload'>
+            <Button
+              component='span'
+              variant='outlined'
+              startIcon={
+                uploading ? <CircularProgress size={16} /> : <UploadIcon />
+              }
+              disabled={uploading || !user}
+              sx={{
+                width: '100%',
+                color: primaryColor,
+                borderColor: `${primaryColor}50`,
+                '&:hover': {
+                  borderColor: primaryColor,
+                  bgcolor: `${primaryColor}10`,
+                },
+              }}
+            >
+              {uploading
+                ? `Uploading... ${uploadProgress}%`
+                : 'Bild/Video hochladen'}
+            </Button>
+          </label>
+          {!user && (
+            <Typography
+              variant='caption'
+              sx={{
+                color: 'error.main',
+                display: 'block',
+                mt: 1,
+                fontSize: '0.7rem',
+              }}
+            >
+              Bitte melde dich an, um einen Hintergrund hochzuladen
+            </Typography>
+          )}
+        </Box>
+      ) : (
+        <>
+          {/* Image/Video Preview */}
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              height: 150,
+              borderRadius: 2,
+              overflow: 'hidden',
+              border: `1px solid ${primaryColor}30`,
+              bgcolor: surfaceColor,
+            }}
+          >
+            {isVideo ? (
+              <video
+                src={backgroundImage}
+                autoPlay
+                loop
+                muted
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  opacity: backgroundImageOpacity,
+                  filter: `blur(${backgroundImageBlur}px)`,
+                  transition: 'opacity 0.2s, filter 0.2s',
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: `url(${backgroundImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  opacity: backgroundImageOpacity,
+                  filter: `blur(${backgroundImageBlur}px)`,
+                  transition: 'opacity 0.2s, filter 0.2s',
+                }}
+              />
+            )}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 1,
+              }}
+            >
+              <IconButton
+                size='small'
+                onClick={handleRemoveImage}
+                disabled={uploading}
+                sx={{
+                  bgcolor: 'rgba(0, 0, 0, 0.7)',
+                  color: '#fff',
+                  '&:hover': {
+                    bgcolor: 'rgba(0, 0, 0, 0.9)',
+                  },
+                }}
+              >
+                <DeleteIcon fontSize='small' />
+              </IconButton>
+            </Box>
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 8,
+                left: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                color: '#fff',
+                textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+              }}
+            >
+              <ImageIcon fontSize='small' />
+              <Typography fontSize='0.75rem'>Vorschau</Typography>
+            </Box>
+          </Box>
+
+          {/* Opacity Control */}
+          <Box>
+            <Typography
+              sx={{
+                fontSize: '0.75rem',
+                color: primaryColor,
+                opacity: 0.8,
+                mb: 1,
+              }}
+            >
+              Transparenz: {Math.round(backgroundImageOpacity * 100)}%
+            </Typography>
+            <Slider
+              value={backgroundImageOpacity}
+              onChange={(_, value) => onOpacityChange(value as number)}
+              min={0}
+              max={1}
+              step={0.05}
+              sx={{
+                color: primaryColor,
+                '& .MuiSlider-track': {
+                  bgcolor: primaryColor,
+                },
+                '& .MuiSlider-thumb': {
+                  bgcolor: primaryColor,
+                },
+              }}
+            />
+          </Box>
+
+          {/* Blur Control */}
+          <Box>
+            <Typography
+              sx={{
+                fontSize: '0.75rem',
+                color: primaryColor,
+                opacity: 0.8,
+                mb: 1,
+              }}
+            >
+              Unschärfe: {backgroundImageBlur}px
+            </Typography>
+            <Slider
+              value={backgroundImageBlur}
+              onChange={(_, value) => onBlurChange(value as number)}
+              min={0}
+              max={20}
+              step={1}
+              sx={{
+                color: primaryColor,
+                '& .MuiSlider-track': {
+                  bgcolor: primaryColor,
+                },
+                '& .MuiSlider-thumb': {
+                  bgcolor: primaryColor,
+                },
+              }}
+            />
+          </Box>
+
+          {/* Replace Image Button */}
+          <input
+            ref={fileInputRef}
+            type='file'
+            accept='image/*,video/*'
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+            id='background-image-replace'
+            disabled={uploading}
+          />
+          <label htmlFor='background-image-replace'>
+            <Button
+              component='span'
+              variant='text'
+              size='small'
+              startIcon={
+                uploading ? <CircularProgress size={16} /> : <UploadIcon />
+              }
+              disabled={uploading}
+              sx={{
+                color: primaryColor,
+                opacity: 0.7,
+                '&:hover': {
+                  opacity: 1,
+                },
+              }}
+            >
+              {uploading
+                ? `Uploading... ${uploadProgress}%`
+                : 'Anderes Bild wählen'}
+            </Button>
+          </label>
+        </>
+      )}
+    </Stack>
+  );
+};

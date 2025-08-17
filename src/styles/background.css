@@ -1,0 +1,112 @@
+/* Background Image Styles */
+body {
+  position: relative;
+  min-height: 100vh;
+  background-color: var(--theme-background, #000000);
+  /* Prevent layout shift when scrollbar appears/disappears */
+  overflow-y: scroll;
+}
+
+/* Custom Scrollbar Styling */
+body::-webkit-scrollbar {
+  width: 12px;
+}
+
+body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--theme-primary, #00fed7);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary-hover, #00fed7);
+  background-clip: padding-box;
+}
+
+/* Firefox Scrollbar */
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-primary, #00fed7) rgba(0, 0, 0, 0.3);
+}
+
+/* Background Image Container - Only when image is set */
+body.has-background-image::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Use viewport width instead of right: 0 */
+  height: 100vh; /* Use viewport height instead of bottom: 0 */
+  z-index: -2;
+  background-image: var(--background-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: var(--background-image-opacity, 0.5);
+  filter: blur(var(--background-image-blur, 0px));
+  transform: scale(1.05); /* Leicht vergrößern um Blur-Ränder zu vermeiden */
+}
+
+/* Ensure content is above background */
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* Make containers semi-transparent ONLY when background image exists */
+body.has-background-image .MuiPaper-root,
+body.has-background-image .MuiCard-root,
+body.has-background-image .series-container,
+body.has-background-image .movie-container {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(3px);
+}
+
+/* Main content areas with background image */
+body.has-background-image main,
+body.has-background-image .main-content {
+  background-color: transparent !important;
+}
+
+/* Dialogs should be darker for better readability */
+body.has-background-image .MuiDialog-paper {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Main page header transparent with background image */
+body.has-background-image .main-page-header {
+  background: rgba(0, 0, 0, 0.4) !important;
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Search input field transparent with background image */
+body.has-background-image .search-input-field,
+body.has-background-image .search-input-field.MuiTextField-root,
+body.has-background-image .search-input-field.MuiFormControl-root {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+body.has-background-image .search-input-field .MuiOutlinedInput-root,
+body.has-background-image .search-input-field .MuiInputBase-root {
+  background: rgba(0, 0, 0, 0.3) !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+}
+
+/* Border styling for better visibility */
+body.has-background-image .search-input-field .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}

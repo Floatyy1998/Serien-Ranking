@@ -576,6 +576,7 @@ export const PublicListPage: React.FC = () => {
     <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
       {/* Header - ähnlich wie UserProfilePage aber als öffentliche Ansicht */}
       <Box
+        className='main-page-header'
         sx={{
           position: 'sticky',
           top: 0,

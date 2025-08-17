@@ -534,6 +534,7 @@ export const UserProfilePage: React.FC = () => {
     <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
       {/* Header */}
       <Box
+        className='main-page-header'
         sx={{
           position: 'sticky',
           top: 0,
