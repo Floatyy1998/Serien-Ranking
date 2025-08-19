@@ -82,14 +82,10 @@ export const BackgroundImageFirebaseUpload: React.FC<
     setError(null);
 
     try {
-      // Delete old image if exists
-      if (
-        backgroundImage &&
-        backgroundImage.includes('firebasestorage.googleapis.com')
-      ) {
-        await deleteOldImage(backgroundImage);
-      }
-
+      // Note: We don't delete old image here anymore
+      // The reference counting system in ThemeEditor will handle it
+      // when the theme is saved with the new image
+      
       // Create a unique filename
       const timestamp = Date.now();
       const filename = `backgrounds/${user.uid}/${timestamp}_${file.name}`;
@@ -127,35 +123,12 @@ export const BackgroundImageFirebaseUpload: React.FC<
     }
   };
 
-  const deleteOldImage = async (imageUrl: string) => {
-    try {
-      // Extract the path from the URL
-      const baseUrl = 'https://firebasestorage.googleapis.com/v0/b/';
-      if (imageUrl.includes(baseUrl)) {
-        const pathStart = imageUrl.indexOf('/o/') + 3;
-        const pathEnd = imageUrl.indexOf('?');
-        const encodedPath = imageUrl.substring(pathStart, pathEnd);
-        const path = decodeURIComponent(encodedPath);
-
-        // Delete the file
-        const storageRef = firebase.storage().ref();
-        const fileRef = storageRef.child(path);
-        await fileRef.delete();
-      }
-    } catch (error) {
-      console.error('Error deleting old image:', error);
-      // Continue even if delete fails
-    }
-  };
 
   const handleRemoveImage = async () => {
-    if (
-      backgroundImage &&
-      backgroundImage.includes('firebasestorage.googleapis.com')
-    ) {
-      await deleteOldImage(backgroundImage);
-    }
-
+    // Note: We don't delete the image from storage here anymore
+    // The reference counting system will handle deletion
+    // when no themes reference this image anymore
+    
     // Update state first
     onImageChange(undefined);
     if (onIsVideoChange) {
@@ -271,6 +244,23 @@ export const BackgroundImageFirebaseUpload: React.FC<
         </Box>
       ) : (
         <>
+          {/* Mobile Warning for Videos */}
+          {isVideo && (
+            <Alert
+              severity='info'
+              sx={{
+                fontSize: '0.7rem',
+                py: 0.5,
+                px: 1,
+                '& .MuiAlert-message': {
+                  fontSize: '0.7rem',
+                },
+              }}
+            >
+              Hinweis: Videos werden auf mobilen Geräten aus Performance-Gründen nicht angezeigt
+            </Alert>
+          )}
+
           {/* Image/Video Preview */}
           <Box
             sx={{
@@ -364,11 +354,11 @@ export const BackgroundImageFirebaseUpload: React.FC<
                 mb: 1,
               }}
             >
-              Transparenz: {Math.round(backgroundImageOpacity * 100)}%
+              Transparenz: {Math.round((1 - backgroundImageOpacity) * 100)}%
             </Typography>
             <Slider
-              value={backgroundImageOpacity}
-              onChange={(_, value) => onOpacityChange(value as number)}
+              value={1 - backgroundImageOpacity}
+              onChange={(_, value) => onOpacityChange(1 - (value as number))}
               min={0}
               max={1}
               step={0.05}
@@ -394,7 +384,7 @@ export const BackgroundImageFirebaseUpload: React.FC<
                 mb: 1,
               }}
             >
-              Unschärfe: {backgroundImageBlur}px
+              Unschärfe: {Math.round((backgroundImageBlur / 20) * 100)}%
             </Typography>
             <Slider
               value={backgroundImageBlur}

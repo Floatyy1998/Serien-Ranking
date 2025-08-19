@@ -280,7 +280,7 @@ export const MovieGrid = ({
             <Box key={movie.id || movie.nmr || (startIndex + index)} sx={{ width: '230px', height: '444px' }}>
               <MovieCard
                 movie={movie}
-                genre={selectedGenre}
+                genre={selectedSpecialFilter || selectedGenre}
                 index={startIndex + index + 1}
                 disableRatingDialog={viewOnlyMode}
                 forceReadOnlyDialogs={viewOnlyMode}

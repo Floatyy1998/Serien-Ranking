@@ -13,8 +13,8 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { genreDisplayNames } from '../../../../constants/seriesCard.constants';
-import { Movie } from '../../../types/Movie';
 import { colors } from '../../../theme';
+import { Movie } from '../../../types/Movie';
 
 interface MovieDialogProps {
   open: boolean;
@@ -287,7 +287,6 @@ const MovieDialog = ({
               background: colors.button.primary.gradient,
               borderRadius: '12px',
               padding: '12px 24px',
-              color: colors.text.primary,
               fontWeight: 600,
               textTransform: 'none',
               border: `1px solid ${colors.border.light}`,

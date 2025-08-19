@@ -15,6 +15,14 @@ export const BackgroundMedia: React.FC = () => {
         if (savedTheme) {
           const theme = JSON.parse(savedTheme);
           if (theme.backgroundImage) {
+            // Debug logging
+            console.log('[BackgroundMedia] Loading media:', {
+              url: theme.backgroundImage,
+              isVideo: theme.backgroundIsVideo,
+              opacity: theme.backgroundImageOpacity,
+              blur: theme.backgroundImageBlur
+            });
+            
             setMediaUrl(theme.backgroundImage);
             setIsVideo(theme.backgroundIsVideo || false);
             setOpacity(theme.backgroundImageOpacity || 0.5);
@@ -24,8 +32,11 @@ export const BackgroundMedia: React.FC = () => {
             document.body.classList.add('has-background-image');
             if (theme.backgroundIsVideo) {
               document.body.classList.add('has-background-video');
+              // Videos auf Mobile nie erlauben
+              document.body.classList.remove('allow-mobile-video');
             } else {
               document.body.classList.remove('has-background-video');
+              document.body.classList.remove('allow-mobile-video');
             }
 
             // Für Bilder auch CSS-Variablen setzen (falls loadBackgroundImage noch nicht gelaufen ist)
@@ -73,6 +84,7 @@ export const BackgroundMedia: React.FC = () => {
       // Remove all classes and styles
       document.body.classList.remove('has-background-image');
       document.body.classList.remove('has-background-video');
+      document.body.classList.remove('allow-mobile-video');
 
       // Remove CSS variables
       const root = document.documentElement;
@@ -100,6 +112,14 @@ export const BackgroundMedia: React.FC = () => {
 
   if (!mediaUrl) return null;
 
+  // Auf Mobile: Videos nicht anzeigen
+  const isMobile = window.innerWidth <= 768;
+  
+  if (isVideo && isMobile) {
+    // Auf Mobile werden Videos einfach nicht gerendert
+    return null;
+  }
+
   if (isVideo) {
     return (
       <video
@@ -111,9 +131,44 @@ export const BackgroundMedia: React.FC = () => {
         loop
         muted
         playsInline
+        preload="auto"
         style={{
           opacity,
           filter: `blur(${blur}px)`,
+          // Hardware-Beschleunigung erzwingen
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+        }}
+        onLoadedData={() => {
+          console.log('[BackgroundMedia] Video loaded successfully');
+          
+          // Fallback: Manuell abspielen falls Autoplay fehlschlägt
+          if (videoRef.current) {
+            videoRef.current.play().catch(error => {
+              console.warn('[BackgroundMedia] Video autoplay failed:', error);
+              
+              // Bei erstem User-Klick/Touch versuchen abzuspielen
+              const playOnInteraction = () => {
+                if (videoRef.current) {
+                  console.log('[BackgroundMedia] Trying to play video on user interaction');
+                  videoRef.current.play().catch(e => {
+                    console.error('[BackgroundMedia] Video play failed even with interaction:', e);
+                  });
+                }
+                document.removeEventListener('click', playOnInteraction);
+                document.removeEventListener('touchstart', playOnInteraction);
+              };
+              document.addEventListener('click', playOnInteraction, { once: true });
+              document.addEventListener('touchstart', playOnInteraction, { once: true });
+            });
+          }
+        }}
+        onError={(e) => {
+          console.error('[BackgroundMedia] Video loading error:', {
+            error: e,
+            src: mediaUrl,
+            videoElement: videoRef.current
+          });
         }}
       />
     );

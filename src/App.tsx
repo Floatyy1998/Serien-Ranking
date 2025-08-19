@@ -178,9 +178,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                       cloudTheme.backgroundColor || '#000000'
                     );
 
-                    // WICHTIG: Cloud-Theme NICHT automatisch lokal speichern
-                    // Sonst würde es zum lokalen Theme werden und könnte nicht mehr überschrieben werden
-                    // User muss explizit im Theme-Editor "Speichern" klicken um ein lokales Theme zu erstellen
+                    // WICHTIG: Cloud-Theme temporär im localStorage speichern,
+                    // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
+                    // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
+                    localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
+                    console.log('Cloud-Theme temporär im localStorage gespeichert für BackgroundMedia');
 
                     window.dispatchEvent(new CustomEvent('themeChanged'));
                   }
@@ -327,6 +329,10 @@ const loadSavedTheme = async (userId?: string) => {
       theme = snapshot.val();
       if (theme) {
         console.log('Cloud-Theme als Fallback geladen:', theme);
+        // WICHTIG: Speichere Cloud-Theme temporär im localStorage,
+        // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
+        localStorage.setItem('customTheme', JSON.stringify(theme));
+        console.log('Cloud-Theme im localStorage gespeichert für BackgroundMedia');
       }
     } catch (error) {
       console.error('Fehler beim Laden des Cloud-Themes:', error);

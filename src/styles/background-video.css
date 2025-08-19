@@ -13,14 +13,15 @@
   pointer-events: none;
 }
 
-/* Hide video on mobile for performance */
+/* Performance-Optimierung für schwache Geräte - kann mit Klasse deaktiviert werden */
 @media (max-width: 768px) {
-  .background-video {
+  /* Nur verstecken wenn nicht explizit erlaubt */
+  body:not(.allow-mobile-video) .background-video {
     display: none;
   }
   
-  /* Show static image fallback on mobile */
-  body.has-background-video::before {
+  /* Show static image fallback on mobile wenn Video versteckt */
+  body:not(.allow-mobile-video).has-background-video::before {
     content: '';
     position: fixed;
     top: 0;
@@ -35,5 +36,16 @@
     opacity: var(--background-image-opacity, 0.5);
     filter: blur(var(--background-image-blur, 0px));
     transform: scale(1.05);
+  }
+  
+  /* Optimierungen für mobile Videos wenn erlaubt */
+  body.allow-mobile-video .background-video {
+    /* Reduzierte Qualität für bessere Performance */
+    image-rendering: optimizeSpeed;
+    /* Verhindere Layout-Probleme */
+    transform: translateZ(0) scale(1.05);
+    -webkit-transform: translateZ(0) scale(1.05);
+    /* Hardware-Beschleunigung */
+    will-change: transform;
   }
 }
