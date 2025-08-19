@@ -18,6 +18,7 @@ import {
   Container,
   Tab,
   Tabs,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import React, { useCallback, useState } from 'react';
@@ -620,53 +621,79 @@ export const MainPage: React.FC = () => {
               </Card>
               <Card>
                 <CardContent sx={{ textAlign: 'center', py: { sm: 2, md: 3 } }}>
-                  <Typography
-                    variant='h4'
-                    color='warning.main'
-                    gutterBottom
-                    sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' } }}
-                  >
-                    {(() => {
-                      const totalHours = Math.floor(
-                        seriesStats.totalWatchtime / 60
-                      );
+                  <Tooltip
+                    title={(() => {
+                      const totalMinutes = seriesStats.totalWatchtime;
+                      const totalHours = Math.floor(totalMinutes / 60);
                       const days = Math.floor(totalHours / 24);
-                      if (days >= 365) {
-                        const years = Math.floor(days / 365);
-                        const remainingDaysAfterYears = days % 365;
-                        if (remainingDaysAfterYears >= 30) {
-                          const months = Math.floor(
-                            remainingDaysAfterYears / 30
-                          );
-                          return `${years}J ${months}M`;
-                        } else if (remainingDaysAfterYears >= 7) {
-                          const weeks = Math.floor(remainingDaysAfterYears / 7);
-                          return `${years}J ${weeks}W`;
-                        } else {
-                          return `${years}J ${remainingDaysAfterYears}T`;
-                        }
-                      } else if (days >= 30) {
-                        const months = Math.floor(days / 30);
-                        const remainingDays = days % 30;
-                        if (remainingDays >= 7) {
-                          const weeks = Math.floor(remainingDays / 7);
-                          return `${months}M ${weeks}W`;
-                        } else {
-                          return `${months}M ${remainingDays}T`;
-                        }
-                      } else if (days >= 7) {
-                        const weeks = Math.floor(days / 7);
-                        const remainingDays = days % 7;
-                        return remainingDays > 0
-                          ? `${weeks}W ${remainingDays}T`
-                          : `${weeks}W`;
-                      } else if (days > 0) {
-                        return `${days}T`;
-                      } else {
-                        return `${totalHours}h`;
-                      }
+                      const years = Math.floor(days / 365);
+                      const months = Math.floor((days % 365) / 30);
+                      const weeks = Math.floor(((days % 365) % 30) / 7);
+                      const remainingDays = ((days % 365) % 30) % 7;
+                      const remainingHours = totalHours % 24;
+                      const remainingMinutes = totalMinutes % 60;
+
+                      const parts = [];
+                      if (years > 0) parts.push(`${years} Jahr${years !== 1 ? 'e' : ''}`);
+                      if (months > 0) parts.push(`${months} Monat${months !== 1 ? 'e' : ''}`);
+                      if (weeks > 0) parts.push(`${weeks} Woche${weeks !== 1 ? 'n' : ''}`);
+                      if (remainingDays > 0) parts.push(`${remainingDays} Tag${remainingDays !== 1 ? 'e' : ''}`);
+                      if (remainingHours > 0) parts.push(`${remainingHours} Stunde${remainingHours !== 1 ? 'n' : ''}`);
+                      if (remainingMinutes > 0) parts.push(`${remainingMinutes} Minute${remainingMinutes !== 1 ? 'n' : ''}`);
+
+                      return parts.join(', ') || '0 Minuten';
                     })()}
-                  </Typography>
+                    arrow
+                    placement='top'
+                  >
+                    <Typography
+                      variant='h4'
+                      color='warning.main'
+                      gutterBottom
+                      sx={{ fontSize: { sm: '1.75rem', md: '2.125rem' }, cursor: 'help' }}
+                    >
+                      {(() => {
+                        const totalHours = Math.floor(
+                          seriesStats.totalWatchtime / 60
+                        );
+                        const days = Math.floor(totalHours / 24);
+                        if (days >= 365) {
+                          const years = Math.floor(days / 365);
+                          const remainingDaysAfterYears = days % 365;
+                          if (remainingDaysAfterYears >= 30) {
+                            const months = Math.floor(
+                              remainingDaysAfterYears / 30
+                            );
+                            return `${years}J ${months}M`;
+                          } else if (remainingDaysAfterYears >= 7) {
+                            const weeks = Math.floor(remainingDaysAfterYears / 7);
+                            return `${years}J ${weeks}W`;
+                          } else {
+                            return `${years}J ${remainingDaysAfterYears}T`;
+                          }
+                        } else if (days >= 30) {
+                          const months = Math.floor(days / 30);
+                          const remainingDays = days % 30;
+                          if (remainingDays >= 7) {
+                            const weeks = Math.floor(remainingDays / 7);
+                            return `${months}M ${weeks}W`;
+                          } else {
+                            return `${months}M ${remainingDays}T`;
+                          }
+                        } else if (days >= 7) {
+                          const weeks = Math.floor(days / 7);
+                          const remainingDays = days % 7;
+                          return remainingDays > 0
+                            ? `${weeks}W ${remainingDays}T`
+                            : `${weeks}W`;
+                        } else if (days > 0) {
+                          return `${days}T`;
+                        } else {
+                          return `${totalHours}h`;
+                        }
+                      })()}
+                    </Typography>
+                  </Tooltip>
                   <Typography
                     variant='body2'
                     sx={{ fontSize: { sm: '0.75rem', md: '0.875rem' } }}
@@ -937,55 +964,81 @@ export const MainPage: React.FC = () => {
                   </Card>
                   <Card>
                     <CardContent sx={{ textAlign: 'center', py: 1.5 }}>
-                      <Typography
-                        variant='h5'
-                        gutterBottom
-                        color='warning.main'
-                        sx={{ fontSize: '1.25rem' }}
-                      >
-                        {(() => {
-                          const totalHours = Math.floor(
-                            seriesStats.totalWatchtime / 60
-                          );
+                      <Tooltip
+                        title={(() => {
+                          const totalMinutes = seriesStats.totalWatchtime;
+                          const totalHours = Math.floor(totalMinutes / 60);
                           const days = Math.floor(totalHours / 24);
-                          if (days >= 365) {
-                            const years = Math.floor(days / 365);
-                            const remainingDaysAfterYears = days % 365;
-                            if (remainingDaysAfterYears >= 30) {
-                              const months = Math.floor(
-                                remainingDaysAfterYears / 30
-                              );
-                              return `${years}J ${months}M`;
-                            } else if (remainingDaysAfterYears >= 7) {
-                              const weeks = Math.floor(
-                                remainingDaysAfterYears / 7
-                              );
-                              return `${years}J ${weeks}W`;
-                            } else {
-                              return `${years}J ${remainingDaysAfterYears}T`;
-                            }
-                          } else if (days >= 30) {
-                            const months = Math.floor(days / 30);
-                            const remainingDays = days % 30;
-                            if (remainingDays >= 7) {
-                              const weeks = Math.floor(remainingDays / 7);
-                              return `${months}M ${weeks}W`;
-                            } else {
-                              return `${months}M ${remainingDays}T`;
-                            }
-                          } else if (days >= 7) {
-                            const weeks = Math.floor(days / 7);
-                            const remainingDays = days % 7;
-                            return remainingDays > 0
-                              ? `${weeks}W ${remainingDays}T`
-                              : `${weeks}W`;
-                          } else if (days > 0) {
-                            return `${days}T`;
-                          } else {
-                            return `${totalHours}h`;
-                          }
+                          const years = Math.floor(days / 365);
+                          const months = Math.floor((days % 365) / 30);
+                          const weeks = Math.floor(((days % 365) % 30) / 7);
+                          const remainingDays = ((days % 365) % 30) % 7;
+                          const remainingHours = totalHours % 24;
+                          const remainingMinutes = totalMinutes % 60;
+
+                          const parts = [];
+                          if (years > 0) parts.push(`${years} Jahr${years !== 1 ? 'e' : ''}`);
+                          if (months > 0) parts.push(`${months} Monat${months !== 1 ? 'e' : ''}`);
+                          if (weeks > 0) parts.push(`${weeks} Woche${weeks !== 1 ? 'n' : ''}`);
+                          if (remainingDays > 0) parts.push(`${remainingDays} Tag${remainingDays !== 1 ? 'e' : ''}`);
+                          if (remainingHours > 0) parts.push(`${remainingHours} Stunde${remainingHours !== 1 ? 'n' : ''}`);
+                          if (remainingMinutes > 0) parts.push(`${remainingMinutes} Minute${remainingMinutes !== 1 ? 'n' : ''}`);
+
+                          return parts.join(', ') || '0 Minuten';
                         })()}
-                      </Typography>
+                        arrow
+                        placement='top'
+                      >
+                        <Typography
+                          variant='h5'
+                          gutterBottom
+                          color='warning.main'
+                          sx={{ fontSize: '1.25rem', cursor: 'help' }}
+                        >
+                          {(() => {
+                            const totalHours = Math.floor(
+                              seriesStats.totalWatchtime / 60
+                            );
+                            const days = Math.floor(totalHours / 24);
+                            if (days >= 365) {
+                              const years = Math.floor(days / 365);
+                              const remainingDaysAfterYears = days % 365;
+                              if (remainingDaysAfterYears >= 30) {
+                                const months = Math.floor(
+                                  remainingDaysAfterYears / 30
+                                );
+                                return `${years}J ${months}M`;
+                              } else if (remainingDaysAfterYears >= 7) {
+                                const weeks = Math.floor(
+                                  remainingDaysAfterYears / 7
+                                );
+                                return `${years}J ${weeks}W`;
+                              } else {
+                                return `${years}J ${remainingDaysAfterYears}T`;
+                              }
+                            } else if (days >= 30) {
+                              const months = Math.floor(days / 30);
+                              const remainingDays = days % 30;
+                              if (remainingDays >= 7) {
+                                const weeks = Math.floor(remainingDays / 7);
+                                return `${months}M ${weeks}W`;
+                              } else {
+                                return `${months}M ${remainingDays}T`;
+                              }
+                            } else if (days >= 7) {
+                              const weeks = Math.floor(days / 7);
+                              const remainingDays = days % 7;
+                              return remainingDays > 0
+                                ? `${weeks}W ${remainingDays}T`
+                                : `${weeks}W`;
+                            } else if (days > 0) {
+                              return `${days}T`;
+                            } else {
+                              return `${totalHours}h`;
+                            }
+                          })()}
+                        </Typography>
+                      </Tooltip>
                       <Typography variant='body2' sx={{ fontSize: '0.7rem' }}>
                         Watchzeit
                       </Typography>
