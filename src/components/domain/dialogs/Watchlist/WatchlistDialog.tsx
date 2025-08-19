@@ -589,18 +589,19 @@ const WatchlistDialog = ({
       await episodeRef.update(updateData);
 
       // 🏆 BADGE-SYSTEM: Activity-Logging für Badge-Berechnung (keine Friend-Activities)
-      const episodeData = series.seasons?.find(
-        (s) => s.seasonNumber === nextEpisode.seasonNumber
-      )?.episodes?.[nextEpisode.episodeIndex];
+      // Verwende air_date direkt aus nextEpisode, da es das korrekte Datum enthält
+      // (episodeData aus series.seasons könnte ein anderes Format haben)
+      const airDate = nextEpisode.air_date || 
+        series.seasons?.find(
+          (s) => s.seasonNumber === nextEpisode.seasonNumber
+        )?.episodes?.[nextEpisode.episodeIndex]?.air_date;
 
-      if (episodeData) {
-        // Variablen entfernt da nicht verwendet
-
+      if (airDate) {
         // Counter-Updates für beide Fälle: neue Episode und Rewatch
         await updateEpisodeCounters(
           user.uid,
           wasWatched, // isRewatch = true wenn Episode bereits gesehen war
-          episodeData.air_date
+          airDate
         );
       }
 

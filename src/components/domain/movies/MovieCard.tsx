@@ -43,6 +43,7 @@ interface MovieCardProps {
 
 export const MovieCard = ({
   movie,
+  genre,
   index,
   disableRatingDialog = false,
   disableDeleteDialog = false,
@@ -379,6 +380,12 @@ export const MovieCard = ({
     }
     handleConfirmDialogClose();
   };
+
+  const shouldNumber = ![
+    'Zuletzt Hinzugefügt',
+    'Ohne Bewertung',
+    'Noch nicht Veröffentlicht',
+  ].includes(genre);
 
   return (
     <>
@@ -789,7 +796,8 @@ export const MovieCard = ({
                 },
               }}
             >
-              {index}. {currentMovie.title}
+              {shouldNumber && `${index}. `}
+              {currentMovie.title}
             </Typography>
           </Tooltip>
         </CardContent>

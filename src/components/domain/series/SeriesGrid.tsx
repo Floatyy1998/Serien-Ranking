@@ -811,7 +811,7 @@ export const SeriesGrid = ({
             >
               <SeriesCard
                 series={series}
-                genre={selectedGenre}
+                genre={selectedSpecialFilter || selectedGenre}
                 index={startIndex + index + 1}
                 disableRatingDialog={viewOnlyMode}
                 forceReadOnlyDialogs={viewOnlyMode}

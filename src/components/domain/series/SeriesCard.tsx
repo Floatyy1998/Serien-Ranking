@@ -15,11 +15,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { colors } from '../../../theme';
-import {
-  allGenres,
-  genreDisplayNames,
-} from '../../../../constants/seriesCard.constants';
+import { allGenres } from '../../../../constants/seriesCard.constants';
 import { useAuth } from '../../../App';
 import notFound from '../../../assets/notFound.jpg';
 import { useOptimizedFriends } from '../../../contexts/OptimizedFriendsProvider';
@@ -28,6 +24,7 @@ import { logRatingAdded } from '../../../features/badges/minimalActivityLogger';
 import { getUnifiedEpisodeDateTime } from '../../../lib/date/episodeDate.utils';
 import { calculateOverallRating } from '../../../lib/rating/rating';
 import '../../../styles/animations.css';
+import { colors } from '../../../theme';
 import { Series } from '../../../types/Series';
 import ThreeDotMenu, {
   DeleteIcon,
@@ -85,8 +82,7 @@ export const SeriesCard = ({
 
   const cardStyles = useMemo(
     () => ({
-      background:
-        `linear-gradient(145deg, ${colors.background.default} 0%, ${colors.background.surface} 50%, ${colors.background.default} 100%)`,
+      background: `linear-gradient(145deg, ${colors.background.default} 0%, ${colors.background.surface} 50%, ${colors.background.default} 100%)`,
       borderRadius: '20px',
       border: `1px solid ${colors.overlay.white}`,
       overflow: 'hidden',
@@ -299,11 +295,10 @@ export const SeriesCard = ({
     setOpenEpisodes(false);
   };
   const shouldNumber = ![
-    genreDisplayNames['All'] ?? 'All',
     'Zuletzt Hinzugefügt',
     'Ohne Bewertung',
     'Neue Episoden',
-  ].includes(genreDisplayNames[genre] ?? genre);
+  ].includes(genre);
   // TMDB Dialog State
   const [tmdbDialogOpen, setTmdbDialogOpen] = useState(false);
   const [tmdbData, setTmdbData] = useState<any>(null);
