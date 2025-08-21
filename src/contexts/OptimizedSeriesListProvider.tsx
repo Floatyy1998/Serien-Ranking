@@ -39,10 +39,50 @@ export const SeriesListProvider = ({
   children: React.ReactNode;
 }) => {
   const { user } = useAuth()!;
-  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(
-    []
-  );
-  const [hasCheckedForNewSeasons, setHasCheckedForNewSeasons] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
+  
+  // Verwende sessionStorage um State zwischen Re-Renders zu behalten
+  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('seriesWithNewSeasons');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          return parsed;
+        } catch (e) {
+        }
+      }
+    }
+    return [];
+  });
+  
+  // Check sessionStorage periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined') {
+        const stored = sessionStorage.getItem('seriesWithNewSeasons');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.length > 0 && seriesWithNewSeasons.length === 0) {
+              setSeriesWithNewSeasons(parsed);
+              setForceUpdate(prev => prev + 1);
+            }
+          } catch (e) {}
+        }
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [seriesWithNewSeasons.length]);
+  
+  const [hasCheckedForNewSeasons, setHasCheckedForNewSeasons] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasCheckedForNewSeasons') === 'true';
+    }
+    return false;
+  });
+  
   const detectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -69,8 +109,15 @@ export const SeriesListProvider = ({
   // Debounced detection function
   const runNewSeasonDetection = useCallback(
     (seriesList: Series[], userId: string) => {
+      // Clear any pending timeout
       if (detectionTimeoutRef.current) {
         clearTimeout(detectionTimeoutRef.current);
+        detectionTimeoutRef.current = null;
+      }
+
+      // Check if already running
+      if (detectionRunRef.current) {
+        return;
       }
 
       detectionTimeoutRef.current = setTimeout(async () => {
@@ -84,30 +131,50 @@ export const SeriesListProvider = ({
           const newSeasons = await detectNewSeasons(seriesList, userId);
 
           if (newSeasons.length > 0) {
+            // Speichere in sessionStorage
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newSeasons));
+            }
             setSeriesWithNewSeasons(newSeasons);
+            // Force update
+            setTimeout(() => {
+              setSeriesWithNewSeasons([...newSeasons]);
+            }, 100);
+            // WICHTIG: Nicht sofort hasCheckedForNewSeasons setzen, damit der Dialog angezeigt werden kann
+          } else {
+            setHasCheckedForNewSeasons(true);
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('hasCheckedForNewSeasons', 'true');
+            }
           }
-
-          setHasCheckedForNewSeasons(true);
         } catch (error) {
-          console.warn('New season detection failed:', error);
           setHasCheckedForNewSeasons(true);
+        } finally {
+          detectionRunRef.current = false;
         }
-      }, 200);
+      }, 500); // Erhöht auf 500ms für besseres Debouncing
     },
     []
   );
 
   // New season detection nur beim ersten Load und wenn online
   useEffect(() => {
-    if (!user || !seriesList.length || hasCheckedForNewSeasons || isOffline)
+    // Prüfe ob bereits neue Staffeln im State sind
+    if (seriesWithNewSeasons.length > 0) {
       return;
+    }
+    
+    if (!user || !seriesList.length || hasCheckedForNewSeasons || isOffline) {
+      return;
+    }
 
     runNewSeasonDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList,
+    seriesList.length, // Nur auf Längenänderung reagieren, nicht auf jede Änderung
     hasCheckedForNewSeasons,
     isOffline,
+    seriesWithNewSeasons.length,
     runNewSeasonDetection,
   ]);
 
@@ -122,17 +189,36 @@ export const SeriesListProvider = ({
         clearTimeout(detectionTimeoutRef.current);
         detectionTimeoutRef.current = null;
       }
+      
+      // Clear sessionStorage on logout
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('seriesWithNewSeasons');
+        sessionStorage.removeItem('hasCheckedForNewSeasons');
+      }
     }
   }, [user]);
 
   const clearNewSeasons = useCallback(() => {
     setSeriesWithNewSeasons([]);
+    setHasCheckedForNewSeasons(true); // Jetzt als gecheckt markieren
     detectionRunRef.current = false;
+    
+    // Clear from sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('seriesWithNewSeasons');
+      sessionStorage.setItem('hasCheckedForNewSeasons', 'true');
+    }
   }, []);
 
   const recheckForNewSeasons = useCallback(() => {
     detectionRunRef.current = false;
     setHasCheckedForNewSeasons(false);
+    
+    // Clear sessionStorage to allow new check
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('hasCheckedForNewSeasons');
+      sessionStorage.removeItem('seriesWithNewSeasons');
+    }
 
     if (user && seriesList.length > 0) {
       runNewSeasonDetection(seriesList, user.uid);

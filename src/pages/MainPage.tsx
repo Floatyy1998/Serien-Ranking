@@ -21,7 +21,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import NewSeasonNotificationDialog from '../components/domain/dialogs/NewSeasonNotificationDialog';
@@ -71,9 +71,11 @@ export const MainPage: React.FC = () => {
     seriesList,
     seriesWithNewSeasons,
     clearNewSeasons,
+    recheckForNewSeasons,
     isOffline,
     isStale,
   } = useSeriesList();
+  
 
   const { movieList } = useMovieList();
   const { totalUnreadActivities } = useNotifications();
@@ -136,6 +138,7 @@ export const MainPage: React.FC = () => {
   const handleRestartTour = () => {
     setShouldRestartTour(true);
   };
+
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
