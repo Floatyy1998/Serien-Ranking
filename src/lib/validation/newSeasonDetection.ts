@@ -8,7 +8,7 @@ export interface NewSeasonData {
   lastChecked: number;
 }
 
-const CHECK_COOLDOWN = process.env.NODE_ENV === 'development' ? 0 : 24 * 60 * 60 * 1000; // Kein Cooldown in Development
+const CHECK_COOLDOWN = process.env.NODE_ENV === 'development' ? 0 : 24 * 60 * 60 * 1000;
 
 export const getStoredSeasonData = async (
   userId: string
@@ -62,7 +62,7 @@ export const detectNewSeasons = async (
     } else {
       // Prüfen ob genug Zeit vergangen ist (Cooldown)
       const timeSinceLastCheck = currentTime - stored.lastChecked;
-      if (timeSinceLastCheck < CHECK_COOLDOWN) {
+      if (timeSinceLastCheck < CHECK_COOLDOWN && process.env.NODE_ENV !== 'development') {
         continue;
       }
 
@@ -117,3 +117,4 @@ export const markSeasonAsNotified = async (
     await storeSeasonData(userId, storedData);
   }
 };
+

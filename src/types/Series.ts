@@ -14,7 +14,22 @@ export interface Series {
     episode: number;
     nextEpisode: string;
     nextEpisodes: {
-      _links: {
+      absoluteNumber?: number;
+      aired?: string;
+      id: number;
+      isMovie?: number;
+      lastUpdated?: string;
+      number: number;
+      runtime?: number;
+      seasonNumber: number;
+      seriesId?: number;
+      watchCount?: number;
+      watched?: boolean;
+      year?: string;
+      name?: string;
+      title?: string;
+      // Legacy fields für Kompatibilität
+      _links?: {
         self: {
           href: string;
         };
@@ -23,19 +38,15 @@ export interface Series {
           name: string;
         };
       };
-      airdate: string;
-      airstamp: string;
-      airtime: string;
-      id: number;
-      name: string;
-      number: number;
-      runtime: number;
-      season: number;
-      type: string;
-      url: string;
+      airdate?: string;
+      airstamp?: string;
+      airtime?: string;
+      season?: number;
+      type?: string;
+      url?: string;
     }[];
     season: number;
-    title: string;
+    title?: string;
   };
   nmr: number;
   origin_country: string[];

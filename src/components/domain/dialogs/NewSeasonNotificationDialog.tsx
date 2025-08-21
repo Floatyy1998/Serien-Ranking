@@ -10,6 +10,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
+import React, { useState } from 'react';
 import { useAuth } from '../../../App';
 import { useFirebaseBatch } from '../../../hooks/useFirebaseBatch';
 import { Series } from '../../../types/Series';
@@ -82,12 +83,20 @@ const NewSeasonNotificationDialog = ({
   seriesWithNewSeasons,
 }: NewSeasonNotificationDialogProps) => {
   const { user } = useAuth()!;
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // 🚀 Batch-Updates für Watchlist-Operationen
   const { addUpdate: addBatchUpdate } = useFirebaseBatch({
     batchSize: 5,
     delayMs: 500,
   });
+
+  // Reset index wenn Dialog öffnet oder neue Serien kommen
+  React.useEffect(() => {
+    if (open) {
+      setCurrentIndex(0);
+    }
+  }, [open, seriesWithNewSeasons]);
 
   const addToWatchlist = async (series: Series) => {
     if (!user) return;
@@ -100,19 +109,30 @@ const NewSeasonNotificationDialog = ({
 
   const handleAddToWatchlist = async (series: Series) => {
     await addToWatchlist(series);
-    onClose(); // Dialog schließen nach Aktion
+    
+    // Zeige nächste Serie oder schließe Dialog
+    if (currentIndex < seriesWithNewSeasons.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      onClose();
+    }
   };
 
   const handleSkip = () => {
-    onClose(); // Dialog schließen nach Aktion
+    // Zeige nächste Serie oder schließe Dialog
+    if (currentIndex < seriesWithNewSeasons.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      onClose();
+    }
   };
 
   if (seriesWithNewSeasons.length === 0) {
     return null;
   }
 
-  const currentSeries = seriesWithNewSeasons[0];
-  const remainingCount = seriesWithNewSeasons.length - 1;
+  const currentSeries = seriesWithNewSeasons[currentIndex] || seriesWithNewSeasons[0];
+  const remainingCount = seriesWithNewSeasons.length - currentIndex - 1;
 
   // Hilfsfunktion für nächste Episode Info
   const getNextEpisodeInfo = (series: Series) => {
@@ -121,17 +141,21 @@ const NewSeasonNotificationDialog = ({
       series.nextEpisode.nextEpisodes.length > 0
     ) {
       const nextEp = series.nextEpisode.nextEpisodes[0];
-      if (nextEp.airdate && nextEp.airdate !== 'null') {
-        const airDate = new Date(nextEp.airdate);
-        return {
-          date: airDate.toLocaleDateString('de-DE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          }),
-          title: nextEp.name,
-          episode: `S${nextEp.season}E${nextEp.number}`,
-        };
+      // Verwende die korrekten Felder aus der tatsächlichen Datenstruktur
+      const dateField = nextEp.aired || nextEp.airdate;
+      if (dateField && dateField !== 'null') {
+        const airDate = new Date(dateField);
+        if (!isNaN(airDate.getTime())) {
+          return {
+            date: airDate.toLocaleDateString('de-DE', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            }),
+            title: nextEp.name || nextEp.title || `Episode ${nextEp.number}`,
+            episode: `S${nextEp.seasonNumber || nextEp.season || 1}E${nextEp.number}`,
+          };
+        }
       }
     }
     return null;
@@ -155,6 +179,12 @@ const NewSeasonNotificationDialog = ({
             overflow: 'hidden',
             boxShadow: '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
             color: 'white',
+            zIndex: 9999,
+          },
+        },
+        backdrop: {
+          sx: {
+            zIndex: 9998,
           },
         },
       }}
@@ -192,7 +222,7 @@ const NewSeasonNotificationDialog = ({
               label={`+${remainingCount} weitere`}
               size='small'
               sx={{
-                backgroundColor: 'var(--theme-primary)',
+                backgroundColor: colors.primary.main,
                 color: '#ffffff',
                 fontWeight: 'bold',
               }}
@@ -250,12 +280,12 @@ const NewSeasonNotificationDialog = ({
 
           <Box flex={1}>
             <Box mb={3} mt={2}>
-              <Typography variant='h4' gutterBottom sx={{ color: 'var(--theme-primary)' }}>
+              <Typography variant='h4' gutterBottom sx={{ color: colors.primary.main }}>
                 {currentSeries.title}
               </Typography>
               <Typography
                 variant='h6'
-                sx={{ color: 'var(--theme-primary)', fontWeight: 'bold' }}
+                sx={{ color: colors.primary.main, fontWeight: 'bold' }}
               >
                 Jetzt {currentSeries.seasonCount} Staffeln verfügbar
               </Typography>
@@ -263,7 +293,7 @@ const NewSeasonNotificationDialog = ({
 
             {currentSeries.beschreibung && (
               <Box mb={3}>
-                <Typography variant='h4' gutterBottom sx={{ color: 'var(--theme-primary)' }}>
+                <Typography variant='h4' gutterBottom sx={{ color: colors.primary.main }}>
                   Beschreibung
                 </Typography>
                 <Typography variant='body1' sx={{ lineHeight: 1.6 }}>
@@ -285,18 +315,19 @@ const NewSeasonNotificationDialog = ({
                         .filter((g) => g !== 'All')
                         .slice(0, 3)
                         .map((genre, index) => (
-                          <span
+                          <Box
                             key={index}
-                            style={{
-                              background: 'var(--theme-primary)',
+                            component='span'
+                            sx={{
+                              background: colors.primary.main,
                               color: '#ffffff',
-                              borderRadius: 6,
+                              borderRadius: '6px',
                               padding: '2px 8px',
-                              marginRight: 4,
+                              marginRight: '4px',
                             }}
                           >
                             {genre}
-                          </span>
+                          </Box>
                         ))}
                     </Box>
                   </Box>
@@ -338,7 +369,7 @@ const NewSeasonNotificationDialog = ({
                               borderRadius: 2,
                               padding: '8px 12px',
                               marginRight: '8px',
-                              border: '1px solid var(--theme-primary)',
+                              border: `1px solid ${colors.primary.main}`,
                             }}
                           >
                             {logoUrl ? (
@@ -377,7 +408,7 @@ const NewSeasonNotificationDialog = ({
                 p: 2,
                 borderRadius: 1,
                 mt: 3,
-                border: '1px solid var(--theme-primary)',
+                border: `1px solid ${colors.primary.main}`,
               }}
             >
               <Typography variant='body1'>
@@ -420,7 +451,7 @@ const NewSeasonNotificationDialog = ({
           variant='contained'
           onClick={() => handleAddToWatchlist(currentSeries)}
           sx={{
-            background: 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)',
+            background: `linear-gradient(135deg, ${colors.primary.main} 0%, ${colors.primary.dark} 100%)`,
             borderRadius: '12px',
             padding: '12px 24px',
             color: '#ffffff',
@@ -430,7 +461,7 @@ const NewSeasonNotificationDialog = ({
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease',
             '&:hover': {
-              background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+              background: `linear-gradient(135deg, ${colors.primary.light} 0%, ${colors.primary.main} 100%)`,
               transform: 'translateY(-2px)',
               boxShadow: colors.shadow.buttonHover,
             },

@@ -102,45 +102,61 @@ const SeriesEpisodesDialog = ({
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {Array.isArray(series.nextEpisode?.nextEpisodes) &&
           series.nextEpisode.nextEpisodes.length > 0 ? (
-            series.nextEpisode.nextEpisodes.map((episode) => (
-              <ListItem
-                key={`${series.id}-${episode.season}-${episode.number}-${episode.airstamp}`}
-                sx={{
-                  border: `1px solid var(--theme-primary)20`,
-                  backgroundColor: colors.background.card,
-                  borderRadius: 2,
-                  p: 3,
-                  backdropFilter: 'blur(10px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <Box
-                  component='img'
-                  src={series.poster?.poster || '/placeholder.jpg'}
-                  alt={episode.name}
+            series.nextEpisode.nextEpisodes.map((episode: any, index) => {
+              // Verwende die tatsächlichen Felder aus Firebase
+              const episodeTitle = episode.name || episode.title || `Episode ${episode.number}`;
+              const seasonNumber = episode.seasonNumber || episode.season || 1;
+              const episodeNumber = episode.number || 0;
+              
+              // Nutze 'aired' Feld für das Datum
+              let dateTimeDisplay = 'Kein Datum verfügbar';
+              if (episode.aired) {
+                const date = getFormattedDate(episode.aired);
+                if (date !== 'Ungültiges Datum' && date !== 'Kein Datum') {
+                  // Da wir keine Uhrzeit haben, zeigen wir nur das Datum
+                  dateTimeDisplay = date;
+                }
+              }
+              
+              return (
+                <ListItem
+                  key={`${series.id}-${seasonNumber}-${episodeNumber}-${index}`}
                   sx={{
-                    width: 60,
-                    height: 90,
-                    borderRadius: 1,
-                    marginRight: 2,
+                    border: `1px solid var(--theme-primary)20`,
+                    backgroundColor: colors.background.card,
+                    borderRadius: 2,
+                    p: 3,
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
                   }}
-                />
-                <Box>
-                  <ListItemText
-                    primary={series.title}
-                    secondary={`Staffel ${episode.season}, Ep. ${episode.number}: ${episode.name}`}
-                  />
+                >
                   <Box
-                    component='span'
-                    sx={{ fontSize: '0.8rem', color: colors.text.secondary }}
-                  >
-                    {getFormattedDate(episode.airstamp)} |{' '}
-                    {getFormattedTime(episode.airstamp)}
+                    component='img'
+                    src={series.poster?.poster || '/placeholder.jpg'}
+                    alt={episodeTitle}
+                    sx={{
+                      width: 60,
+                      height: 90,
+                      borderRadius: 1,
+                      marginRight: 2,
+                    }}
+                  />
+                  <Box>
+                    <ListItemText
+                      primary={series.title}
+                      secondary={`Staffel ${seasonNumber}, Episode ${episodeNumber}: ${episodeTitle}`}
+                    />
+                    <Box
+                      component='span'
+                      sx={{ fontSize: '0.8rem', color: colors.text.secondary }}
+                    >
+                      {dateTimeDisplay}
+                    </Box>
                   </Box>
-                </Box>
-              </ListItem>
-            ))
+                </ListItem>
+              );
+            })
           ) : (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant='body1' color='text.secondary'>
