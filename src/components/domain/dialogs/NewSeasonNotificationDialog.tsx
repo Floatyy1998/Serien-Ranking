@@ -222,7 +222,7 @@ const NewSeasonNotificationDialog = ({
               label={`+${remainingCount} weitere`}
               size='small'
               sx={{
-                backgroundColor: colors.primary.main,
+                backgroundColor: colors.primary,
                 color: '#ffffff',
                 fontWeight: 'bold',
               }}
@@ -280,12 +280,12 @@ const NewSeasonNotificationDialog = ({
 
           <Box flex={1}>
             <Box mb={3} mt={2}>
-              <Typography variant='h4' gutterBottom sx={{ color: colors.primary.main }}>
+              <Typography variant='h4' gutterBottom sx={{ color: colors.primary }}>
                 {currentSeries.title}
               </Typography>
               <Typography
                 variant='h6'
-                sx={{ color: colors.primary.main, fontWeight: 'bold' }}
+                sx={{ color: colors.primary, fontWeight: 'bold' }}
               >
                 Jetzt {currentSeries.seasonCount} Staffeln verfügbar
               </Typography>
@@ -293,7 +293,7 @@ const NewSeasonNotificationDialog = ({
 
             {currentSeries.beschreibung && (
               <Box mb={3}>
-                <Typography variant='h4' gutterBottom sx={{ color: colors.primary.main }}>
+                <Typography variant='h4' gutterBottom sx={{ color: colors.primary }}>
                   Beschreibung
                 </Typography>
                 <Typography variant='body1' sx={{ lineHeight: 1.6 }}>
@@ -319,7 +319,7 @@ const NewSeasonNotificationDialog = ({
                             key={index}
                             component='span'
                             sx={{
-                              background: colors.primary.main,
+                              background: colors.primary,
                               color: '#ffffff',
                               borderRadius: '6px',
                               padding: '2px 8px',
@@ -369,7 +369,7 @@ const NewSeasonNotificationDialog = ({
                               borderRadius: 2,
                               padding: '8px 12px',
                               marginRight: '8px',
-                              border: `1px solid ${colors.primary.main}`,
+                              border: `1px solid ${colors.primary}`,
                             }}
                           >
                             {logoUrl ? (
@@ -408,7 +408,7 @@ const NewSeasonNotificationDialog = ({
                 p: 2,
                 borderRadius: 1,
                 mt: 3,
-                border: `1px solid ${colors.primary.main}`,
+                border: `1px solid ${colors.primary}`,
               }}
             >
               <Typography variant='body1'>
@@ -451,7 +451,7 @@ const NewSeasonNotificationDialog = ({
           variant='contained'
           onClick={() => handleAddToWatchlist(currentSeries)}
           sx={{
-            background: `linear-gradient(135deg, ${colors.primary.main} 0%, ${colors.primary.dark} 100%)`,
+            background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`,
             borderRadius: '12px',
             padding: '12px 24px',
             color: '#ffffff',
@@ -461,7 +461,7 @@ const NewSeasonNotificationDialog = ({
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease',
             '&:hover': {
-              background: `linear-gradient(135deg, ${colors.primary.light} 0%, ${colors.primary.main} 100%)`,
+              background: `linear-gradient(135deg, ${colors.primaryHover} 0%, ${colors.primary} 100%)`,
               transform: 'translateY(-2px)',
               boxShadow: colors.shadow.buttonHover,
             },

@@ -21,7 +21,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import NewSeasonNotificationDialog from '../components/domain/dialogs/NewSeasonNotificationDialog';
@@ -71,7 +71,6 @@ export const MainPage: React.FC = () => {
     seriesList,
     seriesWithNewSeasons,
     clearNewSeasons,
-    recheckForNewSeasons,
     isOffline,
     isStale,
   } = useSeriesList();

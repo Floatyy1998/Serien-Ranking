@@ -39,7 +39,6 @@ export const SeriesListProvider = ({
   children: React.ReactNode;
 }) => {
   const { user } = useAuth()!;
-  const [forceUpdate, setForceUpdate] = useState(0);
   
   // Verwende sessionStorage um State zwischen Re-Renders zu behalten
   const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() => {
@@ -66,7 +65,6 @@ export const SeriesListProvider = ({
             const parsed = JSON.parse(stored);
             if (parsed.length > 0 && seriesWithNewSeasons.length === 0) {
               setSeriesWithNewSeasons(parsed);
-              setForceUpdate(prev => prev + 1);
             }
           } catch (e) {}
         }
