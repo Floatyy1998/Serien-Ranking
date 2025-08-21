@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Series } from '../../../types/Series';
-import { getFormattedDate, getFormattedTime } from '../../../lib/date/date.utils';
+import { getFormattedDate } from '../../../lib/date/date.utils';
 import { colors } from '../../../theme';
 interface SeriesEpisodesDialogProps {
   open: boolean;
