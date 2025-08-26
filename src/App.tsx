@@ -18,12 +18,10 @@ import {
 } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 import { BackgroundMedia } from './components/ui/BackgroundMedia';
-import { LoadingSpinner } from './components/ui/LoadingSpinner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
 import { UpdateNotification } from './components/ui/UpdateNotification';
 // Badge Migration Tools für Development
-import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider } from './contexts/NotificationProvider';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
@@ -33,7 +31,7 @@ import { StatsProvider } from './features/stats/StatsProvider';
 import { FriendsPage } from './pages/FriendsPage';
 import MainPage from './pages/MainPage';
 import { PublicListPage } from './pages/PublicListPage';
-import StartPage from './pages/StartPage'; // Eager loading für bessere Offline-Performance
+import StartPage from './pages/StartPage'; // Startseite für nicht angemeldete User
 import { UserProfilePage } from './pages/UserProfilePage';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { updateTheme } from './theme';
@@ -49,7 +47,7 @@ export const AuthContext = createContext<{
 } | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
-  const [firebaseInitialized, setFirebaseInitialized] = useState(false);
+  const [, setFirebaseInitialized] = useState(false);
   const [authStateResolved, setAuthStateResolved] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
@@ -73,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           module.initFirebase();
           setFirebaseInitialized(true);
+          window.setAppReady?.('firebase', true);
 
           // Service Worker initialisieren
           if ('serviceWorker' in navigator) {
@@ -82,6 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const authTimeout = setTimeout(
             () => {
               setAuthStateResolved(true);
+              window.setAppReady?.('emailVerification', true); // No verification check on timeout
 
               // Wenn offline, versuche gespeicherten User zu laden
               if (isOffline) {
@@ -106,6 +106,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
             setUser(user);
             setAuthStateResolved(true);
+            window.setAppReady?.('auth', true);
+            window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
 
             // User für Offline-Zugriff speichern
             if (user) {
@@ -251,22 +253,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
           console.error('Fehler bei Firebase-Initialisierung:', error);
           setAuthStateResolved(true); // Auch bei Fehler Auth-State als resolved setzen
+          window.setAppReady?.('emailVerification', true); // No verification needed when auth fails
         }
       })
       .catch((error) => {
         console.error('Fehler beim Laden des Firebase-Moduls:', error);
         setAuthStateResolved(true);
+        window.setAppReady?.('emailVerification', true); // No verification when Firebase fails to load
       });
   }, []);
 
-  if (!firebaseInitialized || !authStateResolved) {
-    return (
-      <LoadingSpinner
-        text='Initialisierung...'
-        showOfflineMessage={isOffline}
-      />
-    );
-  }
+  // Kein LoadingSpinner mehr - SplashScreen handled das
+  // Provider trotzdem rendern damit initialData gesetzt werden kann
 
   return (
     <AuthContext.Provider value={{ user, setUser, authStateResolved }}>
@@ -408,6 +406,8 @@ export function App() {
 
       // Theme wurde geladen - State setzen
       setIsThemeLoaded(true);
+      window.setAppReady?.('theme', true);
+      console.log('[App] Theme loaded, app ready for display');
 
       // Wichtig: Theme-Change Event nach kurzer Verzögerung auslösen
       // damit Material-UI Zeit hat sich zu initialisieren
@@ -419,19 +419,19 @@ export function App() {
     initializeTheme();
   }, []);
 
-  // Warte bis Theme geladen ist bevor App gerendert wird
+  // Kein SplashScreen mehr hier - wird in AppWithSplash gehandelt
+  // Warte nur noch auf Theme
   if (!isThemeLoaded) {
-    return <LoadingSpinner text='Lade Theme...' />;
+    // Zeige nichts - App lädt im Hintergrund während SplashScreen läuft
+    return null;
   }
 
   return (
     <Router>
-      <GlobalLoadingProvider>
-        <AuthProvider>
-          <BackgroundMedia />
-          <AppContent />
-        </AuthProvider>
-      </GlobalLoadingProvider>
+      <AuthProvider>
+        <BackgroundMedia />
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }
@@ -496,14 +496,7 @@ function AppContent() {
                     <UsernameRequiredDialog />
                     <UpdateNotification />
                     <main className='w-full'>
-                      <Suspense
-                        fallback={
-                          <LoadingSpinner
-                            text='⏳ Lade Komponente...'
-                            variant='centered'
-                          />
-                        }
-                      >
+                      <Suspense fallback={null}>
                         <Routes>
                           <Route path='/login' element={<LoginPage />} />
                           <Route path='/register' element={<RegisterPage />} />
@@ -512,23 +505,19 @@ function AppContent() {
                             element={
                               <AuthContext.Consumer>
                                 {(auth) => {
-                                  if (!auth?.authStateResolved) {
-                                    return (
-                                      <LoadingSpinner
-                                        text='⏳ Wird geladen...'
-                                        variant='centered'
-                                      />
-                                    );
-                                  }
-
+                                  // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
                                   if (auth?.user) {
                                     return (
                                       <EmailVerificationBanner>
                                         <MainPage />
                                       </EmailVerificationBanner>
                                     );
-                                  } else {
+                                  } else if (auth?.authStateResolved) {
+                                    // Wenn kein User da ist, zeige StartPage
                                     return <StartPage />;
+                                  } else {
+                                    // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
+                                    return null;
                                   }
                                 }}
                               </AuthContext.Consumer>

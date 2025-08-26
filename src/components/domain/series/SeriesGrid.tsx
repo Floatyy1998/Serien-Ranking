@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../App';
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
 import { useStats } from '../../../features/stats/StatsProvider';
@@ -764,7 +764,16 @@ export const SeriesGrid = ({
 
     if (filteredEmptySeries.length === 0 && selectedGenre === 'All') {
       return (
-        <Box className='flex justify-center items-center w-full h-full'>
+        <Box 
+          className='flex justify-center items-center w-full h-full'
+          sx={{
+            animation: 'fadeIn 0.5s ease-in-out',
+            '@keyframes fadeIn': {
+              '0%': { opacity: 0 },
+              '100%': { opacity: 1 }
+            }
+          }}
+        >
           <Typography variant='h2' className='text-center'>
             Dieser Benutzer hat noch keine Serien hinzugefügt.
           </Typography>
@@ -773,9 +782,26 @@ export const SeriesGrid = ({
     }
   }
 
-  if (filteredSeries?.length === 0 && selectedGenre === 'All') {
+  // Zeige Empty State nur wenn Daten fertig geladen sind
+  // Warte kurz nach dem initialen Mount bevor Empty State angezeigt wird
+  const [hasMounted, setHasMounted] = React.useState(false);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setHasMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (hasMounted && filteredSeries?.length === 0 && selectedGenre === 'All') {
     return (
-      <Box className='flex justify-center items-center w-full h-full'>
+      <Box 
+        className='flex justify-center items-center w-full h-full'
+        sx={{
+          animation: 'fadeIn 0.5s ease-in-out',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0 },
+            '100%': { opacity: 1 }
+          }
+        }}
+      >
         <Typography variant='h2' className='text-center'>
           {targetUserId
             ? 'Dieser Benutzer hat noch keine Serien hinzugefügt.'

@@ -3,52 +3,53 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { colors, commonStyles } from '../../theme';
+import { useAuth } from '../../App';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;
 }
 
 export const EmailVerificationBanner = ({ children }: EmailVerificationBannerProps) => {
-  const [isVerified, setIsVerified] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const auth = useAuth();
+  const user = auth?.user;
+  const [isVerified, setIsVerified] = useState<boolean | null>(user?.emailVerified ?? null);
+  const [loading] = useState(false); // Kein initiales Loading
   const [message, setMessage] = useState('');
   const [snackOpen, setSnackOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = firebase.auth().currentUser;
+    // Verwende den User aus dem Auth Context statt firebase.auth().currentUser
     if (user) {
-      if (navigator.onLine) {
+      // Setze sofort den aktuellen Status
+      setIsVerified(user.emailVerified);
+      
+      // Nur wenn online, versuche zu aktualisieren (ohne Loading anzuzeigen)
+      if (navigator.onLine && !user.emailVerified) {
         user
           .reload()
           .then(() => {
             setIsVerified(user.emailVerified);
-            setLoading(false);
           })
           .catch((error) => {
             console.warn(
               'User reload fehlgeschlagen (offline?), verwende cached Daten:',
               error
             );
-            setIsVerified(user.emailVerified);
-            setLoading(false);
           });
-      } else {
-        setIsVerified(user.emailVerified);
-        setLoading(false);
       }
-    } else {
+    } else if (auth?.authStateResolved) {
+      // Nur navigieren wenn Auth wirklich resolved ist und kein User da ist
       navigate('/login');
     }
-  }, [navigate]);
+    // Wenn auth noch nicht resolved ist, warte einfach
+  }, [user, auth?.authStateResolved, navigate]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
-    if (!isVerified) {
+    if (!isVerified && user) {
       intervalId = setInterval(() => {
-        const user = firebase.auth().currentUser;
         if (user) {
           user.reload().then(() => {
             if (user.emailVerified) {
@@ -60,10 +61,9 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
       }, 5000);
     }
     return () => clearInterval(intervalId);
-  }, [isVerified]);
+  }, [isVerified, user]);
 
   const resendVerification = () => {
-    const user = firebase.auth().currentUser;
     if (user) {
       user
         .sendEmailVerification()
@@ -95,8 +95,9 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
       });
   };
 
+  // NIEMALS einen Loading-Screen zeigen - alles wurde im SplashScreen erledigt
   if (loading) {
-    return <LoadingSpinner text="Verifizierung wird geprüft..." />;
+    return <>{children}</>;
   }
 
   if (!isVerified) {

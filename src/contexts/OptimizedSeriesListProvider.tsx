@@ -1,4 +1,4 @@
-import {
+import React, {
   createContext,
   useCallback,
   useContext,
@@ -103,6 +103,20 @@ export const SeriesListProvider = ({
 
   // Konvertiere Object zu Array
   const seriesList: Series[] = seriesData ? Object.values(seriesData) : [];
+
+  // Signal when initial data is loaded
+  React.useEffect(() => {
+    // If no user, data is immediately "ready" (empty)
+    if (!user) {
+      window.setAppReady?.('initialData', true);
+      return;
+    }
+    
+    // If user exists and data has loaded
+    if (!loading) {
+      window.setAppReady?.('initialData', true);
+    }
+  }, [user, loading]);
 
   // Debounced detection function
   const runNewSeasonDetection = useCallback(

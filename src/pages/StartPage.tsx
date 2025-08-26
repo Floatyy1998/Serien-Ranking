@@ -1,149 +1,252 @@
 import { motion } from 'framer-motion';
-import { List, Star, Tv } from 'lucide-react';
+import { styled, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
+import logoSvg from '../assets/logo.svg?raw';
+import { ArrowRight, Film, Star, Users, TrendingUp, Play, Award } from 'lucide-react';
+import { colors } from '../theme/colors';
+
+const PageContainer = styled(Box)`
+  min-height: 100vh;
+  width: 100%;
+  background: ${colors.background.default};
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const HeroSection = styled(Box)`
+  width: 100%;
+  max-width: 1200px;
+  padding: 60px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+`;
+
+const LogoContainer = styled(motion.div)`
+  width: 160px;
+  height: 160px;
+  margin-bottom: 25px;
+  position: relative;
+`;
+
+const LogoWrapper = styled('div')`
+  width: 100%;
+  height: 100%;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+    
+    path {
+      fill: ${colors.text.primary};
+    }
+  }
+`;
+
+const Subtitle = styled(motion.p)`
+  font-size: 1.3rem;
+  color: ${colors.text.muted};
+  margin-bottom: 30px;
+  letter-spacing: 2px;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+`;
+
+const ButtonContainer = styled(motion.div)`
+  display: flex;
+  gap: 20px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+`;
+
+const StyledButton = styled(Link)`
+  padding: 12px 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-decoration: none;
+  color: ${colors.background.default};
+  background: ${colors.primary};
+  border: none;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    background: ${colors.primaryHover};
+    box-shadow: ${colors.shadow.buttonHover};
+  }
+  
+  &.secondary {
+    background: transparent;
+    color: ${colors.text.primary};
+    border: 2px solid ${colors.border.primary};
+    
+    &:hover {
+      background: ${colors.overlay.light};
+    }
+  }
+`;
+
+const FeatureGrid = styled(Box)`
+  width: 100%;
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  padding: 0 20px 40px;
+`;
+
+const FeatureCard = styled(motion.div)`
+  background: ${colors.background.cardGradient};
+  border: 1px solid ${colors.border.subtle};
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    border-color: ${colors.border.primary};
+    box-shadow: ${colors.shadow.hover};
+    background: ${colors.background.cardHover};
+  }
+`;
+
+const FeatureIcon = styled(Box)`
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  background: ${colors.overlay.light};
+  border-radius: 10px;
+  
+  svg {
+    width: 22px;
+    height: 22px;
+    color: ${colors.text.primary};
+  }
+`;
+
+const FeatureTitle = styled('h3')`
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: ${colors.text.secondary};
+`;
+
+const FeatureDescription = styled('p')`
+  color: ${colors.text.muted};
+  line-height: 1.5;
+  font-size: 0.85rem;
+`;
+
+
 const StartPage = () => {
-  const container = {
-    hidden: {
-      opacity: 0,
+  // Process SVG string to remove fill attribute and set viewBox
+  const processedSvg = logoSvg
+    .replace(/fill="#[0-9a-fA-F]{6}"/g, '')
+    .replace('<svg', '<svg fill="currentColor"');
+  
+  const features = [
+    {
+      icon: <Star />,
+      title: 'Bewerte & Ranke',
+      description: 'Bewerte deine Lieblingsserien und Filme mit unserem detaillierten Bewertungssystem.'
     },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
+    {
+      icon: <Film />,
+      title: 'Tracke alles',
+      description: 'Behalte den Überblick über alle deine Serien, Staffeln und Episoden.'
     },
-  };
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 20,
+    {
+      icon: <Users />,
+      title: 'Teile mit Freunden',
+      description: 'Vergleiche deine Rankings mit Freunden und entdecke neue Empfehlungen.'
     },
-    show: {
-      opacity: 1,
-      y: 0,
+    {
+      icon: <TrendingUp />,
+      title: 'Statistiken',
+      description: 'Detaillierte Statistiken über deine Sehgewohnheiten und Bewertungen.'
     },
-  };
+    {
+      icon: <Award />,
+      title: 'Sammle Badges',
+      description: 'Schalte Achievements frei und sammle Badges für deine Aktivitäten.'
+    },
+    {
+      icon: <Play />,
+      title: 'Streaming Info',
+      description: 'Finde heraus wo deine Serien und Filme verfügbar sind.'
+    }
+  ];
+
   return (
-    <div className='w-full  bg-black text-white flex flex-col items-center px-4 py-8'>
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: -20,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        className='text-center mb-16 mt-8'
-      >
-        <h1 className='text-3xl font-semibold mb-4'>Willkommen bei TV-RANK</h1>
-        <p className='text-gray-400 text-lg'>
-          Entdecke, bewerte und verwalte deine Lieblingsserien und -filme.
-        </p>
-      </motion.div>
-      <motion.div
-        initial={{
-          opacity: 0,
-          scale: 0.95,
-        }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-        }}
-        className='bg-gray-900/50 rounded-xl p-8 max-w-2xl w-full mb-12 backdrop-blur-sm'
-      >
-        <p className='text-center text-lg mb-6'>
-          Mit TV-RANK findest du neue Serien und Filme, führst deine Watchlist
-          und verpasst keine Folge oder keinen Film mehr.
-        </p>
-        <div className='flex gap-4 justify-center'>
-          <motion.div
-            whileHover={{
-              scale: 1.05,
-            }}
-            whileTap={{
-              scale: 0.95,
-            }}
-          >
-            <Link
-              to='/login'
-              className='block bg-[var(--theme-primary)] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[var(--theme-accent)] transition-colors'
-              aria-label='Login'
-            >
-              LOGIN
-            </Link>
-          </motion.div>
-          <motion.div
-            whileHover={{
-              scale: 1.05,
-            }}
-            whileTap={{
-              scale: 0.95,
-            }}
-          >
-            <Link
-              to='/register'
-              className='block border-2 border-[var(--theme-primary)] text-[var(--theme-primary)] px-8 py-3 rounded-lg font-semibold hover:bg-[var(--theme-primary)]/10 transition-colors'
-              aria-label='Registrieren'
-            >
-              REGISTRIEREN
-            </Link>
-          </motion.div>
-        </div>
-      </motion.div>
-      <div className='max-w-5xl w-full'>
-        <motion.h2
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
-          className='text-[var(--theme-primary)] text-xl font-semibold mb-8 text-center'
+    <PageContainer>
+      <HeroSection>
+        <LogoContainer
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          Unsere Funktionen
-        </motion.h2>
-        <motion.div
-          variants={container}
-          initial='hidden'
-          animate='show'
-          className='grid md:grid-cols-3 gap-6'
+          <LogoWrapper dangerouslySetInnerHTML={{ __html: processedSvg }} />
+        </LogoContainer>
+
+        <Subtitle
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
         >
-          {[
-            {
-              icon: <Star className='w-8 h-8 text-[var(--theme-primary)] mx-auto mb-4' />,
-              title: 'Bewertungen',
-              description:
-                'Bewerte deine Lieblingsserien und -filme und teile deine Meinung.',
-            },
-            {
-              icon: <Tv className='w-8 h-8 text-[var(--theme-primary)] mx-auto mb-4' />,
-              title: 'Entdeckungen',
-              description:
-                'Finde neue Serien und Filme, die perfekt zu deinem Geschmack passen.',
-            },
-            {
-              icon: <List className='w-8 h-8 text-[var(--theme-primary)] mx-auto mb-4' />,
-              title: 'Watchlist',
-              description:
-                'Verwalte deine persönliche Watchlist und behalte den Überblick.',
-            },
-          ].map((feature, index) => (
-            <motion.div
-              key={index}
-              variants={item}
-              className='bg-gray-900/30 p-6 rounded-xl text-center hover:bg-gray-900/40 transition-colors'
-            >
-              {feature.icon}
-              <h3 className='text-[var(--theme-primary)] font-medium mb-2'>
-                {feature.title}
-              </h3>
-              <p className='text-gray-400'>{feature.description}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </div>
+          Dein Entertainment Hub
+        </Subtitle>
+
+        <ButtonContainer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <StyledButton to="/register">
+            Jetzt Starten
+            <ArrowRight style={{ display: 'inline', marginLeft: '8px', verticalAlign: 'middle' }} size={18} />
+          </StyledButton>
+          <StyledButton to="/login" className="secondary">
+            Anmelden
+          </StyledButton>
+        </ButtonContainer>
+      </HeroSection>
+
+      <FeatureGrid>
+        {features.map((feature, index) => (
+          <FeatureCard
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
+          >
+            <FeatureIcon>{feature.icon}</FeatureIcon>
+            <FeatureTitle>{feature.title}</FeatureTitle>
+            <FeatureDescription>{feature.description}</FeatureDescription>
+          </FeatureCard>
+        ))}
+      </FeatureGrid>
+    </PageContainer>
   );
 };
+
 export default StartPage;
