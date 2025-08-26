@@ -66,7 +66,7 @@ const WatchedEpisodesDialog = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: colors.text.secondary }}
+            sx={{ fontWeight: 'bold', color: colors.text.accent }}
           >
             Kommende Episoden von {series.title}
           </Typography>
@@ -154,21 +154,8 @@ const WatchedEpisodesDialog = ({
                       component='span'
                       sx={{ fontSize: '0.8rem', color: colors.text.secondary }}
                     >
-                      Erschienen: {dateTimeDisplay}
+                      {dateTimeDisplay}
                     </Box>
-                    {episode.firstWatchedAt && (
-                      <Box
-                        component='span'
-                        sx={{ 
-                          fontSize: '0.8rem', 
-                          color: colors.text.secondary,
-                          display: 'block',
-                          mt: 0.5
-                        }}
-                      >
-                        Erstmals gesehen: {getFormattedDate(episode.firstWatchedAt)}
-                      </Box>
-                    )}
                   </Box>
                 </ListItem>
               );
