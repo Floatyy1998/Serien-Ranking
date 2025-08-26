@@ -656,12 +656,11 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ 
   onComplete, 
-  waitForCondition,
-  minDisplayTime = 7500 
+  waitForCondition
 }) => {
   const [isHiding, setIsHiding] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(3);
-  const [showContent, setShowContent] = useState(true); // Logo always there, just hidden by curtain
+  const [showContent] = useState(true); // Logo always there, just hidden by curtain
   const [curtainsOpen, setCurtainsOpen] = useState(false);
 
   useEffect(() => {
