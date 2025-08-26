@@ -76,20 +76,14 @@ export const colors = {
     light: '0 10px 20px -5px rgba(255, 255, 255, 0.1)',
   },
 
-  // Button-Farben
+  // Button-Farben (simplified for solid colors)
   button: {
-    primary: {
-      gradient: `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
-      gradientHover: `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%)`,
-    },
-    secondary: {
-      gradient: `linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)`,
-      gradientHover: `linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%)`,
-    },
-    error: {
-      gradient: `linear-gradient(135deg, rgba(255, 68, 68, 0.1) 0%, rgba(255, 68, 68, 0.05) 100%)`,
-      gradientHover: `linear-gradient(135deg, rgba(255, 68, 68, 0.15) 0%, rgba(255, 68, 68, 0.08) 100%)`,
-    },
+    primary: 'var(--theme-primary, #00fed7)',
+    primaryHover: 'var(--theme-accent, #ff6b6b)',
+    secondary: 'var(--theme-surface, #2d2d30)',
+    secondaryHover: 'var(--theme-surface, #333333)',
+    error: '#ff4444',
+    errorHover: '#cc3333',
   },
 } as const;
 

@@ -102,7 +102,7 @@ const MovieDialog = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: colors.text.accent }}
+            sx={{ fontWeight: 'bold', color: colors.text.secondary }}
           >
             {movie.title}
           </Typography>
@@ -157,16 +157,15 @@ const MovieDialog = ({
                 sx={{
                   fontSize: '1rem',
                   borderRadius: '12px',
-                  background: colors.button.secondary.gradient,
-                  border: `1px solid var(--theme-primary)30`,
-                  color: colors.text.primary,
+                  backgroundColor: `${colors.text.accent}20`,
+                  border: `1px solid ${colors.text.accent}`,
+                  color: colors.text.accent,
                   backdropFilter: 'blur(10px)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: colors.button.secondary.gradientHover,
-                    border: `1px solid var(--theme-primary)40`,
+                    backgroundColor: `${colors.text.accent}30`,
+                    border: `1px solid ${colors.text.accent}`,
                     transform: 'translateY(-2px)',
-                    boxShadow: colors.shadow.hover,
                   },
                 }}
               />
@@ -284,7 +283,7 @@ const MovieDialog = ({
             fullWidth
             sx={{
               maxWidth: 280,
-              background: colors.button.primary.gradient,
+              background: colors.button.primary,
               borderRadius: '12px',
               padding: '12px 24px',
               fontWeight: 600,
@@ -293,7 +292,7 @@ const MovieDialog = ({
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background: colors.button.primary.gradientHover,
+                background: colors.button.primaryHover,
                 transform: 'translateY(-2px)',
                 boxShadow: colors.shadow.buttonHover,
               },

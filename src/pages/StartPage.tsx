@@ -67,7 +67,7 @@ const StartPage = () => {
           >
             <Link
               to='/login'
-              className='block bg-[var(--theme-primary)] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[var(--theme-primary-hover)] transition-colors'
+              className='block bg-[var(--theme-primary)] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[var(--theme-accent)] transition-colors'
               aria-label='Login'
             >
               LOGIN

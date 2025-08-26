@@ -376,7 +376,7 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
             <Typography
               component='div'
               variant='h4'
-              sx={{ fontWeight: 'bold', color: colors.text.accent }}
+              sx={{ fontWeight: 'bold', color: colors.text.secondary }}
             >
               Neuer Tag, neue Folgen!
             </Typography>

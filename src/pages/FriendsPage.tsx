@@ -289,8 +289,9 @@ export const FriendsPage: React.FC = () => {
           label='Anfrage gesendet'
           size='small'
           sx={{
-            backgroundColor: 'var(--theme-primary)',
-            color: colors.text.secondary,
+            backgroundColor: `${colors.text.accent}20`,
+            borderColor: colors.text.accent,
+            color: colors.text.accent,
             fontWeight: 500,
           }}
         />
@@ -396,7 +397,7 @@ export const FriendsPage: React.FC = () => {
             borderRadius: 2,
             boxShadow: `0 4px 12px ${colors.overlay.medium}`,
             '&:hover': {
-              background: 'var(--theme-primary-hover)',
+              background: 'var(--theme-accent)',
               boxShadow: `0 6px 16px ${colors.overlay.medium}`,
               transform: 'translateY(-2px)',
             },
@@ -592,8 +593,9 @@ export const FriendsPage: React.FC = () => {
                             color='success'
                             sx={{
                               mt: 1,
-                              backgroundColor: 'var(--theme-primary)',
-                              color: colors.background.default,
+                              backgroundColor: `${colors.text.accent}20`,
+                              borderColor: colors.text.accent,
+                              color: colors.text.accent,
                               fontWeight: 'bold',
                             }}
                           />
@@ -636,7 +638,7 @@ export const FriendsPage: React.FC = () => {
                             bgcolor: 'var(--theme-primary)',
                             color: '#000',
                             '&:hover': {
-                              bgcolor: 'var(--theme-primary-hover)',
+                              bgcolor: 'var(--theme-accent)',
                             },
                           }}
                         >

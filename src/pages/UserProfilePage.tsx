@@ -614,8 +614,9 @@ export const UserProfilePage: React.FC = () => {
                   label='Online'
                   size='small'
                   sx={{
-                    backgroundColor: 'var(--theme-primary)',
-                    color: colors.background.default,
+                    backgroundColor: `${colors.text.accent}20`,
+                    borderColor: colors.text.accent,
+                    color: colors.text.accent,
                     fontWeight: 'bold',
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 14, md: 20 },
@@ -633,11 +634,14 @@ export const UserProfilePage: React.FC = () => {
                   size='small'
                   variant='outlined'
                   sx={{
+                    backgroundColor: profileData.isFriend
+                      ? `${colors.text.accent}20`
+                      : 'transparent',
                     borderColor: profileData.isFriend
-                      ? 'var(--theme-primary)'
+                      ? colors.text.accent
                       : colors.border.default,
                     color: profileData.isFriend
-                      ? 'var(--theme-primary)'
+                      ? colors.text.accent
                       : colors.text.muted,
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 14, md: 20 },
@@ -708,8 +712,9 @@ export const UserProfilePage: React.FC = () => {
                     label='Online'
                     size='small'
                     sx={{
-                      backgroundColor: 'var(--theme-primary)',
-                      color: '#ffffff',
+                      backgroundColor: `${colors.text.accent}20`,
+                      borderColor: colors.text.accent,
+                      color: colors.text.accent,
                       fontWeight: 'bold',
                     }}
                   />
@@ -720,11 +725,14 @@ export const UserProfilePage: React.FC = () => {
                     size='small'
                     variant='outlined'
                     sx={{
+                      backgroundColor: profileData.isFriend
+                        ? `${colors.text.accent}20`
+                        : 'transparent',
                       borderColor: profileData.isFriend
-                        ? 'var(--theme-primary)'
+                        ? colors.text.accent
                         : '#666',
                       color: profileData.isFriend
-                        ? 'var(--theme-primary)'
+                        ? colors.text.accent
                         : '#ccc',
                     }}
                   />
@@ -763,7 +771,7 @@ export const UserProfilePage: React.FC = () => {
               borderRadius: 2,
               boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: 'var(--theme-primary-hover)',
+                background: 'var(--theme-accent)',
                 boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },
@@ -795,7 +803,7 @@ export const UserProfilePage: React.FC = () => {
               borderRadius: 2,
               boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: 'var(--theme-primary-hover)',
+                background: 'var(--theme-accent)',
                 boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },

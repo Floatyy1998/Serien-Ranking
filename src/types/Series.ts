@@ -80,6 +80,7 @@ export interface Series {
       name: string;
       watched: boolean;
       watchCount?: number;
+      firstWatchedAt?: string;
     }[];
   }[];
   title: string;

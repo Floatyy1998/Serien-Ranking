@@ -383,7 +383,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: colors.text.accent }}
+            sx={{ fontWeight: 'bold', color: colors.text.secondary }}
           >
             Profil bearbeiten
           </Typography>
@@ -692,7 +692,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                         minHeight: { xs: 48, sm: 40 },
                         fontSize: { xs: '0.9rem', sm: '0.875rem' },
                         background:
-                          colors.button.secondary.gradient,
+                          colors.button.secondary,
                         borderRadius: '12px',
                         padding: '12px 24px',
                         color: colors.text.primary,
@@ -703,7 +703,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                         transition: 'all 0.3s ease',
                         '&:hover': {
                           background:
-                            colors.button.secondary.gradientHover,
+                            colors.button.secondaryHover,
                           border: `1px solid ${colors.border.light}`,
                           transform: 'translateY(-2px)',
                         },
@@ -763,20 +763,18 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                       sx={{
                         minHeight: { xs: 48, sm: 40 },
                         fontSize: { xs: '0.9rem', sm: '0.875rem' },
-                        background:
-                          `linear-gradient(135deg, var(--theme-primary)10 0%, var(--theme-primary)05 100%)`,
+                        background: colors.background.surface,
                         borderRadius: '12px',
                         padding: '12px 24px',
-                        color: 'var(--theme-primary)',
+                        color: colors.primary,
                         fontWeight: 500,
                         textTransform: 'none',
-                        border: `1px solid var(--theme-primary)30`,
+                        border: `1px solid ${colors.border.light}`,
                         backdropFilter: 'blur(10px)',
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          background:
-                            `linear-gradient(135deg, var(--theme-primary)15 0%, var(--theme-primary)10 100%)`,
-                          border: `1px solid var(--theme-primary)50`,
+                          background: colors.background.surfaceHover,
+                          border: `1px solid ${colors.border.primary}`,
                           transform: 'translateY(-2px)',
                         },
                       }}
@@ -842,7 +840,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                       borderColor: 'var(--theme-primary)',
                       '&:hover': {
                         backgroundColor: 'transparent',
-                        borderColor: 'var(--theme-primary-hover)',
+                        borderColor: 'var(--theme-accent)',
                       },
                     }}
                   >
@@ -963,7 +961,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: 'var(--theme-primary-hover)',
+                  background: 'var(--theme-accent)',
                   transform: 'translateY(-2px)',
                   boxShadow: colors.shadow.buttonHover,
                 },
@@ -1046,7 +1044,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: 'var(--theme-primary-hover)',
+                  background: 'var(--theme-accent)',
                   transform: 'translateY(-2px)',
                   boxShadow: colors.shadow.buttonHover,
                 },

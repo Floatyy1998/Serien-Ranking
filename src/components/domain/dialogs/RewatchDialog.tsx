@@ -11,6 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import { colors } from '../../../theme';
 
 interface RewatchDialogProps {
   open: boolean;
@@ -69,14 +70,12 @@ const RewatchDialog = ({
           sx: {
             minHeight: 'auto',
             maxHeight: '40vh',
-            background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
+            background: colors.background.gradient.dark,
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${colors.border.subtle}`,
             overflow: 'hidden',
-            boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
-            color: 'white',
+            boxShadow: colors.shadow.dialog,
+            color: colors.text.secondary,
           },
         },
       }}
@@ -85,11 +84,10 @@ const RewatchDialog = ({
         sx={{
           textAlign: 'center',
           position: 'relative',
-          background:
-            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
+          background: colors.overlay.dark,
           backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
+          borderBottom: `1px solid ${colors.border.lighter}`,
+          color: colors.text.secondary,
           fontWeight: 600,
           fontSize: '1.25rem',
         }}
@@ -105,9 +103,9 @@ const RewatchDialog = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            sx={{ fontWeight: 'bold', color: colors.primary }}
           >
-            {itemLabel} bereits gesehen
+            {itemLabel} bearbeiten
           </Typography>
         </Box>
 
@@ -118,13 +116,13 @@ const RewatchDialog = ({
             right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
+            color: colors.text.muted,
+            background: colors.overlay.medium,
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
+              background: colors.overlay.white,
+              color: colors.text.secondary,
               transform: 'translateY(-50%) scale(1.05)',
             },
           }}
@@ -135,19 +133,17 @@ const RewatchDialog = ({
       <DialogContent
         sx={{
           p: 0,
-          background:
-            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
+          background: colors.background.gradient.dark,
           backdropFilter: 'blur(10px)',
-          color: '#ffffff',
+          color: colors.text.secondary,
         }}
       >
         <Box sx={{ p: 3 }}>
           <DialogContentText>
-            Du hast "{itemName}" bereits {currentWatchCount}x gesehen.
+            "{itemName}" wurde {currentWatchCount}x gesehen.
             <br />
             <br />
-            Möchtest du diese {itemLabel.toLowerCase()} erneut ansehen oder den
-            Zähler reduzieren?
+            Was möchtest du tun?
           </DialogContentText>
         </Box>
       </DialogContent>
@@ -156,9 +152,8 @@ const RewatchDialog = ({
           justifyContent: 'space-between',
           px: 3,
           pb: 2,
-          background:
-            'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 100%)',
-          borderTop: '1px solid rgba(255,255,255,0.05)',
+          background: colors.background.gradient.light,
+          borderTop: `1px solid ${colors.border.lighter}`,
         }}
       >
         <Button
@@ -168,19 +163,24 @@ const RewatchDialog = ({
           disabled={loading}
         >
           {currentWatchCount > 2
-            ? `Reduzieren auf ${currentWatchCount - 1}x`
+            ? `Auf ${currentWatchCount - 1}x reduzieren`
             : currentWatchCount === 2
-            ? 'Reduzieren auf 1x'
-            : 'Als ungesehen markieren'}
+            ? 'Auf 1x reduzieren'
+            : 'Als nicht gesehen markieren'}
         </Button>
         <Button
           onClick={handleRewatch}
-          color='primary'
           variant='contained'
           disabled={loading}
           autoFocus
+          sx={{
+            background: colors.primary,
+            '&:hover': {
+              background: colors.text.accent,
+            },
+          }}
         >
-          Erneut ansehen ({currentWatchCount + 1}x)
+          Nochmal gesehen ({currentWatchCount + 1}x)
         </Button>
       </DialogActions>
     </Dialog>

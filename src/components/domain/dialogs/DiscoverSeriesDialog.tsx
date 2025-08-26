@@ -375,7 +375,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               p: 3,
               mb: 3,
               background:
-                colors.button.secondary.gradient,
+                colors.button.secondary,
               backdropFilter: 'blur(10px)',
               borderRadius: '16px',
               border: `1px solid ${colors.border.subtle}`,
@@ -442,7 +442,16 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                           sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
                         >
                           {selected.map((value) => (
-                            <Chip key={value} label={value} size='small' />
+                            <Chip 
+                              key={value} 
+                              label={value} 
+                              size='small'
+                              sx={{
+                                backgroundColor: `${colors.text.accent}20`,
+                                borderColor: colors.text.accent,
+                                color: colors.text.accent,
+                              }}
+                            />
                           ))}
                         </Box>
                       )}
@@ -610,6 +619,11 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                               key={value}
                               label={countryMap[value] || value}
                               size='small'
+                              sx={{
+                                backgroundColor: `${colors.text.accent}20`,
+                                borderColor: colors.text.accent,
+                                color: colors.text.accent,
+                              }}
                             />
                           ))}
                         </Box>
@@ -704,7 +718,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                   onClick={() => handleSearch()}
                   size='large'
                   sx={{
-                    background: colors.button.primary.gradient,
+                    background: colors.button.primary,
                     borderRadius: '12px',
                     padding: '12px 24px',
                     color: colors.background.default,
@@ -714,7 +728,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                     backdropFilter: 'blur(10px)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      background: colors.button.primary.gradientHover,
+                      background: colors.button.primaryHover,
                       transform: 'translateY(-2px)',
                       boxShadow: colors.shadow.buttonHover,
                     },
@@ -728,7 +742,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                   onClick={handleClearFilters}
                   size='large'
                   sx={{
-                    background: colors.button.secondary.gradient,
+                    background: colors.button.secondary,
                     borderRadius: '12px',
                     padding: '12px 24px',
                     color: colors.text.secondary,
@@ -738,7 +752,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                     backdropFilter: 'blur(10px)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      background: colors.button.secondary.gradientHover,
+                      background: colors.button.secondaryHover,
                       border: `1px solid ${colors.border.subtle}`,
                       transform: 'translateY(-2px)',
                     },
@@ -756,7 +770,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               sx={{
                 p: 3,
                 background:
-                  colors.button.secondary.gradient,
+                  colors.button.secondary,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
                 border: `1px solid ${colors.border.subtle}`,
@@ -805,7 +819,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 p: 4,
                 textAlign: 'center',
                 background:
-                  colors.button.secondary.gradient,
+                  colors.button.secondary,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
                 border: `1px solid ${colors.border.subtle}`,
@@ -835,7 +849,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
           onClick={handleClose}
           sx={{
             background:
-              colors.button.secondary.gradient,
+              colors.button.secondary,
             borderRadius: '12px',
             padding: '12px 24px',
             color: colors.text.secondary,
@@ -846,7 +860,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
             transition: 'all 0.3s ease',
             '&:hover': {
               background:
-                colors.button.secondary.gradientHover,
+                colors.button.secondaryHover,
               border: `1px solid ${colors.overlay.white}`,
               transform: 'translateY(-2px)',
             },
@@ -871,7 +885,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
               sx={{
-                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
+                background: colors.primary,
                 borderRadius: '12px',
                 padding: '12px 24px',
                 color: colors.text.secondary,
@@ -882,8 +896,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 transition: 'all 0.3s ease',
                 minWidth: '50px',
                 '&:hover': {
-                  background:
-                    `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
+                  background: colors.text.accent,
                   transform: 'translateY(-2px)',
                   boxShadow: colors.shadow.buttonHover,
                 },
@@ -897,7 +910,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 px: 2,
                 py: 1,
                 background:
-                  colors.button.secondary.gradient,
+                  colors.button.secondary,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
                 border: `1px solid ${colors.border.subtle}`,
@@ -913,7 +926,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
               sx={{
-                background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
+                background: colors.primary,
                 borderRadius: '12px',
                 padding: '12px 24px',
                 color: colors.text.secondary,
@@ -924,8 +937,7 @@ const DiscoverSeriesDialog = ({ open, onClose }: DiscoverSeriesDialogProps) => {
                 transition: 'all 0.3s ease',
                 minWidth: '50px',
                 '&:hover': {
-                  background:
-                    `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
+                  background: colors.text.accent,
                   transform: 'translateY(-2px)',
                   boxShadow: colors.shadow.buttonHover,
                 },

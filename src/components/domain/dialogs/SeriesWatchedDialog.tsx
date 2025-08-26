@@ -1,8 +1,5 @@
 import { Close as CloseIcon } from '@mui/icons-material';
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
   Dialog,
@@ -12,40 +9,38 @@ import {
   DialogTitle,
   IconButton,
   Typography,
+  Tabs,
+  Tab,
+  LinearProgress,
+  Chip,
+  useMediaQuery,
+  useTheme,
+  Badge,
 } from '@mui/material';
-import { Check, ChevronDown } from 'lucide-react';
+import {
+  Check,
+  Calendar,
+  Eye,
+  Award,
+  PlayCircle,
+  RotateCcw,
+  Clock,
+} from 'lucide-react';
 import { useState } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../../types/Series';
 import { getUnifiedEpisodeDate } from '../../../lib/date/episodeDate.utils';
+import { colors } from '../../../theme';
 import RewatchDialog from './RewatchDialog';
-import { NextEpisodeDisplay } from './shared/SharedDialogComponents';
 
 // Hilfsfunktion für Rewatch-Farben
 const getRewatchColor = (watchCount: number): string => {
-  switch (watchCount) {
-    case 2:
-      return '#ff9800'; // Orange
-    case 3:
-      return '#f44336'; // Rot
-    case 4:
-      return '#9c27b0'; // Lila
-    case 5:
-      return '#3f51b5'; // Indigo
-    case 6:
-      return '#2196f3'; // Blau
-    case 7:
-      return '#00bcd4'; // Cyan
-    case 8:
-      return '#4caf50'; // Grün
-    case 9:
-      return '#8bc34a'; // Hellgrün
-    case 10:
-      return '#cddc39'; // Lime
-    default:
-      return watchCount > 10 ? '#ffc107' : 'var(--theme-primary)'; // Gold für >10, sonst Standard
-  }
+  if (watchCount <= 1) return colors.primary;
+  if (watchCount === 2) return colors.text.accent;
+  if (watchCount === 3) return colors.text.accent;
+  return colors.status.warning;
 };
+
 interface SeriesWatchedDialogProps {
   open: boolean;
   onClose: () => void;
@@ -53,18 +48,13 @@ interface SeriesWatchedDialogProps {
   user: any;
   handleWatchedToggleWithConfirmation: (
     seasonNumber: number,
-    episodeId: number,
-    forceWatched?: boolean,
-    isRewatch?: boolean,
-    forceUnwatch?: boolean
-  ) => void;
-  handleBatchWatchedToggle?: (confirmSeason: number) => void;
-  handleEpisodeBatchWatchedToggle?: (
-    seasonNumber: number,
     episodeId: number
   ) => void;
+  handleBatchWatchedToggle?: (seasonNumber: number) => void;
+  handleEpisodeBatchWatchedToggle?: (episodeIds: number[], watched: boolean) => void;
   isReadOnly?: boolean;
 }
+
 const SeriesWatchedDialog = ({
   open,
   onClose,
@@ -74,7 +64,9 @@ const SeriesWatchedDialog = ({
   handleEpisodeBatchWatchedToggle,
   isReadOnly = false,
 }: SeriesWatchedDialogProps) => {
-  const [expanded, setExpanded] = useState<number | false>(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [selectedTab, setSelectedTab] = useState<number>(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmSeason, setConfirmSeason] = useState<number | null>(null);
   const [episodeConfirmOpen, setEpisodeConfirmOpen] = useState(false);
@@ -86,60 +78,64 @@ const SeriesWatchedDialog = ({
   const [rewatchItem, setRewatchItem] = useState<{
     type: 'episode' | 'season';
     name: string;
-    seasonNumber: number;
+    seasonNumber?: number;
     episodeId?: number;
     currentWatchCount: number;
   } | null>(null);
-  // React 19: Automatische Memoization - kein useMemo nötig
-  const uniqueSeasons = (() =>
-    series?.seasons?.filter(
-      (season, index, self) =>
-        index === self.findIndex((s) => s.seasonNumber === season.seasonNumber)
-    ))();
 
-  // React 19: Automatische Memoization - kein useMemo nötig
-  const nextUnwatchedEpisode = (() => {
-    if (!series.seasons || series.seasons.length === 0) {
-      return null;
-    }
-    for (const season of series.seasons) {
-      for (let i = 0; i < season?.episodes?.length; i++) {
-        const episode = season.episodes[i];
-        if (!episode.watched) {
-          return {
-            ...episode, // Spreade erst das originale Episode-Objekt
-            seasonNumber: season.seasonNumber,
-            episodeNumber: i + 1,
-          };
-        }
-      }
-    }
-    return null;
-  })();
+  const uniqueSeasons = series.seasons;
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setSelectedTab(newValue);
+  };
 
   const handleConfirmYes = () => {
-    if (confirmSeason !== null && handleBatchWatchedToggle) {
-      handleBatchWatchedToggle(confirmSeason);
+    if (confirmSeason !== null) {
+      handleBatchWatchedToggle?.(confirmSeason);
+      setConfirmOpen(false);
+      setConfirmSeason(null);
     }
-    setConfirmOpen(false);
-    setConfirmSeason(null);
   };
+
   const handleConfirmNo = () => {
     if (confirmSeason !== null) {
-      handleWatchedToggleWithConfirmation(confirmSeason, -1, true);
+      const season = series.seasons.find((s) => s.seasonNumber === confirmSeason);
+      if (season) {
+        const allUnwatchedEpisodeIds = season.episodes
+          ?.filter((e) => !e.watched)
+          .map((e) => e.id) || [];
+        handleEpisodeBatchWatchedToggle?.(allUnwatchedEpisodeIds, true);
+      }
+      setConfirmOpen(false);
+      setConfirmSeason(null);
     }
-    setConfirmOpen(false);
-    setConfirmSeason(null);
   };
+
   const handleEpisodeConfirmYes = () => {
-    if (confirmEpisode && handleEpisodeBatchWatchedToggle) {
-      handleEpisodeBatchWatchedToggle(
-        confirmEpisode.seasonNumber,
-        confirmEpisode.episodeId
-      );
+    if (confirmEpisode) {
+      const { seasonNumber, episodeId } = confirmEpisode;
+      const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
+      if (season) {
+        const episodeIndex = season.episodes?.findIndex((e) => e.id === episodeId) ?? -1;
+        if (episodeIndex !== -1) {
+          const previousEpisodeIds = season.episodes
+            ?.slice(0, episodeIndex + 1)
+            .filter((e) => !e.watched)
+            .map((e) => e.id) || [];
+          
+          const previousSeasonEpisodeIds = series.seasons
+            .filter((s) => s.seasonNumber < seasonNumber)
+            .flatMap((s) => 
+              s.episodes?.filter((e) => !e.watched).map((e) => e.id) || []
+            );
+          
+          const allEpisodeIds = [...previousSeasonEpisodeIds, ...previousEpisodeIds];
+          handleEpisodeBatchWatchedToggle?.(allEpisodeIds, true);
+        }
+      }
+      setEpisodeConfirmOpen(false);
+      setConfirmEpisode(null);
     }
-    setEpisodeConfirmOpen(false);
-    setConfirmEpisode(null);
   };
 
   const handleEpisodeConfirmNo = () => {
@@ -148,51 +144,49 @@ const SeriesWatchedDialog = ({
         confirmEpisode.seasonNumber,
         confirmEpisode.episodeId
       );
+      setEpisodeConfirmOpen(false);
+      setConfirmEpisode(null);
     }
-    setEpisodeConfirmOpen(false);
-    setConfirmEpisode(null);
   };
 
   const handleSeasonClick = (seasonNumber: number, allWatched: boolean) => {
-    if (!isReadOnly) {
-      if (!allWatched) {
-        const allPreviousWatched = uniqueSeasons
-          ?.filter((s) => s.seasonNumber < seasonNumber)
-          .every((s) => s.episodes.every((e) => e.watched));
-        if (allPreviousWatched) {
-          handleWatchedToggleWithConfirmation(seasonNumber, -1, true);
-        } else {
-          setConfirmSeason(seasonNumber);
-          setConfirmOpen(true);
-        }
+    if (isReadOnly) return;
+
+    const season = series.seasons.find((s) => s.seasonNumber === seasonNumber);
+    if (!season) return;
+
+    if (!allWatched) {
+      const hasPreviousSeasonUnwatched = series.seasons
+        .filter((s) => s.seasonNumber < seasonNumber)
+        .some((s) => s.episodes?.some((e) => !e.watched));
+
+      if (hasPreviousSeasonUnwatched) {
+        setConfirmSeason(seasonNumber);
+        setConfirmOpen(true);
       } else {
-        // Wenn alle Episoden der Staffel gesehen wurden, zeige Rewatch-Dialog
-        const season = uniqueSeasons?.find(
-          (s) => s.seasonNumber === seasonNumber
-        );
-        if (season) {
-          const totalWatchCount = season.episodes.reduce(
-            (sum, ep) => sum + (ep.watchCount || 1),
-            0
-          );
-          const avgWatchCount = Math.round(
-            totalWatchCount / season.episodes.length
-          );
-          setRewatchItem({
-            type: 'season',
-            name: `Staffel ${seasonNumber + 1}`,
-            seasonNumber,
-            currentWatchCount: avgWatchCount,
-          });
-          setRewatchDialogOpen(true);
-        }
+        const allUnwatchedEpisodeIds = season.episodes
+          ?.filter((e) => !e.watched)
+          .map((e) => e.id) || [];
+        handleEpisodeBatchWatchedToggle?.(allUnwatchedEpisodeIds, true);
+      }
+    } else {
+      const avgWatchCount = Math.round(
+        (season.episodes?.reduce((acc, ep) => acc + (ep.watchCount || 1), 0) || 0) /
+        (season.episodes?.length || 1)
+      );
+      
+      if (avgWatchCount >= 1) {
+        setRewatchItem({
+          type: 'season',
+          name: `Staffel ${seasonNumber + 1}`,
+          seasonNumber,
+          currentWatchCount: avgWatchCount,
+        });
+        setRewatchDialogOpen(true);
       }
     }
   };
-  const handleAccordionChange =
-    (panel: number) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false);
-    };
+
   const handleEpisodeClick = (
     seasonNumber: number,
     episodeId: number,
@@ -206,7 +200,6 @@ const SeriesWatchedDialog = ({
     const episode = season.episodes[episodeIndex];
     if (!episode) return;
 
-    // Wenn Episode bereits gesehen wurde, zeige Rewatch-Dialog
     if (episode.watched) {
       const watchCount = episode.watchCount || 1;
       setRewatchItem({
@@ -220,12 +213,10 @@ const SeriesWatchedDialog = ({
       return;
     }
 
-    // Prüfe ob vorherige Episoden in dieser Staffel ungesehen sind
     const hasPreviousUnwatched = season.episodes
       .slice(0, episodeIndex)
       .some((e) => !e.watched);
 
-    // Prüfe ob vorherige Staffeln komplett ungesehen sind
     const hasPreviousSeasonUnwatched = series.seasons
       .filter((s) => s.seasonNumber < seasonNumber)
       .some((s) => s.episodes.some((e) => !e.watched));
@@ -237,363 +228,582 @@ const SeriesWatchedDialog = ({
       handleWatchedToggleWithConfirmation(seasonNumber, episodeId);
     }
   };
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth='lg'
-      fullWidth
-      slotProps={{
-        paper: {
-          sx: {
-            minHeight: '80vh',
-            background:
-              'linear-gradient(145deg, #1a1a1a 0%, #2d2d30 50%, #1a1a1a 100%)',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            overflow: 'hidden',
-            boxShadow:
-              '0 16px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1)',
-            color: 'white',
-          },
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          textAlign: 'center',
-          position: 'relative',
-          background:
-            'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
-          backdropFilter: 'blur(15px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          color: '#ffffff',
-          fontWeight: 600,
-          fontSize: '1.25rem',
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 2,
-          }}
-        >
-          <Typography
-            component='div'
-            variant='h4'
-            sx={{ fontWeight: 'bold', color: '#ffd700' }}
-          >
-            Gesehene Episoden von {series.title}
-          </Typography>
-        </Box>
 
-        <IconButton
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 16,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.05)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '12px',
-            '&:hover': {
-              background: 'rgba(255,255,255,0.1)',
-              color: '#ffffff',
-              transform: 'translateY(-50%) scale(1.05)',
+  // Berechne Fortschritt
+  const totalEpisodes = uniqueSeasons?.reduce(
+    (acc, season) => acc + (season.episodes?.length || 0),
+    0
+  ) || 0;
+  const watchedEpisodes = uniqueSeasons?.reduce(
+    (acc, season) => acc + (season.episodes?.filter((ep) => ep.watched)?.length || 0),
+    0
+  ) || 0;
+  const progressPercentage = totalEpisodes > 0 ? (watchedEpisodes / totalEpisodes) * 100 : 0;
+
+  // Berechne Statistiken
+  const totalWatchTime = uniqueSeasons?.reduce(
+    (acc, season) => acc + season.episodes?.reduce(
+      (epAcc, ep) => {
+        if (!ep.watched) return epAcc;
+        // Verwende immer series.episodeRuntime
+        const runtime = series.episodeRuntime || 45;
+        return epAcc + (ep.watchCount || 1) * runtime;
+      }, 0
+    ) || 0,
+    0
+  ) || 0;
+  const hoursWatched = Math.round(totalWatchTime / 60);
+
+  return (
+    <>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth='lg'
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              maxHeight: '95vh',
+              background: colors.background.dialog,
+              borderRadius: isMobile ? '16px 16px 0 0' : '16px',
+              border: `1px solid ${colors.border.lighter}`,
+              overflow: 'hidden',
+              boxShadow: colors.shadow.dialog,
+              color: colors.text.secondary,
             },
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent
-        sx={{
-          p: 0,
-          background:
-            'linear-gradient(180deg, rgba(26,26,26,0.95) 0%, rgba(45,45,48,0.95) 50%, rgba(26,26,26,0.95) 100%)',
-          backdropFilter: 'blur(10px)',
-          color: '#ffffff',
+          },
         }}
       >
-        {nextUnwatchedEpisode ? (
-          <NextEpisodeDisplay episode={nextUnwatchedEpisode} />
-        ) : (
-          <>
-            <Confetti
-              style={{ width: '100%', height: '100%', position: 'absolute' }}
-              recycle={false}
-              numberOfPieces={1000}
-              gravity={2}
-            />
-            <Box className='mb-6 rounded-xl border border-[var(--theme-primary)]/8 bg-black/40 p-3 text-sm backdrop-blur-sm'>
-              <div
-                style={{ textDecoration: 'underline' }}
-                className='font-medium text-[var(--theme-primary)]'
-              >
-                Glückwunsch! Du hast alle Episoden gesehen.
-              </div>
-            </Box>
-          </>
-        )}
-        <div className='space-y-2'>
-          {uniqueSeasons?.map((season) => {
-            const allWatched = season.episodes?.every(
-              (episode) => episode.watched
-            );
-            return (
-              <Accordion
-                key={season.seasonNumber}
-                expanded={expanded === season.seasonNumber}
-                onChange={handleAccordionChange(season.seasonNumber)}
-              >
-                <AccordionSummary
-                  expandIcon={
-                    <ChevronDown
-                      size={20}
-                      style={{
-                        color: 'var(--theme-primary)',
-                        transition: 'transform 0.2s ease-in-out',
-                      }}
-                    />
-                  }
+        <DialogTitle
+          sx={{
+            position: 'relative',
+            background: colors.background.gradient.dark,
+            borderBottom: `1px solid ${colors.border.lighter}`,
+            padding: isMobile ? '12px' : '20px',
+          }}
+        >
+          <IconButton
+            onClick={onClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: colors.text.muted,
+              zIndex: 1,
+              '&:hover': {
+                background: colors.overlay.light,
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pr: 4 }}>
+            {/* Header mit Titel und Stats */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              {series.poster?.poster && !isMobile && (
+                <Box
+                  component='img'
+                  src={series.poster.poster}
+                  alt={series.title}
                   sx={{
-                    backgroundColor: '#1f1f1f',
-                    textAlign: 'center',
+                    width: 50,
+                    height: 75,
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                    boxShadow: colors.shadow.card,
+                  }}
+                />
+              )}
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant='h5'
+                  sx={{
+                    fontWeight: 700,
+                    color: colors.text.secondary,
+                    fontSize: isMobile ? '1.2rem' : '1.5rem',
+                    lineHeight: 1.2,
+                    mb: 0.5,
                   }}
                 >
-                  <div className='flex items-center gap-3'>
-                    <span className='text-lg font-medium'>
-                      Staffel {season.seasonNumber + 1}
-                    </span>
-                    <span
-                      className='text-sm text-gray-400'
-                      style={{
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                  {series.title}
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  <Chip
+                    icon={<Eye size={14} />}
+                    label={`${watchedEpisodes}/${totalEpisodes}`}
+                    size='small'
+                    sx={{
+                      height: 24,
+                      fontSize: '0.75rem',
+                      backgroundColor: `${colors.text.accent}20`,
+                      color: colors.text.accent,
+                      border: `1px solid ${colors.text.accent}`,
+                      '& .MuiChip-icon': { color: colors.text.accent },
+                    }}
+                  />
+                  {hoursWatched > 0 && (
+                    <Chip
+                      icon={<Clock size={14} />}
+                      label={`${hoursWatched}h`}
+                      size='small'
+                      sx={{
+                        height: 24,
+                        fontSize: '0.75rem',
+                        backgroundColor: `${colors.text.accent}20`,
+                        color: colors.text.accent,
+                        border: `1px solid ${colors.text.accent}`,
+                        '& .MuiChip-icon': { color: colors.text.accent },
                       }}
-                    >
-                      {`${
-                        season.episodes && Array.isArray(season.episodes)
-                          ? season.episodes.filter((e) => e.watched).length
-                          : 0
-                      }/${
-                        season.episodes && Array.isArray(season.episodes)
-                          ? season.episodes.length
-                          : 0
-                      }  Episoden`}
-                      <span className='hidden sm:inline'> gesehen</span>
-                    </span>
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSeasonClick(season.seasonNumber, allWatched);
+                    />
+                  )}
+                  {progressPercentage === 100 && (
+                    <Chip
+                      icon={<Award size={14} />}
+                      label='Komplett'
+                      size='small'
+                      sx={{
+                        height: 24,
+                        fontSize: '0.75rem',
+                        background: `${colors.text.accent}15`,
+                        color: colors.text.accent,
+                        border: `1px solid ${colors.text.accent}`,
+                        '& .MuiChip-icon': { color: colors.text.accent },
                       }}
-                      style={{
-                        color: allWatched
-                          ? (() => {
-                              const minWatchCount = Math.min(
-                                ...season.episodes.map(
-                                  (ep) => ep.watchCount || 1
-                                )
-                              );
-                              return minWatchCount > 1
-                                ? getRewatchColor(minWatchCount)
-                                : 'var(--theme-primary)';
-                            })()
-                          : 'rgba(255, 255, 255, 0.8)',
-                        transition: 'all 0.2s ease-in-out',
-                        cursor: isReadOnly ? 'default' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {allWatched ? (
-                        (() => {
-                          const minWatchCount = Math.min(
-                            ...season.episodes.map((ep) => ep.watchCount || 1)
-                          );
-                          return minWatchCount > 1 ? (
-                            `${minWatchCount}x`
-                          ) : (
-                            <Check size={18} />
-                          );
-                        })()
-                      ) : (
-                        <Check size={18} />
-                      )}
-                    </div>
-                  </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                  {season.episodes?.map((episode, index) => (
-                    <div
-                      key={episode.id}
-                      className='group flex items-center justify-between border-b border-[var(--theme-primary)]/5 p-4 last:border-0 hover:bg-[var(--theme-primary)]/[0.02]'
-                    >
-                      <div className='flex items-center space-x-4'>
-                        <span className='text-sm font-medium text-[var(--theme-primary)]'>
-                          {index + 1}.
-                        </span>
-                        <span className='font-medium text-gray-300 group-hover:text-[var(--theme-primary)]/90'>
-                          {episode.name}
-                        </span>
-                        <span className='text-sm text-gray-500'>
-                          {getUnifiedEpisodeDate(episode.air_date)}
-                        </span>
-                      </div>
-                      <div
-                        onClick={() =>
-                          handleEpisodeClick(
-                            season.seasonNumber,
-                            episode.id,
-                            index
-                          )
-                        }
-                        style={{
-                          color: episode.watched
-                            ? episode.watchCount && episode.watchCount > 1
-                              ? getRewatchColor(episode.watchCount)
-                              : 'var(--theme-primary)'
-                            : 'rgba(255, 255, 255, 0.8)',
-                          transition: 'all 0.2s ease-in-out',
-                          cursor: isReadOnly ? 'default' : 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          fontSize: '14px',
-                          fontWeight: 'bold',
+                    />
+                  )}
+                </Box>
+              </Box>
+            </Box>
+            
+            {/* Progress Bar */}
+            <Box sx={{ width: '100%' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                <Typography
+                  variant='caption'
+                  sx={{
+                    color: colors.text.muted,
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Fortschritt
+                </Typography>
+                <Typography
+                  variant='caption'
+                  sx={{
+                    color: progressPercentage === 100 ? colors.text.accent : progressPercentage >= 80 ? colors.text.accent : colors.primary,
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {Math.round(progressPercentage)}%
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant='determinate'
+                value={progressPercentage}
+                sx={{
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: colors.overlay.light,
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 3,
+                    background: progressPercentage === 100
+                      ? `linear-gradient(90deg, ${colors.text.accent} 0%, ${colors.primary} 100%)`
+                      : progressPercentage >= 80
+                      ? `linear-gradient(90deg, ${colors.primary} 0%, ${colors.text.accent} 100%)`
+                      : colors.primary,
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, background: colors.background.gradient.light }}>
+          {/* Confetti wenn komplett */}
+          {progressPercentage === 100 && (
+            <Confetti
+              style={{ width: '100%', height: '100%', position: 'fixed', zIndex: 9999 }}
+              recycle={false}
+              numberOfPieces={200}
+              gravity={0.3}
+            />
+          )}
+
+          {/* Tabs für Staffeln */}
+          <Box sx={{ borderBottom: 1, borderColor: colors.border.lighter, background: colors.overlay.dark }}>
+            <Tabs
+              value={selectedTab}
+              onChange={handleTabChange}
+              variant='scrollable'
+              scrollButtons='auto'
+              sx={{
+                minHeight: 48,
+                '& .MuiTab-root': {
+                  color: colors.text.muted,
+                  minHeight: 48,
+                  textTransform: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  px: 2,
+                  '&.Mui-selected': {
+                    color: colors.primary,
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: colors.primary,
+                  height: 3,
+                },
+              }}
+            >
+              {uniqueSeasons?.map((season) => {
+                const watchedCount = season.episodes?.filter(e => e.watched).length || 0;
+                const totalCount = season.episodes?.length || 0;
+                const allWatched = watchedCount === totalCount;
+                
+                return (
+                  <Tab
+                    key={season.seasonNumber}
+                    label={
+                      <Box sx={{ position: 'relative' }}>
+                        <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                          Staffel {season.seasonNumber + 1}
+                        </Typography>
+                        <Typography variant='caption' sx={{ opacity: 0.7, fontSize: '0.7rem' }}>
+                          {watchedCount}/{totalCount}
+                        </Typography>
+                        {allWatched && (
+                          <Badge
+                            sx={{
+                              position: 'absolute',
+                              top: -4,
+                              right: -8,
+                              '& .MuiBadge-badge': {
+                                background: colors.status.success,
+                                width: 8,
+                                height: 8,
+                                minWidth: 8,
+                              },
+                            }}
+                            variant='dot'
+                          />
+                        )}
+                      </Box>
+                    }
+                  />
+                );
+              })}
+            </Tabs>
+          </Box>
+
+          {/* Tab Panels mit Episoden */}
+          <Box sx={{ height: 'calc(100vh - 400px)', maxHeight: '500px', overflow: 'auto' }}>
+            {uniqueSeasons?.map((season, index) => {
+              const allWatched = season.episodes?.every(ep => ep.watched);
+              
+              return (
+                <Box
+                  key={season.seasonNumber}
+                  role='tabpanel'
+                  hidden={selectedTab !== index}
+                  sx={{ p: 0 }}
+                >
+                  {/* Staffel Header */}
+                  <Box
+                    sx={{
+                      p: 2,
+                      background: colors.overlay.light,
+                      borderBottom: `1px solid ${colors.border.lighter}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      position: 'sticky',
+                      top: 0,
+                      zIndex: 1,
+                      backdropFilter: 'blur(10px)',
+                    }}
+                  >
+                    <Box>
+                      <Typography variant='h6' sx={{ fontWeight: 600, color: colors.text.secondary }}>
+                        Staffel {season.seasonNumber + 1}
+                      </Typography>
+                      <Typography variant='caption' sx={{ color: colors.text.muted }}>
+                        {season.episodes?.filter(e => e.watched).length || 0} von {season.episodes?.length || 0} gesehen
+                      </Typography>
+                    </Box>
+                    {!isReadOnly && (
+                      <Button
+                        onClick={() => handleSeasonClick(season.seasonNumber, allWatched)}
+                        variant='outlined'
+                        size='small'
+                        startIcon={allWatched ? <PlayCircle size={16} /> : <Check size={16} />}
+                        sx={{
+                          borderColor: allWatched ? colors.primary : colors.primary,
+                          color: allWatched ? colors.primary : colors.primary,
+                          '&:hover': {
+                            borderColor: allWatched ? colors.text.accent : colors.text.accent,
+                            background: colors.overlay.light,
+                          },
                         }}
                       >
-                        {episode.watched &&
-                        episode.watchCount &&
-                        episode.watchCount > 1 ? (
-                          `${episode.watchCount}x`
-                        ) : (
-                          <Check size={18} />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
-        </div>
-        {confirmOpen && (
-          <Dialog
-            open={confirmOpen}
-            onClose={() => {
-              setConfirmOpen(false);
-              setConfirmSeason(null);
-            }}
-          >
-            <DialogTitle>Bestätigung</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Möchten Sie diese Staffel und alle vorherigen als gesehen
-                markieren?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button color='primary' onClick={handleConfirmNo}>
-                Nur diese Staffel
-              </Button>
-              <Button autoFocus onClick={handleConfirmYes}>
-                Ja, alle
-              </Button>
-            </DialogActions>
-          </Dialog>
-        )}
-        {episodeConfirmOpen && (
-          <Dialog
-            open={episodeConfirmOpen}
-            onClose={() => {
-              setEpisodeConfirmOpen(false);
-              setConfirmEpisode(null);
-            }}
-          >
-            <DialogTitle>Bestätigung</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Es gibt vorherige Episoden, die noch nicht als gesehen markiert
-                sind. Möchten Sie alle vorherigen Episoden auch als gesehen
-                markieren?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button color='primary' onClick={handleEpisodeConfirmNo}>
-                Nur diese Episode
-              </Button>
-              <Button autoFocus onClick={handleEpisodeConfirmYes}>
-                Ja, alle vorherigen auch
-              </Button>
-            </DialogActions>
-          </Dialog>
-        )}
-        <RewatchDialog
-          open={rewatchDialogOpen}
+                        {allWatched ? 'Bearbeiten' : 'Alle markieren'}
+                      </Button>
+                    )}
+                  </Box>
+
+                  {/* Episoden Liste */}
+                  <Box sx={{ p: 0 }}>
+                    {season.episodes?.map((episode, episodeIndex) => (
+                      <Box
+                        key={episode.id}
+                        sx={{
+                          p: 2,
+                          borderBottom: `1px solid ${colors.border.subtle}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          transition: 'all 0.2s',
+                          background: episode.watched 
+                            ? `linear-gradient(90deg, ${colors.overlay.light}40, transparent)`
+                            : colors.background.card,
+                        }}
+                      >
+                        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Typography
+                            sx={{
+                              color: colors.primary,
+                              fontWeight: 600,
+                              minWidth: '30px',
+                            }}
+                          >
+                            {episodeIndex + 1}
+                          </Typography>
+                          
+                          <Box sx={{ flex: 1 }}>
+                            <Typography
+                              variant='body2'
+                              sx={{
+                                color: episode.watched ? colors.text.secondary : colors.text.muted,
+                                fontWeight: episode.watched ? 500 : 400,
+                                mb: 0.5,
+                              }}
+                            >
+                              {episode.name}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Calendar size={12} style={{ color: colors.text.muted }} />
+                                <Typography variant='caption' sx={{ color: colors.text.muted }}>
+                                  {getUnifiedEpisodeDate(episode.air_date)}
+                                </Typography>
+                              </Box>
+                              {episode.firstWatchedAt && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <Eye size={12} style={{ color: colors.primary }} />
+                                  <Typography variant='caption' sx={{ color: colors.primary }}>
+                                    Gesehen: {getUnifiedEpisodeDate(episode.firstWatchedAt)}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        <Box 
+                          onClick={() => !isReadOnly && handleEpisodeClick(season.seasonNumber, episode.id, episodeIndex)}
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1,
+                            cursor: isReadOnly ? 'default' : 'pointer',
+                          }}
+                        >
+                          {episode.watched ? (
+                            <>
+                              {episode.watchCount && episode.watchCount > 1 ? (
+                                <Chip
+                                  icon={<RotateCcw size={14} />}
+                                  label={`${episode.watchCount}x`}
+                                  size='small'
+                                  sx={{
+                                    height: 24,
+                                    backgroundColor: `${colors.text.accent}20`,
+                                    border: `1px solid ${getRewatchColor(episode.watchCount)}`,
+                                    color: getRewatchColor(episode.watchCount),
+                                    fontWeight: 500,
+                                    cursor: isReadOnly ? 'default' : 'pointer',
+                                    '& .MuiChip-icon': {
+                                      color: getRewatchColor(episode.watchCount),
+                                    },
+                                    '&:hover': !isReadOnly ? {
+                                      transform: 'scale(1.05)',
+                                      boxShadow: `0 2px 8px ${getRewatchColor(episode.watchCount)}40`,
+                                    } : {},
+                                  }}
+                                />
+                              ) : (
+                                <Box
+                                  sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '8px',
+                                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.text.accent})`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: colors.background.default,
+                                    boxShadow: `0 2px 8px ${colors.primary}40`,
+                                    transition: 'all 0.2s',
+                                    cursor: isReadOnly ? 'default' : 'pointer',
+                                    '&:hover': !isReadOnly ? {
+                                      background: `linear-gradient(135deg, ${colors.text.accent}, ${colors.primary})`,
+                                      transform: 'scale(1.1)',
+                                      boxShadow: `0 4px 12px ${colors.text.accent}60`,
+                                    } : {},
+                                  }}
+                                >
+                                  <Check size={18} />
+                                </Box>
+                              )}
+                            </>
+                          ) : (
+                            <Box
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: '8px',
+                                border: `2px solid ${colors.border.default}`,
+                                background: colors.overlay.light,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s',
+                                cursor: isReadOnly ? 'default' : 'pointer',
+                                '&:hover': !isReadOnly ? {
+                                  borderColor: colors.primary,
+                                  background: `${colors.primary}20`,
+                                  transform: 'scale(1.1)',
+                                } : {},
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Dialogs */}
+      {confirmOpen && (
+        <Dialog
+          open={confirmOpen}
           onClose={() => {
-            setRewatchDialogOpen(false);
-            setRewatchItem(null);
+            setConfirmOpen(false);
+            setConfirmSeason(null);
           }}
-          onRewatch={() => {
-            if (rewatchItem) {
-              if (
-                rewatchItem.type === 'episode' &&
-                rewatchItem.episodeId !== undefined
-              ) {
+        >
+          <DialogTitle>Bestätigung</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Möchten Sie diese Staffel und alle vorherigen als gesehen markieren?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button color='primary' onClick={handleConfirmNo}>
+              Nur diese Staffel
+            </Button>
+            <Button autoFocus onClick={handleConfirmYes}>
+              Ja, alle
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {episodeConfirmOpen && (
+        <Dialog
+          open={episodeConfirmOpen}
+          onClose={() => {
+            setEpisodeConfirmOpen(false);
+            setConfirmEpisode(null);
+          }}
+        >
+          <DialogTitle>Bestätigung</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Es gibt vorherige Episoden, die noch nicht als gesehen markiert
+              sind. Möchten Sie alle vorherigen Episoden auch als gesehen
+              markieren?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button color='primary' onClick={handleEpisodeConfirmNo}>
+              Nur diese Episode
+            </Button>
+            <Button autoFocus onClick={handleEpisodeConfirmYes}>
+              Ja, alle vorherigen auch
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      <RewatchDialog
+        open={rewatchDialogOpen}
+        onClose={() => {
+          setRewatchDialogOpen(false);
+          setRewatchItem(null);
+        }}
+        onRewatch={() => {
+          if (rewatchItem) {
+            if (rewatchItem.type === 'episode' && rewatchItem.seasonNumber !== undefined && rewatchItem.episodeId !== undefined) {
+              // Verwende isRewatch flag für korrektes Rewatch-Verhalten
+              handleWatchedToggleWithConfirmation(
+                rewatchItem.seasonNumber, 
+                rewatchItem.episodeId
+              );
+            } else if (rewatchItem.type === 'season' && rewatchItem.seasonNumber !== undefined) {
+              // Für ganze Staffeln: Rewatch mit isRewatch flag
+              handleWatchedToggleWithConfirmation(
+                rewatchItem.seasonNumber,
+                -1  // -1 bedeutet alle Episoden der Staffel
+              );
+            }
+          }
+        }}
+        onUnwatch={() => {
+          if (rewatchItem) {
+            if (rewatchItem.type === 'episode' && rewatchItem.seasonNumber !== undefined && rewatchItem.episodeId !== undefined) {
+              // Verwende forceUnwatch flag für korrektes Unwatch-Verhalten
+              handleWatchedToggleWithConfirmation(
+                rewatchItem.seasonNumber, 
+                rewatchItem.episodeId
+              );
+            } else if (rewatchItem.type === 'season' && rewatchItem.seasonNumber !== undefined) {
+              // Für ganze Staffeln: Alle Episoden einzeln mit forceUnwatch aufrufen
+              const season = series.seasons.find(s => s.seasonNumber === rewatchItem.seasonNumber);
+              if (season && season.episodes) {
+                // Rufe handleWatchedToggleWithConfirmation für jede Episode auf
+                // mit seasonNumber -1 und forceUnwatch = true für Batch-Operation
                 handleWatchedToggleWithConfirmation(
                   rewatchItem.seasonNumber,
-                  rewatchItem.episodeId,
-                  false,
-                  true
-                );
-              } else if (rewatchItem.type === 'season') {
-                handleWatchedToggleWithConfirmation(
-                  rewatchItem.seasonNumber,
-                  -1,
-                  false,
-                  true
+                  -1  // -1 bedeutet alle Episoden der Staffel
                 );
               }
             }
-          }}
-          onUnwatch={() => {
-            if (rewatchItem) {
-              if (
-                rewatchItem.type === 'episode' &&
-                rewatchItem.episodeId !== undefined
-              ) {
-                handleWatchedToggleWithConfirmation(
-                  rewatchItem.seasonNumber,
-                  rewatchItem.episodeId,
-                  false,
-                  false,
-                  true
-                );
-              } else if (rewatchItem.type === 'season') {
-                handleWatchedToggleWithConfirmation(
-                  rewatchItem.seasonNumber,
-                  -1,
-                  false,
-                  false,
-                  true
-                );
-              }
-            }
-          }}
-          itemType={rewatchItem?.type || 'episode'}
-          itemName={rewatchItem?.name || ''}
-          currentWatchCount={rewatchItem?.currentWatchCount || 1}
-        />
-      </DialogContent>
-    </Dialog>
+          }
+        }}
+        itemType={rewatchItem?.type || 'episode'}
+        itemName={rewatchItem?.name || ''}
+        currentWatchCount={rewatchItem?.currentWatchCount || 1}
+      />
+    </>
   );
 };
+
 export default SeriesWatchedDialog;

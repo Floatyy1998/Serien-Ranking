@@ -205,7 +205,7 @@ const RegisterPage = () => {
             transition: 'background-color 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--theme-primary-hover)';
+            (e.target as HTMLButtonElement).style.backgroundColor = 'var(--theme-accent)';
           }}
           onMouseLeave={(e) => {
             (e.target as HTMLButtonElement).style.backgroundColor = 'var(--theme-primary)';

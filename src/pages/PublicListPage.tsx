@@ -116,7 +116,7 @@ export const PublicListPage: React.FC = () => {
             borderRadius: 2,
             boxShadow: `0 4px 12px ${colors.overlay.medium}`,
             '&:hover': {
-              background: 'var(--theme-primary-hover)',
+              background: 'var(--theme-accent)',
               boxShadow: `0 6px 16px ${colors.overlay.medium}`,
               transform: 'translateY(-2px)',
             },
@@ -129,7 +129,7 @@ export const PublicListPage: React.FC = () => {
             <Avatar
               sx={{
                 bgcolor: colors.text.secondary,
-                color: 'var(--theme-primary-hover)',
+                color: 'var(--theme-accent)',
                 width: 70,
                 height: 70,
                 mx: 'auto',
@@ -156,7 +156,7 @@ export const PublicListPage: React.FC = () => {
                 borderRadius: 2,
                 boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                 '&:hover': {
-                  background: 'var(--theme-primary-hover)',
+                  background: 'var(--theme-accent)',
                   boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                   transform: 'translateY(-2px)',
                 },
@@ -416,7 +416,7 @@ export const PublicListPage: React.FC = () => {
       >
         <Card
           sx={{
-            background: `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
+            background: `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-accent) 100%)`,
             color: colors.text.secondary,
             borderRadius: 3,
             boxShadow: `0 4px 24px ${colors.overlay.medium}`,
@@ -426,7 +426,7 @@ export const PublicListPage: React.FC = () => {
             <Avatar
               sx={{
                 bgcolor: colors.text.secondary,
-                color: 'var(--theme-primary-hover)',
+                color: 'var(--theme-accent)',
                 width: 70,
                 height: 70,
                 mx: 'auto',
@@ -461,7 +461,7 @@ export const PublicListPage: React.FC = () => {
                 borderRadius: 2,
                 boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                 '&:hover': {
-                  background: 'var(--theme-primary-hover)',
+                  background: 'var(--theme-accent)',
                   boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                   transform: 'translateY(-2px)',
                 },
@@ -486,7 +486,7 @@ export const PublicListPage: React.FC = () => {
       >
         <Card
           sx={{
-            background: `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%)`,
+            background: `linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-primary) 100%)`,
             color: colors.text.secondary,
             borderRadius: 3,
             boxShadow: `0 4px 24px ${colors.overlay.medium}`,
@@ -509,7 +509,7 @@ export const PublicListPage: React.FC = () => {
                 transition: 'all 0.2s ease',
                 mb: 2,
                 bgcolor: colors.text.secondary,
-                color: 'var(--theme-primary-hover)',
+                color: 'var(--theme-accent)',
                 boxShadow: `0 2px 12px ${colors.overlay.dark}`,
               }}
               onClick={() =>
@@ -533,8 +533,9 @@ export const PublicListPage: React.FC = () => {
                 label='Nicht öffentlich'
                 size='small'
                 sx={{
-                  backgroundColor: colors.text.secondary,
-                  color: 'var(--theme-primary-hover)',
+                  backgroundColor: `${colors.text.accent}20`,
+                  borderColor: colors.text.accent,
+                  color: colors.text.accent,
                   fontWeight: 'bold',
                   fontSize: '0.85rem',
                   px: 1.5,
@@ -555,7 +556,7 @@ export const PublicListPage: React.FC = () => {
                 borderRadius: 2,
                 boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                 '&:hover': {
-                  background: 'var(--theme-primary-hover)',
+                  background: 'var(--theme-accent)',
                   boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                   transform: 'translateY(-2px)',
                 },
@@ -650,8 +651,9 @@ export const PublicListPage: React.FC = () => {
                 label='Öffentlich'
                 size='small'
                 sx={{
-                  backgroundColor: 'var(--theme-primary)',
-                  color: colors.background.default,
+                  backgroundColor: `${colors.text.accent}20`,
+                  borderColor: colors.text.accent,
+                  color: colors.text.accent,
                   fontWeight: 'bold',
                   fontSize: { xs: '0.75rem', md: '0.875rem' },
                   height: { xs: 14, md: 20 },
@@ -668,8 +670,9 @@ export const PublicListPage: React.FC = () => {
                   size='small'
                   variant='outlined'
                   sx={{
-                    borderColor: 'var(--theme-primary)',
-                    color: 'var(--theme-primary)',
+                    backgroundColor: `${colors.text.accent}20`,
+                    borderColor: colors.text.accent,
+                    color: colors.text.accent,
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     height: { xs: 18, md: 24 },
                     minHeight: { xs: 18, md: 24 },
@@ -735,8 +738,9 @@ export const PublicListPage: React.FC = () => {
                   label='Öffentlich'
                   size='small'
                   sx={{
-                    backgroundColor: 'var(--theme-primary)',
-                    color: colors.background.default,
+                    backgroundColor: `${colors.text.accent}20`,
+                    borderColor: colors.text.accent,
+                    color: colors.text.accent,
                     fontWeight: 'bold',
                   }}
                 />
@@ -746,8 +750,9 @@ export const PublicListPage: React.FC = () => {
                     size='small'
                     variant='outlined'
                     sx={{
-                      borderColor: 'var(--theme-primary)',
-                      color: 'var(--theme-primary)',
+                      backgroundColor: `${colors.text.accent}20`,
+                      borderColor: colors.text.accent,
+                      color: colors.text.accent,
                     }}
                   />
                 )}
@@ -783,7 +788,7 @@ export const PublicListPage: React.FC = () => {
               borderRadius: 2,
               boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: 'var(--theme-primary-hover)',
+                background: 'var(--theme-accent)',
                 boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },
@@ -809,13 +814,13 @@ export const PublicListPage: React.FC = () => {
             onClick={() => navigate('/')}
             startIcon={<ArrowBack />}
             sx={{
-              background: `linear-gradient(45deg, ${colors.status.success}, var(--theme-primary-hover))`,
+              background: colors.status.success,
               color: colors.background.default,
               fontWeight: 'bold',
               borderRadius: 2,
               boxShadow: `0 4px 12px ${colors.overlay.medium}`,
               '&:hover': {
-                background: `linear-gradient(45deg, var(--theme-primary-hover), ${colors.status.success})`,
+                background: colors.text.accent,
                 boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                 transform: 'translateY(-2px)',
               },

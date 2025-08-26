@@ -222,8 +222,9 @@ const NewSeasonNotificationDialog = ({
               label={`+${remainingCount} weitere`}
               size='small'
               sx={{
-                backgroundColor: colors.primary,
-                color: '#ffffff',
+                backgroundColor: `${colors.text.accent}20`,
+                borderColor: colors.text.accent,
+                color: colors.text.accent,
                 fontWeight: 'bold',
               }}
             />
@@ -429,17 +430,17 @@ const NewSeasonNotificationDialog = ({
         <Button 
           onClick={() => handleSkip()}
           sx={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+            background: colors.background.surface,
             borderRadius: '12px',
             padding: '12px 24px',
-            color: '#ffffff',
+            color: colors.text.secondary,
             fontWeight: 600,
             textTransform: 'none',
             border: '1px solid rgba(255,255,255,0.2)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease',
             '&:hover': {
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+              background: colors.background.surfaceHover,
               transform: 'translateY(-2px)',
               boxShadow: '0 8px 25px rgba(255,255,255,0.2)',
             },
@@ -451,17 +452,17 @@ const NewSeasonNotificationDialog = ({
           variant='contained'
           onClick={() => handleAddToWatchlist(currentSeries)}
           sx={{
-            background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`,
+            background: colors.primary,
             borderRadius: '12px',
             padding: '12px 24px',
-            color: '#ffffff',
+            color: colors.background.default,
             fontWeight: 600,
             textTransform: 'none',
             border: '1px solid rgba(255,255,255,0.1)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease',
             '&:hover': {
-              background: `linear-gradient(135deg, ${colors.primaryHover} 0%, ${colors.primary} 100%)`,
+              background: colors.text.accent,
               transform: 'translateY(-2px)',
               boxShadow: colors.shadow.buttonHover,
             },
