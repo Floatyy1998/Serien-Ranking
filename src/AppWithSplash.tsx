@@ -1,0 +1,114 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { SplashScreen } from './components/ui/SplashScreen';
+import { App } from './App';
+
+/**
+ * Globaler Ready-Tracker
+ * Andere Komponenten können window.appReadyStatus setzen
+ */
+declare global {
+  interface Window {
+    appReadyStatus: {
+      theme: boolean;
+      auth: boolean;
+      firebase: boolean;
+      emailVerification: boolean;
+      initialData: boolean;
+    };
+    setAppReady: (key: keyof Window['appReadyStatus'], value: boolean) => void;
+  }
+}
+
+// Initialisiere globalen Status
+if (typeof window !== 'undefined') {
+  window.appReadyStatus = {
+    theme: false,
+    auth: false,
+    firebase: false,
+    emailVerification: false,
+    initialData: false,
+  };
+  
+  window.setAppReady = (key, value) => {
+    window.appReadyStatus[key] = value;
+    console.log(`[AppReady] ${key}: ${value}`, window.appReadyStatus);
+  };
+}
+
+/**
+ * Wrapper-Component die SOFORT den SplashScreen zeigt
+ * und im Hintergrund die App lädt
+ */
+export const AppWithSplash: React.FC = () => {
+  const [showSplash, setShowSplash] = useState(true);
+  const [isAppMounted, setIsAppMounted] = useState(false);
+  const [allSystemsReady, setAllSystemsReady] = useState(false);
+  const checkInterval = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  useEffect(() => {
+    // Mount App im Hintergrund nach kurzer Verzögerung
+    const mountTimer = setTimeout(() => {
+      console.log('[AppWithSplash] Mounting App in background...');
+      setIsAppMounted(true);
+    }, 200);
+
+    // Prüfe regelmäßig ob alle Systeme ready sind
+    checkInterval.current = setInterval(() => {
+      const status = window.appReadyStatus;
+      const isReady = 
+        status.theme && 
+        status.auth && 
+        status.firebase && 
+        status.emailVerification &&
+        status.initialData;
+      
+      if (isReady && !allSystemsReady) {
+        console.log('[AppWithSplash] 🎉 ALLE SYSTEME BEREIT!', status);
+        setAllSystemsReady(true);
+        clearInterval(checkInterval.current);
+      }
+    }, 100);
+
+    // Timeout nach 5 Sekunden als Fallback
+    const fallbackTimeout = setTimeout(() => {
+      console.warn('[AppWithSplash] Timeout - zeige App trotzdem');
+      setAllSystemsReady(true);
+      if (checkInterval.current) {
+        clearInterval(checkInterval.current);
+      }
+    }, 5000);
+
+    return () => {
+      clearTimeout(mountTimer);
+      clearTimeout(fallbackTimeout);
+      if (checkInterval.current) {
+        clearInterval(checkInterval.current);
+      }
+    };
+  }, [allSystemsReady]);
+
+  // Zeige SplashScreen bis WIRKLICH ALLES fertig ist
+  if (showSplash) {
+    return (
+      <>
+        <SplashScreen
+          onComplete={() => {
+            console.log('[AppWithSplash] Splash complete, hiding...');
+            setShowSplash(false);
+          }}
+          waitForCondition={() => allSystemsReady}
+          minDisplayTime={2000}
+        />
+        {/* Rendere App im Hintergrund (unsichtbar) für Preloading */}
+        {isAppMounted && (
+          <div style={{ display: 'none', position: 'absolute', left: '-9999px' }}>
+            <App />
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // Nach SplashScreen: App ist vollständig ready
+  return <App />;
+};

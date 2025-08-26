@@ -46,6 +46,7 @@ export const MovieListProvider = ({
   // Konvertiere Object zu Array
   const movieList: Movie[] = movieData ? Object.values(movieData) : [];
 
+
   return (
     <MovieListContext.Provider
       value={{

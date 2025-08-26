@@ -8,39 +8,39 @@ interface VerifiedRouteProps {
   children: React.ReactNode;
 }
 export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
-  const [isVerified, setIsVerified] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Initialisiere mit dem aktuellen Status - KEIN Loading!
+  const currentUser = firebase.auth().currentUser;
+  const [isVerified, setIsVerified] = useState<boolean | null>(currentUser?.emailVerified ?? null);
+  const [loading] = useState(false); // KEIN initiales Loading mehr!
   const [message, setMessage] = useState('');
   const [snackOpen, setSnackOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   useEffect(() => {
     const user = firebase.auth().currentUser;
     if (user) {
-      // Offline-freundliche Version - reload nur wenn online
-      if (navigator.onLine) {
+      // Setze sofort den Status
+      setIsVerified(user.emailVerified);
+      
+      // Nur im Hintergrund aktualisieren wenn online und nicht verifiziert
+      if (navigator.onLine && !user.emailVerified) {
         user
           .reload()
           .then(() => {
             setIsVerified(user.emailVerified);
-            setLoading(false);
           })
           .catch((error) => {
             console.warn(
-              'User reload fehlgeschlagen (offline?), verwende cached Daten:',
+              'User reload fehlgeschlagen (offline?):',
               error
             );
-            // Bei Offline-Fehler cached Email-Verified Status verwenden
-            setIsVerified(user.emailVerified);
-            setLoading(false);
           });
-      } else {
-        // Offline: Verwende cached Daten direkt
-        setIsVerified(user.emailVerified);
-        setLoading(false);
       }
     } else {
       navigate('/login');
     }
+    
+    // IMMER setAppReady aufrufen - egal ob User oder nicht
+    window.setAppReady?.('emailVerification', true);
   }, [navigate]);
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -90,39 +90,9 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
         navigate('/login');
       });
   };
+  // KEIN Loading-Screen mehr! Wurde im SplashScreen erledigt
   if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          backgroundColor: '#000',
-          color: 'var(--theme-primary)',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        <div
-          style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid var(--theme-primary)',
-            borderTop: '4px solid transparent',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
-        <div>Verifizierung wird geprüft...</div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
+    return <>{children}</>; // Zeige direkt den Content
   }
 
   if (!isVerified) {
