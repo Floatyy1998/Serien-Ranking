@@ -74,7 +74,7 @@ const WatchlistFilter: React.FC<FilterProps> = ({
               width: 'auto',
               fontSize: '0.75rem',
               background: customOrderActive
-                ? 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)'
+                ? 'linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-accent) 100%)'
                 : 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
               borderRadius: '12px',
               padding: '8px 16px',
@@ -86,7 +86,7 @@ const WatchlistFilter: React.FC<FilterProps> = ({
               transition: 'all 0.3s ease',
               '&:hover': {
                 background: customOrderActive
-                  ? 'linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary-hover) 100%)'
+                  ? 'linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent) 100%)'
                   : 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%)',
                 transform: 'translateY(-2px)',
                 boxShadow: customOrderActive

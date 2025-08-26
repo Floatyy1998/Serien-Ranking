@@ -585,8 +585,9 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 label={type === "tv" ? "📺 Serie" : "🎬 Film"}
                 size="small"
                 sx={{
-                  backgroundColor: "var(--theme-primary)",
-                  color: colors.text.secondary,
+                  backgroundColor: `${colors.text.accent}20`,
+                  borderColor: colors.text.accent,
+                  color: colors.text.accent,
                   fontWeight: "bold",
                 }}
               />
@@ -871,7 +872,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   }
                                 }}
                                 sx={{
-                                  background: colors.button.secondary.gradient,
+                                  background: colors.button.secondary,
                                   borderRadius: 3,
                                   p: 2,
                                   textAlign: "center",
@@ -881,7 +882,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   cursor: "pointer",
                                   "&:hover": {
                                     background:
-                                      colors.button.secondary.gradientHover,
+                                      colors.button.secondaryHover,
                                     transform: "translateY(-5px) scale(1.02)",
                                     borderColor: colors.status.warning,
                                   },
@@ -1394,7 +1395,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         sx={{
                           background:
                             video.type === "Trailer"
-                              ? colors.button.secondary.gradient
+                              ? colors.button.secondary
                               : "rgba(255,255,255,0.05)",
                           borderRadius: 2,
                           overflow: "hidden",
@@ -1408,7 +1409,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           "&:hover": {
                             background:
                               video.type === "Trailer"
-                                ? colors.button.secondary.gradientHover
+                                ? colors.button.secondaryHover
                                 : "rgba(255,255,255,0.1)",
                             transform: "translateY(-5px)",
                             boxShadow:
@@ -1463,10 +1464,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                               sx={{
                                 background:
                                   video.type === "Trailer"
-                                    ? "linear-gradient(135deg, var(--theme-primary), var(--theme-primary-hover))"
-                                    : "rgba(255,255,255,0.2)",
+                                    ? `linear-gradient(135deg, ${colors.text.accent}, ${colors.text.accent}90)`
+                                    : `${colors.text.accent}20`,
                                 color:
-                                  video.type === "Trailer" ? "#000" : "#fff",
+                                  video.type === "Trailer" ? colors.background.default : colors.text.accent,
                                 fontWeight:
                                   video.type === "Trailer" ? "800" : "bold",
                                 boxShadow:
@@ -1914,7 +1915,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === "movie"
                                     ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
-                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.text.accent})`,
                                 borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,
@@ -2192,7 +2193,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === "movie"
                                     ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
-                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.text.accent})`,
                                 borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,
@@ -2476,7 +2477,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === "movie"
                                     ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
-                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.text.accent})`,
                                 borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,
@@ -2761,7 +2762,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                 background:
                                   credit.media_type === "movie"
                                     ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
-                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.primaryHover})`,
+                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.text.accent})`,
                                 borderRadius: "12px",
                                 px: 0.8,
                                 py: 0.3,

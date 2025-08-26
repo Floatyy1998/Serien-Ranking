@@ -694,13 +694,13 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             sx={{
               '& .MuiTab-root': {
                 color: colors.text.placeholder,
-                background: colors.button.secondary.gradient,
+                background: colors.button.secondary,
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px 12px 0 0',
                 margin: '0 4px',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: colors.button.secondary.gradientHover,
+                  background: colors.button.secondaryHover,
                   color: colors.text.secondary,
                 },
                 '&.Mui-selected': {
@@ -727,16 +727,14 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                       label={getEarnedCount(category.key)}
                       size='small'
                       sx={{
-                        background:
-                          `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.light} 100%)`,
-                        border: `1px solid ${colors.border.primary}`,
-                        color: colors.text.secondary,
+                        backgroundColor: `${colors.text.accent}20`,
+                        border: `1px solid ${colors.text.accent}`,
+                        color: colors.text.accent,
                         height: 20,
                         fontSize: '0.7rem',
                         '&:hover': {
-                          background:
-                            `linear-gradient(135deg, ${colors.overlay.medium} 0%, ${colors.overlay.medium} 100%)`,
-                          border: `1px solid ${colors.border.primary}`,
+                          backgroundColor: `${colors.text.accent}30`,
+                          border: `1px solid ${colors.text.accent}`,
                         },
                       }}
                     />

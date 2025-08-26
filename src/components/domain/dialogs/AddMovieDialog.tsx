@@ -925,8 +925,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                           loadingSearch ? <CircularProgress size={20} /> : null
                         }
                         sx={{
-                          background:
-                            `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
+                          background: colors.primary,
                           borderRadius: '12px',
                           padding: '12px 24px',
                           color: colors.text.secondary,
@@ -937,8 +936,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                           transition: 'all 0.3s ease',
                           fontSize: { xs: '0.75rem', sm: '0.875rem' },
                           '&:hover': {
-                            background:
-                              `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary-hover) 100%)`,
+                            background: colors.text.accent,
                             transform: 'translateY(-2px)',
                             boxShadow: colors.shadow.buttonHover,
                           },
@@ -1296,6 +1294,11 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                         : 'TBA'
                     }
                     variant='outlined'
+                    sx={{
+                      backgroundColor: `${colors.text.accent}20`,
+                      borderColor: colors.text.accent,
+                      color: colors.text.accent,
+                    }}
                   />
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <StarIcon sx={{ fontSize: 14, color: 'gold' }} />
@@ -1424,7 +1427,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
               sx={{
                 flex: { xs: 1, sm: 'none' },
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                background: `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
+                background: colors.primary,
                 borderRadius: '12px',
                 padding: '12px 24px',
                 color: colors.background.default,
@@ -1434,8 +1437,7 @@ const AddMovieDialog: React.FC<AddMovieDialogProps> = ({
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  background:
-                    `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary-hover) 100%)`,
+                  background: colors.text.accent,
                   transform: 'translateY(-2px)',
                   boxShadow: colors.shadow.buttonHover,
                 },

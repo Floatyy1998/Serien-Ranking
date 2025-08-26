@@ -301,8 +301,8 @@ export const SeriesGrid = ({
             // Von 2x auf 1x (normaler Haken)
             return { ...e, watched: true, watchCount: 1 };
           } else {
-            // Von 1x (Haken) auf ungesehen - entferne watchCount Feld komplett
-            const { watchCount, ...episodeWithoutWatchCount } = e;
+            // Von 1x (Haken) auf ungesehen - entferne watchCount und firstWatchedAt komplett
+            const { watchCount, firstWatchedAt, ...episodeWithoutWatchCount } = e;
             return { ...episodeWithoutWatchCount, watched: false };
           }
         });
@@ -318,22 +318,33 @@ export const SeriesGrid = ({
           maxWatchCount === minWatchCount ? maxWatchCount + 1 : maxWatchCount;
 
         updatedEpisodes = season.episodes.map((e: any) => {
-          return { ...e, watched: true, watchCount: targetWatchCount };
+          return { 
+            ...e, 
+            watched: true, 
+            watchCount: targetWatchCount,
+            firstWatchedAt: e.firstWatchedAt || new Date().toISOString()
+          };
         });
       } else if (forceWatched) {
         updatedEpisodes = season.episodes.map((e: any) => ({
           ...e,
           watched: true,
           watchCount: e.watched ? e.watchCount : 1,
+          firstWatchedAt: e.firstWatchedAt || new Date().toISOString(),
         }));
       } else {
         updatedEpisodes = season.episodes.map((e: any) => {
           if (!allWatched && !e.watched) {
             // Episode wird als watched markiert
-            return { ...e, watched: true, watchCount: 1 };
+            return { 
+              ...e, 
+              watched: true, 
+              watchCount: 1,
+              firstWatchedAt: e.firstWatchedAt || new Date().toISOString()
+            };
           } else if (allWatched) {
-            // Episode wird als unwatch markiert - entferne watchCount Feld
-            const { watchCount, ...episodeWithoutWatchCount } = e;
+            // Episode wird als unwatch markiert - entferne watchCount und firstWatchedAt
+            const { watchCount, firstWatchedAt, ...episodeWithoutWatchCount } = e;
             return { ...episodeWithoutWatchCount, watched: false };
           } else {
             // Keine Änderung
@@ -443,8 +454,8 @@ export const SeriesGrid = ({
             // Von 2x auf 1x (normaler Haken)
             return { ...e, watched: true, watchCount: 1 };
           } else {
-            // Von 1x (Haken) auf ungesehen - entferne watchCount Feld komplett
-            const { watchCount, ...episodeWithoutWatchCount } = e;
+            // Von 1x (Haken) auf ungesehen - entferne watchCount und firstWatchedAt komplett
+            const { watchCount, firstWatchedAt, ...episodeWithoutWatchCount } = e;
             return { ...episodeWithoutWatchCount, watched: false };
           }
         } else if (isRewatch === true) {
@@ -453,11 +464,23 @@ export const SeriesGrid = ({
           return { ...e, watched: true, watchCount: currentWatchCount + 1 };
         } else {
           // Normaler Toggle
-          return {
-            ...e,
-            watched: !e.watched,
-            watchCount: e.watched ? undefined : 1,
-          };
+          const nowWatched = !e.watched;
+          if (nowWatched) {
+            // Episode wird als gesehen markiert
+            return {
+              ...e,
+              watched: true,
+              watchCount: 1,
+              firstWatchedAt: e.firstWatchedAt || new Date().toISOString(),
+            };
+          } else {
+            // Episode wird als nicht gesehen markiert - entferne watchCount und firstWatchedAt
+            const { watchCount, firstWatchedAt, ...episodeWithoutFields } = e;
+            return {
+              ...episodeWithoutFields,
+              watched: false,
+            };
+          }
         }
       }
       return e;
@@ -544,7 +567,11 @@ export const SeriesGrid = ({
 
         return {
           ...s,
-          episodes: s.episodes.map((e: any) => ({ ...e, watched: true })),
+          episodes: s.episodes.map((e: any) => ({ 
+            ...e, 
+            watched: true,
+            firstWatchedAt: !e.watched && !e.firstWatchedAt ? new Date().toISOString() : e.firstWatchedAt,
+          })),
         };
       }
       return s;
@@ -576,56 +603,41 @@ export const SeriesGrid = ({
     }
   };
 
+
+  // Diese Funktion wird für "Alle markieren" Button verwendet
   const handleEpisodeBatchWatchedToggle = async (
-    seasonNumber: number,
-    episodeId: number
+    episodeIds: number[],
+    watched: boolean
   ) => {
     if (!user || !watchedDialogSeries || viewOnlyMode) return;
 
     const series = watchedDialogSeries;
-
-    // Sammle alle Episoden, die als gesehen markiert werden
-    let episodesToMark: any[] = [];
-
-    const updatedSeasons = series.seasons.map((s: any) => {
-      if (s.seasonNumber < seasonNumber) {
-        // Markiere alle Episoden in vorherigen Staffeln als gesehen
-        const unwatchedEpisodes = s.episodes.filter((e: any) => !e.watched);
-        episodesToMark = episodesToMark.concat(
-          unwatchedEpisodes.map((e: any) => ({
-            ...e,
-            seasonNumber: s.seasonNumber,
-          }))
-        );
-
-        return {
-          ...s,
-          episodes: s.episodes.map((e: any) => ({ ...e, watched: true })),
-        };
-      } else if (s.seasonNumber === seasonNumber) {
-        // Markiere alle Episoden bis zur gewählten Episode (inklusive) als gesehen
-        const episodeIndex = s.episodes.findIndex(
-          (e: any) => e.id === episodeId
-        );
-        const unwatchedEpisodes = s.episodes
-          .slice(0, episodeIndex + 1)
-          .filter((e: any) => !e.watched);
-        episodesToMark = episodesToMark.concat(
-          unwatchedEpisodes.map((e: any) => ({
-            ...e,
-            seasonNumber: s.seasonNumber,
-          }))
-        );
-
-        return {
-          ...s,
-          episodes: s.episodes.map((e: any, index: any) => ({
-            ...e,
-            watched: index <= episodeIndex ? true : e.watched,
-          })),
-        };
-      }
-      return s;
+    
+    // Update alle übergebenen Episoden
+    const updatedSeasons = series.seasons.map((season: any) => {
+      const updatedEpisodes = season.episodes.map((episode: any) => {
+        if (episodeIds.includes(episode.id)) {
+          if (watched) {
+            // Episode wird als gesehen markiert
+            return { 
+              ...episode, 
+              watched: true,
+              watchCount: 1,
+              firstWatchedAt: episode.firstWatchedAt || new Date().toISOString()
+            };
+          } else {
+            // Episode wird als nicht gesehen markiert
+            const { watchCount, firstWatchedAt, ...episodeWithoutFields } = episode;
+            return {
+              ...episodeWithoutFields,
+              watched: false
+            };
+          }
+        }
+        return episode;
+      });
+      
+      return { ...season, episodes: updatedEpisodes };
     });
 
     try {
@@ -634,23 +646,36 @@ export const SeriesGrid = ({
         .ref(`${targetUserId || user?.uid}/serien/${series.nmr}/seasons`)
         .set(updatedSeasons);
 
-      // Activity tracken für Episode-Batch-Operationen (nur wenn nicht targetUserId)
-      if (!targetUserId && episodesToMark.length > 0) {
-        // Badge-System für Batch-Episoden aufrufen
+      // Badge-System Activity logging für Batch-Operationen
+      if (!targetUserId && user?.uid && watched && episodeIds.length > 0) {
+        // Nutze Batch-Logging statt einzelne Updates
         const { logBatchEpisodesWatchedClean } = await import(
           '../../../features/badges/minimalActivityLogger'
         );
-        await logBatchEpisodesWatchedClean(
-          user.uid,
-          episodesToMark.map((episode) => ({
-            tmdbId: series.id,
-            isRewatch: false,
-            airDate: episode.air_date || episode.airDate || '',
-          }))
-        );
+        
+        // Sammle alle Episode-Daten für Batch-Update
+        const episodesToLog = [];
+        for (const episodeId of episodeIds) {
+          for (const season of series.seasons) {
+            const episode = season.episodes?.find((e: any) => e.id === episodeId);
+            if (episode) {
+              episodesToLog.push({
+                tmdbId: series.id,
+                isRewatch: false,
+                airDate: episode.air_date || episode.airDate || ''
+              });
+              break;
+            }
+          }
+        }
+        
+        // Ein einziger Batch-Call statt vieler einzelner
+        if (episodesToLog.length > 0) {
+          await logBatchEpisodesWatchedClean(user.uid, episodesToLog);
+        }
       }
     } catch (error) {
-      // Error updating watched status in episode batch
+      console.error('Error updating batch episodes:', error);
     }
   };
 

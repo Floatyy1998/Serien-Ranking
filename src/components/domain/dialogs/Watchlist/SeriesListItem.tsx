@@ -70,6 +70,7 @@ interface SeriesListItemProps {
     isRewatch?: boolean;
     currentWatchCount?: number;
     targetWatchCount?: number;
+    firstWatchedAt?: string;
   } | null;
   rewatchInfo?: {
     seasonNumber: number;
@@ -79,6 +80,7 @@ interface SeriesListItemProps {
     isRewatch: boolean;
     currentWatchCount: number;
     targetWatchCount: number;
+    firstWatchedAt?: string;
   } | null;
   onWatchedToggle: () => void;
   // Neuer Callback für Klick auf den Serientitel
@@ -184,6 +186,11 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
                     {rewatchInfo.targetWatchCount}x
                   </span>
                 </div>
+                {rewatchInfo.firstWatchedAt && (
+                  <div className='mt-1 text-xs text-gray-400'>
+                    Erstmals gesehen: {getUnifiedEpisodeDate(rewatchInfo.firstWatchedAt)}
+                  </div>
+                )}
               </>
             )}
 
@@ -235,6 +242,11 @@ const SeriesListItem: React.FC<SeriesListItemProps> = ({
                       {nextUnwatchedEpisode.targetWatchCount}x
                     </span>
                   </div>
+                  {nextUnwatchedEpisode.firstWatchedAt && (
+                    <div className='mt-1 text-xs text-gray-400'>
+                      Erstmals gesehen: {getUnifiedEpisodeDate(nextUnwatchedEpisode.firstWatchedAt)}
+                    </div>
+                  )}
                 </>
               )}
           </>

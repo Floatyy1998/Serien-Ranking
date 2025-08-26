@@ -389,7 +389,7 @@ export const MainPage: React.FC = () => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   transform: 'scale(1.05)',
-                  borderColor: 'var(--theme-primary-hover)',
+                  borderColor: 'var(--theme-accent)',
                 },
               }}
             >
@@ -480,7 +480,7 @@ export const MainPage: React.FC = () => {
                   borderRadius: 2,
                   boxShadow: `0 4px 12px ${colors.overlay.medium}`,
                   '&:hover': {
-                    background: 'var(--theme-primary-hover)',
+                    background: 'var(--theme-accent)',
                     boxShadow: `0 6px 16px ${colors.overlay.medium}`,
                     transform: 'translateY(-2px)',
                   },

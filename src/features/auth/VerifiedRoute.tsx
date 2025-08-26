@@ -155,7 +155,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
                 <Button
                   variant='contained'
                   onClick={() => resendVerification()}
-                  className='bg-[var(--theme-primary)] text-black font-medium px-8 py-3 rounded-lg hover:bg-[var(--theme-primary-hover)] transition-colors'
+                  className='bg-[var(--theme-primary)] text-black font-medium px-8 py-3 rounded-lg hover:bg-[var(--theme-accent)] transition-colors'
                 >
                   LINK ERNEUT SENDEN
                 </Button>

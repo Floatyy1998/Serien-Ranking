@@ -479,7 +479,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
           cursor: 'pointer',
           textDecoration: 'underline',
           '&:hover': {
-            color: colors.primary,
+            color: colors.text.accent,
           },
         }}
         onClick={(e) => {
@@ -741,7 +741,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
             <Typography
               component='div'
               variant='h4'
-              sx={{ fontWeight: 'bold', color: colors.text.accent }}
+              sx={{ fontWeight: 'bold', color: colors.text.secondary }}
             >
               {friendName}s Aktivitäten
             </Typography>
@@ -895,9 +895,9 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
                             sx={{
                               fontSize: '0.7rem',
                               height: 24,
-                              borderColor: '#404040',
-                              color: '#b0b0b0',
-                              backgroundColor: '#1a1a1a',
+                              backgroundColor: `${colors.text.accent}20`,
+                              borderColor: colors.text.accent,
+                              color: colors.text.accent,
                             }}
                           />
                         </Box>

@@ -201,7 +201,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                     backgroundColor: 'var(--theme-primary)',
                     color: colors.background.default,
                     '&:hover': {
-                      backgroundColor: 'var(--theme-primary-hover)',
+                      backgroundColor: 'var(--theme-accent)',
                     },
                   }}
                 >
@@ -214,7 +214,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                     borderColor: 'var(--theme-primary)',
                     color: 'var(--theme-primary)',
                     '&:hover': {
-                      borderColor: 'var(--theme-primary-hover)',
+                      borderColor: 'var(--theme-accent)',
                       backgroundColor: colors.overlay.medium,
                     },
                   }}

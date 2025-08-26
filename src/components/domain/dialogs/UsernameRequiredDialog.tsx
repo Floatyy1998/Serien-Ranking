@@ -94,7 +94,7 @@ export const UsernameRequiredDialog: React.FC = () => {
             <Typography
               component='div'
               variant='h4'
-              sx={{ fontWeight: 'bold', color: colors.text.accent }}
+              sx={{ fontWeight: 'bold', color: colors.text.secondary }}
             >
               Benutzername erforderlich
             </Typography>
@@ -158,7 +158,7 @@ export const UsernameRequiredDialog: React.FC = () => {
             fullWidth
             sx={{
               maxWidth: 280,
-              background: colors.button.primary.gradient,
+              background: colors.button.primary,
               borderRadius: '12px',
               padding: '12px 24px',
               color: colors.text.primary,
@@ -168,7 +168,7 @@ export const UsernameRequiredDialog: React.FC = () => {
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                background: colors.button.primary.gradientHover,
+                background: colors.button.primaryHover,
                 transform: 'translateY(-2px)',
                 boxShadow: colors.shadow.buttonHover,
               },

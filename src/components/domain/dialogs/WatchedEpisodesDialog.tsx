@@ -10,19 +10,19 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { Series } from '../../../types/Series';
 import { getFormattedDate } from '../../../lib/date/date.utils';
 import { colors } from '../../../theme';
-interface SeriesEpisodesDialogProps {
+import { Series } from '../../../types/Series';
+interface WatchedEpisodesDialogProps {
   open: boolean;
   onClose: () => void;
   series: Series;
 }
-const SeriesEpisodesDialog = ({
+const WatchedEpisodesDialog = ({
   open,
   onClose,
   series,
-}: SeriesEpisodesDialogProps) => {
+}: WatchedEpisodesDialogProps) => {
   return (
     <Dialog
       open={open}
@@ -40,7 +40,7 @@ const SeriesEpisodesDialog = ({
             boxShadow: colors.shadow.card,
             color: colors.text.primary,
           },
-        }
+        },
       }}
     >
       <DialogTitle
@@ -66,7 +66,7 @@ const SeriesEpisodesDialog = ({
           <Typography
             component='div'
             variant='h4'
-            sx={{ fontWeight: 'bold', color: colors.text.accent }}
+            sx={{ fontWeight: 'bold', color: colors.text.secondary }}
           >
             Kommende Episoden von {series.title}
           </Typography>
@@ -93,21 +93,24 @@ const SeriesEpisodesDialog = ({
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent sx={{ 
-        p: 0, 
-        background: colors.background.gradient.light,
-        backdropFilter: 'blur(10px)',
-        color: colors.text.primary 
-      }}>
+      <DialogContent
+        sx={{
+          p: 0,
+          background: colors.background.gradient.light,
+          backdropFilter: 'blur(10px)',
+          color: colors.text.primary,
+        }}
+      >
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {Array.isArray(series.nextEpisode?.nextEpisodes) &&
           series.nextEpisode.nextEpisodes.length > 0 ? (
             series.nextEpisode.nextEpisodes.map((episode: any, index) => {
               // Verwende die tatsächlichen Felder aus Firebase
-              const episodeTitle = episode.name || episode.title || `Episode ${episode.number}`;
+              const episodeTitle =
+                episode.name || episode.title || `Episode ${episode.number}`;
               const seasonNumber = episode.seasonNumber || episode.season || 1;
               const episodeNumber = episode.number || 0;
-              
+
               // Nutze 'aired' Feld für das Datum
               let dateTimeDisplay = 'Kein Datum verfügbar';
               if (episode.aired) {
@@ -117,7 +120,7 @@ const SeriesEpisodesDialog = ({
                   dateTimeDisplay = date;
                 }
               }
-              
+
               return (
                 <ListItem
                   key={`${series.id}-${seasonNumber}-${episodeNumber}-${index}`}
@@ -151,8 +154,21 @@ const SeriesEpisodesDialog = ({
                       component='span'
                       sx={{ fontSize: '0.8rem', color: colors.text.secondary }}
                     >
-                      {dateTimeDisplay}
+                      Erschienen: {dateTimeDisplay}
                     </Box>
+                    {episode.firstWatchedAt && (
+                      <Box
+                        component='span'
+                        sx={{ 
+                          fontSize: '0.8rem', 
+                          color: colors.text.secondary,
+                          display: 'block',
+                          mt: 0.5
+                        }}
+                      >
+                        Erstmals gesehen: {getFormattedDate(episode.firstWatchedAt)}
+                      </Box>
+                    )}
                   </Box>
                 </ListItem>
               );
@@ -169,4 +185,4 @@ const SeriesEpisodesDialog = ({
     </Dialog>
   );
 };
-export default SeriesEpisodesDialog;
+export default WatchedEpisodesDialog;

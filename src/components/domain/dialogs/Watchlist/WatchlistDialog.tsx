@@ -583,6 +583,7 @@ const WatchlistDialog = ({
         updateData = {
           watched: true,
           watchCount: 1,
+          firstWatchedAt: new Date().toISOString(),
         };
       }
 
@@ -742,14 +743,14 @@ const WatchlistDialog = ({
                     onClick={() => setShowFilter((prev) => !prev)}
                     sx={{
                       fontSize: '0.75rem',
-                      background: colors.button.secondary.gradient,
+                      background: colors.button.secondary,
                       backdropFilter: 'blur(10px)',
                       border: `1px solid ${colors.border.subtle}`,
                       borderRadius: '12px',
                       color: colors.text.secondary,
                       transition: 'all 0.3s ease',
                       '&:hover': {
-                        background: colors.button.secondary.gradientHover,
+                        background: colors.button.secondaryHover,
                         border: `1px solid ${colors.border.subtle}`,
                         transform: 'translateY(-2px)',
                         boxShadow: colors.shadow.button,

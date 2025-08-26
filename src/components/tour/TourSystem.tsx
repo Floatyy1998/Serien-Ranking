@@ -341,7 +341,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
                         color: colors.background.default,
                         fontWeight: 'bold',
                         '&:hover': {
-                          backgroundColor: 'var(--theme-primary-hover)',
+                          backgroundColor: 'var(--theme-accent)',
                         },
                         fontSize: { xs: '0.75rem', md: '0.875rem' },
                         minWidth: { xs: '80px', md: 'auto' },

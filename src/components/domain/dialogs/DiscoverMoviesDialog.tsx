@@ -434,7 +434,16 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                     renderValue={(selected) => (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {selected.map((value) => (
-                          <Chip key={value} label={value} size='small' />
+                          <Chip 
+                            key={value} 
+                            label={value} 
+                            size='small'
+                            sx={{
+                              backgroundColor: `${colors.text.accent}20`,
+                              borderColor: colors.text.accent,
+                              color: colors.text.accent,
+                            }}
+                          />
                         ))}
                       </Box>
                     )}
@@ -546,6 +555,11 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                             key={value}
                             label={countryMap[value] || value}
                             size='small'
+                            sx={{
+                              backgroundColor: `${colors.text.accent}20`,
+                              borderColor: colors.text.accent,
+                              color: colors.text.accent,
+                            }}
                           />
                         ))}
                       </Box>
@@ -639,8 +653,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                 size='large'
                 sx={{
                   px: 4,
-                  background:
-                    `linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%)`,
+                  background: colors.primary,
                   borderRadius: '12px',
                   color: colors.background.default,
                   fontWeight: 600,
@@ -649,8 +662,7 @@ const DiscoverMoviesDialog = ({ open, onClose }: DiscoverMoviesDialogProps) => {
                   backdropFilter: 'blur(10px)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background:
-                      `linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary-hover) 100%)`,
+                    background: colors.text.accent,
                     transform: 'translateY(-2px)',
                     boxShadow: `0 8px 25px var(--theme-primary)66`,
                   },

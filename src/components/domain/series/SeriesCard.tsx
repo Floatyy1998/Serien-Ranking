@@ -32,8 +32,8 @@ import ThreeDotMenu, {
   StarIcon,
 } from '../../ui/ThreeDotMenu';
 import SeriesDialog from '../dialogs/SeriesDialog';
-import SeriesEpisodesDialog from '../dialogs/SeriesEpisodesDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
+import WatchedEpisodesDialog from '../dialogs/WatchedEpisodesDialog';
 const Typography = lazy(() => import('@mui/material/Typography'));
 const Box = lazy(() => import('@mui/material/Box'));
 const Card = lazy(() => import('@mui/material/Card'));
@@ -927,7 +927,7 @@ export const SeriesCard = ({
         handleUpdateRatings={handleUpdateRatings}
         isReadOnly={false}
       />
-      <SeriesEpisodesDialog
+      <WatchedEpisodesDialog
         open={openEpisodes}
         onClose={handleCloseEpisodes}
         series={currentSeries}
