@@ -813,7 +813,8 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
                         color: 'var(--theme-primary)'
                       }}
                     >
-                      🎨 Theme-Anpassung
+                      <PaletteIcon sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+                      Theme-Anpassung
                     </Typography>
                     <Typography
                       variant='body2'

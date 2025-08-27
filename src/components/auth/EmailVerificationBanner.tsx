@@ -1,4 +1,5 @@
 import { Alert, Button, Snackbar } from '@mui/material';
+import { Email, Warning } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import React, { useEffect, useState } from 'react';
@@ -119,7 +120,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '20px' }}>⚠️</span>
+            <Warning style={{ fontSize: '20px' }} />
             <span style={{ fontWeight: '500' }}>
               Email nicht verifiziert - Bitte überprüfen Sie Ihr Postfach
             </span>
@@ -186,7 +187,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                 margin: '0 20px',
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '20px' }}>📧</div>
+              <Email style={{ fontSize: '48px', marginBottom: '20px' }} />
               <h2 style={{ color: 'var(--theme-primary)', marginBottom: '16px' }}>
                 Email-Verifizierung erforderlich
               </h2>

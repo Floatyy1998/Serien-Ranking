@@ -2,8 +2,11 @@ import {
   CalendarToday,
   ExpandLess,
   ExpandMore,
+  Inventory,
+  Lightbulb,
   Movie,
   People,
+  PhoneAndroid,
   Star,
   TrendingUp,
 } from '@mui/icons-material';
@@ -378,9 +381,17 @@ export const MainPage: React.FC = () => {
             fontWeight: 'bold',
           }}
         >
-          {isOffline
-            ? '📱 OFFLINE MODUS - Zeige gecachte Daten'
-            : '📦 CACHE MODUS - Daten aus Cache geladen'}{' '}
+          {isOffline ? (
+            <>
+              <PhoneAndroid sx={{ fontSize: '1rem', mr: 0.5 }} />
+              OFFLINE MODUS - Zeige gecachte Daten
+            </>
+          ) : (
+            <>
+              <Inventory sx={{ fontSize: '1rem', mr: 0.5 }} />
+              CACHE MODUS - Daten aus Cache geladen
+            </>
+          )}{' '}
           ({seriesList.length + movieList.length} Serien und Filme verfügbar)
         </Box>
       )}
@@ -474,7 +485,8 @@ export const MainPage: React.FC = () => {
                   display: { xs: 'none', sm: 'block' },
                 }}
               >
-                💡 Klicke auf dein Profilbild für Einstellungen
+                <Lightbulb sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+                Klicke auf dein Profilbild für Einstellungen
               </Typography>
             </Box>
           </Box>

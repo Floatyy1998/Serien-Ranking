@@ -1,4 +1,5 @@
 import {
+  BarChart,
   BookmarkAdd,
   BookmarkRemove,
   CalendarToday,
@@ -426,7 +427,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
   const getActivityEmoji = (activity: ActivityItem | string) => {
     // Handle legacy string parameter for title usage
     if (typeof activity === 'string') {
-      return activity === 'default' ? '📊' : '📊';
+      return <BarChart sx={{ fontSize: '1rem' }} />;
     }
 
     // Spezielle Emojis für Batch-Activities basierend auf batchType

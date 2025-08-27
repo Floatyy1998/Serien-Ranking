@@ -1,4 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
+import { Lightbulb } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -198,7 +199,8 @@ const SeriesDialog = ({
                 lineHeight: 1.4,
               }}
             >
-              💡 <strong>Neues Rating-System:</strong> Bewerte beliebige Genres
+              <Lightbulb sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+              <strong>Neues Rating-System:</strong> Bewerte beliebige Genres
               von 0.00-10.00. Nur bewertete Genres ({'>'} 0) fließen in die
               Gesamtbewertung ein. Unbewertete Genres werden ignoriert.
             </Typography>
