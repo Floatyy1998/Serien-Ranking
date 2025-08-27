@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { checkVideoLoadingViability } from '../../utils/videoOptimizer';
+// import { checkVideoLoadingViability } from '../../utils/videoOptimizer'; // Unused
 
 export const BackgroundMedia: React.FC = () => {
   // Initialisiere aus localStorage für sofortiges Rendern
@@ -32,20 +32,20 @@ export const BackgroundMedia: React.FC = () => {
   const maxRetries = 3;
   const preloadLinkRef = useRef<HTMLLinkElement | null>(null);
 
-  // Preload-Funktion für Videos
-  const preloadVideo = (url: string) => {
-    // Entferne alten Preload-Link falls vorhanden
-    if (preloadLinkRef.current) {
-      preloadLinkRef.current.remove();
-    }
+  // Preload-Funktion für Videos - aktuell deaktiviert für Performance
+  // const _preloadVideo = (url: string) => {
+  //   // Entferne alten Preload-Link falls vorhanden
+  //   if (preloadLinkRef.current) {
+  //     preloadLinkRef.current.remove();
+  //   }
     
-    // Verwende prefetch statt preload für Videos
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = url;
-    document.head.appendChild(link);
-    preloadLinkRef.current = link;
-  };
+  //   // Verwende prefetch statt preload für Videos
+  //   const link = document.createElement('link');
+  //   link.rel = 'prefetch';
+  //   link.href = url;
+  //   document.head.appendChild(link);
+  //   preloadLinkRef.current = link;
+  // };
 
   useEffect(() => {
     // Load background media settings from localStorage
@@ -68,37 +68,23 @@ export const BackgroundMedia: React.FC = () => {
             setOpacity(theme.backgroundImageOpacity || 0.5);
             setBlur(theme.backgroundImageBlur || 0);
             
-            // Preload video im Hintergrund
+            // Preload video im Hintergrund - TEMPORÄR DEAKTIVIERT für Performance
             if (theme.backgroundIsVideo && theme.backgroundImage) {
               // Setze Loading auf true wenn es ein Video ist
-              setIsVideoLoading(true);
+              setIsVideoLoading(false); // CHANGED: Kein Video-Loading mehr
               setRetryCount(0); // Reset retry count for new video
               
-              // Prüfe ob Video geladen werden sollte
-              checkVideoLoadingViability(theme.backgroundImage).then(result => {
-                if (!result.shouldLoadVideo) {
-                  console.warn('[BackgroundMedia] Skipping video load:', result.reason);
-                  setVideoLoadFailed(true);
-                  setIsVideoLoading(false);
-                } else {
-                  // Video kann geladen werden
-                  preloadVideo(theme.backgroundImage);
-                  
-                  // Test if URL is reachable
-                  fetch(theme.backgroundImage, { method: 'HEAD' })
-                    .then(response => {
-                      if (!response.ok) {
-                        console.error('[BackgroundMedia] Video URL not reachable:', response.status);
-                        setVideoLoadFailed(true);
-                        setIsVideoLoading(false);
-                      }
-                    })
-                    .catch(err => {
-                      console.error('[BackgroundMedia] Failed to check video URL:', err);
-                      // Don't fail immediately, let video element try
-                    });
-                }
-              });
+              // SKIP Video preloading für Performance-Test
+              // checkVideoLoadingViability(theme.backgroundImage).then(result => {
+              //   if (!result.shouldLoadVideo) {
+              //     console.warn('[BackgroundMedia] Skipping video load:', result.reason);
+              //     setVideoLoadFailed(true);
+              //     setIsVideoLoading(false);
+              //   } else {
+              //     // Video kann geladen werden - preloadVideo handled alles
+              //     preloadVideo(theme.backgroundImage);
+              //   }
+              // });
             } else if (!theme.backgroundIsVideo) {
               // Für Bilder kein Loading
               setIsVideoLoading(false);

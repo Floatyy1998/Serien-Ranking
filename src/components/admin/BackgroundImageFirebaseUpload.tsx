@@ -51,6 +51,68 @@ export const BackgroundImageFirebaseUpload: React.FC<
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Detect if mobile device
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ) || window.innerWidth <= 768;
+  };
+
+  // Compress image for mobile devices
+  const compressImage = (file: File, maxWidth: number = 1920, maxHeight: number = 1080): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Canvas context not available'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Komprimierung fehlgeschlagen'));
+              }
+            },
+            'image/jpeg',
+            0.85 // 85% quality
+          );
+        };
+        img.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Datei konnte nicht gelesen werden'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -71,29 +133,75 @@ export const BackgroundImageFirebaseUpload: React.FC<
       onIsVideoChange(isVideoFile);
     }
 
-    // Validate file size (max 300MB for both videos and images)
-    const maxSize = 300 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError(`Datei darf maximal 300MB groß sein`);
+    // Different size limits for mobile vs desktop
+    const mobile = isMobile();
+    const maxSizeVideo = mobile ? 50 * 1024 * 1024 : 300 * 1024 * 1024; // 50MB mobile, 300MB desktop
+    const maxSizeImage = mobile ? 5 * 1024 * 1024 : 10 * 1024 * 1024; // 5MB mobile, 10MB desktop
+
+    // Check file size based on type
+    if (isVideoFile && file.size > maxSizeVideo) {
+      setError(`Videos dürfen maximal ${mobile ? '50' : '300'}MB groß sein`);
       return;
+    }
+
+    if (isImageFile && file.size > maxSizeImage) {
+      // Try to compress if it's an image on mobile
+      if (mobile) {
+        setError('Bild wird für Mobile optimiert...');
+      } else {
+        setError(`Bilder dürfen maximal 10MB groß sein`);
+        return;
+      }
     }
 
     setUploading(true);
     setError(null);
 
     try {
+      let fileToUpload: File | Blob = file;
+
+      // Compress images on mobile devices or if image is too large
+      if (isImageFile && (mobile || file.size > maxSizeImage)) {
+        try {
+          const compressed = await compressImage(
+            file,
+            mobile ? 1280 : 1920, // Smaller dimensions for mobile
+            mobile ? 720 : 1080
+          );
+          
+          // Check if compression was successful
+          if (compressed.size < file.size) {
+            fileToUpload = compressed;
+            console.log(`Komprimiert von ${(file.size / 1024 / 1024).toFixed(2)}MB auf ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
+          }
+
+          // Final check after compression
+          if (compressed.size > maxSizeImage) {
+            setError('Bild ist auch nach Komprimierung zu groß. Bitte wähle ein kleineres Bild.');
+            setUploading(false);
+            return;
+          }
+        } catch (compressError) {
+          console.error('Fehler bei Bildkomprimierung:', compressError);
+          setError('Fehler bei der Bildoptimierung');
+          setUploading(false);
+          return;
+        }
+      }
+
       // Note: We don't delete old image here anymore
       // The reference counting system in ThemeEditor will handle it
       // when the theme is saved with the new image
       
       // Create a unique filename
       const timestamp = Date.now();
-      const filename = `backgrounds/${user.uid}/${timestamp}_${file.name}`;
+      const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_'); // Sanitize filename
+      const filename = `backgrounds/${user.uid}/${timestamp}_${originalName}`;
 
       // Upload to Firebase Storage
       const storageRef = firebase.storage().ref();
       const fileRef = storageRef.child(filename);
-      const uploadTask = fileRef.put(file);
+      const uploadTask = fileRef.put(fileToUpload);
 
       // Monitor upload progress
       uploadTask.on(

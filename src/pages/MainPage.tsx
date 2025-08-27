@@ -57,9 +57,20 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`main-page-tabpanel-${index}`}
       aria-labelledby={`main-page-tab-${index}`}
+      style={{ 
+        display: value === index ? 'flex' : 'none',
+        flex: 1,
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
       {...other}
     >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ 
+        pt: 3, 
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+      }}>{children}</Box>}
     </div>
   );
 }
@@ -347,7 +358,12 @@ export const MainPage: React.FC = () => {
   }, [user, user?.photoURL]); // Explizit user.photoURL als Dependency hinzufügen
 
   return (
-    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
+    <Container maxWidth={false} disableGutters sx={{ 
+      p: 0,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       {(isOffline || isStale) && (
         <Box
           sx={{
@@ -391,6 +407,7 @@ export const MainPage: React.FC = () => {
             flexDirection: { xs: 'column', md: 'row' },
             gap: { xs: 1, md: 0 },
             minHeight: { xs: 'auto', sm: 'auto', md: '100px' },
+            flexShrink: 0,
           }}
         >
           <Box
@@ -1272,7 +1289,13 @@ export const MainPage: React.FC = () => {
         />
 
         {/* Tabs für Serien und Filme */}
-        <Card sx={{ mt: { xs: 2, md: 0 } }}>
+        <Card sx={{ 
+          mt: { xs: 2, md: 0 },
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
           <Tabs
             data-tour='tabs'
             value={tabValue}
@@ -1313,7 +1336,8 @@ export const MainPage: React.FC = () => {
             />
           </Tabs>
 
-          <TabPanel value={tabValue} index={0}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <TabPanel value={tabValue} index={0}>
             <Box sx={{ p: { xs: 1, md: 2 } }}>
               <Box sx={{ mb: { xs: 2, md: 3 } }} data-tour='legend'>
                 <Legend />
@@ -1361,6 +1385,7 @@ export const MainPage: React.FC = () => {
               />
             </Box>
           </TabPanel>
+          </Box>
         </Card>
 
         {/* Profile Dialog */}

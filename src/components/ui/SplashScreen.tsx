@@ -550,6 +550,7 @@ const SeatsRow = styled(Box)`
 const LogoSVG = styled('svg')`
   width: 100%;
   height: 100%;
+  transform: rotate(180deg); // Logo um 180° drehen - Fernseher stand auf dem Kopf
   filter: sepia(1) saturate(1.5) hue-rotate(35deg) brightness(0.9)
     drop-shadow(0 0 30px rgba(181, 159, 107, 0.6));
 `;

@@ -50,6 +50,7 @@ import { colors } from '../theme';
 
 interface UserProfileData {
   profile: {
+    uid?: string;  // Add uid field
     username: string;
     displayName?: string;
     photoURL?: string;
@@ -66,6 +67,7 @@ interface UserProfileData {
   };
   seriesStats: {
     count: number;
+    watchedEpisodes?: number;  // Add this field
     totalWatchedEpisodes: number;
     totalWatchtime: number;
     averageRating: number;
@@ -172,37 +174,60 @@ export const UserProfilePage: React.FC = () => {
     profileData?.profile.username,
   ]);
 
-  // Profildaten zurücksetzen wenn userId sich ändert
   useEffect(() => {
+    // Profildaten zurücksetzen wenn userId sich ändert
     setProfileData(null);
-    setLoading(true);
     setError('');
-  }, [userId]);
-
-  useEffect(() => {
+    
     const loadUserProfile = async () => {
-      if (!userId || !user) return;
+      if (!userId || !user) {
+        setLoading(false);
+        return;
+      }
 
       try {
+        console.time('[UserProfile] Total Load Time');
         setLoading(true);
 
         // Benutzer-Profil laden - initial
+        console.time('[UserProfile] User Data');
+        console.log('[UserProfile] Loading user:', userId);
+        
+        // Versuche es mit einem Timeout
         const userRef = firebase.database().ref(`users/${userId}`);
-        const userSnapshot = await userRef.once('value');
+        
+        const userDataPromise = userRef.once('value');
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout loading user data')), 5000)
+        );
+        
+        let userSnapshot: firebase.database.DataSnapshot;
+        try {
+          userSnapshot = await Promise.race([userDataPromise, timeoutPromise]) as firebase.database.DataSnapshot;
+        } catch (timeoutError) {
+          console.error('[UserProfile] Timeout or error loading user data:', timeoutError);
+          // Fallback: Try again without timeout
+          userSnapshot = await userRef.once('value');
+        }
+        
+        console.timeEnd('[UserProfile] User Data');
 
         if (!userSnapshot.exists()) {
           setError('Benutzer nicht gefunden');
+          setLoading(false);
           return;
         }
 
         const userProfile = userSnapshot.val();
 
         // Prüfen ob es ein Freund ist
+        console.time('[UserProfile] Friend Check');
         const friendsRef = firebase.database().ref('friendRequests');
         const friendsSnapshot = await friendsRef
           .orderByChild('fromUserId')
           .equalTo(user.uid)
           .once('value');
+        console.timeEnd('[UserProfile] Friend Check');
 
         let isFriend = false;
         if (friendsSnapshot.exists()) {
@@ -228,6 +253,7 @@ export const UserProfilePage: React.FC = () => {
         }
 
         // Statistiken laden
+        console.time('[UserProfile] Series & Movies Data');
         const seriesRef = firebase.database().ref(`${userId}/serien`);
         const moviesRef = firebase.database().ref(`${userId}/filme`);
 
@@ -235,6 +261,7 @@ export const UserProfilePage: React.FC = () => {
           seriesRef.once('value'),
           moviesRef.once('value'),
         ]);
+        console.timeEnd('[UserProfile] Series & Movies Data');
 
         const seriesData = seriesSnapshot.val() || {};
         const moviesData = moviesSnapshot.val() || {};
@@ -379,11 +406,12 @@ export const UserProfilePage: React.FC = () => {
 
         setProfileData({
           profile: {
-            username: userProfile.username,
-            displayName: userProfile.displayName,
+            uid: userId,  // Added uid field
+            username: userProfile.username || 'Unbekannt',
+            displayName: userProfile.displayName || userProfile.username,
             photoURL: userProfile.photoURL,
-            isOnline: userProfile.isOnline || false,
-            lastActive: userProfile.lastActive,
+            isOnline: onlineStatus || false,  // Use onlineStatus from context
+            lastActive: lastActiveTimestamp || userProfile.lastActive,  // Use lastActiveTimestamp from context
             isPublic: userProfile.isPublic || false,
           },
           isFriend,
@@ -395,6 +423,7 @@ export const UserProfilePage: React.FC = () => {
           },
           seriesStats: {
             count: seriesList.length,
+            watchedEpisodes: totalWatchedEpisodes, // Added this field
             totalWatchedEpisodes,
             totalWatchtime: Math.round(totalSeriesWatchtime),
             averageRating: seriesAverageRating,
@@ -410,15 +439,18 @@ export const UserProfilePage: React.FC = () => {
             favoriteProvider: favoriteMovieProvider,
           },
         });
+        console.timeEnd('[UserProfile] Total Load Time');
+        setLoading(false);
       } catch (error) {
+        console.timeEnd('[UserProfile] Total Load Time');
+        console.error('[UserProfile] Error:', error);
         setError('Fehler beim Laden des Profils');
-      } finally {
         setLoading(false);
       }
     };
 
     loadUserProfile();
-  }, [userId, user]);
+  }, [userId, user]); // onlineStatus und lastActiveTimestamp nicht als Dependencies!
 
   // Filter zurücksetzen bei Tab-Wechsel
   useEffect(() => {
@@ -438,6 +470,8 @@ export const UserProfilePage: React.FC = () => {
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  const isOwnProfile = userId === user?.uid;
 
   if (loading) {
     return (
@@ -528,10 +562,13 @@ export const UserProfilePage: React.FC = () => {
     );
   }
 
-  const isOwnProfile = userId === user?.uid;
-
   return (
-    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
+    <Container maxWidth={false} disableGutters sx={{ 
+      p: 0,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       {/* Header */}
       <Box
         className='main-page-header'
@@ -545,6 +582,7 @@ export const UserProfilePage: React.FC = () => {
           borderBottom: '1px solid rgba(255,255,255,0.05)',
           color: colors.text.secondary,
           mb: { xs: 2, md: 4 },
+          flexShrink: 0,
         }}
       >
         {/* Mobile Layout */}
