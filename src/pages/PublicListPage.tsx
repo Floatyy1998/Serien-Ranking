@@ -574,7 +574,12 @@ export const PublicListPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
+    <Container maxWidth={false} disableGutters sx={{ 
+      p: 0,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       {/* Header - ähnlich wie UserProfilePage aber als öffentliche Ansicht */}
       <Box
         className='main-page-header'
@@ -588,6 +593,7 @@ export const PublicListPage: React.FC = () => {
           p: { xs: 2, sm: 2, md: 3 },
           color: colors.text.secondary,
           mb: { xs: 2, md: 4 },
+          flexShrink: 0,
         }}
       >
         {/* Mobile Layout */}

@@ -344,6 +344,13 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
     
     setLoading(true);
     
+    // Timeout für Mobile - falls Firebase hängt
+    const saveTimeout = setTimeout(() => {
+      console.warn('Speichern dauert zu lange, schließe Dialog...');
+      setLoading(false);
+      onClose();
+    }, 5000); // 5 Sekunden Timeout
+    
     try {
       // Get current themes to track image changes
       const currentLocalTheme = localStorage.getItem('customTheme');
@@ -361,21 +368,34 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       );
       
       if (syncMode === 'cloud' && user) {
-        // Get old cloud theme for reference tracking
-        const oldCloudTheme = await loadCloudTheme();
-        
-        // ZUSÄTZLICH in Cloud speichern für andere Geräte
-        const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
-        await themeRef.set(themeData);
-        
-        // Update cloud theme image reference
-        await backgroundImageManager.updateImageReference(
-          oldCloudTheme?.backgroundImage,
-          themeData.backgroundImage,
-          'cloud'
-        );
-        
-        console.log('Theme saved to cloud and locally with reference tracking');
+        try {
+          // Firebase-Operationen mit Timeout (max 3 Sekunden)
+          await Promise.race([
+            (async () => {
+              // Get old cloud theme for reference tracking
+              const oldCloudTheme = await loadCloudTheme();
+              
+              // ZUSÄTZLICH in Cloud speichern für andere Geräte
+              const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
+              await themeRef.set(themeData);
+              
+              // Update cloud theme image reference
+              await backgroundImageManager.updateImageReference(
+                oldCloudTheme?.backgroundImage,
+                themeData.backgroundImage,
+                'cloud'
+              );
+            })(),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Firebase timeout')), 3000)
+            )
+          ]);
+          
+          console.log('Theme saved to cloud and locally with reference tracking');
+        } catch (firebaseError) {
+          console.warn('Firebase save timed out or failed, but local save succeeded:', firebaseError);
+          // Kein Problem - lokales Theme wurde gespeichert
+        }
       } else {
         // NUR lokal gespeichert
         console.log('Theme saved locally only with reference tracking');
@@ -400,11 +420,13 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       
       window.dispatchEvent(new CustomEvent('themeChanged'));
       
-      // Dialog erfolgreich schließen
+      // Clear timeout und schließe Dialog
+      clearTimeout(saveTimeout);
       setLoading(false);
       onClose();
     } catch (error) {
       console.error('Fehler beim Speichern des Themes:', error);
+      clearTimeout(saveTimeout);
       setLoading(false);
       
       // Bei Fehler trotzdem schließen, da das Theme lokal gespeichert wurde

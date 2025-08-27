@@ -46,6 +46,14 @@ export const SeriesGrid = ({
   >(null);
   const [isWatchedDialogReadOnly, setIsWatchedDialogReadOnly] = useState(false);
   const { seriesStatsData } = useStats();
+  
+  // Zeige Empty State nur wenn Daten fertig geladen sind
+  // Diese Hooks MÜSSEN vor allen conditional returns stehen!
+  const [hasMounted, setHasMounted] = React.useState(false);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setHasMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Prüfe ob der Benutzer "heute nicht mehr anzeigen" gewählt hat
   const isDontShowTodayActive = () => {
@@ -769,9 +777,17 @@ export const SeriesGrid = ({
 
   // Wenn targetUserId gesetzt ist, aber noch keine Daten geladen wurden
   if (targetUserId && !friendSeriesLoading && friendSeriesList.length === 0) {
-    // Prüfe ob wirklich keine Serien vorhanden sind oder noch geladen wird
-    const filteredEmptySeries = (friendSeriesList || []).filter((series) => {
-      const matchesSearch = series.title
+    // Keine weitere Prüfung nötig - Liste ist leer
+  }
+
+  // Check if viewing another user's profile
+  const isOtherUser = targetUserId && targetUserId !== user?.uid;
+  const isLoading = targetUserId ? friendSeriesLoading : false;
+
+  // Empty State für anderen Benutzer mit leerer Serie-Liste
+  if (isOtherUser && !isLoading) {
+    const filteredEmptySeries = seriesList.filter(series => {
+      const matchesSearch = (series.name || '')
         .toLowerCase()
         .includes(debouncedSearchValue.toLowerCase());
       return matchesSearch;
@@ -796,14 +812,6 @@ export const SeriesGrid = ({
       );
     }
   }
-
-  // Zeige Empty State nur wenn Daten fertig geladen sind
-  // Warte kurz nach dem initialen Mount bevor Empty State angezeigt wird
-  const [hasMounted, setHasMounted] = React.useState(false);
-  React.useEffect(() => {
-    const timer = setTimeout(() => setHasMounted(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
   
   if (hasMounted && filteredSeries?.length === 0 && selectedGenre === 'All') {
     return (

@@ -323,7 +323,12 @@ export const FriendsPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth={false} disableGutters sx={{ p: 0 }}>
+    <Container maxWidth={false} disableGutters sx={{ 
+      p: 0,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       {/* Header */}
       <Box
         className='main-page-header'
@@ -342,6 +347,7 @@ export const FriendsPage: React.FC = () => {
           flexDirection: { xs: 'column', md: 'row' },
           gap: { xs: 1, md: 0 },
           minHeight: { xs: 'auto', sm: 'auto', md: '100px' },
+          flexShrink: 0,
         }}
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           if (

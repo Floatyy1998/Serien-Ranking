@@ -498,8 +498,26 @@ function AppContent() {
                     <main className='w-full'>
                       <Suspense fallback={null}>
                         <Routes>
-                          <Route path='/login' element={<LoginPage />} />
-                          <Route path='/register' element={<RegisterPage />} />
+                          <Route 
+                            path='/login' 
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => 
+                                  auth?.user ? <Navigate to='/' /> : <LoginPage />
+                                }
+                              </AuthContext.Consumer>
+                            } 
+                          />
+                          <Route 
+                            path='/register' 
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => 
+                                  auth?.user ? <Navigate to='/' /> : <RegisterPage />
+                                }
+                              </AuthContext.Consumer>
+                            }
+                          />
                           <Route
                             path='/'
                             element={
@@ -527,15 +545,18 @@ function AppContent() {
                             path='/friends'
                             element={
                               <AuthContext.Consumer>
-                                {(auth) =>
-                                  auth?.user ? (
+                                {(auth) => {
+                                  if (!auth?.authStateResolved) {
+                                    return null;
+                                  }
+                                  return auth?.user ? (
                                     <EmailVerificationBanner>
                                       <FriendsPage />
                                     </EmailVerificationBanner>
                                   ) : (
                                     <Navigate to='/login' />
-                                  )
-                                }
+                                  );
+                                }}
                               </AuthContext.Consumer>
                             }
                           />
@@ -547,15 +568,19 @@ function AppContent() {
                             path='/profile/:userId'
                             element={
                               <AuthContext.Consumer>
-                                {(auth) =>
-                                  auth?.user ? (
+                                {(auth) => {
+                                  // Warte auf Auth-Resolution beim initialen Laden
+                                  if (!auth?.authStateResolved) {
+                                    return null; // Zeige nichts während Auth lädt
+                                  }
+                                  return auth?.user ? (
                                     <EmailVerificationBanner>
                                       <UserProfilePage />
                                     </EmailVerificationBanner>
                                   ) : (
                                     <Navigate to='/login' />
-                                  )
-                                }
+                                  );
+                                }}
                               </AuthContext.Consumer>
                             }
                           />
