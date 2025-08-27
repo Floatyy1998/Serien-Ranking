@@ -1,5 +1,5 @@
 /**
- * 🏆 Offline-First Badge System
+ * Offline-First Badge System
  *
  * Berechnet Badges direkt aus existierenden Daten ohne Firebase-Activities zu speichern.
  * Reduziert Firebase-Belastung drastisch und funktioniert offline.
@@ -174,7 +174,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * ⭐ Collector Badges - Anzahl Bewertungen
+   * Collector Badges - Anzahl Bewertungen
    */
   private checkCollectorBadge(
     badge: Badge,
@@ -261,7 +261,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 🏆 Season-Badges aus echten Serien-Completion-Daten
+   * Season-Badges aus echten Serien-Completion-Daten
    */
   private checkSeasonBadgeFromRealData(
     badge: Badge,
@@ -367,7 +367,7 @@ export class OfflineBadgeSystem {
       }
     }
 
-    // 🏆 Season-Badges aus echten Serien-Completion-Daten
+    // Season-Badges aus echten Serien-Completion-Daten
     if (badge.requirements.seasons) {
       return this.checkSeasonBadgeFromRealData(badge, _series);
     }

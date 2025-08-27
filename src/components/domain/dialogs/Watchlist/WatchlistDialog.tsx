@@ -589,7 +589,7 @@ const WatchlistDialog = ({
 
       await episodeRef.update(updateData);
 
-      // 🏆 BADGE-SYSTEM: Activity-Logging für Badge-Berechnung (keine Friend-Activities)
+      // BADGE-SYSTEM: Activity-Logging für Badge-Berechnung (keine Friend-Activities)
       // Verwende air_date direkt aus nextEpisode, da es das korrekte Datum enthält
       // (episodeData aus series.seasons könnte ein anderes Format haben)
       const airDate = nextEpisode.air_date || 

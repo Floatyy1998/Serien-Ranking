@@ -17,7 +17,7 @@ import { colors } from '../../theme';
 
 export interface TourStep {
   target: string; // CSS selector
-  title: string;
+  title: string | React.ReactNode;
   content: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
   disableBeacon?: boolean;

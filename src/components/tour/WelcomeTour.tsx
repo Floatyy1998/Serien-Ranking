@@ -1,9 +1,30 @@
+import {
+  Add,
+  BarChart,
+  BookmarkBorder,
+  EmojiEvents,
+  Explore,
+  Group,
+  LibraryAdd,
+  Palette,
+  PlayCircleOutline,
+  Recommend,
+  Search,
+  TheaterComedy,
+  Tv,
+  WifiTethering,
+  WavingHand,
+  TextFields,
+  SkipNext,
+  Bookmark,
+  Star,
+  MoreVert,
+} from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, { useEffect, useState } from 'react';
 import { MockSeriesCard } from './MockSeriesCard';
 import { TourStep, TourSystem } from './TourSystem';
-
 interface WelcomeTourProps {
   onTourComplete: () => void;
   shouldRestart?: boolean;
@@ -69,7 +90,11 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
   const tourSteps: TourStep[] = [
     {
       target: '.main-header-avatar',
-      title: '👋 Willkommen bei TV-RANK!',
+      title: (
+        <>
+          <WavingHand sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Willkommen bei TV-RANK!
+        </>
+      ),
       content:
         'Hier ist dein Profilbild. Klicke darauf um deine Einstellungen zu öffnen, deinen Benutzernamen zu ändern oder dein Profilbild hochzuladen.',
       position: 'bottom',
@@ -77,7 +102,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '[data-tour="badge-button"]',
-      title: '🏆 Badge System',
+      title: (
+        <>
+          <EmojiEvents sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />{' '}
+          Badge System
+        </>
+      ),
       content:
         'Hier findest du alle deine Achievements! Verdiene Badges durch verschiedene Aktivitäten wie das Schauen von Serien, Bewerten oder das Erreichen von Meilensteinen.',
       position: 'bottom',
@@ -85,7 +115,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '.main-header-button',
-      title: '👥 Freunde System',
+      title: (
+        <>
+          <Group sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Freunde
+          System
+        </>
+      ),
       content:
         'Mit dem Freunde-Button kannst du andere Nutzer als Freunde hinzufügen, ihre Listen einsehen und Aktivitäten verfolgen. Das rote Badge zeigt neue Freundschaftsanfragen an.',
       position: 'bottom',
@@ -95,7 +130,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       target: isMobile
         ? '[data-tour="mobile-stats-button"]'
         : '[data-tour="stats-grid"]',
-      title: '📊 Deine Statistiken',
+      title: (
+        <>
+          <BarChart sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />{' '}
+          Deine Statistiken
+        </>
+      ),
       content: isMobile
         ? 'Tippe auf diesen Button um deine persönlichen Statistiken zu sehen: Anzahl Serien, geschaute Episoden, Bewertungen und mehr. Diese werden automatisch basierend auf deiner Aktivität berechnet.'
         : 'Hier siehst du deine persönlichen Statistiken: Anzahl Serien, geschaute Episoden, Bewertungen und mehr. Diese werden automatisch basierend auf deiner Aktivität berechnet.',
@@ -104,7 +144,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '[data-tour="tabs"]',
-      title: '📺 Serien & Filme',
+      title: (
+        <>
+          <Tv sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Serien &
+          Filme
+        </>
+      ),
       content:
         'Wechsle zwischen deiner Serien- und Filme-Sammlung. Beide haben separate Statistiken und Filter-Optionen.',
       position: 'bottom',
@@ -114,7 +159,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       target: isMobile
         ? '[data-tour="mobile-filters-button"]'
         : '[data-tour="search-filters"]',
-      title: '🔍 Such- und Filter-System',
+      title: (
+        <>
+          <Search sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Such-
+          und Filter-System
+        </>
+      ),
       content: isMobile
         ? 'Tippe auf diesen Button um Such- und Filter-Optionen zu öffnen. Dort findest du Suchleiste, Buttons zum Hinzufügen und Entdecken von Serien, sowie verschiedene Filter-Optionen. Die Tour wird nach den wichtigsten Bereichen der App fortfahren.'
         : 'Hier kannst du deine Sammlung durchsuchen und filtern. Die Filter helfen dir dabei, schnell bestimmte Inhalte zu finden.',
@@ -127,7 +177,11 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       : ([
           {
             target: '[data-tour="search-input"]',
-            title: '🔤 Suchleiste',
+            title: (
+              <>
+                <TextFields sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Suchleiste
+              </>
+            ),
             content:
               'Gib hier den Namen einer Serie ein um sie schnell zu finden. Die Suche funktioniert in Echtzeit während du tippst.',
             position: 'bottom' as const,
@@ -135,7 +189,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           },
           {
             target: '[data-tour="add-button"]',
-            title: '➕ Serie hinzufügen',
+            title: (
+              <>
+                <Add sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />{' '}
+                Serie hinzufügen
+              </>
+            ),
             content:
               'Mit diesem Button kannst du neue Serien zu deiner Sammlung hinzufügen. Einfach den Namen eingeben und aus den Suchergebnissen auswählen.',
             position: 'bottom' as const,
@@ -143,7 +202,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           },
           {
             target: '[data-tour="discover-button"]',
-            title: '🔍 Serien entdecken',
+            title: (
+              <>
+                <Explore sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />{' '}
+                Serien entdecken
+              </>
+            ),
             content:
               'Entdecke noch unveröffentlichte Serien und füge sie zu deiner Wishlist hinzu. So verpasst du keine neuen Releases!',
             position: 'bottom' as const,
@@ -151,7 +215,14 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           },
           {
             target: '[data-tour="recommendations-button"]',
-            title: '🎯 Empfehlungen',
+            title: (
+              <>
+                <Recommend
+                  sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }}
+                />{' '}
+                Empfehlungen
+              </>
+            ),
             content:
               'Erhalte personalisierte Serienempfehlungen basierend auf deinen Bewertungen und Vorlieben. Der Algorithmus lernt deinen Geschmack!',
             position: 'bottom' as const,
@@ -159,7 +230,14 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           },
           {
             target: '[data-tour="genre-filter"]',
-            title: '🎭 Genre-Filter',
+            title: (
+              <>
+                <TheaterComedy
+                  sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }}
+                />{' '}
+                Genre-Filter
+              </>
+            ),
             content:
               'Filtere deine Sammlung nach Genres wie Action, Comedy, Drama usw. So findest du schnell Serien eines bestimmten Typs.',
             position: 'bottom' as const,
@@ -167,7 +245,14 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           },
           {
             target: '[data-tour="provider-filter"]',
-            title: '📺 Streaming-Anbieter Filter',
+            title: (
+              <>
+                <PlayCircleOutline
+                  sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }}
+                />{' '}
+                Streaming-Anbieter Filter
+              </>
+            ),
             content:
               'Zeige nur Serien von bestimmten Anbietern wie Netflix, Amazon Prime, Disney+ etc. Perfekt um zu sehen was auf welcher Plattform verfügbar ist.',
             position: 'bottom' as const,
@@ -175,7 +260,14 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           },
           {
             target: '[data-tour="watchlist-button"]',
-            title: '📋 Watchlist',
+            title: (
+              <>
+                <BookmarkBorder
+                  sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }}
+                />{' '}
+                Watchlist
+              </>
+            ),
             content:
               'Zeige nur Serien aus deiner Watchlist an. Das sind Serien die du als "Geplant" markiert hast und bald schauen möchtest.',
             position: 'bottom' as const,
@@ -183,7 +275,11 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           },
           {
             target: '[data-tour="next-watch-button"]',
-            title: '⏭️ Als nächstes schauen',
+            title: (
+              <>
+                <SkipNext sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Als nächstes schauen
+              </>
+            ),
             content:
               'Finde heraus welche Episoden oder Serien du als nächstes schauen könntest. Basiert auf deinem aktuellen Fortschritt.',
             position: 'bottom' as const,
@@ -192,7 +288,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
         ] as TourStep[])),
     {
       target: '[data-tour="legend"]',
-      title: '🎨 Legende & Status',
+      title: (
+        <>
+          <Palette sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />{' '}
+          Legende & Status
+        </>
+      ),
       content:
         'Die Legende erklärt dir die verschiedenen Farben und Symbole in deiner Liste. Jeder Status hat eine eigene Farbe für bessere Übersicht.',
       position: 'top',
@@ -200,7 +301,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '[data-tour="series-grid"]',
-      title: '📱 Deine Serie Collection',
+      title: (
+        <>
+          <LibraryAdd sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />{' '}
+          Deine Serie Collection
+        </>
+      ),
       content:
         'Hier siehst du alle deine Serien. Jede Serie wird als Card dargestellt mit wichtigen Informationen. Schauen wir uns eine Serie genauer an!',
       position: 'top',
@@ -208,7 +314,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '[data-tour="series-providers"]',
-      title: '📺 Streaming-Anbieter Logos',
+      title: (
+        <>
+          <WifiTethering sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} />{' '}
+          Streaming-Anbieter Logos
+        </>
+      ),
       content:
         'Diese Logos zeigen dir auf welchen Plattformen die Serie verfügbar ist. So weißt du sofort wo du sie schauen kannst.',
       position: 'bottom',
@@ -216,7 +327,11 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '[data-tour="series-watchlist-button"]',
-      title: '🔖 Watchlist-Marker',
+      title: (
+        <>
+          <Bookmark sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Watchlist-Marker
+        </>
+      ),
       content:
         'Das Lesezeichen zeigt an, dass diese Serie auf deiner Watchlist steht. Klicke darauf um sie zur Watchlist hinzuzufügen oder zu entfernen.',
       position: 'bottom',
@@ -224,7 +339,11 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '[data-tour="series-rating"]',
-      title: '⭐ Bewertung',
+      title: (
+        <>
+          <Star sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Bewertung
+        </>
+      ),
       content:
         'Hier siehst du deine Bewertung für diese Serie. Je höher der Wert, desto besser hat dir die Serie gefallen.',
       position: 'bottom',
@@ -232,7 +351,11 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     },
     {
       target: '[data-tour="series-menu"]',
-      title: '⋮ Aktionsmenü',
+      title: (
+        <>
+          <MoreVert sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Aktionsmenü
+        </>
+      ),
       content:
         "Mit den drei Punkten öffnest du das Menü für weitere Aktionen: Episoden verwalten, Serie bewerten oder löschen. Das war's - du kennst jetzt alle wichtigen Features!",
       position: 'bottom',

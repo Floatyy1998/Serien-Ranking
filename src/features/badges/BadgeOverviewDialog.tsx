@@ -1,4 +1,4 @@
-import { Close as CloseIcon, Lock, Star } from '@mui/icons-material';
+import { Close as CloseIcon, Lock, Star, EmojiEvents } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -24,6 +24,7 @@ import {
   BadgeProgress,
   EarnedBadge,
 } from './badgeDefinitions';
+import { BadgeIcon } from './BadgeIcons';
 import { colors } from '../../theme';
 
 interface BadgeOverviewDialogProps {
@@ -402,7 +403,13 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                 position: 'relative',
               }}
             >
-              {badge.emoji}
+              <BadgeIcon 
+                badgeId={badge.id}
+                sx={{ 
+                  fontSize: '2rem',
+                  color: earned ? 'white' : theme.palette.grey[400]
+                }}
+              />
               {!earned && (
                 <Box
                   sx={{
@@ -758,16 +765,25 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
                 gap: 3,
               }}
             >
-              <Typography
-                variant='h5'
-                sx={{
-                  color: 'var(--theme-primary)',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1, 
+                  justifyContent: 'center',
                 }}
               >
-                🏆 Badges werden geladen...
-              </Typography>
+                <EmojiEvents sx={{ fontSize: '1.5rem', color: 'var(--theme-primary)' }} />
+                <Typography
+                  variant='h5'
+                  sx={{
+                    color: 'var(--theme-primary)',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Badges werden geladen...
+                </Typography>
+              </Box>
 
               {loadingProgress && (
                 <>

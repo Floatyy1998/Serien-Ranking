@@ -11,6 +11,10 @@ import {
   ThumbUp,
   Timeline,
   Tv,
+  Whatshot,
+  Bolt,
+  EmojiEvents,
+  Star,
 } from '@mui/icons-material';
 import {
   Alert,
@@ -429,38 +433,38 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
     if (activity.batchType) {
       switch (activity.batchType) {
         case 'binge':
-          return '🔥'; // Feuer für Binge-Watching
+          return <Whatshot sx={{ fontSize: '1.2rem', color: colors.status.error }} />;
         case 'quickwatch':
-          return '⚡'; // Blitz für Quickwatch
+          return <Bolt sx={{ fontSize: '1.2rem', color: colors.status.warning }} />;
         case 'season_complete':
-          return '🏆'; // Pokal für komplette Staffel
+          return <EmojiEvents sx={{ fontSize: '1.2rem', color: colors.status.warning }} />;
         case 'single_episode':
-          return '📺'; // TV für einzelne Episode
+          return <Tv sx={{ fontSize: '1.2rem' }} />;
         default:
-          return '📺';
+          return <Tv sx={{ fontSize: '1.2rem' }} />;
       }
     }
 
-    // Standard Emojis
+    // Standard Icons
     switch (activity.type) {
       case 'series_added':
-        return '📺';
+        return <Tv sx={{ fontSize: '1.2rem' }} />;
       case 'series_deleted':
-        return '🗑️';
+        return <Delete sx={{ fontSize: '1.2rem', color: colors.status.error }} />;
       case 'episode_watched':
-        return '▶️';
+        return <PlayArrow sx={{ fontSize: '1.2rem' }} />;
       case 'episodes_watched':
-        return '⏩';
+        return <FastForward sx={{ fontSize: '1.2rem' }} />;
       case 'series_rated':
-        return '⭐';
+        return <Star sx={{ fontSize: '1.2rem', color: colors.status.warning }} />;
       case 'movie_added':
-        return '🎬';
+        return <MovieIcon sx={{ fontSize: '1.2rem' }} />;
       case 'movie_deleted':
-        return '🗑️';
+        return <Delete sx={{ fontSize: '1.2rem', color: colors.status.error }} />;
       case 'movie_rated':
-        return '⭐';
+        return <Star sx={{ fontSize: '1.2rem', color: colors.status.warning }} />;
       default:
-        return '📊';
+        return <Timeline sx={{ fontSize: '1.2rem' }} />;
     }
   };
 

@@ -1,5 +1,6 @@
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Star } from '@mui/icons-material';
 import {
   Alert,
   Button,
@@ -806,17 +807,20 @@ export const SeriesCard = ({
             }}
             aria-label='Bewertung anzeigen'
           >
-            <Typography
-              variant='body1'
+            <Box
               sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
                 fontSize: '0.9rem',
                 color: '#ffffff',
                 fontWeight: 600,
                 textShadow: '0 1px 3px rgba(0,0,0,0.5)',
               }}
             >
-              ⭐ {rating}
-            </Typography>
+              <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+              {rating}
+            </Box>
           </Box>
           <Box
             className={`absolute bottom-3 right-3 transition-all duration-300 ${

@@ -1,6 +1,14 @@
 import { Info } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { colors } from '../../theme';
+import { 
+  LiveTv, 
+  Circle, 
+  Image, 
+  Bookmark, 
+  MoreVert, 
+  Lightbulb 
+} from '@mui/icons-material';
 const Box = lazy(() => import('@mui/material/Box'));
 const IconButton = lazy(() => import('@mui/material/IconButton'));
 const Tooltip = lazy(() => import('@mui/material/Tooltip'));
@@ -44,20 +52,29 @@ export const Legend = () => {
                   fontSize: '1.1rem'
                 }}
               >
-                📺 Serien & Filme Guide
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
+                  <LiveTv sx={{ fontSize: '1.2rem' }} />
+                  <span>Serien & Filme Guide</span>
+                </Box>
               </Typography>
               
               <Box sx={{ mb: 2 }}>
-                <Typography sx={{ color: '#b103fc', fontWeight: 'bold', mb: 0.5 }}>
-                  🟣 Beendet:
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#b103fc', fontWeight: 'bold', mb: 0.5 }}>
+                  <Circle sx={{ fontSize: '0.9rem', color: '#b103fc' }} />
+                  <Typography sx={{ color: '#b103fc', fontWeight: 'bold' }}>
+                    Beendet:
+                  </Typography>
+                </Box>
                 <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem', mb: 1 }}>
                   Serie ist abgeschlossen - keine neuen Folgen
                 </Typography>
                 
-                <Typography sx={{ color: '#42d10f', fontWeight: 'bold', mb: 0.5 }}>
-                  🟢 Laufend:
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#42d10f', fontWeight: 'bold', mb: 0.5 }}>
+                  <Circle sx={{ fontSize: '0.9rem', color: '#42d10f' }} />
+                  <Typography sx={{ color: '#42d10f', fontWeight: 'bold' }}>
+                    Laufend:
+                  </Typography>
+                </Box>
                 <Typography sx={{ color: '#e0e0e0', fontSize: '0.9rem', mb: 2 }}>
                   Serie läuft noch - neue Folgen kommen
                 </Typography>
@@ -69,21 +86,21 @@ export const Legend = () => {
                 '& > div': { mb: 1.5 }
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ color: 'var(--theme-primary)', fontSize: '1rem' }}>🖼️</Typography>
+                  <Image sx={{ color: 'var(--theme-primary)', fontSize: '1rem' }} />
                   <Typography sx={{ color: colors.text.muted, fontSize: '0.9rem' }}>
                     <strong>Poster:</strong> Details anzeigen
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ color: '#ffd700', fontSize: '1rem' }}>🔖</Typography>
+                  <Bookmark sx={{ color: '#ffd700', fontSize: '1rem' }} />
                   <Typography sx={{ color: colors.text.muted, fontSize: '0.9rem' }}>
                     <strong>Watchlist-Icon:</strong> Toggle Watchlist
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ color: '#ff6b6b', fontSize: '1rem' }}>⋮</Typography>
+                  <MoreVert sx={{ color: '#ff6b6b', fontSize: '1rem' }} />
                   <Typography sx={{ color: colors.text.muted, fontSize: '0.9rem' }}>
                     <strong>3-Punkte-Menü:</strong> Rating ändern, gesehene Episoden, kommende Episoden, löschen
                   </Typography>
@@ -100,7 +117,10 @@ export const Legend = () => {
                   opacity: 0.8
                 }}
               >
-                💡 Nutze Filter & Suche für bessere Übersicht
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: 'center' }}>
+                  <Lightbulb sx={{ fontSize: '0.9rem' }} />
+                  <span>Nutze Filter & Suche für bessere Übersicht</span>
+                </Box>
               </Typography>
               
               <Typography 
