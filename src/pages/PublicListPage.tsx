@@ -3,6 +3,7 @@ import {
   CalendarToday,
   ExpandLess,
   ExpandMore,
+  Public,
   Star,
   TrendingUp,
 } from '@mui/icons-material';
@@ -639,7 +640,7 @@ export const PublicListPage: React.FC = () => {
                 lineHeight: 1.2,
               }}
             >
-              🌍{' '}
+              <Public sx={{ fontSize: '1rem', mr: 0.5 }} />
               {profileData.profile.displayName || profileData.profile.username}s
               öffentliche Liste
             </Typography>
@@ -734,7 +735,7 @@ export const PublicListPage: React.FC = () => {
                 fontWeight='bold'
                 sx={{ fontSize: '2.125rem', mb: 1 }}
               >
-                🌍{' '}
+                <Public sx={{ fontSize: '1rem', mr: 0.5 }} />
                 {profileData.profile.displayName ||
                   profileData.profile.username}
                 s öffentliche Liste

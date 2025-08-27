@@ -1,6 +1,6 @@
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Star } from '@mui/icons-material';
+import { Star, Warning } from '@mui/icons-material';
 import {
   Alert,
   Button,
@@ -974,7 +974,8 @@ export const SeriesCard = ({
             textAlign: 'center',
           }}
         >
-          ⚠️ Bestätigung
+          <Warning sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+          Bestätigung
         </DialogTitle>
         <DialogContent
           sx={{

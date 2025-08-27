@@ -14,7 +14,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { Star } from '@mui/icons-material';
+import { Star, Warning } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -873,7 +873,8 @@ export const MovieCard = ({
             textAlign: 'center',
           }}
         >
-          ⚠️ Bestätigung
+          <Warning sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+          Bestätigung
         </DialogTitle>
         <DialogContent
           sx={{

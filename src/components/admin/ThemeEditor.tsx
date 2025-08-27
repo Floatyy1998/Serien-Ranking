@@ -15,6 +15,8 @@ import {
   Forest,
   AutoAwesome,
   WbSunny,
+  Lightbulb,
+  Warning,
 } from '@mui/icons-material';
 import { BackgroundImageFirebaseUpload } from './BackgroundImageFirebaseUpload';
 import {
@@ -828,7 +830,8 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
                   opacity: 0.8,
                   fontStyle: 'italic',
                 }}>
-                  💡 Tipp: Jedes Gerät kann trotzdem eigene Anpassungen haben (lokales Theme überschreibt Cloud)
+                  <Lightbulb sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+                  Tipp: Jedes Gerät kann trotzdem eigene Anpassungen haben (lokales Theme überschreibt Cloud)
                 </Typography>
               )}
             </Stack>
@@ -1266,7 +1269,8 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
             border: '1px solid #ff444430',
           }}>
             <Typography sx={{ color: '#ff4444', mb: 1, fontWeight: 600 }}>
-              ⚠️ Warnung
+              <Warning sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+              Warnung
             </Typography>
             <Typography sx={{ color: '#fff', fontSize: '0.85rem' }}>
               Dies entfernt das Theme für <strong>ALLE</strong> deine Geräte!

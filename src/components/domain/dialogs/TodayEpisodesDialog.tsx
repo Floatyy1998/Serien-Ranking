@@ -23,6 +23,15 @@ import {
   Restaurant,
   BarChart,
   Public,
+  Waves,
+  School,
+  Grass,
+  RemoveRedEye,
+  Kitchen,
+  NaturePeople,
+  Coffee,
+  Pets,
+  DarkMode,
 } from '@mui/icons-material';
 import {
   Box,
@@ -100,7 +109,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
       const funFacts = [
         // Originale Facts erweitert
         <>
-          🐋 Du hast{' '}
+          <Waves sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hast{' '}
           <strong>
             <u>{percentageOfSharkLife}%</u>
           </strong>{' '}
@@ -163,7 +173,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           verdient!
         </>,
         <>
-          🎓 Du hättest{' '}
+          <School sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{universityDegreesEquivalent || "mindestens einen"}</u>
           </strong>{' '}
@@ -188,7 +199,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           Minuten – du liebst {averageEpisodeLength > 1 ? "längere" : "kürzere"} Formate!
         </>,
         <>
-          🌱 In der Zeit sind deine Haare um{' '}
+          <Grass sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          In der Zeit sind deine Haare um{' '}
           <strong>
             <u>{hairGrowthMM} mm</u>
           </strong>{' '}
@@ -203,14 +215,16 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           mal geschlagen – alle für Serien!
         </>,
         <>
-          👀 Du hast dabei etwa{' '}
+          <RemoveRedEye sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hast dabei etwa{' '}
           <strong>
             <u>{(blinkingEquivalent / 1000).toFixed(0)}k</u>
           </strong>{' '}
           mal geblinzelt – und trotzdem keine Szene verpasst!
         </>,
         <>
-          🍳 Du hättest{' '}
+          <Kitchen sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{cookingMealsEquivalent}</u>
           </strong>{' '}
@@ -225,21 +239,24 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           AAA-Videospiele durchspielen können – aber Serien sind cooler!
         </>,
         <>
-          🌳 Du hättest{' '}
+          <NaturePeople sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{treesPlantedEquivalent}</u>
           </strong>{' '}
           Bäume pflanzen können und damit {Math.floor(treesPlantedEquivalent * 22)} kg CO2 pro Jahr binden!
         </>,
         <>
-          ☕ Du hättest{' '}
+          <Coffee sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{coffeeBrewingEquivalent}</u>
           </strong>{' '}
           Tassen Kaffee zubereiten können – genug Koffein für 10 Lifetime!
         </>,
         <>
-          🐕 Du hättest{' '}
+          <Pets sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{dogWalksEquivalent}</u>
           </strong>{' '}
@@ -279,14 +296,16 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           <strong>{Math.floor(musicListeningEquivalent / 12)} Alben</strong>!
         </>,
         <>
-          ☕ Du hättest{' '}
+          <Coffee sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{coffeeBrewingEquivalent}</u>
           </strong>{' '}
           Tassen Kaffee zubereiten können – genug Koffein für mehrere Leben!
         </>,
         <>
-          🌌 Du hättest{' '}
+          <DarkMode sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{daysInSpaceEquivalent}</u>
           </strong>{' '}

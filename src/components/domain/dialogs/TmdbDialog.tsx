@@ -1,12 +1,16 @@
 import {
   Add as AddIcon,
+  CalendarToday,
   Check as CheckIcon,
+  CheckCircle,
   Close as CloseIcon,
   Movie as MovieIcon,
   Tv as TvIcon,
   Group as GroupIcon,
   Brush,
   Star,
+  TheaterComedy,
+  Warning,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -1046,7 +1050,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         setTimeout(() => {
           setSnackbar({
             open: true,
-            message: `✓ "${titleName}" wurde erfolgreich zu deiner ${credit.media_type === "movie" ? "Film" : "Serien"}-Liste hinzugefügt`,
+            message: `"${titleName}" wurde erfolgreich zu deiner ${credit.media_type === "movie" ? "Film" : "Serien"}-Liste hinzugefügt`,
             severity: 'success',
           });
         }, 100);
@@ -1143,20 +1147,19 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 flexDirection: "column",
               }}
             >
-              <Typography
-                component="div"
-                variant="h4"
-                sx={{ fontWeight: "bold", color: colors.status.warning }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {type === "tv" ? <TvIcon /> : <MovieIcon />}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {type === "tv" ? <TvIcon sx={{ fontSize: '2rem', color: colors.status.warning }} /> : <MovieIcon sx={{ fontSize: '2rem', color: colors.status.warning }} />}
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: "bold", color: colors.status.warning }}
+                >
                   {type === "tv" ? data.name : data.title}
                   {data.first_air_date &&
                     ` (${new Date(data.first_air_date).getFullYear()})`}
                   {data.release_date &&
                     ` (${new Date(data.release_date).getFullYear()})`}
-                </Box>
-              </Typography>
+                </Typography>
+              </Box>
               <Chip
                 icon={type === "tv" ? <TvIcon sx={{ fontSize: '1rem' }} /> : <MovieIcon sx={{ fontSize: '1rem' }} />}
                 label={type === "tv" ? "Serie" : "Film"}
@@ -1269,12 +1272,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           >
                             TMDB Bewertung
                           </Typography>
-                          <Typography variant="body1">
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+                            <Typography variant="body1">
                               {data.vote_average.toFixed(1)}/10
-                            </Box>
-                          </Typography>
+                            </Typography>
+                          </Box>
                         </Box>
                       )}
                     {data.genres && data.genres.length > 0 && (
@@ -1383,19 +1386,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     {/* Anime Charaktere Sektion - höchste Priorität */}
                     {animeCharacters.length > 0 && (
                       <Box mb={4}>
-                        <Typography
-                          variant="h5"
-                          sx={{
-                            color: colors.status.warning,
-                            mb: 2,
-                            fontWeight: "bold",
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <Brush sx={{ fontSize: '1rem' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+                          <Brush sx={{ fontSize: '1.5rem', color: colors.status.warning }} />
+                          <Typography
+                            variant="h5"
+                            sx={{
+                              color: colors.status.warning,
+                              fontWeight: "bold",
+                            }}
+                          >
                             Anime-Charaktere ({animeCharacters.length})
-                          </Box>
-                        </Typography>
+                          </Typography>
+                        </Box>
                         <Box
                           display="grid"
                           gap={2}
@@ -1612,7 +1614,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           variant="body2"
                           sx={{ color: colors.status.warning }}
                         >
-                          ⚠️ AniList nicht erreichbar - Zeige TMDB Cast-Daten
+                          <Warning sx={{ fontSize: '0.875rem', mr: 0.5, verticalAlign: 'middle' }} />
+                          AniList nicht erreichbar - Zeige TMDB Cast-Daten
                         </Typography>
                       </Box>
                     )}
@@ -1646,12 +1649,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             fontWeight: "bold",
                           }}
                         >
-                          🎭 Schauspieler (
-                          {
-                            castData.filter((actor: any) => actor.profile_path)
-                              .length
-                          }
-                          )
+                          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                            <TheaterComedy sx={{ fontSize: '1.2rem' }} />
+                            Schauspieler ({castData.filter((actor: any) => actor.profile_path).length})
+                          </Box>
                         </Typography>
                         <Box
                           display="grid"
@@ -2053,7 +2054,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                     ? `linear-gradient(135deg, ${colors.text.accent}, ${colors.text.accent}90)`
                                     : `${colors.text.accent}20`,
                                 color:
-                                  video.type === "Trailer" ? colors.background.default : colors.text.accent,
+                                  video.type === "Trailer" ? "#FFFFFF" : colors.text.accent,
                                 fontWeight:
                                   video.type === "Trailer" ? "800" : "bold",
                                 boxShadow:
@@ -2108,7 +2109,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 variant="body2"
                 sx={{ color: "#4caf50", fontWeight: "bold" }}
               >
-                ✅ Bereits in deiner Liste
+                <CheckCircle sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+                Bereits in deiner Liste
               </Typography>
             ) : canAdd ? (
               <Button
@@ -2221,7 +2223,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 variant="h4"
                 sx={{ fontWeight: "bold", color: colors.status.warning }}
               >
-                🎭 {selectedPerson.name}
+                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                  <TheaterComedy sx={{ fontSize: '1.5rem' }} />
+                  {selectedPerson.name}
+                </Box>
               </Typography>
               <IconButton
                 onClick={() => setPersonDialogOpen(false)}
@@ -2585,7 +2590,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                     gap: 0.5,
                                   }}
                                 >
-                                  📅{" "}
+                                  <CalendarToday sx={{ fontSize: '0.875rem', mr: 0.5 }} />
                                   {credit.release_date
                                     ? new Date(
                                         credit.release_date,
@@ -2870,7 +2875,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                     gap: 0.5,
                                   }}
                                 >
-                                  📅{" "}
+                                  <CalendarToday sx={{ fontSize: '0.875rem', mr: 0.5 }} />
                                   {credit.release_date
                                     ? new Date(
                                         credit.release_date,

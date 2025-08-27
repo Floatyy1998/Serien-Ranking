@@ -1,4 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
+import { CalendarToday, Tv } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -337,7 +338,8 @@ const NewSeasonNotificationDialog = ({
               {nextEpisodeInfo && (
                 <Box>
                   <Typography variant='body2' sx={{ color: '#9e9e9e' }}>
-                    📅 Nächste Episode
+                    <CalendarToday sx={{ fontSize: '0.875rem', mr: 0.5 }} />
+                    Nächste Episode
                   </Typography>
                   <Typography variant='body1'>
                     {nextEpisodeInfo.episode}: {nextEpisodeInfo.title}
@@ -386,7 +388,7 @@ const NewSeasonNotificationDialog = ({
                                 }}
                               />
                             ) : (
-                              <Box sx={{ fontSize: '24px' }}>📺</Box>
+                              <Tv sx={{ fontSize: '24px' }} />
                             )}
                             <Typography
                               variant='body2'
