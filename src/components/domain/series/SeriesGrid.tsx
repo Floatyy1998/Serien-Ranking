@@ -210,11 +210,26 @@ export const SeriesGrid = ({
     }, []);
 
     if (episodesToday.length > 0) {
+      // Warte bis Splashscreen fertig ist
+      const checkSplashComplete = setInterval(() => {
+        if (window.splashScreenComplete) {
+          clearInterval(checkSplashComplete);
+          setTimeout(() => {
+            setTodayEpisodes(episodesToday);
+            setShowTodayDialog(true);
+            // setDialogShownThisSession(); // Markiere erst beim Schließen als gezeigt
+          }, 500); // Kurze Verzögerung nach Splashscreen
+        }
+      }, 100);
+      
+      // Fallback nach 10 Sekunden
       setTimeout(() => {
-        setTodayEpisodes(episodesToday);
-        setShowTodayDialog(true);
-        // setDialogShownThisSession(); // Markiere erst beim Schließen als gezeigt
-      }, 1000);
+        clearInterval(checkSplashComplete);
+        if (!showTodayDialog) {
+          setTodayEpisodes(episodesToday);
+          setShowTodayDialog(true);
+        }
+      }, 10000);
     }
   }, [contextSeriesList, user, targetUserId]);
 

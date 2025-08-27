@@ -16,6 +16,7 @@ declare global {
       initialData: boolean;
     };
     setAppReady: (key: keyof Window['appReadyStatus'], value: boolean) => void;
+    splashScreenComplete: boolean;
   }
 }
 
@@ -33,6 +34,8 @@ if (typeof window !== 'undefined') {
     window.appReadyStatus[key] = value;
     console.log(`[AppReady] ${key}: ${value}`, window.appReadyStatus);
   };
+  
+  window.splashScreenComplete = false;
 }
 
 /**
@@ -94,6 +97,7 @@ export const AppWithSplash: React.FC = () => {
         <SplashScreen
           onComplete={() => {
             console.log('[AppWithSplash] Splash complete, hiding...');
+            window.splashScreenComplete = true;
             setShowSplash(false);
           }}
           waitForCondition={() => allSystemsReady}

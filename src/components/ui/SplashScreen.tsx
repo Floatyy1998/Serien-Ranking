@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
 import { Box, keyframes, styled } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 
 // ============= VINTAGE FILM ANIMATIONS =============
 
@@ -219,10 +219,9 @@ const SplashContainer = styled(Box, {
   justify-content: center;
   align-items: center;
   background: #0a0a0a;
-  animation: 
-    ${vintageFlicker} 0.15s steps(10) infinite,
+  animation: ${vintageFlicker} 0.15s steps(10) infinite,
     ${vignettePulse} 4s ease-in-out infinite,
-    ${props => props.isHiding ? fadeToBlack : 'none'} 0.8s ease-out forwards;
+    ${(props) => (props.isHiding ? fadeToBlack : 'none')} 0.8s ease-out forwards;
   overflow: hidden;
   box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9);
 `;
@@ -235,10 +234,26 @@ const GrainOverlay = styled(Box)`
   width: 200%;
   height: 200%;
   opacity: 0.15;
-  background-image: 
-    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 255, 255, 0.08) 1px, rgba(255, 255, 255, 0.08) 2px),
-    repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.06) 1px, rgba(255, 255, 255, 0.06) 2px),
-    repeating-radial-gradient(circle at 50% 50%, transparent 0, rgba(255, 255, 255, 0.05) 1px, transparent 2px);
+  background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.08) 1px,
+      rgba(255, 255, 255, 0.08) 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.06) 1px,
+      rgba(255, 255, 255, 0.06) 2px
+    ),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent 0,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 2px
+    );
   animation: ${filmGrain} 0.3s steps(5) infinite;
   pointer-events: none;
   mix-blend-mode: overlay;
@@ -252,20 +267,21 @@ const Scratches = styled(Box)`
   opacity: 0.2;
   pointer-events: none;
   animation: ${scratchMove} 2s linear infinite;
-  
-  &::before, &::after {
+
+  &::before,
+  &::after {
     content: '';
     position: absolute;
     width: 1px;
     height: 100%;
     background: rgba(255, 255, 255, 0.4);
   }
-  
+
   &::before {
     left: 30%;
     transform: scaleY(0.6);
   }
-  
+
   &::after {
     right: 45%;
     transform: scaleY(0.8);
@@ -278,7 +294,7 @@ const BurnSpots = styled(Box)`
   width: 100%;
   height: 100%;
   pointer-events: none;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -290,7 +306,7 @@ const BurnSpots = styled(Box)`
     border-radius: 50%;
     animation: ${filmBurn} 3s ease-in-out infinite;
   }
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -311,12 +327,12 @@ const FilmPerforations = styled(Box, {
 })<{ side: 'left' | 'right' }>`
   position: absolute;
   top: 0;
-  ${props => props.side === 'left' ? 'left: 10px;' : 'right: 10px;'}
+  ${(props) => (props.side === 'left' ? 'left: 10px;' : 'right: 10px;')}
   width: 40px;
   height: 100%;
   background: rgba(0, 0, 0, 0.9);
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -342,7 +358,7 @@ const CountdownContainer = styled(Box, {
   position: absolute;
   width: 350px;
   height: 350px;
-  display: ${props => props.isVisible ? 'flex' : 'none'};
+  display: ${(props) => (props.isVisible ? 'flex' : 'none')};
   justify-content: center;
   align-items: center;
   z-index: 100;
@@ -356,7 +372,7 @@ const CountdownCircle = styled(Box)`
   border-radius: 50%;
   filter: blur(1px) brightness(0.9);
   opacity: 0.8;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -372,7 +388,7 @@ const CountdownCircle = styled(Box)`
     animation: ${countdownWobble} 1s linear infinite;
     filter: blur(0.5px);
   }
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -391,28 +407,24 @@ const CountdownNumber = styled(Box)`
   font-weight: 900;
   color: rgba(180, 170, 150, 0.75);
   font-family: 'Times New Roman', serif;
-  text-shadow: 
-    4px 4px 15px rgba(0, 0, 0, 0.9),
-    -3px -3px 12px rgba(0, 0, 0, 0.7),
-    2px 2px 4px rgba(0, 0, 0, 0.8),
-    -1px -1px 2px rgba(0, 0, 0, 0.6),
-    0 0 40px rgba(180, 170, 150, 0.2),
+  text-shadow: 4px 4px 15px rgba(0, 0, 0, 0.9),
+    -3px -3px 12px rgba(0, 0, 0, 0.7), 2px 2px 4px rgba(0, 0, 0, 0.8),
+    -1px -1px 2px rgba(0, 0, 0, 0.6), 0 0 40px rgba(180, 170, 150, 0.2),
     0 0 80px rgba(0, 0, 0, 0.5);
   animation: ${numberAppear} 1s ease-out;
   user-select: none;
   filter: blur(0.8px) contrast(0.9) brightness(0.95);
   transform: rotate(-3deg) skew(-1deg, 1deg);
   opacity: 0.85;
-  
+
   /* Gritty texture effect */
-  background-image: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.1) 2px,
-      rgba(0, 0, 0, 0.1) 3px
-    );
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 3px
+  );
   -webkit-background-clip: text;
   background-clip: text;
 `;
@@ -424,8 +436,9 @@ const FilmTarget = styled(Box)`
   height: 250px;
   opacity: 0.35;
   filter: blur(0.3px);
-  
-  &::before, &::after {
+
+  &::before,
+  &::after {
     content: '';
     position: absolute;
     background: linear-gradient(
@@ -437,7 +450,7 @@ const FilmTarget = styled(Box)`
       transparent
     );
   }
-  
+
   &::before {
     top: 50%;
     left: 5%;
@@ -445,7 +458,7 @@ const FilmTarget = styled(Box)`
     height: 3px;
     transform: translateY(-50%) scaleY(0.8);
   }
-  
+
   &::after {
     left: 50%;
     top: 5%;
@@ -463,29 +476,29 @@ const Curtain = styled(Box, {
   top: 0;
   width: 55%;
   height: 100%;
-  ${props => props.side === 'left' ? 'left: 0;' : 'right: 0;'}
-  transform-origin: ${props => props.side === 'left' ? 'left' : 'right'};
-  animation: ${props => props.isOpen ? curtainOpen : 'none'} 1.5s ease-in-out forwards;
+  ${(props) => (props.side === 'left' ? 'left: 0;' : 'right: 0;')}
+  transform-origin: ${(props) => (props.side === 'left' ? 'left' : 'right')};
+  animation: ${(props) => (props.isOpen ? curtainOpen : 'none')} 1.5s
+    ease-in-out forwards;
   animation-delay: 0.2s;
   z-index: 50;
-  
+
   /* Velvet texture with subtle waves */
-  background: 
-    repeating-linear-gradient(
-      88deg,
-      #2d0808 0px,
-      #3a0c0c 10px,
-      #4a0e0e 20px,
-      #3a0c0c 30px,
-      #2d0808 40px
-    );
-  
-  box-shadow: 
-    ${props => props.side === 'left'
-      ? 'inset -30px 0 60px rgba(0,0,0,0.9)'
-      : 'inset 30px 0 60px rgba(0,0,0,0.9)'},
-    0 0 50px rgba(0,0,0,0.8);
-  
+  background: repeating-linear-gradient(
+    88deg,
+    #2d0808 0px,
+    #3a0c0c 10px,
+    #4a0e0e 20px,
+    #3a0c0c 30px,
+    #2d0808 40px
+  );
+
+  box-shadow: ${(props) =>
+      props.side === 'left'
+        ? 'inset -30px 0 60px rgba(0,0,0,0.9)'
+        : 'inset 30px 0 60px rgba(0,0,0,0.9)'},
+    0 0 50px rgba(0, 0, 0, 0.8);
+
   /* Vertical fold lines for fabric texture */
   &::before {
     content: '';
@@ -495,10 +508,10 @@ const Curtain = styled(Box, {
     background: repeating-linear-gradient(
       90deg,
       transparent 0px,
-      rgba(0,0,0,0.2) 1px,
+      rgba(0, 0, 0, 0.2) 1px,
       transparent 2px,
       transparent 15px,
-      rgba(255,255,255,0.01) 16px,
+      rgba(255, 255, 255, 0.01) 16px,
       transparent 17px,
       transparent 30px
     );
@@ -512,13 +525,9 @@ const SeatsRow = styled(Box)`
   bottom: 0;
   width: 100%;
   height: 150px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    rgba(0, 0, 0, 0.95)
-  );
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.95));
   z-index: 15;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -541,11 +550,7 @@ const SeatsRow = styled(Box)`
 const LogoSVG = styled('svg')`
   width: 100%;
   height: 100%;
-  filter: 
-    sepia(1) 
-    saturate(1.5) 
-    hue-rotate(35deg) 
-    brightness(0.9)
+  filter: sepia(1) saturate(1.5) hue-rotate(35deg) brightness(0.9)
     drop-shadow(0 0 30px rgba(181, 159, 107, 0.6));
 `;
 
@@ -555,7 +560,7 @@ const LogoContainer = styled(Box, {
   position: relative;
   width: 220px;
   height: 220px;
-  opacity: ${props => props.isVisible ? 1 : 0};
+  opacity: ${(props) => (props.isVisible ? 1 : 0)};
   transition: opacity 1.5s ease-in-out;
   z-index: 10;
 `;
@@ -570,14 +575,12 @@ const Title = styled('h1', {
   text-transform: uppercase;
   letter-spacing: 12px;
   font-family: 'Bebas Neue', 'Arial Black', sans-serif;
-  opacity: ${props => props.isVisible ? 1 : 0};
+  opacity: ${(props) => (props.isVisible ? 1 : 0)};
   transition: opacity 1.5s ease-in-out;
-  text-shadow: 
-    2px 2px 4px rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(181, 159, 107, 0.3),
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 20px rgba(181, 159, 107, 0.3),
     0 0 40px rgba(181, 159, 107, 0.2);
   z-index: 10;
-  
+
   @media (max-width: 768px) {
     font-size: 3rem;
     letter-spacing: 8px;
@@ -592,12 +595,12 @@ const Subtitle = styled('p', {
   text-transform: uppercase;
   letter-spacing: 10px;
   margin: 0;
-  opacity: ${props => props.isVisible ? 1 : 0};
+  opacity: ${(props) => (props.isVisible ? 1 : 0)};
   transition: opacity 1.5s ease-in-out;
   font-family: 'Courier New', monospace;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
   z-index: 10;
-  
+
   @media (max-width: 768px) {
     font-size: 0.8rem;
     letter-spacing: 6px;
@@ -613,9 +616,9 @@ const LeaderMark = styled(Box, {
   height: 60px;
   border: 3px solid rgba(200, 190, 170, 0.15);
   border-radius: 50%;
-  ${props => props.customPosition};
+  ${(props) => props.customPosition};
   opacity: 0.5;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -635,15 +638,8 @@ const ScreenBorder = styled(Box)`
   width: 92%;
   height: 85%;
   border: 20px solid;
-  border-image: linear-gradient(
-    180deg,
-    #1a1612,
-    #2a2218,
-    #1a1612
-  ) 1;
-  box-shadow: 
-    inset 0 0 100px rgba(0, 0, 0, 0.95),
-    0 0 50px rgba(0, 0, 0, 0.8);
+  border-image: linear-gradient(180deg, #1a1612, #2a2218, #1a1612) 1;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.95), 0 0 50px rgba(0, 0, 0, 0.8);
   pointer-events: none;
   z-index: 20;
 `;
@@ -654,47 +650,78 @@ interface SplashScreenProps {
   minDisplayTime?: number;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ 
-  onComplete, 
-  waitForCondition
-}) => {
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [isHiding, setIsHiding] = useState(false);
-  const [countdown, setCountdown] = useState<number | null>(3);
+  const [countdownProgress, setCountdownProgress] = useState(3.0); // Start at 3, count down to 0
   const [showContent] = useState(true); // Logo always there, just hidden by curtain
   const [curtainsOpen, setCurtainsOpen] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0); // 0 to 1
 
+  // Track real loading progress
   useEffect(() => {
-    const countdownInterval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev === null || prev <= 1) {
-          clearInterval(countdownInterval);
+    const checkProgress = setInterval(() => {
+      // Count how many systems are ready
+      const status = window.appReadyStatus || {};
+      const totalSystems = 5; // theme, auth, firebase, emailVerification, initialData
+      const readySystems = [
+        status.theme,
+        status.auth,
+        status.firebase,
+        status.emailVerification,
+        status.initialData,
+      ].filter(Boolean).length;
+
+      const progress = readySystems / totalSystems;
+      setLoadingProgress(progress);
+
+      if (progress >= 1) {
+        clearInterval(checkProgress);
+      }
+    }, 50);
+
+    return () => clearInterval(checkProgress);
+  }, []);
+
+  // Animate countdown based on real progress
+  useEffect(() => {
+    const animationInterval = setInterval(() => {
+      setCountdownProgress((prev) => {
+        // Target value based on loading progress
+        const target = 3 * (1 - loadingProgress);
+
+        // Smooth animation towards target
+        const diff = target - prev;
+        const step = diff * 0.15; // Smooth easing
+
+        const newValue = prev + step;
+
+        // When countdown reaches near 0 and loading is complete
+        if (newValue <= 0.1 && loadingProgress >= 1) {
+          clearInterval(animationInterval);
           setTimeout(() => {
             setCurtainsOpen(true);
-          }, 200);
-          return null;
+          }, 100);
+          return 0;
         }
-        return prev - 1;
-      });
-    }, 1000); // Countdown - 1 second per number
 
-    return () => clearInterval(countdownInterval);
-  }, []);
+        return Math.max(0, newValue);
+      });
+    }, 1000 / 60); // 60 FPS
+
+    return () => clearInterval(animationInterval);
+  }, [loadingProgress]);
 
   useEffect(() => {
     if (curtainsOpen) {
-      const timer = setTimeout(() => {
-        const conditionsMet = waitForCondition ? waitForCondition() : true;
-        if (conditionsMet) {
-          setIsHiding(true);
-          setTimeout(() => {
-            onComplete?.();
-          }, 800);
-        }
-      }, 2000); // Show logo for 2 seconds after curtains open
-
-      return () => clearTimeout(timer);
+      // Show logo briefly (1 second) then close
+      setTimeout(() => {
+        setIsHiding(true);
+        setTimeout(() => {
+          onComplete?.();
+        }, 800); // Fade out animation
+      }, 1000); // Show logo for 1 second
     }
-  }, [curtainsOpen, waitForCondition, onComplete]);
+  }, [curtainsOpen, onComplete]);
 
   return (
     <SplashContainer isHiding={isHiding}>
@@ -702,44 +729,48 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       <GrainOverlay />
       <Scratches />
       <BurnSpots />
-      
+
       {/* Film perforations */}
-      <FilmPerforations side="left" />
-      <FilmPerforations side="right" />
-      
+      <FilmPerforations side='left' />
+      <FilmPerforations side='right' />
+
       {/* Cinema screen frame */}
       <ScreenBorder />
-      
+
       {/* Leader marks */}
-      <LeaderMark customPosition="top: 40px; left: 40px;" />
-      <LeaderMark customPosition="top: 40px; right: 40px;" />
-      <LeaderMark customPosition="bottom: 40px; left: 40px;" />
-      <LeaderMark customPosition="bottom: 40px; right: 40px;" />
-      
+      <LeaderMark customPosition='top: 40px; left: 40px;' />
+      <LeaderMark customPosition='top: 40px; right: 40px;' />
+      <LeaderMark customPosition='bottom: 40px; left: 40px;' />
+      <LeaderMark customPosition='bottom: 40px; right: 40px;' />
+
       {/* Cinema seats */}
       <SeatsRow />
-      
+
       {/* Curtains */}
-      <Curtain side="left" isOpen={curtainsOpen} />
-      <Curtain side="right" isOpen={curtainsOpen} />
-      
+      <Curtain side='left' isOpen={curtainsOpen} />
+      <Curtain side='right' isOpen={curtainsOpen} />
+
       {/* Vintage countdown */}
-      <CountdownContainer isVisible={countdown !== null}>
+      <CountdownContainer isVisible={countdownProgress > 0}>
         <FilmTarget />
         <CountdownCircle />
-        <CountdownNumber key={countdown}>
-          {countdown}
-        </CountdownNumber>
+        <CountdownNumber>{countdownProgress.toFixed(1)}</CountdownNumber>
       </CountdownContainer>
-      
+
       {/* Main content after countdown */}
       <LogoContainer isVisible={showContent}>
-        <LogoSVG viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-          <path fill="currentColor" d="M388.3 902c-4-2.4-5.3-4.8-5.3-9.9 0-4.5-3.3-.3 38-48.1 14-16.2 27.9-32.3 30.8-35.7l5.3-6.2-3.1-3.9c-3.7-4.7-5.7-5.2-21.5-5.2-29.4 0-118.7-6-129-8.6-25.5-6.5-43.6-27.7-46.5-54.7-4.7-42.8-6.3-153.3-3-202.2 3.7-54.6 7-66.5 23-82.6 12.1-12.1 23.8-17.1 43.8-18.5 6.2-.5 9.2-1.1 9.2-1.9 0-.7-1.6-9.1-3.6-18.6-2.9-14.4-3.4-18-2.5-20.9 3.3-11.1 18.2-13.4 25.4-3.9 1.3 1.9 6.6 11.1 11.5 20.4 5 9.4 9.5 17.7 10 18.4.7 1.3 3.6 1.3 20.8.3 45.1-2.8 70.6-3.5 122.9-3.5 52.5-.1 97.2 1.4 126 4.2 6.5.7 9.3.6 10.1-.2.6-.7 5.7-9.7 11.3-20.2 12.1-22.6 13.9-24.7 21.4-25.3 6.5-.5 10.9 1.4 13.7 6.1 2.6 4.3 2.6 5.5-1.5 25.6-1.9 9.5-3.3 17.6-3 18 .2.5 3.9 1.1 8.2 1.5 18.1 1.6 32.8 7 42.6 15.7 9.7 8.5 18.2 23.6 20.8 37.2 5.4 27.9 7.4 137.5 4 211.2-2.1 43.5-3.2 50.4-10.2 63.6-8.4 15.6-25.1 27.4-44.8 31.4-10.6 2.2-60.9 5.3-118.9 7.4l-22.3.8-4.2 4.1c-3.1 3.1-3.9 4.6-3.2 5.6.6.7 16.8 19.5 36 41.6 19.3 22.1 35.5 41.2 36.2 42.4.7 1.1 1.2 3.8 1.3 5.9 0 3.1-.7 4.6-3.4 7.3-2.8 2.8-4.2 3.4-7.5 3.4-5.8 0-9.3-2.1-14.8-9-5.6-6.9-39.3-46.9-57.6-68.5-7.1-8.2-13.4-14.9-14-14.8-.7.1-5.7 1.1-11.2 2.3-12.5 2.7-31.7 2.3-43.2-.8l-7.3-2-9.2 11.2c-5 6.1-15.5 18.5-23.3 27.6-7.8 9.1-20.3 23.9-27.9 33-7.5 9.1-15.1 17.5-16.8 18.8-3.8 2.7-9.2 2.9-13.5.2zm164.2-148c31-1.4 64.3-3.9 69-5.1 15.5-4.2 28.1-18 30.5-33.5 4.7-30.4 4.7-183-.1-217.9-1.9-14.3-11.5-26.9-23.9-31.6-15.4-5.8-108.4-10.1-175.3-8-69.8 2.1-115.8 4.9-126.3 7.7-7.3 1.9-10.9 4.1-16.8 10.4-8.6 9.2-10.7 16.7-12.5 46-3.5 54.7-3 144.7 1 185 1.6 16.4 6.7 25.7 18.2 33.1 7.7 5 14.7 6.4 44.2 8.9 66 5.5 139.2 7.4 192 5zm168.2-53.1c4.1-2.5 9-9.7 9.9-14.5 1.5-8.2-3.9-18.5-11.9-22.5-5.8-3-14.8-3-20.4-.1-16.8 8.8-14 35 4.3 39.7 5.8 1.5 13.2.4 18.1-2.6zm-4-65c5.9-2.2 12.2-10.2 13.8-17.6 1-4.9-1.8-13.2-5.7-17-5.1-4.8-9-6.3-16.1-6.3-12.4 0-20.8 7.5-21.5 19.4-.3 4.9 0 7.1 1.6 10.2 2.5 4.8 6.6 8.8 11.2 10.8 4.1 1.8 12.7 2.1 16.7.5zm17.5-86.4c.8-1.9.8-3.1 0-5-1.3-2.8.5-2.7-31-2.7-17.6 0-19.2.4-19.2 5.1 0 5 .7 5.1 25.7 5.1l23.3 0 1.2-2.5zm-1-24.2c2.4-2.1 2.3-4.8-.2-7.3-1.9-1.9-3.3-2-23.7-2-23.7 0-25.3.4-25.3 6 0 4.8.8 5 24.9 5 19.5 0 22.7-.2 24.3-1.7zm0-24c2.2-2 2.3-5.1.1-7.5-1.5-1.6-3.6-1.8-23.6-1.8-19.1 0-22.3.2-23.9 1.7-2.3 2.1-2.4 6.9 0 8.2 1 .6 10.6 1.1 23.6 1.1 19 0 22.2-.2 23.8-1.7z"/>
-          <path fill="currentColor" d="M549.3 713.6l-2.8-2.4-.2-33.9c-.1-18.6.1-37.4.4-41.9l.6-8 7.6 1.4c11.7 2.2 27.2 0 43.4-6.3 1.6-.7 1.7 1.8 1.7 42.8 0 29.8-.4 44.4-1.1 46-1.9 4.2-4.7 4.7-26.4 4.7-20.1 0-20.4 0-23.2-2.4zM479.5 667.5l-2.5-2.4 0-80.9c0-78.2.1-81.1 1.9-83.3 1.8-2.2 2.8-2.4 12.5-2.7l10.7-.4-4.6 6.5c-16.9 24.3-19.4 55.1-6.4 81.4 6.8 13.8 19.5 27 32.5 34l5.6 3-.1 21.4-.1 21.4-2.6 2.3c-2.4 2.1-3.2 2.2-23.5 2.2-21 0-21 0-23.4-2.5zM411.2 628c-1.2-1.1-2.4-3.1-2.7-4.3-.3-1.2-.4-28.9-.3-61.5l.3-59.4 2.8-2.4c2.8-2.4 3.1-2.4 22.7-2.4 21.2 0 24 .5 25.9 4.7.8 1.7 1.1 20.6 1.1 62.4l0 60-2.5 2.4c-2.4 2.5-2.4 2.5-23.8 2.5-20 0-21.5-.1-23.5-2zM552.8 617c-19-3.4-37.8-15.8-47.6-31.3-7-11-9.4-19.4-9.9-33.7-.8-22.2 4.1-35.5 18.6-50.1 13.8-13.9 29.3-20.3 48.6-20.3 11.9.1 22.3 2.6 33 8.1 9.8 5.1 23.8 19.2 28.3 28.7 4.9 10.1 7.2 20.2 7.2 31.5 0 11.7-1.7 18.9-7.2 30.1-5.3 10.9"/>
+        <LogoSVG viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'>
+          <path
+            fill='currentColor'
+            d='M388.3 902c-4-2.4-5.3-4.8-5.3-9.9 0-4.5-3.3-.3 38-48.1 14-16.2 27.9-32.3 30.8-35.7l5.3-6.2-3.1-3.9c-3.7-4.7-5.7-5.2-21.5-5.2-29.4 0-118.7-6-129-8.6-25.5-6.5-43.6-27.7-46.5-54.7-4.7-42.8-6.3-153.3-3-202.2 3.7-54.6 7-66.5 23-82.6 12.1-12.1 23.8-17.1 43.8-18.5 6.2-.5 9.2-1.1 9.2-1.9 0-.7-1.6-9.1-3.6-18.6-2.9-14.4-3.4-18-2.5-20.9 3.3-11.1 18.2-13.4 25.4-3.9 1.3 1.9 6.6 11.1 11.5 20.4 5 9.4 9.5 17.7 10 18.4.7 1.3 3.6 1.3 20.8.3 45.1-2.8 70.6-3.5 122.9-3.5 52.5-.1 97.2 1.4 126 4.2 6.5.7 9.3.6 10.1-.2.6-.7 5.7-9.7 11.3-20.2 12.1-22.6 13.9-24.7 21.4-25.3 6.5-.5 10.9 1.4 13.7 6.1 2.6 4.3 2.6 5.5-1.5 25.6-1.9 9.5-3.3 17.6-3 18 .2.5 3.9 1.1 8.2 1.5 18.1 1.6 32.8 7 42.6 15.7 9.7 8.5 18.2 23.6 20.8 37.2 5.4 27.9 7.4 137.5 4 211.2-2.1 43.5-3.2 50.4-10.2 63.6-8.4 15.6-25.1 27.4-44.8 31.4-10.6 2.2-60.9 5.3-118.9 7.4l-22.3.8-4.2 4.1c-3.1 3.1-3.9 4.6-3.2 5.6.6.7 16.8 19.5 36 41.6 19.3 22.1 35.5 41.2 36.2 42.4.7 1.1 1.2 3.8 1.3 5.9 0 3.1-.7 4.6-3.4 7.3-2.8 2.8-4.2 3.4-7.5 3.4-5.8 0-9.3-2.1-14.8-9-5.6-6.9-39.3-46.9-57.6-68.5-7.1-8.2-13.4-14.9-14-14.8-.7.1-5.7 1.1-11.2 2.3-12.5 2.7-31.7 2.3-43.2-.8l-7.3-2-9.2 11.2c-5 6.1-15.5 18.5-23.3 27.6-7.8 9.1-20.3 23.9-27.9 33-7.5 9.1-15.1 17.5-16.8 18.8-3.8 2.7-9.2 2.9-13.5.2zm164.2-148c31-1.4 64.3-3.9 69-5.1 15.5-4.2 28.1-18 30.5-33.5 4.7-30.4 4.7-183-.1-217.9-1.9-14.3-11.5-26.9-23.9-31.6-15.4-5.8-108.4-10.1-175.3-8-69.8 2.1-115.8 4.9-126.3 7.7-7.3 1.9-10.9 4.1-16.8 10.4-8.6 9.2-10.7 16.7-12.5 46-3.5 54.7-3 144.7 1 185 1.6 16.4 6.7 25.7 18.2 33.1 7.7 5 14.7 6.4 44.2 8.9 66 5.5 139.2 7.4 192 5zm168.2-53.1c4.1-2.5 9-9.7 9.9-14.5 1.5-8.2-3.9-18.5-11.9-22.5-5.8-3-14.8-3-20.4-.1-16.8 8.8-14 35 4.3 39.7 5.8 1.5 13.2.4 18.1-2.6zm-4-65c5.9-2.2 12.2-10.2 13.8-17.6 1-4.9-1.8-13.2-5.7-17-5.1-4.8-9-6.3-16.1-6.3-12.4 0-20.8 7.5-21.5 19.4-.3 4.9 0 7.1 1.6 10.2 2.5 4.8 6.6 8.8 11.2 10.8 4.1 1.8 12.7 2.1 16.7.5zm17.5-86.4c.8-1.9.8-3.1 0-5-1.3-2.8.5-2.7-31-2.7-17.6 0-19.2.4-19.2 5.1 0 5 .7 5.1 25.7 5.1l23.3 0 1.2-2.5zm-1-24.2c2.4-2.1 2.3-4.8-.2-7.3-1.9-1.9-3.3-2-23.7-2-23.7 0-25.3.4-25.3 6 0 4.8.8 5 24.9 5 19.5 0 22.7-.2 24.3-1.7zm0-24c2.2-2 2.3-5.1.1-7.5-1.5-1.6-3.6-1.8-23.6-1.8-19.1 0-22.3.2-23.9 1.7-2.3 2.1-2.4 6.9 0 8.2 1 .6 10.6 1.1 23.6 1.1 19 0 22.2-.2 23.8-1.7z'
+          />
+          <path
+            fill='currentColor'
+            d='M549.3 713.6l-2.8-2.4-.2-33.9c-.1-18.6.1-37.4.4-41.9l.6-8 7.6 1.4c11.7 2.2 27.2 0 43.4-6.3 1.6-.7 1.7 1.8 1.7 42.8 0 29.8-.4 44.4-1.1 46-1.9 4.2-4.7 4.7-26.4 4.7-20.1 0-20.4 0-23.2-2.4zM479.5 667.5l-2.5-2.4 0-80.9c0-78.2.1-81.1 1.9-83.3 1.8-2.2 2.8-2.4 12.5-2.7l10.7-.4-4.6 6.5c-16.9 24.3-19.4 55.1-6.4 81.4 6.8 13.8 19.5 27 32.5 34l5.6 3-.1 21.4-.1 21.4-2.6 2.3c-2.4 2.1-3.2 2.2-23.5 2.2-21 0-21 0-23.4-2.5zM411.2 628c-1.2-1.1-2.4-3.1-2.7-4.3-.3-1.2-.4-28.9-.3-61.5l.3-59.4 2.8-2.4c2.8-2.4 3.1-2.4 22.7-2.4 21.2 0 24 .5 25.9 4.7.8 1.7 1.1 20.6 1.1 62.4l0 60-2.5 2.4c-2.4 2.5-2.4 2.5-23.8 2.5-20 0-21.5-.1-23.5-2zM552.8 617c-19-3.4-37.8-15.8-47.6-31.3-7-11-9.4-19.4-9.9-33.7-.8-22.2 4.1-35.5 18.6-50.1 13.8-13.9 29.3-20.3 48.6-20.3 11.9.1 22.3 2.6 33 8.1 9.8 5.1 23.8 19.2 28.3 28.7 4.9 10.1 7.2 20.2 7.2 31.5 0 11.7-1.7 18.9-7.2 30.1-5.3 10.9'
+          />
         </LogoSVG>
       </LogoContainer>
-      
+
       <Title isVisible={showContent}>TV-RANK</Title>
       <Subtitle isVisible={showContent}>Est. 2024</Subtitle>
     </SplashContainer>

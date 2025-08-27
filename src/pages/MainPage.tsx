@@ -21,7 +21,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import NewSeasonNotificationDialog from '../components/domain/dialogs/NewSeasonNotificationDialog';
@@ -74,6 +74,32 @@ export const MainPage: React.FC = () => {
     isOffline,
     isStale,
   } = useSeriesList();
+  
+  // Check if splash screen is complete
+  const [canShowDialogs, setCanShowDialogs] = useState(false);
+  
+  useEffect(() => {
+    // Wait for splash screen to complete
+    const checkInterval = setInterval(() => {
+      if (window.splashScreenComplete) {
+        clearInterval(checkInterval);
+        setTimeout(() => {
+          setCanShowDialogs(true);
+        }, 500); // Small delay after splash
+      }
+    }, 100);
+    
+    // Fallback after 10 seconds
+    const fallback = setTimeout(() => {
+      clearInterval(checkInterval);
+      setCanShowDialogs(true);
+    }, 10000);
+    
+    return () => {
+      clearInterval(checkInterval);
+      clearTimeout(fallback);
+    };
+  }, []);
   
 
   const { movieList } = useMovieList();
@@ -1346,7 +1372,7 @@ export const MainPage: React.FC = () => {
 
         {/* New Season Notification Dialog */}
         <NewSeasonNotificationDialog
-          open={seriesWithNewSeasons.length > 0}
+          open={canShowDialogs && seriesWithNewSeasons.length > 0}
           onClose={clearNewSeasons}
           seriesWithNewSeasons={seriesWithNewSeasons}
         />

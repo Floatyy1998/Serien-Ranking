@@ -28,6 +28,8 @@ export const BackgroundMedia: React.FC = () => {
   // Starte mit Loading=true für Videos, false für Bilder
   const [isVideoLoading, setIsVideoLoading] = useState(initial.isVideo);
   const [videoLoadFailed, setVideoLoadFailed] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
   const preloadLinkRef = useRef<HTMLLinkElement | null>(null);
 
   // Preload-Funktion für Videos
@@ -70,6 +72,7 @@ export const BackgroundMedia: React.FC = () => {
             if (theme.backgroundIsVideo && theme.backgroundImage) {
               // Setze Loading auf true wenn es ein Video ist
               setIsVideoLoading(true);
+              setRetryCount(0); // Reset retry count for new video
               
               // Prüfe ob Video geladen werden sollte
               checkVideoLoadingViability(theme.backgroundImage).then(result => {
@@ -80,6 +83,20 @@ export const BackgroundMedia: React.FC = () => {
                 } else {
                   // Video kann geladen werden
                   preloadVideo(theme.backgroundImage);
+                  
+                  // Test if URL is reachable
+                  fetch(theme.backgroundImage, { method: 'HEAD' })
+                    .then(response => {
+                      if (!response.ok) {
+                        console.error('[BackgroundMedia] Video URL not reachable:', response.status);
+                        setVideoLoadFailed(true);
+                        setIsVideoLoading(false);
+                      }
+                    })
+                    .catch(err => {
+                      console.error('[BackgroundMedia] Failed to check video URL:', err);
+                      // Don't fail immediately, let video element try
+                    });
                 }
               });
             } else if (!theme.backgroundIsVideo) {
@@ -225,16 +242,17 @@ export const BackgroundMedia: React.FC = () => {
 
   if (isVideo) {
     return (
-      <video
-        ref={videoRef}
-        className='background-video'
-        src={mediaUrl}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        style={{
+      <>
+        <video
+          ref={videoRef}
+          className='background-video'
+          key={`${mediaUrl}-${retryCount}`} // Force remount on retry
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto" // Changed from metadata to auto for better loading
+          style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -253,9 +271,14 @@ export const BackgroundMedia: React.FC = () => {
         }}
         onLoadedMetadata={() => {
           console.log('[BackgroundMedia] Video metadata loaded');
-          // Zeige Video schon bei Metadaten
+          // Reset retry count on success
+          setRetryCount(0);
+        }}
+        onCanPlay={() => {
+          console.log('[BackgroundMedia] Video can play');
+          // Video ist bereit zum Abspielen
           setIsVideoLoading(false);
-          // Video metadata geladen
+          setVideoLoadFailed(false);
         }}
         onLoadedData={() => {
           console.log('[BackgroundMedia] Video data loaded');
@@ -293,30 +316,49 @@ export const BackgroundMedia: React.FC = () => {
             readyState: videoRef.current?.readyState,
             networkState: videoRef.current?.networkState,
             errorCode: videoError?.code,
-            errorMessage: videoError?.message
+            errorMessage: videoError?.message,
+            retryCount,
+            maxRetries
           });
           
-          // Nur bei temporären Fehlern wiederholen
-          if (videoError?.code === MediaError.MEDIA_ERR_NETWORK) {
-            setIsVideoLoading(true);
+          // Retry logic with exponential backoff
+          if (retryCount < maxRetries) {
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+            console.log(`[BackgroundMedia] Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+            
             setTimeout(() => {
-              if (videoRef.current && mediaUrl) {
-                console.log('[BackgroundMedia] Retrying video load...');
-                videoRef.current.load();
-                videoRef.current.play().catch(err => {
-                  console.error('[BackgroundMedia] Retry failed:', err);
-                  setIsVideoLoading(false);
-                  setVideoLoadFailed(true);
-                });
-              }
-            }, 2000);
+              setRetryCount(prev => prev + 1);
+              // Component will remount due to key change
+            }, delay);
           } else {
-            // Bei anderen Fehlern Fallback anzeigen
+            console.error('[BackgroundMedia] Max retries reached, showing fallback');
             setIsVideoLoading(false);
             setVideoLoadFailed(true);
           }
         }}
-      />
+        >
+          {/* Fallback source für bessere Kompatibilität */}
+          <source src={mediaUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        
+        {/* Loading indicator während Video lädt */}
+        {isVideoLoading && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#000',
+              opacity: 0.7,
+              zIndex: -1,
+              transition: 'opacity 0.3s ease-in-out',
+            }}
+          />
+        )}
+      </>
     );
   }
 
