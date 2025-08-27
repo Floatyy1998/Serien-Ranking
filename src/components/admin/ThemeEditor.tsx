@@ -5,6 +5,16 @@ import {
   Computer as ComputerIcon,
   DeleteForever as DeleteForeverIcon,
   RestartAlt as RestartAltIcon,
+  Whatshot,
+  Diamond,
+  Bolt,
+  CheckCircle,
+  PhotoCamera,
+  Water,
+  LocalFlorist,
+  Forest,
+  AutoAwesome,
+  WbSunny,
 } from '@mui/icons-material';
 import { BackgroundImageFirebaseUpload } from './BackgroundImageFirebaseUpload';
 import {
@@ -610,14 +620,14 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
 
   // Quick Theme Presets
   const presets = [
-    { name: '🌊', p: '#00fed7', b: '#000000', s: '#2d2d30', a: '#ff6b6b' },
-    { name: '🔥', p: '#ef4444', b: '#18181b', s: '#3f3f46', a: '#fbbf24' },
-    { name: '🌸', p: '#ec4899', b: '#1a0b14', s: '#3d1929', a: '#a78bfa' },
-    { name: '💎', p: '#06b6d4', b: '#020617', s: '#0f172a', a: '#38bdf8' },
-    { name: '🌿', p: '#22c55e', b: '#020403', s: '#0a1f0d', a: '#86efac' },
-    { name: '⚡', p: '#facc15', b: '#0a0a0a', s: '#262626', a: '#fb923c' },
-    { name: '🦄', p: '#e879f9', b: '#0f0019', s: '#2e1065', a: '#c084fc' },
-    { name: '🌅', p: '#fb923c', b: '#1c0a00', s: '#431407', a: '#fde047' },
+    { name: 'Ocean', p: '#00fed7', b: '#000000', s: '#2d2d30', a: '#ff6b6b' },
+    { name: 'Fire', p: '#ef4444', b: '#18181b', s: '#3f3f46', a: '#fbbf24' },
+    { name: 'Sakura', p: '#ec4899', b: '#1a0b14', s: '#3d1929', a: '#a78bfa' },
+    { name: 'Diamond', p: '#06b6d4', b: '#020617', s: '#0f172a', a: '#38bdf8' },
+    { name: 'Forest', p: '#22c55e', b: '#020403', s: '#0a1f0d', a: '#86efac' },
+    { name: 'Electric', p: '#facc15', b: '#0a0a0a', s: '#262626', a: '#fb923c' },
+    { name: 'Unicorn', p: '#e879f9', b: '#0f0019', s: '#2e1065', a: '#c084fc' },
+    { name: 'Sunset', p: '#fb923c', b: '#1c0a00', s: '#431407', a: '#fde047' },
   ];
 
   const getCurrentColor = () => {
@@ -856,7 +866,15 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
                   '&:hover': { transform: 'scale(1.1)' },
                 }}
               >
-                {preset.name}
+                {preset.name === 'Ocean' ? <Water sx={{ fontSize: 'inherit' }} /> :
+                 preset.name === 'Fire' ? <Whatshot sx={{ fontSize: 'inherit' }} /> : 
+                 preset.name === 'Sakura' ? <LocalFlorist sx={{ fontSize: 'inherit' }} /> :
+                 preset.name === 'Diamond' ? <Diamond sx={{ fontSize: 'inherit' }} /> :
+                 preset.name === 'Forest' ? <Forest sx={{ fontSize: 'inherit' }} /> :
+                 preset.name === 'Electric' ? <Bolt sx={{ fontSize: 'inherit' }} /> :
+                 preset.name === 'Unicorn' ? <AutoAwesome sx={{ fontSize: 'inherit' }} /> :
+                 preset.name === 'Sunset' ? <WbSunny sx={{ fontSize: 'inherit' }} /> :
+                 preset.name.charAt(0)}
               </Box>
             ))}
           </Box>
@@ -1102,7 +1120,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
         <Stack spacing={3}>
           <Box>
             <Typography sx={{ color: '#fff', mb: 2, fontSize: '0.9rem' }}>
-              ✅ <strong>Was passiert:</strong>
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                <CheckCircle sx={{ fontSize: '1rem', color: '#22c55e' }} />
+                <strong>Was passiert:</strong>
+              </Box>
             </Typography>
             <Stack spacing={1} sx={{ pl: 2 }}>
               <Typography sx={{ color: '#fff', opacity: 0.9, fontSize: '0.85rem' }}>
@@ -1136,7 +1157,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
           {cloudThemePreview && (
             <Box>
               <Typography sx={{ color: tempPrimaryColor, mb: 2, fontSize: '0.9rem' }}>
-                ☁️ <strong>Cloud-Theme Vorschau:</strong>
+                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                  <CloudIcon sx={{ fontSize: '1rem' }} />
+                  <strong>Cloud-Theme Vorschau:</strong>
+                </Box>
               </Typography>
               <Box sx={{
                 p: 2,
@@ -1168,7 +1192,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
                   }} />
                   {cloudThemePreview.backgroundImage && (
                     <Typography sx={{ color: '#fff', fontSize: '0.8rem', ml: 'auto' }}>
-                      📷 Bild/Video
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                        <PhotoCamera sx={{ fontSize: '1rem' }} />
+                        Bild/Video
+                      </Box>
                     </Typography>
                   )}
                 </Stack>

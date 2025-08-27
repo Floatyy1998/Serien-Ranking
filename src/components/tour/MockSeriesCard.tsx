@@ -1,4 +1,4 @@
-import { CheckCircle } from '@mui/icons-material';
+import { CheckCircle, Star } from '@mui/icons-material';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import {
   Box,
@@ -216,17 +216,20 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                 }),
               }}
             >
-              <Typography
-                variant='body1'
-                sx={{
-                  fontSize: '0.9rem',
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-                }}
-              >
-                ⭐ 9.2
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+                <Typography
+                  variant='body1'
+                  sx={{
+                    fontSize: '0.9rem',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  9.2
+                </Typography>
+              </Box>
             </Box>
 
             {/* Three Dot Menu */}

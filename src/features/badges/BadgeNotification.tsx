@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { EarnedBadge } from './badgeDefinitions';
+import { BadgeIcon } from './BadgeIcons';
 
 interface BadgeNotificationProps {
   badge: EarnedBadge | null;
@@ -117,14 +118,13 @@ const BadgeNotification: React.FC<BadgeNotificationProps> = ({
               flexShrink: 0,
             }}
           >
-            <Typography
+            <BadgeIcon
+              badgeId={badge.id}
               sx={{
-                fontSize: isMobile ? '1.1rem' : '1.3rem',
-                lineHeight: 1,
+                fontSize: isMobile ? '1.5rem' : '1.8rem',
+                color: 'white',
               }}
-            >
-              {badge.emoji}
-            </Typography>
+            />
           </Box>
           <Box>
             <Typography

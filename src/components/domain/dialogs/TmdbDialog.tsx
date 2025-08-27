@@ -2,6 +2,11 @@ import {
   Add as AddIcon,
   Check as CheckIcon,
   Close as CloseIcon,
+  Movie as MovieIcon,
+  Tv as TvIcon,
+  Group as GroupIcon,
+  Brush,
+  Star,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -1143,14 +1148,18 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 variant="h4"
                 sx={{ fontWeight: "bold", color: colors.status.warning }}
               >
-                🎬 {type === "tv" ? data.name : data.title}
-                {data.first_air_date &&
-                  ` (${new Date(data.first_air_date).getFullYear()})`}
-                {data.release_date &&
-                  ` (${new Date(data.release_date).getFullYear()})`}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {type === "tv" ? <TvIcon /> : <MovieIcon />}
+                  {type === "tv" ? data.name : data.title}
+                  {data.first_air_date &&
+                    ` (${new Date(data.first_air_date).getFullYear()})`}
+                  {data.release_date &&
+                    ` (${new Date(data.release_date).getFullYear()})`}
+                </Box>
               </Typography>
               <Chip
-                label={type === "tv" ? "📺 Serie" : "🎬 Film"}
+                icon={type === "tv" ? <TvIcon sx={{ fontSize: '1rem' }} /> : <MovieIcon sx={{ fontSize: '1rem' }} />}
+                label={type === "tv" ? "Serie" : "Film"}
                 size="small"
                 sx={{
                   backgroundColor: `${colors.text.accent}20`,
@@ -1261,7 +1270,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             TMDB Bewertung
                           </Typography>
                           <Typography variant="body1">
-                            ⭐ {data.vote_average.toFixed(1)}/10
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+                              {data.vote_average.toFixed(1)}/10
+                            </Box>
                           </Typography>
                         </Box>
                       )}
@@ -1379,7 +1391,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             fontWeight: "bold",
                           }}
                         >
-                          🎨 Anime-Charaktere ({animeCharacters.length})
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Brush sx={{ fontSize: '1rem' }} />
+                            Anime-Charaktere ({animeCharacters.length})
+                          </Box>
                         </Typography>
                         <Box
                           display="grid"
@@ -1749,13 +1764,16 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             fontWeight: "bold",
                           }}
                         >
-                          🎬 Crew (
-                          {
-                            crewData.filter(
-                              (person: any) => person.profile_path,
-                            ).length
-                          }
-                          )
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <GroupIcon />
+                            Crew (
+                            {
+                              crewData.filter(
+                                (person: any) => person.profile_path,
+                              ).length
+                            }
+                            )
+                          </Box>
                         </Typography>
                         <Box
                           display="grid"
@@ -2356,7 +2374,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           TMDB Popularität
                         </Typography>
                         <Typography variant="body1">
-                          ⭐ {selectedPerson.popularity.toFixed(1)}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+                            {selectedPerson.popularity.toFixed(1)}
+                          </Box>
                         </Typography>
                       </Box>
                     )}
@@ -2473,7 +2494,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   fontSize: "1.5rem",
                                 }}
                               >
-                                {credit.media_type === "movie" ? "🎬" : "📺"}
+                                {credit.media_type === "movie" ? <MovieIcon /> : <TvIcon />}
                               </Box>
                             )}
                             <Box
@@ -2591,7 +2612,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                       gap: 0.3,
                                     }}
                                   >
-                                    ⭐ {credit.vote_average.toFixed(1)}
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                      <Star sx={{ fontSize: '0.9rem', color: '#fbbf24' }} />
+                                      {credit.vote_average.toFixed(1)}
+                                    </Box>
                                   </Typography>
                                 ) : null}
                               </Box>
@@ -2751,7 +2775,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                   fontSize: "1.5rem",
                                 }}
                               >
-                                {credit.media_type === "movie" ? "🎬" : "📺"}
+                                {credit.media_type === "movie" ? <MovieIcon /> : <TvIcon />}
                               </Box>
                             )}
                             <Box
@@ -2873,7 +2897,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                                       gap: 0.3,
                                     }}
                                   >
-                                    ⭐ {credit.vote_average.toFixed(1)}
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                      <Star sx={{ fontSize: '0.9rem', color: '#fbbf24' }} />
+                                      {credit.vote_average.toFixed(1)}
+                                    </Box>
                                   </Typography>
                                 ) : null}
                               </Box>

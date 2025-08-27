@@ -241,7 +241,7 @@ export const SeriesGrid = ({
     }
   }, [contextSeriesList, user, targetUserId]);
 
-  // 🏆 BADGE-MIGRATION TEMPORARILY DISABLED (prevents activity spam)
+  // BADGE-MIGRATION TEMPORARILY DISABLED (prevents activity spam)
   useEffect(() => {
     const runBadgeMigration = async () => {
       if (!user || targetUserId) return;
@@ -437,7 +437,7 @@ export const SeriesGrid = ({
                 await logSeasonWatchedClean(user.uid, season.episodes.length);
               } else {
                 // Teilweise Staffel geschaut - Nur Badge-System Logging
-                // 🏆 Badge für einzelne Episoden loggen (KEINE Friend-Activities)
+                // Badge für einzelne Episoden loggen (KEINE Friend-Activities)
                 const { updateEpisodeCounters } = await import(
                   '../../../features/badges/minimalActivityLogger'
                 );

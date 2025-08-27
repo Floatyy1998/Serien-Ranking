@@ -1,4 +1,29 @@
-import { Close as CloseIcon } from '@mui/icons-material';
+import { 
+  Close as CloseIcon,
+  Movie as MovieIcon,
+  Tv as TvIcon,
+  MenuBook,
+  Rocket,
+  DirectionsWalk,
+  Hotel,
+  Work,
+  Timer,
+  Favorite,
+  SportsEsports,
+  AccountBalance,
+  Casino,
+  SelfImprovement,
+  MusicNote,
+  RecordVoiceOver,
+  Star,
+  Air,
+  DirectionsRun,
+  Book,
+  Brush,
+  Restaurant,
+  BarChart,
+  Public,
+} from '@mui/icons-material';
 import {
   Box,
   Checkbox,
@@ -83,14 +108,16 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           <strong>{Math.floor(totalHours / 24)}</strong> Tage durchgehend!
         </>,
         <>
-          📚 Hättest du stattdessen Bücher gelesen, wären das etwa{' '}
+          <MenuBook sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Hättest du stattdessen Bücher gelesen, wären das etwa{' '}
           <strong>
             <u>{booksRead}</u>
           </strong>{' '}
           Romane gewesen – das entspricht einer ganzen Bibliothek!
         </>,
         <>
-          🚀 Du hättest in der Zeit schon{' '}
+          <Rocket sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest in der Zeit schon{' '}
           <strong>
             <u>{marsTrip}</u>
           </strong>{' '}
@@ -98,7 +125,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           <strong>{moonTripsEquivalent}</strong> mal zum Mond!
         </>,
         <>
-          🚶‍♂️ Du hättest bei 5 km/h{' '}
+          <DirectionsWalk sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest bei 5 km/h{' '}
           <strong>
             <u>{totalKM.toFixed(2)}</u>
           </strong>{' '}
@@ -106,7 +134,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           <strong>{olympicMarathonsEquivalent}</strong> olympische Marathons!
         </>,
         <>
-          🌍 Du hättest die Erde{' '}
+          <Public sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest die Erde{' '}
           <strong>
             <u>{(totalKM / 40075).toFixed(2)}</u>
           </strong>{' '}
@@ -115,7 +144,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
         </>,
         // Neue kreative Facts
         <>
-          💤 Du hättest{' '}
+          <Hotel sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{sleepTimeEquivalent}</u>
           </strong>{' '}
@@ -123,7 +153,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           <strong>{Math.floor(sleepTimeEquivalent / 365)}</strong> Jahre!
         </>,
         <>
-          💼 Du hättest{' '}
+          <Work sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{workYearsEquivalent}</u>
           </strong>{' '}
@@ -139,14 +170,18 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           Universitätsabschluss machen können und wärst jetzt Dr. der Serienwissenschaften!
         </>,
         <>
-          🎬 Du hast durchschnittlich{' '}
+          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+            <MovieIcon sx={{ fontSize: '1rem' }} />
+          </Box>
+          {' '}Du hast durchschnittlich{' '}
           <strong>
             <u>{episodesPerDay}</u>
           </strong>{' '}
           Episoden pro Tag geschaut – ein echter Binge-Watching Champion!
         </>,
         <>
-          ⏱️ Deine durchschnittliche Episode dauert{' '}
+          <Timer sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Deine durchschnittliche Episode dauert{' '}
           <strong>
             <u>{(averageEpisodeLength * 60).toFixed(0)}</u>
           </strong>{' '}
@@ -160,7 +195,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           gewachsen – genug für {Math.floor(parseFloat(hairGrowthMM) / 150)} Friseurbesuche!
         </>,
         <>
-          💓 Dein Herz hat in dieser Zeit{' '}
+          <Favorite sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Dein Herz hat in dieser Zeit{' '}
           <strong>
             <u>{(heartbeatsEquivalent / 1000000).toFixed(1)} Millionen</u>
           </strong>{' '}
@@ -181,7 +217,8 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           Mahlzeiten kochen können – das sind {Math.floor(cookingMealsEquivalent / 365)} Jahre Essen!
         </>,
         <>
-          🎮 Du hättest{' '}
+          <SportsEsports sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{videoGameBeatingEquivalent}</u>
           </strong>{' '}
@@ -209,28 +246,32 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           Spaziergänge mit einem Hund machen können – der wäre super glücklich!
         </>,
         <>
-          🏛️ Du hättest{' '}
+          <AccountBalance sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{museumsVisitedEquivalent}</u>
           </strong>{' '}
           Museen besuchen können und wärst kulturell hypergebildet!
         </>,
         <>
-          🎲 Du hättest{' '}
+          <Casino sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{boardGamesEquivalent}</u>
           </strong>{' '}
           Brettspiele spielen können – genug für eine eigene Spielesammlung!
         </>,
         <>
-          🧘‍♀️ Du hättest{' '}
+          <SelfImprovement sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{powerNapsEquivalent}</u>
           </strong>{' '}
           Power-Naps (15min) machen können und wärst der entspannteste Mensch der Welt!
         </>,
         <>
-          🎵 Du hättest{' '}
+          <MusicNote sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{musicListeningEquivalent}</u>
           </strong>{' '}
@@ -252,14 +293,18 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           Tage im Weltall verbringen können – länger als die meisten Astronauten!
         </>,
         <>
-          🗣️ Du hättest{' '}
+          <RecordVoiceOver sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{languageLearningEquivalent}</u>
           </strong>{' '}
           neue Sprachen lernen können und wärst polyglott geworden!
         </>,
         <>
-          📺 Du hast{' '}
+          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+            <TvIcon sx={{ fontSize: '1rem' }} />
+          </Box>
+          {' '}Du hast{' '}
           <strong>
             <u>{userStats.episodesWatched}</u>
           </strong>{' '}
@@ -267,42 +312,48 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
           <strong>{netflixSeriesEquivalent}</strong> komplette Netflix-Serien!
         </>,
         <>
-          🌟 Du hast{' '}
+          <Star sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hast{' '}
           <strong>
             <u>{userStats.seriesRated}</u>
           </strong>{' '}
           Serien bewertet – du bist ein echter Kritiker mit Geschmack!
         </>,
         <>
-          💨 Du hast dabei{' '}
+          <Air sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hast dabei{' '}
           <strong>
             <u>{(breathsEquivalent / 1000000).toFixed(1)} Millionen</u>
           </strong>{' '}
           mal geatmet – reine Sauerstoffverschwendung für Entertainment!
         </>,
         <>
-          🏃‍♂️ Mit der gesparten Zeit hättest du{' '}
+          <DirectionsRun sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Mit der gesparten Zeit hättest du{' '}
           <strong>
             <u>{Math.floor(totalHours / 3)}</u>
           </strong>{' '}
           Halbmarathons laufen können – aber wer braucht schon Fitness?
         </>,
         <>
-          📖 Du hättest{' '}
+          <Book sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{Math.floor(totalHours / 100)}</u>
           </strong>{' '}
           Sachbücher lesen und ein Experte in {Math.floor(totalHours / 100)} Bereichen werden können!
         </>,
         <>
-          🎨 Du hättest{' '}
+          <Brush sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{Math.floor(totalHours / 5)}</u>
           </strong>{' '}
           Kunstwerke malen können und wärst der nächste Picasso geworden!
         </>,
         <>
-          🧑‍🍳 Du hättest{' '}
+          <Restaurant sx={{ fontSize: '1rem', verticalAlign: 'middle', mr: 0.5 }} />
+          Du hättest{' '}
           <strong>
             <u>{Math.floor(totalHours / 40)}</u>
           </strong>{' '}
@@ -480,7 +531,10 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
                   color='primary'
                   gutterBottom
                 >
-                  📊 Heutiger Funfact:
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <BarChart sx={{ fontSize: '1rem' }} />
+                    Heutiger Funfact:
+                  </Box>
                 </Typography>
                 <Typography sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
                   {funFact}
