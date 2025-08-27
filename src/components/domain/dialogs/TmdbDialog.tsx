@@ -4,6 +4,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -14,6 +15,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Snackbar,
   Tab,
   Tabs,
   Tooltip,
@@ -72,6 +74,17 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   const [addingTitles, setAddingTitles] = useState<Set<number>>(new Set());
   const [animeCharacters, setAnimeCharacters] = useState<any[]>([]);
   const [animeLoading, setAnimeLoading] = useState(false);
+  
+  // Snackbar State für Feedback
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'warning' | 'info';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   // Cast Data vorab laden beim Dialog öffnen
   useEffect(() => {
@@ -379,6 +392,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     try {
       setPersonLoading(true);
       setPersonDialogOpen(true);
+      
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 
       // Validierung der Voice Actor Daten
       if (!voiceActor?.person?.name) {
@@ -421,12 +436,512 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         // Perfekt! Voice Actor ist bereits in TMDB Cast-Daten
         await fetchPersonData(tmdbCastMatch.id, false);
       } else {
-        // Fallback: Zeige AniList Daten
+        // Fallback: Lade Voice Actor Daten von AniList
+        try {
+          console.log("Fetching voice actor data from AniList for:", voiceActor.person.name, "ID:", voiceActor.person.id);
+          
+          // Zuerst versuchen wir es mit der ID
+          if (voiceActor.person.id && typeof voiceActor.person.id === 'number') {
+            const query = `
+              query ($id: Int) {
+                Staff(id: $id) {
+                  id
+                  name {
+                    full
+                    native
+                  }
+                  image {
+                    large
+                  }
+                  description
+                  primaryOccupations
+                  age
+                  yearsActive
+                  homeTown
+                  bloodType
+                  characterMedia(page: 1, perPage: 50, sort: FAVOURITES_DESC) {
+                    edges {
+                      node {
+                        id
+                        title {
+                          romaji
+                          english
+                          native
+                        }
+                        format
+                        startDate {
+                          year
+                        }
+                        coverImage {
+                          large
+                        }
+                        popularity
+                      }
+                      characters {
+                        id
+                        name {
+                          full
+                        }
+                        image {
+                          large
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const response = await fetch("https://graphql.anilist.co", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+              },
+              body: JSON.stringify({
+                query,
+                variables: {
+                  id: parseInt(voiceActor.person.id),
+                },
+              }),
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              const staffData = result.data?.Staff;
+
+              if (staffData && staffData.characterMedia?.edges?.length > 0) {
+                // Filtere die aktuelle Serie/Film aus den Credits heraus
+                const currentSeriesId = data?.id;
+                
+                // Transformiere AniList Daten ins TMDB Format
+                const titleMap = new Map(); // Map für Deduplizierung
+                
+                staffData.characterMedia.edges
+                  .filter((edge: any) => edge.node.id !== currentSeriesId) // Filtere aktuelle Serie aus
+                  .forEach((edge: any, index: number) => {
+                    // Bevorzuge englischen Titel, dann romaji, dann native
+                    const preferredTitle = edge.node.title.english || edge.node.title.romaji || edge.node.title.native;
+                    
+                    // Umfassende Bereinigung des Titels
+                    const cleanTitle = preferredTitle
+                      .replace(/[:\-–]?\s*Cour \d+/gi, '') // Entferne "Cour 2"
+                      .replace(/[:\-–]?\s*(Season|S)\s*\d+/gi, '') // Entferne "Season 2", "S2" 
+                      .replace(/[:\-–]?\s*\d+(st|nd|rd|th)\s+Season/gi, '') // Entferne "2nd Season"
+                      .replace(/[:\-–]?\s*Part\s+\d+/gi, '') // Entferne "Part 2"
+                      .replace(/\s*\(TV\)/gi, '') // Entferne "(TV)"
+                      .replace(/\s+/g, ' ') // Normalisiere Leerzeichen
+                      .trim();
+                    
+                    // Erstelle einen noch strikteren Normalisierungs-Key
+                    const normalizedKey = cleanTitle
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, '') // Entferne ALLE Sonderzeichen für den Key
+                      .trim();
+                    
+                    if (!normalizedKey) return; // Skip wenn kein gültiger Titel
+                    
+                    const existing = titleMap.get(normalizedKey);
+                    const newCredit = {
+                      id: edge.node.id,
+                      credit_id: `anilist-${staffData.id}-${edge.node.id}-${index}`,
+                      title: cleanTitle, // Verwende den bereinigten Titel für Anzeige
+                      name: cleanTitle,
+                      original_title: preferredTitle, // Behalte Original für Debug
+                      poster_path: edge.node.coverImage?.large,
+                      is_anilist_image: true,
+                      character: edge.characters?.[0]?.name?.full || "Charakter",
+                      media_type: edge.node.format === "MOVIE" ? "movie" : "tv",
+                      first_air_date: edge.node.startDate?.year ? `${edge.node.startDate.year}-01-01` : null,
+                      release_date: edge.node.startDate?.year ? `${edge.node.startDate.year}-01-01` : null,
+                      popularity: edge.node.popularity || 0,
+                    };
+                    
+                    // Nur hinzufügen wenn nicht existiert oder populärer
+                    if (!existing || newCredit.popularity > existing.popularity) {
+                      titleMap.set(normalizedKey, newCredit);
+                    }
+                  });
+                
+                // Konvertiere Map zu Array
+                const uniqueCredits = Array.from(titleMap.values());
+                
+                // Suche TMDB IDs für AniList Titel
+                console.log(`Searching TMDB IDs for ${uniqueCredits.length} AniList titles...`);
+                for (const credit of uniqueCredits) {
+                  try {
+                    const searchQuery = encodeURIComponent(credit.title);
+                    const searchUrl = credit.media_type === "movie" 
+                      ? `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${searchQuery}&language=de-DE`
+                      : `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${searchQuery}&language=de-DE`;
+                    
+                    const searchResponse = await fetch(searchUrl);
+                    if (searchResponse.ok) {
+                      const searchData = await searchResponse.json();
+                      if (searchData.results && searchData.results.length > 0) {
+                        // Nimm das erste Ergebnis (meist das relevanteste)
+                        credit.tmdb_id = searchData.results[0].id;
+                        credit.tmdb_title = searchData.results[0].title || searchData.results[0].name;
+                      }
+                    }
+                  } catch (error) {
+                    console.error(`Error searching TMDB for "${credit.title}":`, error);
+                  }
+                }
+                
+                console.log(`AniList: ${staffData.characterMedia.edges.length} roles → ${uniqueCredits.length} unique titles`);
+                console.log('Found TMDB IDs for:', uniqueCredits.filter(c => c.tmdb_id).length, 'titles');
+
+                // Versuche zuerst die Biographie von TMDB zu holen
+                let biography = null;
+                let tmdbPersonId = null;
+                
+                try {
+                  console.log("Searching TMDB for:", staffData.name?.full || voiceActor.person.name);
+                  
+                  // Versuche mit dem Namen eine TMDB Person zu finden
+                  const tmdbSearchResponse = await fetch(
+                    `https://api.themoviedb.org/3/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(staffData.name?.full || voiceActor.person.name)}&language=de-DE`
+                  );
+                  
+                  if (tmdbSearchResponse.ok) {
+                    const tmdbSearchData = await tmdbSearchResponse.json();
+                    console.log("TMDB search results:", tmdbSearchData.results?.length || 0, "results found");
+                    
+                    if (tmdbSearchData.results && tmdbSearchData.results.length > 0) {
+                      tmdbPersonId = tmdbSearchData.results[0].id;
+                      
+                      // Hole detaillierte Person-Daten von TMDB - zuerst auf Deutsch
+                      const tmdbPersonResponseDe = await fetch(
+                        `https://api.themoviedb.org/3/person/${tmdbPersonId}?api_key=${TMDB_API_KEY}&language=de-DE`
+                      );
+                      
+                      if (tmdbPersonResponseDe.ok) {
+                        const tmdbPersonDataDe = await tmdbPersonResponseDe.json();
+                        if (tmdbPersonDataDe.biography && tmdbPersonDataDe.biography.trim() !== "") {
+                          biography = tmdbPersonDataDe.biography;
+                          console.log("Using TMDB German biography");
+                        } else {
+                          // Fallback auf Englisch wenn Deutsch leer ist
+                          console.log("German TMDB biography is empty, trying English");
+                          const tmdbPersonResponseEn = await fetch(
+                            `https://api.themoviedb.org/3/person/${tmdbPersonId}?api_key=${TMDB_API_KEY}&language=en-US`
+                          );
+                          
+                          if (tmdbPersonResponseEn.ok) {
+                            const tmdbPersonDataEn = await tmdbPersonResponseEn.json();
+                            if (tmdbPersonDataEn.biography && tmdbPersonDataEn.biography.trim() !== "") {
+                              biography = tmdbPersonDataEn.biography;
+                              console.log("Using TMDB English biography");
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                } catch (tmdbError) {
+                  console.error("Error fetching TMDB data:", tmdbError);
+                }
+                
+                // Falls keine TMDB Biographie, formatiere AniList Beschreibung
+                if (!biography && staffData.description) {
+                  // Entferne Markdown-Formatierung und formatiere für bessere Lesbarkeit
+                  biography = staffData.description
+                    .replace(/__(.*?)__/g, '$1') // Entferne __ formatting
+                    .replace(/\[(.*?)\]\((.*?)\)/g, '$1') // Entferne Markdown Links
+                    .replace(/\n\n/g, '\n') // Reduziere doppelte Zeilenumbrüche
+                    .trim();
+                  console.log("Using formatted AniList description");
+                }
+                
+                if (!biography) {
+                  biography = `Japanischer Synchronsprecher (声優, Seiyuu)\n\nKeine zusätzlichen Informationen verfügbar.`;
+                }
+
+                // Setze Voice Actor Daten
+                setSelectedPerson({
+                  id: tmdbPersonId || staffData.id, // Verwende TMDB ID wenn verfügbar
+                  name: staffData.name?.full || voiceActor.person.name,
+                  profile_path: staffData.image?.large || voiceActor.person.images?.jpg?.image_url,
+                  biography: biography,
+                  known_for_department: "Acting",
+                  birthday: null,
+                  deathday: null,
+                  place_of_birth: staffData.homeTown || "Japan",
+                  homepage: null,
+                  is_from_anilist: true, // Markierung dass Daten von AniList kommen
+                });
+
+                // Filtere den aktuellen Titel aus und sortiere nach Popularität
+                const filteredCredits = uniqueCredits
+                  .filter((credit: any) => {
+                    // Filtere den aktuellen Titel aus (vergleiche TMDB-ID falls vorhanden)
+                    if (credit.tmdb_id && credit.tmdb_id === data.id) {
+                      return false;
+                    }
+                    // Vergleiche auch den Titel als Fallback
+                    if (credit.title === data.name || credit.title === data.title) {
+                      return false;
+                    }
+                    return true;
+                  })
+                  .sort((a: any, b: any) => b.popularity - a.popularity);
+
+                setPersonCredits({ cast: filteredCredits.slice(0, 20), crew: [] });
+                setPersonLoading(false);
+                setCreditsLoading(false);
+                console.log("Successfully loaded voice actor roles from AniList");
+                return;
+              }
+            }
+          }
+
+          // Falls ID-Suche fehlschlägt, versuche Namenssuche
+          console.log("ID search failed, trying name search for:", voiceActor.person.name);
+          const nameSearchQuery = `
+            query ($search: String) {
+              Staff(search: $search) {
+                id
+                name {
+                  full
+                  native
+                }
+                image {
+                  large
+                }
+                description
+                primaryOccupations
+                characterMedia(page: 1, perPage: 50, sort: FAVOURITES_DESC) {
+                  edges {
+                    node {
+                      id
+                      title {
+                        romaji
+                        english
+                        native
+                      }
+                      format
+                      startDate {
+                        year
+                      }
+                      coverImage {
+                        large
+                      }
+                      popularity
+                    }
+                    characters {
+                      id
+                      name {
+                        full
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          `;
+
+          const nameResponse = await fetch("https://graphql.anilist.co", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+            },
+            body: JSON.stringify({
+              query: nameSearchQuery,
+              variables: {
+                search: voiceActor.person.name,
+              },
+            }),
+          });
+
+          if (nameResponse.ok) {
+            const nameResult = await nameResponse.json();
+            const staffData = nameResult.data?.Staff;
+
+            if (staffData && staffData.characterMedia?.edges?.length > 0) {
+              // Filtere die aktuelle Serie/Film aus den Credits heraus
+              const currentSeriesId = data?.id;
+              
+              const titleMap = new Map();
+              
+              staffData.characterMedia.edges
+                .filter((edge: any) => edge.node.id !== currentSeriesId)
+                .forEach((edge: any, index: number) => {
+                  const preferredTitle = edge.node.title.english || edge.node.title.romaji || edge.node.title.native;
+                  
+                  // Umfassende Bereinigung des Titels (gleich wie oben)
+                  const cleanTitle = preferredTitle
+                    .replace(/[:\-–]?\s*Cour \d+/gi, '')
+                    .replace(/[:\-–]?\s*(Season|S)\s*\d+/gi, '')
+                    .replace(/[:\-–]?\s*\d+(st|nd|rd|th)\s+Season/gi, '')
+                    .replace(/[:\-–]?\s*Part\s+\d+/gi, '')
+                    .replace(/\s*\(TV\)/gi, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                  
+                  // Erstelle einen noch strikteren Normalisierungs-Key
+                  const normalizedKey = cleanTitle
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, '')
+                    .trim();
+                  
+                  if (!normalizedKey) return;
+                  
+                  const existing = titleMap.get(normalizedKey);
+                  const newCredit = {
+                    id: edge.node.id,
+                    credit_id: `anilist-name-${staffData.id}-${edge.node.id}-${index}`,
+                    title: cleanTitle,
+                    name: cleanTitle,
+                    original_title: preferredTitle,
+                    poster_path: edge.node.coverImage?.large,
+                    is_anilist_image: true,
+                    character: edge.characters?.[0]?.name?.full || "Charakter",
+                    media_type: edge.node.format === "MOVIE" ? "movie" : "tv",
+                    first_air_date: edge.node.startDate?.year ? `${edge.node.startDate.year}-01-01` : null,
+                    release_date: edge.node.startDate?.year ? `${edge.node.startDate.year}-01-01` : null,
+                    popularity: edge.node.popularity || 0,
+                  };
+                  
+                  if (!existing || newCredit.popularity > existing.popularity) {
+                    titleMap.set(normalizedKey, newCredit);
+                  }
+                });
+              
+              const uniqueCredits = Array.from(titleMap.values());
+              
+              // Suche TMDB IDs für AniList Titel
+              console.log(`Name search: Searching TMDB IDs for ${uniqueCredits.length} AniList titles...`);
+              for (const credit of uniqueCredits) {
+                try {
+                  const searchQuery = encodeURIComponent(credit.title);
+                  const searchUrl = credit.media_type === "movie" 
+                    ? `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${searchQuery}&language=de-DE`
+                    : `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${searchQuery}&language=de-DE`;
+                  
+                  const searchResponse = await fetch(searchUrl);
+                  if (searchResponse.ok) {
+                    const searchData = await searchResponse.json();
+                    if (searchData.results && searchData.results.length > 0) {
+                      credit.tmdb_id = searchData.results[0].id;
+                      credit.tmdb_title = searchData.results[0].title || searchData.results[0].name;
+                    }
+                  }
+                } catch (error) {
+                  console.error(`Error searching TMDB for "${credit.title}":`, error);
+                }
+              }
+              
+              console.log(`Name search: ${staffData.characterMedia.edges.length} roles → ${uniqueCredits.length} unique titles`);
+              console.log('Found TMDB IDs for:', uniqueCredits.filter(c => c.tmdb_id).length, 'titles');
+
+              // Versuche zuerst die Biographie von TMDB zu holen
+              let biography = null;
+              let tmdbPersonId = null;
+              
+              try {
+                console.log("Searching TMDB for (name search):", staffData.name?.full || voiceActor.person.name);
+                
+                const tmdbSearchResponse = await fetch(
+                  `https://api.themoviedb.org/3/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(staffData.name?.full || voiceActor.person.name)}&language=de-DE`
+                );
+                
+                if (tmdbSearchResponse.ok) {
+                  const tmdbSearchData = await tmdbSearchResponse.json();
+                  console.log("TMDB search results (name search):", tmdbSearchData.results?.length || 0, "results found");
+                  
+                  if (tmdbSearchData.results && tmdbSearchData.results.length > 0) {
+                    tmdbPersonId = tmdbSearchData.results[0].id;
+                    
+                    const tmdbPersonResponseDe = await fetch(
+                      `https://api.themoviedb.org/3/person/${tmdbPersonId}?api_key=${TMDB_API_KEY}&language=de-DE`
+                    );
+                    
+                    if (tmdbPersonResponseDe.ok) {
+                      const tmdbPersonDataDe = await tmdbPersonResponseDe.json();
+                      if (tmdbPersonDataDe.biography && tmdbPersonDataDe.biography.trim() !== "") {
+                        biography = tmdbPersonDataDe.biography;
+                        console.log("Using TMDB German biography (name search)");
+                      } else {
+                        console.log("German TMDB biography is empty, trying English (name search)");
+                        const tmdbPersonResponseEn = await fetch(
+                          `https://api.themoviedb.org/3/person/${tmdbPersonId}?api_key=${TMDB_API_KEY}&language=en-US`
+                        );
+                        
+                        if (tmdbPersonResponseEn.ok) {
+                          const tmdbPersonDataEn = await tmdbPersonResponseEn.json();
+                          if (tmdbPersonDataEn.biography && tmdbPersonDataEn.biography.trim() !== "") {
+                            biography = tmdbPersonDataEn.biography;
+                            console.log("Using TMDB English biography (name search)");
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } catch (tmdbError) {
+                console.error("Error fetching TMDB data (name search):", tmdbError);
+              }
+              
+              if (!biography && staffData.description) {
+                biography = staffData.description
+                  .replace(/__(.*?)__/g, '$1')
+                  .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+                  .replace(/\n\n/g, '\n')
+                  .trim();
+                console.log("Using formatted AniList description (name search)");
+              }
+              
+              if (!biography) {
+                biography = `Japanischer Synchronsprecher (声優, Seiyuu)\n\nKeine zusätzlichen Informationen verfügbar.`;
+              }
+
+              setSelectedPerson({
+                id: tmdbPersonId || staffData.id,
+                name: staffData.name?.full || voiceActor.person.name,
+                profile_path: staffData.image?.large || voiceActor.person.images?.jpg?.image_url,
+                biography: biography,
+                known_for_department: "Acting",
+                birthday: null,
+                deathday: null,
+                place_of_birth: "Japan",
+                homepage: null,
+                is_from_anilist: true,
+              });
+
+              // Filtere den aktuellen Titel aus und sortiere nach Popularität
+              const filteredCredits = uniqueCredits
+                .filter((credit: any) => {
+                  // Filtere den aktuellen Titel aus (vergleiche TMDB-ID falls vorhanden)
+                  if (credit.tmdb_id && credit.tmdb_id === data.id) {
+                    return false;
+                  }
+                  // Vergleiche auch den Titel als Fallback
+                  if (credit.title === data.name || credit.title === data.title) {
+                    return false;
+                  }
+                  return true;
+                })
+                .sort((a: any, b: any) => b.popularity - a.popularity);
+                
+              setPersonCredits({ cast: filteredCredits.slice(0, 20), crew: [] });
+              setPersonLoading(false);
+              setCreditsLoading(false);
+              console.log("Successfully loaded voice actor roles from AniList via name search");
+              return;
+            }
+          }
+        } catch (anilistError) {
+          console.error("Error fetching voice actor from AniList:", anilistError);
+        }
+
+        // Ultimate Fallback wenn AniList auch fehlschlägt
         const fallbackPersonData = {
           id: voiceActor.person.id || Math.random(),
           name: voiceActor.person.name || "Unbekannter Sprecher",
           profile_path: voiceActor.person.images?.jpg?.image_url || null,
-          biography: `Japanischer Synchronsprecher (声優, Seiyuu)\n\nNicht in TMDB Cast-Daten gefunden.`,
+          biography: `Japanischer Synchronsprecher (声優, Seiyuu)\n\nKeine zusätzlichen Informationen verfügbar.`,
           known_for_department: "Acting",
           birthday: null,
           deathday: null,
@@ -450,6 +965,21 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   const isTitleInList = (credit: any) => {
     if (!user) return false;
 
+    // Bei AniList Credits verwende die TMDB ID wenn vorhanden
+    if (credit.is_anilist_image && credit.tmdb_id) {
+      if (credit.media_type === "movie") {
+        return movieList.some((movie) => movie.id === credit.tmdb_id);
+      } else {
+        return seriesList.some((series) => series.id === credit.tmdb_id);
+      }
+    }
+    
+    // Fallback f\u00fcr AniList ohne TMDB ID - sollte selten vorkommen
+    if (credit.is_anilist_image) {
+      return false; // Wenn wir keine TMDB ID haben, k\u00f6nnen wir nicht sicher sein
+    }
+    
+    // Standard TMDB ID Vergleich
     if (credit.media_type === "movie") {
       return movieList.some((movie) => movie.id === credit.id);
     } else {
@@ -464,9 +994,26 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
     try {
       setAddingTitles((prev) => new Set(prev.add(credit.id)));
 
+      // Verwende tmdb_id für AniList-Einträge, ansonsten die normale id
+      const tmdbId = credit.is_anilist_image && credit.tmdb_id ? credit.tmdb_id : credit.id;
+      
+      if (credit.is_anilist_image && !credit.tmdb_id) {
+        setSnackbar({
+          open: true,
+          message: `Keine TMDB-ID für "${credit.title || credit.name}" gefunden. Titel kann nicht hinzugefügt werden.`,
+          severity: 'warning',
+        });
+        setAddingTitles((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(credit.id);
+          return newSet;
+        });
+        return;
+      }
+
       const titleData = {
         user: import.meta.env.VITE_USER,
-        id: credit.id,
+        id: tmdbId,
         uuid: user.uid,
       };
 
@@ -487,17 +1034,36 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       });
 
       if (res.ok) {
+        // Erfolg-Meldung
+        const titleName = credit.tmdb_title || credit.title || credit.name;
+        
+        // Zeige Snackbar mit längerer Duration und besserer Sichtbarkeit
+        setTimeout(() => {
+          setSnackbar({
+            open: true,
+            message: `✓ "${titleName}" wurde erfolgreich zu deiner ${credit.media_type === "movie" ? "Film" : "Serien"}-Liste hinzugefügt`,
+            severity: 'success',
+          });
+        }, 100);
+        
         // Refresh der Listen würde hier stattfinden
         // Das passiert automatisch durch die Context Provider
-        console.log(
-          `${
-            credit.media_type === "movie" ? "Film" : "Serie"
-          } erfolgreich hinzugefügt:`,
-          credit.title || credit.name,
-        );
+        // WICHTIG: Dialog bleibt geöffnet, damit der Nutzer weitere Titel hinzufügen kann
+      } else {
+        // Fehler vom Server
+        setSnackbar({
+          open: true,
+          message: `Fehler beim Hinzufügen von "${credit.title || credit.name}". Bitte versuche es später erneut.`,
+          severity: 'error',
+        });
       }
     } catch (error) {
       console.error("Error adding title:", error);
+      setSnackbar({
+        open: true,
+        message: `Netzwerkfehler beim Hinzufügen von "${credit.title || credit.name}"`,
+        severity: 'error',
+      });
     } finally {
       setAddingTitles((prev) => {
         const newSet = new Set(prev);
@@ -521,11 +1087,13 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
   // Zeige Add-Button nur wenn User eingeloggt und noch nicht hinzugefügt
   const canAdd = user && !alreadyAdded;
   return (
+    <>
     <Dialog
       open={open}
       onClose={onClose}
       maxWidth="sm"
       fullWidth
+      disableRestoreFocus
       slotProps={{
         paper: {
           sx: {
@@ -654,7 +1222,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   <Box sx={{ flexShrink: 0 }} mt={1.5}>
                     <Box
                       component="img"
-                      src={`https://image.tmdb.org/t/p/w300${data.poster_path}`}
+                      src={data.poster_path?.startsWith('http') ? data.poster_path : `https://image.tmdb.org/t/p/w300${data.poster_path}`}
                       alt={type === "tv" ? data.name : data.title}
                       sx={{
                         width: { xs: "200px", md: "250px" },
@@ -1563,6 +2131,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         onClose={() => setPersonDialogOpen(false)}
         maxWidth="md"
         fullWidth
+        disableRestoreFocus
         slotProps={{
           paper: {
             sx: {
@@ -1881,7 +2450,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             {credit.poster_path ? (
                               <Box
                                 component="img"
-                                src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
+                                src={credit.poster_path?.startsWith('http') ? credit.poster_path : `https://image.tmdb.org/t/p/w200${credit.poster_path}`}
                                 alt={credit.title || credit.name}
                                 sx={{
                                   width: "100%",
@@ -2159,7 +2728,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             {credit.poster_path ? (
                               <Box
                                 component="img"
-                                src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
+                                src={credit.poster_path?.startsWith('http') ? credit.poster_path : `https://image.tmdb.org/t/p/w200${credit.poster_path}`}
                                 alt={credit.title || credit.name}
                                 sx={{
                                   width: "100%",
@@ -2400,576 +2969,6 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           </Box>
                         </Box>
                       ))}
-
-                    {/* Cast Credits - nur Credits mit Charaktername anzeigen */}
-                    {personCredits.cast
-                      .filter((credit: any) => credit.character)
-                      .map((credit: any) => (
-                        <Box
-                          key={`cast-${credit.id}-${credit.credit_id}`}
-                          sx={{
-                            display: "flex",
-                            gap: 2,
-                            background:
-                              "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-                            borderRadius: 2,
-                            p: 1.5,
-                            backdropFilter: "blur(10px)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                            cursor: "pointer",
-                            "&:hover": {
-                              background:
-                                colors.status.info.gradient,
-                              borderColor: `${colors.border.primary}30`,
-                              transform: "translateX(8px)",
-                              boxShadow: colors.shadow.card,
-                            },
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              position: "relative",
-                              flexShrink: 0,
-                              width: 60,
-                              height: 90,
-                              borderRadius: 1.5,
-                              overflow: "hidden",
-                              background:
-                                "linear-gradient(145deg, #2a2a2a, #1a1a1a)",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                            }}
-                          >
-                            {credit.poster_path ? (
-                              <Box
-                                component="img"
-                                src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
-                                alt={credit.title || credit.name}
-                                sx={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                  transition: "transform 0.3s ease",
-                                }}
-                              />
-                            ) : (
-                              <Box
-                                sx={{
-                                  width: "100%",
-                                  height: "100%",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  background:
-                                    "linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)",
-                                  color: "#666",
-                                  fontSize: "1.5rem",
-                                }}
-                              >
-                                {credit.media_type === "movie" ? "🎬" : "📺"}
-                              </Box>
-                            )}
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                top: 4,
-                                right: 4,
-                                background:
-                                  credit.media_type === "movie"
-                                    ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
-                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.text.accent})`,
-                                borderRadius: "12px",
-                                px: 0.8,
-                                py: 0.3,
-                                fontSize: "0.65rem",
-                                fontWeight: "bold",
-                                color:
-                                  credit.media_type === "movie"
-                                    ? "#fff"
-                                    : "#000",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                                textTransform: "uppercase",
-                                letterSpacing: 0.5,
-                              }}
-                            >
-                              {credit.media_type === "movie" ? "Film" : "Serie"}
-                            </Box>
-                          </Box>
-
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 700,
-                                color: "#ffffff",
-                                mb: 0.5,
-                                lineHeight: 1.2,
-                                fontSize: "0.95rem",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                            >
-                              {credit.title || credit.name}
-                            </Typography>
-
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: "var(--theme-primary)",
-                                fontStyle: "italic",
-                                mb: 0.8,
-                                fontSize: "0.8rem",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                            >
-                              als{" "}
-                              {credit.character.replace(
-                                /\(voice\)/gi,
-                                "(Stimme)",
-                              )}
-                            </Typography>
-
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: { xs: "flex-start", sm: "center" },
-                                justifyContent: "space-between",
-                                flexDirection: { xs: "column", sm: "row" },
-                                gap: { xs: 1, sm: 0 },
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1.5,
-                                  flexWrap: "wrap",
-                                }}
-                              >
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: "#9e9e9e",
-                                    fontWeight: 500,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  📅{" "}
-                                  {credit.release_date
-                                    ? new Date(
-                                        credit.release_date,
-                                      ).getFullYear()
-                                    : credit.first_air_date
-                                      ? new Date(
-                                          credit.first_air_date,
-                                        ).getFullYear()
-                                      : "Unbekannt"}
-                                </Typography>
-
-                                {credit.vote_average &&
-                                typeof credit.vote_average === "number" &&
-                                credit.vote_average > 1 &&
-                                credit.vote_count &&
-                                credit.vote_count > 0 ? (
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: colors.status.warning,
-                                      fontWeight: 600,
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 0.3,
-                                    }}
-                                  >
-                                    ⭐ {credit.vote_average.toFixed(1)}
-                                  </Typography>
-                                ) : null}
-                              </Box>
-
-                              {/* Status und Add Button */}
-                              {user && (
-                                <Box sx={{ flexShrink: 0 }}>
-                                  {isTitleInList(credit) ? (
-                                    <Tooltip title="Bereits in deiner Liste">
-                                      <Chip
-                                        icon={
-                                          <CheckIcon
-                                            sx={{ fontSize: "16px !important" }}
-                                          />
-                                        }
-                                        label="In Liste"
-                                        size="small"
-                                        sx={{
-                                          backgroundColor:
-                                            "rgba(76, 175, 80, 0.2)",
-                                          color: "#4caf50",
-                                          border: "1px solid #4caf50",
-                                          fontSize: "0.7rem",
-                                          height: "24px",
-                                        }}
-                                      />
-                                    </Tooltip>
-                                  ) : (
-                                    <Tooltip
-                                      title={`${
-                                        credit.media_type === "movie"
-                                          ? "Film"
-                                          : "Serie"
-                                      } zu meiner Liste hinzufügen`}
-                                    >
-                                      <Chip
-                                        icon={
-                                          addingTitles.has(credit.id) ? (
-                                            <CircularProgress
-                                              size={14}
-                                              sx={{
-                                                color: "var(--theme-primary)",
-                                              }}
-                                            />
-                                          ) : (
-                                            <AddIcon
-                                              sx={{
-                                                fontSize: "16px !important",
-                                              }}
-                                            />
-                                          )
-                                        }
-                                        label={
-                                          addingTitles.has(credit.id)
-                                            ? "Hinzufügen..."
-                                            : "Hinzufügen"
-                                        }
-                                        size="small"
-                                        clickable
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleAddTitle(credit);
-                                        }}
-                                        disabled={addingTitles.has(credit.id)}
-                                        sx={{
-                                          backgroundColor:
-                                            `${colors.primary}20`,
-                                          color: "var(--theme-primary)",
-                                          border: `1px solid var(--theme-primary)`,
-                                          fontSize: "0.7rem",
-                                          height: "24px",
-                                          cursor: "pointer",
-                                          transition: "all 0.2s ease",
-                                          "&:hover": {
-                                            backgroundColor:
-                                              `${colors.primary}30`,
-                                            transform: "scale(1.05)",
-                                          },
-                                          "&:disabled": {
-                                            backgroundColor:
-                                              "rgba(255,255,255,0.05)",
-                                            color: "#666",
-                                            borderColor:
-                                              "rgba(255,255,255,0.1)",
-                                            cursor: "not-allowed",
-                                          },
-                                        }}
-                                      />
-                                    </Tooltip>
-                                  )}
-                                </Box>
-                              )}
-                            </Box>
-                          </Box>
-                        </Box>
-                      ))}
-
-                    {/* Cast Credits - nur Credits mit Charaktername anzeigen */}
-                    {personCredits.cast
-                      .filter((credit: any) => credit.character)
-                      .map((credit: any) => (
-                        <Box
-                          key={`cast-${credit.id}-${credit.credit_id}`}
-                          sx={{
-                            display: "flex",
-                            gap: 2,
-                            background:
-                              "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-                            borderRadius: 2,
-                            p: 1.5,
-                            backdropFilter: "blur(10px)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                            cursor: "pointer",
-                            "&:hover": {
-                              background:
-                                colors.status.info.gradient,
-                              borderColor: `${colors.border.primary}30`,
-                              transform: "translateX(8px)",
-                              boxShadow: colors.shadow.card,
-                            },
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              position: "relative",
-                              flexShrink: 0,
-                              width: 60,
-                              height: 90,
-                              borderRadius: 1.5,
-                              overflow: "hidden",
-                              background:
-                                "linear-gradient(145deg, #2a2a2a, #1a1a1a)",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-                            }}
-                          >
-                            {credit.poster_path ? (
-                              <Box
-                                component="img"
-                                src={`https://image.tmdb.org/t/p/w200${credit.poster_path}`}
-                                alt={credit.title || credit.name}
-                                sx={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                  transition: "transform 0.3s ease",
-                                }}
-                              />
-                            ) : (
-                              <Box
-                                sx={{
-                                  width: "100%",
-                                  height: "100%",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  background:
-                                    "linear-gradient(145deg, ${colors.background.surface}, #1a1a1a)",
-                                  color: "#666",
-                                  fontSize: "1.5rem",
-                                }}
-                              >
-                                {credit.media_type === "movie" ? "🎬" : "📺"}
-                              </Box>
-                            )}
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                top: 4,
-                                right: 4,
-                                background:
-                                  credit.media_type === "movie"
-                                    ? "linear-gradient(135deg, #ff6b6b, #ff5252)"
-                                    : `linear-gradient(135deg, ${colors.primary}, ${colors.text.accent})`,
-                                borderRadius: "12px",
-                                px: 0.8,
-                                py: 0.3,
-                                fontSize: "0.65rem",
-                                fontWeight: "bold",
-                                color:
-                                  credit.media_type === "movie"
-                                    ? "#fff"
-                                    : "#000",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                                textTransform: "uppercase",
-                                letterSpacing: 0.5,
-                              }}
-                            >
-                              {credit.media_type === "movie" ? "Film" : "Serie"}
-                            </Box>
-                          </Box>
-
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 700,
-                                color: "#ffffff",
-                                mb: 0.5,
-                                lineHeight: 1.2,
-                                fontSize: "0.95rem",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                            >
-                              {credit.title || credit.name}
-                            </Typography>
-
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: "var(--theme-primary)",
-                                fontStyle: "italic",
-                                mb: 0.8,
-                                fontSize: "0.8rem",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                            >
-                              als{" "}
-                              {credit.character.replace(
-                                /\(voice\)/gi,
-                                "(Stimme)",
-                              )}
-                            </Typography>
-
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: { xs: "flex-start", sm: "center" },
-                                justifyContent: "space-between",
-                                flexDirection: { xs: "column", sm: "row" },
-                                gap: { xs: 1, sm: 0 },
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1.5,
-                                  flexWrap: "wrap",
-                                }}
-                              >
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: "#9e9e9e",
-                                    fontWeight: 500,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  📅{" "}
-                                  {credit.release_date
-                                    ? new Date(
-                                        credit.release_date,
-                                      ).getFullYear()
-                                    : credit.first_air_date
-                                      ? new Date(
-                                          credit.first_air_date,
-                                        ).getFullYear()
-                                      : "Unbekannt"}
-                                </Typography>
-
-                                {credit.vote_average &&
-                                typeof credit.vote_average === "number" &&
-                                credit.vote_average > 1 &&
-                                credit.vote_count &&
-                                credit.vote_count > 0 ? (
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: colors.status.warning,
-                                      fontWeight: 600,
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 0.3,
-                                    }}
-                                  >
-                                    ⭐ {credit.vote_average.toFixed(1)}
-                                  </Typography>
-                                ) : null}
-                              </Box>
-
-                              {/* Status und Add Button für Crew */}
-                              {user && (
-                                <Box sx={{ flexShrink: 0 }}>
-                                  {isTitleInList(credit) ? (
-                                    <Tooltip title="Bereits in deiner Liste">
-                                      <Chip
-                                        icon={
-                                          <CheckIcon
-                                            sx={{ fontSize: "16px !important" }}
-                                          />
-                                        }
-                                        label="In Liste"
-                                        size="small"
-                                        sx={{
-                                          backgroundColor:
-                                            "rgba(76, 175, 80, 0.2)",
-                                          color: "#4caf50",
-                                          border: "1px solid #4caf50",
-                                          fontSize: "0.7rem",
-                                          height: "24px",
-                                        }}
-                                      />
-                                    </Tooltip>
-                                  ) : (
-                                    <Tooltip
-                                      title={`${
-                                        credit.media_type === "movie"
-                                          ? "Film"
-                                          : "Serie"
-                                      } zu meiner Liste hinzufügen`}
-                                    >
-                                      <Chip
-                                        icon={
-                                          addingTitles.has(credit.id) ? (
-                                            <CircularProgress
-                                              size={14}
-                                              sx={{
-                                                color: "var(--theme-primary)",
-                                              }}
-                                            />
-                                          ) : (
-                                            <AddIcon
-                                              sx={{
-                                                fontSize: "16px !important",
-                                              }}
-                                            />
-                                          )
-                                        }
-                                        label={
-                                          addingTitles.has(credit.id)
-                                            ? "Hinzufügen..."
-                                            : "Hinzufügen"
-                                        }
-                                        size="small"
-                                        clickable
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleAddTitle(credit);
-                                        }}
-                                        disabled={addingTitles.has(credit.id)}
-                                        sx={{
-                                          backgroundColor:
-                                            `${colors.primary}20`,
-                                          color: "var(--theme-primary)",
-                                          border: `1px solid var(--theme-primary)`,
-                                          fontSize: "0.7rem",
-                                          height: "24px",
-                                          cursor: "pointer",
-                                          transition: "all 0.2s ease",
-                                          "&:hover": {
-                                            backgroundColor:
-                                              `${colors.primary}30`,
-                                            transform: "scale(1.05)",
-                                          },
-                                          "&:disabled": {
-                                            backgroundColor:
-                                              "rgba(255,255,255,0.05)",
-                                            color: "#666",
-                                            borderColor:
-                                              "rgba(255,255,255,0.1)",
-                                            cursor: "not-allowed",
-                                          },
-                                        }}
-                                      />
-                                    </Tooltip>
-                                  )}
-                                </Box>
-                              )}
-                            </Box>
-                          </Box>
-                        </Box>
-                      ))}
                   </Box>
                 ) : (
                   <Typography
@@ -2985,7 +2984,36 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         ) : null}
       </Dialog>
     </Dialog>
+    
+    {/* Snackbar für Feedback - außerhalb des Dialogs */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={6000}
+      onClose={() => setSnackbar({ ...snackbar, open: false })}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      sx={{ 
+        zIndex: 9999,
+        mt: 8
+      }}
+    >
+      <Alert 
+        onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        severity={snackbar.severity}
+        variant="filled"
+        sx={{ 
+          width: '100%',
+          backgroundColor: snackbar.severity === 'success' ? 'rgba(46, 125, 50, 0.95)' : undefined,
+          color: snackbar.severity === 'success' ? '#ffffff' : undefined,
+          fontSize: '1rem',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        }}
+      >
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+    </>
   );
 };
 
-export default TmdbDialog;
+export default React.memo(TmdbDialog);
