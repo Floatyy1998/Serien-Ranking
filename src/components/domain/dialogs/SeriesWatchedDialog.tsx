@@ -48,7 +48,10 @@ interface SeriesWatchedDialogProps {
   user: any;
   handleWatchedToggleWithConfirmation: (
     seasonNumber: number,
-    episodeId: number
+    episodeId: number,
+    forceWatched?: boolean,
+    isRewatch?: boolean,
+    forceUnwatch?: boolean
   ) => void;
   handleBatchWatchedToggle?: (seasonNumber: number) => void;
   handleEpisodeBatchWatchedToggle?: (episodeIds: number[], watched: boolean) => void;
@@ -765,13 +768,17 @@ const SeriesWatchedDialog = ({
               // Verwende isRewatch flag für korrektes Rewatch-Verhalten
               handleWatchedToggleWithConfirmation(
                 rewatchItem.seasonNumber, 
-                rewatchItem.episodeId
+                rewatchItem.episodeId,
+                false,  // forceWatched
+                true    // isRewatch - WICHTIG: Das war der fehlende Parameter!
               );
             } else if (rewatchItem.type === 'season' && rewatchItem.seasonNumber !== undefined) {
               // Für ganze Staffeln: Rewatch mit isRewatch flag
               handleWatchedToggleWithConfirmation(
                 rewatchItem.seasonNumber,
-                -1  // -1 bedeutet alle Episoden der Staffel
+                -1,     // -1 bedeutet alle Episoden der Staffel
+                false,  // forceWatched
+                true    // isRewatch - WICHTIG: Das war der fehlende Parameter!
               );
             }
           }
@@ -782,7 +789,10 @@ const SeriesWatchedDialog = ({
               // Verwende forceUnwatch flag für korrektes Unwatch-Verhalten
               handleWatchedToggleWithConfirmation(
                 rewatchItem.seasonNumber, 
-                rewatchItem.episodeId
+                rewatchItem.episodeId,
+                false,  // forceWatched
+                false,  // isRewatch
+                true    // forceUnwatch - WICHTIG: Das war der fehlende Parameter!
               );
             } else if (rewatchItem.type === 'season' && rewatchItem.seasonNumber !== undefined) {
               // Für ganze Staffeln: Alle Episoden einzeln mit forceUnwatch aufrufen
@@ -792,7 +802,10 @@ const SeriesWatchedDialog = ({
                 // mit seasonNumber -1 und forceUnwatch = true für Batch-Operation
                 handleWatchedToggleWithConfirmation(
                   rewatchItem.seasonNumber,
-                  -1  // -1 bedeutet alle Episoden der Staffel
+                  -1,     // -1 bedeutet alle Episoden der Staffel
+                  false,  // forceWatched
+                  false,  // isRewatch
+                  true    // forceUnwatch - WICHTIG: Das war der fehlende Parameter!
                 );
               }
             }

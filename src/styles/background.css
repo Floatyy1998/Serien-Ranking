@@ -76,6 +76,7 @@ body.has-background-image .main-content {
 }
 
 /* Dialogs should be darker for better readability */
+/* Ausnahme: Tour-Dialog soll transparent bleiben für klare Sicht */
 body.has-background-image .MuiDialog-paper {
   background-color: rgba(0, 0, 0, 0.8) !important;
   backdrop-filter: blur(10px);
