@@ -65,17 +65,29 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
               emailVerifiedAt: firebase.database.ServerValue.TIMESTAMP,
             });
           }
-          console.log('Tour Check - Starting tour!'); // Debug
-          setShouldRunTour(true);
+          
+          // Warte bis Splashscreen definitiv fertig ist
+          const waitForSplashComplete = () => {
+            if (window.splashScreenComplete) {
+              console.log('Tour Check - Splashscreen fertig, starte Tour!'); // Debug
+              // Sofort starten wenn Splashscreen fertig ist
+              setShouldRunTour(true);
+            } else {
+              // Prüfe nochmal in 50ms (schneller)
+              setTimeout(waitForSplashComplete, 50);
+            }
+          };
+          
+          waitForSplashComplete();
         }
       } catch (error) {
         console.error('Error checking tour status:', error);
       }
     };
 
-    // Delay to ensure UI is rendered
-    const timer = setTimeout(checkTourStatus, 500);
-    return () => clearTimeout(timer);
+    // Sofort checken ohne Verzögerung
+    checkTourStatus();
+    return () => {};
   }, []);
 
   // Separates Effect für manuellen Tour-Restart

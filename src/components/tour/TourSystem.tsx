@@ -146,20 +146,8 @@ export const TourSystem: React.FC<TourSystemProps> = ({
   const spotlightStyle = getSpotlightStyle();
 
   return (
-    <Dialog
-      open={true}
-      maxWidth={false}
-      fullScreen
-      sx={{
-        '& .MuiDialog-paper': {
-          background: 'transparent',
-          boxShadow: 'none',
-          overflow: 'visible',
-        },
-      }}
-      hideBackdrop
-    >
-      {/* Overlay */}
+    <>
+      {/* Overlay - direkt im DOM, kein Dialog */}
       <Box
         sx={{
           position: 'fixed',
@@ -174,7 +162,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
         onClick={(e) => e.stopPropagation()}
       />
 
-      {/* Spotlight */}
+      {/* Spotlight - direkt über dem Element */}
       <AnimatePresence>
         {targetRect && (
           <motion.div
@@ -184,7 +172,7 @@ export const TourSystem: React.FC<TourSystemProps> = ({
             transition={{ duration: 0.3 }}
             style={{
               position: 'fixed',
-              zIndex: 10002, // Höher als Mock-Card
+              zIndex: 10002,
               backgroundColor: 'transparent',
               border: '3px solid var(--theme-primary)',
               borderRadius: '8px',
@@ -452,6 +440,6 @@ export const TourSystem: React.FC<TourSystemProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Dialog>
+    </>
   );
 };
