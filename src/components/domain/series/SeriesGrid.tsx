@@ -127,6 +127,43 @@ export const SeriesGrid = ({
             new Date().setHours(0, 0, 0, 0)) ||
         (selectedSpecialFilter === 'Ohne Bewertung' &&
           calculateOverallRating(series) === '0.00') ||
+        (selectedSpecialFilter === 'Begonnen' && (() => {
+          // Berechne Fortschritt für "Begonnen" Filter - nur ausgestrahlte Episoden
+          if (!series.seasons || series.seasons.length === 0) return false;
+          
+          const now = new Date();
+          
+          // Zähle nur ausgestrahlte Episoden
+          const airedEpisodes = series.seasons.reduce(
+            (sum: number, season: any) => {
+              const aired = season.episodes?.filter((e: any) => {
+                const airDate = e.air_date || e.airDate;
+                if (!airDate) return false; // Kein Datum = nicht ausgestrahlt
+                return new Date(airDate) <= now;
+              })?.length || 0;
+              return sum + aired;
+            },
+            0
+          );
+          
+          if (airedEpisodes === 0) return false; // Keine ausgestrahlten Episoden
+          
+          const watchedEpisodes = series.seasons.reduce(
+            (sum: number, season: any) => {
+              const watched = season.episodes?.filter((e: any) => {
+                if (!e.watched) return false;
+                const airDate = e.air_date || e.airDate;
+                if (!airDate) return false; // Kein Datum = nicht zählen
+                return new Date(airDate) <= now;
+              })?.length || 0;
+              return sum + watched;
+            },
+            0
+          );
+          
+          // Nur zeigen wenn mindestens eine Episode gesehen wurde, aber nicht alle ausgestrahlten
+          return watchedEpisodes > 0 && watchedEpisodes < airedEpisodes;
+        })()) ||
         selectedSpecialFilter === 'Zuletzt Hinzugefügt';
       const matchesProvider =
         selectedProvider === 'All' ||
@@ -149,6 +186,45 @@ export const SeriesGrid = ({
       }
       if (selectedSpecialFilter === 'Zuletzt Hinzugefügt') {
         return b.nmr - a.nmr;
+      }
+      if (selectedSpecialFilter === 'Begonnen') {
+        // Sortiere nach Fortschritt (höherer Fortschritt zuerst) - nur ausgestrahlte Episoden
+        const getProgress = (series: any) => {
+          if (!series.seasons || series.seasons.length === 0) return 0;
+          
+          const now = new Date();
+          
+          const airedEpisodes = series.seasons.reduce(
+            (sum: number, season: any) => {
+              const aired = season.episodes?.filter((e: any) => {
+                const airDate = e.air_date || e.airDate;
+                if (!airDate) return false; // Kein Datum = nicht ausgestrahlt
+                return new Date(airDate) <= now;
+              })?.length || 0;
+              return sum + aired;
+            },
+            0
+          );
+          
+          const watchedEpisodes = series.seasons.reduce(
+            (sum: number, season: any) => {
+              const watched = season.episodes?.filter((e: any) => {
+                if (!e.watched) return false;
+                const airDate = e.air_date || e.airDate;
+                if (!airDate) return false; // Kein Datum = nicht zählen
+                return new Date(airDate) <= now;
+              })?.length || 0;
+              return sum + watched;
+            },
+            0
+          );
+          
+          return airedEpisodes > 0 ? (watchedEpisodes / airedEpisodes) * 100 : 0;
+        };
+        
+        const progressA = getProgress(a);
+        const progressB = getProgress(b);
+        return progressB - progressA; // Höherer Fortschritt zuerst
       }
       // Für Freund-Profile: immer nach Rating sortieren
       if (targetUserId) {

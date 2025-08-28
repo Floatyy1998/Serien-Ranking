@@ -338,6 +338,18 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       spotlightPadding: 8,
     },
     {
+      target: '[data-tour="series-progress"]',
+      title: (
+        <>
+          <Star sx={{ fontSize: '1.2rem', verticalAlign: 'middle' }} /> Fortschrittsanzeige
+        </>
+      ),
+      content:
+        'Diese Box zeigt dir deinen Fortschritt bei der Serie an. Der farbige Rahmen und die Zahl zeigen, wie viel Prozent der ausgestrahlten Episoden du bereits gesehen hast.',
+      position: 'bottom',
+      spotlightPadding: 8,
+    },
+    {
       target: '[data-tour="series-watchlist-button"]',
       title: (
         <>
@@ -422,6 +434,7 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     // Mock card soll bei MockCard-relevanten Targets sichtbar sein
     const mockCardTargets = [
       '[data-tour="series-providers"]',
+      '[data-tour="series-progress"]',
       '[data-tour="series-watchlist-button"]',
       '[data-tour="series-rating"]',
       '[data-tour="series-menu"]',
@@ -444,6 +457,8 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       // Bestimme welcher Bereich hervorgehoben werden soll basierend auf dem Target
       if (currentTarget === '[data-tour="series-providers"]') {
         setCurrentHighlightArea('series-providers');
+      } else if (currentTarget === '[data-tour="series-progress"]') {
+        setCurrentHighlightArea('series-progress');
       } else if (currentTarget === '[data-tour="series-watchlist-button"]') {
         setCurrentHighlightArea('series-watchlist-button');
       } else if (currentTarget === '[data-tour="series-rating"]') {

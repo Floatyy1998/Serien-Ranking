@@ -27,6 +27,7 @@ import { calculateOverallRating } from '../../../lib/rating/rating';
 import '../../../styles/animations.css';
 import { colors } from '../../../theme';
 import { Series } from '../../../types/Series';
+import { ProgressBox } from '../../ui/ProgressBox';
 import ThreeDotMenu, {
   DeleteIcon,
   PlaylistPlayIcon,
@@ -129,6 +130,46 @@ export const SeriesCard = ({
       )
     : [];
   const rating = calculateOverallRating(currentSeries);
+
+  // Fortschrittsberechnung für den Ring - nur ausgestrahlte Episoden
+  const calculateProgress = () => {
+    if (!currentSeries.seasons || currentSeries.seasons.length === 0) return 0;
+    
+    const now = new Date();
+    
+    // Zähle nur Episoden die bereits ausgestrahlt wurden
+    const airedEpisodes = currentSeries.seasons.reduce(
+      (sum, season) => {
+        const aired = season.episodes?.filter(e => {
+          // Prüfe ob Episode schon ausgestrahlt wurde
+          const airDate = e.air_date;
+          if (!airDate) return false; // Kein Datum = nicht ausgestrahlt
+          return new Date(airDate) <= now;
+        })?.length || 0;
+        return sum + aired;
+      },
+      0
+    );
+    
+    const watchedEpisodes = currentSeries.seasons.reduce(
+      (sum, season) => {
+        const watched = season.episodes?.filter(e => {
+          // Nur zählen wenn gesehen UND ausgestrahlt
+          if (!e.watched) return false;
+          const airDate = e.air_date;
+          if (!airDate) return false; // Kein Datum = nicht zählen
+          return new Date(airDate) <= now;
+        })?.length || 0;
+        return sum + watched;
+      },
+      0
+    );
+    
+    return airedEpisodes > 0 ? (watchedEpisodes / airedEpisodes) * 100 : 0;
+  };
+  
+  const progressPercentage = calculateProgress();
+  const showProgress = true; // Immer anzeigen!
 
   // Einheitliche Episode-Datum Formatierung
   let dateString = '';
@@ -710,6 +751,28 @@ export const SeriesCard = ({
               )}
             </Box>
           )}
+          
+          {/* Progress Box - immer auf gleicher Höhe */}
+          {showProgress && (
+            <Box
+              className='absolute left-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300'
+              sx={{
+                top: '60px', // IMMER gleiche Position, egal ob Provider da sind
+                transform: 'translateY(-10px)',
+                '@media (min-width: 768px)': {
+                  '.group:hover &': {
+                    transform: 'translateY(0)',
+                  },
+                },
+                '@media (max-width: 767px)': {
+                  transform: 'translateY(0)',
+                },
+              }}
+            >
+              <ProgressBox progress={progressPercentage} />
+            </Box>
+          )}
+          
           {/* Watchlist Button */}
           {!forceReadOnlyDialogs && (
             <Box
