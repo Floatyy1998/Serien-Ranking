@@ -1,6 +1,7 @@
+import { Warning } from '@mui/icons-material';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Star, Warning } from '@mui/icons-material';
+import MuiStarIcon from '@mui/icons-material/Star';
 import {
   Alert,
   Button,
@@ -27,7 +28,6 @@ import { calculateOverallRating } from '../../../lib/rating/rating';
 import '../../../styles/animations.css';
 import { colors } from '../../../theme';
 import { Series } from '../../../types/Series';
-import { ProgressBox } from '../../ui/ProgressBox';
 import ThreeDotMenu, {
   DeleteIcon,
   PlaylistPlayIcon,
@@ -72,6 +72,42 @@ export const SeriesCard = ({
   const shadowColor = !currentSeries.production?.production
     ? '#a855f7'
     : '#22c55e';
+
+  // Fortschrittsberechnung für den Ring - nur ausgestrahlte Episoden
+  const calculateProgress = () => {
+    if (!currentSeries.seasons || currentSeries.seasons.length === 0) return 0;
+
+    const now = new Date();
+
+    // Zähle nur Episoden die bereits ausgestrahlt wurden
+    const airedEpisodes = currentSeries.seasons.reduce((sum, season) => {
+      const aired =
+        season.episodes?.filter((e) => {
+          // Prüfe ob Episode schon ausgestrahlt wurde
+          const airDate = e.air_date;
+          if (!airDate) return false; // Kein Datum = nicht ausgestrahlt
+          return new Date(airDate) <= now;
+        })?.length || 0;
+      return sum + aired;
+    }, 0);
+
+    const watchedEpisodes = currentSeries.seasons.reduce((sum, season) => {
+      const watched =
+        season.episodes?.filter((e) => {
+          // Nur zählen wenn gesehen UND ausgestrahlt
+          if (!e.watched) return false;
+          const airDate = e.air_date;
+          if (!airDate) return false; // Kein Datum = nicht zählen
+          return new Date(airDate) <= now;
+        })?.length || 0;
+      return sum + watched;
+    }, 0);
+
+    return airedEpisodes > 0 ? (watchedEpisodes / airedEpisodes) * 100 : 0;
+  };
+
+  const progressPercentage = calculateProgress();
+  const showProgress = true; // Immer anzeigen!
 
   // Memoize expensive style calculations
   const shadowColors = useMemo(() => {
@@ -130,46 +166,6 @@ export const SeriesCard = ({
       )
     : [];
   const rating = calculateOverallRating(currentSeries);
-
-  // Fortschrittsberechnung für den Ring - nur ausgestrahlte Episoden
-  const calculateProgress = () => {
-    if (!currentSeries.seasons || currentSeries.seasons.length === 0) return 0;
-    
-    const now = new Date();
-    
-    // Zähle nur Episoden die bereits ausgestrahlt wurden
-    const airedEpisodes = currentSeries.seasons.reduce(
-      (sum, season) => {
-        const aired = season.episodes?.filter(e => {
-          // Prüfe ob Episode schon ausgestrahlt wurde
-          const airDate = e.air_date;
-          if (!airDate) return false; // Kein Datum = nicht ausgestrahlt
-          return new Date(airDate) <= now;
-        })?.length || 0;
-        return sum + aired;
-      },
-      0
-    );
-    
-    const watchedEpisodes = currentSeries.seasons.reduce(
-      (sum, season) => {
-        const watched = season.episodes?.filter(e => {
-          // Nur zählen wenn gesehen UND ausgestrahlt
-          if (!e.watched) return false;
-          const airDate = e.air_date;
-          if (!airDate) return false; // Kein Datum = nicht zählen
-          return new Date(airDate) <= now;
-        })?.length || 0;
-        return sum + watched;
-      },
-      0
-    );
-    
-    return airedEpisodes > 0 ? (watchedEpisodes / airedEpisodes) * 100 : 0;
-  };
-  
-  const progressPercentage = calculateProgress();
-  const showProgress = true; // Immer anzeigen!
 
   // Einheitliche Episode-Datum Formatierung
   let dateString = '';
@@ -543,7 +539,7 @@ export const SeriesCard = ({
                 },
               }}
             >
-              {uniqueProviders.slice(0, 2).map((provider) => (
+              {uniqueProviders.slice(0, 1).map((provider) => (
                 <Box
                   key={provider?.id}
                   sx={{
@@ -578,7 +574,7 @@ export const SeriesCard = ({
                   />
                 </Box>
               ))}
-              {uniqueProviders.length > 2 && (
+              {uniqueProviders.length > 1 && (
                 <Tooltip
                   title={
                     <Box sx={{ p: 0 }}>
@@ -589,7 +585,7 @@ export const SeriesCard = ({
                           gap: 1,
                         }}
                       >
-                        {uniqueProviders.slice(2).map((provider, index) => (
+                        {uniqueProviders.slice(1).map((provider, index) => (
                           <Box
                             key={provider?.id || index}
                             sx={{
@@ -744,35 +740,114 @@ export const SeriesCard = ({
                         color: '#ffffff',
                       }}
                     >
-                      +{uniqueProviders.length - 2}
+                      +{uniqueProviders.length - 1}
                     </Typography>
                   </Box>
                 </Tooltip>
               )}
             </Box>
           )}
-          
-          {/* Progress Box - immer auf gleicher Höhe */}
-          {showProgress && (
+
+          {/* Rating Badge mit optionalem Progress */}
+          <Box
+            className='absolute top-3 right-1'
+            sx={{
+              background:
+                progressPercentage === 100
+                  ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)'
+                  : 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(8px)',
+              border:
+                progressPercentage === 100
+                  ? '1px solid rgba(34, 197, 94, 0.25)'
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              px: 1.5,
+              py: 1,
+              transition:
+                'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
+              '@media (min-width: 768px)': {
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  borderColor:
+                    progressPercentage === 100
+                      ? 'rgba(34, 197, 94, 0.4)'
+                      : 'rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+                },
+              },
+            }}
+            aria-label='Bewertung und Fortschritt anzeigen'
+          >
             <Box
-              className='absolute left-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300'
               sx={{
-                top: '60px', // IMMER gleiche Position, egal ob Provider da sind
-                transform: 'translateY(-10px)',
-                '@media (min-width: 768px)': {
-                  '.group:hover &': {
-                    transform: 'translateY(0)',
-                  },
-                },
-                '@media (max-width: 767px)': {
-                  transform: 'translateY(0)',
-                },
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                fontSize: '0.9rem',
+                color: '#ffffff',
+                fontWeight: 600,
+                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
               }}
             >
-              <ProgressBox progress={progressPercentage} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <MuiStarIcon sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+                {rating}
+              </Box>
+              {/* Progress-Indikator immer anzeigen */}
+              {showProgress && (
+                <Tooltip
+                  title={
+                    progressPercentage === 100
+                      ? 'Serie vollständig geschaut! Alle ausgestrahlten Episoden wurden gesehen.'
+                      : progressPercentage === 0
+                      ? 'Noch keine Episode gesehen. Der Fortschritt zeigt nur bereits ausgestrahlte Episoden.'
+                      : `${Math.round(
+                          progressPercentage
+                        )}% der ausgestrahlten Episoden gesehen. Zukünftige Episoden werden nicht mitgezählt.`
+                  }
+                  arrow
+                  placement='bottom'
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.3,
+                      pl: 0.75,
+                      borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+                      cursor: 'help',
+                    }}
+                  >
+                    {progressPercentage === 100 ? (
+                      <CheckCircleIcon
+                        sx={{ fontSize: '0.85rem', color: '#22c55e' }}
+                      />
+                    ) : (
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          fontSize: '0.7rem',
+                          color:
+                            progressPercentage === 0
+                              ? 'rgba(255, 255, 255, 0.4)'
+                              : progressPercentage >= 66
+                              ? '#86efac'
+                              : progressPercentage >= 33
+                              ? '#fbbf24'
+                              : '#ef4444',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {Math.round(progressPercentage)}%
+                      </Typography>
+                    )}
+                  </Box>
+                </Tooltip>
+              )}
             </Box>
-          )}
-          
+          </Box>
+
           {/* Watchlist Button */}
           {!forceReadOnlyDialogs && (
             <Box
@@ -849,42 +924,6 @@ export const SeriesCard = ({
                 </Typography>
               </Box>
             )}
-          <Box
-            className='absolute top-3 right-1'
-            sx={{
-              background: 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
-              px: 2,
-              py: 1,
-              transition:
-                'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
-              '@media (min-width: 768px)': {
-                '&:hover': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-                },
-              },
-            }}
-            aria-label='Bewertung anzeigen'
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                fontSize: '0.9rem',
-                color: '#ffffff',
-                fontWeight: 600,
-                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-              }}
-            >
-              <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
-              {rating}
-            </Box>
-          </Box>
           <Box
             className={`absolute bottom-3 right-3 transition-all duration-300 ${
               isMenuOpen
@@ -1037,7 +1076,9 @@ export const SeriesCard = ({
             textAlign: 'center',
           }}
         >
-          <Warning sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+          <Warning
+            sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }}
+          />
           Bestätigung
         </DialogTitle>
         <DialogContent

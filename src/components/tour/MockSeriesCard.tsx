@@ -1,5 +1,6 @@
-import { CheckCircle, Star } from '@mui/icons-material';
+import { CheckCircle } from '@mui/icons-material';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
+import MuiStarIcon from '@mui/icons-material/Star';
 import {
   Box,
   Card,
@@ -9,13 +10,12 @@ import {
   Typography,
 } from '@mui/material';
 import React, { Suspense } from 'react';
-import { ProgressBox } from '../ui/ProgressBox';
+import { colors } from '../../theme';
 import ThreeDotMenu, {
   DeleteIcon,
   PlaylistPlayIcon,
   StarIcon,
 } from '../ui/ThreeDotMenu';
-import { colors } from '../../theme';
 
 interface MockSeriesCardProps {
   highlightedArea?: string;
@@ -46,7 +46,7 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
   };
 
   const isMobile = window.innerWidth < 768;
-  
+
   return (
     <div
       style={{
@@ -145,33 +145,6 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                 />
               </Box>
             </Box>
-            
-            {/* Progress Box */}
-            <Box
-              className='absolute left-1'
-              data-tour='series-progress'
-              sx={{
-                top: '60px', // Immer gleiche Position wie in echter SeriesCard
-                opacity: 1,
-                ...(highlightedArea === 'series-progress' && {
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '-8px',
-                    left: '-8px',
-                    right: '-8px',
-                    bottom: '-8px',
-                    border: '3px solid var(--theme-primary)',
-                    borderRadius: '8px',
-                    boxShadow: colors.shadow.hover,
-                    pointerEvents: 'none',
-                    zIndex: 10,
-                  },
-                }),
-              }}
-            >
-              <ProgressBox progress={67} />
-            </Box>
 
             {/* Watchlist Button */}
             <Box
@@ -215,7 +188,7 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
               />
             </Box>
 
-            {/* Rating Box */}
+            {/* Rating Box mit Progress */}
             <Box
               className='absolute top-3 right-1'
               data-tour='series-rating'
@@ -224,7 +197,7 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                 backdropFilter: 'blur(8px)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '12px',
-                px: 2,
+                px: 1.5,
                 py: 1,
                 // Keine hover-Effekte für Tour-Version
                 ...(highlightedArea === 'series-rating' && {
@@ -244,19 +217,49 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                 }),
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Star sx={{ fontSize: '1rem', color: '#fbbf24' }} />
-                <Typography
-                  variant='body1'
-                  sx={{
-                    fontSize: '0.9rem',
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-                  }}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MuiStarIcon sx={{ fontSize: '1rem', color: '#fbbf24' }} />
+                  <Typography
+                    variant='body1'
+                    sx={{
+                      fontSize: '0.9rem',
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    9.2
+                  </Typography>
+                </Box>
+                {/* Progress-Indikator */}
+                <Tooltip
+                  title='67% der ausgestrahlten Episoden gesehen. Zukünftige Episoden werden nicht mitgezählt.'
+                  arrow
+                  placement='bottom'
                 >
-                  9.2
-                </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.3,
+                      pl: 0.75,
+                      borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+                      cursor: 'help',
+                    }}
+                  >
+                    <Typography
+                      variant='caption'
+                      sx={{
+                        fontSize: '0.7rem',
+                        color: '#86efac',
+                        fontWeight: 700,
+                      }}
+                    >
+                      67%
+                    </Typography>
+                  </Box>
+                </Tooltip>
               </Box>
             </Box>
 
