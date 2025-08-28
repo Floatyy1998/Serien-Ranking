@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { Suspense } from 'react';
+import { ProgressBox } from '../ui/ProgressBox';
 import ThreeDotMenu, {
   DeleteIcon,
   PlaylistPlayIcon,
@@ -143,6 +144,33 @@ export const MockSeriesCard: React.FC<MockSeriesCardProps> = ({
                   }}
                 />
               </Box>
+            </Box>
+            
+            {/* Progress Box */}
+            <Box
+              className='absolute left-1'
+              data-tour='series-progress'
+              sx={{
+                top: '60px', // Immer gleiche Position wie in echter SeriesCard
+                opacity: 1,
+                ...(highlightedArea === 'series-progress' && {
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '-8px',
+                    right: '-8px',
+                    bottom: '-8px',
+                    border: '3px solid var(--theme-primary)',
+                    borderRadius: '8px',
+                    boxShadow: colors.shadow.hover,
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                  },
+                }),
+              }}
+            >
+              <ProgressBox progress={67} />
             </Box>
 
             {/* Watchlist Button */}

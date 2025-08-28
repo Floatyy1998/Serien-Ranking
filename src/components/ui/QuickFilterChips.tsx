@@ -11,6 +11,7 @@ interface QuickFilterChipsProps {
 const seriesFilters = [
   { value: 'Ohne Bewertung', label: 'Ohne Bewertung' },
   { value: 'Neue Episoden', label: 'Neue Episoden' },
+  { value: 'Begonnen', label: 'Begonnen' },
   { value: 'Zuletzt Hinzugefügt', label: 'Zuletzt Hinzugefügt' },
 ];
 
@@ -100,18 +101,28 @@ export const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
     </Box>
   );
 
-  // Mobile Version - flex wrap, small buttons side by side
+  // Mobile Version - 2x2 grid layout
   const MobileFilters = (
-    <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 1 }}>
+    <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 1, px: 1 }}>
+      <Typography
+        variant='caption'
+        sx={{
+          color: colors.text.muted,
+          fontSize: '0.75rem',
+          fontWeight: 500,
+          textAlign: 'center',
+          display: 'block',
+          mb: 0.5,
+          userSelect: 'none',
+        }}
+      >
+        Quick Filter:
+      </Typography>
       <Box
         sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-evenly',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
           gap: 0.8,
-          px: 0,
-          py: 0.5,
-          mx: 0,
         }}
       >
         {filters.map((filter) => {
@@ -123,14 +134,13 @@ export const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
               size='small'
               onClick={() => handleFilterClick(filter.value)}
               sx={{
-                minWidth: 'fit-content',
-                height: '30px',
-                fontSize: '0.7rem',
-                px: 1.5,
-                borderRadius: '15px',
+                width: '100%',
+                height: '32px',
+                fontSize: '0.68rem',
+                px: 1,
+                borderRadius: '16px',
                 textTransform: 'none',
                 fontWeight: isActive ? 600 : 500,
-                flex: '0 0 auto',
                 backgroundColor: isActive
                   ? colors.overlay.medium
                   : colors.overlay.light,
@@ -144,7 +154,13 @@ export const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
                     : colors.overlay.medium,
                   borderColor: colors.border.primary,
                   color: 'var(--theme-primary)',
+                  transform: 'translateY(-1px)',
                 },
+                transition: 'all 0.2s ease',
+                // Ensure text doesn't overflow
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
               {filter.label}
