@@ -666,11 +666,24 @@ export const SeriesGrid = ({
 
         return {
           ...s,
-          episodes: s.episodes.map((e: any) => ({ 
-            ...e, 
-            watched: true,
-            firstWatchedAt: !e.watched && !e.firstWatchedAt ? new Date().toISOString() : e.firstWatchedAt,
-          })),
+          episodes: s.episodes.map((e: any) => {
+            // Nur neue firstWatchedAt setzen, wenn Episode noch nicht gesehen war
+            const updates: any = { 
+              ...e, 
+              watched: true,
+            };
+            
+            // Setze firstWatchedAt nur wenn es noch nicht existiert und die Episode vorher nicht gesehen war
+            if (!e.watched && !e.firstWatchedAt) {
+              updates.firstWatchedAt = new Date().toISOString();
+            } else if (e.firstWatchedAt) {
+              // Behalte existierendes firstWatchedAt
+              updates.firstWatchedAt = e.firstWatchedAt;
+            }
+            // Wenn Episode bereits watched war aber kein firstWatchedAt hat, lass es weg (nicht undefined setzen)
+            
+            return updates;
+          }),
         };
       }
       return s;
@@ -697,8 +710,14 @@ export const SeriesGrid = ({
           }))
         );
       }
+      
+      // Update the watched dialog series state
+      setWatchedDialogSeries({
+        ...series,
+        seasons: updatedSeasons,
+      });
     } catch (error) {
-      // Error updating watched status in batch
+      console.error('Error updating batch watched status:', error);
     }
   };
 
