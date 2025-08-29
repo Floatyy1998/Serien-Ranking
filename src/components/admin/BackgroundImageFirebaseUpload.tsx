@@ -136,7 +136,7 @@ export const BackgroundImageFirebaseUpload: React.FC<
     // Different size limits for mobile vs desktop
     const mobile = isMobile();
     const maxSizeVideo = mobile ? 50 * 1024 * 1024 : 300 * 1024 * 1024; // 50MB mobile, 300MB desktop
-    const maxSizeImage = mobile ? 5 * 1024 * 1024 : 10 * 1024 * 1024; // 5MB mobile, 10MB desktop
+    const maxSizeImage = mobile ? 50 * 1024 * 1024 : 100 * 1024 * 1024; // 50MB mobile, 100MB desktop
 
     // Check file size based on type
     if (isVideoFile && file.size > maxSizeVideo) {
@@ -149,7 +149,7 @@ export const BackgroundImageFirebaseUpload: React.FC<
       if (mobile) {
         setError('Bild wird für Mobile optimiert...');
       } else {
-        setError(`Bilder dürfen maximal 10MB groß sein`);
+        setError(`Bilder dürfen maximal 100MB groß sein`);
         return;
       }
     }
