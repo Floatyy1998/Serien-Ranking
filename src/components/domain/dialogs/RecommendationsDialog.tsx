@@ -273,10 +273,10 @@ const RecommendationsDialog = ({
               .filter(Boolean),
           };
         } catch (error) {
-          console.error(
-            `Fehler beim Laden der Provider für ${item.id}:`,
-            error
-          );
+          // console.error(
+          //   `Fehler beim Laden der Provider für ${item.id}:`,
+          //   error
+          // );
           return { id: item.id, providers: [] };
         }
       });

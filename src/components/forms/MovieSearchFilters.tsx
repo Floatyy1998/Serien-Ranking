@@ -211,7 +211,7 @@ export const MovieSearchFilters = ({
       setRecommendations(formattedRecommendations);
       setBasedOnItems(basedOnMovies);
     } catch (error) {
-      console.error('Fehler beim Laden der Empfehlungen:', error);
+      // console.error('Fehler beim Laden der Empfehlungen:', error);
       setRecommendations([]);
       setBasedOnItems([]);
     } finally {

@@ -205,7 +205,7 @@ export const ProfileDialog: React.FC<ProfileDialogProps> = ({
         (existingUsers.length === 1 && existingUsers[0] === user.uid)
       );
     } catch (error) {
-      console.error('Error checking username availability:', error);
+      // console.error('Error checking username availability:', error);
       return false;
     }
   };

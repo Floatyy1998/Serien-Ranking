@@ -18,7 +18,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js').then(
       (registration) => {
-        console.log('Service Worker registered with scope:', registration.scope);
+        // console.log('Service Worker registered with scope:', registration.scope);
         
         // Check for updates less aggressively 
         setInterval(() => {
@@ -32,7 +32,7 @@ if ('serviceWorker' in navigator) {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 // New version available, but don't auto-refresh for PWA
-                console.log('🔄 New version available');
+                // console.log('🔄 New version available');
                 // Store update availability
                 localStorage.setItem('updateAvailable', 'true');
               }
@@ -40,15 +40,15 @@ if ('serviceWorker' in navigator) {
           }
         });
       },
-      (error) => {
-        console.error('Service Worker registration failed:', error);
+      (_error) => {
+        // console.error('Service Worker registration failed:', error);
       }
     );
     
     // Listen for cache update messages
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data.type === 'CACHE_UPDATED') {
-        console.log('🔄 Cache updated to version:', event.data.version);
+        // console.log('🔄 Cache updated to version:', event.data.version);
         // Store update info but don't force refresh
         localStorage.setItem('cacheUpdated', 'true');
         localStorage.setItem('cacheVersion', event.data.version);

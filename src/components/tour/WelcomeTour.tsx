@@ -49,14 +49,14 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
         const snapshot = await userRef.once('value');
         const userData = snapshot.val();
 
-        console.log('Tour Check - User Data:', userData); // Debug
+        // console.log('Tour Check - User Data:', userData); // Debug
 
         // Tour anzeigen wenn:
         // 1. User ist email-verifiziert
         // 2. Tour wurde noch nie abgeschlossen
         const hasSeenTour = userData?.hasCompletedTour;
 
-        console.log('Tour Check - hasSeenTour:', hasSeenTour); // Debug
+        // console.log('Tour Check - hasSeenTour:', hasSeenTour); // Debug
 
         if (!hasSeenTour) {
           // Set emailVerifiedAt if not already set
@@ -69,7 +69,7 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           // Warte bis Splashscreen definitiv fertig ist
           const waitForSplashComplete = () => {
             if (window.splashScreenComplete) {
-              console.log('Tour Check - Splashscreen fertig, starte Tour!'); // Debug
+              // console.log('Tour Check - Splashscreen fertig, starte Tour!'); // Debug
               // Sofort starten wenn Splashscreen fertig ist
               setShouldRunTour(true);
             } else {
@@ -81,7 +81,7 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           waitForSplashComplete();
         }
       } catch (error) {
-        console.error('Error checking tour status:', error);
+        // console.error('Error checking tour status:', error);
       }
     };
 
@@ -388,7 +388,7 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           tourCompletedAt: firebase.database.ServerValue.TIMESTAMP,
         });
       } catch (error) {
-        console.error('Error marking tour as completed:', error);
+        // console.error('Error marking tour as completed:', error);
       }
     }
 
@@ -408,7 +408,7 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
           tourSkippedAt: firebase.database.ServerValue.TIMESTAMP,
         });
       } catch (error) {
-        console.error('Error marking tour as skipped:', error);
+        // console.error('Error marking tour as skipped:', error);
       }
     }
 

@@ -300,7 +300,7 @@ export class OfflineBadgeSystem {
 
       return null;
     } catch (error) {
-      console.error('Fehler bei Season-Badge-Check:', error);
+      // console.error('Fehler bei Season-Badge-Check:', error);
       return null;
     }
   }
@@ -998,7 +998,7 @@ if (typeof window !== 'undefined') {
           return user.uid;
         }
       } catch (error) {
-        console.log('Firebase auth not available, trying localStorage...');
+        // console.log('Firebase auth not available, trying localStorage...');
       }
 
       // Fallback: Suche in localStorage nach User-ähnlichen Keys

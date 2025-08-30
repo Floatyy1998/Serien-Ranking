@@ -341,7 +341,7 @@ export const MovieCard = ({
 
         setOpen(false);
       } catch (error) {
-        console.error('Error updating ratings online:', error);
+        // console.error('Error updating ratings online:', error);
         setSnackbarMessage('Fehler beim Aktualisieren der Bewertungen.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);

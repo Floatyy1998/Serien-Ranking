@@ -50,9 +50,9 @@ if (versionMatch) {
   // Schreibe zurück
   fs.writeFileSync(SW_PATH, swContent, 'utf8');
   
-  console.log(`✅ Service Worker Version aktualisiert: ${newVersion}`);
-  console.log('🚀 Bereit für Deployment!');
+  // console.log(`✅ Service Worker Version aktualisiert: ${newVersion}`);
+  // console.log('🚀 Bereit für Deployment!');
 } else {
-  console.error('❌ Konnte Version nicht finden');
+  // console.error('❌ Konnte Version nicht finden');
   process.exit(1);
 }

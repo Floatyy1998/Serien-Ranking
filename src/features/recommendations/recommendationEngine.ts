@@ -139,7 +139,7 @@ export const generateRecommendations = async (
         loadingMessage: 'Lade Trending-Inhalte...',
       };
     } catch (error) {
-      console.error('Fehler beim Laden der Trending-Inhalte:', error);
+      // console.error('Fehler beim Laden der Trending-Inhalte:', error);
       return {
         movies: [],
         series: [],
@@ -184,12 +184,12 @@ export const generateRecommendations = async (
             } else {
               // 404 ist normal für fehlende Seiten - nur bei anderen Fehlern loggen
               if (response.status !== 404) {
-                console.warn(`API ${response.status} für:`, endpoint);
+                // console.warn(`API ${response.status} für:`, endpoint);
               }
               return { results: [] };
             }
           } catch (error) {
-            console.warn('Fetch Fehler für:', endpoint, error);
+            // console.warn('Fetch Fehler für:', endpoint, error);
             return { results: [] };
           }
         });
@@ -303,10 +303,10 @@ export const generateRecommendations = async (
           : 'Lade Trending-Inhalte...',
     };
   } catch (error) {
-    console.error(
-      'Fehler beim Laden der personalisierten Empfehlungen:',
-      error
-    );
+    // console.error(
+    //   'Fehler beim Laden der personalisierten Empfehlungen:',
+    //   error
+    // );
 
     // Fallback zu Trending
     const fallbackEndpoint =

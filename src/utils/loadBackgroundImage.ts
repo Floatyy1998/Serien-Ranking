@@ -18,6 +18,6 @@ export const loadBackgroundImage = () => {
       }
     }
   } catch (error) {
-    console.error('Error loading background image:', error);
+    // console.error('Error loading background image:', error);
   }
 };

@@ -56,12 +56,12 @@ export const BackgroundMedia: React.FC = () => {
           const theme = JSON.parse(savedTheme);
           if (theme.backgroundImage) {
             // Debug logging
-            console.log('[BackgroundMedia] Loading media:', {
-              url: theme.backgroundImage,
-              isVideo: theme.backgroundIsVideo,
-              opacity: theme.backgroundImageOpacity,
-              blur: theme.backgroundImageBlur
-            });
+            // console.log('[BackgroundMedia] Loading media:', {
+            //   url: theme.backgroundImage,
+            //   isVideo: theme.backgroundIsVideo,
+            //   opacity: theme.backgroundImageOpacity,
+            //   blur: theme.backgroundImageBlur
+            // });
             
             setMediaUrl(theme.backgroundImage);
             setIsVideo(theme.backgroundIsVideo || false);
@@ -77,7 +77,7 @@ export const BackgroundMedia: React.FC = () => {
               // SKIP Video preloading für Performance-Test
               // checkVideoLoadingViability(theme.backgroundImage).then(result => {
               //   if (!result.shouldLoadVideo) {
-              //     console.warn('[BackgroundMedia] Skipping video load:', result.reason);
+              //     // console.warn('[BackgroundMedia] Skipping video load:', result.reason);
               //     setVideoLoadFailed(true);
               //     setIsVideoLoading(false);
               //   } else {
@@ -129,7 +129,7 @@ export const BackgroundMedia: React.FC = () => {
           // Video ist nicht kritisch für App-Start
         }
       } catch (error) {
-        console.error('Error loading background media:', error);
+        // console.error('Error loading background media:', error);
         cleanupMedia();
       }
     };
@@ -256,32 +256,32 @@ export const BackgroundMedia: React.FC = () => {
           pointerEvents: 'none',
         }}
         onLoadedMetadata={() => {
-          console.log('[BackgroundMedia] Video metadata loaded');
+          // console.log('[BackgroundMedia] Video metadata loaded');
           // Reset retry count on success
           setRetryCount(0);
         }}
         onCanPlay={() => {
-          console.log('[BackgroundMedia] Video can play');
+          // console.log('[BackgroundMedia] Video can play');
           // Video ist bereit zum Abspielen
           setIsVideoLoading(false);
           setVideoLoadFailed(false);
         }}
         onLoadedData={() => {
-          console.log('[BackgroundMedia] Video data loaded');
+          // console.log('[BackgroundMedia] Video data loaded');
           
           // Fallback: Manuell abspielen falls Autoplay fehlschlägt
           if (videoRef.current) {
             const playPromise = videoRef.current.play();
             if (playPromise !== undefined) {
-              playPromise.catch(error => {
-                console.warn('[BackgroundMedia] Video autoplay failed:', error);
+              playPromise.catch(_error => {
+                // console.warn('[BackgroundMedia] Video autoplay failed:', error);
               
                 // Bei erstem User-Klick/Touch versuchen abzuspielen
                 const playOnInteraction = () => {
                   if (videoRef.current) {
-                    console.log('[BackgroundMedia] Trying to play video on user interaction');
-                    videoRef.current.play().catch(e => {
-                      console.error('[BackgroundMedia] Video play failed even with interaction:', e);
+                    // console.log('[BackgroundMedia] Trying to play video on user interaction');
+                    videoRef.current.play().catch(_e => {
+                      // console.error('[BackgroundMedia] Video play failed even with interaction:', e);
                     });
                   }
                   document.removeEventListener('click', playOnInteraction);
@@ -293,31 +293,31 @@ export const BackgroundMedia: React.FC = () => {
             }
           }
         }}
-        onError={(e) => {
-          const videoError = videoRef.current?.error;
-          console.error('[BackgroundMedia] Video loading error:', {
-            error: e,
-            src: mediaUrl,
-            videoElement: videoRef.current,
-            readyState: videoRef.current?.readyState,
-            networkState: videoRef.current?.networkState,
-            errorCode: videoError?.code,
-            errorMessage: videoError?.message,
-            retryCount,
-            maxRetries
-          });
+        onError={(_e) => {
+          // const _videoError = videoRef.current?.error;
+          // console.error('[BackgroundMedia] Video loading error:', {
+          //   error: e,
+          //   src: mediaUrl,
+          //   videoElement: videoRef.current,
+          //   readyState: videoRef.current?.readyState,
+          //   networkState: videoRef.current?.networkState,
+          //   errorCode: videoError?.code,
+          //   errorMessage: videoError?.message,
+          //   retryCount,
+          //   maxRetries
+          // });
           
           // Retry logic with exponential backoff
           if (retryCount < maxRetries) {
             const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-            console.log(`[BackgroundMedia] Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+            // console.log(`[BackgroundMedia] Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
             
             setTimeout(() => {
               setRetryCount(prev => prev + 1);
               // Component will remount due to key change
             }, delay);
           } else {
-            console.error('[BackgroundMedia] Max retries reached, showing fallback');
+            // console.error('[BackgroundMedia] Max retries reached, showing fallback');
             setIsVideoLoading(false);
             setVideoLoadFailed(true);
           }

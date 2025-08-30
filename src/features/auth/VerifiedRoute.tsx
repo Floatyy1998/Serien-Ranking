@@ -28,11 +28,11 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
           .then(() => {
             setIsVerified(user.emailVerified);
           })
-          .catch((error) => {
-            console.warn(
-              'User reload fehlgeschlagen (offline?):',
-              error
-            );
+          .catch((_error) => {
+            // console.warn(
+            //   'User reload fehlgeschlagen (offline?):',
+            //   error
+            // );
           });
       }
     } else {

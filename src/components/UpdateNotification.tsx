@@ -57,7 +57,7 @@ export function UpdateNotification() {
         }
       }
     } catch (error) {
-      console.error('Update fehlgeschlagen:', error);
+      // console.error('Update fehlgeschlagen:', error);
       // Bei Fehler manueller Reload
       window.location.reload();
     }

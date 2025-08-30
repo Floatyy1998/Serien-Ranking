@@ -43,7 +43,7 @@ export const DuckFacts = () => {
     const newFact = duckFacts[Math.floor(Math.random() * duckFacts.length)];
     setFact(newFact);
     const audio = new Audio(quack);
-    audio.play().catch((error) => console.error('Error playing audio:', error));
+    audio.play();
   };
   return (
     <>

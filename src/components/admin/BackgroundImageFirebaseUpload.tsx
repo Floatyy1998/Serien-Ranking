@@ -172,7 +172,7 @@ export const BackgroundImageFirebaseUpload: React.FC<
           // Check if compression was successful
           if (compressed.size < file.size) {
             fileToUpload = compressed;
-            console.log(`Komprimiert von ${(file.size / 1024 / 1024).toFixed(2)}MB auf ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
+            // console.log(`Komprimiert von ${(file.size / 1024 / 1024).toFixed(2)}MB auf ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
           }
 
           // Final check after compression
@@ -182,7 +182,7 @@ export const BackgroundImageFirebaseUpload: React.FC<
             return;
           }
         } catch (compressError) {
-          console.error('Fehler bei Bildkomprimierung:', compressError);
+          // console.error('Fehler bei Bildkomprimierung:', compressError);
           setError('Fehler bei der Bildoptimierung');
           setUploading(false);
           return;
@@ -211,8 +211,8 @@ export const BackgroundImageFirebaseUpload: React.FC<
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           setUploadProgress(Math.round(progress));
         },
-        (error) => {
-          console.error('Upload error:', error);
+        (_error) => {
+          // console.error('Upload error:', error);
           setError('Fehler beim Hochladen des Bildes');
           setUploading(false);
         },
@@ -225,7 +225,7 @@ export const BackgroundImageFirebaseUpload: React.FC<
         }
       );
     } catch (error) {
-      console.error('Error uploading image:', error);
+      // console.error('Error uploading image:', error);
       setError('Fehler beim Hochladen des Bildes');
       setUploading(false);
     }
@@ -266,7 +266,7 @@ export const BackgroundImageFirebaseUpload: React.FC<
         delete theme.backgroundImageBlur;
         localStorage.setItem('customTheme', JSON.stringify(theme));
       } catch (error) {
-        console.error('Error updating theme in localStorage:', error);
+        // console.error('Error updating theme in localStorage:', error);
       }
     }
 

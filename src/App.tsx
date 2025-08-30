@@ -91,10 +91,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     const parsedUser = JSON.parse(savedUser);
                     setUser(parsedUser);
                   } catch (error) {
-                    console.error(
-                      'Fehler beim Laden des gespeicherten Users:',
-                      error
-                    );
+                    // console.error(
+                    //   'Fehler beim Laden des gespeicherten Users:',
+                    //   error
+                    // );
                   }
                 }
               }
@@ -131,9 +131,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
               if (!localTheme) {
                 // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
-                console.log(
-                  'No local theme found, checking for cloud theme as fallback...'
-                );
+                // console.log(
+                //   'No local theme found, checking for cloud theme as fallback...'
+                // );
                 const themeRef = firebase
                   .database()
                   .ref(`users/${user.uid}/theme`);
@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   const cloudTheme = themeSnapshot.val();
 
                   if (cloudTheme) {
-                    console.log('Cloud theme found as fallback, applying...');
+                    // console.log('Cloud theme found as fallback, applying...');
                     // Cloud-Theme als Fallback verwenden
                     const root = document.documentElement;
                     root.style.setProperty(
@@ -184,17 +184,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
                     // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
                     localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
-                    console.log('Cloud-Theme temporär im localStorage gespeichert für BackgroundMedia');
+                    // console.log('Cloud-Theme temporär im localStorage gespeichert für BackgroundMedia');
 
                     window.dispatchEvent(new CustomEvent('themeChanged'));
                   }
                 } catch (error) {
-                  console.error('Error loading cloud theme:', error);
+                  // console.error('Error loading cloud theme:', error);
                 }
               } else {
-                console.log(
-                  'Local theme exists, keeping it (has priority over cloud theme - cloud updates are ignored)'
-                );
+                // console.log(
+                //   'Local theme exists, keeping it (has priority over cloud theme - cloud updates are ignored)'
+                // );
               }
 
               const userRef = firebase.database().ref(`users/${user.uid}`);
@@ -251,13 +251,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
           });
         } catch (error) {
-          console.error('Fehler bei Firebase-Initialisierung:', error);
+          // console.error('Fehler bei Firebase-Initialisierung:', error);
           setAuthStateResolved(true); // Auch bei Fehler Auth-State als resolved setzen
           window.setAppReady?.('emailVerification', true); // No verification needed when auth fails
         }
       })
-      .catch((error) => {
-        console.error('Fehler beim Laden des Firebase-Moduls:', error);
+      .catch((_error) => {
+        // console.error('Fehler beim Laden des Firebase-Moduls:', error);
         setAuthStateResolved(true);
         window.setAppReady?.('emailVerification', true); // No verification when Firebase fails to load
       });
@@ -313,9 +313,9 @@ const loadSavedTheme = async (userId?: string) => {
   if (savedTheme) {
     try {
       theme = JSON.parse(savedTheme);
-      console.log('Lokales Theme geladen (hat Vorrang):', theme);
+      // console.log('Lokales Theme geladen (hat Vorrang):', theme);
     } catch (error) {
-      console.error('Fehler beim Laden des lokalen Themes:', error);
+      // console.error('Fehler beim Laden des lokalen Themes:', error);
     }
   }
 
@@ -326,14 +326,14 @@ const loadSavedTheme = async (userId?: string) => {
       const snapshot = await themeRef.once('value');
       theme = snapshot.val();
       if (theme) {
-        console.log('Cloud-Theme als Fallback geladen:', theme);
+        // console.log('Cloud-Theme als Fallback geladen:', theme);
         // WICHTIG: Speichere Cloud-Theme temporär im localStorage,
         // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
         localStorage.setItem('customTheme', JSON.stringify(theme));
-        console.log('Cloud-Theme im localStorage gespeichert für BackgroundMedia');
+        // console.log('Cloud-Theme im localStorage gespeichert für BackgroundMedia');
       }
     } catch (error) {
-      console.error('Fehler beim Laden des Cloud-Themes:', error);
+      // console.error('Fehler beim Laden des Cloud-Themes:', error);
     }
   }
 
@@ -407,7 +407,7 @@ export function App() {
       // Theme wurde geladen - State setzen
       setIsThemeLoaded(true);
       window.setAppReady?.('theme', true);
-      console.log('[App] Theme loaded, app ready for display');
+      // console.log('[App] Theme loaded, app ready for display');
 
       // Wichtig: Theme-Change Event nach kurzer Verzögerung auslösen
       // damit Material-UI Zeit hat sich zu initialisieren

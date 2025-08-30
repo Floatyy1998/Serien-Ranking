@@ -32,7 +32,7 @@ if (typeof window !== 'undefined') {
   
   window.setAppReady = (key, value) => {
     window.appReadyStatus[key] = value;
-    console.log(`[AppReady] ${key}: ${value}`, window.appReadyStatus);
+    // console.log(`[AppReady] ${key}: ${value}`, window.appReadyStatus);
   };
   
   window.splashScreenComplete = false;
@@ -51,7 +51,7 @@ export const AppWithSplash: React.FC = () => {
   useEffect(() => {
     // Mount App im Hintergrund nach kurzer Verzögerung
     const mountTimer = setTimeout(() => {
-      console.log('[AppWithSplash] Mounting App in background...');
+      // console.log('[AppWithSplash] Mounting App in background...');
       setIsAppMounted(true);
     }, 200);
 
@@ -66,7 +66,7 @@ export const AppWithSplash: React.FC = () => {
         status.initialData;
       
       if (isReady && !allSystemsReady) {
-        console.log('[AppWithSplash] 🎉 ALLE SYSTEME BEREIT!', status);
+        // console.log('[AppWithSplash] 🎉 ALLE SYSTEME BEREIT!', status);
         setAllSystemsReady(true);
         clearInterval(checkInterval.current);
       }
@@ -74,7 +74,7 @@ export const AppWithSplash: React.FC = () => {
 
     // Timeout nach 5 Sekunden als Fallback
     const fallbackTimeout = setTimeout(() => {
-      console.warn('[AppWithSplash] Timeout - zeige App trotzdem');
+      // console.warn('[AppWithSplash] Timeout - zeige App trotzdem');
       setAllSystemsReady(true);
       if (checkInterval.current) {
         clearInterval(checkInterval.current);
@@ -96,7 +96,7 @@ export const AppWithSplash: React.FC = () => {
       <>
         <SplashScreen
           onComplete={() => {
-            console.log('[AppWithSplash] Splash complete, hiding...');
+            // console.log('[AppWithSplash] Splash complete, hiding...');
             window.splashScreenComplete = true;
             setShowSplash(false);
           }}

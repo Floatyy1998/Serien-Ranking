@@ -84,7 +84,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
         updateCSSVariables(newTheme);
       }
     } catch (error) {
-      console.error('Fehler beim Laden des Themes:', error);
+      // console.error('Fehler beim Laden des Themes:', error);
       resetTheme();
     }
   };

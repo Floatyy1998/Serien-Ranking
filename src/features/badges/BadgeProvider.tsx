@@ -129,10 +129,10 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         const { badgeCounterService } = await import('./badgeCounterService');
         await badgeCounterService.ensureCurrentMarathonWeek(user.uid);
       } catch (error) {
-        console.warn(
-          'Marathon-Wochen-Überprüfung beim Dialog-Öffnen fehlgeschlagen:',
-          error
-        );
+        // console.warn(
+        //   'Marathon-Wochen-Überprüfung beim Dialog-Öffnen fehlgeschlagen:',
+        //   error
+        // );
       }
     }
 
@@ -143,10 +143,10 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         const badgeSystem = getOfflineBadgeSystem(user.uid);
         badgeSystem.invalidateCache();
       } catch (error) {
-        console.warn(
-          'Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:',
-          error
-        );
+        // console.warn(
+        //   'Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:',
+        //   error
+        // );
       }
     }
 
