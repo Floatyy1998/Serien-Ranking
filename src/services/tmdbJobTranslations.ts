@@ -362,7 +362,7 @@ class TmdbJobsService {
     try {
       const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
       if (!TMDB_API_KEY) {
-        console.warn('TMDB API Key nicht gefunden');
+        // console.warn('TMDB API Key nicht gefunden');
         return null;
       }
 
@@ -371,7 +371,7 @@ class TmdbJobsService {
       );
 
       if (!response.ok) {
-        console.error('TMDB Jobs API Fehler:', response.status);
+        // console.error('TMDB Jobs API Fehler:', response.status);
         return null;
       }
 
@@ -391,7 +391,7 @@ class TmdbJobsService {
 
       return jobsByDepartment;
     } catch (error) {
-      console.error('Fehler beim Laden der TMDB Jobs:', error);
+      // console.error('Fehler beim Laden der TMDB Jobs:', error);
       return null;
     }
   }

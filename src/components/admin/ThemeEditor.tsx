@@ -40,7 +40,7 @@ import 'firebase/compat/database';
 
 // Ensure Firebase is initialized
 if (!firebase.apps.length) {
-  console.warn('Firebase not initialized in ThemeEditor');
+  // console.warn('Firebase not initialized in ThemeEditor');
 }
 import { useAuth } from '../../App';
 import { backgroundImageManager } from '../../services/backgroundImageManager';
@@ -109,25 +109,25 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
   // Theme von Cloud laden
   const loadCloudTheme = async () => {
     if (!user) {
-      console.log('loadCloudTheme: No user available');
+      // console.log('loadCloudTheme: No user available');
       return null;
     }
     
     try {
       // Ensure Firebase is imported and initialized
       if (!firebase.database) {
-        console.error('Firebase database not available');
+        // console.error('Firebase database not available');
         return null;
       }
       
-      console.log('Loading cloud theme for user:', user.uid);
+      // console.log('Loading cloud theme for user:', user.uid);
       const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
       const snapshot = await themeRef.once('value');
       const theme = snapshot.val();
-      console.log('Cloud theme data:', theme);
+      // console.log('Cloud theme data:', theme);
       return theme;
     } catch (error) {
-      console.error('Fehler beim Laden des Cloud-Themes:', error);
+      // console.error('Fehler beim Laden des Cloud-Themes:', error);
       return null;
     }
   };
@@ -158,7 +158,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
             // Migrate existing local theme to use reference counting
             await backgroundImageManager.migrateExistingTheme(theme, 'local');
           } catch (error) {
-            console.error('Fehler beim Laden des lokalen Themes:', error);
+            // console.error('Fehler beim Laden des lokalen Themes:', error);
           }
         }
         
@@ -177,7 +177,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
             // WICHTIG: Speichere Cloud-Theme temporär im localStorage,
             // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
             localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
-            console.log('Cloud-Theme als Fallback geladen und im localStorage gespeichert');
+            // console.log('Cloud-Theme als Fallback geladen und im localStorage gespeichert');
           }
         }
         
@@ -358,7 +358,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
     
     // Timeout für Mobile - falls Firebase hängt
     const saveTimeout = setTimeout(() => {
-      console.warn('Speichern dauert zu lange, schließe Dialog...');
+      // console.warn('Speichern dauert zu lange, schließe Dialog...');
       setLoading(false);
       onClose();
     }, 5000); // 5 Sekunden Timeout
@@ -403,14 +403,14 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
             )
           ]);
           
-          console.log('Theme saved to cloud and locally with reference tracking');
+          // console.log('Theme saved to cloud and locally with reference tracking');
         } catch (firebaseError) {
-          console.warn('Firebase save timed out or failed, but local save succeeded:', firebaseError);
+          // console.warn('Firebase save timed out or failed, but local save succeeded:', firebaseError);
           // Kein Problem - lokales Theme wurde gespeichert
         }
       } else {
         // NUR lokal gespeichert
-        console.log('Theme saved locally only with reference tracking');
+        // console.log('Theme saved locally only with reference tracking');
         
         // Optional: Cloud-Theme löschen wenn explizit auf "local" gewechselt
         // Auskommentiert, da User vielleicht Cloud-Theme als Fallback behalten will
@@ -437,7 +437,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       setLoading(false);
       onClose();
     } catch (error) {
-      console.error('Fehler beim Speichern des Themes:', error);
+      // console.error('Fehler beim Speichern des Themes:', error);
       clearTimeout(saveTimeout);
       setLoading(false);
       
@@ -481,24 +481,24 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       let themeToApply = null;
       
       // Debug logging
-      console.log('Reset Debug:', {
-        user: user?.uid,
-        syncMode,
-        savedSyncMode: localStorage.getItem('themeSyncMode')
-      });
+      // console.log('Reset Debug:', {
+      //   user: user?.uid,
+      //   syncMode,
+      //   savedSyncMode: localStorage.getItem('themeSyncMode')
+      // });
       
       // Try to load cloud theme as fallback (regardless of sync mode!)
       // When local theme is deleted, cloud theme should always be the fallback if it exists
       if (user) {
-        console.log('Loading cloud theme as fallback for user:', user.uid);
+        // console.log('Loading cloud theme as fallback for user:', user.uid);
         themeToApply = await loadCloudTheme();
         if (themeToApply) {
-          console.log('Cloud theme found and will be applied:', themeToApply);
+          // console.log('Cloud theme found and will be applied:', themeToApply);
         } else {
-          console.log('No cloud theme found, will use defaults');
+          // console.log('No cloud theme found, will use defaults');
         }
       } else {
-        console.log('No user logged in, will use defaults');
+        // console.log('No user logged in, will use defaults');
       }
       
       if (themeToApply) {
@@ -554,10 +554,10 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
         // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
         localStorage.setItem('customTheme', JSON.stringify(themeToApply));
         
-        console.log('Cloud-Theme erfolgreich angewendet und temporär lokal gespeichert');
+        // console.log('Cloud-Theme erfolgreich angewendet und temporär lokal gespeichert');
       } else {
         // Apply defaults
-        console.log('Kein Cloud-Theme gefunden, verwende Defaults');
+        // console.log('Kein Cloud-Theme gefunden, verwende Defaults');
         applyDefaultTheme();
       }
       
@@ -565,7 +565,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       window.dispatchEvent(new CustomEvent('themeChanged'));
       
     } catch (error) {
-      console.error('Fehler beim Reset:', error);
+      // console.error('Fehler beim Reset:', error);
     } finally {
       setLoading(false);
     }
@@ -592,9 +592,9 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({ open, onClose }) => {
       const themeRef = firebase.database().ref(`users/${user!.uid}/theme`);
       await themeRef.remove();
       
-      console.log('Cloud-Theme gelöscht');
+      // console.log('Cloud-Theme gelöscht');
     } catch (error) {
-      console.error('Fehler beim Löschen des Cloud-Themes:', error);
+      // console.error('Fehler beim Löschen des Cloud-Themes:', error);
       alert('Fehler beim Löschen des Cloud-Themes');
     }
   };

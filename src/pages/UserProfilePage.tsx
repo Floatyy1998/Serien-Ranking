@@ -190,8 +190,8 @@ export const UserProfilePage: React.FC = () => {
         setLoading(true);
 
         // Benutzer-Profil laden - initial
-        console.time('[UserProfile] User Data');
-        console.log('[UserProfile] Loading user:', userId);
+        // console.time('[UserProfile] User Data');
+        // console.log('[UserProfile] Loading user:', userId);
         
         // Versuche es mit einem Timeout
         const userRef = firebase.database().ref(`users/${userId}`);
@@ -205,12 +205,12 @@ export const UserProfilePage: React.FC = () => {
         try {
           userSnapshot = await Promise.race([userDataPromise, timeoutPromise]) as firebase.database.DataSnapshot;
         } catch (timeoutError) {
-          console.error('[UserProfile] Timeout or error loading user data:', timeoutError);
+          // console.error('[UserProfile] Timeout or error loading user data:', timeoutError);
           // Fallback: Try again without timeout
           userSnapshot = await userRef.once('value');
         }
         
-        console.timeEnd('[UserProfile] User Data');
+        // console.timeEnd('[UserProfile] User Data');
 
         if (!userSnapshot.exists()) {
           setError('Benutzer nicht gefunden');
@@ -439,11 +439,11 @@ export const UserProfilePage: React.FC = () => {
             favoriteProvider: favoriteMovieProvider,
           },
         });
-        console.timeEnd('[UserProfile] Total Load Time');
+        // console.timeEnd('[UserProfile] Total Load Time');
         setLoading(false);
       } catch (error) {
-        console.timeEnd('[UserProfile] Total Load Time');
-        console.error('[UserProfile] Error:', error);
+        // console.timeEnd('[UserProfile] Total Load Time');
+        // console.error('[UserProfile] Error:', error);
         setError('Fehler beim Laden des Profils');
         setLoading(false);
       }

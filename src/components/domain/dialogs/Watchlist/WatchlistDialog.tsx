@@ -298,7 +298,7 @@ const WatchlistDialog = ({
         const cached = localStorage.getItem(cachedOrderKey);
         savedOrder = cached ? JSON.parse(cached) : null;
       } catch (error) {
-        console.warn('Failed to load cached watchlist order:', error);
+        // console.warn('Failed to load cached watchlist order:', error);
       }
 
       if (savedOrder && Array.isArray(savedOrder)) {
@@ -632,7 +632,7 @@ const WatchlistDialog = ({
       // Das Update wird automatisch durch useDataProtection ausgeführt
       // Kein manueller Aufruf nötig - verhindert doppelte Ausführung
     } catch (error) {
-      console.error(`❌ Episode update failed for ${updateKey}:`, error);
+      // console.error(`❌ Episode update failed for ${updateKey}:`, error);
     }
   };
 

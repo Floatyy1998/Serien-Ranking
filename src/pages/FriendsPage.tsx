@@ -66,7 +66,7 @@ const useFriendsOnlineStatus = (friends: Friend[]) => {
               newProfiles[friend.uid] = snapshot.val();
             }
           } catch (error) {
-            console.warn(`Failed to load profile for ${friend.uid}:`, error);
+            // console.warn(`Failed to load profile for ${friend.uid}:`, error);
           }
         })
       );

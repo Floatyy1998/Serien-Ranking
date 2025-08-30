@@ -136,7 +136,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       setCastData(result.cast || []);
       setCrewData(result.crew || []);
     } catch (error) {
-      console.error("Error fetching cast data:", error);
+      // console.error("Error fetching cast data:", error);
       setCastData([]);
       setCrewData([]);
     } finally {
@@ -243,8 +243,8 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         setAnimeCharacters(transformedCharacters);
       }
     } catch (error) {
-      console.error("Error fetching anime characters from AniList:", error);
-      console.log("Fallback: Zeige TMDB Cast statt Anime Charaktere");
+      // console.error("Error fetching anime characters from AniList:", error);
+      // console.log("Fallback: Zeige TMDB Cast statt Anime Charaktere");
       setAnimeCharacters([]);
       // Cast-Daten sind bereits geladen, werden normal angezeigt
     } finally {
@@ -272,7 +272,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
       setVideosData(sortedVideos);
     } catch (error) {
-      console.error("Error fetching videos data:", error);
+      // console.error("Error fetching videos data:", error);
       setVideosData([]);
     } finally {
       setVideosLoading(false);
@@ -385,7 +385,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       }
       setPersonDialogOpen(true);
     } catch (error) {
-      console.error("Error fetching person data:", error);
+      // console.error("Error fetching person data:", error);
       setPersonDialogOpen(false);
     } finally {
       setPersonLoading(false);
@@ -406,7 +406,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
 
       // Validierung der Voice Actor Daten
       if (!voiceActor?.person?.name) {
-        console.warn("Voice Actor hat keinen Namen:", voiceActor);
+        // console.warn("Voice Actor hat keinen Namen:", voiceActor);
         setPersonLoading(false);
         return;
       }
@@ -447,7 +447,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
       } else {
         // Fallback: Lade Voice Actor Daten von AniList
         try {
-          console.log("Fetching voice actor data from AniList for:", voiceActor.person.name, "ID:", voiceActor.person.id);
+          // console.log("Fetching voice actor data from AniList for:", voiceActor.person.name, "ID:", voiceActor.person.id);
           
           // Zuerst versuchen wir es mit der ID
           if (voiceActor.person.id && typeof voiceActor.person.id === 'number') {
@@ -576,7 +576,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 const uniqueCredits = Array.from(titleMap.values());
                 
                 // Suche TMDB IDs für AniList Titel
-                console.log(`Searching TMDB IDs for ${uniqueCredits.length} AniList titles...`);
+                // console.log(`Searching TMDB IDs for ${uniqueCredits.length} AniList titles...`);
                 for (const credit of uniqueCredits) {
                   try {
                     const searchQuery = encodeURIComponent(credit.title);
@@ -594,19 +594,19 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       }
                     }
                   } catch (error) {
-                    console.error(`Error searching TMDB for "${credit.title}":`, error);
+                    // console.error(`Error searching TMDB for "${credit.title}":`, error);
                   }
                 }
                 
-                console.log(`AniList: ${staffData.characterMedia.edges.length} roles → ${uniqueCredits.length} unique titles`);
-                console.log('Found TMDB IDs for:', uniqueCredits.filter(c => c.tmdb_id).length, 'titles');
+                // console.log(`AniList: ${staffData.characterMedia.edges.length} roles → ${uniqueCredits.length} unique titles`);
+                // console.log('Found TMDB IDs for:', uniqueCredits.filter(c => c.tmdb_id).length, 'titles');
 
                 // Versuche zuerst die Biographie von TMDB zu holen
                 let biography = null;
                 let tmdbPersonId = null;
                 
                 try {
-                  console.log("Searching TMDB for:", staffData.name?.full || voiceActor.person.name);
+                  // console.log("Searching TMDB for:", staffData.name?.full || voiceActor.person.name);
                   
                   // Versuche mit dem Namen eine TMDB Person zu finden
                   const tmdbSearchResponse = await fetch(
@@ -615,7 +615,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   
                   if (tmdbSearchResponse.ok) {
                     const tmdbSearchData = await tmdbSearchResponse.json();
-                    console.log("TMDB search results:", tmdbSearchData.results?.length || 0, "results found");
+                    // console.log("TMDB search results:", tmdbSearchData.results?.length || 0, "results found");
                     
                     if (tmdbSearchData.results && tmdbSearchData.results.length > 0) {
                       tmdbPersonId = tmdbSearchData.results[0].id;
@@ -629,10 +629,10 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                         const tmdbPersonDataDe = await tmdbPersonResponseDe.json();
                         if (tmdbPersonDataDe.biography && tmdbPersonDataDe.biography.trim() !== "") {
                           biography = tmdbPersonDataDe.biography;
-                          console.log("Using TMDB German biography");
+                          // console.log("Using TMDB German biography");
                         } else {
                           // Fallback auf Englisch wenn Deutsch leer ist
-                          console.log("German TMDB biography is empty, trying English");
+                          // console.log("German TMDB biography is empty, trying English");
                           const tmdbPersonResponseEn = await fetch(
                             `https://api.themoviedb.org/3/person/${tmdbPersonId}?api_key=${TMDB_API_KEY}&language=en-US`
                           );
@@ -641,7 +641,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                             const tmdbPersonDataEn = await tmdbPersonResponseEn.json();
                             if (tmdbPersonDataEn.biography && tmdbPersonDataEn.biography.trim() !== "") {
                               biography = tmdbPersonDataEn.biography;
-                              console.log("Using TMDB English biography");
+                              // console.log("Using TMDB English biography");
                             }
                           }
                         }
@@ -649,7 +649,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     }
                   }
                 } catch (tmdbError) {
-                  console.error("Error fetching TMDB data:", tmdbError);
+                  // console.error("Error fetching TMDB data:", tmdbError);
                 }
                 
                 // Falls keine TMDB Biographie, formatiere AniList Beschreibung
@@ -660,7 +660,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     .replace(/\[(.*?)\]\((.*?)\)/g, '$1') // Entferne Markdown Links
                     .replace(/\n\n/g, '\n') // Reduziere doppelte Zeilenumbrüche
                     .trim();
-                  console.log("Using formatted AniList description");
+                  // console.log("Using formatted AniList description");
                 }
                 
                 if (!biography) {
@@ -699,14 +699,14 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 setPersonCredits({ cast: filteredCredits.slice(0, 20), crew: [] });
                 setPersonLoading(false);
                 setCreditsLoading(false);
-                console.log("Successfully loaded voice actor roles from AniList");
+                // console.log("Successfully loaded voice actor roles from AniList");
                 return;
               }
             }
           }
 
           // Falls ID-Suche fehlschlägt, versuche Namenssuche
-          console.log("ID search failed, trying name search for:", voiceActor.person.name);
+          // console.log("ID search failed, trying name search for:", voiceActor.person.name);
           const nameSearchQuery = `
             query ($search: String) {
               Staff(search: $search) {
@@ -821,7 +821,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               const uniqueCredits = Array.from(titleMap.values());
               
               // Suche TMDB IDs für AniList Titel
-              console.log(`Name search: Searching TMDB IDs for ${uniqueCredits.length} AniList titles...`);
+              // console.log(`Name search: Searching TMDB IDs for ${uniqueCredits.length} AniList titles...`);
               for (const credit of uniqueCredits) {
                 try {
                   const searchQuery = encodeURIComponent(credit.title);
@@ -838,19 +838,19 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                     }
                   }
                 } catch (error) {
-                  console.error(`Error searching TMDB for "${credit.title}":`, error);
+                  // console.error(`Error searching TMDB for "${credit.title}":`, error);
                 }
               }
               
-              console.log(`Name search: ${staffData.characterMedia.edges.length} roles → ${uniqueCredits.length} unique titles`);
-              console.log('Found TMDB IDs for:', uniqueCredits.filter(c => c.tmdb_id).length, 'titles');
+              // console.log(`Name search: ${staffData.characterMedia.edges.length} roles → ${uniqueCredits.length} unique titles`);
+              // console.log('Found TMDB IDs for:', uniqueCredits.filter(c => c.tmdb_id).length, 'titles');
 
               // Versuche zuerst die Biographie von TMDB zu holen
               let biography = null;
               let tmdbPersonId = null;
               
               try {
-                console.log("Searching TMDB for (name search):", staffData.name?.full || voiceActor.person.name);
+                // console.log("Searching TMDB for (name search):", staffData.name?.full || voiceActor.person.name);
                 
                 const tmdbSearchResponse = await fetch(
                   `https://api.themoviedb.org/3/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(staffData.name?.full || voiceActor.person.name)}&language=de-DE`
@@ -858,7 +858,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                 
                 if (tmdbSearchResponse.ok) {
                   const tmdbSearchData = await tmdbSearchResponse.json();
-                  console.log("TMDB search results (name search):", tmdbSearchData.results?.length || 0, "results found");
+                  // console.log("TMDB search results (name search):", tmdbSearchData.results?.length || 0, "results found");
                   
                   if (tmdbSearchData.results && tmdbSearchData.results.length > 0) {
                     tmdbPersonId = tmdbSearchData.results[0].id;
@@ -871,9 +871,9 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                       const tmdbPersonDataDe = await tmdbPersonResponseDe.json();
                       if (tmdbPersonDataDe.biography && tmdbPersonDataDe.biography.trim() !== "") {
                         biography = tmdbPersonDataDe.biography;
-                        console.log("Using TMDB German biography (name search)");
+                        // console.log("Using TMDB German biography (name search)");
                       } else {
-                        console.log("German TMDB biography is empty, trying English (name search)");
+                        // console.log("German TMDB biography is empty, trying English (name search)");
                         const tmdbPersonResponseEn = await fetch(
                           `https://api.themoviedb.org/3/person/${tmdbPersonId}?api_key=${TMDB_API_KEY}&language=en-US`
                         );
@@ -882,7 +882,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                           const tmdbPersonDataEn = await tmdbPersonResponseEn.json();
                           if (tmdbPersonDataEn.biography && tmdbPersonDataEn.biography.trim() !== "") {
                             biography = tmdbPersonDataEn.biography;
-                            console.log("Using TMDB English biography (name search)");
+                            // console.log("Using TMDB English biography (name search)");
                           }
                         }
                       }
@@ -890,7 +890,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   }
                 }
               } catch (tmdbError) {
-                console.error("Error fetching TMDB data (name search):", tmdbError);
+                // console.error("Error fetching TMDB data (name search):", tmdbError);
               }
               
               if (!biography && staffData.description) {
@@ -899,7 +899,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
                   .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
                   .replace(/\n\n/g, '\n')
                   .trim();
-                console.log("Using formatted AniList description (name search)");
+                // console.log("Using formatted AniList description (name search)");
               }
               
               if (!biography) {
@@ -937,12 +937,12 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               setPersonCredits({ cast: filteredCredits.slice(0, 20), crew: [] });
               setPersonLoading(false);
               setCreditsLoading(false);
-              console.log("Successfully loaded voice actor roles from AniList via name search");
+              // console.log("Successfully loaded voice actor roles from AniList via name search");
               return;
             }
           }
         } catch (anilistError) {
-          console.error("Error fetching voice actor from AniList:", anilistError);
+          // console.error("Error fetching voice actor from AniList:", anilistError);
         }
 
         // Ultimate Fallback wenn AniList auch fehlschlägt
@@ -964,7 +964,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         setCreditsLoading(false);
       }
     } catch (error) {
-      console.error("Error matching voice actor with TMDB cast:", error);
+      // console.error("Error matching voice actor with TMDB cast:", error);
       setPersonLoading(false);
       setPersonDialogOpen(false);
     }
@@ -1067,7 +1067,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
         });
       }
     } catch (error) {
-      console.error("Error adding title:", error);
+      // console.error("Error adding title:", error);
       setSnackbar({
         open: true,
         message: `Netzwerkfehler beim Hinzufügen von "${credit.title || credit.name}"`,
@@ -2116,7 +2116,7 @@ const TmdbDialog: React.FC<TmdbDialogProps> = ({
               <Button
                 variant="contained"
                 onClick={
-                  onAdd || (() => console.log("onAdd not implemented yet"))
+                  onAdd || (() => {/* onAdd not implemented yet */})
                 }
                 disabled={adding || !onAdd}
                 sx={{

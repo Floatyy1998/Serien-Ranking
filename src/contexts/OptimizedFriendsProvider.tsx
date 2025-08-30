@@ -191,7 +191,7 @@ export const OptimizedFriendsProvider = ({
         ).length;
         setUnreadRequestsCount(unreadCount);
       } catch (error) {
-        console.warn('Failed to load friend requests:', error);
+        // console.warn('Failed to load friend requests:', error);
       }
     };
 
@@ -250,10 +250,10 @@ export const OptimizedFriendsProvider = ({
           }
           return [];
         } catch (error) {
-          console.warn(
-            `Failed to load activities for friend ${friend.uid}:`,
-            error
-          );
+          // console.warn(
+          //   `Failed to load activities for friend ${friend.uid}:`,
+          //   error
+          // );
           return [];
         }
       });
@@ -277,7 +277,7 @@ export const OptimizedFriendsProvider = ({
       ).length;
       setUnreadActivitiesCount(unreadCount);
     } catch (error) {
-      console.warn('Failed to load friend activities:', error);
+      // console.warn('Failed to load friend activities:', error);
     }
   }, [user, friends, lastReadActivitiesTime]);
 
@@ -425,7 +425,7 @@ export const OptimizedFriendsProvider = ({
         badgeSystem.invalidateCache(); // Cache leeren für frische Friend-Zählung
         await badgeSystem.checkForNewBadges();
       } catch (badgeError) {
-        console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
+        // console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
       }
 
       // Refresh friends data
@@ -511,7 +511,7 @@ export const OptimizedFriendsProvider = ({
         }
       }
     } catch (error) {
-      console.warn('Failed to update user activity:', error);
+      // console.warn('Failed to update user activity:', error);
     }
   };
 

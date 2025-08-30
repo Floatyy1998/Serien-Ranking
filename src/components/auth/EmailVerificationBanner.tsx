@@ -33,11 +33,11 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           .then(() => {
             setIsVerified(user.emailVerified);
           })
-          .catch((error) => {
-            console.warn(
-              'User reload fehlgeschlagen (offline?), verwende cached Daten:',
-              error
-            );
+          .catch((_error) => {
+            // console.warn(
+            //   'User reload fehlgeschlagen (offline?), verwende cached Daten:',
+            //   error
+            // );
           });
       }
     } else if (auth?.authStateResolved) {

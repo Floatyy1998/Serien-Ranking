@@ -164,7 +164,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       setTmdbType(type);
       setTmdbDialogOpen(true);
     } catch (error) {
-      console.error('Fehler beim Laden der TMDB-Daten:', error);
+      // console.error('Fehler beim Laden der TMDB-Daten:', error);
     } finally {
       setTmdbLoading(false);
     }
@@ -276,7 +276,7 @@ export const FriendActivityDialog: React.FC<FriendActivityDialogProps> = ({
       setTmdbDialogOpen(false);
       setTmdbData(null);
     } catch (error) {
-      console.error('Fehler beim Hinzufügen zur eigenen Liste:', error);
+      // console.error('Fehler beim Hinzufügen zur eigenen Liste:', error);
       setSnackbarMessage(
         `Fehler beim Hinzufügen zur Liste: ${
           error instanceof Error ? error.message : 'Unbekannter Fehler'

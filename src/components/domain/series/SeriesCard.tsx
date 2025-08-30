@@ -314,7 +314,7 @@ export const SeriesCard = ({
 
         setOpen(false);
       } catch (error) {
-        console.error('Error updating ratings online:', error);
+        // console.error('Error updating ratings online:', error);
         setSnackbarMessage('Fehler beim Aktualisieren der Bewertungen.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
@@ -468,7 +468,7 @@ export const SeriesCard = ({
         // Watchlist-Logging entfernt - Social Badges nutzen jetzt Friends
       }
     } catch (error) {
-      console.error('Error updating watchlist status:', error);
+      // console.error('Error updating watchlist status:', error);
     }
   };
 
@@ -918,7 +918,7 @@ export const SeriesCard = ({
                     textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                   }}
                 >
-                  S{currentSeries.nextEpisode?.season}E
+                  S{(currentSeries.nextEpisode?.season || 0) + 1}E
                   {currentSeries.nextEpisode?.episode} • {dateString} um{' '}
                   {timeString}
                 </Typography>

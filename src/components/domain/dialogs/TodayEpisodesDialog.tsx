@@ -545,16 +545,25 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
                   boxShadow: 3,
                 }}
               >
-                <Typography
-                  sx={{ fontSize: '1rem' }}
-                  color='primary'
-                  gutterBottom
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 0.5,
+                    fontSize: '1rem',
+                    color: 'primary.main',
+                    mb: 1
+                  }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <BarChart sx={{ fontSize: '1rem' }} />
+                  <BarChart sx={{ fontSize: '1rem' }} />
+                  <Typography
+                    component='span'
+                    sx={{ fontSize: '1rem' }}
+                    color='primary'
+                  >
                     Heutiger Funfact:
-                  </Box>
-                </Typography>
+                  </Typography>
+                </Box>
                 <Typography sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>
                   {funFact}
                 </Typography>

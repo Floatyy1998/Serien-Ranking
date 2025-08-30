@@ -38,7 +38,7 @@ export const preloadBackgroundVideo = () => {
     
     // Behalte Video länger für besseres Caching
     video.addEventListener('canplaythrough', () => {
-      console.log('[Preload] Video fully preloaded:', theme.backgroundImage);
+      // console.log('[Preload] Video fully preloaded:', theme.backgroundImage);
       // Behalte Video für 5 Sekunden im DOM für Cache
       setTimeout(() => {
         video.remove();
@@ -47,14 +47,14 @@ export const preloadBackgroundVideo = () => {
     
     // Fehlerbehandlung
     video.addEventListener('error', () => {
-      console.warn('[Preload] Failed to preload video:', theme.backgroundImage);
+      // console.warn('[Preload] Failed to preload video:', theme.backgroundImage);
       video.remove();
     });
     
     document.body.appendChild(video);
     
   } catch (error) {
-    console.error('[Preload] Error preloading background video:', error);
+    // console.error('[Preload] Error preloading background video:', error);
   }
 };
 

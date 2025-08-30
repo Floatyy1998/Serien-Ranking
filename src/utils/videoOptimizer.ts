@@ -18,9 +18,9 @@ export async function checkVideoLoadingViability(videoUrl: string): Promise<Vide
     
     if (connection) {
       const effectiveType = connection.effectiveType;
-      const downlink = connection.downlink; // Mbps
+      // const _downlink = connection.downlink; // Mbps
       
-      console.log('[VideoOptimizer] Network info:', { effectiveType, downlink });
+      // console.log('[VideoOptimizer] Network info:', { effectiveType, downlink });
       
       // Bei langsamen Verbindungen Video nicht laden
       if (effectiveType === 'slow-2g' || effectiveType === '2g') {
@@ -32,7 +32,7 @@ export async function checkVideoLoadingViability(videoUrl: string): Promise<Vide
       
       // Bei 3G nur mit Warnung
       if (effectiveType === '3g') {
-        console.warn('[VideoOptimizer] 3G connection detected - video may load slowly');
+        // console.warn('[VideoOptimizer] 3G connection detected - video may load slowly');
       }
     }
     
@@ -63,17 +63,17 @@ export async function checkVideoLoadingViability(videoUrl: string): Promise<Vide
           resolved = true;
           
           const loadTime = performance.now() - startTime;
-          console.log(`[VideoOptimizer] Metadata loaded in ${loadTime.toFixed(0)}ms`);
+          // console.log(`[VideoOptimizer] Metadata loaded in ${loadTime.toFixed(0)}ms`);
           
           // Schätze Videogröße basierend auf Duration und Bitrate
           const duration = testVideo.duration;
           if (duration) {
             // Geschätzte Größe (sehr grobe Schätzung)
             const estimatedMB = duration * 0.5; // ~0.5 MB pro Sekunde für komprimiertes Video
-            console.log(`[VideoOptimizer] Estimated size: ~${estimatedMB.toFixed(1)} MB (${duration.toFixed(0)}s video)`);
+            // console.log(`[VideoOptimizer] Estimated size: ~${estimatedMB.toFixed(1)} MB (${duration.toFixed(0)}s video)`);
             
             if (estimatedMB > 50) {
-              console.warn(`[VideoOptimizer] Large video detected: ~${estimatedMB.toFixed(1)} MB`);
+              // console.warn(`[VideoOptimizer] Large video detected: ~${estimatedMB.toFixed(1)} MB`);
             }
           }
           
@@ -81,10 +81,10 @@ export async function checkVideoLoadingViability(videoUrl: string): Promise<Vide
           cleanup();
         });
         
-        testVideo.addEventListener('error', (e) => {
+        testVideo.addEventListener('error', (_e) => {
           if (resolved) return;
           resolved = true;
-          console.warn('[VideoOptimizer] Video test failed:', e);
+          // console.warn('[VideoOptimizer] Video test failed:', e);
           resolve(999999);
           cleanup();
         });
@@ -93,7 +93,7 @@ export async function checkVideoLoadingViability(videoUrl: string): Promise<Vide
         setTimeout(() => {
           if (!resolved) {
             resolved = true;
-            console.warn('[VideoOptimizer] Video test timeout');
+            // console.warn('[VideoOptimizer] Video test timeout');
             resolve(3000);
             cleanup();
           }
@@ -112,7 +112,7 @@ export async function checkVideoLoadingViability(videoUrl: string): Promise<Vide
         };
       }
     } catch (error) {
-      console.warn('[VideoOptimizer] Could not check video metadata:', error);
+      // console.warn('[VideoOptimizer] Could not check video metadata:', error);
     }
     
     return {
@@ -121,7 +121,7 @@ export async function checkVideoLoadingViability(videoUrl: string): Promise<Vide
     };
     
   } catch (error) {
-    console.error('[VideoOptimizer] Error checking video viability:', error);
+    // console.error('[VideoOptimizer] Error checking video viability:', error);
     return {
       shouldLoadVideo: true, // Im Zweifel versuchen
     };
@@ -210,7 +210,7 @@ export async function getVideoThumbnail(videoUrl: string): Promise<string | null
           video.remove();
         }
       } catch (error) {
-        console.error('[VideoOptimizer] Error creating thumbnail:', error);
+        // console.error('[VideoOptimizer] Error creating thumbnail:', error);
         resolve(null);
         video.remove();
       }

@@ -115,10 +115,10 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
             })
           );
         } catch (error) {
-          console.warn(
-            'Badge-Provider State konnte nicht geleert werden:',
-            error
-          );
+          // console.warn(
+          //   'Badge-Provider State konnte nicht geleert werden:',
+          //   error
+          // );
         }
 
         loadBadgeData(); // Cache refresh bei neuen Badges
@@ -193,7 +193,7 @@ const BadgeOverviewDialog: React.FC<BadgeOverviewDialogProps> = ({
       const progressData = await badgeSystem.getAllBadgeProgress();
       setBadgeProgress(progressData);
     } catch (error) {
-      console.error('Error loading badge data:', error);
+      // console.error('Error loading badge data:', error);
     } finally {
       if (!isCached) {
         setLoading(false);

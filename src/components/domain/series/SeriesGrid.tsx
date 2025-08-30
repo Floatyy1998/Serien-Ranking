@@ -717,7 +717,7 @@ export const SeriesGrid = ({
         seasons: updatedSeasons,
       });
     } catch (error) {
-      console.error('Error updating batch watched status:', error);
+      // console.error('Error updating batch watched status:', error);
     }
   };
 
@@ -793,7 +793,7 @@ export const SeriesGrid = ({
         }
       }
     } catch (error) {
-      console.error('Error updating batch episodes:', error);
+      // console.error('Error updating batch episodes:', error);
     }
   };
 

@@ -257,7 +257,7 @@ export const SearchFilters = ({
       setRecommendations(formattedRecommendations as unknown as Series[]);
       setBasedOnSeries(basedOnSeriesItems);
     } catch (error) {
-      console.error('Fehler beim Laden der Empfehlungen:', error);
+      // console.error('Fehler beim Laden der Empfehlungen:', error);
       setRecommendations([]);
       setBasedOnSeries([]);
     } finally {
