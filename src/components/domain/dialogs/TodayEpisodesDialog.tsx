@@ -509,7 +509,7 @@ const TodayEpisodesDialog: React.FC<TodayEpisodesDialogProps> = ({
                 <Box>
                   <ListItemText
                     primary={ep.seriesTitle}
-                    secondary={`Staffel ${ep.seasonNumber}, Ep. ${ep.episodeNumber}: ${ep.episodeTitle}`}
+                    secondary={`Staffel ${ep.seasonNumber + 1}, Ep. ${ep.episodeNumber}: ${ep.episodeTitle}`}
                   />
                   <Box
                     component='span'
