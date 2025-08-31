@@ -75,7 +75,7 @@ export const SeriesCard = ({
 
   // Fortschrittsberechnung für den Ring - nur ausgestrahlte Episoden
   const calculateProgress = () => {
-    if (!currentSeries.seasons || currentSeries.seasons.length === 0) return 0;
+    if (!currentSeries.seasons || currentSeries.seasons.length === 0) return { percentage: 0, aired: 0, watched: 0 };
 
     const now = new Date();
 
@@ -103,10 +103,11 @@ export const SeriesCard = ({
       return sum + watched;
     }, 0);
 
-    return airedEpisodes > 0 ? (watchedEpisodes / airedEpisodes) * 100 : 0;
+    const percentage = airedEpisodes > 0 ? (watchedEpisodes / airedEpisodes) * 100 : 0;
+    return { percentage, aired: airedEpisodes, watched: watchedEpisodes };
   };
 
-  const progressPercentage = calculateProgress();
+  const { percentage: progressPercentage, aired: airedEpisodes, watched: watchedEpisodes } = calculateProgress();
   const showProgress = true; // Immer anzeigen!
 
   // Memoize expensive style calculations
@@ -753,12 +754,12 @@ export const SeriesCard = ({
             className='absolute top-3 right-1'
             sx={{
               background:
-                progressPercentage === 100
+                (airedEpisodes > 0 && watchedEpisodes === airedEpisodes)
                   ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)'
                   : 'rgba(0, 0, 0, 0.6)',
               backdropFilter: 'blur(8px)',
               border:
-                progressPercentage === 100
+                (airedEpisodes > 0 && watchedEpisodes === airedEpisodes)
                   ? '1px solid rgba(34, 197, 94, 0.25)'
                   : '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '12px',
@@ -770,7 +771,7 @@ export const SeriesCard = ({
                 '&:hover': {
                   backgroundColor: 'rgba(0, 0, 0, 0.8)',
                   borderColor:
-                    progressPercentage === 100
+                    (airedEpisodes > 0 && watchedEpisodes === airedEpisodes)
                       ? 'rgba(34, 197, 94, 0.4)'
                       : 'rgba(255, 255, 255, 0.3)',
                   boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
@@ -798,13 +799,15 @@ export const SeriesCard = ({
               {showProgress && (
                 <Tooltip
                   title={
-                    progressPercentage === 100
-                      ? 'Serie vollständig geschaut! Alle ausgestrahlten Episoden wurden gesehen.'
+                    airedEpisodes > 0 && watchedEpisodes === airedEpisodes
+                      ? `Serie vollständig geschaut! Alle ${airedEpisodes} ausgestrahlten Episoden wurden gesehen.`
                       : progressPercentage === 0
-                      ? 'Noch keine Episode gesehen. Der Fortschritt zeigt nur bereits ausgestrahlte Episoden.'
-                      : `${Math.round(
+                      ? `Noch keine Episode gesehen. ${airedEpisodes} Episoden sind bereits ausgestrahlt.`
+                      : progressPercentage >= 99.5 && airedEpisodes > 0 && watchedEpisodes < airedEpisodes
+                      ? `Fast vollständig! ${watchedEpisodes} von ${airedEpisodes} ausgestrahlten Episoden gesehen (${(airedEpisodes - watchedEpisodes)} fehlt noch).`
+                      : `${watchedEpisodes} von ${airedEpisodes} ausgestrahlten Episoden gesehen (${Math.round(
                           progressPercentage
-                        )}% der ausgestrahlten Episoden gesehen. Zukünftige Episoden werden nicht mitgezählt.`
+                        )}%). Zukünftige Episoden werden nicht mitgezählt.`
                   }
                   arrow
                   placement='bottom'
@@ -819,7 +822,7 @@ export const SeriesCard = ({
                       cursor: 'help',
                     }}
                   >
-                    {progressPercentage === 100 ? (
+                    {airedEpisodes > 0 && watchedEpisodes === airedEpisodes ? (
                       <CheckCircleIcon
                         sx={{ fontSize: '0.85rem', color: '#22c55e' }}
                       />
@@ -839,7 +842,9 @@ export const SeriesCard = ({
                           fontWeight: 700,
                         }}
                       >
-                        {Math.round(progressPercentage)}%
+                        {progressPercentage >= 99.5 && airedEpisodes > 0 && watchedEpisodes < airedEpisodes 
+                          ? '99%' 
+                          : `${Math.round(progressPercentage)}%`}
                       </Typography>
                     )}
                   </Box>
