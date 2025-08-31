@@ -11,8 +11,8 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../App';
 import { useEnhancedFirebaseCache } from '../../../hooks/useEnhancedFirebaseCache';
-import { ProfileDialog } from './ProfileDialog';
 import { colors } from '../../../theme';
+import { ProfileDialog } from './ProfileDialog';
 
 export const UsernameRequiredDialog: React.FC = () => {
   const { user } = useAuth()!;
@@ -161,7 +161,7 @@ export const UsernameRequiredDialog: React.FC = () => {
               background: colors.button.primary,
               borderRadius: '12px',
               padding: '12px 24px',
-              color: colors.text.primary,
+              color: colors.text.secondary,
               fontWeight: 600,
               textTransform: 'none',
               border: `1px solid ${colors.border.light}`,

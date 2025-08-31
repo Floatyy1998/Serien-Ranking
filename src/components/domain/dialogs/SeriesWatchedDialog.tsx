@@ -26,7 +26,7 @@ import {
   RotateCcw,
   Clock,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Confetti from 'react-confetti';
 import { Series } from '../../../types/Series';
 import { getUnifiedEpisodeDate } from '../../../lib/date/episodeDate.utils';
@@ -69,7 +69,21 @@ const SeriesWatchedDialog = ({
 }: SeriesWatchedDialogProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [selectedTab, setSelectedTab] = useState<number>(0);
+  
+  // Finde die Staffel mit der ersten ungesehenen Episode
+  const getInitialTab = () => {
+    for (let i = 0; i < series.seasons.length; i++) {
+      const season = series.seasons[i];
+      const hasUnwatchedEpisode = season.episodes?.some(ep => !ep.watched);
+      if (hasUnwatchedEpisode) {
+        return i;
+      }
+    }
+    // Wenn alle gesehen sind oder keine gesehen sind, zeige erste Staffel
+    return 0;
+  };
+  
+  const [selectedTab, setSelectedTab] = useState<number>(getInitialTab());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmSeason, setConfirmSeason] = useState<number | null>(null);
   const [episodeConfirmOpen, setEpisodeConfirmOpen] = useState(false);
@@ -87,6 +101,13 @@ const SeriesWatchedDialog = ({
   } | null>(null);
 
   const uniqueSeasons = series.seasons;
+
+  // Reset den Tab wenn der Dialog geöffnet wird
+  useEffect(() => {
+    if (open) {
+      setSelectedTab(getInitialTab());
+    }
+  }, [open]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
