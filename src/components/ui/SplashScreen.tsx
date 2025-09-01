@@ -85,23 +85,28 @@ const vintageFlicker = keyframes`
   }
 `;
 
-// Countdown circle wobble (faster rotation for 700ms)
-const countdownWobble = keyframes`
+// Radar sweep rotation - one full rotation per second
+const radarSweep = keyframes`
   0% {
-    transform: rotate(0deg) scale(1);
-  }
-  25% {
-    transform: rotate(90deg) scale(0.98);
-  }
-  50% {
-    transform: rotate(180deg) scale(1.02);
-  }
-  75% {
-    transform: rotate(270deg) scale(0.99);
+    transform: rotate(0deg);
   }
   100% {
-    transform: rotate(360deg) scale(1);
+    transform: rotate(360deg);
   }
+`;
+
+// Film flicker for countdown
+const countdownFlicker = keyframes`
+  0%, 100% { opacity: 1; }
+  10% { opacity: 0.9; }
+  20% { opacity: 0.95; }
+  30% { opacity: 0.85; }
+  40% { opacity: 1; }
+  50% { opacity: 0.88; }
+  60% { opacity: 0.95; }
+  70% { opacity: 0.9; }
+  80% { opacity: 1; }
+  90% { opacity: 0.92; }
 `;
 
 // Film burn effect
@@ -134,42 +139,33 @@ const perforationScroll = keyframes`
   }
 `;
 
-// Vintage number appearance (dirty and worn)
+// Classic film leader number change
 const numberAppear = keyframes`
   0% {
-    transform: scale(0.5) rotate(-8deg) skew(2deg, -2deg);
+    transform: scale(1.2);
     opacity: 0;
-    filter: blur(3px) brightness(0.5);
   }
-  20% {
-    transform: scale(1.4) rotate(5deg) skew(-1deg, 1deg);
-    opacity: 0.9;
-    filter: blur(0.5px) brightness(1.1);
+  10% {
+    transform: scale(1);
+    opacity: 1;
   }
-  40% {
-    transform: scale(0.9) rotate(-2deg) skew(1deg, -1deg);
-    opacity: 0.85;
-    filter: blur(1px) brightness(0.9);
-  }
-  80% {
-    transform: scale(0.95) rotate(-1deg) skew(-0.5deg, 0.5deg);
-    opacity: 0.8;
-    filter: blur(0.8px) brightness(0.95);
+  90% {
+    transform: scale(1);
+    opacity: 1;
   }
   100% {
-    transform: scale(0.7) rotate(4deg) skew(1deg, -1deg);
+    transform: scale(0.8);
     opacity: 0;
-    filter: blur(2px) brightness(0.6);
   }
 `;
 
-// Cinema curtain with wave effect
+// Smooth cinema curtain opening
 const curtainOpen = keyframes`
   0% {
     transform: scaleX(1) translateZ(0);
   }
   100% {
-    transform: scaleX(0.05) translateZ(0);
+    transform: scaleX(0) translateZ(0);
   }
 `;
 
@@ -356,115 +352,138 @@ const CountdownContainer = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'isVisible',
 })<{ isVisible: boolean }>`
   position: absolute;
-  width: 350px;
-  height: 350px;
+  width: 280px;
+  height: 280px;
   display: ${(props) => (props.isVisible ? 'flex' : 'none')};
   justify-content: center;
   align-items: center;
   z-index: 100;
+  background: radial-gradient(
+    circle,
+    rgba(15, 15, 15, 0.7) 0%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
+  border-radius: 50%;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 0, 0, 0.8);
+  filter: contrast(0.9) brightness(0.9);
 `;
 
 const CountdownCircle = styled(Box)`
   position: absolute;
   width: 100%;
   height: 100%;
-  border: 14px solid rgba(180, 170, 150, 0.25);
+  border: 6px solid rgba(240, 235, 220, 0.5);
   border-radius: 50%;
-  filter: blur(1px) brightness(0.9);
-  opacity: 0.8;
+  animation: ${countdownFlicker} 0.15s infinite;
+  filter: blur(0.4px);
 
   &::before {
     content: '';
     position: absolute;
-    top: -14px;
-    left: -14px;
-    right: -14px;
-    bottom: -14px;
+    top: -18px;
+    left: -18px;
+    right: -18px;
+    bottom: -18px;
     border-radius: 50%;
-    border: 14px solid transparent;
-    border-top-color: rgba(180, 170, 150, 0.6);
-    border-right-color: rgba(180, 170, 150, 0.4);
-    border-bottom-color: rgba(180, 170, 150, 0.2);
-    animation: ${countdownWobble} 1s linear infinite;
-    filter: blur(0.5px);
+    border: 2px solid rgba(240, 235, 220, 0.2);
+    filter: blur(0.6px);
   }
+`;
 
-  &::after {
+// Rotating radar sweep line
+const RadarSweep = styled(Box)`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  animation: ${radarSweep} 1s linear infinite;
+  opacity: 0.7;
+
+  &::before {
     content: '';
     position: absolute;
-    top: -28px;
-    left: -28px;
-    right: -28px;
-    bottom: -28px;
-    border-radius: 50%;
-    border: 2px dashed rgba(160, 150, 130, 0.2);
-    animation: ${countdownWobble} 1.5s linear reverse infinite;
+    top: 50%;
+    left: 50%;
+    width: 45%;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      rgba(200, 190, 170, 0.6) 0%,
+      rgba(200, 190, 170, 0.3) 60%,
+      transparent 90%
+    );
+    transform-origin: left center;
+    filter: blur(0.5px);
   }
 `;
 
 const CountdownNumber = styled(Box)`
-  font-size: 240px;
-  font-weight: 900;
-  color: rgba(180, 170, 150, 0.75);
-  font-family: 'Times New Roman', serif;
-  text-shadow: 4px 4px 15px rgba(0, 0, 0, 0.9),
-    -3px -3px 12px rgba(0, 0, 0, 0.7), 2px 2px 4px rgba(0, 0, 0, 0.8),
-    -1px -1px 2px rgba(0, 0, 0, 0.6), 0 0 40px rgba(180, 170, 150, 0.2),
-    0 0 80px rgba(0, 0, 0, 0.5);
-  animation: ${numberAppear} 1s ease-out;
+  font-size: 140px;
+  font-weight: 700;
+  color: rgba(255, 250, 240, 0.75);
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 0, 0, 0.4);
+  animation: ${numberAppear} 1s ease-out, ${countdownFlicker} 0.2s infinite;
   user-select: none;
-  filter: blur(0.8px) contrast(0.9) brightness(0.95);
-  transform: rotate(-3deg) skew(-1deg, 1deg);
-  opacity: 0.85;
-
-  /* Gritty texture effect */
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 3px
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
+  z-index: 3;
+  filter: blur(0.6px) contrast(0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
 `;
 
-// Target crosshair (dirty and worn)
+// Classic film leader crosshair
 const FilmTarget = styled(Box)`
   position: absolute;
-  width: 250px;
-  height: 250px;
-  opacity: 0.35;
-  filter: blur(0.3px);
+  width: 100%;
+  height: 100%;
+  opacity: 0.4;
 
   &::before,
   &::after {
     content: '';
     position: absolute;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(160, 150, 130, 0.3),
-      rgba(160, 150, 130, 0.2),
-      rgba(160, 150, 130, 0.3),
-      transparent
-    );
+    background: rgba(240, 235, 220, 0.3);
+    filter: blur(0.4px);
   }
 
   &::before {
     top: 50%;
-    left: 5%;
-    right: 5%;
-    height: 3px;
-    transform: translateY(-50%) scaleY(0.8);
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    transform: translateY(-50%);
   }
 
   &::after {
     left: 50%;
-    top: 5%;
-    bottom: 5%;
-    width: 3px;
-    transform: translateX(-50%) scaleX(0.8);
+    top: 15%;
+    bottom: 15%;
+    width: 1px;
+    transform: translateX(-50%);
+  }
+`;
+
+// Film leader markings
+const LeaderMarkings = styled(Box)`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  &::before {
+    content: 'PICTURE START';
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    color: rgba(240, 235, 220, 0.3);
+    letter-spacing: 3px;
+    font-weight: normal;
+    filter: blur(0.3px);
   }
 `;
 
@@ -478,9 +497,9 @@ const Curtain = styled(Box, {
   height: 100%;
   ${(props) => (props.side === 'left' ? 'left: 0;' : 'right: 0;')}
   transform-origin: ${(props) => (props.side === 'left' ? 'left' : 'right')};
-  animation: ${(props) => (props.isOpen ? curtainOpen : 'none')} 1.5s
-    ease-in-out forwards;
-  animation-delay: 0.2s;
+  animation: ${(props) => (props.isOpen ? curtainOpen : 'none')} 2s
+    cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  animation-delay: 0.1s;
   z-index: 50;
 
   /* Velvet texture with subtle waves */
@@ -550,7 +569,9 @@ const SeatsRow = styled(Box)`
 const LogoSVG = styled('svg')`
   width: 100%;
   height: 100%;
-  transform: rotate(180deg); // Logo um 180° drehen - Fernseher stand auf dem Kopf
+  transform: rotate(
+    180deg
+  ); // Logo um 180° drehen - Fernseher stand auf dem Kopf
   filter: sepia(1) saturate(1.5) hue-rotate(35deg) brightness(0.9)
     drop-shadow(0 0 30px rgba(181, 159, 107, 0.6));
 `;
@@ -683,44 +704,64 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     return () => clearInterval(checkProgress);
   }, []);
 
-  // Animate countdown based on real progress
+  // Countdown that ensures all numbers are shown
+  const [currentCountdown, setCurrentCountdown] = useState(3);
+
   useEffect(() => {
-    const animationInterval = setInterval(() => {
-      setCountdownProgress((prev) => {
-        // Target value based on loading progress
-        const target = 3 * (1 - loadingProgress);
+    let lastChangeTime = Date.now();
+    const minTimePerNumber = 300; // Minimum 300ms per number
 
-        // Smooth animation towards target
-        const diff = target - prev;
-        const step = diff * 0.15; // Smooth easing
+    const countdownInterval = setInterval(() => {
+      const now = Date.now();
+      const timeSinceChange = now - lastChangeTime;
 
-        const newValue = prev + step;
+      // Only change number if enough time has passed
+      if (timeSinceChange >= minTimePerNumber) {
+        setCurrentCountdown((prev) => {
+          // Determine next number based on loading progress
+          let targetNumber = 3;
+          if (loadingProgress >= 0.9) {
+            targetNumber = 0;
+          } else if (loadingProgress >= 0.6) {
+            targetNumber = 1;
+          } else if (loadingProgress >= 0.3) {
+            targetNumber = 2;
+          }
 
-        // When countdown reaches near 0 and loading is complete
-        if (newValue <= 0.1 && loadingProgress >= 1) {
-          clearInterval(animationInterval);
-          setTimeout(() => {
-            setCurtainsOpen(true);
-          }, 100);
-          return 0;
-        }
+          // Move towards target, but only down
+          if (targetNumber < prev) {
+            lastChangeTime = now;
+            return prev - 1;
+          }
+          return prev;
+        });
+      }
+    }, 50);
 
-        return Math.max(0, newValue);
-      });
-    }, 1000 / 60); // 60 FPS
-
-    return () => clearInterval(animationInterval);
+    return () => clearInterval(countdownInterval);
   }, [loadingProgress]);
+
+  // Update countdown display
+  useEffect(() => {
+    setCountdownProgress(currentCountdown);
+
+    // Open curtains when countdown reaches 0
+    if (currentCountdown === 0 && loadingProgress >= 1) {
+      setTimeout(() => {
+        setCurtainsOpen(true);
+      }, 300);
+    }
+  }, [currentCountdown, loadingProgress]);
 
   useEffect(() => {
     if (curtainsOpen) {
-      // Show logo briefly (1 second) then close
+      // Show logo briefly then close
       setTimeout(() => {
         setIsHiding(true);
         setTimeout(() => {
           onComplete?.();
         }, 800); // Fade out animation
-      }, 1000); // Show logo for 1 second
+      }, 1000); // Show logo for 1 second only
     }
   }, [curtainsOpen, onComplete]);
 
@@ -751,11 +792,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       <Curtain side='left' isOpen={curtainsOpen} />
       <Curtain side='right' isOpen={curtainsOpen} />
 
-      {/* Vintage countdown */}
+      {/* Classic film leader countdown */}
       <CountdownContainer isVisible={countdownProgress > 0}>
         <FilmTarget />
         <CountdownCircle />
-        <CountdownNumber>{countdownProgress.toFixed(1)}</CountdownNumber>
+        <RadarSweep />
+        <LeaderMarkings />
+        <CountdownNumber>{Math.ceil(countdownProgress)}</CountdownNumber>
       </CountdownContainer>
 
       {/* Main content after countdown */}
