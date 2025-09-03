@@ -20,6 +20,7 @@ import { useBadges } from '../../features/badges/BadgeProvider';
 import { BADGE_DEFINITIONS, Badge, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 // import firebase from 'firebase/compat/app';
 import './MobileBadgesPage.css';
 
@@ -49,6 +50,7 @@ export const MobileBadgesPage: React.FC = () => {
   const navigate = useNavigate();
   const { } = useBadges();
   const { user } = useAuth()!;
+  const { getMobilePageStyle } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [userBadges, setUserBadges] = useState<EarnedBadge[]>([]);
@@ -179,7 +181,7 @@ export const MobileBadgesPage: React.FC = () => {
   }
 
   return (
-    <div className="mobile-badges-page">
+    <div className="mobile-badges-page" style={getMobilePageStyle()}>
       {/* Header */}
       <div className="badges-header">
         <button className="back-button" onClick={() => navigate(-1)}>

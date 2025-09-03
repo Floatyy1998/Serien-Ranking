@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
+import { useTheme } from '../../contexts/ThemeContext';
 import './MobileFilterPage.css';
 
 interface FilterState {
@@ -51,6 +52,7 @@ export const MobileFilterPage: React.FC = () => {
   const location = useLocation();
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { getMobilePageStyle } = useTheme();
 
   const [filters, setFilters] = useState<FilterState>({
     type: 'all',
@@ -169,7 +171,7 @@ export const MobileFilterPage: React.FC = () => {
   };
 
   return (
-    <div className="mobile-filter-page">
+    <div className="mobile-filter-page" style={getMobilePageStyle()}>
       {/* Header */}
       <div className="filter-header">
         <button onClick={() => navigate(-1)} className="back-button">

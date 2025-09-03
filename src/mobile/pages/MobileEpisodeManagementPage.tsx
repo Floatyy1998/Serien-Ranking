@@ -13,6 +13,7 @@ import {
 import { Series } from '../../types/Series';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
@@ -23,10 +24,13 @@ export const MobileEpisodeManagementPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
+  const { getMobilePageStyle } = useTheme();
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
+  const [showWatchDialog, setShowWatchDialog] = useState(false);
+  const [selectedEpisode, setSelectedEpisode] = useState<{seasonIndex: number, episodeIndex: number, episode: any} | null>(null);
   
   const series = seriesList.find((s: Series) => s.id === Number(id));
 
@@ -41,6 +45,7 @@ export const MobileEpisodeManagementPage: React.FC = () => {
       }
     }
   }, [series]);
+
 
   // Pull to refresh
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -78,21 +83,70 @@ export const MobileEpisodeManagementPage: React.FC = () => {
     }
   };
 
-  const handleEpisodeToggle = async (seasonIndex: number, episodeIndex: number) => {
+  // Handle episode click - show dialog for watched episodes
+  const handleEpisodeClick = (seasonIndex: number, episodeIndex: number) => {
+    const episode = series?.seasons[seasonIndex]?.episodes?.[episodeIndex];
+    if (!episode) return;
+
+    if (episode.watched) {
+      // Show dialog for watched episodes
+      setSelectedEpisode({ seasonIndex, episodeIndex, episode });
+      setShowWatchDialog(true);
+    } else {
+      // For unwatched episodes, just mark as watched
+      handleEpisodeToggle(seasonIndex, episodeIndex);
+    }
+  };
+
+  const handleEpisodeToggle = async (seasonIndex: number, episodeIndex: number, longPress = false) => {
     if (!series || !user) return;
     
     const season = series.seasons[seasonIndex];
     const episode = season.episodes![episodeIndex];
     
     try {
+      const currentWatchCount = episode.watchCount || 0;
+      const isWatched = episode.watched;
+      
+      let newWatched: boolean;
+      let newWatchCount: number;
+      
+      if (longPress && isWatched) {
+        // Long press on watched episode: decrement watch count
+        if (currentWatchCount > 1) {
+          // If watched multiple times, just decrement
+          newWatched = true;
+          newWatchCount = currentWatchCount - 1;
+        } else {
+          // If only watched once, mark as unwatched
+          newWatched = false;
+          newWatchCount = 0;
+        }
+      } else if (isWatched) {
+        // Normal tap on watched episode: increment watch count (rewatch)
+        newWatched = true;
+        newWatchCount = currentWatchCount + 1;
+      } else {
+        // Tap on unwatched episode: mark as watched
+        newWatched = true;
+        newWatchCount = 1;
+      }
+      
       const updatedEpisodes = season.episodes!.map((e, idx) => {
         if (idx === episodeIndex) {
-          const nowWatched = !e.watched;
-          if (nowWatched) {
+          // Ensure data consistency: watched episodes must have watchCount >= 1
+          if (newWatched && newWatchCount < 1) {
+            newWatchCount = 1;
+          }
+          if (!newWatched) {
+            newWatchCount = 0;
+          }
+          
+          if (newWatched) {
             return {
               ...e,
               watched: true,
-              watchCount: 1,
+              watchCount: newWatchCount,
               firstWatchedAt: e.firstWatchedAt || new Date().toISOString(),
             };
           } else {
@@ -121,13 +175,23 @@ export const MobileEpisodeManagementPage: React.FC = () => {
       await seasonsRef.set(updatedSeasons);
       
       // Badge system logging for episode changes
-      if (!episode.watched) { // Episode wird als gesehen markiert
+      if (!episode.watched && newWatched) { // Episode wird als gesehen markiert
         const { updateEpisodeCounters } = await import(
           '../../features/badges/minimalActivityLogger'
         );
         await updateEpisodeCounters(
           user.uid,
           false, // nicht rewatch
+          episode.air_date
+        );
+      } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
+        // Rewatch case
+        const { updateEpisodeCounters } = await import(
+          '../../features/badges/minimalActivityLogger'
+        );
+        await updateEpisodeCounters(
+          user.uid,
+          true, // rewatch
           episode.air_date
         );
       }
@@ -224,7 +288,7 @@ export const MobileEpisodeManagementPage: React.FC = () => {
   const progress = totalCount > 0 ? (watchedCount / totalCount) * 100 : 0;
 
   return (
-    <div className="mobile-episode-page">
+    <div className="mobile-episode-page" style={getMobilePageStyle()}>
       {/* Native App Header */}
       <div className="episode-header">
         <button onClick={() => navigate(-1)} className="back-button">
@@ -323,7 +387,7 @@ export const MobileEpisodeManagementPage: React.FC = () => {
                 key={episode.id}
                 className={`episode-item ${episode.watched ? 'watched' : ''}`}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => handleEpisodeToggle(selectedSeason, index)}
+                onClick={() => handleEpisodeClick(selectedSeason, index)}
               >
                 <div className="episode-number">{index + 1}</div>
                 
@@ -347,7 +411,8 @@ export const MobileEpisodeManagementPage: React.FC = () => {
                   {episode.watched ? (
                     <div className="status-watched">
                       <Check />
-                      {episode.watchCount && episode.watchCount > 1 && (
+                      {/* Show watch count only if > 1 */}
+                      {(episode.watchCount || 0) > 1 && (
                         <span className="watch-count">{episode.watchCount}x</span>
                       )}
                     </div>
@@ -360,6 +425,56 @@ export const MobileEpisodeManagementPage: React.FC = () => {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Watch Count Dialog */}
+      {showWatchDialog && selectedEpisode && (
+        <div 
+          className="watch-dialog-overlay"
+          onClick={() => setShowWatchDialog(false)}
+        >
+          <motion.div
+            className="watch-dialog"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="dialog-header">
+              <h3>{selectedEpisode.episode.name}</h3>
+              <p>Aktuell: {selectedEpisode.episode.watchCount || 1}x gesehen</p>
+            </div>
+            
+            <div className="dialog-buttons">
+              <button
+                className="dialog-button increase"
+                onClick={() => {
+                  handleEpisodeToggle(selectedEpisode.seasonIndex, selectedEpisode.episodeIndex);
+                  setShowWatchDialog(false);
+                }}
+              >
+                +1 (nochmal gesehen)
+              </button>
+              
+              <button
+                className="dialog-button decrease"
+                onClick={() => {
+                  handleEpisodeToggle(selectedEpisode.seasonIndex, selectedEpisode.episodeIndex, true);
+                  setShowWatchDialog(false);
+                }}
+              >
+                -1 (weniger gesehen)
+              </button>
+              
+              <button
+                className="dialog-button cancel"
+                onClick={() => setShowWatchDialog(false)}
+              >
+                Abbrechen
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
     </div>
   );

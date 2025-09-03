@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Person, Movie, Tv, ChevronRight, Star, OpenInNew } from '@mui/icons-material';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface CastMember {
   id: number;
@@ -25,6 +26,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
   onPersonClick,
   seriesData
 }) => {
+  const { currentTheme } = useTheme();
   const [cast, setCast] = useState<CastMember[]>([]);
   const [crew, setCrew] = useState<CastMember[]>([]);
   const [animeCharacters, setAnimeCharacters] = useState<any[]>([]);
@@ -330,7 +332,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
   if (loading) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
-        <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Lade Cast & Crew...</div>
+        <div style={{ color: currentTheme.text.muted }}>Lade Cast & Crew...</div>
       </div>
     );
   }
@@ -360,7 +362,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
 
         {voiceActorLoading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Lade Sprecher-Details...</div>
+            <div style={{ color: currentTheme.text.muted }}>Lade Sprecher-Details...</div>
           </div>
         ) : (
           <>
@@ -391,7 +393,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Person style={{ fontSize: '32px', color: 'rgba(255, 255, 255, 0.3)' }} />
+                  <Person style={{ fontSize: '32px', color: currentTheme.text.muted }} />
                 </div>
               )}
               
@@ -484,9 +486,9 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                           border: '1px solid rgba(255, 255, 255, 0.1)'
                         }}>
                           {edge.node.type === 'ANIME' ? (
-                            <Tv style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                            <Tv style={{ fontSize: '28px', color: currentTheme.text.muted }} />
                           ) : (
-                            <Movie style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                            <Movie style={{ fontSize: '28px', color: currentTheme.text.muted }} />
                           )}
                         </div>
                       )}
@@ -506,7 +508,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                           fontSize: '10px',
                           fontWeight: 600
                         }}>
-                          <Star style={{ fontSize: '10px', color: '#FFD700' }} />
+                          <Star style={{ fontSize: '10px', color: currentTheme.status.warning }} />
                           {(edge.node.meanScore / 10).toFixed(1)}
                         </div>
                       )}
@@ -697,9 +699,9 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                       border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}>
                       {credit.media_type === 'movie' ? (
-                        <Movie style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                        <Movie style={{ fontSize: '28px', color: currentTheme.text.muted }} />
                       ) : (
-                        <Tv style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                        <Tv style={{ fontSize: '28px', color: currentTheme.text.muted }} />
                       )}
                     </div>
                   )}
@@ -719,7 +721,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                       fontSize: '10px',
                       fontWeight: 600
                     }}>
-                      <Star style={{ fontSize: '10px', color: '#ffd700' }} />
+                      <Star style={{ fontSize: '10px', color: currentTheme.status.warning }} />
                       {credit.vote_average.toFixed(1)}
                     </div>
                   )}
@@ -896,7 +898,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <Person style={{ fontSize: '20px', color: 'rgba(255, 255, 255, 0.3)' }} />
+                  <Person style={{ fontSize: '20px', color: currentTheme.text.muted }} />
                 </div>
               )}
               
@@ -973,7 +975,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <Person style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.3)' }} />
+                      <Person style={{ fontSize: '16px', color: currentTheme.text.muted }} />
                     </div>
                   )}
                 </div>

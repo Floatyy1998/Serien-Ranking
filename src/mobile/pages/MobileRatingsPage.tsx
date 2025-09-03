@@ -9,6 +9,7 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // TMDB Genre IDs mapping (unused but kept for reference)
 // const TMDB_GENRE_MAP: { [key: number]: string } = { ... };
@@ -19,6 +20,7 @@ export const MobileRatingsPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { currentTheme, getMobilePageBackground, getMobileHeaderStyle } = useTheme();
   
   // Check for tab parameter in URL
   const params = new URLSearchParams(location.search);
@@ -341,13 +343,13 @@ export const MobileRatingsPage: React.FC = () => {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: '#000', 
-      color: 'white',
+      background: getMobilePageBackground(), // Dynamisch: transparent wenn Bild, sonst undurchsichtig
+      color: currentTheme.text.primary,
       paddingBottom: '80px'
     }}>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(180deg, rgba(255, 215, 0, 0.2) 0%, rgba(0, 0, 0, 0) 100%)',
+        ...getMobileHeaderStyle('rgba(255, 215, 0, 0.3)'), // Golden/yellow for ratings
         padding: '20px',
         paddingTop: 'calc(40px + env(safe-area-inset-top))'
       }}>
@@ -355,9 +357,9 @@ export const MobileRatingsPage: React.FC = () => {
           <button 
             onClick={() => navigate(-1)} 
             style={{ 
-              background: 'rgba(255, 255, 255, 0.1)', 
+              background: currentTheme.background.surface, 
               border: 'none', 
-              color: 'white', 
+              color: currentTheme.text.primary, 
               fontSize: '20px',
               cursor: 'pointer',
               padding: '8px',
@@ -380,7 +382,7 @@ export const MobileRatingsPage: React.FC = () => {
             alignItems: 'center',
             gap: '12px'
           }}>
-            <Star style={{ fontSize: '28px', color: '#ffd700' }} />
+            <Star style={{ fontSize: '28px', color: currentTheme.status.warning }} />
             Meine Bewertungen
           </h1>
         </div>
@@ -391,7 +393,7 @@ export const MobileRatingsPage: React.FC = () => {
           gap: '16px',
           marginTop: '16px',
           fontSize: '14px',
-          color: 'rgba(255, 255, 255, 0.7)'
+          color: currentTheme.text.secondary
         }}>
           <span>{itemsWithRating.length} bewertet</span>
           <span>Ø {averageRating.toFixed(1)} ⭐</span>
@@ -410,11 +412,11 @@ export const MobileRatingsPage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background: activeTab === 'series' 
-              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
+              ? currentTheme.primary
+              : currentTheme.background.surface,
             border: 'none',
             borderRadius: '12px 0 0 12px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             fontSize: '16px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -434,11 +436,11 @@ export const MobileRatingsPage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background: activeTab === 'movies' 
-              ? 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
+              ? currentTheme.status.error
+              : currentTheme.background.surface,
             border: 'none',
             borderRadius: '0 12px 12px 0',
-            color: 'white',
+            color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
             fontSize: '16px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -460,7 +462,7 @@ export const MobileRatingsPage: React.FC = () => {
           <div style={{
             textAlign: 'center',
             padding: '40px 20px',
-            color: 'rgba(255, 255, 255, 0.5)'
+            color: currentTheme.text.muted
           }}>
             <Star style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
             <h3>Noch keine Bewertungen</h3>
@@ -524,7 +526,7 @@ export const MobileRatingsPage: React.FC = () => {
                         aspectRatio: '2/3',
                         objectFit: 'cover',
                         borderRadius: '8px',
-                        background: 'rgba(255, 255, 255, 0.05)'
+                        background: currentTheme.background.surface
                       }}
                     />
                     
@@ -543,9 +545,9 @@ export const MobileRatingsPage: React.FC = () => {
                             const provider = item.provider?.provider.find((p: any) => p.name === name);
                             return provider ? (
                               <div key={provider.id} style={{
-                                background: 'rgba(0, 0, 0, 0.6)',
+                                background: `${currentTheme.background.default}99`,
                                 backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                border: `1px solid ${currentTheme.border.default}`,
                                 borderRadius: '8px',
                                 padding: '2px',
                                 width: '28px',
@@ -569,7 +571,7 @@ export const MobileRatingsPage: React.FC = () => {
                           })}
                         {item.provider.provider.length > 2 && (
                           <div style={{
-                            background: 'rgba(0, 0, 0, 0.6)',
+                            background: `${currentTheme.background.default}99`,
                             backdropFilter: 'blur(8px)',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
                             borderRadius: '8px',
@@ -580,7 +582,7 @@ export const MobileRatingsPage: React.FC = () => {
                             justifyContent: 'center',
                             fontSize: '10px',
                             fontWeight: 600,
-                            color: 'rgba(255, 255, 255, 0.8)'
+                            color: currentTheme.text.primary
                           }}>
                             +{item.provider.provider.length - 2}
                           </div>
@@ -594,7 +596,7 @@ export const MobileRatingsPage: React.FC = () => {
                         position: 'absolute',
                         top: '8px',
                         right: '8px',
-                        background: 'rgba(0, 0, 0, 0.8)',
+                        background: `${currentTheme.background.default}CC`,
                         borderRadius: '16px',
                         padding: '4px 8px',
                         display: 'flex',
@@ -603,7 +605,7 @@ export const MobileRatingsPage: React.FC = () => {
                         fontSize: '12px',
                         fontWeight: 600
                       }}>
-                        <Star style={{ fontSize: '12px', color: '#ffd700' }} />
+                        <Star style={{ fontSize: '12px', color: currentTheme.status.warning }} />
                         {rating.toFixed(1)}
                       </div>
                     )}
@@ -616,7 +618,7 @@ export const MobileRatingsPage: React.FC = () => {
                         left: '6px',
                         right: '6px',
                         height: '4px',
-                        background: 'rgba(0, 0, 0, 0.6)',
+                        background: `${currentTheme.background.default}99`,
                         borderRadius: '2px',
                         overflow: 'hidden'
                       }}>
@@ -624,10 +626,10 @@ export const MobileRatingsPage: React.FC = () => {
                           height: '100%',
                           width: `${progress}%`,
                           background: progress === 100 
-                            ? 'linear-gradient(90deg, #4caf50, #45a049)'
-                            : 'linear-gradient(90deg, #00d4aa, #00b894)',
+                            ? currentTheme.status.success
+                            : currentTheme.status.success,
                           transition: 'width 0.3s ease',
-                          boxShadow: '0 0 4px rgba(0, 212, 170, 0.5)'
+                          boxShadow: `0 0 4px ${currentTheme.status.success}80`
                         }} />
                       </div>
                     )}
@@ -636,7 +638,7 @@ export const MobileRatingsPage: React.FC = () => {
                   <h4 style={{
                     fontSize: '12px',
                     fontWeight: 500,
-                    color: 'rgba(255, 255, 255, 0.9)',
+                    color: currentTheme.text.primary,
                     margin: '8px 0 0 0',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -652,7 +654,7 @@ export const MobileRatingsPage: React.FC = () => {
                   {!isMovie && progress > 0 && (
                     <p style={{
                       fontSize: '11px',
-                      color: progress === 100 ? '#4caf50' : '#00d4aa',
+                      color: currentTheme.status.success,
                       margin: '2px 0 0 0',
                       fontWeight: 500
                     }}>
@@ -663,7 +665,7 @@ export const MobileRatingsPage: React.FC = () => {
                   {isMovie && item.release_date && (
                     <p style={{
                       fontSize: '11px',
-                      color: 'rgba(255, 255, 255, 0.4)',
+                      color: currentTheme.text.muted,
                       margin: '2px 0 0 0'
                     }}>
                       {item.release_date.split('-')[0]}

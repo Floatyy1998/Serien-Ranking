@@ -2,24 +2,25 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowBack } from '@mui/icons-material';
 import { MobileStatsGrid } from '../components/MobileStatsGrid';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export const MobileStatsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
 
   return (
     <div style={{ 
-      height: '100dvh', 
-      background: '#000', 
-      color: 'white',
+      ...getMobilePageStyle(),
+      height: '100dvh',
       paddingBottom: '80px',
       overflowY: 'auto',
       WebkitOverflowScrolling: 'touch'
     }}>
       {/* Header */}
       <header style={{
+        ...getMobileHeaderStyle('rgba(102, 126, 234, 0.6)'),
         padding: '20px',
-        paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, rgba(0, 0, 0, 0) 100%)'
+        paddingTop: 'calc(20px + env(safe-area-inset-top))'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button 

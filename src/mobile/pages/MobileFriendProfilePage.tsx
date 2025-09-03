@@ -9,6 +9,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface FriendItem {
   id: number;
@@ -26,6 +27,7 @@ interface FriendItem {
 export const MobileFriendProfilePage: React.FC = () => {
   const { id: friendId } = useParams();
   const navigate = useNavigate();
+  const { currentTheme, getMobilePageStyle } = useTheme();
   // const { user } = useAuth()!;
   const [loading, setLoading] = useState(true);
   const [friendName, setFriendName] = useState('');
@@ -340,8 +342,8 @@ export const MobileFriendProfilePage: React.FC = () => {
     return (
       <div style={{ 
         minHeight: '100vh', 
-        background: '#000', 
-        color: 'white',
+        background: currentTheme.background.default, 
+        color: currentTheme.text.primary,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
@@ -352,25 +354,20 @@ export const MobileFriendProfilePage: React.FC = () => {
   }
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000', 
-      color: 'white',
-      paddingBottom: '80px'
-    }}>
+    <div style={getMobilePageStyle()}>
       {/* Header */}
       <header style={{
         padding: '20px',
         paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, rgba(0, 0, 0, 0) 100%)'
+        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
           <button 
             onClick={() => navigate(-1)}
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
+              background: currentTheme.background.surface,
               border: 'none',
-              color: 'white',
+              color: currentTheme.text.primary,
               fontSize: '20px',
               cursor: 'pointer',
               padding: '8px',
@@ -390,14 +387,14 @@ export const MobileFriendProfilePage: React.FC = () => {
               fontSize: '24px', 
               fontWeight: 800,
               margin: 0,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: currentTheme.primary,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}>
               {friendName}
             </h1>
             <p style={{ 
-              color: 'rgba(255, 255, 255, 0.6)', 
+              color: currentTheme.text.secondary, 
               fontSize: '14px',
               margin: '4px 0 0 0'
             }}>
@@ -412,13 +409,14 @@ export const MobileFriendProfilePage: React.FC = () => {
         onFilterChange={setFilters}
         isMovieMode={activeTab === 'movies'}
         isRatingsMode={true}
+        hasBottomNav={false}  // No bottom navigation on friend profile page
       />
       
       {/* Tab Switcher */}
       <div style={{
         display: 'flex',
         margin: '0 20px 20px 20px',
-        background: 'rgba(255, 255, 255, 0.05)',
+        background: currentTheme.background.surface,
         borderRadius: '12px'
       }}>
         <button
@@ -427,11 +425,11 @@ export const MobileFriendProfilePage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background: activeTab === 'series' 
-              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              ? currentTheme.primary
               : 'transparent',
             border: 'none',
             borderRadius: '12px 0 0 12px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             fontSize: '16px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -451,11 +449,11 @@ export const MobileFriendProfilePage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background: activeTab === 'movies' 
-              ? 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)'
+              ? currentTheme.status.error
               : 'transparent',
             border: 'none',
             borderRadius: '0 12px 12px 0',
-            color: 'white',
+            color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
             fontSize: '16px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -476,7 +474,7 @@ export const MobileFriendProfilePage: React.FC = () => {
           <div style={{
             textAlign: 'center',
             padding: '40px 20px',
-            color: 'rgba(255, 255, 255, 0.5)'
+            color: currentTheme.text.muted
           }}>
             <Star style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
             <h3>Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden</h3>
@@ -538,7 +536,7 @@ export const MobileFriendProfilePage: React.FC = () => {
                         aspectRatio: '2/3',
                         objectFit: 'cover',
                         borderRadius: '8px',
-                        background: 'rgba(255, 255, 255, 0.05)'
+                        background: currentTheme.background.surface
                       }}
                     />
                     
@@ -557,7 +555,7 @@ export const MobileFriendProfilePage: React.FC = () => {
                             const provider = item.provider?.provider.find((p: any) => p.name === name);
                             return provider ? (
                               <div key={provider.id} style={{
-                                background: 'rgba(0, 0, 0, 0.6)',
+                                background: `${currentTheme.background.default}99`,
                                 backdropFilter: 'blur(8px)',
                                 border: '1px solid rgba(255, 255, 255, 0.1)',
                                 borderRadius: '8px',
@@ -590,7 +588,7 @@ export const MobileFriendProfilePage: React.FC = () => {
                         position: 'absolute',
                         top: '8px',
                         right: '8px',
-                        background: 'rgba(0, 0, 0, 0.8)',
+                        background: `${currentTheme.background.default}CC`,
                         backdropFilter: 'blur(10px)',
                         borderRadius: '8px',
                         padding: '6px 8px',
@@ -598,11 +596,11 @@ export const MobileFriendProfilePage: React.FC = () => {
                         alignItems: 'center',
                         gap: '4px'
                       }}>
-                        <Star style={{ fontSize: '16px', color: '#ffd700' }} />
+                        <Star style={{ fontSize: '16px', color: currentTheme.status.warning }} />
                         <span style={{
                           fontSize: '14px',
                           fontWeight: '600',
-                          color: 'white'
+                          color: currentTheme.text.primary
                         }}>
                           {rating.toFixed(1)}
                         </span>
@@ -617,7 +615,7 @@ export const MobileFriendProfilePage: React.FC = () => {
                         left: '0',
                         right: '0',
                         height: '4px',
-                        background: 'rgba(0, 0, 0, 0.5)',
+                        background: `${currentTheme.background.default}80`,
                         borderRadius: '0 0 8px 8px',
                         overflow: 'hidden'
                       }}>

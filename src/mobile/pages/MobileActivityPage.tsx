@@ -12,6 +12,7 @@ import { useAuth } from '../../App';
 import { FriendActivity } from '../../types/Friend';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface UserSearchResult {
   uid: string;
@@ -25,6 +26,7 @@ interface UserSearchResult {
 export const MobileActivityPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
+  const { currentTheme, getMobilePageStyle, getMobileHeaderStyle } = useTheme();
   const { 
     friends,
     friendRequests,
@@ -358,19 +360,17 @@ export const MobileActivityPage: React.FC = () => {
   
   return (
     <div style={{ 
-      height: '100dvh', 
-      background: '#000', 
-      color: 'white',
-      paddingBottom: '80px',
+      ...getMobilePageStyle(),
+      height: '100dvh',
       overflowY: 'auto',
       WebkitOverflowScrolling: 'touch'
     }}>
       {/* Header */}
       <header style={{
+        ...getMobileHeaderStyle('transparent'),
         padding: '20px',
         paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 100%)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        borderBottom: `1px solid ${currentTheme.border.default}`
       }}>
         <div style={{
           display: 'flex',
@@ -381,9 +381,9 @@ export const MobileActivityPage: React.FC = () => {
             <button
               onClick={() => navigate(-1)}
               style={{
-                background: 'rgba(255, 255, 255, 0.1)', 
+                background: currentTheme.background.surface, 
                 border: 'none', 
-                color: 'white', 
+                color: currentTheme.text.primary, 
                 fontSize: '20px',
                 cursor: 'pointer',
                 padding: '8px',
@@ -402,14 +402,14 @@ export const MobileActivityPage: React.FC = () => {
               fontSize: '32px', 
               fontWeight: 800,
               margin: 0,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: currentTheme.primary,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}>
               Aktivität
             </h1>
             <p style={{ 
-              color: 'rgba(255, 255, 255, 0.6)', 
+              color: currentTheme.text.secondary, 
               fontSize: '16px',
               margin: '4px 0 0 0'
             }}>
@@ -424,9 +424,9 @@ export const MobileActivityPage: React.FC = () => {
               width: '40px',
               height: '40px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: currentTheme.primary,
               border: 'none',
-              color: 'white',
+              color: 'white', // Always white text on primary background
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -451,13 +451,13 @@ export const MobileActivityPage: React.FC = () => {
             flex: 1,
             padding: '10px',
             background: activeTab === 'activity' 
-              ? 'rgba(102, 126, 234, 0.2)'
-              : 'rgba(255, 255, 255, 0.03)',
+              ? `${currentTheme.primary}33`
+              : currentTheme.background.surface,
             border: activeTab === 'activity'
-              ? '1px solid rgba(102, 126, 234, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? `1px solid ${currentTheme.primary}66`
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '8px',
-            color: 'white',
+            color: currentTheme.text.primary,
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -472,7 +472,7 @@ export const MobileActivityPage: React.FC = () => {
               right: '6px',
               width: '8px',
               height: '8px',
-              background: '#ff6b6b',
+              background: currentTheme.status.error,
               borderRadius: '50%'
             }} />
           )}
@@ -484,13 +484,13 @@ export const MobileActivityPage: React.FC = () => {
             flex: 1,
             padding: '10px',
             background: activeTab === 'friends' 
-              ? 'rgba(102, 126, 234, 0.2)'
-              : 'rgba(255, 255, 255, 0.03)',
+              ? `${currentTheme.primary}33`
+              : currentTheme.background.surface,
             border: activeTab === 'friends'
-              ? '1px solid rgba(102, 126, 234, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? `1px solid ${currentTheme.primary}66`
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '8px',
-            color: 'white',
+            color: currentTheme.text.primary,
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer'
@@ -505,13 +505,13 @@ export const MobileActivityPage: React.FC = () => {
             flex: 1,
             padding: '10px',
             background: activeTab === 'requests' 
-              ? 'rgba(102, 126, 234, 0.2)'
-              : 'rgba(255, 255, 255, 0.03)',
+              ? `${currentTheme.primary}33`
+              : currentTheme.background.surface,
             border: activeTab === 'requests'
-              ? '1px solid rgba(102, 126, 234, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? `1px solid ${currentTheme.primary}66`
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '8px',
-            color: 'white',
+            color: currentTheme.text.primary,
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -525,7 +525,7 @@ export const MobileActivityPage: React.FC = () => {
               top: '-4px',
               right: '-4px',
               padding: '2px 6px',
-              background: '#ff6b6b',
+              background: currentTheme.status.error,
               borderRadius: '10px',
               fontSize: '11px',
               fontWeight: 600
@@ -691,10 +691,10 @@ export const MobileActivityPage: React.FC = () => {
                   style={{
                     marginTop: '16px',
                     padding: '12px 24px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: currentTheme.primary,
                     border: 'none',
                     borderRadius: '8px',
-                    color: 'white',
+                    color: currentTheme.text.primary,
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer'
@@ -718,7 +718,7 @@ export const MobileActivityPage: React.FC = () => {
                     background: 'rgba(255, 255, 255, 0.03)',
                     border: '1px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: '8px',
-                    color: 'white',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     textAlign: 'left',
                     width: '100%'
@@ -1016,7 +1016,7 @@ export const MobileActivityPage: React.FC = () => {
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '8px',
-                color: 'white',
+                color: currentTheme.text.primary,
                 fontSize: '16px',
                 marginBottom: '20px',
                 outline: 'none'
@@ -1054,7 +1054,7 @@ export const MobileActivityPage: React.FC = () => {
                       background: 'rgba(255, 255, 255, 0.03)',
                       border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '8px',
-                      color: 'white',
+                      color: currentTheme.text.primary,
                       cursor: result.isAlreadyFriend || result.hasPendingRequest || addingFriend ? 'not-allowed' : 'pointer',
                       opacity: result.isAlreadyFriend || result.hasPendingRequest || addingFriend ? 0.5 : 1,
                       marginBottom: '8px',
@@ -1125,7 +1125,7 @@ export const MobileActivityPage: React.FC = () => {
                   background: 'rgba(255, 255, 255, 0.1)',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   fontSize: '16px',
                   fontWeight: 500,
                   cursor: 'pointer'
@@ -1139,10 +1139,10 @@ export const MobileActivityPage: React.FC = () => {
                 style={{
                   flex: 1,
                   padding: '12px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: currentTheme.primary,
                   border: 'none',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   fontSize: '16px',
                   fontWeight: 600,
                   cursor: addingFriend || !friendUsername.trim() ? 'not-allowed' : 'pointer',

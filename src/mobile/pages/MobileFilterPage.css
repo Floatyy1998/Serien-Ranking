@@ -1,7 +1,7 @@
 .mobile-filter-page {
   height: 100vh;
-  background: #000;
-  color: white;
+  background: var(--color-background-default);
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -12,21 +12,21 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: linear-gradient(to bottom, #111 0%, rgba(17, 17, 17, 0.95) 100%);
+  background: var(--color-background-default);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: calc(env(safe-area-inset-top) + 16px) 16px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .back-button,
 .reset-button {
   background: none;
   border: none;
-  color: white;
+  color: var(--color-text-primary);
   padding: 8px;
   display: flex;
   align-items: center;
@@ -36,7 +36,7 @@
 }
 
 .reset-button {
-  color: #ff6b6b;
+  color: var(--color-error);
 }
 
 .header-content {
@@ -54,7 +54,7 @@
 
 .filter-count {
   padding: 4px 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
@@ -75,10 +75,10 @@
 
 .section-tab {
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 20px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
@@ -88,7 +88,7 @@
 }
 
 .section-tab.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   border-color: transparent;
   color: white;
 }
@@ -105,7 +105,7 @@
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 20px 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
 }
 
 /* Type Filters */
@@ -117,10 +117,10 @@
 
 .type-button {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 2px solid var(--color-border-default);
   border-radius: 16px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -132,8 +132,8 @@
 
 .type-button.active {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border-color: #667eea;
-  color: white;
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .type-button svg {
@@ -154,10 +154,10 @@
 
 .filter-chip {
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 20px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -169,8 +169,8 @@
 
 .filter-chip.active {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border-color: #667eea;
-  color: white;
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .filter-chip svg {
@@ -180,7 +180,7 @@
 /* Range Filter */
 .range-filter {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-background-surface);
   border-radius: 16px;
 }
 
@@ -190,11 +190,11 @@
   align-items: center;
   margin-bottom: 24px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
 }
 
 .range-header svg {
-  color: #ffd700;
+  color: var(--color-warning);
 }
 
 .range-sliders {
@@ -208,7 +208,7 @@
   height: 6px;
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border-default);
   border-radius: 3px;
   outline: none;
 }
@@ -218,7 +218,7 @@
   appearance: none;
   width: 24px;
   height: 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   cursor: pointer;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
@@ -233,10 +233,10 @@
 
 .special-filter {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -248,8 +248,8 @@
 
 .special-filter.active {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border-color: #667eea;
-  color: white;
+  border-color: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .special-filter svg {
@@ -262,7 +262,7 @@
 
 .info-text {
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   font-size: 14px;
   margin-top: 40px;
 }
@@ -273,22 +273,22 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, #111 0%, rgba(17, 17, 17, 0.95) 100%);
+  background: var(--color-background-default);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--color-border-default);
   z-index: 100;
 }
 
 .apply-button {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   border: none;
   border-radius: 12px;
-  color: white;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -309,8 +309,8 @@
   position: absolute;
   right: 16px;
   padding: 2px 8px;
-  background: white;
-  color: #667eea;
+  background: var(--color-text-primary);
+  color: var(--color-primary);
   border-radius: 10px;
   font-size: 12px;
   font-weight: 700;

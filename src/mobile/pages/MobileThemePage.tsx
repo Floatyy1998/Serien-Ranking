@@ -4,7 +4,6 @@ import {
   ArrowBack,
   Palette,
   Image,
-  VideoLibrary,
   CloudOff,
   CloudSync,
   Refresh,
@@ -13,9 +12,10 @@ import {
   ColorLens,
   Wallpaper,
 } from '@mui/icons-material';
-import { LinearProgress, Slider } from '@mui/material';
+import { Slider } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { BackgroundImageFirebaseUpload } from '../../components/admin/BackgroundImageFirebaseUpload';
 import './MobileThemePage.css';
 
 const presetThemes = [
@@ -48,7 +48,6 @@ export const MobileThemePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'colors' | 'background' | 'sync'>('colors');
   const [selectedColor, setSelectedColor] = useState<string>('primaryColor');
   const [colorValue, setColorValue] = useState<string>(userConfig.primaryColor);
-  const [uploading, setUploading] = useState(false);
 
   // Update color value when theme or selected color changes
   useEffect(() => {
@@ -60,10 +59,7 @@ export const MobileThemePage: React.FC = () => {
     updateTheme({
       [selectedColor]: value,
     });
-    // Save theme automatically
-    setTimeout(() => {
-      saveTheme();
-    }, 100);
+    // Theme wird jetzt automatisch in updateTheme gespeichert
   };
 
   const applyPresetTheme = (preset: typeof presetThemes[0]) => {
@@ -74,30 +70,7 @@ export const MobileThemePage: React.FC = () => {
       surfaceColor: preset.surfaceColor,
       accentColor: preset.accentColor,
     });
-    // Save theme automatically
-    setTimeout(() => {
-      saveTheme();
-    }, 100);
-  };
-
-  const handleBackgroundUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      // Upload logic would go here
-      // For now, just simulate upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Update theme with new background
-      // updateTheme({ backgroundMedia: { url: uploadedUrl, type: file.type.startsWith('video') ? 'video' : 'image' } });
-      
-    } catch (error) {
-      console.error('Upload failed:', error);
-    } finally {
-      setUploading(false);
-    }
+    // Theme wird jetzt automatisch in updateTheme gespeichert
   };
 
   const handleResetTheme = () => {
@@ -245,35 +218,26 @@ export const MobileThemePage: React.FC = () => {
               {/* Background Upload */}
               <div className="section">
                 <h3>Hintergrund Media</h3>
-                <div className="upload-area">
-                  <input
-                    type="file"
-                    accept="image/*,video/*"
-                    onChange={handleBackgroundUpload}
-                    className="file-input"
-                    id="background-upload"
-                    disabled={uploading}
-                  />
-                  <label htmlFor="background-upload" className="upload-button">
-                    {uploading ? (
-                      <>
-                        <div className="upload-progress">
-                          <LinearProgress />
-                        </div>
-                        <span>Uploading...</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="upload-icons">
-                          <Image />
-                          <VideoLibrary />
-                        </div>
-                        <span>Bild oder Video hochladen</span>
-                        <p>JPG, PNG, MP4, WebM</p>
-                      </>
-                    )}
-                  </label>
-                </div>
+                <BackgroundImageFirebaseUpload 
+                  backgroundImage={userConfig.backgroundImage}
+                  backgroundImageOpacity={userConfig.backgroundImageOpacity || 0.1}
+                  backgroundImageBlur={userConfig.backgroundImageBlur || 0}
+                  primaryColor={userConfig.primaryColor}
+                  surfaceColor={userConfig.primaryColor}
+                  onImageChange={(url) => {
+                    updateTheme({ 
+                      backgroundImage: url,
+                      backgroundIsVideo: false // BackgroundImageFirebaseUpload unterstützt nur Bilder
+                    });
+                  }}
+                  onOpacityChange={(opacity) => {
+                    updateTheme({ backgroundImageOpacity: opacity });
+                  }}
+                  onBlurChange={(blur) => {
+                    updateTheme({ backgroundImageBlur: blur });
+                  }}
+                  isVideo={userConfig.backgroundIsVideo}
+                />
 
                 {/* Current Background */}
                 {userConfig.backgroundImage && (

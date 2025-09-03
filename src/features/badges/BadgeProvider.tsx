@@ -15,6 +15,7 @@ interface BadgeContextType {
   showBadgeOverview: () => void;
   newBadges: EarnedBadge[];
   clearNewBadges: () => void;
+  unreadBadgesCount: number;
 }
 
 const BadgeContext = createContext<BadgeContextType | null>(null);
@@ -165,6 +166,7 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
     showBadgeOverview,
     newBadges,
     clearNewBadges,
+    unreadBadgesCount: newBadges.length,
   };
 
   return (
