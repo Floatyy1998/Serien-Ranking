@@ -1,20 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowBack, Settings, Palette, Notifications, 
-  Security, Help, Info, Logout, Storage,
-  CloudSync, Language, DarkMode, VolumeUp,
-  Vibration, AutoAwesome, Update
+  ArrowBack, Palette, Logout, Share, Edit, PhotoCamera
 } from '@mui/icons-material';
 import { useAuth } from '../../App';
 import firebase from 'firebase/compat/app';
+import 'firebase/compat/storage';
+import 'firebase/compat/database';
 
 export const MobileSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const [notifications, setNotifications] = useState(true);
-  const [vibration, setVibration] = useState(true);
-  const [autoSync, setAutoSync] = useState(true);
+  
+  const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [usernameEditable, setUsernameEditable] = useState(false);
+  const [displayNameEditable, setDisplayNameEditable] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadUserData = async () => {
+      try {
+        const userRef = firebase.database().ref(`users/${user.uid}`);
+        const snapshot = await userRef.once('value');
+        const userData = snapshot.val();
+        
+        if (userData) {
+          setUsername(userData.username || '');
+          setDisplayName(userData.displayName || user.displayName || '');
+          setPhotoURL(userData.photoURL || user.photoURL || '');
+        } else {
+          setUsername('');
+          setDisplayName(user.displayName || '');
+          setPhotoURL(user.photoURL || '');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+
+    loadUserData();
+  }, [user]);
 
   const handleLogout = async () => {
     if (window.confirm('Möchtest du dich wirklich abmelden?')) {
@@ -27,112 +58,83 @@ export const MobileSettingsPage: React.FC = () => {
     }
   };
 
-  const settingsGroups = [
-    {
-      title: 'Darstellung',
-      items: [
-        {
-          icon: <Palette style={{ fontSize: '20px' }} />,
-          title: 'Design & Themes',
-          subtitle: 'Farben, Hintergrund anpassen',
-          onClick: () => navigate('/theme')
-        },
-        {
-          icon: <DarkMode style={{ fontSize: '20px' }} />,
-          title: 'Dark Mode',
-          subtitle: 'Automatisch aktiviert',
-          disabled: true
-        }
-      ]
-    },
-    {
-      title: 'Benachrichtigungen',
-      items: [
-        {
-          icon: <Notifications style={{ fontSize: '20px' }} />,
-          title: 'Push-Benachrichtigungen',
-          subtitle: notifications ? 'Aktiviert' : 'Deaktiviert',
-          toggle: true,
-          value: notifications,
-          onChange: setNotifications
-        },
-        {
-          icon: <Vibration style={{ fontSize: '20px' }} />,
-          title: 'Vibration',
-          subtitle: vibration ? 'Aktiviert' : 'Deaktiviert',
-          toggle: true,
-          value: vibration,
-          onChange: setVibration
-        }
-      ]
-    },
-    {
-      title: 'Daten & Sync',
-      items: [
-        {
-          icon: <CloudSync style={{ fontSize: '20px' }} />,
-          title: 'Automatische Synchronisation',
-          subtitle: autoSync ? 'Aktiviert' : 'Deaktiviert',
-          toggle: true,
-          value: autoSync,
-          onChange: setAutoSync
-        },
-        {
-          icon: <Storage style={{ fontSize: '20px' }} />,
-          title: 'Speicher verwalten',
-          subtitle: 'Cache leeren, Offline-Daten',
-          onClick: () => console.log('Storage management')
-        }
-      ]
-    },
-    {
-      title: 'Konto',
-      items: [
-        {
-          icon: <Security style={{ fontSize: '20px' }} />,
-          title: 'Privatsphäre & Sicherheit',
-          subtitle: 'Passwort, 2FA, Datenschutz',
-          onClick: () => console.log('Security settings')
-        },
-        {
-          icon: <Language style={{ fontSize: '20px' }} />,
-          title: 'Sprache',
-          subtitle: 'Deutsch',
-          disabled: true
-        }
-      ]
-    },
-    {
-      title: 'Support',
-      items: [
-        {
-          icon: <Help style={{ fontSize: '20px' }} />,
-          title: 'Hilfe & FAQ',
-          subtitle: 'Häufige Fragen, Support kontaktieren',
-          onClick: () => console.log('Help')
-        },
-        {
-          icon: <Info style={{ fontSize: '20px' }} />,
-          title: 'Über TV-RANK',
-          subtitle: 'Version, Lizenzen, Impressum',
-          onClick: () => console.log('About')
-        },
-        {
-          icon: <Update style={{ fontSize: '20px' }} />,
-          title: 'Updates',
-          subtitle: 'App-Version, Changelog',
-          onClick: () => console.log('Updates')
-        }
-      ]
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Bild darf maximal 5MB groß sein');
+      return;
     }
-  ];
+
+    try {
+      setUploading(true);
+      
+      const storageRef = firebase.storage().ref();
+      const imageRef = storageRef.child(`profile-images/${user.uid}`);
+      
+      await imageRef.put(file);
+      const downloadURL = await imageRef.getDownloadURL();
+      
+      await user.updateProfile({ photoURL: downloadURL });
+      await firebase.database().ref(`users/${user.uid}/photoURL`).set(downloadURL);
+      await user.reload();
+      
+      setPhotoURL(downloadURL);
+      alert('Profilbild erfolgreich hochgeladen!');
+    } catch (error) {
+      alert('Fehler beim Hochladen des Bildes');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const saveUsername = async () => {
+    if (!user || !username.trim()) return;
+    
+    try {
+      setSaving(true);
+      await firebase.database().ref(`users/${user.uid}/username`).set(username);
+      setUsernameEditable(false);
+      alert('Benutzername gespeichert!');
+    } catch (error) {
+      alert('Fehler beim Speichern des Benutzernamens');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveDisplayName = async () => {
+    if (!user || !displayName.trim()) return;
+    
+    try {
+      setSaving(true);
+      await user.updateProfile({ displayName: displayName });
+      await firebase.database().ref(`users/${user.uid}/displayName`).set(displayName);
+      await user.reload();
+      setDisplayNameEditable(false);
+      alert('Anzeigename gespeichert!');
+    } catch (error) {
+      alert('Fehler beim Speichern des Anzeigenamens');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const generatePublicLink = () => {
+    const link = `${window.location.origin}/public/${user?.uid}`;
+    navigator.clipboard.writeText(link);
+    alert('Link kopiert!');
+  };
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      height: '100dvh', 
       background: '#000', 
       color: 'white',
-      paddingBottom: '80px'
+      paddingBottom: '80px',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch'
     }}>
       {/* Header */}
       <header style={{
@@ -177,160 +179,394 @@ export const MobileSettingsPage: React.FC = () => {
               fontSize: '14px',
               margin: '4px 0 0 0'
             }}>
-              App-Einstellungen verwalten
+              {user?.displayName || user?.email}
             </p>
           </div>
         </div>
       </header>
-
-      {/* User Info */}
-      <div style={{
-        padding: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        background: 'rgba(255, 255, 255, 0.02)',
-        margin: '0 20px',
-        borderRadius: '12px'
-      }}>
+      
+      {/* Profile Section */}
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Profile Picture */}
         <div style={{
-          width: '50px',
-          height: '50px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center'
+          padding: '20px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '16px',
+          gap: '16px'
         }}>
-          <Settings style={{ fontSize: '24px' }} />
-        </div>
-        <div>
-          <h3 style={{ fontSize: '16px', margin: '0 0 4px 0' }}>
-            {user?.displayName || 'User'}
-          </h3>
+          <div style={{ position: 'relative' }}>
+{photoURL ? (
+              <img 
+                src={photoURL} 
+                alt="Profile" 
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  objectFit: 'cover'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: 'white'
+              }}>
+                {user?.displayName?.[0] || user?.email?.[0] || 'U'}
+              </div>
+            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              style={{
+                position: 'absolute',
+                bottom: '0',
+                right: '0',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: '2px solid #000',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              {uploading ? '⏳' : <PhotoCamera style={{ fontSize: '16px' }} />}
+            </button>
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            style={{ display: 'none' }}
+          />
           <p style={{ 
-            fontSize: '14px', 
-            color: 'rgba(255, 255, 255, 0.5)',
-            margin: 0 
+            color: 'rgba(255, 255, 255, 0.6)', 
+            fontSize: '14px',
+            margin: 0,
+            textAlign: 'center'
           }}>
-            {user?.email}
+            Tippe auf die Kamera um ein neues Profilbild hochzuladen
           </p>
         </div>
-      </div>
-      
-      {/* Settings Groups */}
-      <div style={{ padding: '20px' }}>
-        {settingsGroups.map((group, groupIndex) => (
-          <div key={group.title} style={{ marginBottom: '32px' }}>
-            <h3 style={{
-              fontSize: '14px',
-              fontWeight: 600,
-              color: 'rgba(255, 255, 255, 0.7)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginBottom: '12px',
-              marginTop: groupIndex > 0 ? '24px' : 0
-            }}>
-              {group.title}
+
+        {/* Username */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '20px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '16px'
+        }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 8px 0', color: 'white' }}>
+              Benutzername
             </h3>
-            
-            {group.items.map((item, itemIndex) => (
-              <div
-                key={item.title}
-                onClick={item.disabled ? undefined : item.onClick}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '16px',
-                  background: item.disabled 
-                    ? 'rgba(255, 255, 255, 0.02)'
-                    : 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '12px',
-                  marginBottom: '8px',
-                  cursor: item.disabled ? 'not-allowed' : 'pointer',
-                  opacity: item.disabled ? 0.5 : 1,
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ color: '#667eea' }}>
-                    {item.icon}
-                  </div>
-                  <div>
-                    <h4 style={{ 
-                      fontSize: '16px', 
-                      fontWeight: 500,
-                      margin: '0 0 2px 0'
-                    }}>
-                      {item.title}
-                    </h4>
-                    <p style={{ 
-                      fontSize: '13px', 
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      margin: 0
-                    }}>
-                      {item.subtitle}
-                    </p>
-                  </div>
-                </div>
-                
-                {item.toggle && (
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      item.onChange?.(!item.value);
-                    }}
-                    style={{
-                      width: '44px',
-                      height: '24px',
-                      borderRadius: '12px',
-                      background: item.value ? '#00d4aa' : 'rgba(255, 255, 255, 0.2)',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      transition: 'background 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      borderRadius: '50%',
-                      background: 'white',
-                      position: 'absolute',
-                      top: '2px',
-                      left: item.value ? '22px' : '2px',
-                      transition: 'left 0.2s ease'
-                    }} />
-                  </div>
-                )}
+            {usernameEditable ? (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    color: 'white',
+                    fontSize: '14px'
+                  }}
+                  placeholder="Benutzername eingeben"
+                />
+                <button
+                  onClick={saveUsername}
+                  disabled={saving}
+                  style={{
+                    background: '#4CAF50',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: 'white',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {saving ? '...' : '✓'}
+                </button>
+                <button
+                  onClick={() => setUsernameEditable(false)}
+                  style={{
+                    background: '#f44336',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: 'white',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕
+                </button>
               </div>
-            ))}
+            ) : (
+              <p style={{ 
+                fontSize: '14px', 
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0
+              }}>
+                {username || 'Kein Benutzername festgelegt'}
+              </p>
+            )}
           </div>
-        ))}
-        
-        {/* Logout Button */}
+          {!usernameEditable && (
+            <button
+              onClick={() => setUsernameEditable(true)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.6)',
+                cursor: 'pointer',
+                padding: '8px'
+              }}
+            >
+              <Edit style={{ fontSize: '20px' }} />
+            </button>
+          )}
+        </div>
+
+        {/* Display Name */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '20px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '16px'
+        }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 8px 0', color: 'white' }}>
+              Anzeigename
+            </h3>
+            {displayNameEditable ? (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    color: 'white',
+                    fontSize: '14px'
+                  }}
+                  placeholder="Anzeigename eingeben"
+                />
+                <button
+                  onClick={saveDisplayName}
+                  disabled={saving}
+                  style={{
+                    background: '#4CAF50',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: 'white',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {saving ? '...' : '✓'}
+                </button>
+                <button
+                  onClick={() => setDisplayNameEditable(false)}
+                  style={{
+                    background: '#f44336',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: 'white',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <p style={{ 
+                fontSize: '14px', 
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0
+              }}>
+                {displayName || 'Kein Anzeigename festgelegt'}
+              </p>
+            )}
+          </div>
+          {!displayNameEditable && (
+            <button
+              onClick={() => setDisplayNameEditable(true)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.6)',
+                cursor: 'pointer',
+                padding: '8px'
+              }}
+            >
+              <Edit style={{ fontSize: '20px' }} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Settings Items */}
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {/* Theme Settings */}
+        <button
+          onClick={() => navigate('/theme')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '20px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
+            color: 'white',
+            fontSize: '16px',
+            cursor: 'pointer',
+            textAlign: 'left'
+          }}
+        >
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Palette style={{ fontSize: '24px' }} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
+              Design & Themes
+            </h3>
+            <p style={{ 
+              fontSize: '14px', 
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: '2px 0 0 0'
+            }}>
+              Farben und Aussehen anpassen
+            </p>
+          </div>
+        </button>
+
+        {/* Public Link */}
+        <button
+          onClick={generatePublicLink}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '20px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
+            color: 'white',
+            fontSize: '16px',
+            cursor: 'pointer',
+            textAlign: 'left'
+          }}
+        >
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Share style={{ fontSize: '24px' }} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
+              Öffentlichen Link kopieren
+            </h3>
+            <p style={{ 
+              fontSize: '14px', 
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: '2px 0 0 0'
+            }}>
+              Teile deine Liste mit anderen
+            </p>
+          </div>
+        </button>
+
+        {/* Logout */}
         <button
           onClick={handleLogout}
           style={{
-            width: '100%',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            padding: '16px',
+            gap: '16px',
+            padding: '20px',
             background: 'rgba(255, 107, 107, 0.1)',
             border: '1px solid rgba(255, 107, 107, 0.3)',
-            borderRadius: '12px',
+            borderRadius: '16px',
             color: '#ff6b6b',
             fontSize: '16px',
-            fontWeight: 600,
             cursor: 'pointer',
-            marginTop: '24px'
+            textAlign: 'left',
+            marginTop: '20px'
           }}
         >
-          <Logout style={{ fontSize: '20px' }} />
-          Abmelden
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            background: 'rgba(255, 107, 107, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Logout style={{ fontSize: '24px' }} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
+              Abmelden
+            </h3>
+            <p style={{ 
+              fontSize: '14px', 
+              color: 'rgba(255, 107, 107, 0.8)',
+              margin: '2px 0 0 0'
+            }}>
+              Von diesem Gerät abmelden
+            </p>
+          </div>
         </button>
       </div>
     </div>

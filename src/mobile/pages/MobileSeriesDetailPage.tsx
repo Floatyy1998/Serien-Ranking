@@ -9,6 +9,7 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
+import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { Series } from '../../types/Series';
 import { MobileProviderBadges } from '../components/MobileProviderBadges';
 import { MobileCastCrew } from '../components/MobileCastCrew';
@@ -55,17 +56,35 @@ export const MobileSeriesDetailPage: React.FC = () => {
               id: data.id,
               nmr: 0, // No nmr for non-user series
               title: data.name,
+              name: data.name,
               poster: { poster: data.poster_path },
-              backdrop: data.backdrop_path,
-              overview: data.overview,
               genre: { genres: data.genres?.map((g: any) => g.name) || [] },
               provider: { provider: [] },
-              cast: data.credits?.cast || [],
               seasons: data.seasons || [],
               first_air_date: data.first_air_date,
               status: data.status,
-              rating: null,
-              watchlist: false
+              rating: {},
+              watchlist: false,
+              overview: data.overview,
+              backdrop: data.backdrop_path,
+              // Required fields with defaults
+              begründung: '',
+              beschreibung: data.overview || '',
+              episodeCount: 0,
+              episodeRuntime: 0,
+              imdb: { imdb_id: '' },
+              nextEpisode: { episode: 0, nextEpisode: '', nextEpisodes: [], season: 0 },
+              origin_country: data.origin_country || [],
+              original_language: data.original_language || '',
+              original_name: data.original_name || data.name || '',
+              popularity: data.popularity || 0,
+              vote_average: data.vote_average || 0,
+              vote_count: data.vote_count || 0,
+              seasonCount: data.seasons?.length || 0,
+              tvMaze: { tvMazeID: 0 },
+              watchtime: 0,
+              wo: { wo: '' },
+              release_date: data.first_air_date || ''
             };
             setTmdbSeries(series);
           }
@@ -80,6 +99,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
   
   // Check if this is a TMDB-only series (not in user's list)
   const isReadOnlyTmdbSeries = !localSeries && !!tmdbSeries;
+  const [isAdding, setIsAdding] = useState(false);
 
   // Get TMDB image URL - following TmdbDialog pattern
   const getImageUrl = (posterObj: any): string => {
@@ -96,22 +116,33 @@ export const MobileSeriesDetailPage: React.FC = () => {
     return series.rating[user.uid] || 0;
   }, [series, user]);
 
-  // Calculate progress statistics
+  // Calculate progress statistics - only count aired episodes
   const progressStats = useMemo(() => {
     if (!series?.seasons) return { watched: 0, total: 0, percentage: 0 };
     
-    const watched = series.seasons.reduce((acc, season) => 
-      acc + (season.episodes?.filter(ep => ep.watched).length || 0), 0
-    );
+    const today = new Date();
+    let watchedCount = 0;
+    let airedCount = 0;
     
-    const total = series.seasons.reduce((acc, season) => 
-      acc + (season.episodes?.length || 0), 0
-    );
+    series.seasons.forEach(season => {
+      season.episodes?.forEach(episode => {
+        // Only count episodes that have aired
+        if (episode.air_date) {
+          const airDate = new Date(episode.air_date);
+          if (airDate <= today) {
+            airedCount++;
+            if (episode.watched === true) {
+              watchedCount++;
+            }
+          }
+        }
+      });
+    });
     
     return {
-      watched,
-      total,
-      percentage: total > 0 ? Math.round((watched / total) * 100) : 0
+      watched: watchedCount,
+      total: airedCount, // Only show aired episodes in total
+      percentage: airedCount > 0 ? Math.round((watchedCount / airedCount) * 100) : 0
     };
   }, [series]);
 
@@ -126,6 +157,72 @@ export const MobileSeriesDetailPage: React.FC = () => {
     setExpandedSeasons(newExpanded);
   };
 
+  // Handle episode toggle
+  const handleEpisodeToggle = async (seasonNumber: number, episodeNumber: number, currentWatched: boolean, currentWatchCount?: number) => {
+    if (!series || !user || isReadOnlyTmdbSeries) return;
+    
+    try {
+      const episodePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonNumber - 1}/episodes/${episodeNumber - 1}`;
+      
+      if (!currentWatched) {
+        // Mark as watched
+        await firebase.database().ref(`${episodePath}/watched`).set(true);
+        await firebase.database().ref(`${episodePath}/firstWatchedAt`).set(Date.now());
+        await firebase.database().ref(`${episodePath}/watchCount`).set(1);
+      } else {
+        // Toggle rewatch count
+        const newWatchCount = (currentWatchCount || 1) + 1;
+        await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
+      }
+    } catch (error) {
+      console.error('Error toggling episode:', error);
+    }
+  };
+
+  // Handle adding series
+  const handleAddSeries = async () => {
+    if (!series || !user) return;
+    
+    setIsAdding(true);
+    try {
+      const response = await fetch('https://serienapi.konrad-dinges.de/add', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: import.meta.env.VITE_USER,
+          id: series.id,
+          uuid: user.uid,
+        }),
+      });
+      
+      if (response.ok) {
+        // Activity-Logging für Friend + Badge-System (wie Desktop)
+        await logSeriesAdded(
+          user.uid,
+          series.name || series.title || 'Unbekannte Serie',
+          series.id
+        );
+        
+        alert('Serie erfolgreich hinzugefügt!');
+        // Reload page to show the series from user's list
+        window.location.reload();
+      } else {
+        const data = await response.json();
+        if (data.error === 'Serie bereits vorhanden') {
+          alert('Serie ist bereits in deiner Liste!');
+        } else {
+          throw new Error('Fehler beim Hinzufügen');
+        }
+      }
+    } catch (error) {
+      console.error('Error adding series:', error);
+      alert('Fehler beim Hinzufügen der Serie.');
+    } finally {
+      setIsAdding(false);
+    }
+  };
+  
   // Handle series deletion - using Firebase directly
   const handleDeleteSeries = async () => {
     if (!series || !user || !window.confirm('Möchtest du diese Serie wirklich löschen?')) return;
@@ -172,20 +269,22 @@ export const MobileSeriesDetailPage: React.FC = () => {
     if (!series || !user) return;
     
     try {
-      const response = await fetch('https://serienapi.konrad-dinges.de/episode/rewatch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: import.meta.env.VITE_USER,
-          seriesId: series.id,
-          episodeId: episode.id,
-          uuid: user.uid,
-        }),
-      });
+      // Find the season and episode indices
+      const seasonIndex = series.seasons?.findIndex((s: any) => 
+        s.episodes?.some((e: any) => e.id === episode.id)
+      );
+      const episodeIndex = series.seasons?.[seasonIndex]?.episodes?.findIndex(
+        (e: any) => e.id === episode.id
+      );
       
-      if (!response.ok) {
-        throw new Error('Failed to rewatch episode');
+      if (seasonIndex === -1 || episodeIndex === -1) {
+        throw new Error('Episode not found');
       }
+      
+      const episodePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      const newWatchCount = (episode.watchCount || 1) + 1;
+      
+      await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
       
       setShowRewatchDialog({show: false, type: 'episode', item: null});
     } catch (error) {
@@ -199,25 +298,35 @@ export const MobileSeriesDetailPage: React.FC = () => {
     if (!series || !user) return;
     
     try {
-      const response = await fetch('https://serienapi.konrad-dinges.de/episode/unwatch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: import.meta.env.VITE_USER,
-          seriesId: series.id,
-          episodeId: episode.id,
-          uuid: user.uid,
-        }),
-      });
+      // Find the season and episode indices
+      const seasonIndex = series.seasons?.findIndex((s: any) => 
+        s.episodes?.some((e: any) => e.id === episode.id)
+      );
+      const episodeIndex = series.seasons?.[seasonIndex]?.episodes?.findIndex(
+        (e: any) => e.id === episode.id
+      );
       
-      if (!response.ok) {
-        throw new Error('Failed to unwatch episode');
+      if (seasonIndex === -1 || episodeIndex === -1) {
+        throw new Error('Episode not found');
+      }
+      
+      const episodePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      
+      if (episode.watchCount && episode.watchCount > 1) {
+        // Reduce watch count
+        const newWatchCount = episode.watchCount - 1;
+        await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
+      } else {
+        // Mark as unwatched completely
+        await firebase.database().ref(`${episodePath}/watched`).remove();
+        await firebase.database().ref(`${episodePath}/watchCount`).remove();
+        await firebase.database().ref(`${episodePath}/firstWatchedAt`).remove();
       }
       
       setShowRewatchDialog({show: false, type: 'episode', item: null});
     } catch (error) {
       console.error('Error unwatching episode:', error);
-      alert('Fehler beim Unwatch der Episode.');
+      alert('Fehler beim Markieren als nicht gesehen.');
     }
   };
 
@@ -336,6 +445,34 @@ export const MobileSeriesDetailPage: React.FC = () => {
         >
           <ArrowBack />
         </button>
+
+        {/* Add button for TMDB-only series */}
+        {isReadOnlyTmdbSeries && (
+          <button
+            onClick={handleAddSeries}
+            disabled={isAdding}
+            style={{
+              position: 'absolute',
+              top: 'calc(20px + env(safe-area-inset-top))',
+              right: '20px',
+              background: isAdding ? 'rgba(0, 212, 170, 0.5)' : 'rgba(0, 212, 170, 0.8)',
+              backdropFilter: 'blur(10px)',
+              border: 'none',
+              color: 'white',
+              fontSize: '24px',
+              cursor: isAdding ? 'not-allowed' : 'pointer',
+              padding: '8px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px'
+            }}
+          >
+            {isAdding ? '...' : '+'}
+          </button>
+        )}
 
         {/* Series Info Overlay */}
         <div style={{
@@ -694,21 +831,56 @@ export const MobileSeriesDetailPage: React.FC = () => {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                              <div style={{
-                                width: '24px',
-                                height: '24px',
-                                borderRadius: '50%',
-                                background: episode.watched 
-                                  ? '#00d4aa' 
-                                  : 'rgba(255, 255, 255, 0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '10px',
-                                fontWeight: '600'
-                              }}>
-                                {episode.watched ? <Check style={{ fontSize: '12px' }} /> : episodeIndex + 1}
-                              </div>
+                              <button
+                                onClick={() => handleEpisodeToggle(
+                                  season.season_number || season.seasonNumber,
+                                  episode.episode_number || 0,
+                                  episode.watched || false,
+                                  episode.watchCount
+                                )}
+                                disabled={isReadOnlyTmdbSeries}
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  borderRadius: '50%',
+                                  background: episode.watched 
+                                    ? '#00d4aa' 
+                                    : 'rgba(255, 255, 255, 0.1)',
+                                  border: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '10px',
+                                  fontWeight: '600',
+                                  color: 'white',
+                                  cursor: isReadOnlyTmdbSeries ? 'default' : 'pointer',
+                                  position: 'relative'
+                                }}
+                              >
+                                {episode.watched ? (
+                                  <>
+                                    <Check style={{ fontSize: '12px' }} />
+                                    {episode.watchCount && episode.watchCount > 1 && (
+                                      <span style={{
+                                        position: 'absolute',
+                                        top: '-4px',
+                                        right: '-4px',
+                                        background: '#ff6b6b',
+                                        borderRadius: '50%',
+                                        width: '14px',
+                                        height: '14px',
+                                        fontSize: '9px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: '700'
+                                      }}>
+                                        {episode.watchCount}
+                                      </span>
+                                    )}
+                                  </>
+                                ) : episodeIndex + 1}
+                              </button>
                               
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ 
@@ -833,6 +1005,36 @@ export const MobileSeriesDetailPage: React.FC = () => {
           >
             <Delete />
             {isDeleting ? 'Wird gelöscht...' : 'Serie löschen'}
+          </motion.button>
+        </div>
+      )}
+
+      {/* Add Button - only for TMDB series not in user's list */}
+      {isReadOnlyTmdbSeries && (
+        <div style={{ padding: '20px', paddingBottom: '100px' }}>
+          <motion.button
+            onClick={handleAddSeries}
+            disabled={isAdding}
+            whileHover={{ scale: isAdding ? 1 : 1.02 }}
+            whileTap={{ scale: isAdding ? 1 : 0.98 }}
+            style={{
+              width: '100%',
+              padding: '16px',
+              background: 'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
+              border: '1px solid rgba(0, 212, 170, 0.5)',
+              borderRadius: '12px',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: isAdding ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              opacity: isAdding ? 0.6 : 1
+            }}
+          >
+            {isAdding ? 'Wird hinzugefügt...' : 'Serie hinzufügen'}
           </motion.button>
         </div>
       )}

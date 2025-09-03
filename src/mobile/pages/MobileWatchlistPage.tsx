@@ -1,24 +1,22 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Add, Movie, FilterList,
+  Add, FilterList,
   DragHandle, ArrowUpward, ArrowDownward,
   Tv, Star, Schedule, CheckCircle, Repeat,
   ExpandMore, ExpandLess
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
 import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
+import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 
 export const MobileWatchlistPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { movieList } = useMovieList();
   
-  const [activeTab, setActiveTab] = useState<'series'>('series');
   const [filterInput, setFilterInput] = useState('');
   const [sortOption, setSortOption] = useState('name-asc');
   const [showFilter, setShowFilter] = useState(false);
@@ -27,6 +25,9 @@ export const MobileWatchlistPage: React.FC = () => {
     localStorage.getItem('customOrderActive') === 'true'
   );
   const [showRewatches, setShowRewatches] = useState(false);
+  const [hideRewatches, setHideRewatches] = useState(
+    localStorage.getItem('hideRewatches') === 'true'
+  );
   
   // Load watchlist order from Firebase
   useEffect(() => {
@@ -72,6 +73,11 @@ export const MobileWatchlistPage: React.FC = () => {
       // FIRST: Only show series in watchlist
       if (!series.watchlist) return false;
       
+      // Filter out rewatches if hideRewatches is enabled
+      if (hideRewatches && hasActiveRewatch(series)) {
+        return false;
+      }
+      
       // THEN: Filter by search input
       if (filterInput) {
         const searchTerm = filterInput.toLowerCase();
@@ -109,7 +115,7 @@ export const MobileWatchlistPage: React.FC = () => {
     }
     
     return filtered;
-  }, [seriesList, filterInput, sortOption, customOrderActive, watchlistOrder]);
+  }, [seriesList, filterInput, sortOption, customOrderActive, watchlistOrder, hideRewatches]);
   
   // Get series with next episodes
   const seriesWithNextEpisodes = useMemo(() => {
@@ -121,47 +127,6 @@ export const MobileWatchlistPage: React.FC = () => {
       .filter(item => item.nextEpisode !== null)
       .slice(0, 5); // Show max 5 next episodes
   }, [filteredSeries]);
-  
-  // Filter movies - ONLY WATCHLIST MOVIES (not watched)  
-  const filteredMovies = useMemo(() => {
-    let filtered = movieList.filter(movie => {
-      // FIRST: Only show movies in watchlist (not watched yet)
-      const userRating = user?.uid && movie.rating ? (movie.rating[user.uid] || 0) : 0;
-      if (userRating > 0) return false; // Don't show watched movies
-      
-      // Check if movie is explicitly in watchlist or just unwatched
-      // For now, we consider all unwatched movies as watchlist candidates
-      
-      // THEN: Filter by search input
-      if (filterInput) {
-        const searchTerm = filterInput.toLowerCase();
-        return movie.title?.toLowerCase().includes(searchTerm);
-      }
-      return true;
-    });
-    
-    // Sort movies
-    filtered.sort((a, b) => {
-      switch (sortOption) {
-        case 'name-asc':
-          return (a.title || '').localeCompare(b.title || '');
-        case 'name-desc':
-          return (b.title || '').localeCompare(a.title || '');
-        case 'rating-desc':
-          return ((user?.uid ? (b.rating?.[user.uid] || 0) : 0) || 0) - ((user?.uid ? (a.rating?.[user.uid] || 0) : 0) || 0);
-        case 'rating-asc':
-          return ((user?.uid ? (a.rating?.[user.uid] || 0) : 0) || 0) - ((user?.uid ? (b.rating?.[user.uid] || 0) : 0) || 0);
-        case 'year-desc':
-          return parseInt(b.release_date?.split('-')[0] || '0') - parseInt(a.release_date?.split('-')[0] || '0');
-        case 'year-asc':
-          return parseInt(a.release_date?.split('-')[0] || '0') - parseInt(b.release_date?.split('-')[0] || '0');
-        default:
-          return 0;
-      }
-    });
-    
-    return filtered;
-  }, [movieList, filterInput, sortOption]);
   
   // Move series up/down in custom order
   const moveSeriesInOrder = async (seriesId: number, direction: 'up' | 'down') => {
@@ -184,28 +149,52 @@ export const MobileWatchlistPage: React.FC = () => {
     }
   };
   
-  // Calculate series progress
+  // Calculate series progress - only count aired episodes
   const getSeriesProgress = (series: Series) => {
     if (!series.seasons) return 0;
     
-    let totalEpisodes = 0;
+    const today = new Date();
+    let totalAiredEpisodes = 0;
     let watchedEpisodes = 0;
     
     series.seasons.forEach(season => {
       if (season.episodes) {
-        totalEpisodes += season.episodes.length;
-        watchedEpisodes += season.episodes.filter(ep => ep.watched).length;
+        season.episodes.forEach(ep => {
+          // Only count episodes that have aired
+          if (ep.air_date) {
+            const airDate = new Date(ep.air_date);
+            if (airDate <= today) {
+              totalAiredEpisodes++;
+              if (ep.watched === true) {
+                watchedEpisodes++;
+              }
+            }
+          }
+        });
       }
     });
     
-    return totalEpisodes > 0 ? (watchedEpisodes / totalEpisodes) * 100 : 0;
+    return totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
   };
   
-  // Rewatches temporarily disabled - complex system needs proper implementation
-  const seriesWithRewatches = useMemo(() => [], []);
-  
-  // Movies rewatches disabled for now - movies don't have proper rewatch tracking
-  const moviesWithRewatches = useMemo(() => [], []);
+  // Calculate series with rewatches
+  const seriesWithRewatches = useMemo(() => {
+    return seriesList
+      .filter(series => series.watchlist && hasActiveRewatch(series))
+      .map(series => {
+        let totalRewatches = 0;
+        series.seasons?.forEach(season => {
+          season.episodes?.forEach(episode => {
+            if (episode.watchCount && episode.watchCount > 1) {
+              totalRewatches += (episode.watchCount - 1);
+            }
+          });
+        });
+        return { series, totalRewatches };
+      })
+      .filter(item => item.totalRewatches > 0)
+      .sort((a, b) => b.totalRewatches - a.totalRewatches);
+  }, [seriesList]);
   
   return (
     <div style={{ 
@@ -215,31 +204,27 @@ export const MobileWatchlistPage: React.FC = () => {
       paddingBottom: '80px'
     }}>
       <header style={{
-        padding: '20px',
-        paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 100%)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
+        padding: '16px',
+        paddingTop: 'calc(16px + env(safe-area-inset-top))',
+        background: 'rgba(0, 0, 0, 0.95)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ 
-              fontSize: '32px', 
-              fontWeight: 800,
+              fontSize: '24px', 
+              fontWeight: 700,
               margin: 0,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              color: 'white'
             }}>
               Watchlist
             </h1>
             <p style={{ 
               color: 'rgba(255, 255, 255, 0.6)', 
-              fontSize: '16px',
-              margin: '4px 0 0 0'
+              fontSize: '14px',
+              margin: '2px 0 0 0'
             }}>
-              {`${filteredSeries.length} Serien`}
+              {filteredSeries.length} Serien
             </p>
           </div>
           
@@ -251,7 +236,10 @@ export const MobileWatchlistPage: React.FC = () => {
               border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '12px',
               color: 'white',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
             <FilterList />
@@ -284,23 +272,44 @@ export const MobileWatchlistPage: React.FC = () => {
           />
           
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {activeTab === 'series' && (
-              <button
-                onClick={() => setCustomOrderActive(!customOrderActive)}
-                style={{
-                  padding: '8px 12px',
-                  background: customOrderActive ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                <DragHandle style={{ fontSize: '16px', marginRight: '4px', verticalAlign: 'middle' }} />
-                Eigene Reihenfolge
-              </button>
-            )}
+            <button
+              onClick={() => setCustomOrderActive(!customOrderActive)}
+              style={{
+                padding: '8px 12px',
+                background: customOrderActive ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              <DragHandle style={{ fontSize: '16px', marginRight: '4px', verticalAlign: 'middle' }} />
+              Eigene Reihenfolge
+            </button>
+            
+            <button
+              onClick={() => {
+                const newValue = !hideRewatches;
+                setHideRewatches(newValue);
+                localStorage.setItem('hideRewatches', newValue.toString());
+              }}
+              style={{
+                padding: '8px 12px',
+                background: hideRewatches ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                border: `1px solid ${hideRewatches ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`,
+                borderRadius: '8px',
+                color: hideRewatches ? '#ff9800' : 'white',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <Repeat style={{ fontSize: '16px' }} />
+              {hideRewatches ? 'Rewatches aus' : 'Rewatches an'}
+            </button>
             
             <select
               value={sortOption}
@@ -319,12 +328,6 @@ export const MobileWatchlistPage: React.FC = () => {
               <option value="name-desc">Name Z-A</option>
               <option value="rating-desc">Beste Bewertung</option>
               <option value="rating-asc">Schlechteste Bewertung</option>
-              {activeTab === 'movies' && (
-                <>
-                  <option value="year-desc">Neueste zuerst</option>
-                  <option value="year-asc">Älteste zuerst</option>
-                </>
-              )}
             </select>
           </div>
         </div>
@@ -417,7 +420,7 @@ export const MobileWatchlistPage: React.FC = () => {
             )}
             
             {/* Rewatches Section */}
-            {(seriesWithRewatches.length > 0) && (
+            {!hideRewatches && seriesWithRewatches.length > 0 && (
               <section style={{ marginBottom: '32px' }}>
                 <button 
                   onClick={() => setShowRewatches(!showRewatches)}

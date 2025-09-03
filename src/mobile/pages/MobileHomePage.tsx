@@ -13,10 +13,13 @@ import {
   Search,
   Star,
   TrendingUp,
+  Check,
 } from '@mui/icons-material';
 import { Badge, Chip } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -32,9 +35,12 @@ export const MobileHomePage: React.FC = () => {
   const { movieList } = useMovieList();
   const { unreadActivitiesCount } = useOptimizedFriends();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [selectedCategory, setSelectedCategory] = useState<
-    'all' | 'series' | 'movies'
-  >('all');
+  // const [selectedCategory, setSelectedCategory] = useState<
+  //   'all' | 'series' | 'movies'
+  // >('all');
+  const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
+  const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
+  const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
 
   // Update time every minute
   useEffect(() => {
@@ -51,10 +57,10 @@ export const MobileHomePage: React.FC = () => {
     return `https://image.tmdb.org/t/p/w342${path}`;
   };
 
-  const getUserRating = (rating: any): number => {
-    if (!rating || !user?.uid) return 0;
-    return rating[user.uid] || 0;
-  };
+  // const getUserRating = (rating: any): number => {
+  //   if (!rating || !user?.uid) return 0;
+  //   return rating[user.uid] || 0;
+  // };
 
   // Get greeting based on time
   const getGreeting = () => {
@@ -67,65 +73,86 @@ export const MobileHomePage: React.FC = () => {
 
   // Quick stats
   const stats = useMemo(() => {
-    const totalSeries = seriesList.length;
-    const totalMovies = movieList.length;
-
-    const watchedEpisodes = seriesList.reduce((acc, series) => {
-      return (
-        acc +
-        (series.seasons?.reduce((sAcc, season) => {
-          return (
-            sAcc + (season.episodes?.filter((ep) => ep.watched).length || 0)
-          );
-        }, 0) || 0)
-      );
-    }, 0);
-
-    const totalEpisodes = seriesList.reduce((acc, series) => {
-      return (
-        acc +
-        (series.seasons?.reduce((sAcc, season) => {
-          return sAcc + (season.episodes?.length || 0);
-        }, 0) || 0)
-      );
-    }, 0);
-
-    const watchedMovies = movieList.filter((m) => {
-      const rating = calculateOverallRating(m);
-      return parseFloat(rating) > 0;
-    }).length;
-
-    const watchlistCount = seriesList.filter((s) => s.watchlist).length;
-
-    const todayEpisodes = seriesList.reduce((acc, series) => {
-      const today = new Date().toISOString().split('T')[0];
-      return (
-        acc +
-        (series.seasons?.reduce((sAcc, season) => {
-          return (
-            sAcc +
-            (season.episodes?.filter(
-              (ep) => ep.air_date && ep.air_date.startsWith(today)
-            ).length || 0)
-          );
-        }, 0) || 0)
-      );
-    }, 0);
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Series statistics
+    let totalSeries = 0;
+    let watchlistCount = 0;
+    let watchedEpisodes = 0;
+    let totalAiredEpisodes = 0;
+    let todayEpisodesCount = 0;
+    let todayUnwatchedEpisodes = 0;
+    
+    seriesList.forEach(series => {
+      if (series && series.nmr) { // Only count valid series
+        totalSeries++;
+        
+        if (series.watchlist === true) {
+          watchlistCount++;
+        }
+        
+        // Count episodes - only aired ones
+        series.seasons?.forEach(season => {
+          season.episodes?.forEach(episode => {
+            if (episode.air_date) {
+              const airDate = new Date(episode.air_date);
+              
+              // Only count episodes that have aired
+              if (airDate <= today) {
+                totalAiredEpisodes++;
+                if (episode.watched === true) {
+                  watchedEpisodes++;
+                }
+              }
+              
+              // Count today's episodes
+              if (episode.air_date.startsWith(todayStr)) {
+                todayEpisodesCount++;
+                if (!episode.watched) {
+                  todayUnwatchedEpisodes++;
+                }
+              }
+            }
+          });
+        });
+      }
+    });
+    
+    // Movie statistics - "watched" means "rated" for movies
+    let totalMovies = 0;
+    let watchedMovies = 0;
+    
+    movieList.forEach(movie => {
+      if (movie && movie.nmr) { // Only count valid movies
+        totalMovies++;
+        
+        // For movies: watched = has a rating from the user
+        if (movie.rating && user) {
+          const userRating = movie.rating[user.uid];
+          if (userRating && userRating > 0) {
+            watchedMovies++;
+          }
+        }
+      }
+    });
+    
+    // Calculate progress only for aired episodes
+    const progress = totalAiredEpisodes > 0 
+      ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100)
+      : 0;
 
     return {
       totalSeries,
       totalMovies,
       watchedEpisodes,
-      totalEpisodes,
+      totalEpisodes: totalAiredEpisodes, // Only count aired episodes
       watchedMovies,
       watchlistCount,
-      todayEpisodes,
-      progress:
-        totalEpisodes > 0
-          ? Math.round((watchedEpisodes / totalEpisodes) * 100)
-          : 0,
+      todayEpisodes: todayUnwatchedEpisodes, // Only show unwatched episodes from today
+      progress,
     };
-  }, [seriesList, movieList]);
+  }, [seriesList, movieList, user]);
 
   // Continue watching with better logic
   const continueWatching = useMemo(() => {
@@ -133,26 +160,40 @@ export const MobileHomePage: React.FC = () => {
 
     // Get series with next episodes
     seriesList.forEach((series) => {
+      // Only include series that are on the watchlist
       if (!series.watchlist) return;
 
-      // Calculate total and watched episodes correctly
-      let totalEpisodes = 0;
-      let watchedEpisodes = 0;
-
-      series.seasons?.forEach((season) => {
-        totalEpisodes += season.episodes?.length || 0;
-        watchedEpisodes +=
-          season.episodes?.filter((e) => e.watched).length || 0;
-      });
-
-      if (totalEpisodes === 0) return;
-      const percentage = (watchedEpisodes / totalEpisodes) * 100;
-
-      if (percentage > 0 && percentage < 100) {
-        // Find next unwatched episode
-        for (const season of series.seasons || []) {
-          for (const [index, episode] of (season.episodes || []).entries()) {
-            if (!episode.watched) {
+      const today = new Date();
+      
+      // Find next unwatched episode that has already aired
+      for (const season of series.seasons || []) {
+        for (const [index, episode] of (season.episodes || []).entries()) {
+          // Check if episode has aired and is not watched
+          if (!episode.watched && episode.air_date) {
+            const airDate = new Date(episode.air_date);
+            if (airDate <= today) {
+              // This episode has aired but not watched - add to continue watching
+              
+              // Calculate progress for this series (only aired episodes)
+              let totalAiredEpisodes = 0;
+              let watchedEpisodes = 0;
+              
+              series.seasons?.forEach((s) => {
+                s.episodes?.forEach((ep) => {
+                  if (ep.air_date) {
+                    const epAirDate = new Date(ep.air_date);
+                    if (epAirDate <= today) {
+                      totalAiredEpisodes++;
+                      if (ep.watched) watchedEpisodes++;
+                    }
+                  }
+                });
+              });
+              
+              const percentage = totalAiredEpisodes > 0 
+                ? (watchedEpisodes / totalAiredEpisodes) * 100 
+                : 0;
+              
               items.push({
                 type: 'series',
                 id: series.id,
@@ -166,7 +207,7 @@ export const MobileHomePage: React.FC = () => {
                 },
                 airDate: episode.air_date,
               });
-              return;
+              return; // Stop after finding the first unwatched aired episode
             }
           }
         }
@@ -176,7 +217,7 @@ export const MobileHomePage: React.FC = () => {
     return items.slice(0, 10);
   }, [seriesList]);
 
-  // Today's episodes
+  // Today's episodes - only unwatched
   const todayEpisodes = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const episodes: any[] = [];
@@ -184,13 +225,18 @@ export const MobileHomePage: React.FC = () => {
     seriesList.forEach((series) => {
       series.seasons?.forEach((season) => {
         season.episodes?.forEach((episode, index) => {
-          if (episode.air_date && episode.air_date.startsWith(today)) {
+          // Only show episodes from today that are NOT watched
+          if (episode.air_date && episode.air_date.startsWith(today) && !episode.watched) {
             episodes.push({
               seriesId: series.id,
+              seriesNmr: series.nmr, // Add nmr for Firebase update
               seriesTitle: series.title,
               poster: getImageUrl(series.poster),
-              seasonNumber: season.seasonNumber,
+              seasonNumber: season.seasonNumber || 1,
               episodeNumber: index + 1,
+              seasonIndex: season.seasonNumber ? season.seasonNumber - 1 : 0,  // 0-based for Firebase
+              episodeIndex: index,  // Already 0-based
+              episodeId: episode.id,
               episodeName: episode.name,
               watched: episode.watched,
             });
@@ -201,6 +247,54 @@ export const MobileHomePage: React.FC = () => {
 
     return episodes;
   }, [seriesList]);
+  
+  // Handle episode swipe to complete
+  const handleEpisodeComplete = async (episode: any) => {
+    const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
+    
+    // Add to completing set for animation
+    setCompletingEpisodes(prev => new Set(prev).add(episodeKey));
+    
+    // Mark episode as watched in Firebase directly (like in MobileNewEpisodesPage)
+    if (user) {
+      try {
+        // Use the pre-calculated 0-based indexes
+        const seasonIndex = episode.seasonIndex;
+        const episodeIndex = episode.episodeIndex;
+        
+        const ref = firebase.database()
+          .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watched`);
+        await ref.set(true);
+        
+        // Also update watchCount if needed
+        const watchCountRef = firebase.database()
+          .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watchCount`);
+        const snapshot = await watchCountRef.once('value');
+        const currentCount = snapshot.val() || 0;
+        await watchCountRef.set(currentCount + 1);
+        
+        // Update firstWatchedAt if this is the first time
+        if (currentCount === 0) {
+          const firstWatchedRef = firebase.database()
+            .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`);
+          await firstWatchedRef.set(new Date().toISOString());
+        }
+        
+      } catch (error) {
+        console.error('Error marking episode as watched:', error);
+      }
+    }
+    
+    // After animation, hide the episode
+    setTimeout(() => {
+      setHiddenEpisodes(prev => new Set(prev).add(episodeKey));
+      setCompletingEpisodes(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(episodeKey);
+        return newSet;
+      });
+    }, 300);
+  };
 
   // Trending (most watched recently)
   const trending = useMemo(() => {
@@ -449,7 +543,7 @@ export const MobileHomePage: React.FC = () => {
         />
         <Chip
           icon={<MovieIcon />}
-          label={`${stats.watchedMovies} Filme`}
+          label={`${stats.totalMovies} Filme`}
           onClick={() => navigate('/ratings?tab=movies')}
           style={{
             background: 'rgba(255, 107, 107, 0.1)',
@@ -843,56 +937,146 @@ export const MobileHomePage: React.FC = () => {
               flexDirection: 'column',
               gap: '8px',
               padding: '0 20px',
+              position: 'relative',
             }}
           >
-            {todayEpisodes.slice(0, 3).map((episode, index) => (
-              <motion.div
-                key={index}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/series/${episode.seriesId}`)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  background: 'rgba(255, 215, 0, 0.05)',
-                  border: '1px solid rgba(255, 215, 0, 0.2)',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  cursor: 'pointer',
-                }}
-              >
-                <img
-                  src={episode.poster}
-                  alt={episode.seriesTitle}
-                  style={{
-                    width: '50px',
-                    height: '75px',
-                    objectFit: 'cover',
-                    borderRadius: '8px',
-                  }}
-                />
-                <div style={{ flex: 1 }}>
-                  <h4
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      margin: '0 0 2px 0',
-                    }}
-                  >
-                    {episode.seriesTitle}
-                  </h4>
-                  <p style={{ fontSize: '12px', margin: 0, color: '#ffd700' }}>
-                    S{episode.seasonNumber + 1} E{episode.episodeNumber} •{' '}
-                    {episode.episodeName}
-                  </p>
-                </div>
-                {episode.watched ? (
-                  <CheckCircle style={{ fontSize: '20px', color: '#4cd137' }} />
-                ) : (
-                  <PlayCircle style={{ fontSize: '20px', color: '#ffd700' }} />
-                )}
-              </motion.div>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {todayEpisodes
+                .filter(ep => !hiddenEpisodes.has(`${ep.seriesId}-${ep.seasonNumber}-${ep.episodeNumber}`))
+                .slice(0, 5)
+                .map((episode) => {
+                  const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
+                  const isCompleting = completingEpisodes.has(episodeKey);
+                  const isSwiping = swipingEpisodes.has(episodeKey);
+                  
+                  return (
+                    <motion.div
+                      key={episodeKey}
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ 
+                        opacity: isCompleting ? 0.5 : 1, 
+                        y: 0,
+                        scale: isCompleting ? 0.95 : 1,
+                      }}
+                      exit={{ 
+                        opacity: 0, 
+                        x: 300,
+                        transition: { duration: 0.3 }
+                      }}
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.2}
+                      onDragStart={() => {
+                        setSwipingEpisodes(prev => new Set(prev).add(episodeKey));
+                      }}
+                      onDragEnd={(_event, info: PanInfo) => {
+                        setSwipingEpisodes(prev => {
+                          const newSet = new Set(prev);
+                          newSet.delete(episodeKey);
+                          return newSet;
+                        });
+                        
+                        // If swiped more than 100px to the right, mark as complete
+                        if (info.offset.x > 100 && !episode.watched) {
+                          handleEpisodeComplete(episode);
+                        }
+                      }}
+                      whileDrag={{ scale: 1.02 }}
+                      onClick={() => !isSwiping && navigate(`/series/${episode.seriesId}`)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        background: isCompleting 
+                          ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
+                          : episode.watched 
+                          ? 'rgba(76, 209, 55, 0.1)'
+                          : 'rgba(255, 215, 0, 0.05)',
+                        border: `1px solid ${
+                          isCompleting 
+                            ? 'rgba(76, 209, 55, 0.5)' 
+                            : episode.watched 
+                            ? 'rgba(76, 209, 55, 0.3)'
+                            : 'rgba(255, 215, 0, 0.2)'
+                        }`,
+                        borderRadius: '12px',
+                        padding: '12px',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {/* Swipe Indicator Background */}
+                      <motion.div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
+                          opacity: 0,
+                        }}
+                        animate={{
+                          opacity: isSwiping ? 1 : 0,
+                        }}
+                      />
+                      
+                      <img
+                        src={episode.poster}
+                        alt={episode.seriesTitle}
+                        style={{
+                          width: '50px',
+                          height: '75px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          pointerEvents: 'none',
+                        }}
+                      />
+                      <div style={{ flex: 1, pointerEvents: 'none' }}>
+                        <h4
+                          style={{
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            margin: '0 0 2px 0',
+                          }}
+                        >
+                          {episode.seriesTitle}
+                        </h4>
+                        <p style={{ 
+                          fontSize: '12px', 
+                          margin: 0, 
+                          color: episode.watched ? '#4cd137' : '#ffd700' 
+                        }}>
+                          S{episode.seasonNumber + 1} E{episode.episodeNumber} •{' '}
+                          {episode.episodeName}
+                        </p>
+                      </div>
+                      
+                      <AnimatePresence mode="wait">
+                        {isCompleting ? (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            exit={{ scale: 0, rotate: 180 }}
+                          >
+                            <Check style={{ fontSize: '24px', color: '#4cd137' }} />
+                          </motion.div>
+                        ) : episode.watched ? (
+                          <CheckCircle style={{ fontSize: '20px', color: '#4cd137' }} />
+                        ) : (
+                          <motion.div
+                            animate={{ x: isSwiping ? 10 : 0 }}
+                          >
+                            <PlayCircle style={{ fontSize: '20px', color: '#ffd700' }} />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
+            </AnimatePresence>
           </div>
         </section>
       )}

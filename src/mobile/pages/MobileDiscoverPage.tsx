@@ -1,22 +1,25 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, Whatshot, NewReleases, Star, 
   Movie as MovieIcon, CalendarToday, FilterList, Check, Add,
-  Search, Recommend
+  Search
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
 import { genreIdMapForSeries, genreIdMapForMovies } from '../../config/menuItems';
-import { Series } from '../../types/Series';
-import { Movie } from '../../types/Movie';
+// import { Series } from '../../types/Series';
+// import { Movie } from '../../types/Movie';
+import { logSeriesAdded, logMovieAdded } from '../../features/badges/minimalActivityLogger';
+// import { calculateOverallRating } from '../../lib/rating/rating';
 
 export const MobileDiscoverPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  
   
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
   const [activeCategory, setActiveCategory] = useState<'trending' | 'popular' | 'top_rated' | 'upcoming'>('trending');
@@ -29,15 +32,18 @@ export const MobileDiscoverPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [showRecommendations, setShowRecommendations] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   
   // Check if item is in list
   const isInList = (id: string | number, type: 'series' | 'movie') => {
     if (type === 'series') {
-      return seriesList.some((s: any) => s.id === id || s.id === id.toString());
+      const found = seriesList.some((s: any) => s.id === id || s.id === id.toString());
+      if (found) console.log('Found in series list:', id);
+      return found;
     } else {
-      return movieList.some((m: any) => m.id === id || m.id === id.toString());
+      const found = movieList.some((m: any) => m.id === id || m.id === id.toString());
+      if (found) console.log('Found in movie list:', id);
+      return found;
     }
   };
   
@@ -58,24 +64,29 @@ export const MobileDiscoverPage: React.FC = () => {
       let endpoint = '';
       const mediaType = activeTab === 'series' ? 'tv' : 'movie';
       
-      // Build endpoint based on category
-      switch (activeCategory) {
-        case 'trending':
-          endpoint = `https://api.themoviedb.org/3/trending/${mediaType}/week`;
-          break;
-        case 'popular':
-          endpoint = `https://api.themoviedb.org/3/${mediaType}/popular`;
-          break;
-        case 'top_rated':
-          endpoint = `https://api.themoviedb.org/3/${mediaType}/top_rated`;
-          break;
-        case 'upcoming':
-          if (activeTab === 'movies') {
-            endpoint = `https://api.themoviedb.org/3/movie/upcoming`;
-          } else {
-            endpoint = `https://api.themoviedb.org/3/tv/on_the_air`;
-          }
-          break;
+      // Use discover endpoint when genre filter is active
+      if (selectedGenre) {
+        endpoint = `https://api.themoviedb.org/3/discover/${mediaType}`;
+      } else {
+        // Build endpoint based on category
+        switch (activeCategory) {
+          case 'trending':
+            endpoint = `https://api.themoviedb.org/3/trending/${mediaType}/week`;
+            break;
+          case 'popular':
+            endpoint = `https://api.themoviedb.org/3/${mediaType}/popular`;
+            break;
+          case 'top_rated':
+            endpoint = `https://api.themoviedb.org/3/${mediaType}/top_rated`;
+            break;
+          case 'upcoming':
+            if (activeTab === 'movies') {
+              endpoint = `https://api.themoviedb.org/3/movie/upcoming`;
+            } else {
+              endpoint = `https://api.themoviedb.org/3/tv/on_the_air`;
+            }
+            break;
+        }
       }
       
       // Add parameters
@@ -89,17 +100,21 @@ export const MobileDiscoverPage: React.FC = () => {
       // Add genre filter if selected
       if (selectedGenre) {
         params.append('with_genres', selectedGenre.toString());
+        // Add sort for discover endpoint
+        params.append('sort_by', activeCategory === 'top_rated' ? 'vote_average.desc' : 'popularity.desc');
       }
       
       const response = await fetch(`${endpoint}?${params}`);
       const data = await response.json();
       
       if (data.results) {
-        const mappedResults = data.results.map((item: any) => ({
-          ...item,
-          type: activeTab === 'series' ? 'series' : 'movie',
-          inList: isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
-        }));
+        const mappedResults = data.results
+          .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')) // Hide items already in list
+          .map((item: any) => ({
+            ...item,
+            type: activeTab === 'series' ? 'series' : 'movie',
+            inList: false // Since we filtered them out
+          }));
         
         if (reset) {
           setResults(mappedResults);
@@ -149,11 +164,14 @@ export const MobileDiscoverPage: React.FC = () => {
       const data = await response.json();
       
       if (data.results) {
-        const mappedResults = data.results.slice(0, 20).map((item: any) => ({
-          ...item,
-          type: activeTab === 'series' ? 'series' : 'movie',
-          inList: isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
-        }));
+        const mappedResults = data.results
+          .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')) // Hide items already in list
+          .slice(0, 20)
+          .map((item: any) => ({
+            ...item,
+            type: activeTab === 'series' ? 'series' : 'movie',
+            inList: false // Since we filtered them out
+          }));
         
         setSearchResults(mappedResults);
       }
@@ -175,19 +193,6 @@ export const MobileDiscoverPage: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, showSearch, searchItems]);
   
-  // Generate recommendations - simplified for now
-  const recommendations = useMemo(() => {
-    if (!user?.uid || !showRecommendations) return { series: [], movies: [] };
-    
-    // Simple recommendations based on ratings
-    const ratedSeries = seriesList.filter((s: Series) => s.rating && s.rating[user.uid] && s.rating[user.uid] > 7);
-    const ratedMovies = movieList.filter((m: Movie) => m.rating && m.rating[user.uid] && m.rating[user.uid] > 7);
-    
-    return {
-      series: ratedSeries.slice(0, 10),
-      movies: ratedMovies.slice(0, 10)
-    };
-  }, [seriesList, movieList, user, showRecommendations]);
   
   // Add to list
   const addToList = async (item: any) => {
@@ -198,7 +203,7 @@ export const MobileDiscoverPage: React.FC = () => {
     
     const endpoint = item.type === 'series' 
       ? 'https://serienapi.konrad-dinges.de/add'
-      : 'https://serienapi.konrad-dinges.de/movie/add';
+      : 'https://serienapi.konrad-dinges.de/addMovie';
     
     try {
       const response = await fetch(endpoint, {
@@ -215,6 +220,21 @@ export const MobileDiscoverPage: React.FC = () => {
         setResults(prev => 
           prev.map(r => r.id === item.id ? { ...r, inList: true } : r)
         );
+        
+        // Activity-Logging für Friend + Badge-System (wie Desktop)
+        if (item.type === 'series') {
+          await logSeriesAdded(
+            user.uid,
+            item.name || item.title || 'Unbekannte Serie',
+            item.id
+          );
+        } else {
+          await logMovieAdded(
+            user.uid,
+            item.title || 'Unbekannter Film',
+            item.id
+          );
+        }
       }
     } catch (error) {
       console.error('Error adding item:', error);
@@ -276,32 +296,14 @@ export const MobileDiscoverPage: React.FC = () => {
               fontSize: '16px',
               margin: '4px 0 0 0'
             }}>
-              {showSearch ? 'Suche' : showRecommendations ? 'Empfehlungen' : 'Trending & Beliebte Inhalte'}
+              {showSearch ? 'Suche' : 'Trending & Beliebte Inhalte'}
             </p>
           </div>
           
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => {
-                setShowRecommendations(!showRecommendations);
-                setShowSearch(false);
-              }}
-              style={{
-                padding: '10px',
-                background: showRecommendations ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                color: 'white',
-                cursor: 'pointer'
-              }}
-            >
-              <Recommend />
-            </button>
-            
-            <button
-              onClick={() => {
                 setShowSearch(!showSearch);
-                setShowRecommendations(false);
               }}
               style={{
                 padding: '10px',
@@ -403,7 +405,7 @@ export const MobileDiscoverPage: React.FC = () => {
       </div>
       
       {/* Categories */}
-      {!showSearch && !showRecommendations && (
+      {!showSearch && (
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(2, 1fr)', 
@@ -508,7 +510,7 @@ export const MobileDiscoverPage: React.FC = () => {
       )}
       
       {/* Genre Filter */}
-      {!showSearch && !showRecommendations && (
+      {!showSearch && (
         <div style={{ 
           padding: '0 20px',
           marginBottom: '20px'
@@ -592,207 +594,7 @@ export const MobileDiscoverPage: React.FC = () => {
       )}
       
       {/* Content */}
-      {showRecommendations ? (
-        <div style={{ padding: '0 20px' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '16px'
-          }}>
-            <h3 style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              margin: 0,
-              color: 'rgba(255, 255, 255, 0.9)'
-            }}>
-              Empfehlungen für dich
-            </h3>
-          </div>
-          
-          {activeTab === 'series' ? (
-            recommendations.series.length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: 'rgba(255, 255, 255, 0.4)'
-              }}>
-                <Recommend style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
-                <p>Bewerte mehr Serien um Empfehlungen zu erhalten!</p>
-              </div>
-            ) : (
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(3, 1fr)', 
-                gap: '12px' 
-              }}>
-                {recommendations.series.map((series: Series) => (
-                  <div 
-                    key={`rec-series-${series.id}`}
-                    onClick={() => handleItemClick({...series, type: 'series', inList: isInList(series.id, 'series')})}
-                    style={{ cursor: 'pointer', position: 'relative' }}
-                  >
-                    <div style={{
-                      width: '100%',
-                      aspectRatio: '2/3',
-                      position: 'relative',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      marginBottom: '8px'
-                    }}>
-                      <img
-                        src={series.poster?.poster ? `https://image.tmdb.org/t/p/w342${series.poster.poster}` : '/placeholder.jpg'}
-                        alt={series.title}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover'
-                        }}
-                      />
-                      
-                      {!isInList(series.id, 'series') ? (
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '8px',
-                          right: '8px',
-                          width: '28px',
-                          height: '28px',
-                          background: 'rgba(255, 255, 255, 0.2)',
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '1px solid rgba(255, 255, 255, 0.3)'
-                        }}>
-                          <Add style={{ fontSize: '18px', color: 'white' }} />
-                        </div>
-                      ) : (
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '8px',
-                          right: '8px',
-                          width: '28px',
-                          height: '28px',
-                          background: 'rgba(76, 209, 55, 0.9)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <Check style={{ fontSize: '18px', color: 'white' }} />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <h4 style={{ 
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      margin: 0,
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {series.title}
-                    </h4>
-                  </div>
-                ))}
-              </div>
-            )
-          ) : (
-            recommendations.movies.length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: 'rgba(255, 255, 255, 0.4)'
-              }}>
-                <Recommend style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
-                <p>Bewerte mehr Filme um Empfehlungen zu erhalten!</p>
-              </div>
-            ) : (
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(3, 1fr)', 
-                gap: '12px' 
-              }}>
-                {recommendations.movies.map((movie: Movie) => (
-                  <div 
-                    key={`rec-movie-${movie.id}`}
-                    onClick={() => handleItemClick({...movie, type: 'movie', inList: isInList(movie.id, 'movie')})}
-                    style={{ cursor: 'pointer', position: 'relative' }}
-                  >
-                    <div style={{
-                      width: '100%',
-                      aspectRatio: '2/3',
-                      position: 'relative',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      marginBottom: '8px'
-                    }}>
-                      <img
-                        src={movie.poster?.poster ? `https://image.tmdb.org/t/p/w342${movie.poster.poster}` : '/placeholder.jpg'}
-                        alt={movie.title}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover'
-                        }}
-                      />
-                      
-                      {!isInList(movie.id, 'movie') ? (
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '8px',
-                          right: '8px',
-                          width: '28px',
-                          height: '28px',
-                          background: 'rgba(255, 255, 255, 0.2)',
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '1px solid rgba(255, 255, 255, 0.3)'
-                        }}>
-                          <Add style={{ fontSize: '18px', color: 'white' }} />
-                        </div>
-                      ) : (
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '8px',
-                          right: '8px',
-                          width: '28px',
-                          height: '28px',
-                          background: 'rgba(76, 209, 55, 0.9)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <Check style={{ fontSize: '18px', color: 'white' }} />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <h4 style={{ 
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      margin: 0,
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {movie.title}
-                    </h4>
-                  </div>
-                ))}
-              </div>
-            )
-          )}
-        </div>
-      ) : showSearch ? (
+      {showSearch ? (
         <div style={{ padding: '0 20px' }}>
           {searchLoading ? (
             <div style={{
@@ -823,8 +625,8 @@ export const MobileDiscoverPage: React.FC = () => {
           ) : (
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(3, 1fr)', 
-              gap: '12px'
+              gridTemplateColumns: 'repeat(2, 1fr)', 
+              gap: '16px'
             }}>
               {searchResults.map(item => (
                 <div 
@@ -942,8 +744,8 @@ export const MobileDiscoverPage: React.FC = () => {
       ) : (
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '12px',
+          gridTemplateColumns: 'repeat(2, 1fr)', 
+          gap: '16px',
           padding: '0 20px'
         }}>
           {results.map(item => (
@@ -1034,8 +836,8 @@ export const MobileDiscoverPage: React.FC = () => {
             </div>
             
             <h4 style={{ 
-              fontSize: '12px',
-              fontWeight: 500,
+              fontSize: '14px',
+              fontWeight: 600,
               margin: 0,
               color: 'rgba(255, 255, 255, 0.9)',
               overflow: 'hidden',

@@ -10,37 +10,8 @@ import { useAuth } from '../../App';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
 
-// TMDB Genre IDs mapping
-const TMDB_GENRE_MAP: { [key: number]: string } = {
-  28: 'Action',
-  12: 'Adventure',
-  16: 'Animation',
-  35: 'Comedy',
-  80: 'Crime',
-  99: 'Documentary',
-  18: 'Drama',
-  10751: 'Family',
-  14: 'Fantasy',
-  36: 'History',
-  27: 'Horror',
-  10402: 'Music',
-  9648: 'Mystery',
-  10749: 'Romance',
-  878: 'Science Fiction',
-  10770: 'TV Movie',
-  53: 'Thriller',
-  10752: 'War',
-  37: 'Western',
-  // TV Genres
-  10759: 'Action & Adventure',
-  10762: 'Kids',
-  10763: 'News',
-  10764: 'Reality',
-  10765: 'Sci-Fi & Fantasy',
-  10766: 'Soap',
-  10767: 'Talk',
-  10768: 'War & Politics'
-};
+// TMDB Genre IDs mapping (unused but kept for reference)
+// const TMDB_GENRE_MAP: { [key: number]: string } = { ... };
 
 export const MobileRatingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -69,11 +40,11 @@ export const MobileRatingsPage: React.FC = () => {
     sortBy?: string;
   }>({});
   
-  // Helper function to get user rating
-  const getUserRating = (rating: any): number => {
-    if (!rating || !user?.uid) return 0;
-    return rating[user.uid] || 0;
-  };
+  // Helper function to get user rating (unused)
+  // const getUserRating = (rating: any): number => {
+  //   if (!rating || !user?.uid) return 0;
+  //   return rating[user.uid] || 0;
+  // };
   
   // Get TMDB image URL
   const getImageUrl = (posterObj: any): string => {
@@ -96,13 +67,13 @@ export const MobileRatingsPage: React.FC = () => {
       
       // Log first few items to debug
       filtered.slice(0, 3).forEach(series => {
-        const genres = series.genres || series.genre?.genres || [];
+        const genres = series.genre?.genres || [];
         console.log(`${series.title} genres:`, genres);
       });
       
       filtered = filtered.filter(series => {
         // Genres können in series.genres oder series.genre.genres sein
-        const genres = series.genres || series.genre?.genres || [];
+        const genres = series.genre?.genres || [];
         if (Array.isArray(genres)) {
           const hasGenre = genres.some((g: string) => 
             g.toLowerCase() === filters.genre!.toLowerCase()
@@ -151,15 +122,16 @@ export const MobileRatingsPage: React.FC = () => {
     } else if (filters.quickFilter === 'started') {
       // Nur Serien die begonnen aber nicht fertig sind
       filtered = filtered.filter(s => {
-        if (!s.seasons) return false;
+        const series = s as any; // Type assertion
+        if (!series.seasons) return false;
         
         const today = new Date();
         let totalAiredEpisodes = 0;
         let watchedEpisodes = 0;
         
-        s.seasons.forEach(season => {
+        series.seasons.forEach((season: any) => {
           if (season.episodes) {
-            season.episodes.forEach(ep => {
+            season.episodes.forEach((ep: any) => {
               // Nur ausgestrahlte Episoden zählen (mit air_date in der Vergangenheit)
               if (ep.air_date) {
                 const airDate = new Date(ep.air_date);
@@ -244,13 +216,13 @@ export const MobileRatingsPage: React.FC = () => {
       
       // Log first few items to debug
       filtered.slice(0, 3).forEach(movie => {
-        const genres = movie.genres || movie.genre?.genres || [];
+        const genres = movie.genre?.genres || [];
         console.log(`${movie.title} genres:`, genres);
       });
       
       filtered = filtered.filter(movie => {
         // Genres können in movie.genres oder movie.genre.genres sein
-        const genres = movie.genres || movie.genre?.genres || [];
+        const genres = movie.genre?.genres || [];
         if (Array.isArray(genres)) {
           return genres.some((g: string) => 
             g.toLowerCase() === filters.genre!.toLowerCase()
@@ -296,33 +268,8 @@ export const MobileRatingsPage: React.FC = () => {
         return isNaN(rating) || rating === 0;
       });
     } else if (filters.quickFilter === 'started') {
-      // Nur Serien die begonnen aber nicht fertig sind
-      filtered = filtered.filter(s => {
-        if (!s.seasons) return false;
-        
-        const today = new Date();
-        let totalAiredEpisodes = 0;
-        let watchedEpisodes = 0;
-        
-        s.seasons.forEach(season => {
-          if (season.episodes) {
-            season.episodes.forEach(ep => {
-              // Nur ausgestrahlte Episoden zählen (mit air_date in der Vergangenheit)
-              if (ep.air_date) {
-                const airDate = new Date(ep.air_date);
-                if (airDate <= today) {
-                  totalAiredEpisodes++;
-                  if (ep.watched) watchedEpisodes++;
-                }
-              }
-              // Episoden ohne air_date werden NICHT gezählt
-            });
-          }
-        });
-        
-        // Begonnen aber nicht fertig (zwischen 1% und 99%)
-        return watchedEpisodes > 0 && watchedEpisodes < totalAiredEpisodes;
-      });
+      // Movies don't have seasons, so skip this filter for movies
+      filtered = [];  // No movies can be "started" since they don't have episodes
     } else if (filters.quickFilter === 'best-rated') {
       filtered = filtered.filter(s => {
         const rating = parseFloat(calculateOverallRating(s));
@@ -380,8 +327,15 @@ export const MobileRatingsPage: React.FC = () => {
   }, [movieList, filters, user]);
   
   const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
-  const averageRating = currentItems.length > 0 
-    ? currentItems.reduce((acc, item) => acc + parseFloat(calculateOverallRating(item)), 0) / currentItems.length
+  
+  // Nur Items mit Bewertungen für den Durchschnitt berücksichtigen (Rating > 0)
+  const itemsWithRating = currentItems.filter(item => {
+    const rating = parseFloat(calculateOverallRating(item));
+    return !isNaN(rating) && rating > 0;
+  });
+  
+  const averageRating = itemsWithRating.length > 0 
+    ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateOverallRating(item)), 0) / itemsWithRating.length
     : 0;
   
   return (
@@ -439,7 +393,7 @@ export const MobileRatingsPage: React.FC = () => {
           fontSize: '14px',
           color: 'rgba(255, 255, 255, 0.7)'
         }}>
-          <span>{currentItems.length} bewertet</span>
+          <span>{itemsWithRating.length} bewertet</span>
           <span>Ø {averageRating.toFixed(1)} ⭐</span>
         </div>
       </div>
@@ -524,28 +478,31 @@ export const MobileRatingsPage: React.FC = () => {
               
               // Calculate progress for series (only aired episodes)
               let progress = 0;
-              if (!isMovie && item.seasons) {
-                const today = new Date();
-                let totalAiredEpisodes = 0;
-                let watchedEpisodes = 0;
-                
-                item.seasons.forEach(season => {
-                  if (season.episodes) {
-                    season.episodes.forEach(ep => {
-                      // Nur ausgestrahlte Episoden zählen (mit air_date in der Vergangenheit)
-                      if (ep.air_date) {
-                        const airDate = new Date(ep.air_date);
-                        if (airDate <= today) {
-                          totalAiredEpisodes++;
-                          if (ep.watched) watchedEpisodes++;
+              if (!isMovie) {
+                const series = item as any; // Type assertion for series
+                if (series.seasons) {
+                  const today = new Date();
+                  let totalAiredEpisodes = 0;
+                  let watchedEpisodes = 0;
+                  
+                  series.seasons.forEach((season: any) => {
+                    if (season.episodes) {
+                      season.episodes.forEach((ep: any) => {
+                        // Nur ausgestrahlte Episoden zählen (mit air_date in der Vergangenheit)
+                        if (ep.air_date) {
+                          const airDate = new Date(ep.air_date);
+                          if (airDate <= today) {
+                            totalAiredEpisodes++;
+                            if (ep.watched) watchedEpisodes++;
+                          }
                         }
-                      }
-                      // Episoden ohne air_date werden NICHT gezählt
-                    });
-                  }
-                });
-                
-                progress = totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
+                        // Episoden ohne air_date werden NICHT gezählt
+                      });
+                    }
+                  });
+                  
+                  progress = totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
+                }
               }
               
               return (
@@ -570,6 +527,66 @@ export const MobileRatingsPage: React.FC = () => {
                         background: 'rgba(255, 255, 255, 0.05)'
                       }}
                     />
+                    
+                    {/* Provider Badges */}
+                    {item.provider?.provider && item.provider.provider.length > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        left: '8px',
+                        display: 'flex',
+                        gap: '4px'
+                      }}>
+                        {Array.from(new Set(item.provider.provider.map((p: any) => p.name)))
+                          .slice(0, 2)
+                          .map(name => {
+                            const provider = item.provider?.provider.find((p: any) => p.name === name);
+                            return provider ? (
+                              <div key={provider.id} style={{
+                                background: 'rgba(0, 0, 0, 0.6)',
+                                backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '8px',
+                                padding: '2px',
+                                width: '28px',
+                                height: '28px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}>
+                                <img 
+                                  src={provider.logo}
+                                  alt={provider.name}
+                                  style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '4px',
+                                    objectFit: 'cover'
+                                  }}
+                                />
+                              </div>
+                            ) : null;
+                          })}
+                        {item.provider.provider.length > 2 && (
+                          <div style={{
+                            background: 'rgba(0, 0, 0, 0.6)',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '8px',
+                            width: '28px',
+                            height: '28px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '10px',
+                            fontWeight: 600,
+                            color: 'rgba(255, 255, 255, 0.8)'
+                          }}>
+                            +{item.provider.provider.length - 2}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     
                     {/* Rating Badge */}
                     {!isNaN(rating) && rating > 0 && (

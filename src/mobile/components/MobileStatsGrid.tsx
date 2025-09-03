@@ -23,6 +23,7 @@ import { colors } from '../../theme';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
+import { calculateOverallRating } from '../../lib/rating/rating';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -123,11 +124,6 @@ export const MobileStatsGrid: React.FC = () => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   
-  // Helper function to get user rating
-  const getUserRating = (rating: any): number => {
-    if (!rating || !user?.uid) return 0;
-    return rating[user.uid] || 0;
-  };
 
   // Calculate statistics
   const stats = React.useMemo(() => {
@@ -140,53 +136,76 @@ export const MobileStatsGrid: React.FC = () => {
         lastWeekWatched: 0, completedSeries: 0
       };
     }
-    // Series stats
-    const totalSeries = seriesList.length;
+    // Series stats - only count aired episodes
+    const today = new Date();
+    const totalSeries = seriesList.filter(s => s && s.nmr).length;
     
-    // Count watched episodes including rewatches (like desktop)
-    const watchedEpisodes = seriesList.reduce((acc, series) => {
-      return acc + (series.seasons?.reduce((sAcc, season) => {
-        return sAcc + (season.episodes?.reduce((epAcc, ep) => {
-          if (ep.watched) {
-            // Count rewatches like desktop does
-            return epAcc + (ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1);
+    // Count watched episodes (only aired ones)
+    let watchedEpisodes = 0;
+    let totalAiredEpisodes = 0;
+    
+    seriesList.forEach(series => {
+      if (!series || !series.nmr) return;
+      
+      series.seasons?.forEach(season => {
+        season.episodes?.forEach(ep => {
+          if (ep.air_date) {
+            const airDate = new Date(ep.air_date);
+            if (airDate <= today) {
+              totalAiredEpisodes++;
+              if (ep.watched === true) {
+                // Für Fortschritt: Jede Episode zählt nur einmal, egal wie oft geschaut
+                watchedEpisodes++;
+              }
+            }
           }
-          return epAcc;
-        }, 0) || 0);
-      }, 0) || 0);
-    }, 0);
+        });
+      });
+    });
     
-    const totalEpisodes = seriesList.reduce((acc, series) => {
-      return acc + (series.seasons?.reduce((sAcc, season) => {
-        return sAcc + (season.episodes?.length || 0);
-      }, 0) || 0);
-    }, 0);
+    const totalEpisodes = totalAiredEpisodes;
 
-    // Movies stats - count properly watched movies
-    const totalMovies = movieList.length;
+    // Movies stats - only count valid movies with ratings
+    const totalMovies = movieList.filter(m => m && m.nmr).length;
     const watchedMovies = movieList.filter((movie: any) => {
-      // A movie is watched if it has a rating > 0 from current user
-      const rating = getUserRating(movie.rating);
-      return rating > 0;
+      if (!movie || !movie.nmr) return false;
+      // A movie is watched if it has a rating > 0
+      const rating = parseFloat(calculateOverallRating(movie));
+      return !isNaN(rating) && rating > 0;
     }).length;
 
-    // Time stats - include rewatches like desktop
-    const totalMinutesWatched = seriesList.reduce((acc, series) => {
+    // Time stats - only count actually watched content
+    let totalMinutesWatched = 0;
+    
+    // Series watch time
+    seriesList.forEach(series => {
+      if (!series || !series.nmr) return;
       const runtime = series.episodeRuntime || 45;
-      const watched = series.seasons?.reduce((sAcc, season) => {
-        return sAcc + (season.episodes?.reduce((epAcc, ep) => {
-          if (ep.watched) {
-            // Count rewatches for time calculation
-            return epAcc + (ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1);
+      
+      series.seasons?.forEach(season => {
+        season.episodes?.forEach(ep => {
+          if (ep.air_date && ep.watched === true) {
+            const airDate = new Date(ep.air_date);
+            if (airDate <= today) {
+              // Count rewatches for time calculation
+              const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
+              totalMinutesWatched += runtime * count;
+            }
           }
-          return epAcc;
-        }, 0) || 0);
-      }, 0) || 0;
-      return acc + (watched * runtime);
-    }, 0) + movieList.reduce((acc: number, movie: any) => {
-      const isWatched = getUserRating(movie.rating) > 0;
-      return acc + (isWatched ? (movie.runtime || 120) : 0);
-    }, 0);
+        });
+      });
+    });
+    
+    // Movie watch time
+    movieList.forEach((movie: any) => {
+      if (movie && movie.nmr) {
+        const rating = parseFloat(calculateOverallRating(movie));
+        const isWatched = !isNaN(rating) && rating > 0;
+        if (isWatched) {
+          totalMinutesWatched += (movie.runtime || 120);
+        }
+      }
+    });
 
     // Calculate years, days, hours like desktop
     const years = Math.floor(totalMinutesWatched / (365 * 24 * 60));
@@ -202,23 +221,33 @@ export const MobileStatsGrid: React.FC = () => {
     if (minutes > 0) timeString += `${minutes}m`;
     if (!timeString) timeString = '0m';
 
-    // Ratings - fix for series ratings
-    const ratedSeries = seriesList.filter((s: any) => {
-      const rating = getUserRating(s.rating);
-      return rating > 0;
+    // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
+    const seriesWithRating = seriesList.filter((s: any) => {
+      if (!s || !s.nmr) return false;
+      const rating = parseFloat(calculateOverallRating(s));
+      return !isNaN(rating) && rating > 0;
     });
-    const avgSeriesRating = ratedSeries.length > 0 
-      ? ratedSeries.reduce((acc: number, s: any) => acc + getUserRating(s.rating), 0) / ratedSeries.length
+    
+    const avgSeriesRating = seriesWithRating.length > 0
+      ? seriesWithRating.reduce((acc, s) => acc + parseFloat(calculateOverallRating(s)), 0) / seriesWithRating.length
       : 0;
-      
-    const ratedMovies = movieList.filter((m: any) => getUserRating(m.rating) > 0);
-    const avgMovieRating = ratedMovies.length > 0
-      ? ratedMovies.reduce((acc: number, m: any) => acc + getUserRating(m.rating), 0) / ratedMovies.length
+    
+    const moviesWithRating = movieList.filter((m: any) => {
+      if (!m || !m.nmr) return false;
+      const rating = parseFloat(calculateOverallRating(m));
+      return !isNaN(rating) && rating > 0;
+    });
+    
+    const avgMovieRating = moviesWithRating.length > 0
+      ? moviesWithRating.reduce((acc, m) => acc + parseFloat(calculateOverallRating(m)), 0) / moviesWithRating.length
       : 0;
+    
 
-    // Genres - fix genre detection for different data structures
+    // Genres - fix genre detection and exclude "All"
     const genreCounts: Record<string, number> = {};
     [...seriesList, ...movieList].forEach((item: any) => {
+      if (!item || !item.nmr) return; // Only count valid items
+      
       // Handle different genre structures
       let genres: string[] = [];
       
@@ -226,37 +255,35 @@ export const MobileStatsGrid: React.FC = () => {
         genres = item.genre.genres;
       } else if (item.genres && Array.isArray(item.genres)) {
         genres = item.genres.map((g: any) => typeof g === 'string' ? g : g.name);
-      } else if (item.genre_ids && Array.isArray(item.genre_ids)) {
-        // TMDB genre mapping would go here, but for now skip
-        genres = [];
       }
       
       genres.forEach((genre: string) => {
-        if (genre && typeof genre === 'string') {
+        // Exclude "All" and other invalid genres
+        if (genre && typeof genre === 'string' && 
+            genre.toLowerCase() !== 'all' && 
+            genre.toLowerCase() !== 'alle' &&
+            genre.trim() !== '') {
           genreCounts[genre] = (genreCounts[genre] || 0) + 1;
         }
       });
     });
     const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
 
-    // Providers - fix provider detection with fallbacks
+    // Providers - fix provider detection with the correct data structure
     const providerCounts: Record<string, number> = {};
     [...seriesList, ...movieList].forEach((item: any) => {
-      // Try different provider data structures
+      if (!item || !item.nmr) return; // Only count valid items
+      
+      // Check the actual provider structure used in the app
       let providers: any[] = [];
       
-      if (item.providers?.results?.DE?.flatrate) {
-        providers = item.providers.results.DE.flatrate;
-      } else if (item.providers?.results?.US?.flatrate) {
-        providers = item.providers.results.US.flatrate;
-      } else if (item.watch_providers?.results?.DE?.flatrate) {
-        providers = item.watch_providers.results.DE.flatrate;
-      } else if (item.flatrate) {
-        providers = item.flatrate;
+      // Main provider structure: item.provider.provider[]
+      if (item.provider?.provider && Array.isArray(item.provider.provider)) {
+        providers = item.provider.provider;
       }
       
       providers.forEach((provider: any) => {
-        const name = provider.provider_name || provider.name;
+        const name = provider.name || provider.provider_name;
         if (name && typeof name === 'string') {
           providerCounts[name] = (providerCounts[name] || 0) + 1;
         }
@@ -309,17 +336,27 @@ export const MobileStatsGrid: React.FC = () => {
       topProvider,
       lastWeekWatched,
       completedSeries: seriesList.filter(s => {
-        if (!s.seasons || s.seasons.length === 0) return false;
+        if (!s || !s.nmr || !s.seasons || s.seasons.length === 0) return false;
         
-        const total = s.seasons.reduce((acc, season) => {
-          return acc + (season.episodes?.length || 0);
-        }, 0);
+        // Only count aired episodes for completion
+        let totalAired = 0;
+        let watchedAired = 0;
         
-        const watched = s.seasons.reduce((acc, season) => {
-          return acc + (season.episodes?.filter(ep => ep.watched === true).length || 0);
-        }, 0);
+        s.seasons.forEach(season => {
+          season.episodes?.forEach(ep => {
+            if (ep.air_date) {
+              const airDate = new Date(ep.air_date);
+              if (airDate <= today) {
+                totalAired++;
+                if (ep.watched === true) {
+                  watchedAired++;
+                }
+              }
+            }
+          });
+        });
         
-        return total > 0 && total === watched;
+        return totalAired > 0 && totalAired === watchedAired;
       }).length,
     };
   }, [seriesList, movieList, user]);

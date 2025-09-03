@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  PlayCircle, Check, CalendarToday, CheckCircle,
-  ArrowBack, Tv, BarChart
+  PlayCircle, CalendarToday, CheckCircle,
+  ArrowBack, BarChart
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
@@ -45,8 +45,8 @@ export const MobileTodayEpisodesPage: React.FC = () => {
   // Get next unwatched episodes that have already aired
   const todayEpisodes = useMemo(() => {
     const episodes: TodayEpisode[] = [];
-    const today = new Date();
-    const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    // const today = new Date();
+    // const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
     
     // Check ALL series with progress (not just watchlist)
     const seriesWithProgress = seriesList.filter(series => {

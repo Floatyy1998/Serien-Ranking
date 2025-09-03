@@ -1,9 +1,10 @@
 .mobile-filter-page {
-  min-height: 100vh;
+  height: 100vh;
   background: #000;
   color: white;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Header */
