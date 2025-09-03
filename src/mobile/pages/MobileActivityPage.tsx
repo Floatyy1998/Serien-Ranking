@@ -1,19 +1,30 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Star, Person, Movie, CalendarToday,
+  Person,
   PersonAdd, Groups,
-  Close, CheckCircle, Cancel
+  Close, CheckCircle, Cancel, ArrowBack
 } from '@mui/icons-material';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
 import { FriendActivity } from '../../types/Friend';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+
+interface UserSearchResult {
+  uid: string;
+  username: string;
+  displayName: string;
+  photoURL?: string;
+  isAlreadyFriend: boolean;
+  hasPendingRequest: boolean;
+}
 
 export const MobileActivityPage: React.FC = () => {
   const navigate = useNavigate();
-  const { } = useAuth()!;
+  const { user } = useAuth()!;
   const { 
     friends,
     friendRequests,
@@ -36,6 +47,10 @@ export const MobileActivityPage: React.FC = () => {
   const [friendUsername, setFriendUsername] = useState('');
   const [addingFriend, setAddingFriend] = useState(false);
   const [tmdbPosters, setTmdbPosters] = useState<Record<string, string>>({});
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
+  const [requestProfiles, setRequestProfiles] = useState<Record<string, any>>({});
   
   // Mark as read when viewing
   React.useEffect(() => {
@@ -45,6 +60,131 @@ export const MobileActivityPage: React.FC = () => {
       markRequestsAsRead();
     }
   }, [activeTab, unreadActivitiesCount, unreadRequestsCount]);
+  
+  // Load friend profiles from Firebase Database (like desktop version)
+  React.useEffect(() => {
+    if (friends.length === 0) {
+      setFriendProfiles({});
+      return;
+    }
+
+    const loadFriendProfiles = async () => {
+      const newProfiles: Record<string, any> = {};
+
+      // Load all profiles in parallel
+      await Promise.all(
+        friends.map(async (friend) => {
+          try {
+            const userRef = firebase.database().ref(`users/${friend.uid}`);
+            const snapshot = await userRef.once('value');
+            if (snapshot.exists()) {
+              newProfiles[friend.uid] = snapshot.val();
+            }
+          } catch (error) {
+            console.warn(`Failed to load profile for ${friend.uid}:`, error);
+          }
+        })
+      );
+
+      setFriendProfiles(newProfiles);
+    };
+
+    loadFriendProfiles();
+  }, [friends]);
+  
+  // Load request profiles from Firebase Database (like desktop version)
+  React.useEffect(() => {
+    const loadRequestProfiles = async () => {
+      const profiles: Record<string, any> = {};
+
+      for (const request of friendRequests) {
+        try {
+          const userRef = firebase.database().ref(`users/${request.fromUserId}`);
+          const snapshot = await userRef.once('value');
+          if (snapshot.exists()) {
+            profiles[request.fromUserId] = snapshot.val();
+          }
+        } catch (error) {}
+      }
+
+      setRequestProfiles(profiles);
+    };
+
+    if (friendRequests.length > 0) {
+      loadRequestProfiles();
+    }
+  }, [friendRequests]);
+  
+  // Search for users when friendUsername changes
+  React.useEffect(() => {
+    if (friendUsername.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      searchUsers();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [friendUsername]);
+
+  const searchUsers = async () => {
+    if (!user || friendUsername.length < 3) return;
+
+    try {
+      setSearching(true);
+
+      const usersRef = firebase.database().ref('users');
+      const snapshot = await usersRef.once('value');
+      const usersData = snapshot.val();
+
+      if (!usersData) {
+        setSearchResults([]);
+        return;
+      }
+
+      const results: UserSearchResult[] = [];
+      
+      const currentFriendIds = friends.map((f) => f.uid);
+      const sentRequestIds = sentRequests.map((r) => r.toUserId);
+
+      Object.keys(usersData).forEach((uid) => {
+        const userData = usersData[uid];
+
+        if (uid === user.uid) return;
+        if (!userData.username) return;
+
+        const searchInUsername = userData.username
+          .toLowerCase()
+          .includes(friendUsername.toLowerCase());
+        const searchInDisplayName = userData.displayName
+          ?.toLowerCase()
+          .includes(friendUsername.toLowerCase());
+
+        if (searchInUsername || searchInDisplayName) {
+          const isAlreadyFriend = currentFriendIds.includes(uid);
+          const hasPendingRequest = sentRequestIds.includes(uid);
+          
+          
+          results.push({
+            uid,
+            username: userData.username,
+            displayName: userData.displayName,
+            photoURL: userData.photoURL,
+            isAlreadyFriend,
+            hasPendingRequest,
+          });
+        }
+      });
+
+      setSearchResults(results.slice(0, 10)); // Limit to 10 results
+    } catch (error) {
+      console.error('Error searching users:', error);
+    } finally {
+      setSearching(false);
+    }
+  };
   
   // Get item details for activity
   const getItemDetails = (activity: FriendActivity) => {
@@ -194,14 +334,16 @@ export const MobileActivityPage: React.FC = () => {
   }, [friendActivities.length]); // Only depend on activities length, not tmdbPosters
   
   // Handle add friend
-  const handleAddFriend = async () => {
-    if (!friendUsername.trim()) return;
+  const handleAddFriend = async (targetUser?: UserSearchResult) => {
+    const username = targetUser ? targetUser.username : friendUsername.trim();
+    if (!username) return;
     
     setAddingFriend(true);
     try {
-      const success = await sendFriendRequest(friendUsername);
+      const success = await sendFriendRequest(username);
       if (success) {
         setFriendUsername('');
+        setSearchResults([]);
         setShowAddFriend(false);
         alert('Freundschaftsanfrage gesendet!');
       } else {
@@ -216,10 +358,12 @@ export const MobileActivityPage: React.FC = () => {
   
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      height: '100dvh', 
       background: '#000', 
       color: 'white',
-      paddingBottom: '80px'
+      paddingBottom: '80px',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch'
     }}>
       {/* Header */}
       <header style={{
@@ -233,7 +377,27 @@ export const MobileActivityPage: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => navigate(-1)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)', 
+                border: 'none', 
+                color: 'white', 
+                fontSize: '20px',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px'
+              }}
+            >
+              <ArrowBack />
+            </button>
+            <div>
             <h1 style={{ 
               fontSize: '32px', 
               fontWeight: 800,
@@ -251,6 +415,7 @@ export const MobileActivityPage: React.FC = () => {
             }}>
               {friends.length} Freunde • {sortedActivities.length} Aktivitäten
             </p>
+            </div>
           </div>
           
           <button
@@ -390,6 +555,9 @@ export const MobileActivityPage: React.FC = () => {
                 const isNew = activity.timestamp > (Date.now() - 24 * 60 * 60 * 1000);
                 // userName is now added when loading activities
                 const friendName = activity.userName || 'Unbekannt';
+                // Find the friend object and get their updated profile
+                const friendObj = friends.find(f => f.uid === activity.userId);
+                const activityProfile = friendObj ? (friendProfiles[friendObj.uid] || friendObj) : null;
                 
                 return (
                   <div
@@ -425,13 +593,19 @@ export const MobileActivityPage: React.FC = () => {
                       width: '40px',
                       height: '40px',
                       borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      ...(activityProfile?.photoURL ? {
+                        backgroundImage: `url("${activityProfile.photoURL}")`,
+                        backgroundPosition: 'center',
+                        backgroundSize: 'cover'
+                      } : {
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      }),
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0
                     }}>
-                      <Person style={{ fontSize: '20px' }} />
+                      {!activityProfile?.photoURL && <Person style={{ fontSize: '20px' }} />}
                     </div>
                     
                     {/* Activity Content */}
@@ -447,7 +621,7 @@ export const MobileActivityPage: React.FC = () => {
                           fontWeight: 600,
                           color: 'white'
                         }}>
-                          {friendName}
+                          {activityProfile?.displayName || friendName}
                         </span>
                         <span style={{ 
                           fontSize: '13px',
@@ -530,10 +704,12 @@ export const MobileActivityPage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              friends.map(friend => (
+              friends.map((friend) => {
+                const currentProfile = friendProfiles[friend.uid] || friend;
+                return (
                 <button
                   key={(friend as any).id || friend.uid || Math.random()}
-                  onClick={() => navigate(`/profile/${(friend as any).id || friend.uid}`)}
+                  onClick={() => navigate(`/friend/${(friend as any).id || friend.uid}`)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -552,14 +728,18 @@ export const MobileActivityPage: React.FC = () => {
                     width: '48px',
                     height: '48px',
                     borderRadius: '50%',
-                    background: friend.photoURL 
-                      ? `url(${friend.photoURL}) center/cover`
-                      : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    ...(currentProfile.photoURL ? {
+                      backgroundImage: `url("${currentProfile.photoURL}")`,
+                      backgroundPosition: 'center',
+                      backgroundSize: 'cover'
+                    } : {
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    }),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    {!friend.photoURL && <Person style={{ fontSize: '24px' }} />}
+                    {!currentProfile.photoURL && <Person style={{ fontSize: '24px' }} />}
                   </div>
                   
                   <div style={{ flex: 1 }}>
@@ -568,14 +748,14 @@ export const MobileActivityPage: React.FC = () => {
                       fontWeight: 600,
                       margin: '0 0 4px 0'
                     }}>
-                      {friend.displayName || friend.username}
+                      {currentProfile.displayName || currentProfile.username}
                     </h4>
                     <p style={{
                       fontSize: '13px',
                       color: 'rgba(255, 255, 255, 0.5)',
                       margin: 0
                     }}>
-                      @{friend.username}
+                      @{currentProfile.username}
                     </p>
                   </div>
                   
@@ -588,7 +768,8 @@ export const MobileActivityPage: React.FC = () => {
                     }} />
                   )}
                 </button>
-              ))
+                );
+              })
             )}
           </div>
         )}
@@ -606,7 +787,9 @@ export const MobileActivityPage: React.FC = () => {
                   Eingehende Anfragen
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {friendRequests.map(request => (
+                  {friendRequests.map((request) => {
+                    const requestProfile = requestProfiles[request.fromUserId] || {};
+                    return (
                     <div
                       key={request.id}
                       style={{
@@ -623,12 +806,18 @@ export const MobileActivityPage: React.FC = () => {
                         width: '40px',
                         height: '40px',
                         borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        ...(requestProfile.photoURL ? {
+                          backgroundImage: `url("${requestProfile.photoURL}")`,
+                          backgroundPosition: 'center',
+                          backgroundSize: 'cover'
+                        } : {
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        }),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        <Person style={{ fontSize: '20px' }} />
+                        {!requestProfile.photoURL && <Person style={{ fontSize: '20px' }} />}
                       </div>
                       
                       <div style={{ flex: 1 }}>
@@ -637,7 +826,7 @@ export const MobileActivityPage: React.FC = () => {
                           fontWeight: 600,
                           margin: 0
                         }}>
-                          {request.fromUsername}
+                          {requestProfile.displayName || request.fromUsername}
                         </h4>
                         <p style={{
                           fontSize: '12px',
@@ -683,7 +872,8 @@ export const MobileActivityPage: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -716,12 +906,18 @@ export const MobileActivityPage: React.FC = () => {
                         width: '40px',
                         height: '40px',
                         borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        ...((request as any).toPhotoURL ? {
+                          backgroundImage: `url("${(request as any).toPhotoURL}")`,
+                          backgroundPosition: 'center',
+                          backgroundSize: 'cover'
+                        } : {
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        }),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        <Person style={{ fontSize: '20px' }} />
+                        {!(request as any).toPhotoURL && <Person style={{ fontSize: '20px' }} />}
                       </div>
                       
                       <div style={{ flex: 1 }}>
@@ -827,6 +1023,96 @@ export const MobileActivityPage: React.FC = () => {
               }}
             />
             
+            {/* Search Results */}
+            {searching && (
+              <div style={{
+                padding: '20px',
+                textAlign: 'center',
+                color: 'rgba(255, 255, 255, 0.5)'
+              }}>
+                Suche...
+              </div>
+            )}
+            
+            {searchResults.length > 0 && (
+              <div style={{
+                marginBottom: '20px',
+                maxHeight: '200px',
+                overflowY: 'auto'
+              }}>
+                {searchResults.map((result) => (
+                  <button
+                    key={result.uid}
+                    onClick={() => handleAddFriend(result)}
+                    disabled={result.isAlreadyFriend || result.hasPendingRequest || addingFriend}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      color: 'white',
+                      cursor: result.isAlreadyFriend || result.hasPendingRequest || addingFriend ? 'not-allowed' : 'pointer',
+                      opacity: result.isAlreadyFriend || result.hasPendingRequest || addingFriend ? 0.5 : 1,
+                      marginBottom: '8px',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      ...(result.photoURL ? {
+                        backgroundImage: `url("${result.photoURL}")`,
+                        backgroundPosition: 'center',
+                        backgroundSize: 'cover'
+                      } : {
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      }),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      {!result.photoURL && <Person style={{ fontSize: '20px' }} />}
+                    </div>
+                    
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        marginBottom: '2px'
+                      }}>
+                        {result.displayName || result.username}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: 'rgba(255, 255, 255, 0.5)'
+                      }}>
+                        @{result.username}
+                        {result.isAlreadyFriend && ' • Bereits befreundet'}
+                        {result.hasPendingRequest && ' • Anfrage gesendet'}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {friendUsername.length >= 3 && searchResults.length === 0 && !searching && (
+              <div style={{
+                padding: '20px',
+                textAlign: 'center',
+                color: 'rgba(255, 255, 255, 0.5)',
+                marginBottom: '20px'
+              }}>
+                Keine Benutzer gefunden
+              </div>
+            )}
+            
             <div style={{
               display: 'flex',
               gap: '12px'
@@ -848,7 +1134,7 @@ export const MobileActivityPage: React.FC = () => {
                 Abbrechen
               </button>
               <button
-                onClick={handleAddFriend}
+                onClick={() => handleAddFriend()}
                 disabled={addingFriend || !friendUsername.trim()}
                 style={{
                   flex: 1,

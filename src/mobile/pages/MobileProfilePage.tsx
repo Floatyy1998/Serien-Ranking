@@ -10,21 +10,34 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
+import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 
 export const MobileProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
+  
+  // Load user data from Firebase Database
+  const { data: userData } = useEnhancedFirebaseCache<any>(
+    user ? `users/${user.uid}` : '',
+    {
+      ttl: 5 * 60 * 1000,
+      useRealtimeListener: true,
+      enableOfflineSupport: true,
+    }
+  );
+  
+  
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   
-  const getUserRating = (rating: any): number => {
-    if (!rating || !user?.uid) return 0;
-    return rating[user.uid] || 0;
-  };
+  // const getUserRating = (rating: any): number => {
+  //   if (!rating || !user?.uid) return 0;
+  //   return rating[user.uid] || 0;
+  // };
   
   const stats = useMemo(() => {
     const totalSeries = seriesList.length;
-    const watchedMovies = movieList.filter(movie => getUserRating(movie.rating) > 0).length;
+    const totalMovies = movieList.length;
     
     let watchedEpisodes = 0;
     let totalHours = 0;
@@ -35,8 +48,9 @@ export const MobileProfilePage: React.FC = () => {
           if (season.episodes) {
             season.episodes.forEach(episode => {
               if (episode.watched) {
-                watchedEpisodes++;
-                totalHours += 45; // Default episode runtime
+                const watchCount = episode.watchCount || 1;
+                watchedEpisodes += watchCount;
+                totalHours += (series.episodeRuntime || 45) * watchCount;
               }
             });
           }
@@ -45,18 +59,18 @@ export const MobileProfilePage: React.FC = () => {
     });
     
     movieList.forEach(movie => {
-      if (getUserRating(movie.rating) > 0) {
+      if (movie.watched) {
         totalHours += movie.runtime || 120;
       }
     });
     
     return {
       totalSeries,
-      watchedMovies,
+      totalMovies,
       watchedEpisodes,
       totalHours: Math.round(totalHours / 60)
     };
-  }, [seriesList, movieList, user]);
+  }, [seriesList, movieList]);
   
   const handleLogout = async () => {
     try {
@@ -85,14 +99,20 @@ export const MobileProfilePage: React.FC = () => {
           width: '80px',
           height: '80px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          ...((userData?.photoURL || user?.photoURL) ? {
+            backgroundImage: `url("${userData?.photoURL || user?.photoURL}")`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover'
+          } : {
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+          }),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto 16px',
           boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
         }}>
-          <Person style={{ fontSize: '40px' }} />
+          {!(userData?.photoURL || user?.photoURL) && <Person style={{ fontSize: '40px' }} />}
         </div>
         
         <h2 style={{ 
@@ -100,7 +120,7 @@ export const MobileProfilePage: React.FC = () => {
           fontWeight: 700,
           margin: '0 0 4px 0'
         }}>
-          {user?.displayName || 'User'}
+          {userData?.displayName || user?.displayName || 'User'}
         </h2>
         <p style={{ 
           fontSize: '14px',
@@ -139,7 +159,7 @@ export const MobileProfilePage: React.FC = () => {
           textAlign: 'center'
         }}>
           <Movie style={{ fontSize: '24px', color: '#ff6b6b', marginBottom: '8px' }} />
-          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.watchedMovies}</div>
+          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.totalMovies}</div>
           <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)' }}>Filme</div>
         </div>
         

@@ -6,6 +6,7 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
 import { Series } from '../../types/Series';
 import { Movie as MovieType } from '../../types/Movie';
+import { logSeriesAdded, logMovieAdded } from '../../features/badges/minimalActivityLogger';
 // import { genreIdMapForSeries, genreIdMapForMovies } from '../../config/menuItems';
 
 export const MobileSearchPage: React.FC = () => {
@@ -142,7 +143,7 @@ export const MobileSearchPage: React.FC = () => {
     
     const endpoint = item.type === 'series' 
       ? 'https://serienapi.konrad-dinges.de/add'
-      : 'https://serienapi.konrad-dinges.de/movie/add';
+      : 'https://serienapi.konrad-dinges.de/addMovie';
     
     try {
       const response = await fetch(endpoint, {
@@ -160,6 +161,21 @@ export const MobileSearchPage: React.FC = () => {
         setSearchResults(prev => 
           prev.map(r => r.id === item.id ? { ...r, inList: true } : r)
         );
+        
+        // Activity-Logging für Friend + Badge-System (wie Desktop)
+        if (item.media_type === 'tv' || endpoint.includes('/add')) {
+          await logSeriesAdded(
+            user.uid,
+            item.name || item.title || 'Unbekannte Serie',
+            item.id
+          );
+        } else {
+          await logMovieAdded(
+            user.uid,
+            item.title || 'Unbekannter Film',
+            item.id
+          );
+        }
       }
     } catch (error) {
       console.error('Error adding item:', error);

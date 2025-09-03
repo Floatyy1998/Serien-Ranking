@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowBack, PhotoCamera, Edit, 
   Public, PublicOff, Share, Tour,
-  Palette, Check, Close, ChevronRight
+  Palette, ChevronRight
 } from '@mui/icons-material';
 import { useAuth } from '../../App';
 import firebase from 'firebase/compat/app';

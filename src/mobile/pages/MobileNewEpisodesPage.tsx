@@ -7,7 +7,7 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
-import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+// import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 
@@ -66,8 +66,8 @@ export const MobileNewEpisodesPage: React.FC = () => {
           
           episodes.push({
             seriesId: series.id,
-            seriesName: series.title || series.name || '',
-            seriesPoster: series.poster,
+            seriesName: series.title || '',
+            seriesPoster: typeof series.poster === 'string' ? series.poster : (series.poster as any)?.poster || '',
             seriesNmr: series.nmr,
             seasonIndex: seasonNumber - 1,
             episodeIndex: epNumber - 1,
@@ -90,7 +90,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
         
         season.episodes.forEach((episode, episodeIndex) => {
           // Try multiple date fields
-          const airDate = episode.air_date || episode.airDate || episode.firstAired;
+          const airDate = episode.air_date;
           if (!airDate) {
             // Debug: Log episodes without air dates
             if (episodeIndex === 0 && seasonIndex === 0) {
@@ -111,14 +111,14 @@ export const MobileNewEpisodesPage: React.FC = () => {
             // Show ALL future episodes, no time limit
             episodes.push({
               seriesId: series.id,
-              seriesName: series.title || series.name || '',
-              seriesPoster: series.poster,
+              seriesName: series.title || '',
+              seriesPoster: typeof series.poster === 'string' ? series.poster : (series.poster as any)?.poster || '',
               seriesNmr: series.nmr,
               seasonIndex,
               episodeIndex,
-              episodeName: episode.name || `Episode ${episode.episode_number || episodeIndex + 1}`,
-              episodeNumber: episode.episode_number || episodeIndex + 1,
-              seasonNumber: season.season_number || seasonIndex + 1,
+              episodeName: episode.name || `Episode ${episodeIndex + 1}`,
+              episodeNumber: episodeIndex + 1,
+              seasonNumber: season.seasonNumber || seasonIndex + 1,
               airDate: episodeDate,
               daysUntil,
               watched: episode.watched || false

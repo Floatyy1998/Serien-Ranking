@@ -8,10 +8,12 @@ export const MobileStatsPage: React.FC = () => {
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      height: '100dvh', 
       background: '#000', 
       color: 'white',
-      paddingBottom: '80px'
+      paddingBottom: '80px',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch'
     }}>
       {/* Header */}
       <header style={{

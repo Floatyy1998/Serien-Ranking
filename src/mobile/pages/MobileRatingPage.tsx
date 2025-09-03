@@ -30,6 +30,7 @@ import { useAuth } from '../../App';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { genreMenuItemsForMovies, genreMenuItems } from '../../config/menuItems';
 import './MobileRatingPage.css';
 
@@ -83,7 +84,7 @@ export const MobileRatingPage: React.FC = () => {
   useEffect(() => {
     if (item && user) {
       console.log('Item type:', type);
-      console.log('Item genres from object:', item.genre?.genres || item.genres);
+      console.log('Item genres from object:', item.genre?.genres);
       
       // Get ALL possible genres based on type (movie or series)
       // Use the complete genre list from menuItems
@@ -205,6 +206,17 @@ export const MobileRatingPage: React.FC = () => {
           .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
         
         await ratingRef.set(ratingsToSave);
+        
+        // Activity-Logging für Friend + Badge-System (wie Desktop)
+        if (user?.uid && overallRating > 0) {
+          await logRatingAdded(
+            user.uid,
+            item.title || 'Unbekannter Titel',
+            type === 'series' ? 'series' : 'movie',
+            overallRating,
+            item.id
+          );
+        }
       }
       
       navigate(-1);

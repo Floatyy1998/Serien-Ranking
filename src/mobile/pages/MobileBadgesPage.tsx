@@ -20,7 +20,7 @@ import { useBadges } from '../../features/badges/BadgeProvider';
 import { BADGE_DEFINITIONS, Badge, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import { useAuth } from '../../App';
-import firebase from 'firebase/compat/app';
+// import firebase from 'firebase/compat/app';
 import './MobileBadgesPage.css';
 
 const categoryIcons: Record<string, React.ReactNode> = {

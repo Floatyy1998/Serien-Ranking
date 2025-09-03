@@ -74,6 +74,7 @@ export interface Series {
   seasonCount: number;
   seasons: {
     seasonNumber: number;
+    season_number?: number; // TMDB format alternative
     episodes: {
       air_date: string;
       id: number;
@@ -81,6 +82,9 @@ export interface Series {
       watched: boolean;
       watchCount?: number;
       firstWatchedAt?: string;
+      episode_number?: number; // TMDB format
+      airDate?: string; // Alternative date format
+      firstAired?: string; // Another alternative date format
     }[];
   }[];
   title: string;
@@ -95,4 +99,15 @@ export interface Series {
   release_date: string;
   media_type?: string;
   // Note: userRating is stored in rating[userId], not as separate field
+  
+  // Additional optional fields from TMDB API or other sources
+  overview?: string;
+  backdrop?: string;
+  name?: string; // Alternative to title
+  genres?: { id: number; name: string }[]; // TMDB genre format
+  tmdb_id?: number;
+  watch_providers?: any; // Provider data from TMDB
+  first_air_date?: string;
+  status?: string;
+  cast?: any[]; // Cast data from TMDB
 }

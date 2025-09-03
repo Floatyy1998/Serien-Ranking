@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Person, Movie, Tv, ChevronRight, Star } from '@mui/icons-material';
+import { Person, Movie, Tv, ChevronRight, Star, OpenInNew } from '@mui/icons-material';
 
 interface CastMember {
   id: number;
@@ -29,20 +29,62 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
   const [crew, setCrew] = useState<CastMember[]>([]);
   const [animeCharacters, setAnimeCharacters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'cast' | 'crew' | 'characters'>('cast');
   const [personDetails, setPersonDetails] = useState<any>(null);
   const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
+  const [selectedVoiceActor, setSelectedVoiceActor] = useState<any>(null);
+  const [voiceActorDetails, setVoiceActorDetails] = useState<any>(null);
+  const [voiceActorLoading, setVoiceActorLoading] = useState(false);
   
-  // Check if anime
-  const isAnime = seriesData?.genres?.some((g: any) => g.id === 16) && 
-    seriesData?.origin_country?.some((c: string) => ['JP', 'CN', 'KR'].includes(c));
+  // Check if anime - multiple detection methods
+  // Method 1: Check for Animation genre (id 16) and Asian origin
+  const hasAnimationGenre = seriesData?.genres?.some((g: any) => g.id === 16) ||
+    seriesData?.genre?.genres?.some((g: string) => g.toLowerCase().includes('animation'));
+  
+  const isFromAsianCountry = seriesData?.origin_country?.some((c: string) => 
+    ['JP', 'CN', 'KR'].includes(c)) || false;
+  
+  // Method 2: Check for anime-related keywords in title or genres
+  const hasAnimeKeywords = seriesData?.genre?.genres?.some((g: string) => 
+    g.toLowerCase().includes('anime')) ||
+    seriesData?.title?.toLowerCase().includes('anime');
+  
+  // If we have Animation genre but no origin_country data, assume it's anime
+  // Most western animations don't have "Animation" as genre in TMDB
+  const isAnime = hasAnimeKeywords || 
+    (hasAnimationGenre && (isFromAsianCountry || !seriesData?.origin_country));
+  
+  // Debug logging
+  console.log('MobileCastCrew Anime Detection:', {
+    title: seriesData?.title,
+    genres: seriesData?.genres,
+    genreStrings: seriesData?.genre?.genres,
+    origin_country: seriesData?.origin_country,
+    hasAnimationGenre,
+    isFromAsianCountry,
+    hasAnimeKeywords,
+    isAnime,
+    mediaType
+  });
+  
+  // Set initial tab based on whether it's anime
+  const [activeTab, setActiveTab] = useState<'cast' | 'crew' | 'characters'>(
+    isAnime ? 'characters' : 'cast'
+  );
 
   useEffect(() => {
     if (isAnime && mediaType === 'tv') {
       fetchAnimeCharacters();
+      setActiveTab('characters'); // Switch to characters tab when anime is detected
     }
     fetchCredits();
   }, [tmdbId, mediaType, isAnime]);
+  
+  // Update active tab when anime characters are loaded
+  useEffect(() => {
+    if (isAnime && animeCharacters.length > 0 && activeTab !== 'characters') {
+      setActiveTab('characters');
+    }
+  }, [animeCharacters, isAnime]);
 
   const fetchAnimeCharacters = async () => {
     try {
@@ -115,6 +157,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
             role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
             voice_actors: edge.voiceActors.map((va: any) => ({
               person: {
+                id: va.id,  // AniList ID des Voice Actors
                 name: `${va.name.first || ''} ${va.name.last || ''}`.trim(),
                 native: va.name.native,
                 image: va.image?.large,
@@ -202,10 +245,318 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
     }
   };
 
+  const fetchVoiceActorDetails = async (voiceActorId: number) => {
+    setVoiceActorLoading(true);
+    try {
+      const query = `
+        query ($id: Int) {
+          Staff(id: $id) {
+            id
+            name {
+              full
+              native
+            }
+            image {
+              large
+            }
+            age
+            dateOfBirth {
+              year
+              month
+              day
+            }
+            characterMedia(perPage: 20, sort: START_DATE_DESC) {
+              edges {
+                node {
+                  id
+                  title {
+                    romaji
+                    english
+                  }
+                  type
+                  coverImage {
+                    large
+                  }
+                  startDate {
+                    year
+                  }
+                  meanScore
+                }
+                characters {
+                  id
+                  name {
+                    full
+                  }
+                }
+                characterRole
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          variables: { id: voiceActorId },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data?.Staff) {
+          setVoiceActorDetails(data.data.Staff);
+          setSelectedVoiceActor(voiceActorId);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching voice actor details:', error);
+    } finally {
+      setVoiceActorLoading(false);
+    }
+  };
+
+  const handleVoiceActorClick = (voiceActor: any) => {
+    if (voiceActor?.person?.id) {
+      fetchVoiceActorDetails(voiceActor.person.id);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
         <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Lade Cast & Crew...</div>
+      </div>
+    );
+  }
+
+  // Voice Actor Details View
+  if (selectedVoiceActor && voiceActorDetails) {
+    return (
+      <div style={{ padding: '20px' }}>
+        <button
+          onClick={() => {
+            setSelectedVoiceActor(null);
+            setVoiceActorDetails(null);
+          }}
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: 'none',
+            borderRadius: '20px',
+            padding: '8px 16px',
+            color: 'white',
+            fontSize: '13px',
+            marginBottom: '20px',
+            cursor: 'pointer'
+          }}
+        >
+          ← Zurück
+        </button>
+
+        {voiceActorLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Lade Sprecher-Details...</div>
+          </div>
+        ) : (
+          <>
+            {/* Voice Actor Info */}
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              marginBottom: '24px'
+            }}>
+              {voiceActorDetails.image?.large ? (
+                <img
+                  src={voiceActorDetails.image.large}
+                  alt={voiceActorDetails.name.full}
+                  style={{
+                    width: '80px',
+                    height: '120px',
+                    objectFit: 'cover',
+                    borderRadius: '12px'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '80px',
+                  height: '120px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Person style={{ fontSize: '32px', color: 'rgba(255, 255, 255, 0.3)' }} />
+                </div>
+              )}
+              
+              <div style={{ flex: 1 }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  margin: '0 0 8px 0'
+                }}>
+                  {voiceActorDetails.name.full}
+                </h3>
+                {voiceActorDetails.name.native && (
+                  <p style={{
+                    fontSize: '13px',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    margin: '0 0 4px 0'
+                  }}>
+                    {voiceActorDetails.name.native}
+                  </p>
+                )}
+                <p style={{
+                  fontSize: '13px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  margin: '0 0 4px 0'
+                }}>
+                  Voice Acting
+                </p>
+                {voiceActorDetails.dateOfBirth && (
+                  <p style={{
+                    fontSize: '12px',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    margin: 0
+                  }}>
+                    Geboren: {voiceActorDetails.dateOfBirth.day || '??'}.{voiceActorDetails.dateOfBirth.month || '??'}.{voiceActorDetails.dateOfBirth.year || '????'}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Known For */}
+            <div>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: 600,
+                marginBottom: '12px'
+              }}>
+                Bekannt aus
+              </h4>
+              
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                overflowX: 'auto',
+                paddingBottom: '8px',
+                scrollbarWidth: 'none'
+              }}>
+                {voiceActorDetails.characterMedia?.edges?.map((edge: any) => (
+                  <div
+                    key={edge.node.id}
+                    style={{
+                      minWidth: '100px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <div style={{
+                      position: 'relative',
+                      marginBottom: '6px'
+                    }}>
+                      {edge.node.coverImage?.large ? (
+                        <img
+                          src={edge.node.coverImage.large}
+                          alt={edge.node.title.english || edge.node.title.romaji}
+                          style={{
+                            width: '100px',
+                            height: '150px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                          }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: '100px',
+                          height: '150px',
+                          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}>
+                          {edge.node.type === 'ANIME' ? (
+                            <Tv style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                          ) : (
+                            <Movie style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Rating Badge */}
+                      {edge.node.meanScore && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '6px',
+                          right: '6px',
+                          background: 'rgba(0, 0, 0, 0.8)',
+                          borderRadius: '12px',
+                          padding: '2px 6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          fontSize: '10px',
+                          fontWeight: 600
+                        }}>
+                          <Star style={{ fontSize: '10px', color: '#FFD700' }} />
+                          {(edge.node.meanScore / 10).toFixed(1)}
+                        </div>
+                      )}
+                      
+                      {/* Year Badge */}
+                      {edge.node.startDate?.year && (
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '6px',
+                          left: '6px',
+                          background: 'rgba(0, 0, 0, 0.8)',
+                          borderRadius: '8px',
+                          padding: '2px 6px',
+                          fontSize: '10px',
+                          fontWeight: 500
+                        }}>
+                          {edge.node.startDate.year}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <p style={{
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      margin: '0 0 2px 0',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      lineHeight: 1.3
+                    }}>
+                      {edge.node.title.english || edge.node.title.romaji}
+                    </p>
+                    {edge.characters?.[0] && (
+                      <p style={{
+                        fontSize: '10px',
+                        margin: 0,
+                        color: 'rgba(255, 255, 255, 0.5)'
+                      }}>
+                        als {edge.characters[0].name.full}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -506,7 +857,21 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                 padding: '12px',
                 background: 'rgba(255, 255, 255, 0.02)',
                 borderRadius: '12px',
-                marginBottom: '8px'
+                marginBottom: '8px',
+                cursor: char.voice_actors?.[0]?.person?.id ? 'pointer' : 'default',
+                transition: 'background 0.2s'
+              }}
+              onClick={() => {
+                // Klick auf Voice Actor - zeige Details
+                handleVoiceActorClick(char.voice_actors?.[0]);
+              }}
+              onMouseEnter={(e) => {
+                if (char.voice_actors?.[0]?.person?.id) {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
               }}
             >
               {/* Character Image */}
@@ -545,15 +910,6 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                 }}>
                   {char.character.name}
                 </p>
-                {char.character.native && (
-                  <p style={{
-                    fontSize: '12px',
-                    margin: '2px 0 0 0',
-                    color: 'rgba(255, 255, 255, 0.5)'
-                  }}>
-                    {char.character.native}
-                  </p>
-                )}
                 <p style={{
                   fontSize: '11px',
                   margin: '2px 0 0 0',
@@ -574,25 +930,26 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                     <p style={{
                       fontSize: '12px',
                       margin: 0,
-                      color: 'rgba(255, 255, 255, 0.7)'
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      justifyContent: 'flex-end'
                     }}>
                       {char.voice_actors[0].person.name}
+                      {char.voice_actors[0].person.id && (
+                        <OpenInNew style={{ 
+                          fontSize: '10px', 
+                          opacity: 0.5 
+                        }} />
+                      )}
                     </p>
-                    {char.voice_actors[0].person.native && (
-                      <p style={{
-                        fontSize: '11px',
-                        margin: '2px 0 0 0',
-                        color: 'rgba(255, 255, 255, 0.5)'
-                      }}>
-                        {char.voice_actors[0].person.native}
-                      </p>
-                    )}
                     <p style={{
                       fontSize: '10px',
                       margin: '2px 0 0 0',
                       color: 'rgba(255, 255, 255, 0.4)'
                     }}>
-                      Seiyuu
+                      Sprecher
                     </p>
                   </div>
                   {char.voice_actors[0].person.image ? (

@@ -2,18 +2,17 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Movie, ArrowBack, Star, FilterList, 
-  Search, Sort, CalendarToday, TrendingUp
+  Movie, ArrowBack, Star
 } from '@mui/icons-material';
 import { useMovieList } from '../../contexts/MovieListProvider';
-import { useAuth } from '../../App';
-import { Movie as MovieType } from '../../types/Movie';
+// import { useAuth } from '../../App';
+// import { Movie as MovieType } from '../../types/Movie';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
 
 export const MobileMoviesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  // const { user } = useAuth()!;
   const { movieList } = useMovieList();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'year' | 'rating'>('name');
@@ -32,8 +31,8 @@ export const MobileMoviesPage: React.FC = () => {
   const allGenres = useMemo(() => {
     const genres = new Set<string>();
     movieList.forEach(movie => {
-      if (movie.genres && Array.isArray(movie.genres)) {
-        movie.genres.forEach((g: any) => {
+      if (movie.genre?.genres && Array.isArray(movie.genre.genres)) {
+        movie.genre.genres.forEach((g: any) => {
           const genre = typeof g === 'string' ? g : g.name;
           if (genre) genres.add(genre);
         });
@@ -55,9 +54,7 @@ export const MobileMoviesPage: React.FC = () => {
       
       // Genre filter
       if (filterGenre !== 'all') {
-        const movieGenres = movie.genres?.map((g: any) => 
-          typeof g === 'string' ? g : g.name
-        ) || [];
+        const movieGenres = movie.genre?.genres || [];
         if (!movieGenres.includes(filterGenre)) {
           return false;
         }

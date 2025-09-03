@@ -12,7 +12,7 @@ import { useAuth } from '../../App';
 import { Series } from '../../types/Series';
 import { Movie } from '../../types/Movie';
 import { MobileStatsGrid } from '../components/MobileStatsGrid';
-import { generateRecommendations } from '../../features/recommendations/recommendationEngine';
+// import { generateRecommendations } from '../../features/recommendations/recommendationEngine';
 import './MobileHomePage.css';
 
 export const MobileHomePage: React.FC = () => {

@@ -34,4 +34,10 @@ export interface Movie {
   media_type?: string;
   // Note: userRating is stored in rating[userId], not as separate field
   // watched status is derived from rating[userId] > 0
+  
+  // Additional optional fields from TMDB API
+  overview?: string;
+  backdrop?: string;
+  watched?: boolean;
+  genres?: { id: number; name: string }[]; // TMDB genre format
 }

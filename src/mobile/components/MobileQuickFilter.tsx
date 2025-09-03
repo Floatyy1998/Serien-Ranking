@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FilterList, Close, Movie, Tv, 
+  FilterList, Close, 
   Star, NewReleases, Schedule, PlaylistAdd 
 } from '@mui/icons-material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
@@ -82,7 +82,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
-          bottom: '20px',
+          bottom: '120px',  // Fixed height above navbar
           right: '20px',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           border: 'none',
@@ -415,9 +415,9 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                           overflow: 'hidden'
                         }}
                       >
-                        {provider.icon && (
+                        {(provider as any)?.icon ? (
                           <img 
-                            src={provider.icon} 
+                            src={(provider as any).icon} 
                             alt={provider.label}
                             style={{
                               width: '24px',
@@ -426,14 +426,15 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                               filter: isActive ? 'brightness(1.2)' : 'none'
                             }}
                           />
-                        )}
-                        {!provider.icon && (
+                        ) : (
                           <span style={{
-                            fontSize: '10px',
+                            fontSize: '8px',
                             fontWeight: 600,
-                            color: 'white'
+                            color: 'white',
+                            textAlign: 'center',
+                            lineHeight: '1.1'
                           }}>
-                            {provider.label.slice(0, 3)}
+                            {provider.label}
                           </span>
                         )}
                       </button>

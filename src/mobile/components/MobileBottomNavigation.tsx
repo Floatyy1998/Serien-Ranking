@@ -5,13 +5,11 @@ import {
   Home,
   PlayCircle,
   Star,
-  Bookmark,
   Person,
+  BarChart,
 } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useNotifications } from '../../contexts/NotificationProvider';
-import { useNotifications as useGeneralNotifications } from '../../contexts/NotificationContext';
 import './MobileBottomNavigation.css';
 
 interface NavItem {
@@ -49,6 +47,12 @@ export const MobileBottomNavigation: React.FC = () => {
       label: 'Entdecken',
     },
     {
+      id: 'ratings',
+      path: '/ratings',
+      icon: <BarChart />,
+      label: 'Bewertungen',
+    },
+    {
       id: 'profile',
       path: '/profile',
       icon: <Person />,
@@ -83,7 +87,7 @@ export const MobileBottomNavigation: React.FC = () => {
   // Hide on detail pages
   const shouldHide = location.pathname.includes('/series/') || 
                      location.pathname.includes('/movie/') ||
-                     location.pathname.includes('/rating') ||
+                     location.pathname.includes('/rating/') ||  // Only hide for /rating/:type/:id
                      location.pathname.includes('/episodes');
 
   if (shouldHide) return null;

@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowBack,
   Check,
-  Schedule,
-  PlayCircle,
   Refresh,
   ExpandMore,
   ExpandLess,
@@ -363,17 +361,6 @@ export const MobileEpisodeManagementPage: React.FC = () => {
         </AnimatePresence>
       </div>
 
-      {/* Native Bottom Action Bar */}
-      <div className="bottom-action-bar">
-        <button className="action-button">
-          <PlayCircle />
-          <span>Nächste Episode</span>
-        </button>
-        <button className="action-button">
-          <Schedule />
-          <span>Zeitplan</span>
-        </button>
-      </div>
     </div>
   );
 };
