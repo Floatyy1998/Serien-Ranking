@@ -4,6 +4,7 @@ import {
   ArrowBack, Palette, Logout, Share, Edit, PhotoCamera
 } from '@mui/icons-material';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import 'firebase/compat/database';
@@ -11,6 +12,7 @@ import 'firebase/compat/database';
 export const MobileSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
+  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
   
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -129,18 +131,17 @@ export const MobileSettingsPage: React.FC = () => {
 
   return (
     <div style={{ 
-      height: '100dvh', 
-      background: '#000', 
-      color: 'white',
+      ...getMobilePageStyle(),
+      height: '100dvh',
       paddingBottom: '80px',
       overflowY: 'auto',
       WebkitOverflowScrolling: 'touch'
     }}>
       {/* Header */}
       <header style={{
+        ...getMobileHeaderStyle('rgba(102, 126, 234, 0.6)'),
         padding: '20px',
-        paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, rgba(0, 0, 0, 0) 100%)'
+        paddingTop: 'calc(20px + env(safe-area-inset-top))'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button 

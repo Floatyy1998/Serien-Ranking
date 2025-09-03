@@ -6,6 +6,7 @@ import {
   Palette, ChevronRight
 } from '@mui/icons-material';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
@@ -14,6 +15,7 @@ import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 export const MobileProfileSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
+  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [username, setUsername] = useState('');
@@ -199,16 +201,14 @@ export const MobileProfileSettingsPage: React.FC = () => {
   
   return (
     <div style={{ 
-      minHeight: '100vh', 
-      background: 'var(--color-background-default, #000)', 
-      color: 'white',
+      ...getMobilePageStyle(),
       paddingBottom: '80px'
     }}>
       {/* Header */}
       <header style={{
+        ...getMobileHeaderStyle('rgba(102, 126, 234, 0.6)'),
         padding: '20px',
-        paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, rgba(0, 0, 0, 0) 100%)'
+        paddingTop: 'calc(20px + env(safe-area-inset-top))'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
           <button 

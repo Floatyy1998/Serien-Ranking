@@ -16,12 +16,14 @@ import { MobileCastCrew } from '../components/MobileCastCrew';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export const MobileSeriesDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
+  const { getMobilePageStyle } = useTheme();
   const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
   const [showRewatchDialog, setShowRewatchDialog] = useState<{show: boolean, type: 'episode' | 'season', item: any}>({show: false, type: 'episode', item: null});
@@ -157,27 +159,6 @@ export const MobileSeriesDetailPage: React.FC = () => {
     setExpandedSeasons(newExpanded);
   };
 
-  // Handle episode toggle
-  const handleEpisodeToggle = async (seasonNumber: number, episodeNumber: number, currentWatched: boolean, currentWatchCount?: number) => {
-    if (!series || !user || isReadOnlyTmdbSeries) return;
-    
-    try {
-      const episodePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonNumber - 1}/episodes/${episodeNumber - 1}`;
-      
-      if (!currentWatched) {
-        // Mark as watched
-        await firebase.database().ref(`${episodePath}/watched`).set(true);
-        await firebase.database().ref(`${episodePath}/firstWatchedAt`).set(Date.now());
-        await firebase.database().ref(`${episodePath}/watchCount`).set(1);
-      } else {
-        // Toggle rewatch count
-        const newWatchCount = (currentWatchCount || 1) + 1;
-        await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
-      }
-    } catch (error) {
-      console.error('Error toggling episode:', error);
-    }
-  };
 
   // Handle adding series
   const handleAddSeries = async () => {
@@ -334,9 +315,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
     const apiKey = import.meta.env.VITE_API_TMDB;
     return (
       <div style={{ 
-        minHeight: '100vh', 
-        background: '#000', 
-        color: 'white',
+        ...getMobilePageStyle(),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -373,9 +352,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
   if (loading || !series) {
     return (
       <div style={{ 
-        minHeight: '100vh', 
-        background: '#000', 
-        color: 'white',
+        ...getMobilePageStyle(),
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
@@ -386,11 +363,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
   }
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000', 
-      color: 'white'
-    }}>
+    <div style={getMobilePageStyle()}>
       {/* Hero Section with Poster */}
       <div style={{ 
         position: 'relative',
@@ -814,15 +787,16 @@ export const MobileSeriesDetailPage: React.FC = () => {
                         style={{
                           borderTop: '1px solid rgba(255, 255, 255, 0.1)',
                           maxHeight: '200px',
-                          overflowY: 'auto'
+                          overflowY: 'auto',
+                          overflowX: 'hidden'
                         }}
                       >
-                        {season.episodes?.slice(0, 10).map((episode, episodeIndex) => (
+                        {season.episodes?.map((episode, episodeIndex) => (
                           <div
                             key={episode.id}
                             style={{
                               padding: '12px 16px',
-                              borderBottom: episodeIndex < Math.min(season.episodes!.length - 1, 9) 
+                              borderBottom: episodeIndex < season.episodes!.length - 1
                                 ? '1px solid rgba(255, 255, 255, 0.05)' 
                                 : 'none',
                               display: 'flex',
@@ -831,19 +805,12 @@ export const MobileSeriesDetailPage: React.FC = () => {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                              <button
-                                onClick={() => handleEpisodeToggle(
-                                  season.season_number || season.seasonNumber,
-                                  episode.episode_number || 0,
-                                  episode.watched || false,
-                                  episode.watchCount
-                                )}
-                                disabled={isReadOnlyTmdbSeries}
+                              <div
                                 style={{
                                   width: '24px',
                                   height: '24px',
                                   borderRadius: '50%',
-                                  background: episode.watched 
+                                  background: episode.watched === true
                                     ? '#00d4aa' 
                                     : 'rgba(255, 255, 255, 0.1)',
                                   border: 'none',
@@ -853,41 +820,37 @@ export const MobileSeriesDetailPage: React.FC = () => {
                                   fontSize: '10px',
                                   fontWeight: '600',
                                   color: 'white',
-                                  cursor: isReadOnlyTmdbSeries ? 'default' : 'pointer',
+                                  cursor: 'default',
                                   position: 'relative'
                                 }}
                               >
-                                {episode.watched ? (
-                                  <>
-                                    <Check style={{ fontSize: '12px' }} />
-                                    {episode.watchCount && episode.watchCount > 1 && (
-                                      <span style={{
-                                        position: 'absolute',
-                                        top: '-4px',
-                                        right: '-4px',
-                                        background: '#ff6b6b',
-                                        borderRadius: '50%',
-                                        width: '14px',
-                                        height: '14px',
-                                        fontSize: '9px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontWeight: '700'
-                                      }}>
-                                        {episode.watchCount}
-                                      </span>
-                                    )}
-                                  </>
-                                ) : episodeIndex + 1}
-                              </button>
+                                {episodeIndex + 1}
+                                {(episode.watchCount || 0) > 1 && (
+                                  <span style={{
+                                    position: 'absolute',
+                                    top: '-4px',
+                                    right: '-4px',
+                                    background: '#ff6b6b',
+                                    borderRadius: '50%',
+                                    width: '14px',
+                                    height: '14px',
+                                    fontSize: '9px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: '700'
+                                  }}>
+                                    {episode.watchCount}
+                                  </span>
+                                )}
+                              </div>
                               
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ 
                                   fontSize: '14px', 
                                   fontWeight: '500',
-                                  opacity: episode.watched ? 0.7 : 1,
-                                  textDecoration: episode.watched ? 'line-through' : 'none',
+                                  opacity: episode.watched === true ? 0.7 : 1,
+                                  textDecoration: episode.watched === true ? 'line-through' : 'none',
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis'
@@ -911,7 +874,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
                             </div>
                             
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {episode.watched && episode.firstWatchedAt && (
+                              {!!episode.watched && episode.firstWatchedAt && Number(episode.firstWatchedAt) > 0 && (
                                 <div style={{
                                   fontSize: '10px',
                                   opacity: 0.5,
@@ -924,16 +887,8 @@ export const MobileSeriesDetailPage: React.FC = () => {
                                 </div>
                               )}
                               
-                              {episode.watched && episode.watchCount && episode.watchCount > 1 && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowRewatchDialog({
-                                      show: true,
-                                      type: 'episode',
-                                      item: { ...episode, seriesTitle: series.title }
-                                    });
-                                  }}
+                              {!!episode.watched && (episode.watchCount || 0) > 1 && (
+                                <div
                                   style={{
                                     background: 'rgba(255, 165, 0, 0.2)',
                                     border: '1px solid rgba(255, 165, 0, 0.4)',
@@ -941,7 +896,6 @@ export const MobileSeriesDetailPage: React.FC = () => {
                                     borderRadius: '12px',
                                     padding: '2px 6px',
                                     fontSize: '10px',
-                                    cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '2px'
@@ -949,22 +903,25 @@ export const MobileSeriesDetailPage: React.FC = () => {
                                 >
                                   <Repeat style={{ fontSize: '10px' }} />
                                   {episode.watchCount}x
-                                </button>
+                                </div>
+                              )}
+                              
+                              {!!episode.watched && (
+                                <div style={{
+                                  width: '20px',
+                                  height: '20px',
+                                  borderRadius: '50%',
+                                  background: '#00d4aa',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}>
+                                  <Check style={{ fontSize: '12px', color: 'white' }} />
+                                </div>
                               )}
                             </div>
                           </div>
                         ))}
-                        
-                        {season.episodes && season.episodes.length > 10 && (
-                          <div style={{
-                            padding: '12px 16px',
-                            textAlign: 'center',
-                            fontSize: '12px',
-                            opacity: 0.6
-                          }}>
-                            +{season.episodes.length - 10} weitere Episoden
-                          </div>
-                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>

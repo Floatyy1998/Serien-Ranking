@@ -27,6 +27,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileStatsGrid } from '../components/MobileStatsGrid';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export const MobileHomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ export const MobileHomePage: React.FC = () => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { unreadActivitiesCount } = useOptimizedFriends();
+  const { currentTheme, getMobilePageStyle } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   // const [selectedCategory, setSelectedCategory] = useState<
   //   'all' | 'series' | 'movies'
@@ -74,7 +76,7 @@ export const MobileHomePage: React.FC = () => {
   // Quick stats
   const stats = useMemo(() => {
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    today.setHours(0, 0, 0, 0);
     
     // Series statistics
     let totalSeries = 0;
@@ -99,18 +101,25 @@ export const MobileHomePage: React.FC = () => {
               const airDate = new Date(episode.air_date);
               
               // Only count episodes that have aired
-              if (airDate <= today) {
-                totalAiredEpisodes++;
-                if (episode.watched === true) {
-                  watchedEpisodes++;
+              if (!isNaN(airDate.getTime())) {
+                airDate.setHours(0, 0, 0, 0);
+                if (airDate <= today) {
+                  totalAiredEpisodes++;
+                  if (episode.watched === true) {
+                    watchedEpisodes++;
+                  }
                 }
               }
               
               // Count today's episodes
-              if (episode.air_date.startsWith(todayStr)) {
-                todayEpisodesCount++;
-                if (!episode.watched) {
-                  todayUnwatchedEpisodes++;
+              if (!isNaN(airDate.getTime())) {
+                const normalizedAirDate = new Date(airDate);
+                normalizedAirDate.setHours(0, 0, 0, 0);
+                if (normalizedAirDate.getTime() === today.getTime()) {
+                  todayEpisodesCount++;
+                  if (!episode.watched) {
+                    todayUnwatchedEpisodes++;
+                  }
                 }
               }
             }
@@ -219,28 +228,42 @@ export const MobileHomePage: React.FC = () => {
 
   // Today's episodes - only unwatched
   const todayEpisodes = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
+    // Use same logic as MobileNewEpisodesPage
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const episodes: any[] = [];
+    
+    // Debug: Log today's date
+    console.log('Today (normalized):', today);
 
     seriesList.forEach((series) => {
       series.seasons?.forEach((season) => {
         season.episodes?.forEach((episode, index) => {
-          // Only show episodes from today that are NOT watched
-          if (episode.air_date && episode.air_date.startsWith(today) && !episode.watched) {
-            episodes.push({
-              seriesId: series.id,
-              seriesNmr: series.nmr, // Add nmr for Firebase update
-              seriesTitle: series.title,
-              poster: getImageUrl(series.poster),
-              seasonNumber: season.seasonNumber || 1,
-              episodeNumber: index + 1,
-              seasonIndex: season.seasonNumber ? season.seasonNumber - 1 : 0,  // 0-based for Firebase
-              episodeIndex: index,  // Already 0-based
-              episodeId: episode.id,
-              episodeName: episode.name,
-              watched: episode.watched,
-            });
-          }
+          // Debug: Log episode dates
+          if (episode.air_date) {
+            const episodeDate = new Date(episode.air_date);
+            if (!isNaN(episodeDate.getTime())) {
+              episodeDate.setHours(0, 0, 0, 0);
+              console.log(`Episode "${episode.name || 'Unnamed'}" air_date:`, episode.air_date, 'normalized:', episodeDate, 'matches today:', episodeDate.getTime() === today.getTime());
+              
+                // Only show episodes from today that are NOT watched
+                if (episodeDate.getTime() === today.getTime() && !episode.watched) {
+                  episodes.push({
+                    seriesId: series.id,
+                    seriesNmr: series.nmr, // Add nmr for Firebase update
+                    seriesTitle: series.title,
+                    poster: getImageUrl(series.poster),
+                    seasonNumber: season.seasonNumber || 1,
+                    episodeNumber: index + 1,
+                    seasonIndex: season.seasonNumber ? season.seasonNumber - 1 : 0,  // 0-based for Firebase
+                    episodeIndex: index,  // Already 0-based
+                    episodeId: episode.id,
+                    episodeName: episode.name,
+                    watched: episode.watched,
+                  });
+                }
+              }
+            }
         });
       });
     });
@@ -405,10 +428,7 @@ export const MobileHomePage: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: '100vh',
-        background: 'var(--color-background-default, #000)',
-        color: 'var(--color-text-primary, #fff)',
-        paddingBottom: '80px',
+        ...getMobilePageStyle(),
         overflowY: 'auto',
       }}
     >
@@ -512,9 +532,9 @@ export const MobileHomePage: React.FC = () => {
           }}
         >
           <Search
-            style={{ fontSize: '20px', color: 'rgba(255, 255, 255, 0.5)' }}
+            style={{ fontSize: '20px', color: currentTheme.text.muted }}
           />
-          <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px' }}>
+          <span style={{ color: currentTheme.text.muted, fontSize: '14px' }}>
             Suche nach Serien oder Filmen
           </span>
         </motion.div>
@@ -613,7 +633,7 @@ export const MobileHomePage: React.FC = () => {
           />
 
           <PlayCircle
-            style={{ fontSize: '32px', color: '#00d4aa', marginBottom: '8px' }}
+            style={{ fontSize: '32px', color: currentTheme.status.success, marginBottom: '8px' }}
           />
           <h3
             style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}
@@ -659,7 +679,7 @@ export const MobileHomePage: React.FC = () => {
           />
 
           <AutoAwesome
-            style={{ fontSize: '32px', color: '#667eea', marginBottom: '8px' }}
+            style={{ fontSize: '32px', color: currentTheme.primary, marginBottom: '8px' }}
           />
           <h3
             style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}
@@ -767,7 +787,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <PlayCircle style={{ fontSize: '24px', color: '#00d4aa' }} />
+              <PlayCircle style={{ fontSize: '24px', color: currentTheme.status.success }} />
               Weiterschauen
             </h2>
             <button
@@ -854,7 +874,7 @@ export const MobileHomePage: React.FC = () => {
                     }}
                   >
                     <PlayCircle
-                      style={{ fontSize: '20px', color: '#00d4aa' }}
+                      style={{ fontSize: '20px', color: currentTheme.status.success }}
                     />
                   </div>
                 </div>
@@ -911,7 +931,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <NewReleases style={{ fontSize: '24px', color: '#ffd700' }} />
+              <NewReleases style={{ fontSize: '24px', color: currentTheme.status.warning }} />
               Heute Neu
             </h2>
             <button
@@ -1061,15 +1081,15 @@ export const MobileHomePage: React.FC = () => {
                             animate={{ scale: 1, rotate: 0 }}
                             exit={{ scale: 0, rotate: 180 }}
                           >
-                            <Check style={{ fontSize: '24px', color: '#4cd137' }} />
+                            <Check style={{ fontSize: '24px', color: currentTheme.status.success }} />
                           </motion.div>
                         ) : episode.watched ? (
-                          <CheckCircle style={{ fontSize: '20px', color: '#4cd137' }} />
+                          <CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
                         ) : (
                           <motion.div
                             animate={{ x: isSwiping ? 10 : 0 }}
                           >
-                            <PlayCircle style={{ fontSize: '20px', color: '#ffd700' }} />
+                            <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.warning }} />
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -1104,7 +1124,7 @@ export const MobileHomePage: React.FC = () => {
               }}
             >
               <LocalFireDepartment
-                style={{ fontSize: '24px', color: '#ff6b6b' }}
+                style={{ fontSize: '24px', color: currentTheme.status.error }}
               />
               Trending diese Woche
             </h2>
@@ -1201,7 +1221,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <Star style={{ fontSize: '24px', color: '#ffd700' }} />
+              <Star style={{ fontSize: '24px', color: currentTheme.status.warning }} />
               Bestbewertet
             </h2>
             <button
@@ -1269,7 +1289,7 @@ export const MobileHomePage: React.FC = () => {
                       backdropFilter: 'blur(10px)',
                     }}
                   >
-                    <Star style={{ fontSize: '11px', color: '#ffd700' }} />
+                    <Star style={{ fontSize: '11px', color: currentTheme.status.warning }} />
                     {item.rating.toFixed(1)}
                   </div>
                 </div>
@@ -1314,7 +1334,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <AutoAwesome style={{ fontSize: '24px', color: '#667eea' }} />
+              <AutoAwesome style={{ fontSize: '24px', color: currentTheme.primary }} />
               Empfehlungen für dich
             </h2>
           </div>

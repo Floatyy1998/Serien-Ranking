@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 // import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -30,6 +31,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
+  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
   
   // Get TMDB image URL
@@ -51,37 +53,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
     console.log('Today:', today);
     
     seriesList.forEach(series => {
-      // First check if series has nextEpisode info from API
-      if (series.nextEpisode?.nextEpisode) {
-        console.log('Series', series.title, 'has nextEpisode:', series.nextEpisode.nextEpisode);
-        const nextDate = new Date(series.nextEpisode.nextEpisode);
-        if (!isNaN(nextDate.getTime()) && nextDate >= today) {
-          const daysUntil = Math.floor((nextDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-          console.log('Next episode in', daysUntil, 'days');
-          
-          // Show ALL future episodes, no limit
-          // Find the episode number from nextEpisode info
-          const epNumber = series.nextEpisode.episode || 1;
-          const seasonNumber = parseInt(series.nextEpisode.nextEpisode.split('x')[0]) || 1;
-          
-          episodes.push({
-            seriesId: series.id,
-            seriesName: series.title || '',
-            seriesPoster: typeof series.poster === 'string' ? series.poster : (series.poster as any)?.poster || '',
-            seriesNmr: series.nmr,
-            seasonIndex: seasonNumber - 1,
-            episodeIndex: epNumber - 1,
-            episodeName: `Episode ${epNumber}`,
-            episodeNumber: epNumber,
-            seasonNumber: seasonNumber,
-            airDate: nextDate,
-            daysUntil,
-            watched: false
-          });
-        }
-      }
-      
-      // Also check all episodes as fallback
+      // Only check episodes in seasons, not API data (to avoid duplicates)
       if (!series.seasons) return;
       
       // Check all episodes for upcoming dates
@@ -118,10 +90,10 @@ export const MobileNewEpisodesPage: React.FC = () => {
               episodeIndex,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
               episodeNumber: episodeIndex + 1,
-              seasonNumber: season.seasonNumber || seasonIndex + 1,
+              seasonNumber: (season.seasonNumber ?? seasonIndex) + 1,
               airDate: episodeDate,
               daysUntil,
-              watched: episode.watched || false
+              watched: !!episode.watched
             });
           }
         });
@@ -178,14 +150,12 @@ export const MobileNewEpisodesPage: React.FC = () => {
   
   return (
     <div style={{ 
-      minHeight: '100vh', 
-      background: 'var(--color-background-default, #000)', 
-      color: 'white',
+      ...getMobilePageStyle(),
       paddingBottom: '80px'
     }}>
       {/* Header */}
       <header style={{
-        background: 'linear-gradient(180deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 0, 0, 0) 100%)',
+        ...getMobileHeaderStyle('rgba(0, 212, 170, 0.6)'),
         padding: '20px',
         paddingTop: 'calc(20px + env(safe-area-inset-top))'
       }}>

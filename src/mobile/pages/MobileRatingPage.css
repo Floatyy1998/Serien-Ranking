@@ -1,7 +1,7 @@
 .mobile-rating-page {
   height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  color: white;
+  background: var(--color-background-default);
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -12,20 +12,20 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: linear-gradient(to bottom, #111 0%, rgba(17, 17, 17, 0.95) 100%);
+  background: var(--color-background-default);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: calc(env(safe-area-inset-top) + 16px) 16px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .back-button {
   background: none;
   border: none;
-  color: white;
+  color: var(--color-text-primary);
   padding: 8px;
   display: flex;
   align-items: center;
@@ -59,7 +59,7 @@
 
 .header-content p {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -75,20 +75,20 @@
   align-items: center;
   gap: 12px;
   padding: 20px 32px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  background: var(--color-background-surface);
+  border: 2px solid var(--color-primary);
   border-radius: 20px;
 }
 
 .star-icon {
   font-size: 36px !important;
-  color: #ffd700;
+  color: var(--color-warning);
 }
 
 .rating-value {
   font-size: 48px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -96,7 +96,7 @@
 
 .rating-max {
   font-size: 24px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   font-weight: 300;
 }
 
@@ -111,10 +111,10 @@
 .tab {
   flex: 1;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -123,7 +123,7 @@
 }
 
 .tab.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   border-color: transparent;
   color: white;
 }
@@ -153,10 +153,10 @@
 .emoji-button {
   flex: 1;
   padding: 12px 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-background-surface);
   border: 2px solid transparent;
   border-radius: 16px;
-  color: white;
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -202,7 +202,7 @@
   appearance: none;
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   cursor: pointer;
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
@@ -211,7 +211,7 @@
 .slider::-moz-range-thumb {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   cursor: pointer;
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
@@ -221,7 +221,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
 }
 
 /* Quick Ratings */
@@ -240,10 +240,10 @@
 .quick-button {
   flex: 1;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
-  color: white;
+  color: var(--color-text-primary);
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -252,9 +252,10 @@
 }
 
 .quick-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   border-color: transparent;
   transform: scale(1.05);
+  color: white;
 }
 
 /* Genre Ratings */
@@ -349,7 +350,7 @@
 
 .average-value svg {
   font-size: 20px !important;
-  color: #ffd700;
+  color: var(--color-warning);
 }
 
 /* Bottom Actions */
@@ -374,7 +375,7 @@
   padding: 14px;
   border-radius: 12px;
   border: none;
-  color: white;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -393,8 +394,8 @@
 }
 
 .action-button.save {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .action-button:disabled {

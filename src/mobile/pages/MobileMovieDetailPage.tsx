@@ -14,12 +14,14 @@ import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { Movie } from '../../types/Movie';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export const MobileMovieDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { movieList } = useMovieList();
+  const { currentTheme, getMobilePageStyle } = useTheme();
   const [userRating, setUserRating] = useState<number>(0);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -213,9 +215,7 @@ export const MobileMovieDetailPage: React.FC = () => {
     return (
       <div
         style={{
-          minHeight: '100vh',
-          background: '#000',
-          color: 'white',
+          ...getMobilePageStyle(),
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -228,7 +228,7 @@ export const MobileMovieDetailPage: React.FC = () => {
           Film nicht gefunden
         </h2>
         {!apiKey && (
-          <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '400px' }}>
+          <p style={{ color: currentTheme.text.secondary, maxWidth: '400px' }}>
             Dieser Film ist nicht in deiner Liste. Um Filme von Freunden
             anzuzeigen, wird ein TMDB API-Schlüssel benötigt.
           </p>
@@ -238,10 +238,10 @@ export const MobileMovieDetailPage: React.FC = () => {
           style={{
             marginTop: '24px',
             padding: '12px 24px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
             borderRadius: '8px',
-            color: 'white',
+            color: currentTheme.text.primary,
             fontSize: '16px',
             cursor: 'pointer',
           }}
@@ -256,9 +256,7 @@ export const MobileMovieDetailPage: React.FC = () => {
     return (
       <div
         style={{
-          minHeight: '100vh',
-          background: '#000',
-          color: 'white',
+          ...getMobilePageStyle(),
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -273,11 +271,7 @@ export const MobileMovieDetailPage: React.FC = () => {
 
   return (
     <div
-      style={{
-        minHeight: '100vh',
-        background: '#000',
-        color: 'white',
-      }}
+      style={getMobilePageStyle()}
     >
       {/* Hero Section with Backdrop */}
       <div
@@ -305,7 +299,7 @@ export const MobileMovieDetailPage: React.FC = () => {
               width: '100%',
               height: '100%',
               background:
-                'linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 154, 0, 0.2) 100%)',
+                `linear-gradient(135deg, ${currentTheme.status.error}33 0%, ${currentTheme.status.warning}33 100%)`,
             }}
           />
         )}
@@ -318,7 +312,7 @@ export const MobileMovieDetailPage: React.FC = () => {
             left: 0,
             right: 0,
             height: '200px',
-            background: 'linear-gradient(to top, #000 0%, transparent 100%)',
+            background: `linear-gradient(to top, ${currentTheme.background.default} 0%, transparent 100%)`,
           }}
         />
 
@@ -336,10 +330,10 @@ export const MobileMovieDetailPage: React.FC = () => {
           <button
             onClick={() => navigate(-1)}
             style={{
-              background: 'rgba(0, 0, 0, 0.5)',
+              background: `${currentTheme.background.default}80`,
               backdropFilter: 'blur(10px)',
               border: 'none',
-              color: 'white',
+              color: currentTheme.text.primary,
               fontSize: '24px',
               cursor: 'pointer',
               padding: '8px',
@@ -365,7 +359,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                   : 'rgba(0, 212, 170, 0.8)',
                 backdropFilter: 'blur(10px)',
                 border: 'none',
-                color: 'white',
+                color: currentTheme.text.primary,
                 fontSize: '24px',
                 cursor: isAdding ? 'not-allowed' : 'pointer',
                 padding: '8px',
@@ -386,7 +380,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                 background: 'rgba(220, 53, 69, 0.8)',
                 backdropFilter: 'blur(10px)',
                 border: 'none',
-                color: 'white',
+                color: currentTheme.text.primary,
                 fontSize: '20px',
                 cursor: 'pointer',
                 padding: '8px',
@@ -463,7 +457,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                     marginBottom: '12px',
                   }}
                 >
-                  <Star style={{ fontSize: '20px', color: '#ffd700' }} />
+                  <Star style={{ fontSize: '20px', color: currentTheme.status.warning }} />
                   <span style={{ fontSize: '18px', fontWeight: 600 }}>
                     {averageRating}
                   </span>
@@ -521,7 +515,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                     ? '1px solid rgba(255, 215, 0, 0.4)'
                     : 'none',
                   borderRadius: '12px',
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   fontSize: '15px',
                   fontWeight: 600,
                   cursor: loading ? 'not-allowed' : 'pointer',
@@ -554,7 +548,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                 : 'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
               border: '1px solid rgba(0, 212, 170, 0.5)',
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.primary,
               fontSize: '16px',
               fontWeight: 600,
               cursor: isAdding ? 'not-allowed' : 'pointer',
@@ -869,7 +863,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                   background: 'rgba(255, 255, 255, 0.1)',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   fontSize: '16px',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -889,7 +883,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                       : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   border: 'none',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   fontSize: '16px',
                   fontWeight: 600,
                   cursor:
@@ -969,7 +963,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                   background: 'rgba(255, 255, 255, 0.1)',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   fontSize: '16px',
                   fontWeight: 500,
                   cursor: loading ? 'not-allowed' : 'pointer',
@@ -989,7 +983,7 @@ export const MobileMovieDetailPage: React.FC = () => {
                     : 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
                   border: 'none',
                   borderRadius: '8px',
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   fontSize: '16px',
                   fontWeight: 600,
                   cursor: loading ? 'not-allowed' : 'pointer',

@@ -4,6 +4,7 @@ import { Search, Close, Movie, CalendarToday, TrendingUp, Add, Check } from '@mu
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Series } from '../../types/Series';
 import { Movie as MovieType } from '../../types/Movie';
 import { logSeriesAdded, logMovieAdded } from '../../features/badges/minimalActivityLogger';
@@ -14,6 +15,7 @@ export const MobileSearchPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { getMobilePageStyle } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'all' | 'series' | 'movies'>('all');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -190,11 +192,7 @@ export const MobileSearchPage: React.FC = () => {
   };
   
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000', 
-      color: 'white'
-    }}>
+    <div style={getMobilePageStyle()}>
       {/* Search Header */}
       <div style={{
         position: 'sticky',

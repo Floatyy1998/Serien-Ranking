@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Series } from '../../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -31,6 +32,7 @@ export const MobileTodayEpisodesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
+  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
   const [updatingEpisodes, setUpdatingEpisodes] = useState<Set<string>>(new Set());
   
   // Get TMDB image URL
@@ -147,16 +149,14 @@ export const MobileTodayEpisodesPage: React.FC = () => {
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
-      background: '#000', 
-      color: 'white',
+      ...getMobilePageStyle(),
       paddingBottom: '80px'
     }}>
       {/* Header */}
       <header style={{
+        ...getMobileHeaderStyle('transparent'), // Remove the black gradient entirely
         padding: '20px',
         paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 100%)',
         position: 'sticky',
         top: 0,
         zIndex: 100

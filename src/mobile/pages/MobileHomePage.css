@@ -25,7 +25,7 @@
 }
 
 .home-header p {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   font-size: 16px;
   margin: 4px 0 0 0;
 }
@@ -76,12 +76,12 @@
 .stat-value {
   font-size: 24px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .stat-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -99,7 +99,7 @@
   margin: 24px 0 16px;
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -109,15 +109,15 @@
 }
 
 .series-section .section-title {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .movies-section .section-title {
-  color: #ff6b6b;
+  color: var(--color-error);
 }
 
 .recommendations-section .section-title {
-  color: #4ecdc4;
+  color: var(--color-success);
 }
 
 /* Subsections */
@@ -139,7 +139,7 @@
   gap: 6px;
   font-size: 16px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
 }
 
 .subsection-header h3 svg {
@@ -150,7 +150,7 @@
 .subsection-header button {
   background: none;
   border: none;
-  color: #667eea;
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -169,8 +169,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
@@ -196,19 +196,19 @@
 .episode-info h4 {
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 0 0 4px 0;
 }
 
 .episode-info p {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .play-icon {
   font-size: 28px !important;
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 /* Poster Grid */
@@ -245,7 +245,7 @@
 .poster-card h4 {
   font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
   margin: 8px 0 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -272,13 +272,13 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   transition: width 0.3s ease;
 }
 
 .poster-progress span {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
 }
 
 .poster-rating {
@@ -287,7 +287,7 @@
   gap: 4px;
   margin-top: 6px;
   font-size: 12px;
-  color: #ffd700;
+  color: var(--color-warning);
 }
 
 .poster-rating svg {
@@ -296,7 +296,7 @@
 
 .movie-year {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   margin: 2px 0 0 0;
 }
 
@@ -318,7 +318,7 @@
 .recommendation-info h4 {
   font-size: 11px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 0 0 4px 0;
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
@@ -328,7 +328,7 @@
   align-items: center;
   gap: 3px;
   font-size: 10px;
-  color: #ffd700;
+  color: var(--color-warning);
 }
 
 .recommendation-rating svg {
@@ -350,10 +350,10 @@
   justify-content: center;
   gap: 8px;
   padding: 16px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 16px;
-  color: #fff;
+  color: var(--color-text-primary);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -373,7 +373,7 @@
 .recommendations-loading {
   padding: 0 20px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   font-size: 14px;
   margin: 20px 0;
 }

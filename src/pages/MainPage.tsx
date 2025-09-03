@@ -190,7 +190,7 @@ export const MainPage: React.FC = () => {
   // Separierte Statistiken für Serien und Filme
   const seriesStats = React.useMemo(() => {
     const totalWatchedEpisodes = seriesList.reduce((total, series) => {
-      if (series.seasons) {
+      if (series.seasons && Array.isArray(series.seasons)) {
         return (
           total +
           series.seasons.reduce((seasonTotal: number, season: any) => {

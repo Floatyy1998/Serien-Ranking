@@ -4,7 +4,8 @@
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #000;
+  /* Transparent background to show background image */
+  background: transparent;
   position: relative;
 }
 
@@ -13,6 +14,18 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  /* Prevent iOS pull-to-refresh */
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  /* Hide scrollbars on mobile */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
   padding-bottom: 60px; /* Space for bottom nav */
   padding-bottom: calc(60px + env(safe-area-inset-bottom));
+}
+
+/* Hide scrollbar for WebKit browsers (Safari, Chrome) */
+.mobile-content::-webkit-scrollbar {
+  display: none;
 }

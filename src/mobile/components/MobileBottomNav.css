@@ -3,10 +3,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.95);
+  background: var(--color-background-default);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--color-border-default);
   z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -27,7 +27,7 @@
   gap: 4px;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   transition: all 0.2s ease;
   cursor: pointer;
   padding: 0;
@@ -35,7 +35,7 @@
 }
 
 .nav-item.active {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .nav-item:active {

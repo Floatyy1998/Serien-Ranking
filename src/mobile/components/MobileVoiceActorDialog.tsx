@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Movie, Tv, Star } from '@mui/icons-material';
 // import { motion } from 'framer-motion';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface VoiceActorDialogProps {
   open: boolean;
@@ -65,6 +66,7 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
   voiceActorId,
   // voiceActorName,
 }) => {
+  const { currentTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [voiceActorData, setVoiceActorData] = useState<VoiceActorDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -227,7 +229,7 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Lade Sprecher-Details...</div>
+        <div style={{ color: currentTheme.text.muted }}>Lade Sprecher-Details...</div>
       </div>
     );
   }
@@ -260,7 +262,7 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
         >
           <ChevronLeft /> Zurück
         </button>
-        <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
+        <div style={{ textAlign: 'center', color: currentTheme.text.muted }}>
           {error || 'Fehler beim Laden der Sprecher-Details'}
         </div>
       </div>
@@ -324,7 +326,7 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <Star style={{ fontSize: '32px', color: 'rgba(255, 255, 255, 0.3)' }} />
+              <Star style={{ fontSize: '32px', color: currentTheme.text.muted }} />
             </div>
           )}
           
@@ -419,9 +421,9 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
                       border: '1px solid rgba(255, 255, 255, 0.1)'
                     }}>
                       {char.media?.type === 'ANIME' ? (
-                        <Tv style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                        <Tv style={{ fontSize: '28px', color: currentTheme.text.muted }} />
                       ) : (
-                        <Movie style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                        <Movie style={{ fontSize: '28px', color: currentTheme.text.muted }} />
                       )}
                     </div>
                   )}

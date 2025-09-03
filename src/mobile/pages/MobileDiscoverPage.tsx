@@ -13,12 +13,14 @@ import { genreIdMapForSeries, genreIdMapForMovies } from '../../config/menuItems
 // import { Movie } from '../../types/Movie';
 import { logSeriesAdded, logMovieAdded } from '../../features/badges/minimalActivityLogger';
 // import { calculateOverallRating } from '../../lib/rating/rating';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export const MobileDiscoverPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { currentTheme, getMobilePageStyle } = useTheme();
   
   
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
@@ -261,11 +263,8 @@ export const MobileDiscoverPage: React.FC = () => {
   const genres = activeTab === 'series' ? genreIdMapForSeries : genreIdMapForMovies;
   
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000', 
-      color: 'white',
-      paddingBottom: '80px',
+    <div style={{
+      ...getMobilePageStyle(),
       overflowY: 'auto'
     }}
     onScroll={handleScroll}
@@ -274,7 +273,7 @@ export const MobileDiscoverPage: React.FC = () => {
       <header style={{
         padding: '20px',
         paddingTop: 'calc(20px + env(safe-area-inset-top))',
-        background: 'linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 100%)',
+        background: `linear-gradient(180deg, ${currentTheme.background.default} 0%, ${currentTheme.background.default}CC 100%)`,
         position: 'sticky',
         top: 0,
         zIndex: 100
@@ -285,14 +284,14 @@ export const MobileDiscoverPage: React.FC = () => {
               fontSize: '32px', 
               fontWeight: 800,
               margin: 0,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: currentTheme.primary,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}>
               Entdecken
             </h1>
             <p style={{ 
-              color: 'rgba(255, 255, 255, 0.6)', 
+              color: currentTheme.text.secondary, 
               fontSize: '16px',
               margin: '4px 0 0 0'
             }}>
@@ -307,10 +306,10 @@ export const MobileDiscoverPage: React.FC = () => {
               }}
               style={{
                 padding: '10px',
-                background: showSearch ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: showSearch ? `${currentTheme.primary}33` : `${currentTheme.text.primary}0D`,
+                border: `1px solid ${currentTheme.border.default}`,
                 borderRadius: '12px',
-                color: 'white',
+                color: currentTheme.text.primary,
                 cursor: 'pointer'
               }}
             >
@@ -334,10 +333,10 @@ export const MobileDiscoverPage: React.FC = () => {
             style={{
               width: '100%',
               padding: '16px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: `${currentTheme.text.primary}0D`,
+              border: `1px solid ${currentTheme.border.default}`,
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.primary,
               fontSize: '16px'
             }}
           />
@@ -357,13 +356,13 @@ export const MobileDiscoverPage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background: activeTab === 'series' 
-              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
+              ? currentTheme.primary
+              : `${currentTheme.text.primary}0D`,
             border: activeTab === 'series'
               ? 'none'
-              : '1px solid rgba(255, 255, 255, 0.1)',
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '12px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             fontSize: '14px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -383,13 +382,13 @@ export const MobileDiscoverPage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background: activeTab === 'movies' 
-              ? 'linear-gradient(135deg, #ff6b6b 0%, #ff9a00 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
+              ? currentTheme.status.error
+              : `${currentTheme.text.primary}0D`,
             border: activeTab === 'movies'
               ? 'none'
-              : '1px solid rgba(255, 255, 255, 0.1)',
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '12px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             fontSize: '14px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -418,13 +417,13 @@ export const MobileDiscoverPage: React.FC = () => {
           style={{
             padding: '20px',
             background: activeCategory === 'trending'
-              ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)'
-              : 'rgba(255, 255, 255, 0.03)',
+              ? `${currentTheme.primary}33`
+              : `${currentTheme.text.primary}08`,
             border: activeCategory === 'trending'
-              ? '1px solid rgba(102, 126, 234, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? `1px solid ${currentTheme.primary}66`
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '16px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
@@ -432,7 +431,7 @@ export const MobileDiscoverPage: React.FC = () => {
             gap: '8px'
           }}
         >
-          <TrendingUp style={{ fontSize: '32px', color: '#667eea' }} />
+          <TrendingUp style={{ fontSize: '32px', color: currentTheme.primary }} />
           <span style={{ fontSize: '14px', fontWeight: 600 }}>Im Trend</span>
         </button>
         
@@ -441,13 +440,13 @@ export const MobileDiscoverPage: React.FC = () => {
           style={{
             padding: '20px',
             background: activeCategory === 'popular'
-              ? 'linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 154, 0, 0.2) 100%)'
-              : 'rgba(255, 255, 255, 0.03)',
+              ? `${currentTheme.status.error}33`
+              : `${currentTheme.text.primary}08`,
             border: activeCategory === 'popular'
-              ? '1px solid rgba(255, 107, 107, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? `1px solid ${currentTheme.status.error}66`
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '16px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
@@ -455,7 +454,7 @@ export const MobileDiscoverPage: React.FC = () => {
             gap: '8px'
           }}
         >
-          <Whatshot style={{ fontSize: '32px', color: '#ff6b6b' }} />
+          <Whatshot style={{ fontSize: '32px', color: currentTheme.status.error }} />
           <span style={{ fontSize: '14px', fontWeight: 600 }}>Beliebt</span>
         </button>
         
@@ -464,13 +463,13 @@ export const MobileDiscoverPage: React.FC = () => {
           style={{
             padding: '20px',
             background: activeCategory === 'top_rated'
-              ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 140, 0, 0.2) 100%)'
-              : 'rgba(255, 255, 255, 0.03)',
+              ? `${currentTheme.status.warning}33`
+              : `${currentTheme.text.primary}08`,
             border: activeCategory === 'top_rated'
-              ? '1px solid rgba(255, 215, 0, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? `1px solid ${currentTheme.status.warning}66`
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '16px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
@@ -478,7 +477,7 @@ export const MobileDiscoverPage: React.FC = () => {
             gap: '8px'
           }}
         >
-          <Star style={{ fontSize: '32px', color: '#ffd700' }} />
+          <Star style={{ fontSize: '32px', color: currentTheme.status.warning }} />
           <span style={{ fontSize: '14px', fontWeight: 600 }}>Top Bewertet</span>
         </button>
         
@@ -487,13 +486,13 @@ export const MobileDiscoverPage: React.FC = () => {
           style={{
             padding: '20px',
             background: activeCategory === 'upcoming'
-              ? 'linear-gradient(135deg, rgba(76, 209, 55, 0.2) 0%, rgba(0, 184, 169, 0.2) 100%)'
-              : 'rgba(255, 255, 255, 0.03)',
+              ? `${currentTheme.status.success}33`
+              : `${currentTheme.text.primary}08`,
             border: activeCategory === 'upcoming'
-              ? '1px solid rgba(76, 209, 55, 0.4)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? `1px solid ${currentTheme.status.success}66`
+              : `1px solid ${currentTheme.border.default}`,
             borderRadius: '16px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
@@ -501,7 +500,7 @@ export const MobileDiscoverPage: React.FC = () => {
             gap: '8px'
           }}
         >
-          <NewReleases style={{ fontSize: '32px', color: '#4cd137' }} />
+          <NewReleases style={{ fontSize: '32px', color: currentTheme.status.success }} />
           <span style={{ fontSize: '14px', fontWeight: 600 }}>
             {activeTab === 'movies' ? 'Demnächst' : 'Läuft gerade'}
           </span>
@@ -522,10 +521,10 @@ export const MobileDiscoverPage: React.FC = () => {
             alignItems: 'center',
             gap: '8px',
             padding: '10px 16px',
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: `${currentTheme.text.primary}0D`,
+            border: `1px solid ${currentTheme.border.default}`,
             borderRadius: '8px',
-            color: 'white',
+            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer'
@@ -557,7 +556,7 @@ export const MobileDiscoverPage: React.FC = () => {
                   ? 'none'
                   : '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '16px',
-                color: 'white',
+                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 fontSize: '12px',
                 cursor: 'pointer'
               }}
@@ -580,7 +579,7 @@ export const MobileDiscoverPage: React.FC = () => {
                     ? 'none'
                     : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '16px',
-                  color: 'white',
+                  color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                   fontSize: '12px',
                   cursor: 'pointer'
                 }}
@@ -602,7 +601,7 @@ export const MobileDiscoverPage: React.FC = () => {
               justifyContent: 'center',
               padding: '40px'
             }}>
-              <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Suche läuft...</div>
+              <div style={{ color: currentTheme.text.muted }}>Suche läuft...</div>
             </div>
           ) : searchResults.length === 0 && searchQuery.trim() ? (
             <div style={{
@@ -671,7 +670,7 @@ export const MobileDiscoverPage: React.FC = () => {
                         alignItems: 'center',
                         gap: '2px'
                       }}>
-                        <Star style={{ fontSize: '12px', color: '#ffd700' }} />
+                        <Star style={{ fontSize: '12px', color: currentTheme.status.warning }} />
                         {item.vote_average.toFixed(1)}
                       </div>
                     )}
@@ -690,7 +689,7 @@ export const MobileDiscoverPage: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        <Check style={{ fontSize: '18px', color: 'white' }} />
+                        <Check style={{ fontSize: '18px', color: currentTheme.text.primary }} />
                       </div>
                     ) : (
                       <div style={{
@@ -707,7 +706,7 @@ export const MobileDiscoverPage: React.FC = () => {
                         justifyContent: 'center',
                         border: '1px solid rgba(255, 255, 255, 0.3)'
                       }}>
-                        <Add style={{ fontSize: '18px', color: 'white' }} />
+                        <Add style={{ fontSize: '18px', color: currentTheme.text.primary }} />
                       </div>
                     )}
                   </div>
@@ -791,7 +790,7 @@ export const MobileDiscoverPage: React.FC = () => {
                   alignItems: 'center',
                   gap: '2px'
                 }}>
-                  <Star style={{ fontSize: '12px', color: '#ffd700' }} />
+                  <Star style={{ fontSize: '12px', color: currentTheme.status.warning }} />
                   {item.vote_average.toFixed(1)}
                 </div>
               )}
@@ -871,7 +870,7 @@ export const MobileDiscoverPage: React.FC = () => {
           justifyContent: 'center',
           padding: '20px'
         }}>
-          <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Lade mehr...</div>
+          <div style={{ color: currentTheme.text.muted }}>Lade mehr...</div>
         </div>
       )}
     </div>

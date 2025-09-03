@@ -10,6 +10,7 @@ import {
 } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useBadges } from '../../features/badges/BadgeProvider';
 import './MobileBottomNavigation.css';
 
 interface NavItem {
@@ -24,6 +25,7 @@ export const MobileBottomNavigation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
+  const { unreadBadgesCount } = useBadges();
   // const { totalUnreadActivities } = useNotifications();
   // const { unreadCount: generalNotificationCount } = useGeneralNotifications();
 
@@ -57,8 +59,8 @@ export const MobileBottomNavigation: React.FC = () => {
       path: '/profile',
       icon: <Person />,
       label: 'Mehr',
-      badge: (unreadActivitiesCount + unreadRequestsCount) > 0 
-        ? (unreadActivitiesCount + unreadRequestsCount) 
+      badge: (unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0)) > 0 
+        ? (unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0)) 
         : undefined,
     },
   ];

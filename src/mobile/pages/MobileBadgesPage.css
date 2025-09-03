@@ -1,6 +1,6 @@
 .mobile-badges-page {
   height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  background: var(--color-background-default);
   padding-bottom: 80px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -12,10 +12,10 @@
   align-items: center;
   justify-content: space-between;
   padding: env(safe-area-inset-top) 16px 16px;
-  background: rgba(10, 10, 10, 0.95);
+  background: var(--color-background-default);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border-default);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -25,7 +25,7 @@
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -35,7 +35,7 @@
 .refresh-button {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-primary);
   padding: 8px;
   display: flex;
   align-items: center;
@@ -48,7 +48,7 @@
 .back-button:active,
 .refresh-button:active {
   transform: scale(0.9);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
 }
 
 .refresh-button.spinning {
@@ -64,9 +64,9 @@
 .overall-progress-card {
   margin: 16px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-background-surface);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border-default);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -80,7 +80,7 @@
 
 .trophy-icon {
   font-size: 48px !important;
-  color: #ffd700;
+  color: var(--color-warning);
   filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
 }
 
@@ -92,19 +92,19 @@
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .progress-text p {
   margin: 4px 0 0;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
 }
 
 .progress-percentage {
   font-size: 32px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -134,10 +134,10 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 24px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
@@ -152,13 +152,13 @@
 
 .category-tab.active {
   background: var(--category-color);
-  color: #fff;
+  color: var(--color-text-primary);
   border-color: var(--category-color);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .category-count {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: var(--color-background-surface) !important;
   color: inherit !important;
   font-size: 11px !important;
   height: 20px !important;
@@ -174,8 +174,8 @@
 }
 
 .badge-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -234,17 +234,17 @@
   bottom: 0;
   right: 0;
   font-size: 20px !important;
-  background: #0a0a0a;
+  background: var(--color-background-default);
   border-radius: 50%;
   padding: 2px;
 }
 
 .earned-indicator {
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 .locked-indicator {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--color-text-muted);
 }
 
 .badge-info {
@@ -260,13 +260,13 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .badge-description {
   margin: 0;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   line-height: 1.4;
 }
 
@@ -281,7 +281,7 @@
 }
 
 .badge-rarity svg.filled {
-  color: #ffd700;
+  color: var(--color-warning);
 }
 
 .earned-date {
@@ -289,7 +289,7 @@
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: #4caf50;
+  color: var(--color-success);
   margin-top: 4px;
 }
 
@@ -328,7 +328,7 @@
   justify-content: center;
   gap: 4px;
   font-size: 10px;
-  color: #ff9f43;
+  color: var(--color-warning);
 }
 
 .time-remaining svg {
@@ -337,7 +337,7 @@
 
 .badge-requirement {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   margin-top: 4px;
 }
 
@@ -351,7 +351,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-background-surface);
   transition: all 0.3s ease;
 }
 
@@ -364,16 +364,16 @@
 .active-sessions-footer {
   margin: 24px 16px 16px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-background-surface);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border-default);
 }
 
 .active-sessions-footer h3 {
   margin: 0 0 12px;
   font-size: 16px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .sessions-list {
@@ -387,15 +387,15 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-background-surface);
   border-radius: 8px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-primary);
 }
 
 .session-item svg {
   font-size: 18px !important;
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 /* Tablet Adjustments */

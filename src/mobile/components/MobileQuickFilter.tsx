@@ -5,6 +5,7 @@ import {
   Star, NewReleases, Schedule, PlaylistAdd 
 } from '@mui/icons-material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface MobileQuickFilterProps {
   onFilterChange: (filters: {
@@ -16,6 +17,7 @@ interface MobileQuickFilterProps {
   }) => void;
   isMovieMode?: boolean;
   isRatingsMode?: boolean;
+  hasBottomNav?: boolean;  // Optional prop to adjust FAB position
 }
 
 const seriesQuickFilters = [
@@ -43,8 +45,10 @@ const ratingsQuickFilters = [
 export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
   onFilterChange,
   isMovieMode = false,
-  isRatingsMode = false
+  isRatingsMode = false,
+  hasBottomNav = true  // Default to true for most pages
 }) => {
+  const { currentTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>('');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
@@ -82,7 +86,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
-          bottom: '120px',  // Fixed height above navbar
+          bottom: hasBottomNav ? '120px' : '30px',  // Adjust based on navbar presence
           right: '20px',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           border: 'none',
@@ -320,11 +324,11 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                       fontSize: '14px'
                     }}
                   >
-                    <option value="rating-desc" style={{ background: '#1a1a1a', color: 'white' }}>Beste zuerst</option>
-                    <option value="rating-asc" style={{ background: '#1a1a1a', color: 'white' }}>Schlechteste zuerst</option>
-                    <option value="name-asc" style={{ background: '#1a1a1a', color: 'white' }}>Name A-Z</option>
-                    <option value="name-desc" style={{ background: '#1a1a1a', color: 'white' }}>Name Z-A</option>
-                    <option value="date-desc" style={{ background: '#1a1a1a', color: 'white' }}>Neueste zuerst</option>
+                    <option value="rating-desc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Beste zuerst</option>
+                    <option value="rating-asc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Schlechteste zuerst</option>
+                    <option value="name-asc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Name A-Z</option>
+                    <option value="name-desc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Name Z-A</option>
+                    <option value="date-desc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Neueste zuerst</option>
                   </select>
                 </div>
               )}

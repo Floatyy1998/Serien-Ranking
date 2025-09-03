@@ -27,6 +27,7 @@ import { Movie as MovieType } from '../../types/Movie';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
+import { useTheme } from '../../contexts/ThemeContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -68,6 +69,7 @@ export const MobileRatingPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { getMobilePageStyle } = useTheme();
   
   const [activeTab, setActiveTab] = useState<'overall' | 'genre'>('overall');
   const [overallRating, setOverallRating] = useState(0);
@@ -263,7 +265,7 @@ export const MobileRatingPage: React.FC = () => {
   }
 
   return (
-    <div className="mobile-rating-page">
+    <div className="mobile-rating-page" style={getMobilePageStyle()}>
       {/* Native Header */}
       <div className="rating-header">
         <button onClick={() => navigate(-1)} className="back-button">

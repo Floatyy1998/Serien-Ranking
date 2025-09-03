@@ -11,10 +11,12 @@ import {
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export const MobileProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
+  const { currentTheme, getMobilePageStyle } = useTheme();
   
   // Load user data from Firebase Database
   const { data: userData } = useEnhancedFirebaseCache<any>(
@@ -82,15 +84,10 @@ export const MobileProfilePage: React.FC = () => {
   };
   
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000', 
-      color: 'white',
-      paddingBottom: '80px'
-    }}>
+    <div style={getMobilePageStyle()}>
       {/* Profile Header */}
       <div style={{
-        background: 'linear-gradient(180deg, rgba(102, 126, 234, 0.2) 0%, rgba(0, 0, 0, 0) 100%)',
+        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
         padding: '20px',
         paddingTop: 'calc(40px + env(safe-area-inset-top))',
         textAlign: 'center'
@@ -104,13 +101,13 @@ export const MobileProfilePage: React.FC = () => {
             backgroundPosition: 'center',
             backgroundSize: 'cover'
           } : {
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            background: currentTheme.primary
           }),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto 16px',
-          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+          boxShadow: `0 4px 12px ${currentTheme.primary}4D`
         }}>
           {!(userData?.photoURL || user?.photoURL) && <Person style={{ fontSize: '40px' }} />}
         </div>
@@ -124,7 +121,7 @@ export const MobileProfilePage: React.FC = () => {
         </h2>
         <p style={{ 
           fontSize: '14px',
-          color: 'rgba(255, 255, 255, 0.5)',
+          color: currentTheme.text.muted,
           margin: 0
         }}>
           {user?.email}
@@ -140,51 +137,51 @@ export const MobileProfilePage: React.FC = () => {
         marginBottom: '20px'
       }}>
         <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
           borderRadius: '12px',
           padding: '16px',
           textAlign: 'center'
         }}>
-          <CalendarToday style={{ fontSize: '24px', color: '#667eea', marginBottom: '8px' }} />
+          <CalendarToday style={{ fontSize: '24px', color: currentTheme.primary, marginBottom: '8px' }} />
           <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.totalSeries}</div>
-          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)' }}>Serien</div>
+          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Serien</div>
         </div>
         
         <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
           borderRadius: '12px',
           padding: '16px',
           textAlign: 'center'
         }}>
-          <Movie style={{ fontSize: '24px', color: '#ff6b6b', marginBottom: '8px' }} />
+          <Movie style={{ fontSize: '24px', color: currentTheme.status.error, marginBottom: '8px' }} />
           <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.totalMovies}</div>
-          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)' }}>Filme</div>
+          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Filme</div>
         </div>
         
         <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
           borderRadius: '12px',
           padding: '16px',
           textAlign: 'center'
         }}>
-          <PlayCircle style={{ fontSize: '24px', color: '#4cd137', marginBottom: '8px' }} />
+          <PlayCircle style={{ fontSize: '24px', color: currentTheme.status.success, marginBottom: '8px' }} />
           <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.watchedEpisodes}</div>
-          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)' }}>Episoden</div>
+          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Episoden</div>
         </div>
         
         <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
           borderRadius: '12px',
           padding: '16px',
           textAlign: 'center'
         }}>
-          <TrendingUp style={{ fontSize: '24px', color: '#ffd700', marginBottom: '8px' }} />
+          <TrendingUp style={{ fontSize: '24px', color: currentTheme.status.warning, marginBottom: '8px' }} />
           <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.totalHours}h</div>
-          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)' }}>Watchzeit</div>
+          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Watchzeit</div>
         </div>
       </div>
       
@@ -198,8 +195,8 @@ export const MobileProfilePage: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px',
-            background: 'rgba(255, 215, 0, 0.1)',
-            border: '1px solid rgba(255, 215, 0, 0.2)',
+            background: `${currentTheme.status.warning}1A`,
+            border: `1px solid ${currentTheme.status.warning}33`,
             borderRadius: '12px',
             color: 'white',
             marginBottom: '8px',
@@ -207,7 +204,7 @@ export const MobileProfilePage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Star style={{ fontSize: '20px', color: '#ffd700' }} />
+            <Star style={{ fontSize: '20px', color: currentTheme.status.warning }} />
             <span style={{ fontSize: '16px' }}>Meine Bewertungen</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
@@ -221,8 +218,8 @@ export const MobileProfilePage: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px',
-            background: 'rgba(102, 126, 234, 0.1)',
-            border: '1px solid rgba(102, 126, 234, 0.2)',
+            background: `${currentTheme.primary}1A`,
+            border: `1px solid ${currentTheme.primary}33`,
             borderRadius: '12px',
             color: 'white',
             marginBottom: '8px',
@@ -230,7 +227,7 @@ export const MobileProfilePage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Group style={{ fontSize: '20px', color: '#667eea' }} />
+            <Group style={{ fontSize: '20px', color: currentTheme.primary }} />
             <span style={{ fontSize: '16px' }}>Aktivität & Freunde</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
@@ -244,8 +241,8 @@ export const MobileProfilePage: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px',
-            background: 'rgba(255, 107, 107, 0.1)',
-            border: '1px solid rgba(255, 107, 107, 0.2)',
+            background: `${currentTheme.status.error}1A`,
+            border: `1px solid ${currentTheme.status.error}33`,
             borderRadius: '12px',
             color: 'white',
             marginBottom: '8px',
@@ -253,7 +250,7 @@ export const MobileProfilePage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Search style={{ fontSize: '20px', color: '#ff6b6b' }} />
+            <Search style={{ fontSize: '20px', color: currentTheme.status.error }} />
             <span style={{ fontSize: '16px' }}>Hinzufügen & Suchen</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
@@ -279,7 +276,7 @@ export const MobileProfilePage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <TrendingUp style={{ fontSize: '20px', color: '#667eea' }} />
+            <TrendingUp style={{ fontSize: '20px', color: currentTheme.primary }} />
             <span style={{ fontSize: '16px' }}>Statistiken</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
@@ -302,7 +299,7 @@ export const MobileProfilePage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <EmojiEvents style={{ fontSize: '20px', color: '#ffd700' }} />
+            <EmojiEvents style={{ fontSize: '20px', color: currentTheme.status.warning }} />
             <span style={{ fontSize: '16px' }}>Erfolge</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
@@ -325,7 +322,7 @@ export const MobileProfilePage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Palette style={{ fontSize: '20px', color: '#667eea' }} />
+            <Palette style={{ fontSize: '20px', color: currentTheme.primary }} />
             <span style={{ fontSize: '16px' }}>Design</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
@@ -348,7 +345,7 @@ export const MobileProfilePage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Settings style={{ fontSize: '20px', opacity: 0.7 }} />
+            <Settings style={{ fontSize: '20px', color: currentTheme.text.secondary }} />
             <span style={{ fontSize: '16px' }}>Einstellungen</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
@@ -362,10 +359,10 @@ export const MobileProfilePage: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px',
-            background: 'rgba(255, 107, 107, 0.1)',
-            border: '1px solid rgba(255, 107, 107, 0.2)',
+            background: `${currentTheme.status.error}1A`,
+            border: `1px solid ${currentTheme.status.error}33`,
             borderRadius: '12px',
-            color: '#ff6b6b',
+            color: currentTheme.status.error,
             marginTop: '20px',
             cursor: 'pointer'
           }}
