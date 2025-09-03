@@ -24,6 +24,7 @@ import { UpdateNotification } from './components/ui/UpdateNotification';
 // Badge Migration Tools für Development
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider } from './contexts/NotificationProvider';
+import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
 import { BadgeProvider } from './features/badges/BadgeProvider';
@@ -461,7 +462,8 @@ function AppContent() {
   return (
     <OptimizedFriendsProvider>
       <NotificationProvider>
-        <SeriesListProvider>
+        <GeneralNotificationProvider>
+          <SeriesListProvider>
           <MovieListProvider>
             <StatsProvider>
               <BadgeProvider>
@@ -519,7 +521,7 @@ function AppContent() {
                             }
                           />
                           <Route
-                            path='/'
+                            path='/*'
                             element={
                               <AuthContext.Consumer>
                                 {(auth) => {
@@ -594,7 +596,8 @@ function AppContent() {
               </BadgeProvider>
             </StatsProvider>
           </MovieListProvider>
-        </SeriesListProvider>
+          </SeriesListProvider>
+        </GeneralNotificationProvider>
       </NotificationProvider>
     </OptimizedFriendsProvider>
   );

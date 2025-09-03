@@ -32,4 +32,6 @@ export interface Movie {
   release_date?: string;
   collection_id?: number;
   media_type?: string;
+  // Note: userRating is stored in rating[userId], not as separate field
+  // watched status is derived from rating[userId] > 0
 }

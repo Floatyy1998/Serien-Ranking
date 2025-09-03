@@ -94,4 +94,5 @@ export interface Series {
   watchlist?: boolean;
   release_date: string;
   media_type?: string;
+  // Note: userRating is stored in rating[userId], not as separate field
 }

@@ -1,0 +1,419 @@
+.mobile-badges-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  padding-bottom: 80px;
+}
+
+/* Header */
+.badges-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top) 16px 16px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.badges-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.back-button,
+.refresh-button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.back-button:active,
+.refresh-button:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.refresh-button.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Overall Progress Card */
+.overall-progress-card {
+  margin: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.trophy-icon {
+  font-size: 48px !important;
+  color: #ffd700;
+  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
+}
+
+.progress-text {
+  flex: 1;
+}
+
+.progress-text h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.progress-text p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.progress-percentage {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.progress-bar {
+  margin-top: 12px;
+}
+
+/* Category Tabs */
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-bottom: 16px;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.category-tab svg {
+  font-size: 18px !important;
+}
+
+.category-tab.active {
+  background: var(--category-color);
+  color: #fff;
+  border-color: var(--category-color);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.category-count {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: inherit !important;
+  font-size: 11px !important;
+  height: 20px !important;
+  font-weight: 600 !important;
+}
+
+/* Badge Grid */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.badge-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-card.earned {
+  background: linear-gradient(135deg, 
+    rgba(var(--badge-color), 0.1) 0%, 
+    rgba(var(--badge-color), 0.05) 100%);
+  border-color: var(--badge-color);
+}
+
+.badge-card.active {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.badge-icon-container {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-icon-container svg {
+  font-size: 48px !important;
+  color: var(--badge-color);
+  opacity: 0.3;
+  transition: all 0.3s ease;
+}
+
+.badge-card.earned .badge-icon-container svg {
+  opacity: 1;
+  filter: drop-shadow(0 2px 8px rgba(102, 126, 234, 0.3));
+}
+
+.earned-indicator,
+.locked-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 20px !important;
+  background: #0a0a0a;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.earned-indicator {
+  color: #4caf50;
+}
+
+.locked-indicator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.badge-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  width: 100%;
+}
+
+.badge-info h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge-description {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+.badge-rarity {
+  display: flex;
+  gap: 2px;
+}
+
+.badge-rarity svg {
+  font-size: 14px !important;
+  color: rgba(255, 255, 255, 0.1);
+}
+
+.badge-rarity svg.filled {
+  color: #ffd700;
+}
+
+.earned-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #4caf50;
+  margin-top: 4px;
+}
+
+.earned-date svg {
+  font-size: 14px !important;
+}
+
+.badge-progress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.mini-progress {
+  height: 4px !important;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.mini-progress .MuiLinearProgress-bar {
+  background: var(--badge-color) !important;
+}
+
+.progress-text {
+  font-size: 11px;
+  color: var(--badge-color);
+  font-weight: 600;
+  text-align: center;
+}
+
+.time-remaining {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #ff9f43;
+}
+
+.time-remaining svg {
+  font-size: 12px !important;
+}
+
+.badge-requirement {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
+}
+
+.tier-indicator {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.tier-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.tier-dot.earned {
+  background: var(--badge-color);
+  box-shadow: 0 0 4px var(--badge-color);
+}
+
+/* Active Sessions Footer */
+.active-sessions-footer {
+  margin: 24px 16px 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.active-sessions-footer h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.session-item svg {
+  font-size: 18px !important;
+  color: #667eea;
+}
+
+/* Tablet Adjustments */
+@media (min-width: 768px) {
+  .badges-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 0 24px;
+  }
+  
+  .badge-card {
+    padding: 20px;
+  }
+  
+  .badge-icon-container {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .badge-icon-container svg {
+    font-size: 56px !important;
+  }
+}

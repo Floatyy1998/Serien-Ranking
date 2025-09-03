@@ -97,6 +97,8 @@ export const genreIdMap = [
   { id: 37, name: 'Western' },
 ];
 
+export const genreIdMapForMovies = genreIdMap;
+
 export const genreIdMapForSeries = [
   { id: 10759, name: 'Action & Adventure' },
   { id: 16, name: 'Animation' },

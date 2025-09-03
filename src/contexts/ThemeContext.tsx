@@ -54,6 +54,11 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
     
     // CSS-Variablen für dynamisches Styling setzen
     updateCSSVariables(newTheme);
+    
+    // Auto-save after update
+    setTimeout(() => {
+      saveTheme();
+    }, 50);
   };
 
   // Theme zurücksetzen
@@ -82,9 +87,12 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
         const newTheme = generateDynamicTheme(validatedConfig);
         setCurrentTheme(newTheme);
         updateCSSVariables(newTheme);
+      } else {
+        // Ensure CSS variables are set even with default theme
+        updateCSSVariables(currentTheme);
       }
     } catch (error) {
-      // console.error('Fehler beim Laden des Themes:', error);
+      console.error('Fehler beim Laden des Themes:', error);
       resetTheme();
     }
   };
