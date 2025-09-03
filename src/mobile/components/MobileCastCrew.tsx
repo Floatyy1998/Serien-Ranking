@@ -1,0 +1,698 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Person, Movie, Tv, ChevronRight, Star } from '@mui/icons-material';
+
+interface CastMember {
+  id: number;
+  name: string;
+  character?: string;
+  job?: string;
+  profile_path?: string;
+  order?: number;
+  known_for_department?: string;
+}
+
+interface MobileCastCrewProps {
+  tmdbId: number;
+  mediaType: 'tv' | 'movie';
+  onPersonClick?: (personId: number) => void;
+  seriesData?: any; // For checking if it's anime
+}
+
+export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
+  tmdbId,
+  mediaType,
+  onPersonClick,
+  seriesData
+}) => {
+  const [cast, setCast] = useState<CastMember[]>([]);
+  const [crew, setCrew] = useState<CastMember[]>([]);
+  const [animeCharacters, setAnimeCharacters] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'cast' | 'crew' | 'characters'>('cast');
+  const [personDetails, setPersonDetails] = useState<any>(null);
+  const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
+  
+  // Check if anime
+  const isAnime = seriesData?.genres?.some((g: any) => g.id === 16) && 
+    seriesData?.origin_country?.some((c: string) => ['JP', 'CN', 'KR'].includes(c));
+
+  useEffect(() => {
+    if (isAnime && mediaType === 'tv') {
+      fetchAnimeCharacters();
+    }
+    fetchCredits();
+  }, [tmdbId, mediaType, isAnime]);
+
+  const fetchAnimeCharacters = async () => {
+    try {
+      const query = `
+        query ($search: String) {
+          Media(search: $search, type: ANIME) {
+            id
+            title {
+              romaji
+              english
+              native
+            }
+            characters(sort: ROLE, perPage: 30) {
+              edges {
+                node {
+                  id
+                  name {
+                    first
+                    last
+                    native
+                  }
+                  image {
+                    large
+                  }
+                }
+                role
+                voiceActors(language: JAPANESE, sort: LANGUAGE) {
+                  id
+                  name {
+                    first
+                    last
+                    native
+                  }
+                  image {
+                    large
+                  }
+                  languageV2
+                }
+              }
+            }
+          }
+        }
+      `;
+      
+      const response = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          variables: {
+            search: seriesData?.name || seriesData?.title,
+          },
+        }),
+      });
+      
+      if (!response.ok) return;
+      
+      const result = await response.json();
+      if (result.data?.Media?.characters?.edges) {
+        const transformedCharacters = result.data.Media.characters.edges
+          .filter((edge: any) => edge.voiceActors && edge.voiceActors.length > 0)
+          .map((edge: any) => ({
+            character: {
+              name: `${edge.node.name.first || ''} ${edge.node.name.last || ''}`.trim(),
+              native: edge.node.name.native,
+              image: edge.node.image?.large,
+            },
+            role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
+            voice_actors: edge.voiceActors.map((va: any) => ({
+              person: {
+                name: `${va.name.first || ''} ${va.name.last || ''}`.trim(),
+                native: va.name.native,
+                image: va.image?.large,
+              },
+              language: 'Japanese'
+            }))
+          }));
+        setAnimeCharacters(transformedCharacters);
+      }
+    } catch (error) {
+      console.error('Error fetching anime characters:', error);
+    }
+  };
+
+  const fetchCredits = async () => {
+    try {
+      setLoading(true);
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+      const response = await fetch(
+        `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/credits?api_key=${TMDB_API_KEY}&language=de-DE`
+      );
+      
+      if (!response.ok) throw new Error('Failed to fetch credits');
+      
+      const data = await response.json();
+      
+      // Sort cast by order
+      const sortedCast = (data.cast || [])
+        .sort((a: CastMember, b: CastMember) => (a.order || 999) - (b.order || 999))
+        .slice(0, 20);
+      
+      // Group crew by department and get important roles
+      const importantCrew = (data.crew || [])
+        .filter((member: CastMember) => 
+          ['Director', 'Producer', 'Writer', 'Screenplay', 'Creator'].includes(member.job || '')
+        )
+        .slice(0, 10);
+      
+      setCast(sortedCast);
+      setCrew(importantCrew);
+    } catch (error) {
+      console.error('Error fetching credits:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPersonDetails = async (personId: number) => {
+    try {
+      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+      const [personResponse, creditsResponse] = await Promise.all([
+        fetch(
+          `https://api.themoviedb.org/3/person/${personId}?api_key=${TMDB_API_KEY}&language=de-DE`
+        ),
+        fetch(
+          `https://api.themoviedb.org/3/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}&language=de-DE`
+        )
+      ]);
+      
+      if (!personResponse.ok || !creditsResponse.ok) throw new Error('Failed to fetch person details');
+      
+      const personData = await personResponse.json();
+      const creditsData = await creditsResponse.json();
+      
+      // Sort credits by popularity
+      const sortedCredits = [...creditsData.cast, ...creditsData.crew]
+        .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
+        .slice(0, 20);
+      
+      setPersonDetails({
+        ...personData,
+        credits: sortedCredits
+      });
+      setSelectedPersonId(personId);
+    } catch (error) {
+      console.error('Error fetching person details:', error);
+    }
+  };
+
+  const handlePersonClick = (personId: number) => {
+    if (onPersonClick) {
+      onPersonClick(personId);
+    } else {
+      fetchPersonDetails(personId);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Lade Cast & Crew...</div>
+      </div>
+    );
+  }
+
+  // Person Details View
+  if (selectedPersonId && personDetails) {
+    return (
+      <div style={{ padding: '20px' }}>
+        <button
+          onClick={() => {
+            setSelectedPersonId(null);
+            setPersonDetails(null);
+          }}
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: 'none',
+            borderRadius: '20px',
+            padding: '8px 16px',
+            color: 'white',
+            fontSize: '13px',
+            marginBottom: '20px',
+            cursor: 'pointer'
+          }}
+        >
+          ← Zurück
+        </button>
+
+        {/* Person Info */}
+        <div style={{
+          display: 'flex',
+          gap: '16px',
+          marginBottom: '24px'
+        }}>
+          {personDetails.profile_path ? (
+            <img
+              src={`https://image.tmdb.org/t/p/w185${personDetails.profile_path}`}
+              alt={personDetails.name}
+              style={{
+                width: '80px',
+                height: '120px',
+                objectFit: 'cover',
+                borderRadius: '12px'
+              }}
+            />
+          ) : (
+            <div style={{
+              width: '80px',
+              height: '120px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Person style={{ fontSize: '32px', color: 'rgba(255, 255, 255, 0.3)' }} />
+            </div>
+          )}
+          
+          <div style={{ flex: 1 }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: 700,
+              margin: '0 0 8px 0'
+            }}>
+              {personDetails.name}
+            </h3>
+            {personDetails.known_for_department && (
+              <p style={{
+                fontSize: '13px',
+                color: 'rgba(255, 255, 255, 0.6)',
+                margin: '0 0 4px 0'
+              }}>
+                {personDetails.known_for_department}
+              </p>
+            )}
+            {personDetails.birthday && (
+              <p style={{
+                fontSize: '12px',
+                color: 'rgba(255, 255, 255, 0.5)',
+                margin: 0
+              }}>
+                Geboren: {new Date(personDetails.birthday).toLocaleDateString('de-DE')}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Known For */}
+        <div>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            marginBottom: '12px'
+          }}>
+            Bekannt aus
+          </h4>
+          
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            overflowX: 'auto',
+            paddingBottom: '8px',
+            scrollbarWidth: 'none'
+          }}>
+            {personDetails.credits.map((credit: any) => (
+              <div
+                key={credit.id}
+                style={{
+                  minWidth: '100px',
+                  cursor: 'pointer'
+                }}
+              >
+                <div style={{
+                  position: 'relative',
+                  marginBottom: '6px'
+                }}>
+                  {credit.poster_path ? (
+                    <img
+                      src={`https://image.tmdb.org/t/p/w185${credit.poster_path}`}
+                      alt={credit.title || credit.name}
+                      style={{
+                        width: '100px',
+                        height: '150px',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100px',
+                      height: '150px',
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                      {credit.media_type === 'movie' ? (
+                        <Movie style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                      ) : (
+                        <Tv style={{ fontSize: '28px', color: 'rgba(255, 255, 255, 0.2)' }} />
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Rating Badge */}
+                  {credit.vote_average > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '6px',
+                      right: '6px',
+                      background: 'rgba(0, 0, 0, 0.8)',
+                      borderRadius: '12px',
+                      padding: '2px 6px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      fontSize: '10px',
+                      fontWeight: 600
+                    }}>
+                      <Star style={{ fontSize: '10px', color: '#ffd700' }} />
+                      {credit.vote_average.toFixed(1)}
+                    </div>
+                  )}
+                  
+                  {/* Year Badge */}
+                  {(credit.release_date || credit.first_air_date) && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '6px',
+                      left: '6px',
+                      background: 'rgba(0, 0, 0, 0.8)',
+                      borderRadius: '8px',
+                      padding: '2px 6px',
+                      fontSize: '10px',
+                      fontWeight: 500
+                    }}>
+                      {new Date(credit.release_date || credit.first_air_date).getFullYear()}
+                    </div>
+                  )}
+                </div>
+                
+                <p style={{
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  margin: '0 0 2px 0',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  lineHeight: '1.3'
+                }}>
+                  {credit.title || credit.name}
+                </p>
+                
+                {credit.character && (
+                  <p style={{
+                    fontSize: '10px',
+                    margin: 0,
+                    color: 'rgba(255, 255, 255, 0.5)'
+                  }}>
+                    als {credit.character}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Cast & Crew List View
+  return (
+    <div>
+      {/* Tabs */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        padding: '0 20px',
+        marginBottom: '16px'
+      }}>
+        {isAnime && animeCharacters.length > 0 && (
+          <button
+            onClick={() => setActiveTab('characters')}
+            style={{
+              flex: 1,
+              padding: '10px',
+              background: activeTab === 'characters' 
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+              border: 'none',
+              borderRadius: '12px',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: activeTab === 'characters' ? 600 : 500,
+              cursor: 'pointer'
+            }}
+          >
+            Charaktere ({animeCharacters.length})
+          </button>
+        )}
+        
+        <button
+          onClick={() => setActiveTab('cast')}
+          style={{
+            flex: 1,
+            padding: '10px',
+            background: activeTab === 'cast' 
+              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              : 'rgba(255, 255, 255, 0.05)',
+            border: 'none',
+            borderRadius: '12px',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: activeTab === 'cast' ? 600 : 500,
+            cursor: 'pointer'
+          }}
+        >
+          Besetzung ({cast.length})
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('crew')}
+          style={{
+            flex: 1,
+            padding: '10px',
+            background: activeTab === 'crew' 
+              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              : 'rgba(255, 255, 255, 0.05)',
+            border: 'none',
+            borderRadius: '12px',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: activeTab === 'crew' ? 600 : 500,
+            cursor: 'pointer'
+          }}
+        >
+          Crew ({crew.length})
+        </button>
+      </div>
+
+      {/* List */}
+      <div style={{ padding: '0 20px' }}>
+        {activeTab === 'characters' ? (
+          // Anime Characters Display
+          animeCharacters.map((char, index) => (
+            <div
+              key={index}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: '12px',
+                marginBottom: '8px'
+              }}
+            >
+              {/* Character Image */}
+              {char.character.image ? (
+                <img
+                  src={char.character.image}
+                  alt={char.character.name}
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    objectFit: 'cover',
+                    borderRadius: '50%'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Person style={{ fontSize: '20px', color: 'rgba(255, 255, 255, 0.3)' }} />
+                </div>
+              )}
+              
+              {/* Character Info */}
+              <div style={{ flex: 1 }}>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  margin: 0,
+                  color: 'white'
+                }}>
+                  {char.character.name}
+                </p>
+                {char.character.native && (
+                  <p style={{
+                    fontSize: '12px',
+                    margin: '2px 0 0 0',
+                    color: 'rgba(255, 255, 255, 0.5)'
+                  }}>
+                    {char.character.native}
+                  </p>
+                )}
+                <p style={{
+                  fontSize: '11px',
+                  margin: '2px 0 0 0',
+                  color: '#00d4aa'
+                }}>
+                  {char.role}
+                </p>
+              </div>
+              
+              {/* Voice Actor */}
+              {char.voice_actors?.[0] && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{
+                      fontSize: '12px',
+                      margin: 0,
+                      color: 'rgba(255, 255, 255, 0.7)'
+                    }}>
+                      {char.voice_actors[0].person.name}
+                    </p>
+                    {char.voice_actors[0].person.native && (
+                      <p style={{
+                        fontSize: '11px',
+                        margin: '2px 0 0 0',
+                        color: 'rgba(255, 255, 255, 0.5)'
+                      }}>
+                        {char.voice_actors[0].person.native}
+                      </p>
+                    )}
+                    <p style={{
+                      fontSize: '10px',
+                      margin: '2px 0 0 0',
+                      color: 'rgba(255, 255, 255, 0.4)'
+                    }}>
+                      Seiyuu
+                    </p>
+                  </div>
+                  {char.voice_actors[0].person.image ? (
+                    <img
+                      src={char.voice_actors[0].person.image}
+                      alt={char.voice_actors[0].person.name}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        objectFit: 'cover',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Person style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.3)' }} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          // Regular Cast/Crew Display
+          (activeTab === 'cast' ? cast : crew).map((member) => (
+          <motion.div
+            key={member.id}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handlePersonClick(member.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px',
+              background: 'rgba(255, 255, 255, 0.02)',
+              borderRadius: '12px',
+              marginBottom: '8px',
+              cursor: 'pointer',
+              transition: 'background 0.2s ease'
+            }}
+          >
+            {member.profile_path ? (
+              <img
+                src={`https://image.tmdb.org/t/p/w92${member.profile_path}`}
+                alt={member.name}
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  objectFit: 'cover',
+                  borderRadius: '50%'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Person style={{ fontSize: '20px', color: 'rgba(255, 255, 255, 0.3)' }} />
+              </div>
+            )}
+            
+            <div style={{ flex: 1 }}>
+              <p style={{
+                fontSize: '14px',
+                fontWeight: 500,
+                margin: 0,
+                color: 'white'
+              }}>
+                {member.name}
+              </p>
+              <p style={{
+                fontSize: '12px',
+                margin: 0,
+                color: 'rgba(255, 255, 255, 0.5)'
+              }}>
+                {member.character || member.job}
+              </p>
+            </div>
+            
+            <ChevronRight style={{ 
+              fontSize: '20px', 
+              color: 'rgba(255, 255, 255, 0.3)' 
+            }} />
+          </motion.div>
+        ))
+        )}
+      </div>
+    </div>
+  );
+};

@@ -222,12 +222,10 @@ export const OptimizedFriendsProvider = ({
     try {
       const allActivities: FriendActivity[] = [];
 
-      // Intelligente Freund-Auswahl: Priorisiere aktive Freunde
-      const activeFriends = friends
-        .sort((a, b) => (b.lastActive || 0) - (a.lastActive || 0)) // Sortiere nach letzter Aktivität
-        .slice(0, 8); // Reduziere von 10 auf 8 für bessere Performance
+      // Load from ALL friends, not just the first 8
+      const activeFriends = friends;
 
-      const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000; // Reduziere von 7 auf 3 Tage
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; // Load last 7 days of activities
 
       // Batch alle Requests parallel statt sequenziell
       const activityPromises = activeFriends.map(async (friend) => {
@@ -236,8 +234,8 @@ export const OptimizedFriendsProvider = ({
             .database()
             .ref(`activities/${friend.uid}`)
             .orderByChild('timestamp')
-            .startAt(threeDaysAgo)
-            .limitToLast(15); // Reduziere von 20 auf 15 pro Freund
+            .startAt(sevenDaysAgo)
+            .limitToLast(20); // Get last 20 activities per friend
 
           const snapshot = await activitiesRef.once('value');
           const data = snapshot.val();
@@ -245,6 +243,8 @@ export const OptimizedFriendsProvider = ({
           if (data) {
             return Object.keys(data).map((key) => ({
               id: key,
+              userId: friend.uid,  // Add the friend's userId to each activity
+              userName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
               ...data[key],
             }));
           }
@@ -268,7 +268,8 @@ export const OptimizedFriendsProvider = ({
 
       // Sortiere nach Zeitstempel und limitiere früher
       allActivities.sort((a, b) => b.timestamp - a.timestamp);
-      const recentActivities = allActivities.slice(0, 30); // Reduziere von 50 auf 30
+      const recentActivities = allActivities.slice(0, 100); // Show up to 100 activities
+      console.log('Loaded activities from friends:', allActivities.length, 'total, showing', recentActivities.length);
       setFriendActivities(recentActivities);
 
       // Unread count

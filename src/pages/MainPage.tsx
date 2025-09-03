@@ -10,6 +10,7 @@ import {
   Star,
   TrendingUp,
 } from '@mui/icons-material';
+import { useMobileDetection } from '../hooks/useMobileDetection';
 import {
   Avatar,
   Badge,
@@ -24,7 +25,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import NewSeasonNotificationDialog from '../components/domain/dialogs/NewSeasonNotificationDialog';
@@ -44,6 +45,9 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import BadgeButton from '../features/badges/BadgeButton';
 import { calculateCorrectAverageRating } from '../lib/rating/rating';
 import { colors } from '../theme';
+
+// Lazy load MobileApp outside component to avoid re-creating it
+const MobileApp = lazy(() => import('../mobile/MobileApp').then(m => ({ default: m.MobileApp })));
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -136,6 +140,7 @@ export const MainPage: React.FC = () => {
   const [movieSelectedSpecialFilter, setMovieSelectedSpecialFilter] =
     useState('');
 
+  // Define ALL callbacks and hooks BEFORE any conditional returns
   const handleSearchChange = useCallback((value: string) => {
     setSearchValue(value);
   }, []);
@@ -177,7 +182,6 @@ export const MainPage: React.FC = () => {
   const handleRestartTour = () => {
     setShouldRestartTour(true);
   };
-
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -359,6 +363,18 @@ export const MainPage: React.FC = () => {
       isOnline: true,
     };
   }, [user, user?.photoURL]); // Explizit user.photoURL als Dependency hinzufügen
+
+  // Check for mobile AFTER ALL hooks
+  const { isMobile } = useMobileDetection();
+  
+  // Use mobile version on mobile devices - AFTER ALL hooks
+  if (isMobile) {
+    return (
+      <Suspense fallback={<div style={{ background: '#000', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>Loading...</div>}>
+        <MobileApp />
+      </Suspense>
+    );
+  }
 
   return (
     <Container maxWidth={false} disableGutters sx={{ 
