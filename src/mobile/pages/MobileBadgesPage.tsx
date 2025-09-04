@@ -50,7 +50,7 @@ export const MobileBadgesPage: React.FC = () => {
   const navigate = useNavigate();
   const { } = useBadges();
   const { user } = useAuth()!;
-  const { getMobilePageStyle } = useTheme();
+  const {} = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [userBadges, setUserBadges] = useState<EarnedBadge[]>([]);
@@ -181,7 +181,7 @@ export const MobileBadgesPage: React.FC = () => {
   }
 
   return (
-    <div className="mobile-badges-page" style={getMobilePageStyle()}>
+    <div className="mobile-badges-page">
       {/* Header */}
       <div className="badges-header">
         <button className="back-button" onClick={() => navigate(-1)}>

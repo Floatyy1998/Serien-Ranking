@@ -6,16 +6,10 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 export const MobileStatsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
+  const { getMobileHeaderStyle } = useTheme();
 
   return (
-    <div style={{ 
-      ...getMobilePageStyle(),
-      height: '100dvh',
-      paddingBottom: '80px',
-      overflowY: 'auto',
-      WebkitOverflowScrolling: 'touch'
-    }}>
+    <div>
       {/* Header */}
       <header style={{
         ...getMobileHeaderStyle('rgba(102, 126, 234, 0.6)'),

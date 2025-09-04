@@ -35,7 +35,7 @@ export const MobileHomePage: React.FC = () => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { unreadActivitiesCount } = useOptimizedFriends();
-  const { currentTheme, getMobilePageStyle } = useTheme();
+  const { currentTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   // const [selectedCategory, setSelectedCategory] = useState<
   //   'all' | 'series' | 'movies'
@@ -428,7 +428,6 @@ export const MobileHomePage: React.FC = () => {
   return (
     <div
       style={{
-        ...getMobilePageStyle(),
         overflowY: 'auto',
       }}
     >

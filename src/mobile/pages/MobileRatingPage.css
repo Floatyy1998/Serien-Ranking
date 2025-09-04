@@ -131,7 +131,7 @@
 /* Rating Content */
 .rating-content {
   flex: 1;
-  padding: 0 16px 100px;
+  padding: 0 16px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -326,7 +326,11 @@
 
 .average-display {
   padding: 16px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
   border: 1px solid rgba(102, 126, 234, 0.2);
   border-radius: 12px;
   display: flex;
@@ -395,7 +399,7 @@
 
 .action-button.save {
   background: var(--color-primary);
-  color: var(--color-text-primary);
+  color: white;
 }
 
 .action-button:disabled {

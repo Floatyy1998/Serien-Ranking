@@ -32,7 +32,7 @@ export const MobileTodayEpisodesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
+  const { getMobileHeaderStyle } = useTheme();
   const [updatingEpisodes, setUpdatingEpisodes] = useState<Set<string>>(new Set());
   
   // Get TMDB image URL
@@ -149,7 +149,6 @@ export const MobileTodayEpisodesPage: React.FC = () => {
 
   return (
     <div style={{ 
-      ...getMobilePageStyle(),
       paddingBottom: '80px'
     }}>
       {/* Header */}

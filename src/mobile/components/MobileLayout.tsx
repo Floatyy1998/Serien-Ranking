@@ -47,7 +47,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({ children, hideNav = 
   
   return (
     <div className="mobile-layout" ref={swipeRef as any}>
-      <div className="mobile-content">
+      <div className={`mobile-content ${hideNav ? 'no-nav' : 'with-nav'}`}>
         {children}
       </div>
       {!hideNav && <MobileBottomNavigation />}

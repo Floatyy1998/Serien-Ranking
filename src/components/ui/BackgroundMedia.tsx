@@ -2,8 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 // import { checkVideoLoadingViability } from '../../utils/videoOptimizer'; // Unused
 
 export const BackgroundMedia: React.FC = () => {
-  // Initialisiere aus localStorage für sofortiges Rendern
+  // Check if mobile device
+  const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  
+  // Initialisiere aus localStorage für sofortiges Rendern (nur auf Desktop)
   const getInitialMedia = () => {
+    // Disable completely on mobile
+    if (isMobileDevice) {
+      return { url: null, isVideo: false, opacity: 0.5, blur: 0 };
+    }
+    
     try {
       const savedTheme = localStorage.getItem('customTheme');
       if (savedTheme) {
@@ -50,6 +58,12 @@ export const BackgroundMedia: React.FC = () => {
   useEffect(() => {
     // Load background media settings from localStorage
     const loadBackgroundMedia = () => {
+      // Skip entirely on mobile
+      if (isMobileDevice) {
+        cleanupMedia();
+        return;
+      }
+      
       try {
         const savedTheme = localStorage.getItem('customTheme');
         if (savedTheme) {
@@ -197,14 +211,15 @@ export const BackgroundMedia: React.FC = () => {
       window.removeEventListener('themeChanged', handleThemeChange);
       cleanupMedia();
     };
-  }, []);
+  }, [isMobileDevice]);
 
-  if (!mediaUrl) return null;
+  // Return null on mobile devices
+  if (isMobileDevice || !mediaUrl) return null;
 
-  // Auf Mobile: Videos nicht anzeigen
-  const isMobile = window.innerWidth <= 768;
+  // Videos nicht anzeigen auf kleinen Bildschirmen
+  const isSmallScreen = window.innerWidth <= 768;
   
-  if (isVideo && (isMobile || videoLoadFailed)) {
+  if (isVideo && (isSmallScreen || videoLoadFailed)) {
     // Bei Mobile oder Ladefehler: Zeige statisches Bild als Fallback
     return (
       <div

@@ -1,7 +1,6 @@
 .mobile-badges-page {
   height: 100vh;
   background: var(--color-background-default);
-  padding-bottom: 80px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

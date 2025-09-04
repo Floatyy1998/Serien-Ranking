@@ -358,8 +358,10 @@ const loadSavedTheme = async (userId?: string) => {
     );
     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
-    // Hintergrundbild sofort setzen wenn vorhanden
-    if (theme.backgroundImage && !theme.backgroundIsVideo) {
+    // Hintergrundbild nur auf Desktop setzen
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    if (theme.backgroundImage && !theme.backgroundIsVideo && !isMobile) {
       root.style.setProperty(
         '--background-image',
         `url(${theme.backgroundImage})`

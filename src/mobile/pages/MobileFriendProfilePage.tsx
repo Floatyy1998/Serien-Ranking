@@ -27,7 +27,7 @@ interface FriendItem {
 export const MobileFriendProfilePage: React.FC = () => {
   const { id: friendId } = useParams();
   const navigate = useNavigate();
-  const { currentTheme, getMobilePageStyle } = useTheme();
+  const { currentTheme } = useTheme();
   // const { user } = useAuth()!;
   const [loading, setLoading] = useState(true);
   const [friendName, setFriendName] = useState('');
@@ -341,12 +341,12 @@ export const MobileFriendProfilePage: React.FC = () => {
   if (loading) {
     return (
       <div style={{ 
-        minHeight: '100vh', 
         background: currentTheme.background.default, 
         color: currentTheme.text.primary,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: '20px'
       }}>
         <div>Loading...</div>
       </div>
@@ -354,7 +354,7 @@ export const MobileFriendProfilePage: React.FC = () => {
   }
 
   return (
-    <div style={getMobilePageStyle()}>
+    <div>
       {/* Header */}
       <header style={{
         padding: '20px',

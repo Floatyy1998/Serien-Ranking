@@ -20,7 +20,7 @@ export const MobileDiscoverPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const { currentTheme, getMobilePageStyle } = useTheme();
+  const { currentTheme } = useTheme();
   
   
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
@@ -264,7 +264,6 @@ export const MobileDiscoverPage: React.FC = () => {
   
   return (
     <div style={{
-      ...getMobilePageStyle(),
       overflowY: 'auto'
     }}
     onScroll={handleScroll}

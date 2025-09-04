@@ -52,7 +52,7 @@ export const MobileFilterPage: React.FC = () => {
   const location = useLocation();
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const { getMobilePageStyle } = useTheme();
+  const {} = useTheme();
 
   const [filters, setFilters] = useState<FilterState>({
     type: 'all',
@@ -171,7 +171,7 @@ export const MobileFilterPage: React.FC = () => {
   };
 
   return (
-    <div className="mobile-filter-page" style={getMobilePageStyle()}>
+    <div className="mobile-filter-page">
       {/* Header */}
       <div className="filter-header">
         <button onClick={() => navigate(-1)} className="back-button">

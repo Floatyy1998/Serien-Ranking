@@ -23,7 +23,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { getMobilePageStyle } = useTheme();
+  const {} = useTheme();
   const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
   const [showRewatchDialog, setShowRewatchDialog] = useState<{show: boolean, type: 'episode' | 'season', item: any}>({show: false, type: 'episode', item: null});
@@ -238,6 +238,14 @@ export const MobileSeriesDetailPage: React.FC = () => {
       const newWatchlistStatus = !series.watchlist;
       await ref.set(newWatchlistStatus);
       
+      // Badge-System für Watchlist (nur wenn hinzugefügt)
+      if (newWatchlistStatus) {
+        const { logWatchlistAdded } = await import(
+          '../../features/badges/minimalActivityLogger'
+        );
+        await logWatchlistAdded(user.uid, series.title, series.id);
+      }
+      
       // The context will update automatically through Firebase listeners
     } catch (error) {
       console.error('Error updating watchlist:', error);
@@ -315,7 +323,6 @@ export const MobileSeriesDetailPage: React.FC = () => {
     const apiKey = import.meta.env.VITE_API_TMDB;
     return (
       <div style={{ 
-        ...getMobilePageStyle(),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -352,7 +359,6 @@ export const MobileSeriesDetailPage: React.FC = () => {
   if (loading || !series) {
     return (
       <div style={{ 
-        ...getMobilePageStyle(),
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
@@ -363,7 +369,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
   }
 
   return (
-    <div style={getMobilePageStyle()}>
+    <div>
       {/* Hero Section with Poster */}
       <div style={{ 
         position: 'relative',
@@ -937,7 +943,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
 
       {/* Delete Button - only for user's series */}
       {!isReadOnlyTmdbSeries && (
-        <div style={{ padding: '20px', paddingBottom: '100px' }}>
+        <div style={{ padding: '20px' }}>
           <motion.button
             onClick={handleDeleteSeries}
             disabled={isDeleting}
@@ -968,7 +974,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
 
       {/* Add Button - only for TMDB series not in user's list */}
       {isReadOnlyTmdbSeries && (
-        <div style={{ padding: '20px', paddingBottom: '100px' }}>
+        <div style={{ padding: '20px' }}>
           <motion.button
             onClick={handleAddSeries}
             disabled={isAdding}

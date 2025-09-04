@@ -344,8 +344,7 @@ export const MobileRatingsPage: React.FC = () => {
     <div style={{ 
       minHeight: '100vh', 
       background: getMobilePageBackground(), // Dynamisch: transparent wenn Bild, sonst undurchsichtig
-      color: currentTheme.text.primary,
-      paddingBottom: '80px'
+      color: currentTheme.text.primary
     }}>
       {/* Header */}
       <div style={{
