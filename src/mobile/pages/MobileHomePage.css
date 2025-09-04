@@ -3,7 +3,6 @@
   height: 100vh;
   background: var(--color-background-default, #000);
   color: var(--color-text-primary, #fff);
-  padding-bottom: 80px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

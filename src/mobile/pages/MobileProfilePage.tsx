@@ -16,7 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 export const MobileProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { currentTheme, getMobilePageStyle } = useTheme();
+  const { currentTheme } = useTheme();
   
   // Load user data from Firebase Database
   const { data: userData } = useEnhancedFirebaseCache<any>(
@@ -84,7 +84,7 @@ export const MobileProfilePage: React.FC = () => {
   };
   
   return (
-    <div style={getMobilePageStyle()}>
+    <div>
       {/* Profile Header */}
       <div style={{
         background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,

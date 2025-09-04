@@ -15,7 +15,7 @@ import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 export const MobileProfileSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
+  const { getMobileHeaderStyle } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [username, setUsername] = useState('');
@@ -200,10 +200,7 @@ export const MobileProfileSettingsPage: React.FC = () => {
   };
   
   return (
-    <div style={{ 
-      ...getMobilePageStyle(),
-      paddingBottom: '80px'
-    }}>
+    <div>
       {/* Header */}
       <header style={{
         ...getMobileHeaderStyle('rgba(102, 126, 234, 0.6)'),

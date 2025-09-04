@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { 
-  FilterList, Close, 
+  FilterList, 
   Star, NewReleases, Schedule, PlaylistAdd 
 } from '@mui/icons-material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
@@ -55,11 +55,61 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
   const [selectedQuickFilter, setSelectedQuickFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSort, setSelectedSort] = useState<string>('rating-desc');
+  const dragControls = useDragControls();
   
   const quickFilters = isRatingsMode 
     ? ratingsQuickFilters 
     : (isMovieMode ? movieQuickFilters : seriesQuickFilters);
   const activeFiltersCount = [selectedGenre, selectedProvider, selectedQuickFilter].filter(Boolean).length;
+
+  // Lock body scroll when filter panel is open
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      const body = document.body;
+      const documentElement = document.documentElement;
+      
+      // Store current position
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollY}px`;
+      body.style.left = '0';
+      body.style.right = '0';
+      body.style.overflow = 'hidden';
+      
+      // Also lock the html element on iOS
+      documentElement.style.overflow = 'hidden';
+      documentElement.style.height = '100%';
+    } else {
+      const body = document.body;
+      const documentElement = document.documentElement;
+      const scrollY = body.style.top;
+      
+      // Reset styles
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.overflow = '';
+      
+      documentElement.style.overflow = '';
+      documentElement.style.height = '';
+      
+      // Restore scroll position
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.height = '';
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     onFilterChange({
@@ -140,16 +190,27 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                 right: 0,
                 bottom: 0,
                 background: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 1100
+                zIndex: 9998
               }}
             />
 
-            {/* Panel */}
+            {/* Panel Container */}
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+              drag="y"
+              dragControls={dragControls}
+              dragConstraints={{ top: 0 }}
+              dragElastic={0.1}
+              dragListener={false}
+              onDragEnd={(_e, info) => {
+                // Close if dragged down more than 50px or with velocity
+                if (info.offset.y > 50 || info.velocity.y > 300) {
+                  setIsOpen(false);
+                }
+              }}
               style={{
                 position: 'fixed',
                 bottom: 0,
@@ -158,12 +219,63 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                 background: 'var(--color-background-elevated, #1a1a1a)',
                 borderTopLeftRadius: '24px',
                 borderTopRightRadius: '24px',
-                padding: '24px',
-                paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
-                maxHeight: '80vh',
-                overflowY: 'auto',
-                zIndex: 1200
+                maxHeight: hasBottomNav ? 'calc(80vh - 60px)' : '80vh',
+                display: 'flex',
+                flexDirection: 'column',
+                zIndex: 9999
               }}
+              onClick={(e) => e.stopPropagation()}
+              onScroll={(e) => e.stopPropagation()}
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
+              {/* Drag Handle - Only this area triggers drag */}
+              <div 
+                onPointerDown={(e) => dragControls.start(e)}
+                style={{
+                  paddingTop: '12px',
+                  paddingBottom: '8px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  cursor: 'grab',
+                  touchAction: 'none'
+                }}
+              >
+                <div style={{
+                  width: '40px',
+                  height: '5px',
+                  borderRadius: '3px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  pointerEvents: 'none'
+                }} />
+              </div>
+              
+              {/* Panel Scrollable Content */}
+              <div
+                style={{
+                  padding: '24px',
+                  paddingTop: '0',
+                  paddingBottom: hasBottomNav 
+                    ? 'calc(60px + 24px + env(safe-area-inset-bottom))' 
+                    : 'calc(24px + env(safe-area-inset-bottom))',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  WebkitOverflowScrolling: 'touch',
+                  flex: 1,
+                  overscrollBehavior: 'contain',
+                  touchAction: 'pan-y'
+                }}
+                onScroll={(e) => {
+                  e.stopPropagation();
+                  // Prevent parent scroll when at boundaries
+                  const target = e.currentTarget;
+                  if (target.scrollTop === 0 && (e as any).deltaY < 0) {
+                    e.preventDefault();
+                  }
+                  if (target.scrollTop + target.clientHeight >= target.scrollHeight && (e as any).deltaY > 0) {
+                    e.preventDefault();
+                  }
+                }}
             >
               {/* Header */}
               <div style={{
@@ -183,43 +295,23 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                   Filter & Sortierung
                 </h2>
                 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {activeFiltersCount > 0 && (
-                    <button
-                      onClick={clearFilters}
-                      style={{
-                        background: 'rgba(255, 71, 87, 0.1)',
-                        border: '1px solid rgba(255, 71, 87, 0.3)',
-                        borderRadius: '20px',
-                        padding: '6px 12px',
-                        color: '#ff4757',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Zurücksetzen
-                    </button>
-                  )}
-                  
+                {activeFiltersCount > 0 && (
                   <button
-                    onClick={() => setIsOpen(false)}
+                    onClick={clearFilters}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '32px',
-                      height: '32px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
+                      background: 'rgba(255, 71, 87, 0.1)',
+                      border: '1px solid rgba(255, 71, 87, 0.3)',
+                      borderRadius: '20px',
+                      padding: '6px 12px',
+                      color: '#ff4757',
+                      fontSize: '13px',
+                      fontWeight: 600,
                       cursor: 'pointer'
                     }}
                   >
-                    <Close />
+                    Zurücksetzen
                   </button>
-                </div>
+                )}
               </div>
 
               {/* Search */}
@@ -445,6 +537,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                     );
                   })}
                 </div>
+              </div>
               </div>
             </motion.div>
           </>

@@ -32,7 +32,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { currentTheme, getMobilePageStyle, getMobileHeaderStyle } = useTheme();
+  const { currentTheme, getMobileHeaderStyle } = useTheme();
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   
@@ -173,10 +173,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
   };
   
   return (
-    <div style={{ 
-      ...getMobilePageStyle(),
-      paddingBottom: '80px'
-    }}>
+    <div>
       {/* Header */}
       <header style={{
         ...getMobileHeaderStyle('transparent'),

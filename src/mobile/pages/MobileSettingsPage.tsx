@@ -12,7 +12,7 @@ import 'firebase/compat/database';
 export const MobileSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
+  const { getMobileHeaderStyle } = useTheme();
   
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -130,13 +130,7 @@ export const MobileSettingsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      ...getMobilePageStyle(),
-      height: '100dvh',
-      paddingBottom: '80px',
-      overflowY: 'auto',
-      WebkitOverflowScrolling: 'touch'
-    }}>
+    <div>
       {/* Header */}
       <header style={{
         ...getMobileHeaderStyle('rgba(102, 126, 234, 0.6)'),

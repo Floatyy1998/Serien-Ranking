@@ -24,7 +24,7 @@ export const MobileEpisodeManagementPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { getMobilePageStyle } = useTheme();
+  const {} = useTheme();
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -288,7 +288,7 @@ export const MobileEpisodeManagementPage: React.FC = () => {
   const progress = totalCount > 0 ? (watchedCount / totalCount) * 100 : 0;
 
   return (
-    <div className="mobile-episode-page" style={getMobilePageStyle()}>
+    <div className="mobile-episode-page">
       {/* Native App Header */}
       <div className="episode-header">
         <button onClick={() => navigate(-1)} className="back-button">

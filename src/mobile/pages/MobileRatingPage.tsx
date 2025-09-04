@@ -69,7 +69,7 @@ export const MobileRatingPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const { getMobilePageStyle } = useTheme();
+  const {} = useTheme();
   
   const [activeTab, setActiveTab] = useState<'overall' | 'genre'>('overall');
   const [overallRating, setOverallRating] = useState(0);
@@ -265,7 +265,7 @@ export const MobileRatingPage: React.FC = () => {
   }
 
   return (
-    <div className="mobile-rating-page" style={getMobilePageStyle()}>
+    <div className="mobile-rating-page">
       {/* Native Header */}
       <div className="rating-header">
         <button onClick={() => navigate(-1)} className="back-button">

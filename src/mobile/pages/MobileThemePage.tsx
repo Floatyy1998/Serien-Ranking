@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowBack,
   Palette,
-  Image,
   CloudOff,
   CloudSync,
   Refresh,
@@ -12,10 +11,8 @@ import {
   ColorLens,
   Wallpaper,
 } from '@mui/icons-material';
-import { Slider } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { BackgroundImageFirebaseUpload } from '../../components/admin/BackgroundImageFirebaseUpload';
 import './MobileThemePage.css';
 
 const presetThemes = [
@@ -42,10 +39,9 @@ export const MobileThemePage: React.FC = () => {
     userConfig,
     updateTheme,
     resetTheme,
-    saveTheme,
   } = useTheme();
 
-  const [activeTab, setActiveTab] = useState<'colors' | 'background' | 'sync'>('colors');
+  const [activeTab, setActiveTab] = useState<'colors' | 'sync'>('colors');
   const [selectedColor, setSelectedColor] = useState<string>('primaryColor');
   const [colorValue, setColorValue] = useState<string>(userConfig.primaryColor);
 
@@ -99,13 +95,6 @@ export const MobileThemePage: React.FC = () => {
         >
           <Palette />
           <span>Farben</span>
-        </button>
-        <button
-          className={`theme-tab ${activeTab === 'background' ? 'active' : ''}`}
-          onClick={() => setActiveTab('background')}
-        >
-          <Image />
-          <span>Hintergrund</span>
         </button>
         <button
           className={`theme-tab ${activeTab === 'sync' ? 'active' : ''}`}
@@ -207,102 +196,6 @@ export const MobileThemePage: React.FC = () => {
             </motion.div>
           )}
 
-          {activeTab === 'background' && (
-            <motion.div
-              key="background"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="background-tab"
-            >
-              {/* Background Upload */}
-              <div className="section">
-                <h3>Hintergrund Media</h3>
-                <BackgroundImageFirebaseUpload 
-                  backgroundImage={userConfig.backgroundImage}
-                  backgroundImageOpacity={userConfig.backgroundImageOpacity || 0.1}
-                  backgroundImageBlur={userConfig.backgroundImageBlur || 0}
-                  primaryColor={userConfig.primaryColor}
-                  surfaceColor={userConfig.primaryColor}
-                  onImageChange={(url) => {
-                    updateTheme({ 
-                      backgroundImage: url,
-                      backgroundIsVideo: false // BackgroundImageFirebaseUpload unterstützt nur Bilder
-                    });
-                  }}
-                  onOpacityChange={(opacity) => {
-                    updateTheme({ backgroundImageOpacity: opacity });
-                  }}
-                  onBlurChange={(blur) => {
-                    updateTheme({ backgroundImageBlur: blur });
-                  }}
-                  isVideo={userConfig.backgroundIsVideo}
-                />
-
-                {/* Current Background */}
-                {userConfig.backgroundImage && (
-                  <div className="current-background">
-                    <h4>Aktueller Hintergrund</h4>
-                    <div className="background-preview">
-                      {userConfig.backgroundIsVideo ? (
-                        <video src={userConfig.backgroundImage} muted loop />
-                      ) : (
-                        <img src={userConfig.backgroundImage} alt="Background" />
-                      )}
-                    </div>
-                    <button
-                      className="remove-button"
-                      onClick={() => updateTheme({ backgroundImage: undefined })}
-                    >
-                      Entfernen
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Background Controls */}
-              <div className="section">
-                <h3>Hintergrund Einstellungen</h3>
-                
-                <div className="control-group">
-                  <div className="control-header">
-                    <span>Deckkraft</span>
-                    <span className="control-value">{Math.round((userConfig.backgroundImageOpacity || 0.5) * 100)}%</span>
-                  </div>
-                  <Slider
-                    value={userConfig.backgroundImageOpacity || 0.5}
-                    onChange={(_, value) => {
-                      updateTheme({ backgroundImageOpacity: value as number });
-                      setTimeout(() => saveTheme(), 100);
-                    }}
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    className="control-slider"
-                  />
-                </div>
-
-                <div className="control-group">
-                  <div className="control-header">
-                    <span>Unschärfe</span>
-                    <span className="control-value">{userConfig.backgroundImageBlur || 0}px</span>
-                  </div>
-                  <Slider
-                    value={userConfig.backgroundImageBlur || 0}
-                    onChange={(_, value) => {
-                      updateTheme({ backgroundImageBlur: value as number });
-                      setTimeout(() => saveTheme(), 100);
-                    }}
-                    min={0}
-                    max={20}
-                    step={1}
-                    className="control-slider"
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
-
           {activeTab === 'sync' && (
             <motion.div
               key="sync"
@@ -359,10 +252,6 @@ export const MobileThemePage: React.FC = () => {
                       />
                       <span>{userConfig.primaryColor}</span>
                     </div>
-                  </div>
-                  <div className="info-row">
-                    <span>Hintergrund:</span>
-                    <span>{userConfig.backgroundImage ? 'Benutzerdefiniert' : 'Standard'}</span>
                   </div>
                 </div>
               </div>

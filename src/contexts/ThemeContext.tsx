@@ -64,6 +64,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
   const [userConfig, setUserConfig] = useState<UserThemeConfig>(initialConfig);
   const [currentTheme, setCurrentTheme] = useState(() => {
     const theme = generateDynamicTheme(initialConfig);
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     // Setze CSS-Variablen sofort beim Start
     setTimeout(() => {
       const root = document.documentElement;
@@ -92,8 +93,8 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
       root.style.setProperty('--color-warning', theme.status.warning);
       root.style.setProperty('--color-success', theme.status.success);
       
-      // Hintergrundbild
-      if (initialConfig.backgroundImage) {
+      // Hintergrundbild - skip on mobile devices
+      if (initialConfig.backgroundImage && !isMobileDevice) {
         root.style.setProperty('--background-image', `url(${initialConfig.backgroundImage})`);
         root.style.setProperty('--background-image-opacity', String(initialConfig.backgroundImageOpacity || 0.3));
         root.style.setProperty('--background-image-blur', `${initialConfig.backgroundImageBlur || 0}px`);
@@ -228,6 +229,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
   const updateCSSVariables = (theme: ReturnType<typeof generateDynamicTheme>, config?: UserThemeConfig) => {
     const root = document.documentElement;
     const configToUse = config || userConfig;
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
     
     // Primäre Farben
     root.style.setProperty('--color-primary', theme.primary);
@@ -254,8 +256,8 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
     root.style.setProperty('--color-warning', theme.status.warning);
     root.style.setProperty('--color-success', theme.status.success);
     
-    // Hintergrundbild
-    if (configToUse.backgroundImage) {
+    // Hintergrundbild - skip on mobile devices
+    if (configToUse.backgroundImage && !isMobileDevice) {
       root.style.setProperty('--background-image', `url(${configToUse.backgroundImage})`);
       root.style.setProperty('--background-image-opacity', String(configToUse.backgroundImageOpacity || 0.3));
       root.style.setProperty('--background-image-blur', `${configToUse.backgroundImageBlur || 0}px`);
@@ -270,49 +272,18 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
 
   // Funktion für dynamische Mobile-Hintergründe
   const getMobilePageBackground = (): string => {
-    // Wenn ein Hintergrundbild vorhanden ist, verwende glasigen Effekt
-    if (userConfig.backgroundImage) {
-      // Glasiger Effekt mit semi-transparentem Hintergrund
-      return `${currentTheme.background.default}B3`; // 70% Opazität für Glaseffekt
-    }
-    // Sonst verwende den normalen undurchsichtigen Hintergrund
+    // Auf Mobile immer undurchsichtiger Hintergrund (kein Background-Image Support)
     return currentTheme.background.default;
   };
 
-  // Erweiterte Funktion für Glaseffekt-Styles
+  // Einfache Style-Funktion ohne minHeight oder flex
   const getMobilePageStyle = (): React.CSSProperties => {
-    if (userConfig.backgroundImage) {
-      return {
-        minHeight: '100vh',
-        background: `${currentTheme.background.default}B3`, // 70% Opazität
-        color: currentTheme.text.primary,
-        paddingBottom: '80px',
-        backdropFilter: 'blur(10px)', // Glaseffekt
-        WebkitBackdropFilter: 'blur(10px)', // Safari Support
-      };
-    }
-    // Ohne Bild: normaler Hintergrund
-    return {
-      minHeight: '100vh',
-      background: currentTheme.background.default,
-      color: currentTheme.text.primary,
-      paddingBottom: '80px',
-    };
+    return {};
   };
 
-  // Header-Style mit Glaseffekt
+  // Header-Style - no glass effect on mobile
   const getMobileHeaderStyle = (gradientColor?: string): React.CSSProperties => {
-    if (userConfig.backgroundImage) {
-      // Mit Bild: komplett transparent, nur leichter Blur
-      return {
-        background: gradientColor && gradientColor !== 'transparent'
-          ? `linear-gradient(180deg, ${gradientColor}1A 0%, transparent 100%)` // Only 10% opacity for subtle tint
-          : 'transparent',
-        backdropFilter: 'blur(5px)', // Lighter blur for headers
-        WebkitBackdropFilter: 'blur(5px)',
-      };
-    }
-    // Ohne Bild: normaler Gradient-Header
+    // Always use normal gradient on mobile (no glass effect)
     return {
       background: gradientColor 
         ? `linear-gradient(180deg, ${gradientColor}33 0%, transparent 100%)`

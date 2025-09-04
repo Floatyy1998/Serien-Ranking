@@ -30,7 +30,7 @@ interface UserSearchResult {
 export const MobileActivityPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { currentTheme, getMobilePageStyle, getMobileHeaderStyle } = useTheme();
+  const { currentTheme, getMobileHeaderStyle } = useTheme();
   const {
     friends,
     friendRequests,
@@ -415,12 +415,6 @@ export const MobileActivityPage: React.FC = () => {
 
   return (
     <div
-      style={{
-        ...getMobilePageStyle(),
-        height: '100dvh',
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
-      }}
     >
       {/* Header */}
       <header

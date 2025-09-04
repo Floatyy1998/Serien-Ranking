@@ -35,7 +35,7 @@ export const MobileWatchNextPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { currentTheme, getMobilePageStyle } = useTheme();
+  const { currentTheme } = useTheme();
   const [showFilter, setShowFilter] = useState(false);
   const [filterInput, setFilterInput] = useState('');
   // Always start with rewatches hidden on /watchlist
@@ -371,7 +371,7 @@ export const MobileWatchNextPage: React.FC = () => {
   };
 
   return (
-    <div ref={containerRef} style={getMobilePageStyle()}>
+    <div ref={containerRef}>
       {/* Header */}
       <header style={{
         padding: '20px',
@@ -589,20 +589,17 @@ export const MobileWatchNextPage: React.FC = () => {
                   <motion.div
                     key={episodeKey}
                     className="episode-card"
-                    initial={{ opacity: 1, scale: 1, x: 0 }}
+                    initial={{ opacity: 1, x: 0 }}
                     animate={{
                       opacity: isBeingWatched ? 0 : 1,
-                      scale: isBeingWatched ? 0.8 : 1,
-                      x: isBeingWatched ? 100 : 0,
-                      filter: isBeingWatched ? 'blur(4px)' : 'blur(0px)'
+                      x: isBeingWatched ? 50 : 0
                     }}
                     exit={{
                       opacity: 0,
-                      scale: 0.8,
-                      x: 100,
-                      transition: { duration: 0.4 }
+                      x: 50,
+                      transition: { duration: 0.3 }
                     }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
                     whileTap={{ scale: 0.98 }}
                     draggable={customOrderActive}
                     onDragStart={(e) => handleDragStart(e as any, index)}
@@ -640,44 +637,28 @@ export const MobileWatchNextPage: React.FC = () => {
                       overflow: 'hidden'
                     }}
                   >
-                    {/* Animated checkmark overlay */}
-                    <AnimatePresence>
-                      {isBeingWatched && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ 
-                            scale: [0, 1.2, 1],
-                            opacity: [0, 1, 0.8],
-                          }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{ 
-                            duration: 0.5,
-                            times: [0, 0.5, 1]
-                          }}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor: `${currentTheme.status.success}E6`,
-                            zIndex: 10,
-                            borderRadius: '10px'
-                          }}
-                        >
-                          <CheckCircle 
-                            style={{ 
-                              fontSize: '48px', 
-                              color: '#fff',
-                              filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))'
-                            }} 
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    {/* Simple checkmark indicator */}
+                    {isBeingWatched && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.2, type: 'spring', stiffness: 300 }}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          zIndex: 10
+                        }}
+                      >
+                        <CheckCircle 
+                          style={{ 
+                            fontSize: '28px', 
+                            color: currentTheme.status.success
+                          }} 
+                        />
+                      </motion.div>
+                    )}
                     <img 
                       src={episode.poster} 
                       alt={episode.seriesTitle}
@@ -758,6 +739,12 @@ export const MobileWatchNextPage: React.FC = () => {
                             .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`);
                           const newCount = (episode.currentWatchCount || 0) + 1;
                           await watchCountRef.set(newCount);
+                          
+                          // Badge-System für Rewatch
+                          const { updateEpisodeCounters } = await import(
+                            '../../features/badges/minimalActivityLogger'
+                          );
+                          await updateEpisodeCounters(user.uid, true, episode.airDate);
                         } else {
                           // Update firstWatchedAt if not set
                           const firstWatchedRef = firebase
@@ -767,6 +754,12 @@ export const MobileWatchNextPage: React.FC = () => {
                           if (!snapshot.val()) {
                             await firstWatchedRef.set(new Date().toISOString());
                           }
+                          
+                          // Badge-System für normale Episode
+                          const { updateEpisodeCounters } = await import(
+                            '../../features/badges/minimalActivityLogger'
+                          );
+                          await updateEpisodeCounters(user.uid, false, episode.airDate);
                         }
                       }}
                       style={{

@@ -15,7 +15,7 @@ export const MobileSearchPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const { getMobilePageStyle } = useTheme();
+  const {} = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'all' | 'series' | 'movies'>('all');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -192,7 +192,7 @@ export const MobileSearchPage: React.FC = () => {
   };
   
   return (
-    <div style={getMobilePageStyle()}>
+    <div>
       {/* Search Header */}
       <div style={{
         position: 'sticky',

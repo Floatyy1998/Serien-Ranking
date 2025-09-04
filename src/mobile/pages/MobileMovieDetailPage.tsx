@@ -21,7 +21,7 @@ export const MobileMovieDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { movieList } = useMovieList();
-  const { currentTheme, getMobilePageStyle } = useTheme();
+  const { currentTheme } = useTheme();
   const [userRating, setUserRating] = useState<number>(0);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -215,7 +215,6 @@ export const MobileMovieDetailPage: React.FC = () => {
     return (
       <div
         style={{
-          ...getMobilePageStyle(),
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -256,7 +255,6 @@ export const MobileMovieDetailPage: React.FC = () => {
     return (
       <div
         style={{
-          ...getMobilePageStyle(),
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -271,7 +269,6 @@ export const MobileMovieDetailPage: React.FC = () => {
 
   return (
     <div
-      style={getMobilePageStyle()}
     >
       {/* Hero Section with Backdrop */}
       <div
