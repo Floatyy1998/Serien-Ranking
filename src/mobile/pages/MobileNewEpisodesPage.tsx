@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowBack, PlayCircle, CheckCircle, 
-  CalendarToday, NewReleases, Timer
+  CalendarToday, NewReleases, Timer,
+  ExpandMore, ExpandLess
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
@@ -31,8 +32,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { getMobilePageStyle, getMobileHeaderStyle } = useTheme();
+  const { currentTheme, getMobilePageStyle, getMobileHeaderStyle } = useTheme();
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
+  const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   
   // Get TMDB image URL
   const getImageUrl = (posterObj: any): string => {
@@ -106,9 +108,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
     return episodes;
   }, [seriesList]);
   
-  // Group episodes by date
+  // Group episodes by date and then by series
   const groupedEpisodes = useMemo(() => {
-    const groups: { [key: string]: UpcomingEpisode[] } = {};
+    const groups: { [key: string]: { [seriesId: number]: UpcomingEpisode[] } } = {};
     
     upcomingEpisodes.forEach(episode => {
       const dateKey = episode.airDate.toLocaleDateString('de-DE', {
@@ -118,9 +120,14 @@ export const MobileNewEpisodesPage: React.FC = () => {
       });
       
       if (!groups[dateKey]) {
-        groups[dateKey] = [];
+        groups[dateKey] = {};
       }
-      groups[dateKey].push(episode);
+      
+      if (!groups[dateKey][episode.seriesId]) {
+        groups[dateKey][episode.seriesId] = [];
+      }
+      
+      groups[dateKey][episode.seriesId].push(episode);
     });
     
     return groups;
@@ -148,6 +155,23 @@ export const MobileNewEpisodesPage: React.FC = () => {
     return episode.watched || markedWatched.has(key);
   };
   
+  const toggleSeriesExpanded = (date: string, seriesId: number) => {
+    const key = `${date}-${seriesId}`;
+    setExpandedSeries(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
+  
+  const isSeriesExpanded = (date: string, seriesId: number) => {
+    return expandedSeries.has(`${date}-${seriesId}`);
+  };
+  
   return (
     <div style={{ 
       ...getMobilePageStyle(),
@@ -155,17 +179,18 @@ export const MobileNewEpisodesPage: React.FC = () => {
     }}>
       {/* Header */}
       <header style={{
-        ...getMobileHeaderStyle('rgba(0, 212, 170, 0.6)'),
+        ...getMobileHeaderStyle('transparent'),
         padding: '20px',
-        paddingTop: 'calc(20px + env(safe-area-inset-top))'
+        paddingTop: 'calc(20px + env(safe-area-inset-top))',
+        borderBottom: `1px solid ${currentTheme.border.default}`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
           <button 
             onClick={() => navigate(-1)} 
             style={{ 
-              background: 'rgba(255, 255, 255, 0.1)', 
+              background: currentTheme.background.surface, 
               border: 'none', 
-              color: 'white', 
+              color: currentTheme.text.primary, 
               fontSize: '20px',
               cursor: 'pointer',
               padding: '8px',
@@ -185,14 +210,14 @@ export const MobileNewEpisodesPage: React.FC = () => {
               fontSize: '24px', 
               fontWeight: 800,
               margin: 0,
-              background: 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)',
+              background: currentTheme.primary,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}>
               Kommende Episoden
             </h1>
             <p style={{ 
-              color: 'rgba(255, 255, 255, 0.6)', 
+              color: currentTheme.text.secondary, 
               fontSize: '14px',
               margin: '4px 0 0 0'
             }}>
@@ -209,8 +234,8 @@ export const MobileNewEpisodesPage: React.FC = () => {
           paddingBottom: '8px'
         }}>
           <div style={{
-            background: 'rgba(0, 212, 170, 0.1)',
-            border: '1px solid rgba(0, 212, 170, 0.3)',
+            background: `${currentTheme.primary}1A`,
+            border: `1px solid ${currentTheme.primary}4D`,
             borderRadius: '12px',
             padding: '8px 12px',
             display: 'flex',
@@ -220,12 +245,12 @@ export const MobileNewEpisodesPage: React.FC = () => {
             whiteSpace: 'nowrap'
           }}>
             <CalendarToday style={{ fontSize: '16px' }} />
-            Heute: {groupedEpisodes[Object.keys(groupedEpisodes)[0]]?.length || 0}
+            Heute: {Object.values(groupedEpisodes[Object.keys(groupedEpisodes)[0]] || {}).flat().length || 0}
           </div>
           
           <div style={{
-            background: 'rgba(255, 193, 7, 0.1)',
-            border: '1px solid rgba(255, 193, 7, 0.3)',
+            background: `${currentTheme.status.warning}1A`,
+            border: `1px solid ${currentTheme.status.warning}4D`,
             borderRadius: '12px',
             padding: '8px 12px',
             display: 'flex',
@@ -253,7 +278,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
             <p>Es gibt aktuell keine neuen Episoden in deiner Watchlist</p>
           </div>
         ) : (
-          Object.entries(groupedEpisodes).map(([date, episodes]) => (
+          Object.entries(groupedEpisodes).map(([date, seriesGroups]) => (
             <div key={date} style={{ marginBottom: '32px' }}>
               <h3 style={{
                 fontSize: '16px',
@@ -267,101 +292,255 @@ export const MobileNewEpisodesPage: React.FC = () => {
               </h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {episodes.map((episode, index) => {
-                  const watched = isEpisodeWatched(episode);
+                {Object.entries(seriesGroups).map(([seriesId, episodes]) => {
+                  const firstEpisode = episodes[0];
+                  const isExpanded = isSeriesExpanded(date, Number(seriesId));
+                  const allWatched = episodes.every(ep => isEpisodeWatched(ep));
                   
+                  // If only one episode, show it directly without accordion
+                  if (episodes.length === 1) {
+                    const episode = episodes[0];
+                    const watched = isEpisodeWatched(episode);
+                    
+                    return (
+                      <motion.div
+                        key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                          display: 'flex',
+                          gap: '12px',
+                          padding: '12px',
+                          background: watched 
+                            ? 'rgba(0, 212, 170, 0.05)'
+                            : 'rgba(255, 255, 255, 0.02)',
+                          borderRadius: '12px',
+                          border: watched
+                            ? '1px solid rgba(0, 212, 170, 0.2)'
+                            : '1px solid rgba(255, 255, 255, 0.05)',
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <img
+                          src={getImageUrl(episode.seriesPoster)}
+                          alt={episode.seriesName}
+                          onClick={() => navigate(`/series/${episode.seriesId}`)}
+                          style={{
+                            width: '60px',
+                            height: '90px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            margin: '0 0 4px 0',
+                            color: watched ? 'rgba(0, 212, 170, 0.9)' : 'white'
+                          }}>
+                            {episode.seriesName}
+                          </h4>
+                          
+                          <p style={{
+                            fontSize: '13px',
+                            margin: '0 0 4px 0',
+                            color: 'rgba(255, 255, 255, 0.6)'
+                          }}>
+                            S{String(episode.seasonNumber).padStart(2, '0')}E{String(episode.episodeNumber).padStart(2, '0')} • {episode.episodeName}
+                          </p>
+                          
+                          <p style={{
+                            fontSize: '12px',
+                            margin: 0,
+                            color: 'rgba(255, 255, 255, 0.4)'
+                          }}>
+                            {episode.daysUntil === 0 ? 'Heute' : 
+                             episode.daysUntil === 1 ? 'Morgen' : 
+                             `In ${episode.daysUntil} Tagen`}
+                          </p>
+                        </div>
+                        
+                        <button
+                          onClick={() => handleMarkWatched(episode)}
+                          disabled={watched}
+                          style={{
+                            background: watched 
+                              ? 'transparent'
+                              : 'rgba(0, 212, 170, 0.1)',
+                            border: watched
+                              ? 'none'
+                              : '1px solid rgba(0, 212, 170, 0.3)',
+                            borderRadius: '8px',
+                            padding: '8px',
+                            color: watched 
+                              ? 'rgba(0, 212, 170, 0.9)'
+                              : 'rgba(0, 212, 170, 0.7)',
+                            cursor: watched ? 'default' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          {watched ? (
+                            <CheckCircle style={{ fontSize: '20px' }} />
+                          ) : (
+                            <PlayCircle style={{ fontSize: '20px' }} />
+                          )}
+                        </button>
+                      </motion.div>
+                    );
+                  }
+                  
+                  // Multiple episodes - show accordion
                   return (
                     <motion.div
-                      key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
+                      key={seriesId}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
                       style={{
-                        display: 'flex',
-                        gap: '12px',
-                        padding: '12px',
-                        background: watched 
+                        background: allWatched 
                           ? 'rgba(0, 212, 170, 0.05)'
                           : 'rgba(255, 255, 255, 0.02)',
                         borderRadius: '12px',
-                        border: watched
+                        border: allWatched
                           ? '1px solid rgba(0, 212, 170, 0.2)'
                           : '1px solid rgba(255, 255, 255, 0.05)',
+                        overflow: 'hidden',
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      {/* Poster */}
-                      <img
-                        src={getImageUrl(episode.seriesPoster)}
-                        alt={episode.seriesName}
-                        onClick={() => navigate(`/series/${episode.seriesId}`)}
+                      {/* Accordion Header */}
+                      <div 
+                        onClick={() => toggleSeriesExpanded(date, Number(seriesId))}
                         style={{
-                          width: '60px',
-                          height: '90px',
-                          objectFit: 'cover',
-                          borderRadius: '8px',
-                          cursor: 'pointer'
-                        }}
-                      />
-                      
-                      {/* Info */}
-                      <div style={{ flex: 1 }}>
-                        <h4 style={{
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          margin: '0 0 4px 0',
-                          color: watched ? 'rgba(0, 212, 170, 0.9)' : 'white'
-                        }}>
-                          {episode.seriesName}
-                        </h4>
-                        
-                        <p style={{
-                          fontSize: '13px',
-                          margin: '0 0 4px 0',
-                          color: 'rgba(255, 255, 255, 0.6)'
-                        }}>
-                          S{String(episode.seasonNumber).padStart(2, '0')}E{String(episode.episodeNumber).padStart(2, '0')} • {episode.episodeName}
-                        </p>
-                        
-                        <p style={{
-                          fontSize: '12px',
-                          margin: 0,
-                          color: 'rgba(255, 255, 255, 0.4)'
-                        }}>
-                          {episode.daysUntil === 0 ? 'Heute' : 
-                           episode.daysUntil === 1 ? 'Morgen' : 
-                           `In ${episode.daysUntil} Tagen`}
-                        </p>
-                      </div>
-                      
-                      {/* Action Button */}
-                      <button
-                        onClick={() => handleMarkWatched(episode)}
-                        disabled={watched}
-                        style={{
-                          background: watched 
-                            ? 'transparent'
-                            : 'rgba(0, 212, 170, 0.1)',
-                          border: watched
-                            ? 'none'
-                            : '1px solid rgba(0, 212, 170, 0.3)',
-                          borderRadius: '8px',
-                          padding: '8px',
-                          color: watched 
-                            ? 'rgba(0, 212, 170, 0.9)'
-                            : 'rgba(0, 212, 170, 0.7)',
-                          cursor: watched ? 'default' : 'pointer',
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
+                          gap: '12px',
+                          padding: '12px',
+                          cursor: 'pointer',
+                          background: 'rgba(255, 255, 255, 0.02)'
                         }}
                       >
-                        {watched ? (
-                          <CheckCircle style={{ fontSize: '20px' }} />
-                        ) : (
-                          <PlayCircle style={{ fontSize: '20px' }} />
-                        )}
-                      </button>
+                        <img
+                          src={getImageUrl(firstEpisode.seriesPoster)}
+                          alt={firstEpisode.seriesName}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/series/${firstEpisode.seriesId}`);
+                          }}
+                          style={{
+                            width: '60px',
+                            height: '90px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            margin: '0 0 4px 0',
+                            color: allWatched ? 'rgba(0, 212, 170, 0.9)' : 'white'
+                          }}>
+                            {firstEpisode.seriesName}
+                          </h4>
+                          
+                          <p style={{
+                            fontSize: '13px',
+                            margin: '0 0 4px 0',
+                            color: 'rgba(255, 255, 255, 0.6)'
+                          }}>
+                            {episodes.length} Episoden
+                          </p>
+                          
+                          <p style={{
+                            fontSize: '12px',
+                            margin: 0,
+                            color: 'rgba(255, 255, 255, 0.4)'
+                          }}>
+                            {episodes.filter(ep => isEpisodeWatched(ep)).length} von {episodes.length} gesehen
+                          </p>
+                        </div>
+                        
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'rgba(255, 255, 255, 0.6)'
+                        }}>
+                          {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                        </div>
+                      </div>
+                      
+                      {/* Expanded Episodes */}
+                      {isExpanded && (
+                        <div style={{ 
+                          borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                          padding: '8px'
+                        }}>
+                          {episodes.map((episode, idx) => {
+                            const watched = isEpisodeWatched(episode);
+                            
+                            return (
+                              <div
+                                key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  padding: '8px',
+                                  borderRadius: '8px',
+                                  background: idx % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.01)'
+                                }}
+                              >
+                                <div style={{ flex: 1 }}>
+                                  <p style={{
+                                    fontSize: '13px',
+                                    margin: 0,
+                                    color: watched ? 'rgba(0, 212, 170, 0.9)' : 'rgba(255, 255, 255, 0.8)'
+                                  }}>
+                                    S{String(episode.seasonNumber).padStart(2, '0')}E{String(episode.episodeNumber).padStart(2, '0')} • {episode.episodeName}
+                                  </p>
+                                </div>
+                                
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkWatched(episode);
+                                  }}
+                                  disabled={watched}
+                                  style={{
+                                    background: watched 
+                                      ? 'transparent'
+                                      : 'rgba(0, 212, 170, 0.1)',
+                                    border: watched
+                                      ? 'none'
+                                      : '1px solid rgba(0, 212, 170, 0.3)',
+                                    borderRadius: '8px',
+                                    padding: '6px',
+                                    color: watched 
+                                      ? 'rgba(0, 212, 170, 0.9)'
+                                      : 'rgba(0, 212, 170, 0.7)',
+                                    cursor: watched ? 'default' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                >
+                                  {watched ? (
+                                    <CheckCircle style={{ fontSize: '18px' }} />
+                                  ) : (
+                                    <PlayCircle style={{ fontSize: '18px' }} />
+                                  )}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })}
