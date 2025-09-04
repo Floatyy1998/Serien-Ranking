@@ -1,201 +1,124 @@
 import { Box, keyframes, styled } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-// ============= VINTAGE FILM ANIMATIONS =============
+// ============= MODERN ANIMATIONS =============
 
-// Heavy film grain and scratches
-const filmGrain = keyframes`
-  0%, 100% {
-    background-position: 0 0, 0 0, 0 0;
-  }
-  10% {
-    background-position: -3% 5%, 5% -5%, -5% 3%;
-  }
-  20% {
-    background-position: 3% -3%, -5% 5%, 5% -5%;
-  }
-  30% {
-    background-position: -5% -3%, 3% 3%, -3% -3%;
-  }
-  40% {
-    background-position: 5% 5%, -3% -3%, 3% 5%;
-  }
-  50% {
-    background-position: -3% 0, 0 3%, -5% -5%;
-  }
-  60% {
-    background-position: 3% -5%, 5% 0, 0 3%;
-  }
-  70% {
-    background-position: 0 3%, -3% -5%, 5% 0;
-  }
-  80% {
-    background-position: -5% 0, 0 -3%, 3% 5%;
-  }
-  90% {
-    background-position: 5% -3%, -5% 3%, 0 0;
-  }
-`;
-
-// Heavy flicker like old projectors
-const vintageFlicker = keyframes`
-  0% {
-    opacity: 1;
-    filter: brightness(1) contrast(1);
-  }
-  10% {
-    opacity: 0.96;
-    filter: brightness(1.1) contrast(1.05);
-  }
-  20% {
-    opacity: 0.98;
-    filter: brightness(0.95) contrast(1.02);
-  }
-  30% {
-    opacity: 0.93;
-    filter: brightness(1.05) contrast(0.98);
-  }
-  40% {
-    opacity: 0.97;
-    filter: brightness(0.98) contrast(1.03);
-  }
-  50% {
-    opacity: 0.94;
-    filter: brightness(1.02) contrast(0.97);
-  }
-  60% {
-    opacity: 0.99;
-    filter: brightness(0.97) contrast(1.01);
-  }
-  70% {
-    opacity: 0.95;
-    filter: brightness(1.03) contrast(0.99);
-  }
-  80% {
-    opacity: 0.98;
-    filter: brightness(0.99) contrast(1.02);
-  }
-  90% {
-    opacity: 0.96;
-    filter: brightness(1.01) contrast(0.98);
-  }
-  100% {
-    opacity: 1;
-    filter: brightness(1) contrast(1);
-  }
-`;
-
-// Radar sweep rotation - one full rotation per second
-const radarSweep = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`;
-
-// Film flicker for countdown
-const countdownFlicker = keyframes`
-  0%, 100% { opacity: 1; }
-  10% { opacity: 0.9; }
-  20% { opacity: 0.95; }
-  30% { opacity: 0.85; }
-  40% { opacity: 1; }
-  50% { opacity: 0.88; }
-  60% { opacity: 0.95; }
-  70% { opacity: 0.9; }
-  80% { opacity: 1; }
-  90% { opacity: 0.92; }
-`;
-
-// Film burn effect
-const filmBurn = keyframes`
-  0%, 100% {
+// Smooth fade in
+const fadeIn = keyframes`
+  from {
     opacity: 0;
+    transform: translateY(20px);
   }
-  50% {
-    opacity: 0.03;
-  }
-`;
-
-// Scratches animation
-const scratchMove = keyframes`
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-`;
-
-// Film perforation scroll
-const perforationScroll = keyframes`
-  0% {
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
+`;
+
+// Logo entrance animation
+const logoEntrance = keyframes`
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(180deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) rotate(180deg);
+  }
   100% {
-    transform: translateY(50px);
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
   }
 `;
 
-// Classic film leader number change
-const numberAppear = keyframes`
+// Subtle breathing effect
+const breathe = keyframes`
+  0%, 100% {
+    transform: scale(1) rotate(180deg);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.03) rotate(180deg);
+    filter: brightness(1.1);
+  }
+`;
+
+
+// Fade out animation
+const fadeOut = keyframes`
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+`;
+
+// Gradient shift animation
+const gradientShift = keyframes`
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+`;
+
+// Glow pulse animation
+const glowPulse = keyframes`
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3),
+                0 0 40px rgba(236, 72, 153, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.5),
+                0 0 60px rgba(236, 72, 153, 0.2);
+  }
+`;
+
+// Text reveal animation
+const textReveal = keyframes`
   0% {
-    transform: scale(1.2);
+    opacity: 0;
+    letter-spacing: 20px;
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 0.5;
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 10px;
+    filter: blur(0);
+  }
+`;
+
+// Progress bar shine
+const progressShine = keyframes`
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+`;
+
+// Particle animation
+const particleFloat = keyframes`
+  0% {
+    transform: translateY(100vh) rotate(0deg);
     opacity: 0;
   }
   10% {
-    transform: scale(1);
     opacity: 1;
   }
   90% {
-    transform: scale(1);
     opacity: 1;
   }
   100% {
-    transform: scale(0.8);
+    transform: translateY(-100vh) rotate(360deg);
     opacity: 0;
-  }
-`;
-
-// Smooth cinema curtain opening
-const curtainOpen = keyframes`
-  0% {
-    transform: scaleX(1) translateZ(0);
-  }
-  100% {
-    transform: scaleX(0) translateZ(0);
-  }
-`;
-
-// Subtle curtain wave
-const curtainWave = keyframes`
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-`;
-
-// Classic fade
-const fadeToBlack = keyframes`
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-`;
-
-// Vignette pulse
-const vignettePulse = keyframes`
-  0%, 100% {
-    box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9);
-  }
-  50% {
-    box-shadow: inset 0 0 250px rgba(0, 0, 0, 0.95);
   }
 `;
 
@@ -214,456 +137,324 @@ const SplashContainer = styled(Box, {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #0a0a0a;
-  animation: ${vintageFlicker} 0.15s steps(10) infinite,
-    ${vignettePulse} 4s ease-in-out infinite,
-    ${(props) => (props.isHiding ? fadeToBlack : 'none')} 0.8s ease-out forwards;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #0f0f0f 50%, #1a1a1a 75%, #0a0a0a 100%);
+  background-size: 200% 200%;
+  animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)} 
+    ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards,
+    ${gradientShift} 8s ease infinite;
   overflow: hidden;
-  box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9);
 `;
 
-// Heavy grain overlay
-const GrainOverlay = styled(Box)`
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  opacity: 0.15;
-  background-image: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 1px,
-      rgba(255, 255, 255, 0.08) 1px,
-      rgba(255, 255, 255, 0.08) 2px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 1px,
-      rgba(255, 255, 255, 0.06) 1px,
-      rgba(255, 255, 255, 0.06) 2px
-    ),
-    repeating-radial-gradient(
-      circle at 50% 50%,
-      transparent 0,
-      rgba(255, 255, 255, 0.05) 1px,
-      transparent 2px
-    );
-  animation: ${filmGrain} 0.3s steps(5) infinite;
-  pointer-events: none;
-  mix-blend-mode: overlay;
-`;
-
-// Film scratches
-const Scratches = styled(Box)`
-  position: absolute;
-  width: 100%;
-  height: 200%;
-  opacity: 0.2;
-  pointer-events: none;
-  animation: ${scratchMove} 2s linear infinite;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.4);
-  }
-
-  &::before {
-    left: 30%;
-    transform: scaleY(0.6);
-  }
-
-  &::after {
-    right: 45%;
-    transform: scaleY(0.8);
-  }
-`;
-
-// Film burn spots
-const BurnSpots = styled(Box)`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 20%;
-    left: 70%;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba(139, 69, 19, 0.3), transparent);
-    border-radius: 50%;
-    animation: ${filmBurn} 3s ease-in-out infinite;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 30%;
-    right: 60%;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(101, 67, 33, 0.2), transparent);
-    border-radius: 50%;
-    animation: ${filmBurn} 5s ease-in-out infinite;
-    animation-delay: 1.5s;
-  }
-`;
-
-// Film perforations
-const FilmPerforations = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'side',
-})<{ side: 'left' | 'right' }>`
+// Animated background with gradient mesh
+const BackgroundMesh = styled(Box)`
   position: absolute;
   top: 0;
-  ${(props) => (props.side === 'left' ? 'left: 10px;' : 'right: 10px;')}
-  width: 40px;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 200%;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 15px,
-      #0a0a0a 15px,
-      #0a0a0a 35px,
-      transparent 35px,
-      transparent 50px
-    );
-    animation: ${perforationScroll} 1s linear infinite;
-  }
-`;
-
-// Vintage countdown
-const CountdownContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isVisible',
-})<{ isVisible: boolean }>`
-  position: absolute;
-  width: 280px;
-  height: 280px;
-  display: ${(props) => (props.isVisible ? 'flex' : 'none')};
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-  background: radial-gradient(
-    circle,
-    rgba(15, 15, 15, 0.7) 0%,
-    rgba(0, 0, 0, 0.9) 100%
-  );
-  border-radius: 50%;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 0, 0, 0.8);
-  filter: contrast(0.9) brightness(0.9);
-`;
-
-const CountdownCircle = styled(Box)`
-  position: absolute;
+  left: 0;
   width: 100%;
   height: 100%;
-  border: 6px solid rgba(240, 235, 220, 0.5);
-  border-radius: 50%;
-  animation: ${countdownFlicker} 0.15s infinite;
-  filter: blur(0.4px);
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -18px;
-    left: -18px;
-    right: -18px;
-    bottom: -18px;
-    border-radius: 50%;
-    border: 2px solid rgba(240, 235, 220, 0.2);
-    filter: blur(0.6px);
-  }
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  animation: ${breathe} 4s ease-in-out infinite;
 `;
 
-// Rotating radar sweep line
-const RadarSweep = styled(Box)`
+// Floating particles
+const Particle = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'delay' && prop !== 'left',
+})<{ delay: number; left: string }>`
   position: absolute;
-  width: 100%;
-  height: 100%;
-  animation: ${radarSweep} 1s linear infinite;
-  opacity: 0.7;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 45%;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      rgba(200, 190, 170, 0.6) 0%,
-      rgba(200, 190, 170, 0.3) 60%,
-      transparent 90%
-    );
-    transform-origin: left center;
-    filter: blur(0.5px);
-  }
+  width: 2px;
+  height: 2px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(236, 72, 153, 0.8));
+  left: ${(props) => props.left};
+  border-radius: 50%;
+  animation: ${particleFloat} 15s linear infinite;
+  animation-delay: ${(props) => props.delay}s;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
 `;
 
-const CountdownNumber = styled(Box)`
-  font-size: 140px;
-  font-weight: 700;
-  color: rgba(255, 250, 240, 0.75);
-  font-family: 'Helvetica', 'Arial', sans-serif;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 0, 0, 0.4);
-  animation: ${numberAppear} 1s ease-out, ${countdownFlicker} 0.2s infinite;
-  user-select: none;
-  z-index: 3;
-  filter: blur(0.6px) contrast(0.9);
+// Modern logo container with glow
+const LogoContainer = styled(Box)`
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  line-height: 1;
+  
+  @media (max-width: 768px) {
+    width: 160px;
+    height: 160px;
+  }
 `;
 
-// Classic film leader crosshair
-const FilmTarget = styled(Box)`
+// Glowing orb behind logo
+const LogoGlow = styled(Box)`
   position: absolute;
   width: 100%;
   height: 100%;
-  opacity: 0.4;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    background: rgba(240, 235, 220, 0.3);
-    filter: blur(0.4px);
-  }
-
-  &::before {
-    top: 50%;
-    left: 15%;
-    right: 15%;
-    height: 1px;
-    transform: translateY(-50%);
-  }
-
-  &::after {
-    left: 50%;
-    top: 15%;
-    bottom: 15%;
-    width: 1px;
-    transform: translateX(-50%);
-  }
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.1) 40%, transparent 70%);
+  filter: blur(20px);
+  animation: ${glowPulse} 3s ease-in-out infinite;
 `;
 
-// Film leader markings
-const LeaderMarkings = styled(Box)`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-
-  &::before {
-    content: 'PICTURE START';
-    position: absolute;
-    top: -45px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 11px;
-    font-family: 'Courier New', monospace;
-    color: rgba(240, 235, 220, 0.3);
-    letter-spacing: 3px;
-    font-weight: normal;
-    filter: blur(0.3px);
-  }
-`;
-
-// Cinema curtains (velvet red with subtle waves)
-const Curtain = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'side' && prop !== 'isOpen',
-})<{ side: 'left' | 'right'; isOpen: boolean }>`
-  position: absolute;
-  top: 0;
-  width: 55%;
-  height: 100%;
-  ${(props) => (props.side === 'left' ? 'left: 0;' : 'right: 0;')}
-  transform-origin: ${(props) => (props.side === 'left' ? 'left' : 'right')};
-  animation: ${(props) => (props.isOpen ? curtainOpen : 'none')} 2s
-    cubic-bezier(0.76, 0, 0.24, 1) forwards;
-  animation-delay: 0.1s;
-  z-index: 50;
-
-  /* Velvet texture with subtle waves */
-  background: repeating-linear-gradient(
-    88deg,
-    #2d0808 0px,
-    #3a0c0c 10px,
-    #4a0e0e 20px,
-    #3a0c0c 30px,
-    #2d0808 40px
-  );
-
-  box-shadow: ${(props) =>
-      props.side === 'left'
-        ? 'inset -30px 0 60px rgba(0,0,0,0.9)'
-        : 'inset 30px 0 60px rgba(0,0,0,0.9)'},
-    0 0 50px rgba(0, 0, 0, 0.8);
-
-  /* Vertical fold lines for fabric texture */
-  &::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      rgba(0, 0, 0, 0.2) 1px,
-      transparent 2px,
-      transparent 15px,
-      rgba(255, 255, 255, 0.01) 16px,
-      transparent 17px,
-      transparent 30px
-    );
-    animation: ${curtainWave} 6s ease-in-out infinite;
-  }
-`;
-
-// Cinema seats silhouette
-const SeatsRow = styled(Box)`
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 150px;
-  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.95));
-  z-index: 15;
-
-  &::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 60px;
-    background: repeating-linear-gradient(
-      90deg,
-      #050505 0px,
-      #050505 40px,
-      #0a0a0a 40px,
-      #0a0a0a 45px,
-      #050505 45px,
-      #050505 85px
-    );
-  }
-`;
-
-// SVG Logo with Cinema Gold color
+// SVG Logo with animation
 const LogoSVG = styled('svg')`
-  width: 100%;
-  height: 100%;
-  transform: rotate(
-    180deg
-  ); // Logo um 180° drehen - Fernseher stand auf dem Kopf
-  filter: sepia(1) saturate(1.5) hue-rotate(35deg) brightness(0.9)
-    drop-shadow(0 0 30px rgba(181, 159, 107, 0.6));
-`;
-
-const LogoContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isVisible',
-})<{ isVisible: boolean }>`
+  width: 80%;
+  height: 80%;
   position: relative;
-  width: 220px;
-  height: 220px;
-  opacity: ${(props) => (props.isVisible ? 1 : 0)};
-  transition: opacity 1.5s ease-in-out;
-  z-index: 10;
+  z-index: 1;
+  animation: ${logoEntrance} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+             ${breathe} 3s ease-in-out infinite;
+  animation-delay: 0s, 1.2s;
+  filter: drop-shadow(0 10px 40px rgba(168, 85, 247, 0.4));
+  
+  path {
+    fill: url(#goldGradient);
+  }
 `;
 
-const Title = styled('h1', {
-  shouldForwardProp: (prop) => prop !== 'isVisible',
-})<{ isVisible: boolean }>`
-  font-size: 4.5rem;
-  font-weight: 700;
-  margin: 30px 0 20px;
-  color: #b59f6b;
+// Modern title with animated gradient
+const Title = styled('h1')`
+  font-size: 4rem;
+  font-weight: 200;
+  margin: 0 0 15px 0;
+  background: linear-gradient(
+    135deg,
+    #a855f7 0%,
+    #ec4899 25%,
+    #f97316 50%,
+    #ec4899 75%,
+    #a855f7 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   text-transform: uppercase;
-  letter-spacing: 12px;
-  font-family: 'Bebas Neue', 'Arial Black', sans-serif;
-  opacity: ${(props) => (props.isVisible ? 1 : 0)};
-  transition: opacity 1.5s ease-in-out;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 20px rgba(181, 159, 107, 0.3),
-    0 0 40px rgba(181, 159, 107, 0.2);
-  z-index: 10;
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  animation: ${textReveal} 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards,
+             ${gradientShift} 3s linear infinite;
+  animation-delay: 0.3s, 0s;
+  opacity: 0;
 
   @media (max-width: 768px) {
     font-size: 3rem;
-    letter-spacing: 8px;
   }
 `;
 
-const Subtitle = styled('p', {
-  shouldForwardProp: (prop) => prop !== 'isVisible',
-})<{ isVisible: boolean }>`
+// Stylish subtitle
+const Subtitle = styled('p')`
   font-size: 1rem;
-  color: #8b7a5a;
+  color: #888;
   text-transform: uppercase;
-  letter-spacing: 10px;
-  margin: 0;
-  opacity: ${(props) => (props.isVisible ? 1 : 0)};
-  transition: opacity 1.5s ease-in-out;
-  font-family: 'Courier New', monospace;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-  z-index: 10;
+  letter-spacing: 8px;
+  margin: 0 0 80px 0;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  animation: ${fadeIn} 1s ease-out 0.6s backwards;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #a855f7, transparent);
+    animation: ${gradientShift} 2s linear infinite;
+  }
 
   @media (max-width: 768px) {
-    font-size: 0.8rem;
-    letter-spacing: 6px;
+    font-size: 0.85rem;
+    letter-spacing: 5px;
   }
 `;
 
-// Leader marks (film alignment)
-const LeaderMark = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'customPosition',
-})<{ customPosition: string }>`
+// Modern progress container with glass effect
+const ProgressWrapper = styled(Box)`
+  position: relative;
+  width: 350px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  animation: ${fadeIn} 1s ease-out 0.8s backwards;
+  
+  @media (max-width: 768px) {
+    width: 280px;
+  }
+`;
+
+const ProgressContainer = styled(Box)`
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+`;
+
+const ProgressBar = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'progress',
+})<{ progress: number }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    #a855f7 0%,
+    #ec4899 50%,
+    #a855f7 100%
+  );
+  transform: scaleX(${(props) => props.progress});
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    animation: ${progressShine} 2s linear infinite;
+  }
+`;
+
+// Loading status with percentage
+const LoadingStatus = styled(Box)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  font-family: 'Inter', sans-serif;
+`;
+
+const LoadingText = styled('p')`
+  font-size: 0.75rem;
+  color: #999;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0;
+`;
+
+const LoadingPercentage = styled('p')`
+  font-size: 0.85rem;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 500;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+`;
+
+// Modern corner accents
+const CornerAccent = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'cornerPos',
+})<{ cornerPos: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }>`
   position: absolute;
   width: 60px;
   height: 60px;
-  border: 3px solid rgba(200, 190, 170, 0.15);
-  border-radius: 50%;
-  ${(props) => props.customPosition};
-  opacity: 0.5;
-
-  &::before {
+  
+  &::before, &::after {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 15px;
-    height: 15px;
-    background: rgba(200, 190, 170, 0.2);
-    border-radius: 50%;
+    background: linear-gradient(135deg, #a855f7, transparent);
+    opacity: 0.3;
   }
-`;
-
-// Cinema screen border
-const ScreenBorder = styled(Box)`
-  position: absolute;
-  width: 92%;
-  height: 85%;
-  border: 20px solid;
-  border-image: linear-gradient(180deg, #1a1612, #2a2218, #1a1612) 1;
-  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.95), 0 0 50px rgba(0, 0, 0, 0.8);
-  pointer-events: none;
-  z-index: 20;
+  
+  ${(props) => {
+    switch (props.cornerPos) {
+      case 'top-left':
+        return `
+          top: 30px;
+          left: 30px;
+          &::before {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+          }
+          &::after {
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+          }
+        `;
+      case 'top-right':
+        return `
+          top: 30px;
+          right: 30px;
+          &::before {
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 2px;
+          }
+          &::after {
+            top: 0;
+            right: 0;
+            width: 2px;
+            height: 100%;
+          }
+        `;
+      case 'bottom-left':
+        return `
+          bottom: 30px;
+          left: 30px;
+          &::before {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+          }
+          &::after {
+            bottom: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+          }
+        `;
+      case 'bottom-right':
+        return `
+          bottom: 30px;
+          right: 30px;
+          &::before {
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 2px;
+          }
+          &::after {
+            bottom: 0;
+            right: 0;
+            width: 2px;
+            height: 100%;
+          }
+        `;
+    }
+  }}
+  
+  animation: ${fadeIn} 1s ease-out 1s backwards;
 `;
 
 interface SplashScreenProps {
@@ -674,17 +465,14 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [isHiding, setIsHiding] = useState(false);
-  const [countdownProgress, setCountdownProgress] = useState(3.0); // Start at 3, count down to 0
-  const [showContent] = useState(true); // Logo always there, just hidden by curtain
-  const [curtainsOpen, setCurtainsOpen] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0); // 0 to 1
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState('Initialisiere System');
 
   // Track real loading progress
   useEffect(() => {
     const checkProgress = setInterval(() => {
-      // Count how many systems are ready
       const status = window.appReadyStatus || {};
-      const totalSystems = 5; // theme, auth, firebase, emailVerification, initialData
+      const totalSystems = 5;
       const readySystems = [
         status.theme,
         status.auth,
@@ -696,127 +484,85 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       const progress = readySystems / totalSystems;
       setLoadingProgress(progress);
 
+      // Update loading text based on progress
+      if (progress < 0.2) {
+        setLoadingText('Initialisiere System');
+      } else if (progress < 0.4) {
+        setLoadingText('Lade Interface');
+      } else if (progress < 0.6) {
+        setLoadingText('Authentifizierung');
+      } else if (progress < 0.8) {
+        setLoadingText('Synchronisiere Daten');
+      } else if (progress < 1) {
+        setLoadingText('Finalisiere');
+      } else {
+        setLoadingText('Start');
+      }
+
       if (progress >= 1) {
         clearInterval(checkProgress);
+        // Wait a moment before hiding
+        setTimeout(() => {
+          setIsHiding(true);
+          setTimeout(() => {
+            onComplete?.();
+          }, 500);
+        }, 800);
       }
     }, 50);
 
     return () => clearInterval(checkProgress);
-  }, []);
-
-  // Countdown that ensures all numbers are shown
-  const [currentCountdown, setCurrentCountdown] = useState(3);
-
-  useEffect(() => {
-    let lastChangeTime = Date.now();
-    const minTimePerNumber = 300; // Minimum 300ms per number
-
-    const countdownInterval = setInterval(() => {
-      const now = Date.now();
-      const timeSinceChange = now - lastChangeTime;
-
-      // Only change number if enough time has passed
-      if (timeSinceChange >= minTimePerNumber) {
-        setCurrentCountdown((prev) => {
-          // Determine next number based on loading progress
-          let targetNumber = 3;
-          if (loadingProgress >= 0.9) {
-            targetNumber = 0;
-          } else if (loadingProgress >= 0.6) {
-            targetNumber = 1;
-          } else if (loadingProgress >= 0.3) {
-            targetNumber = 2;
-          }
-
-          // Move towards target, but only down
-          if (targetNumber < prev) {
-            lastChangeTime = now;
-            return prev - 1;
-          }
-          return prev;
-        });
-      }
-    }, 50);
-
-    return () => clearInterval(countdownInterval);
-  }, [loadingProgress]);
-
-  // Update countdown display
-  useEffect(() => {
-    setCountdownProgress(currentCountdown);
-
-    // Open curtains when countdown reaches 0
-    if (currentCountdown === 0 && loadingProgress >= 1) {
-      setTimeout(() => {
-        setCurtainsOpen(true);
-      }, 300);
-    }
-  }, [currentCountdown, loadingProgress]);
-
-  useEffect(() => {
-    if (curtainsOpen) {
-      // Show logo briefly then close
-      setTimeout(() => {
-        setIsHiding(true);
-        setTimeout(() => {
-          onComplete?.();
-        }, 800); // Fade out animation
-      }, 1000); // Show logo for 1 second only
-    }
-  }, [curtainsOpen, onComplete]);
+  }, [onComplete]);
 
   return (
     <SplashContainer isHiding={isHiding}>
-      {/* Grain and damage effects */}
-      <GrainOverlay />
-      <Scratches />
-      <BurnSpots />
-
-      {/* Film perforations */}
-      <FilmPerforations side='left' />
-      <FilmPerforations side='right' />
-
-      {/* Cinema screen frame */}
-      <ScreenBorder />
-
-      {/* Leader marks */}
-      <LeaderMark customPosition='top: 40px; left: 40px;' />
-      <LeaderMark customPosition='top: 40px; right: 40px;' />
-      <LeaderMark customPosition='bottom: 40px; left: 40px;' />
-      <LeaderMark customPosition='bottom: 40px; right: 40px;' />
-
-      {/* Cinema seats */}
-      <SeatsRow />
-
-      {/* Curtains */}
-      <Curtain side='left' isOpen={curtainsOpen} />
-      <Curtain side='right' isOpen={curtainsOpen} />
-
-      {/* Classic film leader countdown */}
-      <CountdownContainer isVisible={countdownProgress > 0}>
-        <FilmTarget />
-        <CountdownCircle />
-        <RadarSweep />
-        <LeaderMarkings />
-        <CountdownNumber>{Math.ceil(countdownProgress)}</CountdownNumber>
-      </CountdownContainer>
-
-      {/* Main content after countdown */}
-      <LogoContainer isVisible={showContent}>
-        <LogoSVG viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'>
-          <path
-            fill='currentColor'
-            d='M388.3 902c-4-2.4-5.3-4.8-5.3-9.9 0-4.5-3.3-.3 38-48.1 14-16.2 27.9-32.3 30.8-35.7l5.3-6.2-3.1-3.9c-3.7-4.7-5.7-5.2-21.5-5.2-29.4 0-118.7-6-129-8.6-25.5-6.5-43.6-27.7-46.5-54.7-4.7-42.8-6.3-153.3-3-202.2 3.7-54.6 7-66.5 23-82.6 12.1-12.1 23.8-17.1 43.8-18.5 6.2-.5 9.2-1.1 9.2-1.9 0-.7-1.6-9.1-3.6-18.6-2.9-14.4-3.4-18-2.5-20.9 3.3-11.1 18.2-13.4 25.4-3.9 1.3 1.9 6.6 11.1 11.5 20.4 5 9.4 9.5 17.7 10 18.4.7 1.3 3.6 1.3 20.8.3 45.1-2.8 70.6-3.5 122.9-3.5 52.5-.1 97.2 1.4 126 4.2 6.5.7 9.3.6 10.1-.2.6-.7 5.7-9.7 11.3-20.2 12.1-22.6 13.9-24.7 21.4-25.3 6.5-.5 10.9 1.4 13.7 6.1 2.6 4.3 2.6 5.5-1.5 25.6-1.9 9.5-3.3 17.6-3 18 .2.5 3.9 1.1 8.2 1.5 18.1 1.6 32.8 7 42.6 15.7 9.7 8.5 18.2 23.6 20.8 37.2 5.4 27.9 7.4 137.5 4 211.2-2.1 43.5-3.2 50.4-10.2 63.6-8.4 15.6-25.1 27.4-44.8 31.4-10.6 2.2-60.9 5.3-118.9 7.4l-22.3.8-4.2 4.1c-3.1 3.1-3.9 4.6-3.2 5.6.6.7 16.8 19.5 36 41.6 19.3 22.1 35.5 41.2 36.2 42.4.7 1.1 1.2 3.8 1.3 5.9 0 3.1-.7 4.6-3.4 7.3-2.8 2.8-4.2 3.4-7.5 3.4-5.8 0-9.3-2.1-14.8-9-5.6-6.9-39.3-46.9-57.6-68.5-7.1-8.2-13.4-14.9-14-14.8-.7.1-5.7 1.1-11.2 2.3-12.5 2.7-31.7 2.3-43.2-.8l-7.3-2-9.2 11.2c-5 6.1-15.5 18.5-23.3 27.6-7.8 9.1-20.3 23.9-27.9 33-7.5 9.1-15.1 17.5-16.8 18.8-3.8 2.7-9.2 2.9-13.5.2zm164.2-148c31-1.4 64.3-3.9 69-5.1 15.5-4.2 28.1-18 30.5-33.5 4.7-30.4 4.7-183-.1-217.9-1.9-14.3-11.5-26.9-23.9-31.6-15.4-5.8-108.4-10.1-175.3-8-69.8 2.1-115.8 4.9-126.3 7.7-7.3 1.9-10.9 4.1-16.8 10.4-8.6 9.2-10.7 16.7-12.5 46-3.5 54.7-3 144.7 1 185 1.6 16.4 6.7 25.7 18.2 33.1 7.7 5 14.7 6.4 44.2 8.9 66 5.5 139.2 7.4 192 5zm168.2-53.1c4.1-2.5 9-9.7 9.9-14.5 1.5-8.2-3.9-18.5-11.9-22.5-5.8-3-14.8-3-20.4-.1-16.8 8.8-14 35 4.3 39.7 5.8 1.5 13.2.4 18.1-2.6zm-4-65c5.9-2.2 12.2-10.2 13.8-17.6 1-4.9-1.8-13.2-5.7-17-5.1-4.8-9-6.3-16.1-6.3-12.4 0-20.8 7.5-21.5 19.4-.3 4.9 0 7.1 1.6 10.2 2.5 4.8 6.6 8.8 11.2 10.8 4.1 1.8 12.7 2.1 16.7.5zm17.5-86.4c.8-1.9.8-3.1 0-5-1.3-2.8.5-2.7-31-2.7-17.6 0-19.2.4-19.2 5.1 0 5 .7 5.1 25.7 5.1l23.3 0 1.2-2.5zm-1-24.2c2.4-2.1 2.3-4.8-.2-7.3-1.9-1.9-3.3-2-23.7-2-23.7 0-25.3.4-25.3 6 0 4.8.8 5 24.9 5 19.5 0 22.7-.2 24.3-1.7zm0-24c2.2-2 2.3-5.1.1-7.5-1.5-1.6-3.6-1.8-23.6-1.8-19.1 0-22.3.2-23.9 1.7-2.3 2.1-2.4 6.9 0 8.2 1 .6 10.6 1.1 23.6 1.1 19 0 22.2-.2 23.8-1.7z'
-          />
-          <path
-            fill='currentColor'
-            d='M549.3 713.6l-2.8-2.4-.2-33.9c-.1-18.6.1-37.4.4-41.9l.6-8 7.6 1.4c11.7 2.2 27.2 0 43.4-6.3 1.6-.7 1.7 1.8 1.7 42.8 0 29.8-.4 44.4-1.1 46-1.9 4.2-4.7 4.7-26.4 4.7-20.1 0-20.4 0-23.2-2.4zM479.5 667.5l-2.5-2.4 0-80.9c0-78.2.1-81.1 1.9-83.3 1.8-2.2 2.8-2.4 12.5-2.7l10.7-.4-4.6 6.5c-16.9 24.3-19.4 55.1-6.4 81.4 6.8 13.8 19.5 27 32.5 34l5.6 3-.1 21.4-.1 21.4-2.6 2.3c-2.4 2.1-3.2 2.2-23.5 2.2-21 0-21 0-23.4-2.5zM411.2 628c-1.2-1.1-2.4-3.1-2.7-4.3-.3-1.2-.4-28.9-.3-61.5l.3-59.4 2.8-2.4c2.8-2.4 3.1-2.4 22.7-2.4 21.2 0 24 .5 25.9 4.7.8 1.7 1.1 20.6 1.1 62.4l0 60-2.5 2.4c-2.4 2.5-2.4 2.5-23.8 2.5-20 0-21.5-.1-23.5-2z'
-          />
+      <BackgroundMesh />
+      
+      {/* Floating particles */}
+      {[...Array(5)].map((_, i) => (
+        <Particle 
+          key={i}
+          delay={i * 3}
+          left={`${20 + (i * 15)}%`}
+        />
+      ))}
+      
+      {/* Corner accents */}
+      <CornerAccent cornerPos="top-left" />
+      <CornerAccent cornerPos="top-right" />
+      <CornerAccent cornerPos="bottom-left" />
+      <CornerAccent cornerPos="bottom-right" />
+      
+      {/* Logo with glow */}
+      <LogoContainer>
+        <LogoGlow />
+        <LogoSVG viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.9" />
+              <stop offset="50%" stopColor="#ec4899" stopOpacity="1" />
+              <stop offset="100%" stopColor="#f97316" stopOpacity="0.9" />
+            </linearGradient>
+          </defs>
+          <path d="M388.3 902c-4-2.4-5.3-4.8-5.3-9.9 0-4.5-3.3-.3 38-48.1 14-16.2 27.9-32.3 30.8-35.7l5.3-6.2-3.1-3.9c-3.7-4.7-5.7-5.2-21.5-5.2-29.4 0-118.7-6-129-8.6-25.5-6.5-43.6-27.7-46.5-54.7-4.7-42.8-6.3-153.3-3-202.2 3.7-54.6 7-66.5 23-82.6 12.1-12.1 23.8-17.1 43.8-18.5 6.2-.5 9.2-1.1 9.2-1.9 0-.7-1.6-9.1-3.6-18.6-2.9-14.4-3.4-18-2.5-20.9 3.3-11.1 18.2-13.4 25.4-3.9 1.3 1.9 6.6 11.1 11.5 20.4 5 9.4 9.5 17.7 10 18.4.7 1.3 3.6 1.3 20.8.3 45.1-2.8 70.6-3.5 122.9-3.5 52.5-.1 97.2 1.4 126 4.2 6.5.7 9.3.6 10.1-.2.6-.7 5.7-9.7 11.3-20.2 12.1-22.6 13.9-24.7 21.4-25.3 6.5-.5 10.9 1.4 13.7 6.1 2.6 4.3 2.6 5.5-1.5 25.6-1.9 9.5-3.3 17.6-3 18 .2.5 3.9 1.1 8.2 1.5 18.1 1.6 32.8 7 42.6 15.7 9.7 8.5 18.2 23.6 20.8 37.2 5.4 27.9 7.4 137.5 4 211.2-2.1 43.5-3.2 50.4-10.2 63.6-8.4 15.6-25.1 27.4-44.8 31.4-10.6 2.2-60.9 5.3-118.9 7.4l-22.3.8-4.2 4.1c-3.1 3.1-3.9 4.6-3.2 5.6.6.7 16.8 19.5 36 41.6 19.3 22.1 35.5 41.2 36.2 42.4.7 1.1 1.2 3.8 1.3 5.9 0 3.1-.7 4.6-3.4 7.3-2.8 2.8-4.2 3.4-7.5 3.4-5.8 0-9.3-2.1-14.8-9-5.6-6.9-39.3-46.9-57.6-68.5-7.1-8.2-13.4-14.9-14-14.8-.7.1-5.7 1.1-11.2 2.3-12.5 2.7-31.7 2.3-43.2-.8l-7.3-2-9.2 11.2c-5 6.1-15.5 18.5-23.3 27.6-7.8 9.1-20.3 23.9-27.9 33-7.5 9.1-15.1 17.5-16.8 18.8-3.8 2.7-9.2 2.9-13.5.2zm164.2-148c31-1.4 64.3-3.9 69-5.1 15.5-4.2 28.1-18 30.5-33.5 4.7-30.4 4.7-183-.1-217.9-1.9-14.3-11.5-26.9-23.9-31.6-15.4-5.8-108.4-10.1-175.3-8-69.8 2.1-115.8 4.9-126.3 7.7-7.3 1.9-10.9 4.1-16.8 10.4-8.6 9.2-10.7 16.7-12.5 46-3.5 54.7-3 144.7 1 185 1.6 16.4 6.7 25.7 18.2 33.1 7.7 5 14.7 6.4 44.2 8.9 66 5.5 139.2 7.4 192 5zm168.2-53.1c4.1-2.5 9-9.7 9.9-14.5 1.5-8.2-3.9-18.5-11.9-22.5-5.8-3-14.8-3-20.4-.1-16.8 8.8-14 35 4.3 39.7 5.8 1.5 13.2.4 18.1-2.6zm-4-65c5.9-2.2 12.2-10.2 13.8-17.6 1-4.9-1.8-13.2-5.7-17-5.1-4.8-9-6.3-16.1-6.3-12.4 0-20.8 7.5-21.5 19.4-.3 4.9 0 7.1 1.6 10.2 2.5 4.8 6.6 8.8 11.2 10.8 4.1 1.8 12.7 2.1 16.7.5zm17.5-86.4c.8-1.9.8-3.1 0-5-1.3-2.8.5-2.7-31-2.7-17.6 0-19.2.4-19.2 5.1 0 5 .7 5.1 25.7 5.1l23.3 0 1.2-2.5zm-1-24.2c2.4-2.1 2.3-4.8-.2-7.3-1.9-1.9-3.3-2-23.7-2-23.7 0-25.3.4-25.3 6 0 4.8.8 5 24.9 5 19.5 0 22.7-.2 24.3-1.7zm0-24c2.2-2 2.3-5.1.1-7.5-1.5-1.6-3.6-1.8-23.6-1.8-19.1 0-22.3.2-23.9 1.7-2.3 2.1-2.4 6.9 0 8.2 1 .6 10.6 1.1 23.6 1.1 19 0 22.2-.2 23.8-1.7z" />
+          <path d="M549.3 713.6l-2.8-2.4-.2-33.9c-.1-18.6.1-37.4.4-41.9l.6-8 7.6 1.4c11.7 2.2 27.2 0 43.4-6.3 1.6-.7 1.7 1.8 1.7 42.8 0 29.8-.4 44.4-1.1 46-1.9 4.2-4.7 4.7-26.4 4.7-20.1 0-20.4 0-23.2-2.4zM479.5 667.5l-2.5-2.4 0-80.9c0-78.2.1-81.1 1.9-83.3 1.8-2.2 2.8-2.4 12.5-2.7l10.7-.4-4.6 6.5c-16.9 24.3-19.4 55.1-6.4 81.4 6.8 13.8 19.5 27 32.5 34l5.6 3-.1 21.4-.1 21.4-2.6 2.3c-2.4 2.1-3.2 2.2-23.5 2.2-21 0-21 0-23.4-2.5zM411.2 628c-1.2-1.1-2.4-3.1-2.7-4.3-.3-1.2-.4-28.9-.3-61.5l.3-59.4 2.8-2.4c2.8-2.4 3.1-2.4 22.7-2.4 21.2 0 24 .5 25.9 4.7.8 1.7 1.1 20.6 1.1 62.4l0 60-2.5 2.4c-2.4 2.5-2.4 2.5-23.8 2.5-20 0-21.5-.1-23.5-2z" />
         </LogoSVG>
       </LogoContainer>
 
-      <Title isVisible={showContent}>TV-RANK</Title>
-      <Subtitle isVisible={showContent}>Est. 2024</Subtitle>
+      {/* Title and subtitle */}
+      <Title>TV-RANK</Title>
+      <Subtitle>Serien & Filme im Blick</Subtitle>
+      
+      {/* Progress section with glass effect */}
+      <ProgressWrapper>
+        <ProgressContainer>
+          <ProgressBar progress={loadingProgress} />
+        </ProgressContainer>
+        <LoadingStatus>
+          <LoadingText>{loadingText}</LoadingText>
+          <LoadingPercentage>{Math.round(loadingProgress * 100)}%</LoadingPercentage>
+        </LoadingStatus>
+      </ProgressWrapper>
     </SplashContainer>
   );
 };
