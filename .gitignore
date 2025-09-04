@@ -32,3 +32,4 @@ src/workers/advanced-service-worker.ts
 public/service-worker.js
 
 storage.rules
+.claude/settings.local.json
