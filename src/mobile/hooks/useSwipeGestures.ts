@@ -28,6 +28,13 @@ export const useSwipeGestures = (
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
+      // Check if the touch started on an element that blocks swipes
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-block-swipe]')) {
+        touchStartRef.current = null;
+        return;
+      }
+      
       const touch = e.touches[0];
       touchStartRef.current = {
         x: touch.pageX,
