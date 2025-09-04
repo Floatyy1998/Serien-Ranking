@@ -215,11 +215,10 @@ export const MobileWatchNextPage: React.FC = () => {
           for (const [episodeIndex, episode] of episodesList.entries()) {
             if (episode.watched) continue;
             
-            // Check if episode has aired (if air_date exists)
-            if (episode.air_date) {
-              const airDate = new Date(episode.air_date);
-              if (airDate > today) continue; // Skip future episodes
-            }
+            // Check if episode has aired
+            if (!episode.air_date) continue; // Skip episodes without air date
+            const airDate = new Date(episode.air_date);
+            if (airDate > today) continue; // Skip future episodes
             episodes.push({
               seriesId: series.id,
               seriesTitle: series.title,
