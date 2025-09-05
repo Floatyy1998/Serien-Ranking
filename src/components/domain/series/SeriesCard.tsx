@@ -4,7 +4,11 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import MuiStarIcon from '@mui/icons-material/Star';
 import {
   Alert,
+  Box,
   Button,
+  Card,
+  CardContent,
+  CardMedia,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,10 +16,11 @@ import {
   DialogTitle,
   Snackbar,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { allGenres } from '../../../../constants/seriesCard.constants';
 import { useAuth } from '../../../App';
@@ -36,11 +41,6 @@ import ThreeDotMenu, {
 import SeriesDialog from '../dialogs/SeriesDialog';
 import TmdbDialog from '../dialogs/TmdbDialog';
 import WatchedEpisodesDialog from '../dialogs/WatchedEpisodesDialog';
-const Typography = lazy(() => import('@mui/material/Typography'));
-const Box = lazy(() => import('@mui/material/Box'));
-const Card = lazy(() => import('@mui/material/Card'));
-const CardContent = lazy(() => import('@mui/material/CardContent'));
-const CardMedia = lazy(() => import('@mui/material/CardMedia'));
 interface SeriesCardProps {
   series: Series;
   genre: string;
@@ -49,7 +49,7 @@ interface SeriesCardProps {
   forceReadOnlyDialogs?: boolean;
   disableDeleteDialog?: boolean;
 }
-export const SeriesCard = ({
+const SeriesCardComponent = ({
   series,
   genre,
   index,
@@ -474,7 +474,7 @@ export const SeriesCard = ({
   };
 
   return (
-    <Suspense fallback={<div />}>
+    <>
       <Card
         className='h-full transition-all duration-500 flex flex-col series-card group'
         sx={cardStyles}
@@ -1186,7 +1186,22 @@ export const SeriesCard = ({
           setAdding(false);
         }}
       />
-    </Suspense>
+    </>
   );
 };
+
+export const SeriesCard = memo(SeriesCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function for better performance
+  return (
+    prevProps.series.nmr === nextProps.series.nmr &&
+    prevProps.series.watchlist === nextProps.series.watchlist &&
+    prevProps.series.seasons === nextProps.series.seasons &&
+    prevProps.genre === nextProps.genre &&
+    prevProps.index === nextProps.index &&
+    prevProps.disableRatingDialog === nextProps.disableRatingDialog &&
+    prevProps.forceReadOnlyDialogs === nextProps.forceReadOnlyDialogs &&
+    prevProps.disableDeleteDialog === nextProps.disableDeleteDialog
+  );
+});
+
 export default SeriesCard;

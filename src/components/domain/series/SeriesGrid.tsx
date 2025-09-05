@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../../../App';
 import { useSeriesList } from '../../../contexts/OptimizedSeriesListProvider';
 import { useStats } from '../../../features/stats/StatsProvider';
@@ -797,67 +797,83 @@ export const SeriesGrid = ({
     }
   };
 
+  // Optimized scroll handler with RAF-based throttling
+  const rafId = useRef<number | null>(null);
+  const lastScrollTime = useRef<number>(0);
+  
+  const handleScroll = useCallback(() => {
+    const now = Date.now();
+    // Skip if less than 100ms since last update
+    if (now - lastScrollTime.current < 100) {
+      return;
+    }
+    
+    lastScrollTime.current = now;
+    
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const fullHeight = document.body.offsetHeight;
+
+    // Berechne Grid-Parameter
+    const cardWidth = 230;
+    const cardHeight = 444;
+    const gap = 75;
+    let columns = Math.floor(window.innerWidth / (cardWidth + gap));
+    if (columns < 1) columns = 1;
+
+    const rowHeight = cardHeight + gap;
+    const viewportStart = Math.max(0, scrollTop - windowHeight);
+    const viewportEnd = scrollTop + windowHeight * 2; // Buffer für smooth scrolling
+
+    // Berechne sichtbare Reihen
+    const startRow = Math.floor(viewportStart / rowHeight);
+    const endRow = Math.ceil(viewportEnd / rowHeight);
+
+    const newStartIndex = Math.max(0, startRow * columns);
+    const newEndIndex = Math.min(
+      filteredSeries?.length || 0,
+      (endRow + 1) * columns
+    );
+    const newVisibleCount = newEndIndex - newStartIndex;
+
+    // Virtualization: Aktiviere bei mehr als 40 Serien für bessere Performance
+    if (filteredSeries?.length > 40) {
+      setStartIndex(newStartIndex);
+      setVisibleCount(Math.min(newVisibleCount, 60)); // Max 60 Cards gleichzeitig (reduziert von 80)
+    } else {
+      // Bei wenigen Serien: normales infinite scroll, aber limitiert auf 40 max
+      if (
+        scrollTop + windowHeight >= fullHeight - 1000 &&
+        visibleCount < Math.min(40, filteredSeries?.length || 0)
+      ) {
+        const itemsToAdd = Math.min(columns, 8); // Reduziert von 12 auf 8
+        setVisibleCount((prev) =>
+          Math.min(prev + itemsToAdd, 40, filteredSeries?.length || 0)
+        );
+      }
+    }
+  }, [filteredSeries?.length, visibleCount]);
+
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const fullHeight = document.body.offsetHeight;
-
-      // Berechne Grid-Parameter
-      const cardWidth = 230;
-      const cardHeight = 444;
-      const gap = 75;
-      let columns = Math.floor(window.innerWidth / (cardWidth + gap));
-      if (columns < 1) columns = 1;
-
-      const rowHeight = cardHeight + gap;
-      const viewportStart = Math.max(0, scrollTop - windowHeight);
-      const viewportEnd = scrollTop + windowHeight * 2; // Buffer für smooth scrolling
-
-      // Berechne sichtbare Reihen
-      const startRow = Math.floor(viewportStart / rowHeight);
-      const endRow = Math.ceil(viewportEnd / rowHeight);
-
-      const newStartIndex = Math.max(0, startRow * columns);
-      const newEndIndex = Math.min(
-        filteredSeries?.length || 0,
-        (endRow + 1) * columns
-      );
-      const newVisibleCount = newEndIndex - newStartIndex;
-
-      // Virtualization: Aktiviere bei mehr als 40 Serien für bessere Performance
-      if (filteredSeries?.length > 40) {
-        setStartIndex(newStartIndex);
-        setVisibleCount(Math.min(newVisibleCount, 60)); // Max 60 Cards gleichzeitig (reduziert von 80)
-      } else {
-        // Bei wenigen Serien: normales infinite scroll, aber limitiert auf 40 max
-        if (
-          scrollTop + windowHeight >= fullHeight - 1000 &&
-          visibleCount < Math.min(40, filteredSeries?.length || 0)
-        ) {
-          const itemsToAdd = Math.min(columns, 8); // Reduziert von 12 auf 8
-          setVisibleCount((prev) =>
-            Math.min(prev + itemsToAdd, 40, filteredSeries?.length || 0)
-          );
-        }
+    const scrollListener = () => {
+      // Cancel any pending RAF
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+      }
+      
+      // Schedule new RAF
+      rafId.current = requestAnimationFrame(handleScroll);
+    };
+    
+    window.addEventListener('scroll', scrollListener, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', scrollListener);
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
       }
     };
-
-    // Debounced scroll handler für bessere Performance
-    let ticking = false;
-    const debouncedHandleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', debouncedHandleScroll);
-  }, [visibleCount, startIndex, filteredSeries?.length]);
+  }, [handleScroll]);
 
   // Kein Loading-State mehr - das globale Skeleton regelt das
   if (targetUserId && friendSeriesLoading) {

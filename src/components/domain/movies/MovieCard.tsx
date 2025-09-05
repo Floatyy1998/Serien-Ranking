@@ -17,7 +17,7 @@ import {
 import { Star, Warning } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { allGenresForMovies } from '../../../../constants/seriesCard.constants';
 import { useAuth } from '../../../App';
@@ -42,7 +42,7 @@ interface MovieCardProps {
   forceReadOnlyDialogs?: boolean;
 }
 
-export const MovieCard = ({
+const MovieCardComponent = ({
   movie,
   genre,
   index,
@@ -963,5 +963,19 @@ export const MovieCard = ({
     </>
   );
 };
+
+export const MovieCard = memo(MovieCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function for better performance
+  return (
+    prevProps.movie.id === nextProps.movie.id &&
+    prevProps.movie.watchlist === nextProps.movie.watchlist &&
+    prevProps.movie.rating === nextProps.movie.rating &&
+    prevProps.genre === nextProps.genre &&
+    prevProps.index === nextProps.index &&
+    prevProps.disableRatingDialog === nextProps.disableRatingDialog &&
+    prevProps.forceReadOnlyDialogs === nextProps.forceReadOnlyDialogs &&
+    prevProps.disableDeleteDialog === nextProps.disableDeleteDialog
+  );
+});
 
 export default MovieCard;

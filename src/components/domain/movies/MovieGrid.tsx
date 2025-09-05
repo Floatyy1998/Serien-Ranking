@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useMovieList } from '../../../contexts/MovieListProvider';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { calculateOverallRating } from '../../../lib/rating/rating';
@@ -130,8 +130,19 @@ export const MovieGrid = ({
     setFilteredMovies(filtered);
   }, [movieList, debouncedSearchValue, selectedGenre, selectedProvider, selectedSpecialFilter]);
 
-  // React 19: Automatische Memoization - kein useCallback nötig
+  // Optimized scroll handler with RAF-based throttling
+  const rafId = useRef<number | null>(null);
+  const lastScrollTime = useRef<number>(0);
+  
   const handleWindowScroll = useCallback(() => {
+    const now = Date.now();
+    // Skip if less than 100ms since last update
+    if (now - lastScrollTime.current < 100) {
+      return;
+    }
+    
+    lastScrollTime.current = now;
+    
     const scrollTop = window.scrollY;
     const windowHeight = window.innerHeight;
     const fullHeight = document.body.offsetHeight;
@@ -169,23 +180,27 @@ export const MovieGrid = ({
         setVisibleCount((prev) => Math.min(prev + itemsToAdd, 40, currentMovies?.length || 0));
       }
     }
-  }, [visibleCount, startIndex, filteredMovies, movieList]);
+  }, [visibleCount, filteredMovies, movieList]);
 
   useEffect(() => {
-    // Debounced scroll handler für bessere Performance
-    let ticking = false;
-    const debouncedHandleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleWindowScroll();
-          ticking = false;
-        });
-        ticking = true;
+    const scrollListener = () => {
+      // Cancel any pending RAF
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+      }
+      
+      // Schedule new RAF
+      rafId.current = requestAnimationFrame(handleWindowScroll);
+    };
+    
+    window.addEventListener('scroll', scrollListener, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', scrollListener);
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
       }
     };
-
-    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', debouncedHandleScroll);
   }, [handleWindowScroll]);
 
   useEffect(() => {

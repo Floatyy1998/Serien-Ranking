@@ -1,11 +1,11 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { 
   PlayCircle, ArrowBack,
   CheckBoxOutlineBlank, FilterList, Repeat,
   ArrowUpward, ArrowDownward, DragHandle,
-  CheckCircle
+  Check
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
@@ -50,7 +50,11 @@ export const MobileWatchNextPage: React.FC = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [currentTouchIndex, setCurrentTouchIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [watchedEpisodes, setWatchedEpisodes] = useState<Set<string>>(new Set());
+  const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
+  const [dragOffsets, setDragOffsets] = useState<{ [key: string]: number }>({});
+  const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
+  const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
+  const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
   // Removed tabs - only show next episodes
   
   // Save preferences to localStorage and ensure rewatches start hidden
@@ -369,6 +373,80 @@ export const MobileWatchNextPage: React.FC = () => {
     setCurrentTouchIndex(null);
   };
 
+  // Handle episode swipe to complete
+  const handleEpisodeComplete = async (episode: NextEpisode, swipeDirection: 'left' | 'right' = 'right') => {
+    const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
+    
+    // Store swipe direction for exit animation
+    setSwipeDirections(prev => ({ ...prev, [episodeKey]: swipeDirection }));
+    
+    // Add to completing set for animation
+    setCompletingEpisodes(prev => new Set(prev).add(episodeKey));
+    
+    // Mark episode as watched in Firebase
+    if (user) {
+      const series = seriesList.find(s => s.id === episode.seriesId);
+      if (!series) return;
+      
+      try {
+        const watchedRef = firebase
+          .database()
+          .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`);
+        await watchedRef.set(true);
+        
+        // Handle rewatch: increment watchCount
+        if (episode.isRewatch) {
+          const watchCountRef = firebase
+            .database()
+            .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`);
+          const newCount = (episode.currentWatchCount || 0) + 1;
+          await watchCountRef.set(newCount);
+          
+          // Badge-System für Rewatch
+          const { updateEpisodeCounters } = await import(
+            '../../features/badges/minimalActivityLogger'
+          );
+          await updateEpisodeCounters(user.uid, true, episode.airDate);
+        } else {
+          // Update firstWatchedAt if not set
+          const firstWatchedRef = firebase
+            .database()
+            .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`);
+          const snapshot = await firstWatchedRef.once('value');
+          if (!snapshot.val()) {
+            await firstWatchedRef.set(new Date().toISOString());
+          }
+          
+          // Also update watchCount if needed
+          const watchCountRef = firebase
+            .database()
+            .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`);
+          const watchCountSnapshot = await watchCountRef.once('value');
+          const currentCount = watchCountSnapshot.val() || 0;
+          await watchCountRef.set(currentCount + 1);
+          
+          // Badge-System für normale Episode
+          const { updateEpisodeCounters } = await import(
+            '../../features/badges/minimalActivityLogger'
+          );
+          await updateEpisodeCounters(user.uid, false, episode.airDate);
+        }
+      } catch (error) {
+        console.error('Error marking episode as watched:', error);
+      }
+    }
+    
+    // After animation, hide the episode
+    setTimeout(() => {
+      setHiddenEpisodes(prev => new Set(prev).add(episodeKey));
+      setCompletingEpisodes(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(episodeKey);
+        return newSet;
+      });
+    }, 300);
+  };
+
   return (
     <div ref={containerRef}>
       {/* Header */}
@@ -579,65 +657,144 @@ export const MobileWatchNextPage: React.FC = () => {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <AnimatePresence>
-                {nextEpisodes.map((episode, index) => {
+                <AnimatePresence mode="popLayout">
+                {nextEpisodes
+                  .filter(episode => !hiddenEpisodes.has(`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`))
+                  .map((episode, index) => {
                   const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
-                  const isBeingWatched = watchedEpisodes.has(episodeKey);
+                  const isCompleting = completingEpisodes.has(episodeKey);
+                  const isSwiping = swipingEpisodes.has(episodeKey);
                   
                   return (
                   <motion.div
                     key={episodeKey}
+                    data-block-swipe
                     className="episode-card"
-                    initial={{ opacity: 1, x: 0 }}
-                    animate={{
-                      opacity: isBeingWatched ? 0 : 1,
-                      x: isBeingWatched ? 50 : 0
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ 
+                      opacity: isCompleting ? 0.5 : 1, 
+                      y: 0,
+                      scale: isCompleting ? 0.95 : 1,
                     }}
-                    exit={{
-                      opacity: 0,
-                      x: 50,
+                    exit={{ 
+                      opacity: 0, 
+                      x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
                       transition: { duration: 0.3 }
                     }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                    whileTap={{ scale: 0.98 }}
-                    draggable={customOrderActive}
-                    onDragStart={(e) => handleDragStart(e as any, index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDrop={(e) => handleDrop(e as any, index)}
-                    onTouchStart={(e) => handleTouchStart(e, index)}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      background: episode.isRewatch ? `${currentTheme.status.warning}0D` : `${currentTheme.status.success}08`,
-                      border: currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index
-                        ? `2px solid ${currentTheme.primary}`
-                        : episode.isRewatch 
-                        ? `1px solid ${currentTheme.status.warning}4D` 
-                        : `1px solid ${currentTheme.status.success}26`,
-                      borderRadius: '10px',
-                      padding: currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index ? '7px' : '8px',
-                      cursor: customOrderActive ? 'move' : 'pointer',
-                      opacity: draggedIndex === index ? 0.6 : 1,
-                      transform: draggedIndex === index 
-                        ? 'scale(1.05)' 
-                        : currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index
-                        ? 'scale(1.02)' 
-                        : 'scale(1)',
-                      boxShadow: draggedIndex === index 
-                        ? `0 8px 24px ${currentTheme.primary}40`
-                        : currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index
-                        ? `0 4px 12px ${currentTheme.primary}30`
-                        : 'none',
-                      transition: 'all 0.2s ease',
                       position: 'relative',
-                      overflow: 'hidden'
                     }}
                   >
-                    {/* Simple checkmark indicator */}
-                    {isBeingWatched && (
+                    {/* Swipe Overlay for episodes */}
+                    {!customOrderActive && (
+                      <motion.div
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={1}
+                        dragSnapToOrigin={true}
+                        onDragStart={() => {
+                          setSwipingEpisodes(prev => new Set(prev).add(episodeKey));
+                        }}
+                        onDrag={(_event, info: PanInfo) => {
+                          setDragOffsets(prev => ({
+                            ...prev,
+                            [episodeKey]: info.offset.x
+                          }));
+                        }}
+                        onDragEnd={(event, info: PanInfo) => {
+                          event.stopPropagation();
+                          setSwipingEpisodes(prev => {
+                            const newSet = new Set(prev);
+                            newSet.delete(episodeKey);
+                            return newSet;
+                          });
+                          setDragOffsets(prev => {
+                            const newOffsets = { ...prev };
+                            delete newOffsets[episodeKey];
+                            return newOffsets;
+                          });
+                          
+                          if (Math.abs(info.offset.x) > 100 && Math.abs(info.velocity.x) > 50) {
+                            const direction = info.offset.x > 0 ? 'right' : 'left';
+                            handleEpisodeComplete(episode, direction);
+                          }
+                        }}
+                        whileDrag={{ scale: 1.02 }}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: '60px', // Start after the poster
+                          right: 0,
+                          bottom: 0,
+                          zIndex: 1,
+                        }}
+                      />
+                    )}
+                    
+                    {/* Card content with drag handles for custom order */}
+                    <div
+                      draggable={customOrderActive}
+                      onDragStart={customOrderActive ? (e) => handleDragStart(e as any, index) : undefined}
+                      onDragOver={customOrderActive ? (e) => handleDragOver(e, index) : undefined}
+                      onDrop={customOrderActive ? (e) => handleDrop(e as any, index) : undefined}
+                      onTouchStart={customOrderActive ? (e) => handleTouchStart(e, index) : undefined}
+                      onTouchMove={customOrderActive ? handleTouchMove : undefined}
+                      onTouchEnd={customOrderActive ? handleTouchEnd : undefined}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        background: isCompleting 
+                          ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
+                          : episode.isRewatch 
+                          ? `${currentTheme.status.warning}0D` 
+                          : `rgba(76, 209, 55, ${Math.min(Math.abs(dragOffsets[episodeKey] || 0) / 100 * 0.15, 0.15)})`,
+                        border: `1px solid ${
+                          isCompleting 
+                            ? 'rgba(76, 209, 55, 0.5)' 
+                            : currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index
+                            ? currentTheme.primary
+                            : episode.isRewatch 
+                            ? `${currentTheme.status.warning}4D` 
+                            : `rgba(76, 209, 55, ${0.2 + Math.min(Math.abs(dragOffsets[episodeKey] || 0) / 100 * 0.3, 0.3)})`
+                        }`,
+                        borderRadius: '10px',
+                        padding: currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index ? '7px' : '8px',
+                        cursor: customOrderActive ? 'move' : 'pointer',
+                        opacity: draggedIndex === index ? 0.6 : 1,
+                        transform: draggedIndex === index 
+                          ? 'scale(1.05)' 
+                          : currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index
+                          ? 'scale(1.02)' 
+                          : 'scale(1)',
+                        boxShadow: draggedIndex === index 
+                          ? `0 8px 24px ${currentTheme.primary}40`
+                          : currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index
+                          ? `0 4px 12px ${currentTheme.primary}30`
+                          : 'none',
+                        transition: 'all 0.2s ease',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {/* Swipe Indicator Background */}
+                      <motion.div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
+                          opacity: 0,
+                        }}
+                        animate={{
+                          opacity: isSwiping ? 1 : 0,
+                        }}
+                      />
+                      {/* Simple checkmark indicator */}
+                      {isCompleting && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -650,27 +807,24 @@ export const MobileWatchNextPage: React.FC = () => {
                           zIndex: 10
                         }}
                       >
-                        <CheckCircle 
-                          style={{ 
-                            fontSize: '28px', 
-                            color: currentTheme.status.success
-                          }} 
-                        />
+                        <Check style={{ fontSize: '28px', color: currentTheme.status.success }} />
                       </motion.div>
                     )}
-                    <img 
-                      src={episode.poster} 
-                      alt={episode.seriesTitle}
-                      onClick={() => navigate(`/series/${episode.seriesId}`)}
-                      style={{
-                        width: '48px',
-                        height: '72px',
-                        objectFit: 'cover',
-                        borderRadius: '6px',
-                        cursor: 'pointer'
-                      }}
-                    />
-                    <div style={{ flex: 1 }} onClick={() => navigate(`/series/${episode.seriesId}`)}>
+                      <img 
+                        src={episode.poster} 
+                        alt={episode.seriesTitle}
+                        onClick={() => navigate(`/series/${episode.seriesId}`)}
+                        style={{
+                          width: '48px',
+                          height: '72px',
+                          objectFit: 'cover',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          zIndex: 2,
+                        }}
+                      />
+                      <div style={{ flex: 1, pointerEvents: customOrderActive ? 'auto' : 'none', position: 'relative', zIndex: 2 }} onClick={() => !customOrderActive && navigate(`/series/${episode.seriesId}`)}>
                       <h4 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
                         {episode.seriesTitle}
                       </h4>
@@ -699,8 +853,8 @@ export const MobileWatchNextPage: React.FC = () => {
                           {new Date(episode.airDate).toLocaleDateString('de-DE')}
                         </p>
                       )}
-                    </div>
-                    {customOrderActive && (
+                      </div>
+                      {customOrderActive && (
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -709,74 +863,57 @@ export const MobileWatchNextPage: React.FC = () => {
                       }}>
                         <DragHandle style={{ fontSize: '20px' }} />
                       </div>
-                    )}
-                    <button
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        if (!user) return;
-                        
-                        // Add to watched set for animation
-                        const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
-                        setWatchedEpisodes(prev => new Set([...prev, episodeKey]));
-                        
-                        // Wait a bit for animation to start
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        
-                        // Mark episode as watched in Firebase
-                        const series = seriesList.find(s => s.id === episode.seriesId);
-                        if (!series) return;
-                        
-                        const watchedRef = firebase
-                          .database()
-                          .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`);
-                        await watchedRef.set(true);
-                        
-                        // Handle rewatch: increment watchCount
-                        if (episode.isRewatch) {
-                          const watchCountRef = firebase
-                            .database()
-                            .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`);
-                          const newCount = (episode.currentWatchCount || 0) + 1;
-                          await watchCountRef.set(newCount);
-                          
-                          // Badge-System für Rewatch
-                          const { updateEpisodeCounters } = await import(
-                            '../../features/badges/minimalActivityLogger'
-                          );
-                          await updateEpisodeCounters(user.uid, true, episode.airDate);
-                        } else {
-                          // Update firstWatchedAt if not set
-                          const firstWatchedRef = firebase
-                            .database()
-                            .ref(`${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`);
-                          const snapshot = await firstWatchedRef.once('value');
-                          if (!snapshot.val()) {
-                            await firstWatchedRef.set(new Date().toISOString());
-                          }
-                          
-                          // Badge-System für normale Episode
-                          const { updateEpisodeCounters } = await import(
-                            '../../features/badges/minimalActivityLogger'
-                          );
-                          await updateEpisodeCounters(user.uid, false, episode.airDate);
-                        }
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: '8px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      >
-                        {isBeingWatched ? (
-                          <CheckCircle style={{ fontSize: '24px', color: currentTheme.status.success }} />
+                      )}
+                      
+                      {/* Replaced button with AnimatePresence for swipe */}
+                      <AnimatePresence mode="wait">
+                        {isCompleting ? (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            exit={{ scale: 0, rotate: 180 }}
+                            style={{
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <Check style={{ fontSize: '24px', color: currentTheme.status.success }} />
+                          </motion.div>
+                        ) : !customOrderActive ? (
+                          <motion.div
+                            animate={{ x: isSwiping ? 10 : 0 }}
+                            style={{
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <PlayCircle style={{ fontSize: '24px', color: episode.isRewatch ? currentTheme.status.warning : currentTheme.status.success }} />
+                          </motion.div>
                         ) : (
-                          <CheckBoxOutlineBlank style={{ fontSize: '24px', color: currentTheme.status.success }} />
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await handleEpisodeComplete(episode);
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: '8px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <CheckBoxOutlineBlank style={{ fontSize: '24px', color: currentTheme.status.success }} />
+                          </button>
                         )}
-                      </button>
+                      </AnimatePresence>
+                    </div>
                   </motion.div>
                   );
                 })}
