@@ -3,8 +3,6 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import React, {
   createContext,
-  lazy,
-  Suspense,
   useContext,
   useEffect,
   useState,
@@ -37,10 +35,9 @@ import { UserProfilePage } from './pages/UserProfilePage';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { updateTheme } from './theme';
 
-// Nur diese bleiben lazy
-const LoginPage = lazy(() => import('./features/auth/LoginPage'));
-const RegisterPage = lazy(() => import('./features/auth/RegisterPage'));
-const DuckFacts = lazy(() => import('./features/DuckFacts'));
+import LoginPage from './features/auth/LoginPage';
+import RegisterPage from './features/auth/RegisterPage';
+import DuckFacts from './features/DuckFacts';
 export const AuthContext = createContext<{
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
@@ -500,8 +497,7 @@ function AppContent() {
                     <UsernameRequiredDialog />
                     <UpdateNotification />
                     <main className='w-full'>
-                      <Suspense fallback={null}>
-                        <Routes>
+                      <Routes>
                           <Route 
                             path='/login' 
                             element={
@@ -591,7 +587,6 @@ function AppContent() {
                           <Route path='/duckfacts' element={<DuckFacts />} />
                           <Route path='*' element={<Navigate to='/' />} />
                         </Routes>
-                      </Suspense>
                     </main>
                   </div>
                 </ThemeProvider>

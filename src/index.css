@@ -9,6 +9,9 @@ html, body {
   padding: 0;
   height: 100%;
   width: 100%;
+  /* Prevent browser swipe navigation */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
 }
 
 #root {

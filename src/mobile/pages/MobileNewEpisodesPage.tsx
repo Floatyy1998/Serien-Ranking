@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { 
-  ArrowBack, PlayCircle, CheckCircle, 
+  ArrowBack, PlayCircle, CheckCircle, Check,
   CalendarToday, NewReleases, Timer,
   ExpandMore, ExpandLess
 } from '@mui/icons-material';
@@ -35,6 +35,11 @@ export const MobileNewEpisodesPage: React.FC = () => {
   const { currentTheme, getMobileHeaderStyle } = useTheme();
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
+  const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
+  const [dragOffsets, setDragOffsets] = useState<{ [key: string]: number }>({});
+  const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
+  const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
+  const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
   
   // Get TMDB image URL
   const getImageUrl = (posterObj: any): string => {
@@ -148,6 +153,52 @@ export const MobileNewEpisodesPage: React.FC = () => {
     } catch (error) {
       console.error('Error marking episode as watched:', error);
     }
+  };
+
+  // Handle episode swipe to complete
+  const handleEpisodeComplete = async (episode: UpcomingEpisode, swipeDirection: 'left' | 'right' = 'right') => {
+    const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
+    
+    // Store swipe direction for exit animation
+    setSwipeDirections(prev => ({ ...prev, [episodeKey]: swipeDirection }));
+    
+    // Add to completing set for animation
+    setCompletingEpisodes(prev => new Set(prev).add(episodeKey));
+    
+    // Mark episode as watched in Firebase
+    if (user) {
+      try {
+        const ref = firebase.database()
+          .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`);
+        await ref.set(true);
+        
+        // Also update watchCount if needed
+        const watchCountRef = firebase.database()
+          .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`);
+        const snapshot = await watchCountRef.once('value');
+        const currentCount = snapshot.val() || 0;
+        await watchCountRef.set(currentCount + 1);
+        
+        // Update firstWatchedAt if this is the first time
+        if (currentCount === 0) {
+          const firstWatchedRef = firebase.database()
+            .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`);
+          await firstWatchedRef.set(new Date().toISOString());
+        }
+      } catch (error) {
+        console.error('Error marking episode as watched:', error);
+      }
+    }
+    
+    // After animation, hide the episode
+    setTimeout(() => {
+      setHiddenEpisodes(prev => new Set(prev).add(episodeKey));
+      setCompletingEpisodes(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(episodeKey);
+        return newSet;
+      });
+    }, 300);
   };
   
   const isEpisodeWatched = (episode: UpcomingEpisode) => {
@@ -289,6 +340,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
               </h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <AnimatePresence mode="popLayout">
                 {Object.entries(seriesGroups).map(([seriesId, episodes]) => {
                   const firstEpisode = episodes[0];
                   const isExpanded = isSeriesExpanded(date, Number(seriesId));
@@ -297,27 +349,115 @@ export const MobileNewEpisodesPage: React.FC = () => {
                   // If only one episode, show it directly without accordion
                   if (episodes.length === 1) {
                     const episode = episodes[0];
+                    const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
                     const watched = isEpisodeWatched(episode);
+                    const isCompleting = completingEpisodes.has(episodeKey);
+                    const isSwiping = swipingEpisodes.has(episodeKey);
+                    const isHidden = hiddenEpisodes.has(episodeKey);
+                    
+                    if (isHidden) return null;
                     
                     return (
                       <motion.div
-                        key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
+                        key={episodeKey}
+                        data-block-swipe
+                        layout
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        animate={{ 
+                          opacity: isCompleting ? 0.5 : 1, 
+                          y: 0,
+                          scale: isCompleting ? 0.95 : 1,
+                        }}
+                        exit={{ 
+                          opacity: 0, 
+                          x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
+                          transition: { duration: 0.3 }
+                        }}
                         style={{
+                          position: 'relative',
+                        }}
+                      >
+                        {/* Swipe overlay for episode */}
+                        <motion.div
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={1}
+                          dragSnapToOrigin={true}
+                          onDragStart={() => {
+                            setSwipingEpisodes(prev => new Set(prev).add(episodeKey));
+                          }}
+                          onDrag={(_event, info: PanInfo) => {
+                            setDragOffsets(prev => ({
+                              ...prev,
+                              [episodeKey]: info.offset.x
+                            }));
+                          }}
+                          onDragEnd={(event, info: PanInfo) => {
+                            event.stopPropagation();
+                            setSwipingEpisodes(prev => {
+                              const newSet = new Set(prev);
+                              newSet.delete(episodeKey);
+                              return newSet;
+                            });
+                            setDragOffsets(prev => {
+                              const newOffsets = { ...prev };
+                              delete newOffsets[episodeKey];
+                              return newOffsets;
+                            });
+                            
+                            if (Math.abs(info.offset.x) > 100 && Math.abs(info.velocity.x) > 50 && !watched) {
+                              const direction = info.offset.x > 0 ? 'right' : 'left';
+                              handleEpisodeComplete(episode, direction);
+                            }
+                          }}
+                          whileDrag={{ scale: 1.02 }}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: '72px', // Start after the poster
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1,
+                          }}
+                        />
+                        
+                        <div style={{
                           display: 'flex',
                           gap: '12px',
                           padding: '12px',
-                          background: watched 
-                            ? 'rgba(0, 212, 170, 0.05)'
-                            : 'rgba(255, 255, 255, 0.02)',
+                          background: isCompleting 
+                            ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
+                            : watched 
+                            ? 'rgba(76, 209, 55, 0.1)'
+                            : `rgba(76, 209, 55, ${Math.min(Math.abs(dragOffsets[episodeKey] || 0) / 100 * 0.15, 0.15)})`,
                           borderRadius: '12px',
-                          border: watched
-                            ? '1px solid rgba(0, 212, 170, 0.2)'
-                            : '1px solid rgba(255, 255, 255, 0.05)',
-                          transition: 'all 0.3s ease'
+                          border: `1px solid ${
+                            isCompleting 
+                              ? 'rgba(76, 209, 55, 0.5)' 
+                              : watched 
+                              ? 'rgba(76, 209, 55, 0.3)'
+                              : `rgba(76, 209, 55, ${0.05 + Math.min(Math.abs(dragOffsets[episodeKey] || 0) / 100 * 0.25, 0.25)})`
+                          }`,
+                          transition: 'all 0.3s ease',
+                          position: 'relative',
+                          overflow: 'hidden'
                         }}
                       >
+                        {/* Swipe Indicator Background */}
+                        <motion.div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
+                            opacity: 0,
+                          }}
+                          animate={{
+                            opacity: isSwiping ? 1 : 0,
+                          }}
+                        />
                         <img
                           src={getImageUrl(episode.seriesPoster)}
                           alt={episode.seriesName}
@@ -327,11 +467,13 @@ export const MobileNewEpisodesPage: React.FC = () => {
                             height: '90px',
                             objectFit: 'cover',
                             borderRadius: '8px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            position: 'relative',
+                            zIndex: 2,
                           }}
                         />
                         
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}>
                           <h4 style={{
                             fontSize: '14px',
                             fontWeight: 600,
@@ -360,33 +502,38 @@ export const MobileNewEpisodesPage: React.FC = () => {
                           </p>
                         </div>
                         
-                        <button
-                          onClick={() => handleMarkWatched(episode)}
-                          disabled={watched}
-                          style={{
-                            background: watched 
-                              ? 'transparent'
-                              : 'rgba(0, 212, 170, 0.1)',
-                            border: watched
-                              ? 'none'
-                              : '1px solid rgba(0, 212, 170, 0.3)',
-                            borderRadius: '8px',
-                            padding: '8px',
-                            color: watched 
-                              ? 'rgba(0, 212, 170, 0.9)'
-                              : 'rgba(0, 212, 170, 0.7)',
-                            cursor: watched ? 'default' : 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          {watched ? (
-                            <CheckCircle style={{ fontSize: '20px' }} />
+                        <AnimatePresence mode="wait">
+                          {isCompleting ? (
+                            <motion.div
+                              initial={{ scale: 0, rotate: -180 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              exit={{ scale: 0, rotate: 180 }}
+                              style={{
+                                padding: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <Check style={{ fontSize: '24px', color: currentTheme.status.success }} />
+                            </motion.div>
+                          ) : watched ? (
+                            <CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
                           ) : (
-                            <PlayCircle style={{ fontSize: '20px' }} />
+                            <motion.div
+                              animate={{ x: isSwiping ? 10 : 0 }}
+                              style={{
+                                padding: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
+                            </motion.div>
                           )}
-                        </button>
+                        </AnimatePresence>
+                      </div>
                       </motion.div>
                     );
                   }
@@ -541,6 +688,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
                     </motion.div>
                   );
                 })}
+                </AnimatePresence>
               </div>
             </div>
           ))

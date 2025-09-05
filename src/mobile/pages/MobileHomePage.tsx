@@ -41,9 +41,11 @@ export const MobileHomePage: React.FC = () => {
   //   'all' | 'series' | 'movies'
   // >('all');
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
+  const [dragOffsetsEpisodes, setDragOffsetsEpisodes] = useState<{ [key: string]: number }>({});
   const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
   const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
   const [swipingContinueEpisodes, setSwipingContinueEpisodes] = useState<Set<string>>(new Set());
+  const [dragOffsetsContinue, setDragOffsetsContinue] = useState<{ [key: string]: number }>({});
   const [completingContinueEpisodes, setCompletingContinueEpisodes] = useState<Set<string>>(new Set());
   const [hiddenContinueEpisodes, setHiddenContinueEpisodes] = useState<Set<string>>(new Set());
   const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
@@ -624,6 +626,7 @@ export const MobileHomePage: React.FC = () => {
 
       {/* Quick Stats */}
       <div
+        data-block-swipe
         style={{
           display: 'flex',
           gap: '8px',
@@ -931,8 +934,15 @@ export const MobileHomePage: React.FC = () => {
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
+                        dragSnapToOrigin
                         onDragStart={() => {
                           setSwipingContinueEpisodes(prev => new Set(prev).add(episodeKey));
+                        }}
+                        onDrag={(_event, info: PanInfo) => {
+                          setDragOffsetsContinue(prev => ({
+                            ...prev,
+                            [episodeKey]: info.offset.x
+                          }));
                         }}
                         onDragEnd={(event, info: PanInfo) => {
                           event.stopPropagation();
@@ -940,6 +950,11 @@ export const MobileHomePage: React.FC = () => {
                             const newSet = new Set(prev);
                             newSet.delete(episodeKey);
                             return newSet;
+                          });
+                          setDragOffsetsContinue(prev => {
+                            const newOffsets = { ...prev };
+                            delete newOffsets[episodeKey];
+                            return newOffsets;
                           });
                           
                           if (Math.abs(info.offset.x) > 100) {
@@ -964,12 +979,13 @@ export const MobileHomePage: React.FC = () => {
                           gap: '12px',
                           background: isCompleting 
                             ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
-                            : 'rgba(0, 212, 170, 0.05)',
+                            : `rgba(76, 209, 55, ${Math.min(Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100 * 0.15, 0.15)})`,
                           border: `1px solid ${
                             isCompleting 
                               ? 'rgba(76, 209, 55, 0.5)' 
-                              : 'rgba(0, 212, 170, 0.2)'
+                              : `rgba(76, 209, 55, ${0.2 + Math.min(Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100 * 0.3, 0.3)})`
                           }`,
+                          transition: dragOffsetsContinue[episodeKey] ? 'none' : 'all 0.3s ease',
                           borderRadius: '12px',
                           padding: '12px',
                           position: 'relative',
@@ -1151,8 +1167,15 @@ export const MobileHomePage: React.FC = () => {
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
+                        dragSnapToOrigin
                         onDragStart={() => {
                           setSwipingEpisodes(prev => new Set(prev).add(episodeKey));
+                        }}
+                        onDrag={(_event, info: PanInfo) => {
+                          setDragOffsetsEpisodes(prev => ({
+                            ...prev,
+                            [episodeKey]: info.offset.x
+                          }));
                         }}
                         onDragEnd={(event, info: PanInfo) => {
                           event.stopPropagation();
@@ -1160,6 +1183,11 @@ export const MobileHomePage: React.FC = () => {
                             const newSet = new Set(prev);
                             newSet.delete(episodeKey);
                             return newSet;
+                          });
+                          setDragOffsetsEpisodes(prev => {
+                            const newOffsets = { ...prev };
+                            delete newOffsets[episodeKey];
+                            return newOffsets;
                           });
                           
                           if (Math.abs(info.offset.x) > 100 && !episode.watched) {
@@ -1186,14 +1214,15 @@ export const MobileHomePage: React.FC = () => {
                           ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
                           : episode.watched 
                           ? 'rgba(76, 209, 55, 0.1)'
-                          : 'rgba(255, 215, 0, 0.05)',
+                          : `rgba(76, 209, 55, ${Math.min(Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100 * 0.15, 0.15)})`,
                         border: `1px solid ${
                           isCompleting 
                             ? 'rgba(76, 209, 55, 0.5)' 
                             : episode.watched 
                             ? 'rgba(76, 209, 55, 0.3)'
-                            : 'rgba(255, 215, 0, 0.2)'
+                            : `rgba(76, 209, 55, ${0.2 + Math.min(Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100 * 0.3, 0.3)})`
                         }`,
+                        transition: dragOffsetsEpisodes[episodeKey] ? 'none' : 'all 0.3s ease',
                         borderRadius: '12px',
                         padding: '12px',
                         cursor: 'pointer',
@@ -1309,6 +1338,7 @@ export const MobileHomePage: React.FC = () => {
           </div>
 
           <div
+            data-block-swipe
             style={{
               display: 'flex',
               gap: '12px',
@@ -1420,6 +1450,7 @@ export const MobileHomePage: React.FC = () => {
           </div>
 
           <div
+            data-block-swipe
             style={{
               display: 'flex',
               gap: '12px',
@@ -1518,6 +1549,7 @@ export const MobileHomePage: React.FC = () => {
           </div>
 
           <div
+            data-block-swipe
             style={{
               display: 'flex',
               gap: '12px',
