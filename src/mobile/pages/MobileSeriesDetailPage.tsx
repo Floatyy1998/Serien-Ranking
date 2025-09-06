@@ -1,5 +1,5 @@
+import { MobileBackButton } from '../components/MobileBackButton';
 import {
-  ArrowBack,
   BookmarkAdd,
   BookmarkRemove,
   Check,
@@ -396,7 +396,7 @@ export const MobileSeriesDetailPage: React.FC = () => {
           </p>
         )}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/')}
           style={{
             marginTop: '24px',
             padding: '12px 24px',
@@ -468,29 +468,15 @@ export const MobileSeriesDetailPage: React.FC = () => {
         />
 
         {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
+        <div
           style={{
             position: 'absolute',
             top: 'calc(20px + env(safe-area-inset-top))',
             left: '20px',
-            background: 'rgba(0, 0, 0, 0.5)',
-            backdropFilter: 'blur(10px)',
-            border: 'none',
-            color: 'white',
-            fontSize: '24px',
-            cursor: 'pointer',
-            padding: '8px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '40px',
-            height: '40px',
           }}
         >
-          <ArrowBack />
-        </button>
+          <MobileBackButton style={{ backdropFilter: 'blur(10px)' }} />
+        </div>
 
         {/* Add button for TMDB-only series */}
         {isReadOnlyTmdbSeries && (

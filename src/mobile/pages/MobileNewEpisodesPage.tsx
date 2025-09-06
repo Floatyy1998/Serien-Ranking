@@ -1,5 +1,4 @@
 import {
-  ArrowBack,
   CalendarToday,
   Check,
   CheckCircle,
@@ -8,7 +7,10 @@ import {
   NewReleases,
   PlayCircle,
   Timer,
+  Visibility,
+  VisibilityOff,
 } from '@mui/icons-material';
+import { MobileBackButton } from '../components/MobileBackButton';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -35,11 +37,15 @@ interface UpcomingEpisode {
   watched: boolean;
 }
 
-export const MobileNewEpisodesPage: React.FC = () => {
+interface MobileNewEpisodesPageProps {
+  showAllSeries?: boolean;
+}
+
+export const MobileNewEpisodesPage: React.FC<MobileNewEpisodesPageProps> = ({ showAllSeries = false }) => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const { currentTheme, getMobileHeaderStyle } = useTheme();
+  const { currentTheme } = useTheme();
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(
@@ -73,6 +79,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
     console.log('Today:', today);
 
     seriesList.forEach((series) => {
+      // Filter by watchlist unless showAllSeries is true
+      if (!showAllSeries && !series.watchlist) return;
+      
       // Only check episodes in seasons, not API data (to avoid duplicates)
       if (!series.seasons) return;
 
@@ -177,11 +186,21 @@ export const MobileNewEpisodesPage: React.FC = () => {
     }
   };
 
+  // Check if episode has aired
+  const hasEpisodeAired = (episode: UpcomingEpisode) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return episode.airDate <= today;
+  };
+
   // Handle episode swipe to complete
   const handleEpisodeComplete = async (
     episode: UpcomingEpisode,
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
+    // Don't allow marking future episodes as watched
+    if (!hasEpisodeAired(episode)) return;
+    
     const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
 
     // Store swipe direction for exit animation
@@ -262,9 +281,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
       {/* Header */}
       <header
         style={{
-          ...getMobileHeaderStyle('transparent'),
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
           padding: '20px',
-          paddingTop: 'calc(20px + env(safe-area-inset-top))',
+          paddingTop: 'calc(30px + env(safe-area-inset-top))',
         }}
       >
         <div
@@ -275,25 +294,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
             marginBottom: '16px',
           }}
         >
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              background: currentTheme.background.surface,
-              border: 'none',
-              color: currentTheme.text.primary,
-              fontSize: '20px',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-            }}
-          >
-            <ArrowBack />
-          </button>
+          <MobileBackButton />
 
           <div>
             <h1
@@ -306,7 +307,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Kommende Episoden
+              Episoden Kalender
             </h1>
             <p
               style={{
@@ -315,7 +316,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
                 margin: '4px 0 0 0',
               }}
             >
-              {upcomingEpisodes.length} neue Episoden
+              {upcomingEpisodes.length} kommende Episoden
             </p>
           </div>
         </div>
@@ -327,6 +328,30 @@ export const MobileNewEpisodesPage: React.FC = () => {
             paddingBottom: '8px',
           }}
         >
+          <div
+            style={{
+              background: showAllSeries 
+                ? `${currentTheme.primary}1A`
+                : `${currentTheme.status.success}1A`,
+              border: showAllSeries
+                ? `1px solid ${currentTheme.primary}4D`
+                : `1px solid ${currentTheme.status.success}4D`,
+              borderRadius: '12px',
+              padding: '8px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              whiteSpace: 'nowrap',
+              fontWeight: 600,
+            }}
+          >
+            {showAllSeries ? (
+              <><Visibility style={{ fontSize: '16px' }} /> Alle Serien</>
+            ) : (
+              <><VisibilityOff style={{ fontSize: '16px' }} /> Nur Watchlist</>
+            )}
+          </div>
           <div
             style={{
               background: `${currentTheme.primary}1A`,
@@ -381,23 +406,47 @@ export const MobileNewEpisodesPage: React.FC = () => {
               style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}
             />
             <h3>Keine kommenden Episoden</h3>
-            <p>Es gibt aktuell keine neuen Episoden in deiner Watchlist</p>
+            <p>Es gibt aktuell keine neuen Episoden {showAllSeries ? '' : 'in deiner Watchlist'}</p>
           </div>
         ) : (
           Object.entries(groupedEpisodes).map(([date, seriesGroups]) => (
-            <div key={date} style={{ marginBottom: '32px' }}>
-              <h3
+            <div key={date} style={{ marginBottom: '28px' }}>
+              <div
                 style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  marginBottom: '16px',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                  paddingBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '12px',
+                  padding: '8px 12px',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
                 }}
               >
-                {date}
-              </h3>
+                <CalendarToday style={{ fontSize: '18px', color: currentTheme.primary }} />
+                <h3
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    margin: 0,
+                    color: 'rgba(255, 255, 255, 0.9)',
+                  }}
+                >
+                  {date}
+                </h3>
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    fontSize: '13px',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                  }}
+                >
+                  {Object.values(seriesGroups).flat().length} Episode{Object.values(seriesGroups).flat().length !== 1 ? 'n' : ''}
+                </span>
+              </div>
 
               <div
                 style={{
@@ -422,6 +471,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
                       const isCompleting = completingEpisodes.has(episodeKey);
                       const isSwiping = swipingEpisodes.has(episodeKey);
                       const isHidden = hiddenEpisodes.has(episodeKey);
+                      const hasAired = hasEpisodeAired(episode);
 
                       if (isHidden) return null;
 
@@ -448,22 +498,26 @@ export const MobileNewEpisodesPage: React.FC = () => {
                             position: 'relative',
                           }}
                         >
-                          {/* Swipe overlay for episode */}
+                          {/* Swipe overlay for episode - only enabled for aired episodes */}
                           <motion.div
-                            drag='x'
+                            drag={hasAired && !watched ? 'x' : false}
                             dragConstraints={{ left: 0, right: 0 }}
                             dragElastic={1}
                             dragSnapToOrigin={true}
                             onDragStart={() => {
-                              setSwipingEpisodes((prev) =>
-                                new Set(prev).add(episodeKey)
-                              );
+                              if (hasAired && !watched) {
+                                setSwipingEpisodes((prev) =>
+                                  new Set(prev).add(episodeKey)
+                                );
+                              }
                             }}
                             onDrag={(_event, info: PanInfo) => {
-                              setDragOffsets((prev) => ({
-                                ...prev,
-                                [episodeKey]: info.offset.x,
-                              }));
+                              if (hasAired && !watched) {
+                                setDragOffsets((prev) => ({
+                                  ...prev,
+                                  [episodeKey]: info.offset.x,
+                                }));
+                              }
                             }}
                             onDragEnd={(event, info: PanInfo) => {
                               event.stopPropagation();
@@ -479,6 +533,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
                               });
 
                               if (
+                                hasAired &&
                                 Math.abs(info.offset.x) > 100 &&
                                 Math.abs(info.velocity.x) > 50 &&
                                 !watched
@@ -502,9 +557,11 @@ export const MobileNewEpisodesPage: React.FC = () => {
                           <div
                             style={{
                               display: 'flex',
-                              gap: '12px',
-                              padding: '12px',
-                              background: isCompleting
+                              gap: '10px',
+                              padding: '10px',
+                              background: !hasAired
+                                ? 'rgba(255, 255, 255, 0.02)'
+                                : isCompleting
                                 ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
                                 : watched
                                 ? 'rgba(76, 209, 55, 0.1)'
@@ -516,7 +573,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
                                   )})`,
                               borderRadius: '12px',
                               border: `1px solid ${
-                                isCompleting
+                                !hasAired
+                                  ? 'rgba(255, 255, 255, 0.1)'
+                                  : isCompleting
                                   ? 'rgba(76, 209, 55, 0.5)'
                                   : watched
                                   ? 'rgba(76, 209, 55, 0.3)'
@@ -560,8 +619,8 @@ export const MobileNewEpisodesPage: React.FC = () => {
                                 navigate(`/series/${episode.seriesId}`)
                               }
                               style={{
-                                width: '60px',
-                                height: '90px',
+                                width: '48px',
+                                height: '72px',
                                 objectFit: 'cover',
                                 borderRadius: '8px',
                                 cursor: 'pointer',
@@ -583,7 +642,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
                                   fontSize: '14px',
                                   fontWeight: 600,
                                   margin: '0 0 4px 0',
-                                  color: watched
+                                  color: !hasAired
+                                    ? 'rgba(255, 255, 255, 0.5)'
+                                    : watched
                                     ? 'rgba(0, 212, 170, 0.9)'
                                     : 'white',
                                 }}
@@ -595,7 +656,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
                                 style={{
                                   fontSize: '13px',
                                   margin: '0 0 4px 0',
-                                  color: 'rgba(255, 255, 255, 0.6)',
+                                  color: !hasAired
+                                    ? 'rgba(255, 255, 255, 0.4)'
+                                    : 'rgba(255, 255, 255, 0.6)',
                                 }}
                               >
                                 S{String(episode.seasonNumber).padStart(2, '0')}
@@ -620,7 +683,14 @@ export const MobileNewEpisodesPage: React.FC = () => {
                             </div>
 
                             <AnimatePresence mode='wait'>
-                              {isCompleting ? (
+                              {!hasAired ? (
+                                <Timer
+                                  style={{
+                                    fontSize: '20px',
+                                    color: 'rgba(255, 255, 255, 0.3)',
+                                  }}
+                                />
+                              ) : isCompleting ? (
                                 <motion.div
                                   initial={{ scale: 0, rotate: -180 }}
                                   animate={{ scale: 1, rotate: 0 }}
@@ -777,6 +847,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
                           >
                             {episodes.map((episode, idx) => {
                               const watched = isEpisodeWatched(episode);
+                              const hasAired = hasEpisodeAired(episode);
 
                               return (
                                 <div
@@ -798,7 +869,9 @@ export const MobileNewEpisodesPage: React.FC = () => {
                                       style={{
                                         fontSize: '13px',
                                         margin: 0,
-                                        color: watched
+                                        color: !hasAired
+                                          ? 'rgba(255, 255, 255, 0.5)'
+                                          : watched
                                           ? 'rgba(0, 212, 170, 0.9)'
                                           : 'rgba(255, 255, 255, 0.8)',
                                       }}
@@ -820,28 +893,40 @@ export const MobileNewEpisodesPage: React.FC = () => {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleMarkWatched(episode);
+                                      if (hasAired) {
+                                        handleMarkWatched(episode);
+                                      }
                                     }}
-                                    disabled={watched}
+                                    disabled={watched || !hasAired}
                                     style={{
-                                      background: watched
+                                      background: !hasAired
+                                        ? 'transparent'
+                                        : watched
                                         ? 'transparent'
                                         : 'rgba(0, 212, 170, 0.1)',
-                                      border: watched
+                                      border: !hasAired
+                                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                                        : watched
                                         ? 'none'
                                         : '1px solid rgba(0, 212, 170, 0.3)',
                                       borderRadius: '8px',
                                       padding: '6px',
-                                      color: watched
+                                      color: !hasAired
+                                        ? 'rgba(255, 255, 255, 0.3)'
+                                        : watched
                                         ? 'rgba(0, 212, 170, 0.9)'
                                         : 'rgba(0, 212, 170, 0.7)',
-                                      cursor: watched ? 'default' : 'pointer',
+                                      cursor: !hasAired || watched ? 'default' : 'pointer',
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'center',
                                     }}
                                   >
-                                    {watched ? (
+                                    {!hasAired ? (
+                                      <Timer
+                                        style={{ fontSize: '18px' }}
+                                      />
+                                    ) : watched ? (
                                       <CheckCircle
                                         style={{ fontSize: '18px' }}
                                       />

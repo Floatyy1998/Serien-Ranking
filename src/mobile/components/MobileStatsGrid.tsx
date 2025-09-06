@@ -12,7 +12,6 @@ import {
   Timer,
   Star,
   TrendingUp,
-  PlayCircle,
   Schedule,
   Category,
   Stream,
@@ -131,8 +130,8 @@ export const MobileStatsGrid: React.FC = () => {
       console.warn('MobileStatsGrid: No user found');
       return {
         totalSeries: 0, watchedEpisodes: 0, totalEpisodes: 0, totalMovies: 0,
-        watchedMovies: 0, timeString: '0m', totalHours: 0, avgSeriesRating: '0.0',
-        avgMovieRating: '0.0', topGenre: 'Keine', topProvider: 'Keine',
+        watchedMovies: 0, timeString: '0Min', totalHours: 0, seriesTimeString: '0Min', movieTimeString: '0Min',
+        avgSeriesRating: '0.0', avgMovieRating: '0.0', topGenre: 'Keine', topProvider: 'Keine',
         lastWeekWatched: 0, completedSeries: 0
       };
     }
@@ -175,7 +174,8 @@ export const MobileStatsGrid: React.FC = () => {
     }).length;
 
     // Time stats - only count actually watched content
-    let totalMinutesWatched = 0;
+    let seriesMinutesWatched = 0;
+    let moviesMinutesWatched = 0;
     
     // Series watch time
     seriesList.forEach(series => {
@@ -189,7 +189,7 @@ export const MobileStatsGrid: React.FC = () => {
             if (airDate <= today) {
               // Count rewatches for time calculation
               const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-              totalMinutesWatched += runtime * count;
+              seriesMinutesWatched += runtime * count;
             }
           }
         });
@@ -202,10 +202,12 @@ export const MobileStatsGrid: React.FC = () => {
         const rating = parseFloat(calculateOverallRating(movie));
         const isWatched = !isNaN(rating) && rating > 0;
         if (isWatched) {
-          totalMinutesWatched += (movie.runtime || 120);
+          moviesMinutesWatched += (movie.runtime || 120);
         }
       }
     });
+    
+    const totalMinutesWatched = seriesMinutesWatched + moviesMinutesWatched;
 
     // Calculate years, months, days, hours like desktop
     const years = Math.floor(totalMinutesWatched / (365 * 24 * 60));
@@ -223,6 +225,28 @@ export const MobileStatsGrid: React.FC = () => {
     if (hours > 0) timeString += `${hours}S `;
     if (minutes > 0) timeString += `${Math.floor(minutes)}Min`;
     if (!timeString) timeString = '0Min';
+    
+    // Format series and movie times separately
+    const formatMinutesToString = (totalMinutes: number) => {
+      const y = Math.floor(totalMinutes / (365 * 24 * 60));
+      const remainingAfterY = totalMinutes % (365 * 24 * 60);
+      const m = Math.floor(remainingAfterY / (30 * 24 * 60));
+      const remainingAfterM = remainingAfterY % (30 * 24 * 60);
+      const d = Math.floor(remainingAfterM / 1440);
+      const h = Math.floor((remainingAfterM % 1440) / 60);
+      const min = Math.floor(remainingAfterM % 60);
+      
+      let str = '';
+      if (y > 0) str += `${y}J `;
+      if (m > 0) str += `${m}M `;
+      if (d > 0) str += `${d}T `;
+      if (h > 0) str += `${h}S `;
+      if (min > 0) str += `${min}Min`;
+      return str.trim() || '0Min';
+    };
+    
+    const seriesTimeString = formatMinutesToString(seriesMinutesWatched);
+    const movieTimeString = formatMinutesToString(moviesMinutesWatched);
 
     // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
     const seriesWithRating = seriesList.filter((s: any) => {
@@ -333,6 +357,8 @@ export const MobileStatsGrid: React.FC = () => {
       watchedMovies,
       timeString,
       totalHours: Math.round(totalMinutesWatched / 60),
+      seriesTimeString,
+      movieTimeString,
       avgSeriesRating: avgSeriesRating > 0 ? avgSeriesRating.toFixed(1) : '0.0',
       avgMovieRating: avgMovieRating > 0 ? avgMovieRating.toFixed(1) : '0.0',
       topGenre,
@@ -365,22 +391,21 @@ export const MobileStatsGrid: React.FC = () => {
   }, [seriesList, movieList, user]);
 
   return (
-    <Box sx={{ mb: 3 }}>
-      {/* Header */}
+    <Box>
+      {/* Header with expand button */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 2,
+          mb: 1.5,
         }}
       >
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 700,
+        <Typography 
+          sx={{ 
+            fontSize: '0.9rem',
             color: colors.text.secondary,
-            fontSize: '1.1rem',
+            fontWeight: 600,
           }}
         >
           Deine Statistiken
@@ -388,22 +413,81 @@ export const MobileStatsGrid: React.FC = () => {
         
         <IconButton
           onClick={() => setExpanded(!expanded)}
+          size="small"
           sx={{
             color: colors.text.muted,
-            p: 0.5,
+            padding: '4px',
           }}
         >
-          {expanded ? <ExpandLess /> : <ExpandMore />}
+          {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
         </IconButton>
       </Box>
 
-      {/* Primary Stats Grid (Always visible) */}
+      {/* Progress Bar - Full Width */}
+      <Paper
+        sx={{
+          p: 2,
+          background: colors.background.card,
+          border: `1px solid ${colors.border.subtle}`,
+          borderRadius: 2,
+          mb: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: 1.5,
+              background: `${colors.primary}20`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: colors.primary,
+            }}
+          >
+            <Schedule sx={{ fontSize: 20 }} />
+          </Box>
+          <Typography sx={{ fontSize: '0.7rem', textTransform: 'uppercase', color: colors.text.muted }}>
+            Dein Episoden-Fortschritt
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <Typography sx={{ fontSize: '1.2rem', fontWeight: 700 }}>
+            {stats.watchedEpisodes.toLocaleString('de-DE')}
+          </Typography>
+          <Typography sx={{ fontSize: '1.2rem', fontWeight: 700, color: colors.text.muted }}>
+            {stats.totalEpisodes.toLocaleString('de-DE')}
+          </Typography>
+        </Box>
+        
+        <Box sx={{ position: 'relative', height: 8, background: colors.border.subtle, borderRadius: 1, overflow: 'hidden' }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              height: '100%',
+              width: `${stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0}%`,
+              background: `linear-gradient(90deg, ${colors.primary}, ${colors.status.success})`,
+              transition: 'width 0.3s ease',
+            }}
+          />
+        </Box>
+        
+        <Typography sx={{ fontSize: '0.65rem', color: colors.text.muted, mt: 1 }}>
+          {stats.totalEpisodes > 0 ? `${Math.round((stats.watchedEpisodes / stats.totalEpisodes) * 100)}% geschafft • Noch ${(stats.totalEpisodes - stats.watchedEpisodes).toLocaleString('de-DE')} Episoden vor dir` : 'Keine Episoden'}
+        </Typography>
+      </Paper>
+
+      {/* Primary 2 Stats (Always visible) */}
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
           gap: 1.5,
-          mb: expanded ? 2 : 0,
+          mb: expanded ? 1.5 : 0,
         }}
       >
         <StatCard
@@ -411,35 +495,19 @@ export const MobileStatsGrid: React.FC = () => {
           label="Serien"
           value={stats.totalSeries}
           color={colors.primary}
-          subValue={`${stats.completedSeries} abgeschlossen`}
+          subValue={stats.completedSeries > 0 ? `${stats.completedSeries} von ${stats.totalSeries} komplett` : 'In deiner Sammlung'}
         />
         
         <StatCard
           icon={<Movie sx={{ fontSize: 20 }} />}
-          label="Filme"
-          value={stats.watchedMovies}
+          label="Filme"  
+          value={stats.totalMovies}
           color={colors.text.accent}
-          subValue={`von ${stats.totalMovies}`}
-        />
-        
-        <StatCard
-          icon={<PlayCircle sx={{ fontSize: 20 }} />}
-          label="Episoden"
-          value={stats.watchedEpisodes}
-          color={colors.status.success}
-          subValue={`von ${stats.totalEpisodes}`}
-        />
-        
-        <StatCard
-          icon={<Timer sx={{ fontSize: 20 }} />}
-          label="Watchzeit"
-          value={stats.timeString}
-          color={colors.status.warning}
-          subValue={`${stats.totalHours} Stunden`}
+          subValue={`${stats.watchedMovies} von ${stats.totalMovies} geschaut`}
         />
       </Box>
 
-      {/* Extended Stats (Collapsible) */}
+      {/* Extended Stats (Collapsible) - Better organized */}
       <Collapse in={expanded}>
         <Box
           sx={{
@@ -448,50 +516,64 @@ export const MobileStatsGrid: React.FC = () => {
             gap: 1.5,
           }}
         >
+          {/* Watchzeit Details */}
+          <StatCard
+            icon={<Timer sx={{ fontSize: 20 }} />}
+            label="Gesamte Watchzeit"
+            value={stats.timeString}
+            color={colors.status.warning}
+          />
+          
+          <StatCard
+            icon={<TrendingUp sx={{ fontSize: 20 }} />}
+            label="Diese Woche"
+            value={`${stats.lastWeekWatched} Episoden`}
+            color={colors.status.success}
+            subValue="neu geschaut"
+          />
+          
+          <StatCard
+            icon={<Tv sx={{ fontSize: 20 }} />}
+            label="Zeit mit Serien"
+            value={stats.seriesTimeString}
+            color={colors.primary}
+          />
+          
+          <StatCard
+            icon={<Movie sx={{ fontSize: 20 }} />}
+            label="Zeit mit Filmen"
+            value={stats.movieTimeString}
+            color={colors.text.accent}
+          />
+          
+          {/* Bewertungen */}
           <StatCard
             icon={<Star sx={{ fontSize: 20 }} />}
-            label="Ø Serien"
-            value={stats.avgSeriesRating}
+            label="Ø Serien-Bewertung"
+            value={`⭐ ${stats.avgSeriesRating}`}
             color={colors.status.warning}
-            subValue="Bewertung"
           />
           
           <StatCard
             icon={<Star sx={{ fontSize: 20 }} />}
-            label="Ø Filme"
-            value={stats.avgMovieRating}
+            label="Ø Film-Bewertung"
+            value={`⭐ ${stats.avgMovieRating}`}
             color={colors.status.warning}
-            subValue="Bewertung"
           />
           
+          {/* Präferenzen */}
           <StatCard
             icon={<Category sx={{ fontSize: 20 }} />}
-            label="Top Genre"
+            label="Lieblingsgenre"
             value={stats.topGenre}
             color={colors.primary}
           />
           
           <StatCard
             icon={<Stream sx={{ fontSize: 20 }} />}
-            label="Top Provider"
+            label="Hauptprovider"
             value={stats.topProvider}
             color={colors.text.accent}
-          />
-          
-          <StatCard
-            icon={<TrendingUp sx={{ fontSize: 20 }} />}
-            label="Diese Woche"
-            value={stats.lastWeekWatched}
-            color={colors.status.success}
-            subValue="Episoden"
-          />
-          
-          <StatCard
-            icon={<Schedule sx={{ fontSize: 20 }} />}
-            label="Fortschritt"
-            value={stats.totalEpisodes > 0 ? `${Math.round((stats.watchedEpisodes / stats.totalEpisodes) * 100)}%` : '0%'}
-            color={colors.primary}
-            subValue="Gesamt"
           />
         </Box>
       </Collapse>
