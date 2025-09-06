@@ -47,14 +47,6 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/today-episodes'
-            element={
-              <MobileLayout>
-                <MobileNewEpisodesPage />
-              </MobileLayout>
-            }
-          />
-          <Route
             path='/ratings'
             element={
               <MobileLayout>
@@ -77,6 +69,14 @@ export const MobileApp: React.FC = () => {
             element={
               <MobileLayout>
                 <MobileNewEpisodesPage />
+              </MobileLayout>
+            }
+          />
+          <Route
+            path='/all-episodes'
+            element={
+              <MobileLayout>
+                <MobileNewEpisodesPage showAllSeries />
               </MobileLayout>
             }
           />

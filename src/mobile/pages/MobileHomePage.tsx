@@ -20,10 +20,11 @@ import { Badge, Chip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useContinueWatching } from '../../hooks/useContinueWatching';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
@@ -113,6 +114,45 @@ export const MobileHomePage: React.FC = () => {
   const { trending } = useTMDBTrending(); // Use actual TMDB trending data
   const topRated = useTopRated();
   const recommendations: any[] = []; // TODO: Create separate hook if needed
+
+  // Get the total count of series with unwatched episodes in watchlist
+  const { seriesList } = useSeriesList();
+  const totalSeriesWithUnwatched = useMemo(() => {
+    const today = new Date();
+    let count = 0;
+
+    for (const series of seriesList) {
+      if (!series.watchlist) continue;
+      if (!series.seasons) continue;
+
+      const seasonsArray = Array.isArray(series.seasons)
+        ? series.seasons
+        : Object.values(series.seasons);
+
+      let hasUnwatchedEpisode = false;
+      for (const season of seasonsArray as any[]) {
+        if (!season?.episodes) continue;
+        const episodesArray = Array.isArray(season.episodes)
+          ? season.episodes
+          : Object.values(season.episodes);
+
+        for (const episode of episodesArray as any[]) {
+          if (!episode?.watched && episode?.air_date) {
+            const airDate = new Date(episode.air_date);
+            if (airDate <= today) {
+              hasUnwatchedEpisode = true;
+              break;
+            }
+          }
+        }
+        if (hasUnwatchedEpisode) break;
+      }
+
+      if (hasUnwatchedEpisode) count++;
+    }
+
+    return count;
+  }, [seriesList]);
 
   // Handle continue watching episode complete
   const handleContinueEpisodeComplete = async (
@@ -243,8 +283,7 @@ export const MobileHomePage: React.FC = () => {
       {/* Premium Header */}
       <header
         style={{
-          background:
-            'linear-gradient(180deg, rgba(102, 126, 234, 0.1) 0%, rgba(0, 0, 0, 0) 100%)',
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
           padding: '20px',
           paddingTop: 'calc(30px + env(safe-area-inset-top))',
         }}
@@ -262,7 +301,7 @@ export const MobileHomePage: React.FC = () => {
                 fontSize: '28px',
                 fontWeight: 800,
                 margin: '0 0 4px 0',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -271,7 +310,7 @@ export const MobileHomePage: React.FC = () => {
             </h1>
             <p
               style={{
-                color: 'rgba(255, 255, 255, 0.6)',
+                color: currentTheme.text.secondary,
                 fontSize: '14px',
                 margin: 0,
               }}
@@ -293,9 +332,9 @@ export const MobileHomePage: React.FC = () => {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: 'white',
+                  background: `${currentTheme.primary}1A`,
+                  border: `1px solid ${currentTheme.primary}33`,
+                  color: currentTheme.text.primary,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -314,7 +353,7 @@ export const MobileHomePage: React.FC = () => {
                 height: '40px',
                 borderRadius: '50%',
                 background: `url(${user?.photoURL}) center/cover`,
-                border: '2px solid var(--color-primary, #667eea)',
+                border: `2px solid ${currentTheme.primary}`,
                 cursor: 'pointer',
               }}
             />
@@ -328,8 +367,8 @@ export const MobileHomePage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/search')}
           style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: `${currentTheme.background.surface}`,
+            border: `1px solid ${currentTheme.border.default}`,
             borderRadius: '16px',
             padding: '14px 16px',
             display: 'flex',
@@ -361,9 +400,9 @@ export const MobileHomePage: React.FC = () => {
           label={`${stats.watchedEpisodes} Episoden`}
           onClick={() => navigate('/stats')}
           style={{
-            background: 'rgba(0, 212, 170, 0.1)',
-            border: '1px solid rgba(0, 212, 170, 0.3)',
-            color: '#00d4aa',
+            background: `${currentTheme.status.success}1A`,
+            border: `1px solid ${currentTheme.status.success}4D`,
+            color: currentTheme.status.success,
           }}
         />
         <Chip
@@ -371,9 +410,9 @@ export const MobileHomePage: React.FC = () => {
           label={`${stats.totalMovies} Filme`}
           onClick={() => navigate('/ratings?tab=movies')}
           style={{
-            background: 'rgba(255, 107, 107, 0.1)',
-            border: '1px solid rgba(255, 107, 107, 0.3)',
-            color: '#ff6b6b',
+            background: `${currentTheme.status.error}1A`,
+            border: `1px solid ${currentTheme.status.error}4D`,
+            color: currentTheme.status.error,
           }}
         />
         <Chip
@@ -381,20 +420,20 @@ export const MobileHomePage: React.FC = () => {
           label={`${stats.progress}% Fortschritt`}
           onClick={() => navigate('/stats')}
           style={{
-            background: 'rgba(102, 126, 234, 0.1)',
-            border: '1px solid rgba(102, 126, 234, 0.3)',
-            color: '#667eea',
+            background: `${currentTheme.primary}1A`,
+            border: `1px solid ${currentTheme.primary}4D`,
+            color: currentTheme.primary,
           }}
         />
         {stats.todayEpisodes > 0 && (
           <Chip
             icon={<NewReleases />}
             label={`${stats.todayEpisodes} Heute`}
-            onClick={() => navigate('/today-episodes')}
+            onClick={() => navigate('/new-episodes')}
             style={{
-              background: 'rgba(255, 215, 0, 0.1)',
-              border: '1px solid rgba(255, 215, 0, 0.3)',
-              color: '#ffd700',
+              background: `${currentTheme.status.warning}1A`,
+              border: `1px solid ${currentTheme.status.warning}4D`,
+              color: currentTheme.status.warning,
             }}
           />
         )}
@@ -431,7 +470,7 @@ export const MobileHomePage: React.FC = () => {
               right: '-20px',
               width: '80px',
               height: '80px',
-              background: 'rgba(0, 212, 170, 0.2)',
+              background: `${currentTheme.status.success}33`,
               borderRadius: '50%',
               filter: 'blur(30px)',
             }}
@@ -452,11 +491,11 @@ export const MobileHomePage: React.FC = () => {
           <p
             style={{
               fontSize: '13px',
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: currentTheme.text.secondary,
               margin: 0,
             }}
           >
-            {continueWatching.length} Serien bereit
+            {totalSeriesWithUnwatched} Serien bereit
           </p>
         </motion.div>
 
@@ -464,9 +503,8 @@ export const MobileHomePage: React.FC = () => {
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/discover')}
           style={{
-            background:
-              'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)',
-            border: '1px solid rgba(102, 126, 234, 0.3)',
+            background: `linear-gradient(135deg, ${currentTheme.primary}33 0%, ${currentTheme.accent}33 100%)`,
+            border: `1px solid ${currentTheme.primary}4D`,
             borderRadius: '20px',
             padding: '20px',
             cursor: 'pointer',
@@ -481,7 +519,7 @@ export const MobileHomePage: React.FC = () => {
               right: '-20px',
               width: '80px',
               height: '80px',
-              background: 'rgba(102, 126, 234, 0.2)',
+              background: `${currentTheme.primary}33`,
               borderRadius: '50%',
               filter: 'blur(30px)',
             }}
@@ -502,7 +540,7 @@ export const MobileHomePage: React.FC = () => {
           <p
             style={{
               fontSize: '13px',
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: currentTheme.text.secondary,
               margin: 0,
             }}
           >
@@ -526,25 +564,25 @@ export const MobileHomePage: React.FC = () => {
             icon: <Star />,
             label: 'Ratings',
             path: '/ratings',
-            color: '#ffd700',
+            color: currentTheme.status.warning,
           },
           {
             icon: <CalendarToday />,
             label: 'Kalender',
-            path: '/today-episodes',
-            color: '#4cd137',
+            path: '/all-episodes',
+            color: currentTheme.status.success,
           },
           {
             icon: <EmojiEvents />,
             label: 'Badges',
             path: '/badges',
-            color: '#ff6b6b',
+            color: currentTheme.status.error,
           },
           {
             icon: <Group />,
             label: 'Freunde',
             path: '/activity',
-            color: '#00b4d8',
+            color: currentTheme.status.info.main,
           },
         ].map((action, index) => (
           <motion.button
@@ -569,7 +607,7 @@ export const MobileHomePage: React.FC = () => {
               style={{
                 fontSize: '14px',
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.8)',
+                color: currentTheme.text.primary,
               }}
             >
               {action.label}
@@ -610,7 +648,7 @@ export const MobileHomePage: React.FC = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.secondary,
                 fontSize: '14px',
                 cursor: 'pointer',
               }}
@@ -812,18 +850,22 @@ export const MobileHomePage: React.FC = () => {
                           <div
                             style={{
                               marginTop: '4px',
-                              height: '2px',
-                              background: 'rgba(0, 0, 0, 0.3)',
-                              borderRadius: '2px',
+                              height: '3px',
+                              background: currentTheme.border.default,
+                              borderRadius: '1.5px',
                               overflow: 'hidden',
+                              position: 'relative',
                             }}
                           >
                             <div
                               style={{
+                                position: 'absolute',
+                                left: 0,
+                                top: 0,
                                 height: '100%',
                                 width: `${item.progress}%`,
-                                background:
-                                  'linear-gradient(90deg, #00d4aa, #00b4d8)',
+                                background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.status.success})`,
+                                transition: 'width 0.3s ease',
                               }}
                             />
                           </div>
@@ -895,7 +937,7 @@ export const MobileHomePage: React.FC = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.secondary,
                 fontSize: '14px',
                 cursor: 'pointer',
               }}
@@ -1313,7 +1355,7 @@ export const MobileHomePage: React.FC = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.secondary,
                 fontSize: '14px',
                 cursor: 'pointer',
               }}

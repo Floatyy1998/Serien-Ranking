@@ -217,8 +217,8 @@ export const MobileMovieDetailPage: React.FC = () => {
 
       await movieRef.remove();
 
-      // Navigate back after successful deletion
-      navigate(-1);
+      // Navigate back to home after successful deletion
+      navigate('/');
     } catch (error) {
       console.error('Error deleting movie:', error);
     } finally {
@@ -345,9 +345,7 @@ export const MobileMovieDetailPage: React.FC = () => {
         >
           <MobileBackButton 
             style={{
-              background: `${currentTheme.background.default}80`,
               backdropFilter: 'blur(10px)',
-              border: 'none',
             }}
           />
 

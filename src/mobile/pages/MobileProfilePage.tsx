@@ -12,6 +12,7 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { useTheme } from '../../contexts/ThemeContext';
+import { calculateOverallRating } from '../../lib/rating/rating';
 
 export const MobileProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,19 +41,29 @@ export const MobileProfilePage: React.FC = () => {
   const stats = useMemo(() => {
     const totalSeries = seriesList.length;
     const totalMovies = movieList.length;
+    const today = new Date();
     
     let watchedEpisodes = 0;
-    let totalHours = 0;
+    let totalMinutesWatched = 0;
     
+    // Series watch time - same calculation as MobileStatsGrid
     seriesList.forEach(series => {
+      if (!series || !series.nmr) return;
+      const runtime = series.episodeRuntime || 45;
+      
       if (series.seasons) {
         series.seasons.forEach(season => {
           if (season.episodes) {
             season.episodes.forEach(episode => {
-              if (episode.watched) {
-                const watchCount = episode.watchCount || 1;
-                watchedEpisodes += watchCount;
-                totalHours += (series.episodeRuntime || 45) * watchCount;
+              if (episode.air_date && episode.watched === true) {
+                const airDate = new Date(episode.air_date);
+                if (airDate <= today) {
+                  // For episode count: count once
+                  watchedEpisodes++;
+                  // For time: count rewatches
+                  const watchCount = episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
+                  totalMinutesWatched += runtime * watchCount;
+                }
               }
             });
           }
@@ -60,17 +71,39 @@ export const MobileProfilePage: React.FC = () => {
       }
     });
     
-    movieList.forEach(movie => {
-      if (movie.watched) {
-        totalHours += movie.runtime || 120;
+    // Movie watch time - use rating > 0 to determine if watched (same as MobileStatsGrid)
+    movieList.forEach((movie: any) => {
+      if (movie && movie.nmr) {
+        const rating = parseFloat(calculateOverallRating(movie));
+        const isWatched = !isNaN(rating) && rating > 0;
+        if (isWatched) {
+          totalMinutesWatched += (movie.runtime || 120);
+        }
       }
     });
+    
+    // Calculate time display string like MobileStatsGrid
+    const years = Math.floor(totalMinutesWatched / (365 * 24 * 60));
+    const remainingAfterYears = totalMinutesWatched % (365 * 24 * 60);
+    const months = Math.floor(remainingAfterYears / (30 * 24 * 60));
+    const remainingAfterMonths = remainingAfterYears % (30 * 24 * 60);
+    const days = Math.floor(remainingAfterMonths / 1440);
+    const hours = Math.floor((remainingAfterMonths % 1440) / 60);
+    const minutes = remainingAfterMonths % 60;
+
+    let timeString = '';
+    if (years > 0) timeString += `${years}J `;
+    if (months > 0) timeString += `${months}M `;
+    if (days > 0) timeString += `${days}T `;
+    if (hours > 0) timeString += `${hours}h `;
+    if (minutes > 0) timeString += `${Math.floor(minutes)}m`;
+    if (!timeString) timeString = '0m';
     
     return {
       totalSeries,
       totalMovies,
       watchedEpisodes,
-      totalHours: Math.round(totalHours / 60)
+      timeString: timeString.trim()
     };
   }, [seriesList, movieList]);
   
@@ -180,8 +213,9 @@ export const MobileProfilePage: React.FC = () => {
           textAlign: 'center'
         }}>
           <TrendingUp style={{ fontSize: '24px', color: currentTheme.status.warning, marginBottom: '8px' }} />
-          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.totalHours}h</div>
-          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Watchzeit</div>
+          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.timeString}</div>
+          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Gesamt-Watchzeit</div>
+          <div style={{ fontSize: '10px', color: currentTheme.text.muted, opacity: 0.7 }}>Serien + Filme</div>
         </div>
       </div>
       
