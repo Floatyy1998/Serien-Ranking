@@ -39,7 +39,6 @@ export function criticalCSSPlugin(): Plugin {
             z-index: 100;
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px 16px;
           }
           
@@ -96,17 +95,17 @@ export function criticalCSSPlugin(): Plugin {
           }
         </style>
       `;
-      
+
       // No splash screen HTML - we use our custom splash screen instead
-      
+
       // Inject critical CSS in head
       html = html.replace('</head>', `${criticalCSS}</head>`);
-      
+
       // Remove incorrect resource hints - they will be handled by Vite
       const resourceHints = ``;
-      
+
       html = html.replace('</head>', `${resourceHints}</head>`);
-      
+
       return html;
     },
   };

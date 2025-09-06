@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MobileBackButton } from '../components/MobileBackButton';
 import {
-  ArrowBack,
   Star,
   Delete,
   Save,
@@ -69,13 +69,12 @@ export const MobileRatingPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const {} = useTheme();
+  const { currentTheme } = useTheme();
   
   const [activeTab, setActiveTab] = useState<'overall' | 'genre'>('overall');
   const [overallRating, setOverallRating] = useState(0);
   const [genreRatings, setGenreRatings] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [touchStart, setTouchStart] = useState(0);
   
   // Get item based on type  
   const item = type === 'series' 
@@ -131,30 +130,12 @@ export const MobileRatingPage: React.FC = () => {
       const ratedGenres = Object.values(genreRatings).filter(rating => rating > 0);
       if (ratedGenres.length > 0) {
         const avg = ratedGenres.reduce((a, b) => a + b, 0) / ratedGenres.length;
-        setOverallRating(Math.round(avg * 10) / 10);
+        setOverallRating(Math.round(avg * 100) / 100); // Keep 2 decimal places
       } else {
         setOverallRating(0);
       }
     }
   }, [genreRatings, activeTab]);
-
-  // Handle swipe between tabs
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-
-    if (Math.abs(diff) > 50) {
-      if (diff > 0 && activeTab === 'overall') {
-        setActiveTab('genre');
-      } else if (diff < 0 && activeTab === 'genre') {
-        setActiveTab('overall');
-      }
-    }
-  };
 
   const handleRatingChange = (value: number) => {
     setOverallRating(value);
@@ -166,9 +147,7 @@ export const MobileRatingPage: React.FC = () => {
 
   const handleGenreRatingChange = (genre: string, value: number) => {
     setGenreRatings(prev => ({ ...prev, [genre]: value }));
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    // Removed vibration to prevent any potential issues
   };
 
   const handleSave = async () => {
@@ -221,7 +200,7 @@ export const MobileRatingPage: React.FC = () => {
         }
       }
       
-      navigate(-1);
+      navigate('/');
     } catch (error) {
       console.error('Error saving rating:', error);
     } finally {
@@ -243,7 +222,7 @@ export const MobileRatingPage: React.FC = () => {
       
       await ratingRef.remove();
       
-      navigate(-1);
+      navigate('/');
     } catch (error) {
       console.error('Error deleting rating:', error);
     } finally {
@@ -254,10 +233,10 @@ export const MobileRatingPage: React.FC = () => {
   if (!item) {
     return (
       <div className="mobile-rating-page">
-        <div className="rating-header">
-          <button onClick={() => navigate(-1)} className="back-button">
-            <ArrowBack />
-          </button>
+        <div className="rating-header" style={{
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
+        }}>
+          <MobileBackButton />
           <h1>Nicht gefunden</h1>
         </div>
       </div>
@@ -267,10 +246,10 @@ export const MobileRatingPage: React.FC = () => {
   return (
     <div className="mobile-rating-page">
       {/* Native Header */}
-      <div className="rating-header">
-        <button onClick={() => navigate(-1)} className="back-button">
-          <ArrowBack />
-        </button>
+      <div className="rating-header" style={{
+        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
+      }}>
+        <MobileBackButton />
         <div className="header-content">
           <div className="title-row">
             {type === 'series' ? <Tv /> : <Movie />}
@@ -289,7 +268,7 @@ export const MobileRatingPage: React.FC = () => {
           key={overallRating}
         >
           <Star className="star-icon" />
-          <span className="rating-value">{overallRating.toFixed(1)}</span>
+          <span className="rating-value">{overallRating.toFixed(2)}</span>
           <span className="rating-max">/10</span>
         </motion.div>
       </div>
@@ -315,8 +294,6 @@ export const MobileRatingPage: React.FC = () => {
       {/* Rating Content */}
       <div 
         className="rating-content"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
       >
         <AnimatePresence mode="wait">
           {activeTab === 'overall' ? (
@@ -337,8 +314,12 @@ export const MobileRatingPage: React.FC = () => {
                     onClick={() => handleRatingChange(emoji.value)}
                     whileTap={{ scale: 0.9 }}
                     style={{
-                      borderColor: Math.round(overallRating) === emoji.value ? emoji.color : 'transparent',
-                      background: Math.round(overallRating) === emoji.value ? `${emoji.color}20` : 'transparent',
+                      border: Math.round(overallRating) === emoji.value 
+                        ? `2px solid ${emoji.color}` 
+                        : '2px solid rgba(255, 255, 255, 0.1)',
+                      background: Math.round(overallRating) === emoji.value 
+                        ? `${emoji.color}20` 
+                        : currentTheme.background.surface,
                     }}
                   >
                     <div style={{ color: emoji.color }}>
@@ -355,10 +336,13 @@ export const MobileRatingPage: React.FC = () => {
                   type="range"
                   min="0"
                   max="10"
-                  step="0.1"
+                  step="0.01"
                   value={overallRating}
                   onChange={(e) => handleRatingChange(parseFloat(e.target.value))}
-                  className="slider"
+                  className="genre-slider"
+                  style={{
+                    background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, rgba(255, 255, 255, 0.1) ${overallRating * 10}%, rgba(255, 255, 255, 0.1) 100%)`
+                  }}
                 />
                 <div className="slider-labels">
                   <span>0</span>
@@ -371,7 +355,7 @@ export const MobileRatingPage: React.FC = () => {
               <div className="quick-ratings">
                 <h3>Schnellbewertung</h3>
                 <div className="quick-buttons">
-                  {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(value => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => (
                     <motion.button
                       key={value}
                       className={`quick-button ${Math.round(overallRating) === value ? 'active' : ''}`}
@@ -412,7 +396,7 @@ export const MobileRatingPage: React.FC = () => {
                       className="genre-value"
                       style={{ color: genreColors[genre] || '#667eea' }}
                     >
-                      {(genreRatings[genre] || 0).toFixed(1)}
+                      {(genreRatings[genre] || 0).toFixed(2)}
                     </span>
                   </div>
                   
@@ -420,7 +404,7 @@ export const MobileRatingPage: React.FC = () => {
                     type="range"
                     min="0"
                     max="10"
-                    step="0.1"
+                    step="0.01"
                     value={genreRatings[genre] || 0}
                     onChange={(e) => handleGenreRatingChange(genre, parseFloat(e.target.value))}
                     className="genre-slider"
@@ -435,7 +419,7 @@ export const MobileRatingPage: React.FC = () => {
                 <span>Durchschnitt (nur bewertete Genres)</span>
                 <div className="average-value">
                   <Star />
-                  <span>{overallRating.toFixed(1)}</span>
+                  <span>{overallRating.toFixed(2)}</span>
                 </div>
               </div>
             </motion.div>

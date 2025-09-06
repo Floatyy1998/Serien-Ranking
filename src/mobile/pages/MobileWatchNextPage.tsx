@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { 
-  PlayCircle, ArrowBack,
+  PlayCircle,
   CheckBoxOutlineBlank, FilterList, Repeat,
   ArrowUpward, ArrowDownward, DragHandle,
   Check
@@ -10,6 +10,7 @@ import {
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
+import { MobileBackButton } from '../components/MobileBackButton';
 import { Series } from '../../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -457,25 +458,7 @@ export const MobileWatchNextPage: React.FC = () => {
         background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-          <button 
-            onClick={() => navigate(-1)} 
-            style={{ 
-              background: currentTheme.border.default, 
-              border: 'none', 
-              color: currentTheme.text.primary, 
-              fontSize: '20px',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px'
-            }}
-          >
-            <ArrowBack />
-          </button>
+          <MobileBackButton />
           
           <div style={{ flex: 1 }}>
             <h1 style={{ 
