@@ -307,7 +307,7 @@ export const MobileDiscoverPage: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/')}
               style={{
                 background: 'none',
                 border: 'none',
