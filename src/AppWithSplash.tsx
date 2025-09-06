@@ -90,7 +90,16 @@ export const AppWithSplash: React.FC = () => {
     };
   }, [allSystemsReady]);
 
-  // Zeige SplashScreen bis WIRKLICH ALLES fertig ist
+  // Check if we're on auth pages - if so, skip splash screen
+  const currentPath = window.location.pathname;
+  const isAuthPage = currentPath === '/login' || currentPath === '/register' || currentPath === '/start';
+
+  // Skip splash screen for auth pages
+  if (isAuthPage) {
+    return <App />;
+  }
+
+  // Zeige SplashScreen nur für die Hauptapp (nicht für Auth-Seiten)
   if (showSplash) {
     return (
       <>

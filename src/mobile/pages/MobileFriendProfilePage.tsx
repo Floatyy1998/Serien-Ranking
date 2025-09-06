@@ -469,7 +469,7 @@ export const MobileFriendProfilePage: React.FC = () => {
       </div>
       
       {/* Items Grid */}
-      <div style={{ padding: '0 20px' }}>
+      <div style={{ padding: window.innerWidth >= 768 ? '0 40px' : '0 20px' }}>
         {currentItems.length === 0 ? (
           <div style={{
             textAlign: 'center',
@@ -483,8 +483,10 @@ export const MobileFriendProfilePage: React.FC = () => {
         ) : (
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
-            gap: '16px' 
+            gridTemplateColumns: window.innerWidth >= 1200 ? 'repeat(6, 1fr)' :
+                               window.innerWidth >= 768 ? 'repeat(4, 1fr)' :
+                               'repeat(auto-fill, minmax(120px, 1fr))', 
+            gap: window.innerWidth >= 768 ? '20px' : '16px' 
           }}>
             {currentItems.map((item) => {
               const rating = parseFloat(calculateFriendRating(item));

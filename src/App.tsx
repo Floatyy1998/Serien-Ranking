@@ -1,8 +1,9 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import React, {
   createContext,
+  lazy,
+  Suspense,
   useContext,
   useEffect,
   useState,
@@ -15,29 +16,59 @@ import {
   Routes,
 } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
-import { BackgroundMedia } from './components/ui/BackgroundMedia';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
-import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
 import { UpdateNotification } from './components/ui/UpdateNotification';
 // Badge Migration Tools für Development
 import { MovieListProvider } from './contexts/MovieListProvider';
-import { NotificationProvider } from './contexts/NotificationProvider';
 import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
+import { NotificationProvider } from './contexts/NotificationProvider';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
-import { FriendsPage } from './pages/FriendsPage';
-import MainPage from './pages/MainPage';
-import { PublicListPage } from './pages/PublicListPage';
-import StartPage from './pages/StartPage'; // Startseite für nicht angemeldete User
-import { UserProfilePage } from './pages/UserProfilePage';
+import './mobile/styles/performance.css';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { updateTheme } from './theme';
 
-import LoginPage from './features/auth/LoginPage';
-import RegisterPage from './features/auth/RegisterPage';
-import DuckFacts from './features/DuckFacts';
+// Lazy load mobile app for all platforms
+const MobileApp = lazy(() =>
+  import('./mobile/MobileApp').then((m) => ({ default: m.MobileApp }))
+);
+const StartPage = lazy(() =>
+  import('./pages/MobileStartPage').then((m) => ({
+    default: m.MobileStartPage,
+  }))
+);
+const LoginPage = lazy(() =>
+  import('./features/auth/MobileLoginPage').then((m) => ({
+    default: m.MobileLoginPage,
+  }))
+);
+const RegisterPage = lazy(() =>
+  import('./features/auth/MobileRegisterPage').then((m) => ({
+    default: m.MobileRegisterPage,
+  }))
+);
+const PublicProfilePage = lazy(() =>
+  import('./mobile/pages/MobilePublicProfilePage').then((m) => ({
+    default: m.MobilePublicProfilePage,
+  }))
+);
+
+// Loading component
+const PageLoader = () => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      background: 'var(--theme-background, #000)',
+    }}
+  >
+    <div style={{ color: 'var(--theme-primary, #fff)' }}>Loading...</div>
+  </div>
+);
 export const AuthContext = createContext<{
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
@@ -181,7 +212,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // WICHTIG: Cloud-Theme temporär im localStorage speichern,
                     // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
                     // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
-                    localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
+                    localStorage.setItem(
+                      'customTheme',
+                      JSON.stringify(cloudTheme)
+                    );
                     // console.log('Cloud-Theme temporär im localStorage gespeichert für BackgroundMedia');
 
                     window.dispatchEvent(new CustomEvent('themeChanged'));
@@ -355,24 +389,7 @@ const loadSavedTheme = async (userId?: string) => {
     );
     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
-    // Hintergrundbild nur auf Desktop setzen
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    
-    if (theme.backgroundImage && !theme.backgroundIsVideo && !isMobile) {
-      root.style.setProperty(
-        '--background-image',
-        `url(${theme.backgroundImage})`
-      );
-      root.style.setProperty(
-        '--background-image-opacity',
-        String(theme.backgroundImageOpacity || 0.5)
-      );
-      root.style.setProperty(
-        '--background-image-blur',
-        `${theme.backgroundImageBlur || 0}px`
-      );
-      document.body.classList.add('has-background-image');
-    }
+    // Mobile-first app - no background images needed
 
     // Update theme-color Meta-Tag für PWA Status Bar
     updateThemeColorMeta(theme.backgroundColor || '#000000');
@@ -429,7 +446,6 @@ export function App() {
   return (
     <Router>
       <AuthProvider>
-        <BackgroundMedia />
         <AppContent />
       </AuthProvider>
     </Router>
@@ -463,136 +479,105 @@ function AppContent() {
       <NotificationProvider>
         <GeneralNotificationProvider>
           <SeriesListProvider>
-          <MovieListProvider>
-            <StatsProvider>
-              <BadgeProvider>
-                <Helmet>
-                  <title>
-                    TV-RANK - Entdecke, bewerte und verwalte deine
-                    Lieblingsserien
-                  </title>
-                  <meta
-                    name='description'
-                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-                  />
-                  <meta
-                    name='keywords'
-                    content='Serien, TV, Bewertung, Watchlist, TV-RANK'
-                  />
-                  <meta
-                    property='og:title'
-                    content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
-                  />
-                  <meta
-                    property='og:description'
-                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-                  />
-                  <meta property='og:image' content='/favicon.ico' />
-                  <meta property='og:url' content='https://tv-rank.de' />
-                  <meta name='twitter:card' content='summary_large_image' />
-                </Helmet>
-                <ThemeProvider theme={currentTheme}>
-                  <CssBaseline />
-                  <div className='w-full'>
-                    <UsernameRequiredDialog />
-                    <UpdateNotification />
-                    <main className='w-full'>
-                      <Routes>
-                          <Route 
-                            path='/login' 
-                            element={
-                              <AuthContext.Consumer>
-                                {(auth) => 
-                                  auth?.user ? <Navigate to='/' /> : <LoginPage />
-                                }
-                              </AuthContext.Consumer>
-                            } 
-                          />
-                          <Route 
-                            path='/register' 
-                            element={
-                              <AuthContext.Consumer>
-                                {(auth) => 
-                                  auth?.user ? <Navigate to='/' /> : <RegisterPage />
-                                }
-                              </AuthContext.Consumer>
-                            }
-                          />
-                          <Route
-                            path='/*'
-                            element={
-                              <AuthContext.Consumer>
-                                {(auth) => {
-                                  // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
-                                  if (auth?.user) {
-                                    return (
-                                      <EmailVerificationBanner>
-                                        <MainPage />
-                                      </EmailVerificationBanner>
-                                    );
-                                  } else if (auth?.authStateResolved) {
-                                    // Wenn kein User da ist, zeige StartPage
-                                    return <StartPage />;
-                                  } else {
-                                    // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
-                                    return null;
+            <MovieListProvider>
+              <StatsProvider>
+                <BadgeProvider>
+                  <Helmet>
+                    <title>
+                      TV-RANK - Entdecke, bewerte und verwalte deine
+                      Lieblingsserien
+                    </title>
+                    <meta
+                      name='description'
+                      content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+                    />
+                    <meta
+                      name='keywords'
+                      content='Serien, TV, Bewertung, Watchlist, TV-RANK'
+                    />
+                    <meta
+                      property='og:title'
+                      content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
+                    />
+                    <meta
+                      property='og:description'
+                      content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+                    />
+                    <meta property='og:image' content='/favicon.ico' />
+                    <meta property='og:url' content='https://tv-rank.de' />
+                    <meta name='twitter:card' content='summary_large_image' />
+                  </Helmet>
+                  <ThemeProvider theme={currentTheme}>
+                    <CssBaseline />
+                    <div className='w-full'>
+                      <UpdateNotification />
+                      <main className='w-full'>
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
+                            <Route
+                              path='/login'
+                              element={
+                                <AuthContext.Consumer>
+                                  {(auth) =>
+                                    auth?.user ? (
+                                      <Navigate to='/' />
+                                    ) : (
+                                      <LoginPage />
+                                    )
                                   }
-                                }}
-                              </AuthContext.Consumer>
-                            }
-                          />
-                          <Route
-                            path='/friends'
-                            element={
-                              <AuthContext.Consumer>
-                                {(auth) => {
-                                  if (!auth?.authStateResolved) {
-                                    return null;
+                                </AuthContext.Consumer>
+                              }
+                            />
+                            <Route
+                              path='/register'
+                              element={
+                                <AuthContext.Consumer>
+                                  {(auth) =>
+                                    auth?.user ? (
+                                      <Navigate to='/' />
+                                    ) : (
+                                      <RegisterPage />
+                                    )
                                   }
-                                  return auth?.user ? (
-                                    <EmailVerificationBanner>
-                                      <FriendsPage />
-                                    </EmailVerificationBanner>
-                                  ) : (
-                                    <Navigate to='/login' />
-                                  );
-                                }}
-                              </AuthContext.Consumer>
-                            }
-                          />
-                          <Route
-                            path='/public/:friendId'
-                            element={<PublicListPage />}
-                          />
-                          <Route
-                            path='/profile/:userId'
-                            element={
-                              <AuthContext.Consumer>
-                                {(auth) => {
-                                  // Warte auf Auth-Resolution beim initialen Laden
-                                  if (!auth?.authStateResolved) {
-                                    return null; // Zeige nichts während Auth lädt
-                                  }
-                                  return auth?.user ? (
-                                    <EmailVerificationBanner>
-                                      <UserProfilePage />
-                                    </EmailVerificationBanner>
-                                  ) : (
-                                    <Navigate to='/login' />
-                                  );
-                                }}
-                              </AuthContext.Consumer>
-                            }
-                          />
-                          <Route path='/duckfacts' element={<DuckFacts />} />
-                          <Route path='*' element={<Navigate to='/' />} />
-                        </Routes>
-                    </main>
-                  </div>
-                </ThemeProvider>
-              </BadgeProvider>
-            </StatsProvider>
-          </MovieListProvider>
+                                </AuthContext.Consumer>
+                              }
+                            />
+                            <Route
+                              path='/public/:publicId'
+                              element={<PublicProfilePage />}
+                            />
+                            <Route
+                              path='/*'
+                              element={
+                                <AuthContext.Consumer>
+                                  {(auth) => {
+                                    // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
+                                    if (auth?.user) {
+                                      return (
+                                        <EmailVerificationBanner>
+                                          <MobileApp />
+                                        </EmailVerificationBanner>
+                                      );
+                                    } else if (auth?.authStateResolved) {
+                                      // Wenn kein User da ist, zeige StartPage
+                                      return <StartPage />;
+                                    } else {
+                                      // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
+                                      return null;
+                                    }
+                                  }}
+                                </AuthContext.Consumer>
+                              }
+                            />
+                            <Route path='*' element={<Navigate to='/' />} />
+                          </Routes>
+                        </Suspense>
+                      </main>
+                    </div>
+                  </ThemeProvider>
+                </BadgeProvider>
+              </StatsProvider>
+            </MovieListProvider>
           </SeriesListProvider>
         </GeneralNotificationProvider>
       </NotificationProvider>

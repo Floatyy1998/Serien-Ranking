@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Person, Movie, Tv, ChevronRight, Star, OpenInNew } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
+import { HorizontalScrollContainer } from './HorizontalScrollContainer';
 
 interface CastMember {
   id: number;
@@ -443,16 +444,10 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                 Bekannt aus
               </h4>
               
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                overflowX: 'auto',
-                paddingBottom: '8px',
-                scrollbarWidth: 'none'
-              }}>
-                {voiceActorDetails.characterMedia?.edges?.map((edge: any) => (
+              <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
+                {voiceActorDetails.characterMedia?.edges?.map((edge: any, index: number) => (
                   <div
-                    key={edge.node.id}
+                    key={`${edge.node.id}-${index}`}
                     style={{
                       minWidth: '100px',
                       cursor: 'pointer'
@@ -555,7 +550,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                     )}
                   </div>
                 ))}
-              </div>
+              </HorizontalScrollContainer>
             </div>
           </>
         )}
@@ -656,16 +651,10 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
             Bekannt aus
           </h4>
           
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            overflowX: 'auto',
-            paddingBottom: '8px',
-            scrollbarWidth: 'none'
-          }}>
-            {personDetails.credits.map((credit: any) => (
+          <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
+            {personDetails.credits.map((credit: any, index: number) => (
               <div
-                key={credit.id}
+                key={`${credit.id}-${index}`}
                 style={{
                   minWidth: '100px',
                   cursor: 'pointer'
@@ -769,7 +758,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                 )}
               </div>
             ))}
-          </div>
+          </HorizontalScrollContainer>
         </div>
       </div>
     );
@@ -984,9 +973,9 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
           ))
         ) : (
           // Regular Cast/Crew Display
-          (activeTab === 'cast' ? cast : crew).map((member) => (
+          (activeTab === 'cast' ? cast : crew).map((member, index) => (
           <motion.div
-            key={member.id}
+            key={`${member.id}-${member.character || member.job}-${index}`}
             whileTap={{ scale: 0.98 }}
             onClick={() => handlePersonClick(member.id)}
             style={{

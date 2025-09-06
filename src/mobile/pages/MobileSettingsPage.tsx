@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowBack, Palette, Logout, Share, Edit, PhotoCamera
+  ArrowBack, Palette, Logout, Edit, PhotoCamera, Public, Link, ContentCopy, Refresh
 } from '@mui/icons-material';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -21,6 +21,9 @@ export const MobileSettingsPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [usernameEditable, setUsernameEditable] = useState(false);
   const [displayNameEditable, setDisplayNameEditable] = useState(false);
+  const [isPublicProfile, setIsPublicProfile] = useState<boolean>(false);
+  const [publicProfileId, setPublicProfileId] = useState<string>('');
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,10 +39,14 @@ export const MobileSettingsPage: React.FC = () => {
           setUsername(userData.username || '');
           setDisplayName(userData.displayName || user.displayName || '');
           setPhotoURL(userData.photoURL || user.photoURL || '');
+          setIsPublicProfile(userData.isPublicProfile || false);
+          setPublicProfileId(userData.publicProfileId || '');
         } else {
           setUsername('');
           setDisplayName(user.displayName || '');
           setPhotoURL(user.photoURL || '');
+          setIsPublicProfile(false);
+          setPublicProfileId('');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -123,10 +130,68 @@ export const MobileSettingsPage: React.FC = () => {
     }
   };
 
-  const generatePublicLink = () => {
-    const link = `${window.location.origin}/public/${user?.uid}`;
-    navigator.clipboard.writeText(link);
-    alert('Link kopiert!');
+  const generatePublicId = (): string => {
+    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+  };
+
+  const handlePublicProfileToggle = async (enabled: boolean) => {
+    if (!user) return;
+    
+    setIsLoadingProfile(true);
+    try {
+      let newPublicProfileId = publicProfileId;
+      
+      if (enabled && !publicProfileId) {
+        newPublicProfileId = generatePublicId();
+      }
+      
+      await firebase.database().ref(`users/${user.uid}`).update({
+        isPublicProfile: enabled,
+        publicProfileId: enabled ? newPublicProfileId : null
+      });
+      
+      setIsPublicProfile(enabled);
+      setPublicProfileId(enabled ? newPublicProfileId : '');
+      
+      if (navigator.vibrate) navigator.vibrate(50);
+      
+    } catch (error) {
+      console.error('Error updating public profile:', error);
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
+
+  const copyPublicLink = () => {
+    if (!publicProfileId) return;
+    
+    const publicUrl = `${window.location.origin}/public/${publicProfileId}`;
+    navigator.clipboard.writeText(publicUrl).then(() => {
+      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+      alert('Link kopiert!');
+    });
+  };
+
+  const regeneratePublicId = async () => {
+    if (!user || !isPublicProfile) return;
+    
+    setIsLoadingProfile(true);
+    try {
+      const newPublicProfileId = generatePublicId();
+      
+      await firebase.database().ref(`users/${user.uid}`).update({
+        publicProfileId: newPublicProfileId
+      });
+      
+      setPublicProfileId(newPublicProfileId);
+      
+      if (navigator.vibrate) navigator.vibrate(100);
+      
+    } catch (error) {
+      console.error('Error regenerating public ID:', error);
+    } finally {
+      setIsLoadingProfile(false);
+    }
   };
 
   return (
@@ -479,47 +544,266 @@ export const MobileSettingsPage: React.FC = () => {
           </div>
         </button>
 
-        {/* Public Link */}
-        <button
-          onClick={generatePublicLink}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            color: 'white',
-            fontSize: '16px',
-            cursor: 'pointer',
-            textAlign: 'left'
-          }}
-        >
+        {/* Public Profile Settings */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          padding: '20px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '16px'
+        }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 600, margin: 0, color: 'white' }}>
+            Öffentliches Profil
+          </h3>
+          
+          {/* Public Profile Toggle */}
           <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'space-between',
+            gap: '16px',
+            padding: '16px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
-            <Share style={{ fontSize: '24px' }} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
-              Öffentlichen Link kopieren
-            </h3>
-            <p style={{ 
-              fontSize: '14px', 
-              color: 'rgba(255, 255, 255, 0.6)',
-              margin: '2px 0 0 0'
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flex: 1
             }}>
-              Teile deine Liste mit anderen
-            </p>
+              <Public style={{ fontSize: '24px', color: '#667eea' }} />
+              <div>
+                <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 500, color: 'white' }}>
+                  Profil öffentlich teilen
+                </h4>
+                <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255, 255, 255, 0.6)' }}>
+                  Andere können deine Serien und Filme ohne Anmeldung sehen
+                </p>
+              </div>
+            </div>
+            <label style={{
+              position: 'relative',
+              display: 'inline-block',
+              width: '50px',
+              height: '28px'
+            }}>
+              <input
+                type="checkbox"
+                checked={isPublicProfile}
+                onChange={(e) => handlePublicProfileToggle(e.target.checked)}
+                disabled={isLoadingProfile}
+                style={{
+                  opacity: 0,
+                  width: 0,
+                  height: 0
+                }}
+              />
+              <span style={{
+                position: 'absolute',
+                cursor: 'pointer',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: isPublicProfile ? 'var(--color-primary, #667eea)' : 'rgba(255, 255, 255, 0.1)',
+                transition: '0.3s',
+                borderRadius: '28px',
+                opacity: isLoadingProfile ? 0.5 : 1
+              }}>
+                <span style={{
+                  position: 'absolute',
+                  content: '',
+                  height: '20px',
+                  width: '20px',
+                  left: isPublicProfile ? '26px' : '4px',
+                  bottom: '4px',
+                  backgroundColor: 'white',
+                  transition: '0.3s',
+                  borderRadius: '50%'
+                }} />
+              </span>
+            </label>
           </div>
-        </button>
+
+          {/* Public Link Section */}
+          {isPublicProfile && publicProfileId && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              padding: '16px',
+              borderRadius: '12px'
+            }}>
+              <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: 'white' }}>
+                Öffentlicher Link
+              </h4>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <Link style={{ fontSize: '18px', opacity: 0.7, color: 'white' }} />
+                <span style={{
+                  fontSize: '12px',
+                  fontFamily: 'monospace',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  wordBreak: 'break-all',
+                  flex: 1
+                }}>
+                  {`${window.location.origin}/public/${publicProfileId}`}
+                </span>
+              </div>
+              <div style={{
+                display: 'flex',
+                gap: '12px'
+              }}>
+                <button
+                  onClick={copyPublicLink}
+                  disabled={isLoadingProfile}
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    transition: 'all 0.2s',
+                    background: 'var(--color-primary, #667eea)',
+                    color: 'white',
+                    opacity: isLoadingProfile ? 0.5 : 1
+                  }}
+                >
+                  <ContentCopy style={{ fontSize: '18px' }} />
+                  Link kopieren
+                </button>
+                <button
+                  onClick={regeneratePublicId}
+                  disabled={isLoadingProfile}
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    transition: 'all 0.2s',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    opacity: isLoadingProfile ? 0.5 : 1
+                  }}
+                >
+                  <Refresh style={{ fontSize: '18px' }} />
+                  Neuen Link generieren
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Info Section */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              padding: '12px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: '8px'
+            }}>
+              <div style={{
+                flexShrink: 0,
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '8px'
+              }}>
+                <Public style={{ fontSize: '18px', color: 'var(--color-primary, #667eea)' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <strong style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  marginBottom: '4px'
+                }}>
+                  Sichtbar für alle
+                </strong>
+                <p style={{
+                  fontSize: '12px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  margin: 0,
+                  lineHeight: 1.4
+                }}>
+                  Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen
+                </p>
+              </div>
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              padding: '12px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: '8px'
+            }}>
+              <div style={{
+                flexShrink: 0,
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '8px'
+              }}>
+                <Link style={{ fontSize: '18px', color: 'var(--color-primary, #667eea)' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <strong style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  marginBottom: '4px'
+                }}>
+                  Einzigartiger Link
+                </strong>
+                <p style={{
+                  fontSize: '12px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  margin: 0,
+                  lineHeight: 1.4
+                }}>
+                  Jedes öffentliche Profil hat eine eindeutige URL die du teilen kannst
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Logout */}
         <button
