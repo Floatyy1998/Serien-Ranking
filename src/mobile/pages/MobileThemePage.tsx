@@ -50,6 +50,7 @@ export const MobileThemePage: React.FC = () => {
     setColorValue(userConfig[selectedColor as keyof typeof userConfig] as string || '#00fed7');
   }, [userConfig, selectedColor]);
 
+
   const handleColorChange = (value: string) => {
     setColorValue(value);
     updateTheme({
@@ -73,6 +74,7 @@ export const MobileThemePage: React.FC = () => {
     if (navigator.vibrate) navigator.vibrate(20);
     resetTheme();
   };
+
 
   return (
     <div className="mobile-theme-page">
@@ -257,6 +259,7 @@ export const MobileThemePage: React.FC = () => {
               </div>
             </motion.div>
           )}
+
         </AnimatePresence>
       </div>
     </div>

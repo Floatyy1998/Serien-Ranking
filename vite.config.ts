@@ -1,12 +1,13 @@
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
 import { defineConfig } from 'vite';
+import { criticalCSSPlugin } from './vite-plugin-critical-css';
 
 dotenv.config();
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), criticalCSSPlugin()],
   define: {
     // Firebase Umgebungsvariablen - korrigierte Namen
     'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(
@@ -38,13 +39,29 @@ export default defineConfig({
   },
   publicDir: 'public', // Stellen Sie sicher, dass dies korrekt konfiguriert ist
   build: {
-    chunkSizeWarningLimit: 450, // Set warning limit to 450kb
+    chunkSizeWarningLimit: 200, // Aggressive limit for 90+ score
     minify: 'terser',
+    cssMinify: true,
+    sourcemap: false, // Disable sourcemaps for production
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
+        passes: 2, // More aggressive compression
+        // Remove unsafe options that break Firebase
+        unsafe: false,
+        unsafe_comps: false,
+        unsafe_math: false,
+        unsafe_proto: false,
+        unsafe_regexp: false,
+      },
+      mangle: {
+        // Don't mangle properties - it breaks Firebase!
+        keep_fnames: true, // Keep function names for Firebase
+      },
+      format: {
+        comments: false, // Remove all comments
       },
     },
     rollupOptions: {
@@ -102,83 +119,26 @@ export default defineConfig({
             return;
           }
           
-          // React, Emotion, MUI System and utils MUST be together to avoid circular deps
-          if (id.includes('react-dom')) {
-            return 'react-vendor';
-          }
-          if (id.includes('react/') || (id.includes('react') && !id.includes('react-'))) {
-            return 'react-vendor';
-          }
-          if (id.includes('scheduler')) {
-            return 'react-vendor';
-          }
-          // MUI utils must be with React to avoid initialization issues
-          if (id.includes('@mui/utils')) {
-            return 'react-vendor';
-          }
-          // Emotion, MUI System and Framer Motion must be with React too
-          if (id.includes('@emotion') || 
+          // Bundle React ecosystem together
+          if (id.includes('react') || 
+              id.includes('scheduler') ||
+              id.includes('@emotion') || 
               id.includes('emotion') || 
               id.includes('stylis') ||
-              id.includes('@mui/styled-engine') ||
-              id.includes('@mui/system') ||
-              id.includes('@mui/private-theming')) {
+              id.includes('prop-types')) {
             return 'react-vendor';
           }
           
-          // React Router separate
-          if (id.includes('react-router')) {
-            return 'react-router';
-          }
-          
-          // Firebase - split into even smaller chunks
+          // Firebase - all in one chunk
           if (id.includes('firebase')) {
-            if (id.includes('@firebase/auth')) return 'fb-auth';
-            if (id.includes('firebase/compat/auth')) return 'fb-auth-compat';
-            if (id.includes('@firebase/database')) return 'fb-database';
-            if (id.includes('firebase/compat/database')) return 'fb-database-compat';
-            if (id.includes('@firebase/storage')) return 'fb-storage';
-            if (id.includes('firebase/compat/storage')) return 'fb-storage-compat';
-            if (id.includes('@firebase/app')) return 'fb-app';
-            if (id.includes('firebase/compat/app')) return 'fb-app-compat';
-            if (id.includes('@firebase/analytics')) return 'fb-analytics';
-            if (id.includes('@firebase/util')) return 'fb-util';
-            if (id.includes('@firebase/component')) return 'fb-component';
-            return 'fb-core';
+            return 'firebase-all';
           }
           
           // Emotion and MUI System are now bundled with react-vendor
           
-          // MUI - keep only non-problematic splits
+          // MUI - simpler chunking
           if (id.includes('@mui')) {
-            // Icons can stay split - they don't have circular deps
-            if (id.includes('icons-material')) {
-              if (id.includes('esm/')) {
-                const iconPath = id.split('esm/')[1];
-                if (iconPath) {
-                  const firstLetter = iconPath[0].toLowerCase();
-                  if (firstLetter <= 'd') return 'mui-icons-1';
-                  if (firstLetter <= 'h') return 'mui-icons-2';
-                  if (firstLetter <= 'n') return 'mui-icons-3';
-                  if (firstLetter <= 's') return 'mui-icons-4';
-                  return 'mui-icons-5';
-                }
-              }
-              return 'mui-icons-core';
-            }
-            
-            // Date pickers can stay separate
-            if (id.includes('@mui/x-date-pickers')) return 'mui-date';
-            if (id.includes('@mui/x-')) return 'mui-x-core';
-            
-            // Bundle ALL @mui/material together to avoid circular deps
-            if (id.includes('@mui/material') || 
-                id.includes('@mui/base') || 
-                id.includes('@mui/lab')) {
-              return 'mui-material-all';
-            }
-            
-            return 'mui-core';
+            return 'mui-all';
           }
           
           // Framer Motion - all in one chunk to avoid circular deps
@@ -203,10 +163,11 @@ export default defineConfig({
           if (id.includes('@popperjs')) return 'popper';
           if (id.includes('idb')) return 'idb';
           
+          // react-window is now handled by the general react check above
+          
           // Small utilities
           if (id.includes('tslib')) return 'util-tslib';
-          if (id.includes('scheduler')) return 'util-scheduler';
-          if (id.includes('prop-types')) return 'util-proptypes';
+          // prop-types is now in react-vendor
           if (id.includes('object-assign')) return 'util-assign';
           if (id.includes('cookie')) return 'util-cookie';
           if (id.includes('fast-deep-equal')) return 'util-equal';

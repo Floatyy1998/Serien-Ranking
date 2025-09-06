@@ -470,7 +470,9 @@ export const MobileRatingsPage: React.FC = () => {
         ) : (
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', 
+            gridTemplateColumns: window.innerWidth >= 1200 ? 'repeat(6, 1fr)' :
+                                window.innerWidth >= 768 ? 'repeat(4, 1fr)' :
+                                'repeat(auto-fill, minmax(120px, 1fr))', 
             gap: '16px' 
           }}>
             {currentItems.map((item) => {

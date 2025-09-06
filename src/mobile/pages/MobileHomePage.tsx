@@ -17,23 +17,42 @@ import {
 } from '@mui/icons-material';
 import { Badge, Chip } from '@mui/material';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileStatsGrid } from '../components/MobileStatsGrid';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
+import { useContinueWatching } from '../../hooks/useContinueWatching';
+import { useWebWorkerTodayEpisodes } from '../../hooks/useWebWorkerTodayEpisodes';
+import { useRecentlyWatched } from '../../hooks/useRecentlyWatched';
+import { useTopRated } from '../../hooks/useTopRated';
+import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 
 export const MobileHomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
-  const { movieList } = useMovieList();
+  const authContext = useAuth();
+  
+  // Handle case where auth context might be null
+  if (!authContext) {
+    return <div>Loading...</div>;
+  }
+  
+  const { user } = authContext;
+  
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+  
+  if (!user) {
+    return <div>Redirecting to login...</div>;
+  }
   const { unreadActivitiesCount } = useOptimizedFriends();
   const { currentTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -56,14 +75,6 @@ export const MobileHomePage: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Helper functions
-  const getImageUrl = (posterObj: any): string => {
-    if (!posterObj) return '/placeholder.jpg';
-    const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w342${path}`;
-  };
 
   // const getUserRating = (rating: any): number => {
   //   if (!rating || !user?.uid) return 0;
@@ -79,232 +90,15 @@ export const MobileHomePage: React.FC = () => {
     return 'Gute Nacht';
   };
 
-  // Quick stats
-  const stats = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Series statistics
-    let totalSeries = 0;
-    let watchlistCount = 0;
-    let watchedEpisodes = 0;
-    let totalAiredEpisodes = 0;
-    let todayEpisodesCount = 0;
-    let todayUnwatchedEpisodes = 0;
-    
-    seriesList.forEach(series => {
-      if (series && series.nmr) { // Only count valid series
-        totalSeries++;
-        
-        if (series.watchlist === true) {
-          watchlistCount++;
-        }
-        
-        // Count episodes - only aired ones
-        series.seasons?.forEach(season => {
-          season.episodes?.forEach(episode => {
-            if (episode.air_date) {
-              const airDate = new Date(episode.air_date);
-              
-              // Only count episodes that have aired
-              if (!isNaN(airDate.getTime())) {
-                airDate.setHours(0, 0, 0, 0);
-                if (airDate <= today) {
-                  totalAiredEpisodes++;
-                  if (episode.watched === true) {
-                    watchedEpisodes++;
-                  }
-                }
-              }
-              
-              // Count today's episodes
-              if (!isNaN(airDate.getTime())) {
-                const normalizedAirDate = new Date(airDate);
-                normalizedAirDate.setHours(0, 0, 0, 0);
-                if (normalizedAirDate.getTime() === today.getTime()) {
-                  todayEpisodesCount++;
-                  if (!episode.watched) {
-                    todayUnwatchedEpisodes++;
-                  }
-                }
-              }
-            }
-          });
-        });
-      }
-    });
-    
-    // Movie statistics - "watched" means "rated" for movies
-    let totalMovies = 0;
-    let watchedMovies = 0;
-    
-    movieList.forEach(movie => {
-      if (movie && movie.nmr) { // Only count valid movies
-        totalMovies++;
-        
-        // For movies: watched = has a rating from the user
-        if (movie.rating && user) {
-          const userRating = movie.rating[user.uid];
-          if (userRating && userRating > 0) {
-            watchedMovies++;
-          }
-        }
-      }
-    });
-    
-    // Calculate progress only for aired episodes
-    const progress = totalAiredEpisodes > 0 
-      ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100)
-      : 0;
+  // Use optimized hooks for heavy computations
+  const stats = useWebWorkerStatsOptimized();
+  const continueWatching = useContinueWatching();
+  const todayEpisodes = useWebWorkerTodayEpisodes();
+  const trending = useRecentlyWatched(); // Use the same hook for trending
+  const topRated = useTopRated();
+  const recommendations: any[] = []; // TODO: Create separate hook if needed
 
-    return {
-      totalSeries,
-      totalMovies,
-      watchedEpisodes,
-      totalEpisodes: totalAiredEpisodes, // Only count aired episodes
-      watchedMovies,
-      watchlistCount,
-      todayEpisodes: todayUnwatchedEpisodes, // Only show unwatched episodes from today
-      progress,
-    };
-  }, [seriesList, movieList, user]);
 
-  // Continue watching with better logic - sorted by last watched
-  const continueWatching = useMemo(() => {
-    const items: any[] = [];
-
-    // Get series with next episodes and last watched timestamp
-    seriesList.forEach((series) => {
-      // Only include series that are on the watchlist
-      if (!series.watchlist) return;
-
-      const today = new Date();
-      
-      // Get last watched timestamp for this series
-      let lastWatchedAt: string | null = null;
-      series.seasons?.forEach((season) => {
-        season.episodes?.forEach((ep) => {
-          if (ep.firstWatchedAt && ep.watched) {
-            if (!lastWatchedAt || new Date(ep.firstWatchedAt) > new Date(lastWatchedAt)) {
-              lastWatchedAt = ep.firstWatchedAt;
-            }
-          }
-        });
-      });
-      
-      // Find next unwatched episode that has already aired
-      for (const season of series.seasons || []) {
-        for (const [index, episode] of (season.episodes || []).entries()) {
-          // Check if episode has aired and is not watched
-          if (!episode.watched && episode.air_date) {
-            const airDate = new Date(episode.air_date);
-            if (airDate <= today) {
-              // This episode has aired but not watched - add to continue watching
-              
-              // Calculate progress for this series (only aired episodes)
-              let totalAiredEpisodes = 0;
-              let watchedEpisodes = 0;
-              
-              series.seasons?.forEach((s) => {
-                s.episodes?.forEach((ep) => {
-                  if (ep.air_date) {
-                    const epAirDate = new Date(ep.air_date);
-                    if (epAirDate <= today) {
-                      totalAiredEpisodes++;
-                      if (ep.watched) watchedEpisodes++;
-                    }
-                  }
-                });
-              });
-              
-              const percentage = totalAiredEpisodes > 0 
-                ? (watchedEpisodes / totalAiredEpisodes) * 100 
-                : 0;
-              
-              // Find season index (0-based for Firebase)
-              const seasonIndex = series.seasons?.findIndex(s => s.seasonNumber === season.seasonNumber) ?? 0;
-              
-              items.push({
-                type: 'series',
-                id: series.id,
-                nmr: series.nmr, // For Firebase update
-                title: series.title,
-                poster: getImageUrl(series.poster),
-                progress: percentage,
-                nextEpisode: {
-                  seasonNumber: season.seasonNumber || 1, // 1-based like in todayEpisodes
-                  episodeNumber: index + 1,
-                  name: episode.name,
-                  seasonIndex: seasonIndex, // 0-based for Firebase
-                  episodeIndex: index, // Already 0-based
-                },
-                airDate: episode.air_date,
-                lastWatchedAt: lastWatchedAt || '1900-01-01', // Default date if never watched
-              });
-              return; // Stop after finding the first unwatched aired episode
-            }
-          }
-        }
-      }
-    });
-
-    // Sort by last watched date (most recent first)
-    items.sort((a, b) => {
-      const dateA = new Date(a.lastWatchedAt);
-      const dateB = new Date(b.lastWatchedAt);
-      return dateB.getTime() - dateA.getTime();
-    });
-
-    return items.slice(0, 10);
-  }, [seriesList]);
-
-  // Today's episodes - only unwatched
-  const todayEpisodes = useMemo(() => {
-    // Use same logic as MobileNewEpisodesPage
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const episodes: any[] = [];
-    
-    // Debug: Log today's date
-    // console.log('Today (normalized):', today);
-
-    seriesList.forEach((series) => {
-      series.seasons?.forEach((season) => {
-        season.episodes?.forEach((episode, index) => {
-          // Debug: Log episode dates
-          if (episode.air_date) {
-            const episodeDate = new Date(episode.air_date);
-            if (!isNaN(episodeDate.getTime())) {
-              episodeDate.setHours(0, 0, 0, 0);
-              // console.log(`Episode "${episode.name || 'Unnamed'}" air_date:`, episode.air_date, 'normalized:', episodeDate, 'matches today:', episodeDate.getTime() === today.getTime());
-              
-                // Only show episodes from today that are NOT watched
-                if (episodeDate.getTime() === today.getTime() && !episode.watched) {
-                  // Find the actual season index in the series.seasons array
-                  const actualSeasonIndex = series.seasons?.findIndex(s => s.seasonNumber === season.seasonNumber) ?? 0;
-                  
-                  episodes.push({
-                    seriesId: series.id,
-                    seriesNmr: series.nmr, // Add nmr for Firebase update
-                    seriesTitle: series.title,
-                    poster: getImageUrl(series.poster),
-                    seasonNumber: season.seasonNumber || 1,
-                    episodeNumber: index + 1,
-                    seasonIndex: actualSeasonIndex,  // Use the actual index from the array
-                    episodeIndex: index,  // Already 0-based
-                    episodeId: episode.id,
-                    episodeName: episode.name,
-                    watched: episode.watched,
-                  });
-                }
-              }
-            }
-        });
-      });
-    });
-
-    return episodes;
-  }, [seriesList]);
   
   // Handle continue watching episode complete
   const handleContinueEpisodeComplete = async (item: any, swipeDirection: 'left' | 'right' = 'right') => {
@@ -404,111 +198,8 @@ export const MobileHomePage: React.FC = () => {
     }, 300);
   };
 
-  // Trending (most watched recently)
-  const trending = useMemo(() => {
-    const items: any[] = [];
 
-    // Get recently watched series
-    const recentSeries = seriesList.filter((series) => {
-      const hasRecent = series.seasons?.some((season) =>
-        season.episodes?.some((ep) => {
-          if (!ep.firstWatchedAt) return false;
-          const watchDate = new Date(ep.firstWatchedAt);
-          const daysSince =
-            (Date.now() - watchDate.getTime()) / (1000 * 60 * 60 * 24);
-          return daysSince <= 7;
-        })
-      );
-      return hasRecent;
-    });
 
-    recentSeries.forEach((series) => {
-      items.push({
-        type: 'series',
-        id: series.id,
-        title: series.title,
-        poster: getImageUrl(series.poster),
-        rating: parseFloat(calculateOverallRating(series)),
-      });
-    });
-
-    return items.slice(0, 10);
-  }, [seriesList]);
-
-  // Top rated
-  const topRated = useMemo(() => {
-    const items: any[] = [];
-
-    // Add top series
-    seriesList
-      .filter((s) => parseFloat(calculateOverallRating(s)) > 0)
-      .sort(
-        (a, b) =>
-          parseFloat(calculateOverallRating(b)) -
-          parseFloat(calculateOverallRating(a))
-      )
-      .slice(0, 5)
-      .forEach((series) => {
-        items.push({
-          type: 'series',
-          id: series.id,
-          title: series.title,
-          poster: getImageUrl(series.poster),
-          rating: parseFloat(calculateOverallRating(series)),
-        });
-      });
-
-    // Add top movies
-    movieList
-      .filter((m) => parseFloat(calculateOverallRating(m)) > 0)
-      .sort(
-        (a, b) =>
-          parseFloat(calculateOverallRating(b)) -
-          parseFloat(calculateOverallRating(a))
-      )
-      .slice(0, 5)
-      .forEach((movie) => {
-        items.push({
-          type: 'movie',
-          id: movie.id,
-          title: movie.title,
-          poster: getImageUrl(movie.poster),
-          rating: parseFloat(calculateOverallRating(movie)),
-        });
-      });
-
-    return items.sort((a, b) => b.rating - a.rating).slice(0, 10);
-  }, [seriesList, movieList]);
-
-  // Recommendations (unwatched highly rated)
-  const recommendations = useMemo(() => {
-    const items: any[] = [];
-
-    // Get unwatched series with high TMDB rating
-    seriesList
-      .filter((s) => {
-        const progress =
-          s.seasons?.reduce((acc, season) => {
-            const watched =
-              season.episodes?.filter((e) => e.watched).length || 0;
-            return acc + watched;
-          }, 0) || 0;
-        return progress === 0 && s.vote_average > 7;
-      })
-      .sort((a, b) => b.vote_average - a.vote_average)
-      .slice(0, 10)
-      .forEach((series) => {
-        items.push({
-          type: 'series',
-          id: series.id,
-          title: series.title,
-          poster: getImageUrl(series.poster),
-          tmdbRating: series.vote_average,
-        });
-      });
-
-    return items;
-  }, [seriesList]);
 
   return (
     <div
@@ -625,15 +316,11 @@ export const MobileHomePage: React.FC = () => {
       </div>
 
       {/* Quick Stats */}
-      <div
-        data-block-swipe
+      <HorizontalScrollContainer
+        gap={8}
         style={{
-          display: 'flex',
-          gap: '8px',
           padding: '0 20px',
           marginBottom: '20px',
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
         }}
       >
         <Chip
@@ -678,7 +365,7 @@ export const MobileHomePage: React.FC = () => {
             }}
           />
         )}
-      </div>
+      </HorizontalScrollContainer>
 
       {/* Main Action Cards */}
       <div
@@ -1337,14 +1024,10 @@ export const MobileHomePage: React.FC = () => {
             </h2>
           </div>
 
-          <div
-            data-block-swipe
+          <HorizontalScrollContainer
+            gap={12}
             style={{
-              display: 'flex',
-              gap: '12px',
               padding: '0 20px',
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
             }}
           >
             {trending.map((item, index) => (
@@ -1403,7 +1086,7 @@ export const MobileHomePage: React.FC = () => {
                 </h4>
               </motion.div>
             ))}
-          </div>
+          </HorizontalScrollContainer>
         </section>
       )}
 
@@ -1449,14 +1132,10 @@ export const MobileHomePage: React.FC = () => {
             </button>
           </div>
 
-          <div
-            data-block-swipe
+          <HorizontalScrollContainer
+            gap={12}
             style={{
-              display: 'flex',
-              gap: '12px',
               padding: '0 20px',
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
             }}
           >
             {topRated.map((item, index) => (
@@ -1517,7 +1196,7 @@ export const MobileHomePage: React.FC = () => {
                 </h4>
               </motion.div>
             ))}
-          </div>
+          </HorizontalScrollContainer>
         </section>
       )}
 
@@ -1548,14 +1227,10 @@ export const MobileHomePage: React.FC = () => {
             </h2>
           </div>
 
-          <div
-            data-block-swipe
+          <HorizontalScrollContainer
+            gap={12}
             style={{
-              display: 'flex',
-              gap: '12px',
               padding: '0 20px',
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
             }}
           >
             {recommendations.map((item, index) => (
@@ -1615,7 +1290,7 @@ export const MobileHomePage: React.FC = () => {
                 </h4>
               </motion.div>
             ))}
-          </div>
+          </HorizontalScrollContainer>
         </section>
       )}
 

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Close, Movie, CalendarToday, TrendingUp, Add, Check } from '@mui/icons-material';
+import { Search, Close, Movie, CalendarToday, TrendingUp } from '@mui/icons-material';
+import { VirtualizedSearchResults } from '../components/VirtualizedSearchResults';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
@@ -48,12 +49,6 @@ export const MobileSearchPage: React.FC = () => {
     }
   };
   
-  // Get TMDB image URL
-  const getImageUrl = (path: string | null): string => {
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w342${path}`;
-  };
   
   // Search TMDB
   const searchTMDB = useCallback(async (query: string) => {
@@ -346,107 +341,12 @@ export const MobileSearchPage: React.FC = () => {
               {searchResults.length} Ergebnisse für "{searchQuery}"
             </p>
             
-            {/* Results List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {searchResults.map(item => (
-                <button
-                  key={`${item.type}-${item.id}`}
-                  onClick={() => handleItemClick(item)}
-                  style={{
-                    display: 'flex',
-                    gap: '12px',
-                    padding: '12px',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    color: 'white',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <img 
-                    src={getImageUrl(item.poster_path)}
-                    alt={item.title || item.name}
-                    style={{
-                      width: '60px',
-                      height: '90px',
-                      objectFit: 'cover',
-                      borderRadius: '6px'
-                    }}
-                  />
-                  
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      marginBottom: '4px'
-                    }}>
-                      <h3 style={{
-                        fontSize: '15px',
-                        fontWeight: 600,
-                        margin: 0
-                      }}>
-                        {item.title || item.name}
-                      </h3>
-                      <span style={{
-                        padding: '2px 8px',
-                        background: item.type === 'series' 
-                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                          : 'linear-gradient(135deg, #ff6b6b 0%, #ff9a00 100%)',
-                        borderRadius: '4px',
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        flexShrink: 0
-                      }}>
-                        {item.type === 'series' ? 'SERIE' : 'FILM'}
-                      </span>
-                    </div>
-                    
-                    <p style={{
-                      fontSize: '13px',
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      margin: '0 0 8px 0'
-                    }}>
-                      {item.release_date || item.first_air_date 
-                        ? new Date(item.release_date || item.first_air_date).getFullYear()
-                        : 'TBA'}
-                      {item.vote_average > 0 && ` • ★ ${item.vote_average.toFixed(1)}`}
-                    </p>
-                    
-                    {item.overview && (
-                      <p style={{
-                        fontSize: '12px',
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        margin: 0,
-                        overflow: 'hidden',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        lineHeight: 1.4
-                      }}>
-                        {item.overview}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '40px',
-                    flexShrink: 0
-                  }}>
-                    {item.inList ? (
-                      <Check style={{ fontSize: '24px', color: '#4cd137' }} />
-                    ) : (
-                      <Add style={{ fontSize: '24px', color: 'rgba(255, 255, 255, 0.5)' }} />
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
+            {/* Virtualized Results List */}
+            <VirtualizedSearchResults
+              results={searchResults}
+              onItemClick={handleItemClick}
+              height={window.innerHeight - 200} // Account for header and search bar
+            />
           </>
         ) : searchQuery && !loading ? (
           <p style={{ 

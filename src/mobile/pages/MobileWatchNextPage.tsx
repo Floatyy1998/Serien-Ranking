@@ -9,6 +9,7 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
+import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { Series } from '../../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -539,13 +540,9 @@ export const MobileWatchNextPage: React.FC = () => {
               }}
             />
             
-            <div style={{ 
-              display: 'flex', 
-              gap: '8px', 
-              overflowX: 'auto',
-              scrollbarWidth: 'none' as any,
-              msOverflowStyle: 'none' as any
-            }}>
+            <HorizontalScrollContainer 
+              gap={8}
+              style={{}}>
               <button
                 onClick={() => setShowRewatches(!showRewatches)}
                 style={{
@@ -637,7 +634,7 @@ export const MobileWatchNextPage: React.FC = () => {
                     <ArrowDownward style={{ fontSize: '14px' }} />
                 )}
               </button>
-            </div>
+            </HorizontalScrollContainer>
           </div>
         )}
       </header>

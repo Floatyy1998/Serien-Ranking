@@ -54,15 +54,7 @@ const fadeOut = keyframes`
   }
 `;
 
-// Gradient shift animation
-const gradientShift = keyframes`
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-`;
+// Removed unused gradientShift animation
 
 // Glow pulse animation
 const glowPulse = keyframes`
@@ -138,14 +130,12 @@ const SplashContainer = styled(Box, {
   justify-content: center;
   align-items: center;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #0f0f0f 50%, #1a1a1a 75%, #0a0a0a 100%);
-  background-size: 200% 200%;
   animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)} 
-    ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards,
-    ${gradientShift} 8s ease infinite;
+    ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards;
   overflow: hidden;
 `;
 
-// Animated background with gradient mesh
+// Static background with gradient mesh - no animation to prevent flickering
 const BackgroundMesh = styled(Box)`
   position: absolute;
   top: 0;
@@ -158,7 +148,6 @@ const BackgroundMesh = styled(Box)`
     radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
     radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.03) 0%, transparent 50%);
   pointer-events: none;
-  animation: ${breathe} 4s ease-in-out infinite;
 `;
 
 // Floating particles
@@ -218,7 +207,7 @@ const LogoSVG = styled('svg')`
   }
 `;
 
-// Modern title with animated gradient
+// Modern title with static gradient - no animation to prevent flickering
 const Title = styled('h1')`
   font-size: 4rem;
   font-weight: 200;
@@ -231,15 +220,13 @@ const Title = styled('h1')`
     #ec4899 75%,
     #a855f7 100%
   );
-  background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-transform: uppercase;
   font-family: 'Inter', 'Helvetica Neue', sans-serif;
-  animation: ${textReveal} 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards,
-             ${gradientShift} 3s linear infinite;
-  animation-delay: 0.3s, 0s;
+  animation: ${textReveal} 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  animation-delay: 0.3s;
   opacity: 0;
 
   @media (max-width: 768px) {
@@ -268,7 +255,6 @@ const Subtitle = styled('p')`
     width: 60px;
     height: 1px;
     background: linear-gradient(90deg, transparent, #a855f7, transparent);
-    animation: ${gradientShift} 2s linear infinite;
   }
 
   @media (max-width: 768px) {

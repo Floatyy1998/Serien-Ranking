@@ -27,20 +27,49 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
+    <!-- Performance optimizations: Resource hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://identitytoolkit.googleapis.com"
+      crossorigin
+    />
+    <link
+      rel="preconnect"
+      href="https://securetoken.googleapis.com"
+      crossorigin
+    />
+    <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
+    <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+    <link rel="dns-prefetch" href="https://api.themoviedb.org" />
+
     <!-- PWA Theme Color - wird dynamisch per JavaScript aktualisiert -->
     <meta name="theme-color" content="#0a0a0a" id="theme-color-meta" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    
+
     <!-- Cache Control für aggressive Cache-Invalidierung -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
     <meta http-equiv="Pragma" content="no-cache" />
-    
+
     <!-- Allow external resources including Firebase WebSocket -->
-    <meta http-equiv="Content-Security-Policy" content="img-src 'self' data: https: http: blob:; connect-src 'self' https: wss: ws:; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https: http: blob:;" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="img-src 'self' data: https: http: blob:; connect-src 'self' https: wss: ws:; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https: http: blob:;"
+    />
     <meta http-equiv="Expires" content="0" />
   </head>
   <body>

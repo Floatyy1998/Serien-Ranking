@@ -1,105 +1,98 @@
-import { Close, Refresh } from '@mui/icons-material';
-import { Alert, Button, IconButton, Snackbar } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { colors } from '../../theme';
+import { useEffect, useState } from 'react';
 
-export const UpdateNotification: React.FC = () => {
-  const [showUpdate, setShowUpdate] = useState(false);
+export function UpdateNotification() {
+  const [showNotification, setShowNotification] = useState(false);
+  const [hasUpdate, setHasUpdate] = useState(false);
 
   useEffect(() => {
-    // Check for available updates
-    const checkForUpdates = () => {
-      const updateAvailable = localStorage.getItem('updateAvailable');
-      const cacheUpdated = localStorage.getItem('cacheUpdated');
-      
-      if (updateAvailable === 'true' || cacheUpdated === 'true') {
-        setShowUpdate(true);
+    // Prüfe ob es ein verfügbares Update gibt
+    const checkForUpdate = async () => {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration?.waiting) {
+          setHasUpdate(true);
+          setShowNotification(true);
+        }
       }
     };
 
-    // Check immediately
-    checkForUpdates();
+    // Initial check
+    checkForUpdate();
 
-    // Check periodically (less aggressive - every 10 minutes)
-    const interval = setInterval(checkForUpdates, 600000);
+    // Lausche auf Service Worker Events
+    const handleUpdateAvailable = (_event: CustomEvent) => {
+      // Zeige Update-Notification nur wenn noch nicht gezeigt
+      if (!hasUpdate) {
+        setHasUpdate(true);
+        setShowNotification(true);
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, []);
+    window.addEventListener(
+      'sw-update-available',
+      handleUpdateAvailable as EventListener
+    );
 
-  const handleUpdate = () => {
-    // Clear the flags
-    localStorage.removeItem('updateAvailable');
-    localStorage.removeItem('cacheUpdated');
-    localStorage.removeItem('cacheVersion');
+    return () => {
+      window.removeEventListener(
+        'sw-update-available',
+        handleUpdateAvailable as EventListener
+      );
+    };
+  }, [hasUpdate]);
+
+  const handleUpdate = async () => {
+    setShowNotification(false);
+    setHasUpdate(false);
     
-    // Skip waiting and reload
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-    }
-    
-    // Give SW time to skip waiting, then reload
-    setTimeout(() => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration?.waiting) {
+          // Aktiviere den wartenden Service Worker
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          
+          // Der controllerchange Event wird automatisch einen Reload auslösen
+          // (siehe setupEventListeners in serviceWorkerManager)
+        }
+      }
+    } catch (error) {
+      // console.error('Update fehlgeschlagen:', error);
+      // Bei Fehler manueller Reload
       window.location.reload();
-    }, 500);
+    }
   };
 
   const handleDismiss = () => {
-    setShowUpdate(false);
-    // Don't clear localStorage - user dismissed but update is still available
+    setShowNotification(false);
   };
 
-  if (!showUpdate) return null;
+  if (!showNotification || !hasUpdate) return null;
 
   return (
-    <Snackbar
-      open={showUpdate}
-      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      sx={{ mt: 8 }} // Below header
+    <div
+      className='fixed bottom-4 right-4 bg-primary text-black px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3 animate-slide-up max-w-md'
+      style={{
+        animation: 'slideUp 0.3s ease-out',
+      }}
     >
-      <Alert
-        severity="info"
-        sx={{
-          backgroundColor: colors.overlay.light,
-          border: `1px solid ${colors.border.primary}30`,
-          color: colors.text.secondary,
-          '& .MuiAlert-icon': {
-            color: 'var(--theme-primary)',
-          },
-        }}
-        action={
-          <>
-            <Button
-              color="inherit"
-              size="small"
-              onClick={handleUpdate}
-              startIcon={<Refresh />}
-              sx={{
-                color: 'var(--theme-primary)',
-                '&:hover': {
-                  backgroundColor: colors.overlay.light,
-                },
-              }}
-            >
-              Aktualisieren
-            </Button>
-            <IconButton
-              size="small"
-              color="inherit"
-              onClick={handleDismiss}
-              sx={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                '&:hover': {
-                  color: colors.text.secondary,
-                },
-              }}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-          </>
-        }
-      >
-        Neue Version verfügbar! Jetzt aktualisieren für die neuesten Features.
-      </Alert>
-    </Snackbar>
+      <span className="flex-1">Ein Update ist verfügbar!</span>
+      <div className="flex gap-2">
+        <button
+          onClick={handleUpdate}
+          className='bg-black text-primary px-3 py-1 rounded hover:bg-gray-900 transition-colors whitespace-nowrap'
+        >
+          Aktualisieren
+        </button>
+        <button
+          onClick={handleDismiss}
+          className='text-black hover:text-gray-700 transition-colors'
+          aria-label="Später"
+          title="Später aktualisieren"
+        >
+          Später
+        </button>
+      </div>
+    </div>
   );
-};
+}

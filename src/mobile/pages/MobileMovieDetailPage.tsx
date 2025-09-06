@@ -33,9 +33,26 @@ export const MobileMovieDetailPage: React.FC = () => {
     return movieList.find((m: Movie) => m.id === Number(id));
   }, [movieList, id]);
 
-  // Fetch from TMDB if not found locally
+  // State for backdrop from TMDB
+  const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
+
+  // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
+    
+    // ALWAYS fetch backdrop from TMDB (local data never has it)
+    if (id && apiKey) {
+      fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.backdrop_path) {
+            setTmdbBackdrop(data.backdrop_path);
+          }
+        })
+        .catch(err => console.error('Error fetching backdrop from TMDB:', err));
+    }
+    
+    // Full fetch if not found locally
     if (!localMovie && id && apiKey && !tmdbMovie) {
       setLoading(true);
       fetch(
@@ -93,11 +110,12 @@ export const MobileMovieDetailPage: React.FC = () => {
     return `https://image.tmdb.org/t/p/w500${path}`;
   };
 
-  // Get backdrop URL
+  // Get backdrop URL - use actual backdrop field or TMDB backdrop
   const getBackdropUrl = (backdropPath: string | undefined): string => {
     if (!backdropPath) return '';
     if (backdropPath.startsWith('http')) return backdropPath;
-    return `https://image.tmdb.org/t/p/w1280${backdropPath}`;
+    // Use original size for best quality on 2K/4K monitors
+    return `https://image.tmdb.org/t/p/original${backdropPath}`;
   };
 
   // Calculate average rating
@@ -279,14 +297,15 @@ export const MobileMovieDetailPage: React.FC = () => {
           overflow: 'hidden',
         }}
       >
-        {movie.poster?.poster ? (
+        {tmdbBackdrop ? (
           <img
-            src={getBackdropUrl(movie.poster?.poster)}
+            src={getBackdropUrl(tmdbBackdrop)}
             alt={movie.title}
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              objectPosition: 'center top',
               opacity: 0.5,
             }}
           />

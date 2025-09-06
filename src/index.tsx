@@ -1,18 +1,10 @@
 import ReactDOM from 'react-dom/client';
 import { AppWithSplash } from './AppWithSplash';
 import './index.css';
-import './styles/background.css';
-import './styles/background-video.css';
-import { loadBackgroundImage } from './utils/loadBackgroundImage';
-import { preloadBackgroundVideo } from './utils/preloadBackgroundVideo';
 
-// Load background image and preload video on app start
-loadBackgroundImage();
-preloadBackgroundVideo();
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
-// Zeige SOFORT den SplashScreen
 root.render(<AppWithSplash />);
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

@@ -1,11 +1,16 @@
 {
   "name": "TV-RANK",
   "short_name": "TV-RANK",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
   "description": "Entdecke, bewerte und verwalte deine Lieblingsserien und -filme",
+  "orientation": "portrait-primary",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "categories": ["entertainment", "lifestyle"],
+  "lang": "de",
+  "dir": "ltr",
   "icons": [
     {
       "src": "tv-logo.svg",
@@ -21,17 +26,20 @@
     {
       "src": "logo180.png?v=2",
       "type": "image/png",
-      "sizes": "180x180"
+      "sizes": "180x180",
+      "purpose": "apple-touch-icon"
     },
     {
       "src": "logo192.png?v=2",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "logo512.png?v=2",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     }
   ]
 }

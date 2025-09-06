@@ -8,6 +8,7 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useAuth } from '../../App';
+import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { useTheme } from '../../contexts/ThemeContext';
 // import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import firebase from 'firebase/compat/app';
@@ -275,12 +276,11 @@ export const MobileNewEpisodesPage: React.FC = () => {
         </div>
         
         {/* Stats */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          overflowX: 'auto',
-          paddingBottom: '8px'
-        }}>
+        <HorizontalScrollContainer
+          gap={12}
+          style={{
+            paddingBottom: '8px'
+          }}>
           <div style={{
             background: `${currentTheme.primary}1A`,
             border: `1px solid ${currentTheme.primary}4D`,
@@ -310,7 +310,7 @@ export const MobileNewEpisodesPage: React.FC = () => {
             <Timer style={{ fontSize: '16px' }} />
             Nächste 7 Tage: {upcomingEpisodes.filter(e => e.daysUntil <= 7).length}
           </div>
-        </div>
+        </HorizontalScrollContainer>
       </header>
       
       {/* Episodes List */}

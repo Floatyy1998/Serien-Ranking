@@ -5,7 +5,6 @@ import {
   Star, NewReleases, Schedule, PlaylistAdd 
 } from '@mui/icons-material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
-import { useTheme } from '../../contexts/ThemeContext';
 
 interface MobileQuickFilterProps {
   onFilterChange: (filters: {
@@ -48,7 +47,6 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
   isRatingsMode = false,
   hasBottomNav = true  // Default to true for most pages
 }) => {
-  const { currentTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>('');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
@@ -416,11 +414,11 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                       fontSize: '14px'
                     }}
                   >
-                    <option value="rating-desc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Beste zuerst</option>
-                    <option value="rating-asc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Schlechteste zuerst</option>
-                    <option value="name-asc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Name A-Z</option>
-                    <option value="name-desc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Name Z-A</option>
-                    <option value="date-desc" style={{ background: currentTheme.background.surface, color: currentTheme.text.primary }}>Neueste zuerst</option>
+                    <option value="rating-desc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Beste zuerst</option>
+                    <option value="rating-asc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Schlechteste zuerst</option>
+                    <option value="name-asc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Name A-Z</option>
+                    <option value="name-desc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Name Z-A</option>
+                    <option value="date-desc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Neueste zuerst</option>
                   </select>
                 </div>
               )}

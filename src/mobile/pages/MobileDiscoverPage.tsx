@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, Whatshot, NewReleases, Star, 
   Movie as MovieIcon, CalendarToday, FilterList, Check, Add,
-  Search
+  Search, ArrowBack
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -35,6 +35,16 @@ export const MobileDiscoverPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  
+  // Handle resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Check if item is in list
   const isInList = (id: string | number, type: 'series' | 'movie') => {
@@ -60,7 +70,7 @@ export const MobileDiscoverPage: React.FC = () => {
     if (loading) return;
     setLoading(true);
     
-    const currentPage = reset ? 1 : page;
+    const currentPage = reset ? 1 : page + 1;
     
     try {
       let endpoint = '';
@@ -122,11 +132,16 @@ export const MobileDiscoverPage: React.FC = () => {
           setResults(mappedResults);
           setPage(1);
         } else {
-          setResults(prev => [...prev, ...mappedResults]);
+          setResults(prev => {
+            // Filter out duplicates by creating a Set of existing IDs
+            const existingIds = new Set(prev.map((item: any) => `${item.type}-${item.id}`));
+            const newResults = mappedResults.filter((item: any) => !existingIds.has(`${item.type}-${item.id}`));
+            return [...prev, ...newResults];
+          });
+          setPage(currentPage);
         }
         
         setHasMore(currentPage < data.total_pages);
-        if (!reset) setPage(currentPage + 1);
       }
     } catch (error) {
       console.error('Error fetching from TMDB:', error);
@@ -253,21 +268,33 @@ export const MobileDiscoverPage: React.FC = () => {
   };
   
   // Load more on scroll
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const bottom = e.currentTarget.scrollHeight - e.currentTarget.scrollTop <= e.currentTarget.clientHeight + 100;
-    if (bottom && hasMore && !loading) {
+  const handleScroll = useCallback(() => {
+    const scrollContainer = document.querySelector('.mobile-content');
+    if (!scrollContainer) return;
+    
+    const scrollTop = scrollContainer.scrollTop;
+    const scrollHeight = scrollContainer.scrollHeight;
+    const clientHeight = scrollContainer.clientHeight;
+    
+    // Check if we're within 200px of the bottom
+    if (scrollHeight - scrollTop - clientHeight < 200 && hasMore && !loading) {
       fetchFromTMDB();
     }
-  };
+  }, [hasMore, loading, fetchFromTMDB]);
+  
+  // Attach scroll listener
+  useEffect(() => {
+    const scrollContainer = document.querySelector('.mobile-content');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
   
   const genres = activeTab === 'series' ? genreIdMapForSeries : genreIdMapForMovies;
   
   return (
-    <div style={{
-      overflowY: 'auto'
-    }}
-    onScroll={handleScroll}
-    >
+    <div>
       {/* Header */}
       <header style={{
         padding: '20px',
@@ -278,24 +305,42 @@ export const MobileDiscoverPage: React.FC = () => {
         zIndex: 100
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h1 style={{ 
-              fontSize: '32px', 
-              fontWeight: 800,
-              margin: 0,
-              background: currentTheme.primary,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-              Entdecken
-            </h1>
-            <p style={{ 
-              color: currentTheme.text.secondary, 
-              fontSize: '16px',
-              margin: '4px 0 0 0'
-            }}>
-              {showSearch ? 'Suche' : 'Trending & Beliebte Inhalte'}
-            </p>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <button
+              onClick={() => navigate(-1)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: currentTheme.text.primary,
+                cursor: 'pointer',
+                padding: '4px',
+                marginTop: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <ArrowBack style={{ fontSize: '28px' }} />
+            </button>
+            <div>
+              <h1 style={{ 
+                fontSize: '32px', 
+                fontWeight: 800,
+                margin: 0,
+                background: currentTheme.primary,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Entdecken
+              </h1>
+              <p style={{ 
+                color: currentTheme.text.secondary, 
+                fontSize: '16px',
+                margin: '4px 0 0 0'
+              }}>
+                {showSearch ? 'Suche' : 'Trending & Beliebte Inhalte'}
+              </p>
+            </div>
           </div>
           
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -623,8 +668,12 @@ export const MobileDiscoverPage: React.FC = () => {
           ) : (
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: '16px'
+              gridTemplateColumns: isDesktop 
+                ? 'repeat(auto-fill, minmax(150px, 1fr))' 
+                : 'repeat(2, 1fr)', 
+              gap: '16px',
+              maxWidth: isDesktop ? '1200px' : '100%',
+              margin: isDesktop ? '0 auto' : '0'
             }}>
               {searchResults.map(item => (
                 <div 
@@ -742,9 +791,13 @@ export const MobileDiscoverPage: React.FC = () => {
       ) : (
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(2, 1fr)', 
+          gridTemplateColumns: isDesktop 
+            ? 'repeat(auto-fill, minmax(150px, 1fr))' 
+            : 'repeat(2, 1fr)', 
           gap: '16px',
-          padding: '0 20px'
+          padding: '0 20px',
+          maxWidth: isDesktop ? '1200px' : '100%',
+          margin: isDesktop ? '0 auto' : '0'
         }}>
           {results.map(item => (
           <div 
