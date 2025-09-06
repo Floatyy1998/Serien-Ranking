@@ -207,19 +207,22 @@ export const MobileStatsGrid: React.FC = () => {
       }
     });
 
-    // Calculate years, days, hours like desktop
+    // Calculate years, months, days, hours like desktop
     const years = Math.floor(totalMinutesWatched / (365 * 24 * 60));
     const remainingAfterYears = totalMinutesWatched % (365 * 24 * 60);
-    const days = Math.floor(remainingAfterYears / 1440);
-    const hours = Math.floor((remainingAfterYears % 1440) / 60);
-    const minutes = remainingAfterYears % 60;
+    const months = Math.floor(remainingAfterYears / (30 * 24 * 60));
+    const remainingAfterMonths = remainingAfterYears % (30 * 24 * 60);
+    const days = Math.floor(remainingAfterMonths / 1440);
+    const hours = Math.floor((remainingAfterMonths % 1440) / 60);
+    const minutes = remainingAfterMonths % 60;
 
     let timeString = '';
-    if (years > 0) timeString += `${years}y `;
-    if (days > 0) timeString += `${days}d `;
-    if (hours > 0) timeString += `${hours}h `;
-    if (minutes > 0) timeString += `${minutes}m`;
-    if (!timeString) timeString = '0m';
+    if (years > 0) timeString += `${years}J `;
+    if (months > 0) timeString += `${months}M `;
+    if (days > 0) timeString += `${days}T `;
+    if (hours > 0) timeString += `${hours}S `;
+    if (minutes > 0) timeString += `${Math.floor(minutes)}Min`;
+    if (!timeString) timeString = '0Min';
 
     // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
     const seriesWithRating = seriesList.filter((s: any) => {

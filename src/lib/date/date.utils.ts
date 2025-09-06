@@ -2,11 +2,12 @@ export const getFormattedDate = (date: string) => {
   if (!date) return 'Kein Datum';
   const parsedDate = new Date(date);
   if (isNaN(parsedDate.getTime())) return 'Ungültiges Datum';
-  return parsedDate.toLocaleDateString('de-DE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
+  
+  const day = parsedDate.getDate().toString().padStart(2, '0');
+  const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
+  const year = parsedDate.getFullYear();
+  
+  return `${day}.${month}.${year}`;
 };
 export const getFormattedTime = (date: string) => {
   if (!date) return 'Keine Zeit';

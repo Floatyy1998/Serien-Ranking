@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Person, Movie, Tv, ChevronRight, Star, OpenInNew } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from './HorizontalScrollContainer';
+import { getFormattedDate } from '../../lib/date/date.utils';
 
 interface CastMember {
   id: number;
@@ -635,7 +636,7 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
                 color: 'rgba(255, 255, 255, 0.5)',
                 margin: 0
               }}>
-                Geboren: {new Date(personDetails.birthday).toLocaleDateString('de-DE')}
+                Geboren: {getFormattedDate(personDetails.birthday)}
               </p>
             )}
           </div>

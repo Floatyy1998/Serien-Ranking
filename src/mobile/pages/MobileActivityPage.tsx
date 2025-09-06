@@ -17,6 +17,7 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { FriendActivity } from '../../types/Friend';
 import { MobileBackButton } from '../components/MobileBackButton';
+import { getFormattedDate } from '../../lib/date/date.utils';
 
 interface UserSearchResult {
   uid: string;
@@ -285,7 +286,7 @@ export const MobileActivityPage: React.FC = () => {
     if (hours < 24) return `vor ${hours} ${hours === 1 ? 'Stunde' : 'Stunden'}`;
     if (days < 7) return `vor ${days} ${days === 1 ? 'Tag' : 'Tagen'}`;
 
-    return new Date(timestamp).toLocaleDateString('de-DE');
+    return getFormattedDate(new Date(timestamp).toISOString());
   };
 
   // Sort activities by timestamp

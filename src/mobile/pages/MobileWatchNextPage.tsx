@@ -16,6 +16,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getFormattedDate } from '../../lib/date/date.utils';
 // import { cleanOverlappingEpisodes } from '../../lib/episode/cleanOverlappingEpisodes';
 
 interface NextEpisode {
@@ -830,7 +831,7 @@ export const MobileWatchNextPage: React.FC = () => {
                           margin: '4px 0 0 0', 
                           color: currentTheme.text.muted 
                         }}>
-                          {new Date(episode.airDate).toLocaleDateString('de-DE')}
+                          {getFormattedDate(episode.airDate)}
                         </p>
                       )}
                       </div>

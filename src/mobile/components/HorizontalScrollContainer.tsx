@@ -34,8 +34,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
   const checkScroll = () => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    setCanScrollLeft(scrollLeft > 5); // Add small threshold
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5); // Add small threshold
   };
 
   useEffect(() => {
@@ -68,11 +68,19 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
+    
+    // Don't scroll if we can't scroll in that direction
+    if (direction === 'left' && !canScrollLeft) return;
+    if (direction === 'right' && !canScrollRight) return;
+    
     const scrollAmount = scrollRef.current.clientWidth * 0.8; // Scroll 80% of container width
     scrollRef.current.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth'
     });
+    
+    // Re-check scroll position after animation
+    setTimeout(checkScroll, 300);
   };
 
   const shouldShowArrows = showArrows === 'always' || (showArrows === 'desktop' && isDesktop);
