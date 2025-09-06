@@ -20,6 +20,7 @@ import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MobileBackButton } from '../components/MobileBackButton';
+import { getFormattedDate } from '../../lib/date/date.utils';
 // import firebase from 'firebase/compat/app';
 import './MobileBadgesPage.css';
 
@@ -311,7 +312,7 @@ export const MobileBadgesPage: React.FC = () => {
                   {earned && earnedBadge ? (
                     <div className="earned-date">
                       <CheckCircle />
-                      <span>{new Date(earnedBadge.earnedAt).toLocaleDateString('de-DE')}</span>
+                      <span>{getFormattedDate(new Date(earnedBadge.earnedAt).toISOString())}</span>
                     </div>
                   ) : (
                     <div className="badge-requirement">

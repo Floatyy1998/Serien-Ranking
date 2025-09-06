@@ -658,7 +658,7 @@ export const MobileRatingsPage: React.FC = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '10px',
+                                fontSize: '14px',
                                 fontWeight: 600,
                                 color: currentTheme.text.primary,
                               }}
@@ -682,13 +682,13 @@ export const MobileRatingsPage: React.FC = () => {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
-                          fontSize: '12px',
+                          fontSize: '14px',
                           fontWeight: 600,
                         }}
                       >
                         <Star
                           style={{
-                            fontSize: '12px',
+                            fontSize: '14px',
                             color: currentTheme.status.warning,
                           }}
                         />
@@ -747,7 +747,7 @@ export const MobileRatingsPage: React.FC = () => {
                   {!isMovie && progress > 0 && (
                     <p
                       style={{
-                        fontSize: '11px',
+                        fontSize: '13px',
                         color: currentTheme.status.success,
                         margin: '2px 0 0 0',
                         fontWeight: 500,
@@ -760,7 +760,7 @@ export const MobileRatingsPage: React.FC = () => {
                   {isMovie && item.release_date && (
                     <p
                       style={{
-                        fontSize: '11px',
+                        fontSize: '13px',
                         color: currentTheme.text.muted,
                         margin: '2px 0 0 0',
                       }}

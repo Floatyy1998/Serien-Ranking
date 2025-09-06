@@ -1,6 +1,7 @@
 import {
   AutoAwesome,
   CalendarToday,
+  Check,
   CheckCircle,
   ChevronRight,
   EmojiEvents,
@@ -13,43 +14,43 @@ import {
   Search,
   Star,
   TrendingUp,
-  Check,
+  Tv,
 } from '@mui/icons-material';
 import { Badge, Chip } from '@mui/material';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { AnimatePresence, motion, PanInfo } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { MobileStatsGrid } from '../components/MobileStatsGrid';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 import { useContinueWatching } from '../../hooks/useContinueWatching';
-import { useWebWorkerTodayEpisodes } from '../../hooks/useWebWorkerTodayEpisodes';
-import { useRecentlyWatched } from '../../hooks/useRecentlyWatched';
+import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
+import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
+import { useWebWorkerTodayEpisodes } from '../../hooks/useWebWorkerTodayEpisodes';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
+import { MobileStatsGrid } from '../components/MobileStatsGrid';
 
 export const MobileHomePage: React.FC = () => {
   const navigate = useNavigate();
   const authContext = useAuth();
-  
+
   // Handle case where auth context might be null
   if (!authContext) {
     return <div>Loading...</div>;
   }
-  
+
   const { user } = authContext;
-  
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!user) {
       navigate('/login');
     }
   }, [user, navigate]);
-  
+
   if (!user) {
     return <div>Redirecting to login...</div>;
   }
@@ -59,22 +60,37 @@ export const MobileHomePage: React.FC = () => {
   // const [selectedCategory, setSelectedCategory] = useState<
   //   'all' | 'series' | 'movies'
   // >('all');
-  const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
-  const [dragOffsetsEpisodes, setDragOffsetsEpisodes] = useState<{ [key: string]: number }>({});
-  const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
+  const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(
+    new Set()
+  );
+  const [dragOffsetsEpisodes, setDragOffsetsEpisodes] = useState<{
+    [key: string]: number;
+  }>({});
+  const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(
+    new Set()
+  );
   const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
-  const [swipingContinueEpisodes, setSwipingContinueEpisodes] = useState<Set<string>>(new Set());
-  const [dragOffsetsContinue, setDragOffsetsContinue] = useState<{ [key: string]: number }>({});
-  const [completingContinueEpisodes, setCompletingContinueEpisodes] = useState<Set<string>>(new Set());
-  const [hiddenContinueEpisodes, setHiddenContinueEpisodes] = useState<Set<string>>(new Set());
-  const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
+  const [swipingContinueEpisodes, setSwipingContinueEpisodes] = useState<
+    Set<string>
+  >(new Set());
+  const [dragOffsetsContinue, setDragOffsetsContinue] = useState<{
+    [key: string]: number;
+  }>({});
+  const [completingContinueEpisodes, setCompletingContinueEpisodes] = useState<
+    Set<string>
+  >(new Set());
+  const [hiddenContinueEpisodes, setHiddenContinueEpisodes] = useState<
+    Set<string>
+  >(new Set());
+  const [swipeDirections, setSwipeDirections] = useState<
+    Record<string, 'left' | 'right'>
+  >({});
 
   // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
-
 
   // const getUserRating = (rating: any): number => {
   //   if (!rating || !user?.uid) return 0;
@@ -94,112 +110,129 @@ export const MobileHomePage: React.FC = () => {
   const stats = useWebWorkerStatsOptimized();
   const continueWatching = useContinueWatching();
   const todayEpisodes = useWebWorkerTodayEpisodes();
-  const trending = useRecentlyWatched(); // Use the same hook for trending
+  const { trending } = useTMDBTrending(); // Use actual TMDB trending data
   const topRated = useTopRated();
   const recommendations: any[] = []; // TODO: Create separate hook if needed
 
-
-  
   // Handle continue watching episode complete
-  const handleContinueEpisodeComplete = async (item: any, swipeDirection: 'left' | 'right' = 'right') => {
+  const handleContinueEpisodeComplete = async (
+    item: any,
+    swipeDirection: 'left' | 'right' = 'right'
+  ) => {
     const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
-    
+
     // Store swipe direction for exit animation
-    setSwipeDirections(prev => ({ ...prev, [episodeKey]: swipeDirection }));
-    
+    setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
+
     // Add to completing set for animation
-    setCompletingContinueEpisodes(prev => new Set(prev).add(episodeKey));
-    
+    setCompletingContinueEpisodes((prev) => new Set(prev).add(episodeKey));
+
     // Mark episode as watched in Firebase
     if (user && item.nmr !== undefined) {
       try {
-        const ref = firebase.database()
-          .ref(`${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/watched`);
+        const ref = firebase
+          .database()
+          .ref(
+            `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/watched`
+          );
         await ref.set(true);
-        
+
         // Also update watchCount if needed
-        const watchCountRef = firebase.database()
-          .ref(`${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/watchCount`);
+        const watchCountRef = firebase
+          .database()
+          .ref(
+            `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/watchCount`
+          );
         const snapshot = await watchCountRef.once('value');
         const currentCount = snapshot.val() || 0;
         await watchCountRef.set(currentCount + 1);
-        
+
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
-          const firstWatchedRef = firebase.database()
-            .ref(`${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/firstWatchedAt`);
+          const firstWatchedRef = firebase
+            .database()
+            .ref(
+              `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/firstWatchedAt`
+            );
           await firstWatchedRef.set(new Date().toISOString());
         }
-        
       } catch (error) {
         console.error('Error marking episode as watched:', error);
       }
     }
-    
+
     // After animation, hide the episode
     setTimeout(() => {
-      setHiddenContinueEpisodes(prev => new Set(prev).add(episodeKey));
-      setCompletingContinueEpisodes(prev => {
+      setHiddenContinueEpisodes((prev) => new Set(prev).add(episodeKey));
+      setCompletingContinueEpisodes((prev) => {
         const newSet = new Set(prev);
         newSet.delete(episodeKey);
         return newSet;
       });
     }, 300);
   };
-  
-  // Handle episode swipe to complete  
-  const handleEpisodeComplete = async (episode: any, swipeDirection: 'left' | 'right' = 'right') => {
+
+  // Handle episode swipe to complete
+  const handleEpisodeComplete = async (
+    episode: any,
+    swipeDirection: 'left' | 'right' = 'right'
+  ) => {
     const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
-    
+
     // Store swipe direction for exit animation
-    setSwipeDirections(prev => ({ ...prev, [episodeKey]: swipeDirection }));
-    
+    setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
+
     // Add to completing set for animation
-    setCompletingEpisodes(prev => new Set(prev).add(episodeKey));
-    
+    setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
+
     // Mark episode as watched in Firebase directly (like in MobileNewEpisodesPage)
     if (user) {
       try {
         // Use the pre-calculated 0-based indexes
         const seasonIndex = episode.seasonIndex;
         const episodeIndex = episode.episodeIndex;
-        
-        const ref = firebase.database()
-          .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watched`);
+
+        const ref = firebase
+          .database()
+          .ref(
+            `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watched`
+          );
         await ref.set(true);
-        
+
         // Also update watchCount if needed
-        const watchCountRef = firebase.database()
-          .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watchCount`);
+        const watchCountRef = firebase
+          .database()
+          .ref(
+            `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watchCount`
+          );
         const snapshot = await watchCountRef.once('value');
         const currentCount = snapshot.val() || 0;
         await watchCountRef.set(currentCount + 1);
-        
+
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
-          const firstWatchedRef = firebase.database()
-            .ref(`${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`);
+          const firstWatchedRef = firebase
+            .database()
+            .ref(
+              `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`
+            );
           await firstWatchedRef.set(new Date().toISOString());
         }
-        
       } catch (error) {
         console.error('Error marking episode as watched:', error);
       }
     }
-    
+
     // After animation, hide the episode
     setTimeout(() => {
-      setHiddenEpisodes(prev => new Set(prev).add(episodeKey));
-      setCompletingEpisodes(prev => {
+      setHiddenEpisodes((prev) => new Set(prev).add(episodeKey));
+      setCompletingEpisodes((prev) => {
         const newSet = new Set(prev);
         newSet.delete(episodeKey);
         return newSet;
       });
     }, 300);
   };
-
-
-
 
   return (
     <div
@@ -405,7 +438,11 @@ export const MobileHomePage: React.FC = () => {
           />
 
           <PlayCircle
-            style={{ fontSize: '32px', color: currentTheme.status.success, marginBottom: '8px' }}
+            style={{
+              fontSize: '32px',
+              color: currentTheme.status.success,
+              marginBottom: '8px',
+            }}
           />
           <h3
             style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}
@@ -451,7 +488,11 @@ export const MobileHomePage: React.FC = () => {
           />
 
           <AutoAwesome
-            style={{ fontSize: '32px', color: currentTheme.primary, marginBottom: '8px' }}
+            style={{
+              fontSize: '32px',
+              color: currentTheme.primary,
+              marginBottom: '8px',
+            }}
           />
           <h3
             style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}
@@ -526,7 +567,7 @@ export const MobileHomePage: React.FC = () => {
             {React.cloneElement(action.icon, { style: { fontSize: '22px' } })}
             <span
               style={{
-                fontSize: '11px',
+                fontSize: '14px',
                 fontWeight: 600,
                 color: 'rgba(255, 255, 255, 0.8)',
               }}
@@ -559,7 +600,9 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <PlayCircle style={{ fontSize: '24px', color: currentTheme.status.success }} />
+              <PlayCircle
+                style={{ fontSize: '24px', color: currentTheme.status.success }}
+              />
               Weiterschauen
             </h2>
             <button
@@ -588,64 +631,73 @@ export const MobileHomePage: React.FC = () => {
               position: 'relative',
             }}
           >
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode='popLayout'>
               {continueWatching
-                .filter(item => !hiddenContinueEpisodes.has(`${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`))
+                .filter(
+                  (item) =>
+                    !hiddenContinueEpisodes.has(
+                      `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`
+                    )
+                )
                 .slice(0, 4) // Max 4 episodes like requested
                 .map((item) => {
                   const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
-                  const isCompleting = completingContinueEpisodes.has(episodeKey);
+                  const isCompleting =
+                    completingContinueEpisodes.has(episodeKey);
                   const isSwiping = swipingContinueEpisodes.has(episodeKey);
-                  
+
                   return (
                     <motion.div
                       key={episodeKey}
                       data-block-swipe
                       layout
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{ 
-                        opacity: isCompleting ? 0.5 : 1, 
+                      animate={{
+                        opacity: isCompleting ? 0.5 : 1,
                         y: 0,
                         scale: isCompleting ? 0.95 : 1,
                       }}
-                      exit={{ 
-                        opacity: 0, 
+                      exit={{
+                        opacity: 0,
                         x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
-                        transition: { duration: 0.3 }
+                        transition: { duration: 0.3 },
                       }}
                       style={{
                         position: 'relative',
                       }}
                     >
                       <motion.div
-                        drag="x"
+                        drag='x'
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
                         dragSnapToOrigin
                         onDragStart={() => {
-                          setSwipingContinueEpisodes(prev => new Set(prev).add(episodeKey));
+                          setSwipingContinueEpisodes((prev) =>
+                            new Set(prev).add(episodeKey)
+                          );
                         }}
                         onDrag={(_event, info: PanInfo) => {
-                          setDragOffsetsContinue(prev => ({
+                          setDragOffsetsContinue((prev) => ({
                             ...prev,
-                            [episodeKey]: info.offset.x
+                            [episodeKey]: info.offset.x,
                           }));
                         }}
                         onDragEnd={(event, info: PanInfo) => {
                           event.stopPropagation();
-                          setSwipingContinueEpisodes(prev => {
+                          setSwipingContinueEpisodes((prev) => {
                             const newSet = new Set(prev);
                             newSet.delete(episodeKey);
                             return newSet;
                           });
-                          setDragOffsetsContinue(prev => {
+                          setDragOffsetsContinue((prev) => {
                             const newOffsets = { ...prev };
                             delete newOffsets[episodeKey];
                             return newOffsets;
                           });
-                          
+
                           if (Math.abs(info.offset.x) > 100) {
-                            const direction = info.offset.x > 0 ? 'right' : 'left';
+                            const direction =
+                              info.offset.x > 0 ? 'right' : 'left';
                             handleContinueEpisodeComplete(item, direction);
                           }
                         }}
@@ -664,15 +716,34 @@ export const MobileHomePage: React.FC = () => {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '12px',
-                          background: isCompleting 
+                          background: isCompleting
                             ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
-                            : `rgba(76, 209, 55, ${Math.min(Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100 * 0.15, 0.15)})`,
+                            : `rgba(76, 209, 55, ${Math.min(
+                                (Math.abs(
+                                  dragOffsetsContinue[episodeKey] || 0
+                                ) /
+                                  100) *
+                                  0.15,
+                                0.15
+                              )})`,
                           border: `1px solid ${
-                            isCompleting 
-                              ? 'rgba(76, 209, 55, 0.5)' 
-                              : `rgba(76, 209, 55, ${0.2 + Math.min(Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100 * 0.3, 0.3)})`
+                            isCompleting
+                              ? 'rgba(76, 209, 55, 0.5)'
+                              : `rgba(76, 209, 55, ${
+                                  0.2 +
+                                  Math.min(
+                                    (Math.abs(
+                                      dragOffsetsContinue[episodeKey] || 0
+                                    ) /
+                                      100) *
+                                      0.3,
+                                    0.3
+                                  )
+                                })`
                           }`,
-                          transition: dragOffsetsContinue[episodeKey] ? 'none' : 'all 0.3s ease',
+                          transition: dragOffsetsContinue[episodeKey]
+                            ? 'none'
+                            : 'all 0.3s ease',
                           borderRadius: '12px',
                           padding: '12px',
                           position: 'relative',
@@ -687,14 +758,15 @@ export const MobileHomePage: React.FC = () => {
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
+                            background:
+                              'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
                             opacity: 0,
                           }}
                           animate={{
                             opacity: isSwiping ? 1 : 0,
                           }}
                         />
-                        
+
                         <img
                           src={item.poster}
                           alt={item.title}
@@ -709,55 +781,76 @@ export const MobileHomePage: React.FC = () => {
                             zIndex: 2,
                           }}
                         />
-                        <div style={{ flex: 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}>
-                        <h4
+                        <div
                           style={{
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            margin: '0 0 2px 0',
+                            flex: 1,
+                            pointerEvents: 'none',
+                            position: 'relative',
+                            zIndex: 2,
                           }}
                         >
-                          {item.title}
-                        </h4>
-                        <p style={{ 
-                          fontSize: '12px', 
-                          margin: 0, 
-                          color: '#00d4aa' 
-                        }}>
-                          S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
-                          {item.nextEpisode.name}
-                        </p>
-                        <div style={{
-                          marginTop: '4px',
-                          height: '2px',
-                          background: 'rgba(0, 0, 0, 0.3)',
-                          borderRadius: '2px',
-                          overflow: 'hidden',
-                        }}>
+                          <h4
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              margin: '0 0 2px 0',
+                            }}
+                          >
+                            {item.title}
+                          </h4>
+                          <p
+                            style={{
+                              fontSize: '12px',
+                              margin: 0,
+                              color: '#00d4aa',
+                            }}
+                          >
+                            S{item.nextEpisode.seasonNumber} E
+                            {item.nextEpisode.episodeNumber} •{' '}
+                            {item.nextEpisode.name}
+                          </p>
                           <div
                             style={{
-                              height: '100%',
-                              width: `${item.progress}%`,
-                              background: 'linear-gradient(90deg, #00d4aa, #00b4d8)',
+                              marginTop: '4px',
+                              height: '2px',
+                              background: 'rgba(0, 0, 0, 0.3)',
+                              borderRadius: '2px',
+                              overflow: 'hidden',
                             }}
-                          />
+                          >
+                            <div
+                              style={{
+                                height: '100%',
+                                width: `${item.progress}%`,
+                                background:
+                                  'linear-gradient(90deg, #00d4aa, #00b4d8)',
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      
-                        <AnimatePresence mode="wait">
+
+                        <AnimatePresence mode='wait'>
                           {isCompleting ? (
                             <motion.div
                               initial={{ scale: 0, rotate: -180 }}
                               animate={{ scale: 1, rotate: 0 }}
                               exit={{ scale: 0, rotate: 180 }}
                             >
-                              <Check style={{ fontSize: '24px', color: currentTheme.status.success }} />
+                              <Check
+                                style={{
+                                  fontSize: '24px',
+                                  color: currentTheme.status.success,
+                                }}
+                              />
                             </motion.div>
                           ) : (
-                            <motion.div
-                              animate={{ x: isSwiping ? 10 : 0 }}
-                            >
-                              <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
+                            <motion.div animate={{ x: isSwiping ? 10 : 0 }}>
+                              <PlayCircle
+                                style={{
+                                  fontSize: '20px',
+                                  color: currentTheme.status.success,
+                                }}
+                              />
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -792,7 +885,9 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <NewReleases style={{ fontSize: '24px', color: currentTheme.status.warning }} />
+              <NewReleases
+                style={{ fontSize: '24px', color: currentTheme.status.warning }}
+              />
               Heute Neu
             </h2>
             <button
@@ -821,64 +916,75 @@ export const MobileHomePage: React.FC = () => {
               position: 'relative',
             }}
           >
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode='popLayout'>
               {todayEpisodes
-                .filter(ep => !hiddenEpisodes.has(`${ep.seriesId}-${ep.seasonNumber}-${ep.episodeNumber}`))
+                .filter(
+                  (ep) =>
+                    !hiddenEpisodes.has(
+                      `${ep.seriesId}-${ep.seasonNumber}-${ep.episodeNumber}`
+                    )
+                )
                 .slice(0, 5)
                 .map((episode) => {
                   const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
                   const isCompleting = completingEpisodes.has(episodeKey);
                   const isSwiping = swipingEpisodes.has(episodeKey);
-                  
+
                   return (
                     <motion.div
                       key={episodeKey}
                       data-block-swipe
                       layout
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{ 
-                        opacity: isCompleting ? 0.5 : 1, 
+                      animate={{
+                        opacity: isCompleting ? 0.5 : 1,
                         y: 0,
                         scale: isCompleting ? 0.95 : 1,
                       }}
-                      exit={{ 
-                        opacity: 0, 
+                      exit={{
+                        opacity: 0,
                         x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
-                        transition: { duration: 0.3 }
+                        transition: { duration: 0.3 },
                       }}
                       style={{
                         position: 'relative',
                       }}
                     >
                       <motion.div
-                        drag="x"
+                        drag='x'
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
                         dragSnapToOrigin
                         onDragStart={() => {
-                          setSwipingEpisodes(prev => new Set(prev).add(episodeKey));
+                          setSwipingEpisodes((prev) =>
+                            new Set(prev).add(episodeKey)
+                          );
                         }}
                         onDrag={(_event, info: PanInfo) => {
-                          setDragOffsetsEpisodes(prev => ({
+                          setDragOffsetsEpisodes((prev) => ({
                             ...prev,
-                            [episodeKey]: info.offset.x
+                            [episodeKey]: info.offset.x,
                           }));
                         }}
                         onDragEnd={(event, info: PanInfo) => {
                           event.stopPropagation();
-                          setSwipingEpisodes(prev => {
+                          setSwipingEpisodes((prev) => {
                             const newSet = new Set(prev);
                             newSet.delete(episodeKey);
                             return newSet;
                           });
-                          setDragOffsetsEpisodes(prev => {
+                          setDragOffsetsEpisodes((prev) => {
                             const newOffsets = { ...prev };
                             delete newOffsets[episodeKey];
                             return newOffsets;
                           });
-                          
-                          if (Math.abs(info.offset.x) > 100 && !episode.watched) {
-                            const direction = info.offset.x > 0 ? 'right' : 'left';
+
+                          if (
+                            Math.abs(info.offset.x) > 100 &&
+                            !episode.watched
+                          ) {
+                            const direction =
+                              info.offset.x > 0 ? 'right' : 'left';
                             handleEpisodeComplete(episode, direction);
                           }
                         }}
@@ -897,95 +1003,132 @@ export const MobileHomePage: React.FC = () => {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '12px',
-                          background: isCompleting 
-                          ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
-                          : episode.watched 
-                          ? 'rgba(76, 209, 55, 0.1)'
-                          : `rgba(76, 209, 55, ${Math.min(Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100 * 0.15, 0.15)})`,
-                        border: `1px solid ${
-                          isCompleting 
-                            ? 'rgba(76, 209, 55, 0.5)' 
-                            : episode.watched 
-                            ? 'rgba(76, 209, 55, 0.3)'
-                            : `rgba(76, 209, 55, ${0.2 + Math.min(Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100 * 0.3, 0.3)})`
-                        }`,
-                        transition: dragOffsetsEpisodes[episodeKey] ? 'none' : 'all 0.3s ease',
-                        borderRadius: '12px',
-                        padding: '12px',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {/* Swipe Indicator Background */}
-                      <motion.div
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
-                          opacity: 0,
-                        }}
-                        animate={{
-                          opacity: isSwiping ? 1 : 0,
-                        }}
-                      />
-                      
-                      <img
-                        src={episode.poster}
-                        alt={episode.seriesTitle}
-                        onClick={() => navigate(`/series/${episode.seriesId}`)}
-                        style={{
-                          width: '50px',
-                          height: '75px',
-                          objectFit: 'cover',
-                          borderRadius: '8px',
+                          background: isCompleting
+                            ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
+                            : episode.watched
+                            ? 'rgba(76, 209, 55, 0.1)'
+                            : `rgba(76, 209, 55, ${Math.min(
+                                (Math.abs(
+                                  dragOffsetsEpisodes[episodeKey] || 0
+                                ) /
+                                  100) *
+                                  0.15,
+                                0.15
+                              )})`,
+                          border: `1px solid ${
+                            isCompleting
+                              ? 'rgba(76, 209, 55, 0.5)'
+                              : episode.watched
+                              ? 'rgba(76, 209, 55, 0.3)'
+                              : `rgba(76, 209, 55, ${
+                                  0.2 +
+                                  Math.min(
+                                    (Math.abs(
+                                      dragOffsetsEpisodes[episodeKey] || 0
+                                    ) /
+                                      100) *
+                                      0.3,
+                                    0.3
+                                  )
+                                })`
+                          }`,
+                          transition: dragOffsetsEpisodes[episodeKey]
+                            ? 'none'
+                            : 'all 0.3s ease',
+                          borderRadius: '12px',
+                          padding: '12px',
                           cursor: 'pointer',
                           position: 'relative',
-                          zIndex: 2,
+                          overflow: 'hidden',
                         }}
-                      />
-                      <div style={{ flex: 1, pointerEvents: 'none' }}>
-                        <h4
+                      >
+                        {/* Swipe Indicator Background */}
+                        <motion.div
                           style={{
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            margin: '0 0 2px 0',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background:
+                              'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
+                            opacity: 0,
                           }}
-                        >
-                          {episode.seriesTitle}
-                        </h4>
-                        <p style={{ 
-                          fontSize: '12px', 
-                          margin: 0, 
-                          color: episode.watched ? '#4cd137' : '#ffd700' 
-                        }}>
-                          S{episode.seasonNumber + 1} E{episode.episodeNumber} •{' '}
-                          {episode.episodeName}
-                        </p>
-                      </div>
-                      
-                      <AnimatePresence mode="wait">
-                        {isCompleting ? (
-                          <motion.div
-                            initial={{ scale: 0, rotate: -180 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            exit={{ scale: 0, rotate: 180 }}
+                          animate={{
+                            opacity: isSwiping ? 1 : 0,
+                          }}
+                        />
+
+                        <img
+                          src={episode.poster}
+                          alt={episode.seriesTitle}
+                          onClick={() =>
+                            navigate(`/series/${episode.seriesId}`)
+                          }
+                          style={{
+                            width: '50px',
+                            height: '75px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            zIndex: 2,
+                          }}
+                        />
+                        <div style={{ flex: 1, pointerEvents: 'none' }}>
+                          <h4
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              margin: '0 0 2px 0',
+                            }}
                           >
-                            <Check style={{ fontSize: '24px', color: currentTheme.status.success }} />
-                          </motion.div>
-                        ) : episode.watched ? (
-                          <CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
-                        ) : (
-                          <motion.div
-                            animate={{ x: isSwiping ? 10 : 0 }}
+                            {episode.seriesTitle}
+                          </h4>
+                          <p
+                            style={{
+                              fontSize: '12px',
+                              margin: 0,
+                              color: episode.watched ? '#4cd137' : '#ffd700',
+                            }}
                           >
-                            <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.warning }} />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                            S{episode.seasonNumber + 1} E{episode.episodeNumber}{' '}
+                            • {episode.episodeName}
+                          </p>
+                        </div>
+
+                        <AnimatePresence mode='wait'>
+                          {isCompleting ? (
+                            <motion.div
+                              initial={{ scale: 0, rotate: -180 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              exit={{ scale: 0, rotate: 180 }}
+                            >
+                              <Check
+                                style={{
+                                  fontSize: '24px',
+                                  color: currentTheme.status.success,
+                                }}
+                              />
+                            </motion.div>
+                          ) : episode.watched ? (
+                            <CheckCircle
+                              style={{
+                                fontSize: '20px',
+                                color: currentTheme.status.success,
+                              }}
+                            />
+                          ) : (
+                            <motion.div animate={{ x: isSwiping ? 10 : 0 }}>
+                              <PlayCircle
+                                style={{
+                                  fontSize: '20px',
+                                  color: currentTheme.status.warning,
+                                }}
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </motion.div>
                   );
@@ -1032,11 +1175,11 @@ export const MobileHomePage: React.FC = () => {
           >
             {trending.map((item, index) => (
               <motion.div
-                key={index}
+                key={`trending-${item.type}-${item.id}`}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/${item.type}/${item.id}`)}
                 style={{
-                  minWidth: '100px',
+                  minWidth: window.innerWidth >= 768 ? '240px' : '140px',
                   cursor: 'pointer',
                 }}
               >
@@ -1059,6 +1202,30 @@ export const MobileHomePage: React.FC = () => {
                       top: '4px',
                       left: '4px',
                       background: 'linear-gradient(135deg, #ff6b6b, #ff4757)',
+                      color: 'white',
+                      borderRadius: '6px',
+                      padding: '2px 6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                    }}
+                  >
+                    <TrendingUp style={{ fontSize: '12px' }} />#{index + 1}
+                  </div>
+
+                  {/* Type Badge (Movie/Series) */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '4px',
+                      left: '4px',
+                      background:
+                        item.type === 'movie'
+                          ? 'rgba(255, 193, 7, 0.9)'
+                          : 'rgba(102, 126, 234, 0.9)',
+                      color: 'white',
                       borderRadius: '6px',
                       padding: '2px 6px',
                       fontSize: '10px',
@@ -1066,15 +1233,26 @@ export const MobileHomePage: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '2px',
+                      backdropFilter: 'blur(10px)',
                     }}
                   >
-                    <TrendingUp style={{ fontSize: '10px' }} />#{index + 1}
+                    {item.type === 'movie' ? (
+                      <>
+                        <MovieIcon style={{ fontSize: '10px' }} />
+                        Film
+                      </>
+                    ) : (
+                      <>
+                        <Tv style={{ fontSize: '10px' }} />
+                        Serie
+                      </>
+                    )}
                   </div>
                 </div>
 
                 <h4
                   style={{
-                    fontSize: '11px',
+                    fontSize: '14px',
                     fontWeight: 500,
                     margin: 0,
                     overflow: 'hidden',
@@ -1084,6 +1262,19 @@ export const MobileHomePage: React.FC = () => {
                 >
                   {item.title}
                 </h4>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '14px',
+                    color: currentTheme.text.muted,
+                    marginTop: '2px',
+                  }}
+                >
+                  <Star style={{ fontSize: '14px', color: '#ffd43b' }} />
+                  <span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
+                </div>
               </motion.div>
             ))}
           </HorizontalScrollContainer>
@@ -1112,7 +1303,9 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <Star style={{ fontSize: '24px', color: currentTheme.status.warning }} />
+              <Star
+                style={{ fontSize: '24px', color: currentTheme.status.warning }}
+              />
               Bestbewertet
             </h2>
             <button
@@ -1144,7 +1337,7 @@ export const MobileHomePage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/${item.type}/${item.id}`)}
                 style={{
-                  minWidth: '100px',
+                  minWidth: window.innerWidth >= 768 ? '240px' : '140px',
                   cursor: 'pointer',
                 }}
               >
@@ -1169,7 +1362,7 @@ export const MobileHomePage: React.FC = () => {
                       background: 'rgba(0, 0, 0, 0.8)',
                       borderRadius: '8px',
                       padding: '4px 6px',
-                      fontSize: '11px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       display: 'flex',
                       alignItems: 'center',
@@ -1177,14 +1370,19 @@ export const MobileHomePage: React.FC = () => {
                       backdropFilter: 'blur(10px)',
                     }}
                   >
-                    <Star style={{ fontSize: '11px', color: currentTheme.status.warning }} />
+                    <Star
+                      style={{
+                        fontSize: '13px',
+                        color: currentTheme.status.warning,
+                      }}
+                    />
                     {item.rating.toFixed(1)}
                   </div>
                 </div>
 
                 <h4
                   style={{
-                    fontSize: '11px',
+                    fontSize: '14px',
                     fontWeight: 500,
                     margin: 0,
                     overflow: 'hidden',
@@ -1222,7 +1420,9 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <AutoAwesome style={{ fontSize: '24px', color: currentTheme.primary }} />
+              <AutoAwesome
+                style={{ fontSize: '24px', color: currentTheme.primary }}
+              />
               Empfehlungen für dich
             </h2>
           </div>
