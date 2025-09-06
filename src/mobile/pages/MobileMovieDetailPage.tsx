@@ -1,5 +1,5 @@
+import { MobileBackButton } from '../components/MobileBackButton';
 import {
-  ArrowBack,
   Delete,
   Info,
   Star,
@@ -251,7 +251,7 @@ export const MobileMovieDetailPage: React.FC = () => {
           </p>
         )}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/')}
           style={{
             marginTop: '24px',
             padding: '12px 24px',
@@ -343,26 +343,13 @@ export const MobileMovieDetailPage: React.FC = () => {
             justifyContent: 'space-between',
           }}
         >
-          <button
-            onClick={() => navigate(-1)}
+          <MobileBackButton 
             style={{
               background: `${currentTheme.background.default}80`,
               backdropFilter: 'blur(10px)',
               border: 'none',
-              color: currentTheme.text.primary,
-              fontSize: '24px',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
             }}
-          >
-            <ArrowBack />
-          </button>
+          />
 
           {/* Show Add button for TMDB movies, Delete button for user's movies */}
           {isReadOnlyTmdbMovie ? (

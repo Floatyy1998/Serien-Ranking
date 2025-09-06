@@ -13,27 +13,16 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--color-background-default, #000000) 66; /* More transparent - 40% opacity */
+  /* background wird inline in der Komponente gesetzt */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: calc(env(safe-area-inset-top) + 16px) 16px 16px;
+  padding: calc(env(safe-area-inset-top) + 20px) 20px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid var(--color-border-default);
 }
 
-.back-button {
-  background: none;
-  border: none;
-  color: var(--color-text-primary);
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
+/* .back-button styles entfernt - MobileBackButton verwendet eigene Styles */
 
 .header-content {
   flex: 1;

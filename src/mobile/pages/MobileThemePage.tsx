@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MobileBackButton } from '../components/MobileBackButton';
 import {
-  ArrowBack,
   Palette,
   CloudOff,
   CloudSync,
@@ -11,7 +11,6 @@ import {
   ColorLens,
   Wallpaper,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import './MobileThemePage.css';
 
@@ -34,11 +33,11 @@ const colorCategories = [
 ];
 
 export const MobileThemePage: React.FC = () => {
-  const navigate = useNavigate();
   const {
     userConfig,
     updateTheme,
     resetTheme,
+    currentTheme,
   } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'colors' | 'sync'>('colors');
@@ -79,10 +78,10 @@ export const MobileThemePage: React.FC = () => {
   return (
     <div className="mobile-theme-page">
       {/* Header */}
-      <div className="theme-header">
-        <button className="back-button" onClick={() => navigate(-1)}>
-          <ArrowBack />
-        </button>
+      <div className="theme-header" style={{
+        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
+      }}>
+        <MobileBackButton />
         <h1>Theme Anpassen</h1>
         <button className="preview-button">
           <Preview />

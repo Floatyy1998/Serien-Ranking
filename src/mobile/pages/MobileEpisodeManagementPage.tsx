@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MobileBackButton } from '../components/MobileBackButton';
 import {
-  ArrowBack,
   Check,
   Refresh,
   ExpandMore,
@@ -21,10 +21,9 @@ import './MobileEpisodeManagementPage.css';
 
 export const MobileEpisodeManagementPage: React.FC = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const {} = useTheme();
+  const { currentTheme } = useTheme();
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -272,10 +271,10 @@ export const MobileEpisodeManagementPage: React.FC = () => {
   if (!series) {
     return (
       <div className="mobile-episode-page">
-        <div className="episode-header">
-          <button onClick={() => navigate(-1)} className="back-button">
-            <ArrowBack />
-          </button>
+        <div className="episode-header" style={{
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
+        }}>
+          <MobileBackButton />
           <h1>Serie nicht gefunden</h1>
         </div>
       </div>
@@ -290,10 +289,10 @@ export const MobileEpisodeManagementPage: React.FC = () => {
   return (
     <div className="mobile-episode-page">
       {/* Native App Header */}
-      <div className="episode-header">
-        <button onClick={() => navigate(-1)} className="back-button">
-          <ArrowBack />
-        </button>
+      <div className="episode-header" style={{
+        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
+      }}>
+        <MobileBackButton />
         <div className="header-content">
           <h1>{series.title}</h1>
           <p>Episoden verwalten</p>

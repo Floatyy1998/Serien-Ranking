@@ -9,18 +9,17 @@ import {
   Refresh,
   Speed,
   Movie,
-  ArrowBack,
   Lock,
   CheckCircle,
   TrendingUp,
 } from '@mui/icons-material';
 import { LinearProgress, Chip } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { useBadges } from '../../features/badges/BadgeProvider';
 import { BADGE_DEFINITIONS, Badge, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
+import { MobileBackButton } from '../components/MobileBackButton';
 // import firebase from 'firebase/compat/app';
 import './MobileBadgesPage.css';
 
@@ -47,10 +46,9 @@ const categoryColors: Record<string, string> = {
 };
 
 export const MobileBadgesPage: React.FC = () => {
-  const navigate = useNavigate();
   const { } = useBadges();
   const { user } = useAuth()!;
-  const {} = useTheme();
+  const { currentTheme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [userBadges, setUserBadges] = useState<EarnedBadge[]>([]);
@@ -162,10 +160,10 @@ export const MobileBadgesPage: React.FC = () => {
   if (loading) {
     return (
       <div className="mobile-badges-page">
-        <div className="badges-header">
-          <button className="back-button" onClick={() => navigate(-1)}>
-            <ArrowBack />
-          </button>
+        <div className="badges-header" style={{
+        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
+      }}>
+          <MobileBackButton />
           <h1>Achievements</h1>
           <div className="refresh-button">
             <Refresh />
@@ -183,10 +181,10 @@ export const MobileBadgesPage: React.FC = () => {
   return (
     <div className="mobile-badges-page">
       {/* Header */}
-      <div className="badges-header">
-        <button className="back-button" onClick={() => navigate(-1)}>
-          <ArrowBack />
-        </button>
+      <div className="badges-header" style={{
+        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
+      }}>
+        <MobileBackButton />
         <h1>Achievements</h1>
         <button 
           className={`refresh-button ${refreshing ? 'spinning' : ''}`}

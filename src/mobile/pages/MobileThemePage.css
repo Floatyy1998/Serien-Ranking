@@ -10,11 +10,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: env(safe-area-inset-top) 16px 16px;
-  background: var(--color-background-default);
+  padding: calc(env(safe-area-inset-top) + 20px) 20px 20px;
+  /* background wird inline in der Komponente gesetzt */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--color-border-default);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -30,7 +29,8 @@
   background-clip: text;
 }
 
-.back-button,
+/* .back-button styles entfernt - MobileBackButton verwendet eigene Styles */
+
 .preview-button {
   background: none;
   border: none;
@@ -44,7 +44,6 @@
   transition: all 0.2s ease;
 }
 
-.back-button:active,
 .preview-button:active {
   transform: scale(0.9);
   background: var(--color-background-surface);
@@ -510,7 +509,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -546,7 +546,7 @@
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 20px;
   width: 20px;
   left: 4px;
@@ -689,17 +689,17 @@ input:disabled + .slider {
   .preset-grid {
     grid-template-columns: repeat(4, 1fr);
   }
-  
+
   .theme-tabs {
     max-width: 500px;
     margin: 0 auto;
   }
-  
+
   .theme-content {
     max-width: 600px;
     margin: 0 auto;
   }
-  
+
   .link-actions {
     flex-direction: row;
   }

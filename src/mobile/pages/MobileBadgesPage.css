@@ -10,11 +10,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: env(safe-area-inset-top) 16px 16px;
-  background: var(--color-background-default);
+  padding: calc(env(safe-area-inset-top) + 20px) 20px 20px;
+  /* background wird inline in der Komponente gesetzt */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--color-border-default);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -30,7 +29,8 @@
   background-clip: text;
 }
 
-.back-button,
+/* .back-button styles entfernt - MobileBackButton verwendet eigene Styles */
+
 .refresh-button {
   background: none;
   border: none;
@@ -44,7 +44,6 @@
   transition: all 0.2s ease;
 }
 
-.back-button:active,
 .refresh-button:active {
   transform: scale(0.9);
   background: var(--color-background-surface);
@@ -55,8 +54,12 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Overall Progress Card */
@@ -187,9 +190,11 @@
 }
 
 .badge-card.earned {
-  background: linear-gradient(135deg, 
-    rgba(var(--badge-color), 0.1) 0%, 
-    rgba(var(--badge-color), 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--badge-color), 0.1) 0%,
+    rgba(var(--badge-color), 0.05) 100%
+  );
   border-color: var(--badge-color);
 }
 
@@ -198,7 +203,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
   }
   50% {
@@ -404,16 +410,16 @@
     gap: 16px;
     padding: 0 24px;
   }
-  
+
   .badge-card {
     padding: 20px;
   }
-  
+
   .badge-icon-container {
     width: 80px;
     height: 80px;
   }
-  
+
   .badge-icon-container svg {
     font-size: 56px !important;
   }

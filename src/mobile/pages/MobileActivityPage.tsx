@@ -1,5 +1,4 @@
 import {
-  ArrowBack,
   Cancel,
   CheckCircle,
   Close,
@@ -17,6 +16,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { FriendActivity } from '../../types/Friend';
+import { MobileBackButton } from '../components/MobileBackButton';
 
 interface UserSearchResult {
   uid: string;
@@ -414,15 +414,14 @@ export const MobileActivityPage: React.FC = () => {
   };
 
   return (
-    <div
-    >
+    <div>
       {/* Header */}
       <header
         style={{
           ...getMobileHeaderStyle('transparent'),
           padding: '20px',
           paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          borderBottom: `1px solid ${currentTheme.border.default}`,
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
         }}
       >
         <div
@@ -433,25 +432,7 @@ export const MobileActivityPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button
-              onClick={() => navigate(-1)}
-              style={{
-                background: currentTheme.background.surface,
-                border: 'none',
-                color: currentTheme.text.primary,
-                fontSize: '20px',
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-              }}
-            >
-              <ArrowBack />
-            </button>
+            <MobileBackButton />
             <div>
               <h1
                 style={{
