@@ -19,9 +19,35 @@ export const MobileSearchPage: React.FC = () => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme } = useTheme();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchType, setSearchType] = useState<'all' | 'series' | 'movies'>('all');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  
+  // Check if we came back via navigation (back button)
+  const isReturning = window.history.state?.usr?.returning === true;
+  
+  // Restore search state from sessionStorage only if returning
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (isReturning) {
+      return sessionStorage.getItem('searchQuery') || '';
+    }
+    // Clear session storage if not returning
+    sessionStorage.removeItem('searchQuery');
+    sessionStorage.removeItem('searchType');
+    sessionStorage.removeItem('searchResults');
+    return '';
+  });
+  const [searchType, setSearchType] = useState<'all' | 'series' | 'movies'>(() => {
+    if (isReturning) {
+      const saved = sessionStorage.getItem('searchType');
+      return (saved as 'all' | 'series' | 'movies') || 'all';
+    }
+    return 'all';
+  });
+  const [searchResults, setSearchResults] = useState<any[]>(() => {
+    if (isReturning) {
+      const saved = sessionStorage.getItem('searchResults');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
@@ -43,6 +69,19 @@ export const MobileSearchPage: React.FC = () => {
       setRecentSearches(JSON.parse(recent));
     }
   }, []);
+
+  // Save search state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('searchQuery', searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    sessionStorage.setItem('searchType', searchType);
+  }, [searchType]);
+
+  useEffect(() => {
+    sessionStorage.setItem('searchResults', JSON.stringify(searchResults));
+  }, [searchResults]);
 
   // Save search to recent
   const saveToRecent = (query: string) => {
@@ -124,8 +163,17 @@ export const MobileSearchPage: React.FC = () => {
     [searchType, seriesList, movieList]
   );
 
-  // Debounced search
+  // Debounced search - Skip initial search if we have saved results and are returning
+  const [skipInitialSearch, setSkipInitialSearch] = useState(() => {
+    return isReturning && searchResults.length > 0;
+  });
+
   useEffect(() => {
+    if (skipInitialSearch) {
+      setSkipInitialSearch(false);
+      return;
+    }
+    
     const timer = setTimeout(() => {
       searchTMDB(searchQuery);
     }, 500);
@@ -135,6 +183,9 @@ export const MobileSearchPage: React.FC = () => {
 
   // Handle item click - always navigate to detail page
   const handleItemClick = (item: any) => {
+    // Set flag for returning navigation
+    window.history.replaceState({ ...window.history.state, usr: { returning: true } }, '');
+    
     // Always navigate to detail page
     if (item.type === 'series') {
       navigate(`/series/${item.id}`);
