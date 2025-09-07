@@ -11,7 +11,7 @@ import {
   Tv,
 } from '@mui/icons-material';
 import { Box, Collapse, IconButton, Paper, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
@@ -120,7 +120,7 @@ export const MobileStatsGrid = () => {
   const { movieList } = useMovieList();
 
   // Calculate statistics
-  const stats = React.useMemo(() => {
+  const stats = useMemo(() => {
     if (!user?.uid) {
       return {
         totalSeries: 0,

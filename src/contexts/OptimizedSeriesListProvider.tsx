@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
@@ -90,7 +90,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const seriesList: Series[] = seriesData ? Object.values(seriesData) : [];
 
   // Signal when initial data is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     // If no user, data is immediately "ready" (empty)
     if (!user) {
       window.setAppReady?.('initialData', true);
