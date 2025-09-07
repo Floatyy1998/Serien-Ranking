@@ -1,7 +1,7 @@
 import { Cancel, CheckCircle, Close, Groups, Person, PersonAdd } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -53,7 +53,7 @@ export const MobileActivityPage = () => {
   const [requestProfiles, setRequestProfiles] = useState<Record<string, any>>({});
 
   // Mark as read when viewing
-  React.useEffect(() => {
+  useEffect(() => {
     if (activeTab === 'activity' && unreadActivitiesCount > 0) {
       markActivitiesAsRead();
     } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
@@ -62,7 +62,7 @@ export const MobileActivityPage = () => {
   }, [activeTab, unreadActivitiesCount, unreadRequestsCount]);
 
   // Load friend profiles from Firebase Database (like desktop version)
-  React.useEffect(() => {
+  useEffect(() => {
     if (friends.length === 0) {
       setFriendProfiles({});
       return;
@@ -91,7 +91,7 @@ export const MobileActivityPage = () => {
   }, [friends]);
 
   // Load request profiles from Firebase Database (like desktop version)
-  React.useEffect(() => {
+  useEffect(() => {
     const loadRequestProfiles = async () => {
       const profiles: Record<string, any> = {};
 
@@ -114,7 +114,7 @@ export const MobileActivityPage = () => {
   }, [friendRequests]);
 
   // Search for users when friendUsername changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (friendUsername.length < 3) {
       setSearchResults([]);
       return;

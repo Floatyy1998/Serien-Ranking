@@ -1,26 +1,20 @@
-import React, { useState } from 'react';
+import { ArrowForward, Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
-  Box,
-  TextField,
-  Button,
-  Typography,
   Alert,
-  InputAdornment,
-  IconButton,
+  Box,
+  Button,
   Container,
+  IconButton,
+  InputAdornment,
   Paper,
+  TextField,
+  Typography,
 } from '@mui/material';
-import {
-  Email,
-  Lock,
-  Visibility,
-  VisibilityOff,
-  ArrowForward,
-} from '@mui/icons-material';
-import { useNavigate, Link } from 'react-router-dom';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const MobileLoginPage = () => {
   const navigate = useNavigate();
@@ -130,9 +124,9 @@ export const MobileLoginPage = () => {
             }}
           >
             {error && (
-              <Alert 
-                severity="error" 
-                sx={{ 
+              <Alert
+                severity="error"
+                sx={{
                   mb: 3,
                   background: 'rgba(211, 47, 47, 0.1)',
                   color: '#ff5252',
@@ -260,10 +254,7 @@ export const MobileLoginPage = () => {
           </Paper>
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography
-              variant="body1"
-              sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
-            >
+            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
               Noch kein Konto?{' '}
               <Link
                 to="/register"

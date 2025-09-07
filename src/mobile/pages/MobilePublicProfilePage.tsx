@@ -1,14 +1,8 @@
-import {
-  ArrowBack,
-  Movie as MovieIcon,
-  Public,
-  Star,
-  Tv as TvIcon,
-} from '@mui/icons-material';
+import { ArrowBack, Movie as MovieIcon, Public, Star, Tv as TvIcon } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { motion } from 'framer-motion';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
@@ -56,10 +50,7 @@ export const MobilePublicProfilePage: React.FC = () => {
         const usersSnapshot = await usersRef.once('value');
         const users = usersSnapshot.val();
 
-        console.log(
-          'Found users in database:',
-          users ? Object.keys(users).length : 0
-        );
+        console.log('Found users in database:', users ? Object.keys(users).length : 0);
 
         let foundUser = null;
         let foundUserId = null;
@@ -86,14 +77,8 @@ export const MobilePublicProfilePage: React.FC = () => {
           return;
         }
 
-        console.log(
-          `Loading public profile for: ${
-            foundUser.username || foundUser.displayName
-          }`
-        );
-        setProfileName(
-          foundUser.username || foundUser.displayName || 'Unbekannt'
-        );
+        console.log(`Loading public profile for: ${foundUser.username || foundUser.displayName}`);
+        setProfileName(foundUser.username || foundUser.displayName || 'Unbekannt');
 
         // Load user's series
         const seriesRef = firebase.database().ref(`${foundUserId}/serien`);
@@ -103,24 +88,19 @@ export const MobilePublicProfilePage: React.FC = () => {
         console.log('Raw series data:', series);
 
         if (series) {
-          const seriesArray = Object.entries(series).map(
-            ([id, data]: [string, any]) => ({
-              id: parseInt(id),
-              nmr: data.nmr || 0,
-              title: data.title,
-              poster: data.poster,
-              rating: data.rating,
-              genre: data.genre,
-              genres: data.genres,
-              provider: data.provider,
-              seasons: data.seasons,
-            })
-          );
+          const seriesArray = Object.entries(series).map(([id, data]: [string, any]) => ({
+            id: parseInt(id),
+            nmr: data.nmr || 0,
+            title: data.title,
+            poster: data.poster,
+            rating: data.rating,
+            genre: data.genre,
+            genres: data.genres,
+            provider: data.provider,
+            seasons: data.seasons,
+          }));
 
-          console.log(
-            `Loaded ${seriesArray.length} series for public profile:`,
-            seriesArray
-          );
+          console.log(`Loaded ${seriesArray.length} series for public profile:`, seriesArray);
           setProfileSeries(seriesArray);
         } else {
           console.log('No series found for this user');
@@ -134,24 +114,19 @@ export const MobilePublicProfilePage: React.FC = () => {
         console.log('Raw movies data:', movies);
 
         if (movies) {
-          const moviesArray = Object.entries(movies).map(
-            ([id, data]: [string, any]) => ({
-              id: parseInt(id),
-              nmr: data.nmr || 0,
-              title: data.title,
-              poster: data.poster,
-              rating: data.rating,
-              genre: data.genre,
-              genres: data.genres,
-              provider: data.provider,
-              release_date: data.release_date,
-            })
-          );
+          const moviesArray = Object.entries(movies).map(([id, data]: [string, any]) => ({
+            id: parseInt(id),
+            nmr: data.nmr || 0,
+            title: data.title,
+            poster: data.poster,
+            rating: data.rating,
+            genre: data.genre,
+            genres: data.genres,
+            provider: data.provider,
+            release_date: data.release_date,
+          }));
 
-          console.log(
-            `Loaded ${moviesArray.length} movies for public profile:`,
-            moviesArray
-          );
+          console.log(`Loaded ${moviesArray.length} movies for public profile:`, moviesArray);
           setProfileMovies(moviesArray);
         } else {
           console.log('No movies found for this user');
@@ -205,9 +180,7 @@ export const MobilePublicProfilePage: React.FC = () => {
       filtered = filtered.filter((series) => {
         const genres = series.genres || series.genre?.genres || [];
         if (Array.isArray(genres)) {
-          return genres.some(
-            (g: string) => g.toLowerCase() === filters.genre!.toLowerCase()
-          );
+          return genres.some((g: string) => g.toLowerCase() === filters.genre!.toLowerCase());
         }
         return false;
       });
@@ -215,13 +188,8 @@ export const MobilePublicProfilePage: React.FC = () => {
 
     if (filters.provider && filters.provider !== 'All') {
       filtered = filtered.filter((series) => {
-        if (
-          series.provider?.provider &&
-          Array.isArray(series.provider.provider)
-        ) {
-          return series.provider.provider.some(
-            (p: any) => p.name === filters.provider
-          );
+        if (series.provider?.provider && Array.isArray(series.provider.provider)) {
+          return series.provider.provider.some((p: any) => p.name === filters.provider);
         }
         return false;
       });
@@ -229,9 +197,7 @@ export const MobilePublicProfilePage: React.FC = () => {
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter((series) =>
-        series.title?.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter((series) => series.title?.toLowerCase().includes(searchLower));
     }
 
     // Apply quick filters
@@ -264,8 +230,8 @@ export const MobilePublicProfilePage: React.FC = () => {
       filters.quickFilter === 'recently-rated'
         ? 'date-desc'
         : filters.quickFilter === 'recently-added'
-        ? 'date-desc'
-        : filters.sortBy || 'rating-desc';
+          ? 'date-desc'
+          : filters.sortBy || 'rating-desc';
     filtered.sort((a, b) => {
       const ratingA = parseFloat(calculatePublicRating(a));
       const ratingB = parseFloat(calculatePublicRating(b));
@@ -299,9 +265,7 @@ export const MobilePublicProfilePage: React.FC = () => {
       filtered = filtered.filter((movie) => {
         const genres = movie.genres || movie.genre?.genres || [];
         if (Array.isArray(genres)) {
-          return genres.some(
-            (g: string) => g.toLowerCase() === filters.genre!.toLowerCase()
-          );
+          return genres.some((g: string) => g.toLowerCase() === filters.genre!.toLowerCase());
         }
         return false;
       });
@@ -309,13 +273,8 @@ export const MobilePublicProfilePage: React.FC = () => {
 
     if (filters.provider && filters.provider !== 'All') {
       filtered = filtered.filter((movie) => {
-        if (
-          movie.provider?.provider &&
-          Array.isArray(movie.provider.provider)
-        ) {
-          return movie.provider.provider.some(
-            (p: any) => p.name === filters.provider
-          );
+        if (movie.provider?.provider && Array.isArray(movie.provider.provider)) {
+          return movie.provider.provider.some((p: any) => p.name === filters.provider);
         }
         return false;
       });
@@ -323,9 +282,7 @@ export const MobilePublicProfilePage: React.FC = () => {
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter((movie) =>
-        movie.title?.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter((movie) => movie.title?.toLowerCase().includes(searchLower));
     }
 
     // Apply quick filters for movies
@@ -358,8 +315,8 @@ export const MobilePublicProfilePage: React.FC = () => {
       filters.quickFilter === 'recently-rated'
         ? 'date-desc'
         : filters.quickFilter === 'recently-added'
-        ? 'date-desc'
-        : filters.sortBy || 'rating-desc';
+          ? 'date-desc'
+          : filters.sortBy || 'rating-desc';
     filtered.sort((a, b) => {
       const ratingA = parseFloat(calculatePublicRating(a));
       const ratingB = parseFloat(calculatePublicRating(b));
@@ -430,15 +387,10 @@ export const MobilePublicProfilePage: React.FC = () => {
           textAlign: 'center',
         }}
       >
-        <Public
-          style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.3 }}
-        />
+        <Public style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.3 }} />
         <h2 style={{ marginBottom: '16px' }}>Profil nicht gefunden</h2>
-        <p
-          style={{ color: 'var(--color-text-secondary)', marginBottom: '32px' }}
-        >
-          Dieses öffentliche Profil existiert nicht oder ist nicht mehr
-          öffentlich zugänglich.
+        <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px' }}>
+          Dieses öffentliche Profil existiert nicht oder ist nicht mehr öffentlich zugänglich.
         </p>
         <button
           onClick={() => navigate('/')}
@@ -504,9 +456,7 @@ export const MobilePublicProfilePage: React.FC = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Public style={{ fontSize: '20px', opacity: 0.7 }} />
-              <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>
-                {profileName}
-              </h1>
+              <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>{profileName}</h1>
             </div>
             <p
               style={{
@@ -549,16 +499,10 @@ export const MobilePublicProfilePage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background:
-              activeTab === 'series'
-                ? 'var(--color-primary)'
-                : 'var(--color-background-surface)',
-            border:
-              activeTab === 'series'
-                ? 'none'
-                : '1px solid var(--color-border-default)',
+              activeTab === 'series' ? 'var(--color-primary)' : 'var(--color-background-surface)',
+            border: activeTab === 'series' ? 'none' : '1px solid var(--color-border-default)',
             borderRadius: '12px',
-            color:
-              activeTab === 'series' ? 'white' : 'var(--color-text-secondary)',
+            color: activeTab === 'series' ? 'white' : 'var(--color-text-secondary)',
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -578,16 +522,10 @@ export const MobilePublicProfilePage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background:
-              activeTab === 'movies'
-                ? 'var(--color-primary)'
-                : 'var(--color-background-surface)',
-            border:
-              activeTab === 'movies'
-                ? 'none'
-                : '1px solid var(--color-border-default)',
+              activeTab === 'movies' ? 'var(--color-primary)' : 'var(--color-background-surface)',
+            border: activeTab === 'movies' ? 'none' : '1px solid var(--color-border-default)',
             borderRadius: '12px',
-            color:
-              activeTab === 'movies' ? 'white' : 'var(--color-text-secondary)',
+            color: activeTab === 'movies' ? 'white' : 'var(--color-text-secondary)',
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -619,9 +557,7 @@ export const MobilePublicProfilePage: React.FC = () => {
               color: 'var(--color-text-secondary)',
             }}
           >
-            <Star
-              style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}
-            />
+            <Star style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
             <h3 style={{ fontSize: '20px', marginBottom: '12px' }}>
               Keine {activeTab === 'series' ? 'Serien' : 'Filme'} vorhanden
             </h3>
@@ -634,8 +570,8 @@ export const MobilePublicProfilePage: React.FC = () => {
               }}
             >
               {profileName || 'Dieser Nutzer'} hat noch keine{' '}
-              {activeTab === 'series' ? 'Serien' : 'Filme'} zu seiner Liste
-              hinzugefügt oder bewertet
+              {activeTab === 'series' ? 'Serien' : 'Filme'} zu seiner Liste hinzugefügt oder
+              bewertet
             </p>
           </div>
         ) : (
@@ -646,8 +582,8 @@ export const MobilePublicProfilePage: React.FC = () => {
                 window.innerWidth >= 1200
                   ? 'repeat(6, 1fr)'
                   : window.innerWidth >= 768
-                  ? 'repeat(4, 1fr)'
-                  : 'repeat(auto-fill, minmax(120px, 1fr))',
+                    ? 'repeat(4, 1fr)'
+                    : 'repeat(auto-fill, minmax(120px, 1fr))',
               gap: window.innerWidth >= 768 ? '20px' : '16px',
               paddingBottom: '40px',
             }}
@@ -678,9 +614,7 @@ export const MobilePublicProfilePage: React.FC = () => {
                 });
 
                 progress =
-                  totalAiredEpisodes > 0
-                    ? (watchedEpisodes / totalAiredEpisodes) * 100
-                    : 0;
+                  totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
               }
 
               return (
@@ -716,59 +650,53 @@ export const MobilePublicProfilePage: React.FC = () => {
                   />
 
                   {/* Provider Badges */}
-                  {item.provider?.provider &&
-                    item.provider.provider.length > 0 && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          left: '8px',
-                          display: 'flex',
-                          gap: '4px',
-                        }}
-                      >
-                        {Array.from(
-                          new Set(
-                            item.provider.provider.map((p: any) => p.name)
-                          )
-                        )
-                          .slice(0, 2)
-                          .map((name) => {
-                            const provider = item.provider?.provider.find(
-                              (p: any) => p.name === name
-                            );
-                            return provider ? (
-                              <div
-                                key={provider.id}
+                  {item.provider?.provider && item.provider.provider.length > 0 && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '8px',
+                        left: '8px',
+                        display: 'flex',
+                        gap: '4px',
+                      }}
+                    >
+                      {Array.from(new Set(item.provider.provider.map((p: any) => p.name)))
+                        .slice(0, 2)
+                        .map((name) => {
+                          const provider = item.provider?.provider.find(
+                            (p: any) => p.name === name
+                          );
+                          return provider ? (
+                            <div
+                              key={provider.id}
+                              style={{
+                                background: 'var(--color-background-default)99',
+                                backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '8px',
+                                padding: '2px',
+                                width: '28px',
+                                height: '28px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <img
+                                src={provider.logo}
+                                alt={provider.name}
                                 style={{
-                                  background:
-                                    'var(--color-background-default)99',
-                                  backdropFilter: 'blur(8px)',
-                                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                                  borderRadius: '8px',
-                                  padding: '2px',
-                                  width: '28px',
-                                  height: '28px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
+                                  width: '24px',
+                                  height: '24px',
+                                  borderRadius: '4px',
+                                  objectFit: 'cover',
                                 }}
-                              >
-                                <img
-                                  src={provider.logo}
-                                  alt={provider.name}
-                                  style={{
-                                    width: '24px',
-                                    height: '24px',
-                                    borderRadius: '4px',
-                                    objectFit: 'cover',
-                                  }}
-                                />
-                              </div>
-                            ) : null;
-                          })}
-                      </div>
-                    )}
+                              />
+                            </div>
+                          ) : null;
+                        })}
+                    </div>
+                  )}
 
                   {/* Rating Badge */}
                   {rating > 0 && (
@@ -824,8 +752,7 @@ export const MobilePublicProfilePage: React.FC = () => {
                       bottom: '0',
                       left: '0',
                       right: '0',
-                      background:
-                        'linear-gradient(transparent, rgba(0, 0, 0, 0.8))',
+                      background: 'linear-gradient(transparent, rgba(0, 0, 0, 0.8))',
                       padding: '32px 8px 8px',
                       color: 'white',
                     }}

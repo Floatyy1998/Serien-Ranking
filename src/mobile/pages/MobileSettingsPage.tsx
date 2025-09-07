@@ -11,7 +11,7 @@ import {
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -56,8 +56,7 @@ export const MobileSettingsPage = () => {
           setIsPublicProfile(false);
           setPublicProfileId('');
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     };
 
     loadUserData();
@@ -68,14 +67,11 @@ export const MobileSettingsPage = () => {
       try {
         await firebase.auth().signOut();
         navigate('/');
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   };
 
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
@@ -94,10 +90,7 @@ export const MobileSettingsPage = () => {
       const downloadURL = await imageRef.getDownloadURL();
 
       await user.updateProfile({ photoURL: downloadURL });
-      await firebase
-        .database()
-        .ref(`users/${user.uid}/photoURL`)
-        .set(downloadURL);
+      await firebase.database().ref(`users/${user.uid}/photoURL`).set(downloadURL);
       await user.reload();
 
       setPhotoURL(downloadURL);
@@ -130,10 +123,7 @@ export const MobileSettingsPage = () => {
     try {
       setSaving(true);
       await user.updateProfile({ displayName: displayName });
-      await firebase
-        .database()
-        .ref(`users/${user.uid}/displayName`)
-        .set(displayName);
+      await firebase.database().ref(`users/${user.uid}/displayName`).set(displayName);
       await user.reload();
       setDisplayNameEditable(false);
       alert('Anzeigename gespeichert!');
@@ -273,7 +263,7 @@ export const MobileSettingsPage = () => {
             {photoURL ? (
               <img
                 src={photoURL}
-                alt='Profile'
+                alt="Profile"
                 style={{
                   width: '80px',
                   height: '80px',
@@ -287,8 +277,7 @@ export const MobileSettingsPage = () => {
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
-                  background:
-                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -323,10 +312,10 @@ export const MobileSettingsPage = () => {
             </button>
           </div>
           <input
-            type='file'
+            type="file"
             ref={fileInputRef}
             onChange={handleImageUpload}
-            accept='image/*'
+            accept="image/*"
             style={{ display: 'none' }}
           />
           <p
@@ -365,11 +354,9 @@ export const MobileSettingsPage = () => {
               Benutzername
             </h3>
             {usernameEditable ? (
-              <div
-                style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
-              >
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <input
-                  type='text'
+                  type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   style={{
@@ -381,7 +368,7 @@ export const MobileSettingsPage = () => {
                     color: 'white',
                     fontSize: '14px',
                   }}
-                  placeholder='Benutzername eingeben'
+                  placeholder="Benutzername eingeben"
                 />
                 <button
                   onClick={saveUsername}
@@ -465,11 +452,9 @@ export const MobileSettingsPage = () => {
               Anzeigename
             </h3>
             {displayNameEditable ? (
-              <div
-                style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
-              >
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <input
-                  type='text'
+                  type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   style={{
@@ -481,7 +466,7 @@ export const MobileSettingsPage = () => {
                     color: 'white',
                     fontSize: '14px',
                   }}
-                  placeholder='Anzeigename eingeben'
+                  placeholder="Anzeigename eingeben"
                 />
                 <button
                   onClick={saveDisplayName}
@@ -582,9 +567,7 @@ export const MobileSettingsPage = () => {
             <Palette style={{ fontSize: '24px' }} />
           </div>
           <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
-              Design & Themes
-            </h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Design & Themes</h3>
             <p
               style={{
                 fontSize: '14px',
@@ -673,7 +656,7 @@ export const MobileSettingsPage = () => {
               }}
             >
               <input
-                type='checkbox'
+                type="checkbox"
                 checked={isPublicProfile}
                 onChange={(e) => handlePublicProfileToggle(e.target.checked)}
                 disabled={isLoadingProfile}
@@ -749,9 +732,7 @@ export const MobileSettingsPage = () => {
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Link
-                  style={{ fontSize: '18px', opacity: 0.7, color: 'white' }}
-                />
+                <Link style={{ fontSize: '18px', opacity: 0.7, color: 'white' }} />
                 <span
                   style={{
                     fontSize: '12px',
@@ -878,8 +859,8 @@ export const MobileSettingsPage = () => {
                     lineHeight: 1.4,
                   }}
                 >
-                  Wenn aktiviert, können andere deine bewerteten Serien und
-                  Filme auch ohne Anmeldung sehen
+                  Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne
+                  Anmeldung sehen
                 </p>
               </div>
             </div>
@@ -931,8 +912,7 @@ export const MobileSettingsPage = () => {
                     lineHeight: 1.4,
                   }}
                 >
-                  Jedes öffentliche Profil hat eine eindeutige URL die du teilen
-                  kannst
+                  Jedes öffentliche Profil hat eine eindeutige URL die du teilen kannst
                 </p>
               </div>
             </div>
@@ -971,9 +951,7 @@ export const MobileSettingsPage = () => {
             <Logout style={{ fontSize: '24px' }} />
           </div>
           <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
-              Abmelden
-            </h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Abmelden</h3>
             <p
               style={{
                 fontSize: '14px',

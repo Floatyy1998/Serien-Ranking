@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import React, { useRef, useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface HorizontalScrollContainerProps {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
   className,
   style,
   gap = 12,
-  showArrows = 'desktop'
+  showArrows = 'desktop',
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -47,38 +47,38 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
       // Also check on resize
       const resizeObserver = new ResizeObserver(checkScroll);
       resizeObserver.observe(container);
-      
+
       // Check when images load
       const images = container.querySelectorAll('img');
-      images.forEach(img => {
+      images.forEach((img) => {
         if (img.complete) {
           checkScroll();
         } else {
           img.addEventListener('load', checkScroll);
         }
       });
-      
+
       return () => {
         container.removeEventListener('scroll', checkScroll);
         resizeObserver.disconnect();
-        images.forEach(img => img.removeEventListener('load', checkScroll));
+        images.forEach((img) => img.removeEventListener('load', checkScroll));
       };
     }
   }, [children]); // Re-check when children change
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
-    
+
     // Don't scroll if we can't scroll in that direction
     if (direction === 'left' && !canScrollLeft) return;
     if (direction === 'right' && !canScrollRight) return;
-    
+
     const scrollAmount = scrollRef.current.clientWidth * 0.8; // Scroll 80% of container width
     scrollRef.current.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
-    
+
     // Re-check scroll position after animation
     setTimeout(checkScroll, 300);
   };
@@ -97,7 +97,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
             top: '50%',
             transform: 'translateY(-50%)',
             zIndex: 10,
-            background: 'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+            background:
+              'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
             border: 'none',
             color: 'white',
             cursor: 'pointer',
@@ -109,8 +110,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
             backdropFilter: 'blur(4px)',
             transition: 'opacity 0.2s',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
         >
           <ChevronLeft style={{ fontSize: '28px' }} />
         </button>
@@ -126,8 +127,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
           overflowY: 'hidden',
           scrollbarWidth: 'none',
           WebkitOverflowScrolling: 'touch',
-          ...((shouldShowArrows && canScrollLeft) ? { paddingLeft: '40px' } : {}),
-          ...((shouldShowArrows && canScrollRight) ? { paddingRight: '40px' } : {}),
+          ...(shouldShowArrows && canScrollLeft ? { paddingLeft: '40px' } : {}),
+          ...(shouldShowArrows && canScrollRight ? { paddingRight: '40px' } : {}),
         }}
         className="hide-scrollbar"
       >
@@ -144,7 +145,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
             top: '50%',
             transform: 'translateY(-50%)',
             zIndex: 10,
-            background: 'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+            background:
+              'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
             border: 'none',
             color: 'white',
             cursor: 'pointer',
@@ -156,8 +158,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
             backdropFilter: 'blur(4px)',
             transition: 'opacity 0.2s',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
         >
           <ChevronRight style={{ fontSize: '28px' }} />
         </button>

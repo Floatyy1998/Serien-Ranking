@@ -61,31 +61,21 @@ export const MobileHomePage: React.FC = () => {
   // const [selectedCategory, setSelectedCategory] = useState<
   //   'all' | 'series' | 'movies'
   // >('all');
-  const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(
-    new Set()
-  );
+  const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
   const [dragOffsetsEpisodes, setDragOffsetsEpisodes] = useState<{
     [key: string]: number;
   }>({});
-  const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(
-    new Set()
-  );
+  const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
   const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
-  const [swipingContinueEpisodes, setSwipingContinueEpisodes] = useState<
-    Set<string>
-  >(new Set());
+  const [swipingContinueEpisodes, setSwipingContinueEpisodes] = useState<Set<string>>(new Set());
   const [dragOffsetsContinue, setDragOffsetsContinue] = useState<{
     [key: string]: number;
   }>({});
-  const [completingContinueEpisodes, setCompletingContinueEpisodes] = useState<
-    Set<string>
-  >(new Set());
-  const [hiddenContinueEpisodes, setHiddenContinueEpisodes] = useState<
-    Set<string>
-  >(new Set());
-  const [swipeDirections, setSwipeDirections] = useState<
-    Record<string, 'left' | 'right'>
-  >({});
+  const [completingContinueEpisodes, setCompletingContinueEpisodes] = useState<Set<string>>(
+    new Set()
+  );
+  const [hiddenContinueEpisodes, setHiddenContinueEpisodes] = useState<Set<string>>(new Set());
+  const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
 
   // Update time every minute
   useEffect(() => {
@@ -324,7 +314,7 @@ export const MobileHomePage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
-            <Badge badgeContent={unreadActivitiesCount} color='error'>
+            <Badge badgeContent={unreadActivitiesCount} color="error">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => navigate('/activity')}
@@ -378,9 +368,7 @@ export const MobileHomePage: React.FC = () => {
             backdropFilter: 'blur(10px)',
           }}
         >
-          <Search
-            style={{ fontSize: '20px', color: currentTheme.text.muted }}
-          />
+          <Search style={{ fontSize: '20px', color: currentTheme.text.muted }} />
           <span style={{ color: currentTheme.text.muted, fontSize: '14px' }}>
             Suche nach Serien oder Filmen
           </span>
@@ -483,11 +471,7 @@ export const MobileHomePage: React.FC = () => {
               marginBottom: '8px',
             }}
           />
-          <h3
-            style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}
-          >
-            Weiterschauen
-          </h3>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}>Weiterschauen</h3>
           <p
             style={{
               fontSize: '13px',
@@ -532,11 +516,7 @@ export const MobileHomePage: React.FC = () => {
               marginBottom: '8px',
             }}
           />
-          <h3
-            style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}
-          >
-            Entdecken
-          </h3>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}>Entdecken</h3>
           <p
             style={{
               fontSize: '13px',
@@ -638,9 +618,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <PlayCircle
-                style={{ fontSize: '24px', color: currentTheme.status.success }}
-              />
+              <PlayCircle style={{ fontSize: '24px', color: currentTheme.status.success }} />
               Weiterschauen
             </h2>
             <button
@@ -653,10 +631,7 @@ export const MobileHomePage: React.FC = () => {
                 cursor: 'pointer',
               }}
             >
-              Alle{' '}
-              <ChevronRight
-                style={{ fontSize: '16px', verticalAlign: 'middle' }}
-              />
+              Alle <ChevronRight style={{ fontSize: '16px', verticalAlign: 'middle' }} />
             </button>
           </div>
 
@@ -669,7 +644,7 @@ export const MobileHomePage: React.FC = () => {
               position: 'relative',
             }}
           >
-            <AnimatePresence mode='popLayout'>
+            <AnimatePresence mode="popLayout">
               {continueWatching
                 .filter(
                   (item) =>
@@ -680,8 +655,7 @@ export const MobileHomePage: React.FC = () => {
                 .slice(0, 4) // Max 4 episodes like requested
                 .map((item) => {
                   const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
-                  const isCompleting =
-                    completingContinueEpisodes.has(episodeKey);
+                  const isCompleting = completingContinueEpisodes.has(episodeKey);
                   const isSwiping = swipingContinueEpisodes.has(episodeKey);
 
                   return (
@@ -705,14 +679,12 @@ export const MobileHomePage: React.FC = () => {
                       }}
                     >
                       <motion.div
-                        drag='x'
+                        drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
                         dragSnapToOrigin
                         onDragStart={() => {
-                          setSwipingContinueEpisodes((prev) =>
-                            new Set(prev).add(episodeKey)
-                          );
+                          setSwipingContinueEpisodes((prev) => new Set(prev).add(episodeKey));
                         }}
                         onDrag={(_event, info: PanInfo) => {
                           setDragOffsetsContinue((prev) => ({
@@ -734,8 +706,7 @@ export const MobileHomePage: React.FC = () => {
                           });
 
                           if (Math.abs(info.offset.x) > 100) {
-                            const direction =
-                              info.offset.x > 0 ? 'right' : 'left';
+                            const direction = info.offset.x > 0 ? 'right' : 'left';
                             handleContinueEpisodeComplete(item, direction);
                           }
                         }}
@@ -757,11 +728,7 @@ export const MobileHomePage: React.FC = () => {
                           background: isCompleting
                             ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
                             : `rgba(76, 209, 55, ${Math.min(
-                                (Math.abs(
-                                  dragOffsetsContinue[episodeKey] || 0
-                                ) /
-                                  100) *
-                                  0.15,
+                                (Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100) * 0.15,
                                 0.15
                               )})`,
                           border: `1px solid ${
@@ -770,18 +737,12 @@ export const MobileHomePage: React.FC = () => {
                               : `rgba(76, 209, 55, ${
                                   0.2 +
                                   Math.min(
-                                    (Math.abs(
-                                      dragOffsetsContinue[episodeKey] || 0
-                                    ) /
-                                      100) *
-                                      0.3,
+                                    (Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100) * 0.3,
                                     0.3
                                   )
                                 })`
                           }`,
-                          transition: dragOffsetsContinue[episodeKey]
-                            ? 'none'
-                            : 'all 0.3s ease',
+                          transition: dragOffsetsContinue[episodeKey] ? 'none' : 'all 0.3s ease',
                           borderRadius: '12px',
                           padding: '12px',
                           position: 'relative',
@@ -843,8 +804,7 @@ export const MobileHomePage: React.FC = () => {
                               color: '#00d4aa',
                             }}
                           >
-                            S{item.nextEpisode.seasonNumber} E
-                            {item.nextEpisode.episodeNumber} •{' '}
+                            S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
                             {item.nextEpisode.name}
                           </p>
                           <div
@@ -871,7 +831,7 @@ export const MobileHomePage: React.FC = () => {
                           </div>
                         </div>
 
-                        <AnimatePresence mode='wait'>
+                        <AnimatePresence mode="wait">
                           {isCompleting ? (
                             <motion.div
                               initial={{ scale: 0, rotate: -180 }}
@@ -927,9 +887,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <NewReleases
-                style={{ fontSize: '24px', color: currentTheme.status.warning }}
-              />
+              <NewReleases style={{ fontSize: '24px', color: currentTheme.status.warning }} />
               Heute Neu
             </h2>
             <button
@@ -942,10 +900,7 @@ export const MobileHomePage: React.FC = () => {
                 cursor: 'pointer',
               }}
             >
-              Alle{' '}
-              <ChevronRight
-                style={{ fontSize: '16px', verticalAlign: 'middle' }}
-              />
+              Alle <ChevronRight style={{ fontSize: '16px', verticalAlign: 'middle' }} />
             </button>
           </div>
 
@@ -958,13 +913,11 @@ export const MobileHomePage: React.FC = () => {
               position: 'relative',
             }}
           >
-            <AnimatePresence mode='popLayout'>
+            <AnimatePresence mode="popLayout">
               {todayEpisodes
                 .filter(
                   (ep) =>
-                    !hiddenEpisodes.has(
-                      `${ep.seriesId}-${ep.seasonNumber}-${ep.episodeNumber}`
-                    )
+                    !hiddenEpisodes.has(`${ep.seriesId}-${ep.seasonNumber}-${ep.episodeNumber}`)
                 )
                 .slice(0, 5)
                 .map((episode) => {
@@ -993,14 +946,12 @@ export const MobileHomePage: React.FC = () => {
                       }}
                     >
                       <motion.div
-                        drag='x'
+                        drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
                         dragSnapToOrigin
                         onDragStart={() => {
-                          setSwipingEpisodes((prev) =>
-                            new Set(prev).add(episodeKey)
-                          );
+                          setSwipingEpisodes((prev) => new Set(prev).add(episodeKey));
                         }}
                         onDrag={(_event, info: PanInfo) => {
                           setDragOffsetsEpisodes((prev) => ({
@@ -1021,12 +972,8 @@ export const MobileHomePage: React.FC = () => {
                             return newOffsets;
                           });
 
-                          if (
-                            Math.abs(info.offset.x) > 100 &&
-                            !episode.watched
-                          ) {
-                            const direction =
-                              info.offset.x > 0 ? 'right' : 'left';
+                          if (Math.abs(info.offset.x) > 100 && !episode.watched) {
+                            const direction = info.offset.x > 0 ? 'right' : 'left';
                             handleEpisodeComplete(episode, direction);
                           }
                         }}
@@ -1048,35 +995,25 @@ export const MobileHomePage: React.FC = () => {
                           background: isCompleting
                             ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
                             : episode.watched
-                            ? 'rgba(76, 209, 55, 0.1)'
-                            : `rgba(76, 209, 55, ${Math.min(
-                                (Math.abs(
-                                  dragOffsetsEpisodes[episodeKey] || 0
-                                ) /
-                                  100) *
-                                  0.15,
-                                0.15
-                              )})`,
+                              ? 'rgba(76, 209, 55, 0.1)'
+                              : `rgba(76, 209, 55, ${Math.min(
+                                  (Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100) * 0.15,
+                                  0.15
+                                )})`,
                           border: `1px solid ${
                             isCompleting
                               ? 'rgba(76, 209, 55, 0.5)'
                               : episode.watched
-                              ? 'rgba(76, 209, 55, 0.3)'
-                              : `rgba(76, 209, 55, ${
-                                  0.2 +
-                                  Math.min(
-                                    (Math.abs(
-                                      dragOffsetsEpisodes[episodeKey] || 0
-                                    ) /
-                                      100) *
-                                      0.3,
-                                    0.3
-                                  )
-                                })`
+                                ? 'rgba(76, 209, 55, 0.3)'
+                                : `rgba(76, 209, 55, ${
+                                    0.2 +
+                                    Math.min(
+                                      (Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100) * 0.3,
+                                      0.3
+                                    )
+                                  })`
                           }`,
-                          transition: dragOffsetsEpisodes[episodeKey]
-                            ? 'none'
-                            : 'all 0.3s ease',
+                          transition: dragOffsetsEpisodes[episodeKey] ? 'none' : 'all 0.3s ease',
                           borderRadius: '12px',
                           padding: '12px',
                           cursor: 'pointer',
@@ -1104,9 +1041,7 @@ export const MobileHomePage: React.FC = () => {
                         <img
                           src={episode.poster}
                           alt={episode.seriesTitle}
-                          onClick={() =>
-                            navigate(`/series/${episode.seriesId}`)
-                          }
+                          onClick={() => navigate(`/series/${episode.seriesId}`)}
                           style={{
                             width: '50px',
                             height: '75px',
@@ -1134,12 +1069,12 @@ export const MobileHomePage: React.FC = () => {
                               color: episode.watched ? '#4cd137' : '#ffd700',
                             }}
                           >
-                            S{episode.seasonNumber + 1} E{episode.episodeNumber}{' '}
-                            • {episode.episodeName}
+                            S{episode.seasonNumber + 1} E{episode.episodeNumber} •{' '}
+                            {episode.episodeName}
                           </p>
                         </div>
 
-                        <AnimatePresence mode='wait'>
+                        <AnimatePresence mode="wait">
                           {isCompleting ? (
                             <motion.div
                               initial={{ scale: 0, rotate: -180 }}
@@ -1202,9 +1137,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <LocalFireDepartment
-                style={{ fontSize: '24px', color: currentTheme.status.error }}
-              />
+              <LocalFireDepartment style={{ fontSize: '24px', color: currentTheme.status.error }} />
               Trending diese Woche
             </h2>
           </div>
@@ -1345,9 +1278,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <Star
-                style={{ fontSize: '24px', color: currentTheme.status.warning }}
-              />
+              <Star style={{ fontSize: '24px', color: currentTheme.status.warning }} />
               Bestbewertet
             </h2>
             <button
@@ -1360,10 +1291,7 @@ export const MobileHomePage: React.FC = () => {
                 cursor: 'pointer',
               }}
             >
-              Alle{' '}
-              <ChevronRight
-                style={{ fontSize: '16px', verticalAlign: 'middle' }}
-              />
+              Alle <ChevronRight style={{ fontSize: '16px', verticalAlign: 'middle' }} />
             </button>
           </div>
 
@@ -1462,9 +1390,7 @@ export const MobileHomePage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <AutoAwesome
-                style={{ fontSize: '24px', color: currentTheme.primary }}
-              />
+              <AutoAwesome style={{ fontSize: '24px', color: currentTheme.primary }} />
               Empfehlungen für dich
             </h2>
           </div>
