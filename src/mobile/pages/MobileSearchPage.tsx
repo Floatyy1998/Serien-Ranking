@@ -1,4 +1,4 @@
-import { CalendarToday, Check, Close, Movie, Search, TrendingUp } from '@mui/icons-material';
+import { Add, CalendarToday, Check, Close, Movie, Search, Star, TrendingUp } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
@@ -8,8 +8,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { Movie as MovieType } from '../../types/Movie';
 import { Series } from '../../types/Series';
-import { VirtualizedSearchResults } from '../components/VirtualizedSearchResults';
+// Removed VirtualizedSearchResults import - using custom grid layout
 import { MobileDialog } from '../components/MobileDialog';
+import { MobileBackButton } from '../components/MobileBackButton';
 // import { genreIdMapForSeries, genreIdMapForMovies } from '../../config/menuItems';
 
 export const MobileSearchPage: React.FC = () => {
@@ -25,6 +26,7 @@ export const MobileSearchPage: React.FC = () => {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [isDesktop] = useState(window.innerWidth >= 768);
   const [popularSearches] = useState([
     'Breaking Bad',
     'The Last of Us',
@@ -201,23 +203,49 @@ export const MobileSearchPage: React.FC = () => {
   };
 
   return (
-    <div>
+    <div style={{ minHeight: '100vh', background: currentTheme.background.default }}>
       {/* Search Header */}
       <div
         style={{
           position: 'sticky',
           top: 0,
-          background: 'rgba(0, 0, 0, 0.95)',
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           zIndex: 100,
         }}
       >
         <div
           style={{
-            padding: '20px',
-            paddingTop: 'calc(20px + env(safe-area-inset-top))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: `calc(env(safe-area-inset-top) + 20px) 20px 20px`,
+          }}
+        >
+          <MobileBackButton />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Search style={{ fontSize: '24px', color: currentTheme.primary }} />
+            <h1
+              style={{
+                fontSize: '24px',
+                fontWeight: 800,
+                margin: 0,
+                background: currentTheme.primary,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Suche
+            </h1>
+          </div>
+          <div style={{ width: '40px' }}></div> {/* Spacer for alignment */}
+        </div>
+        
+        <div
+          style={{
+            padding: '0 20px 20px',
           }}
         >
           <div
@@ -231,7 +259,6 @@ export const MobileSearchPage: React.FC = () => {
               padding: '12px',
             }}
           >
-            <Search style={{ fontSize: '24px', color: 'rgba(255, 255, 255, 0.5)' }} />
             <input
               type="text"
               value={searchQuery}
@@ -340,7 +367,7 @@ export const MobileSearchPage: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '16px' }}>
         {loading ? (
           <div
             style={{
@@ -364,13 +391,189 @@ export const MobileSearchPage: React.FC = () => {
               {searchResults.length} Ergebnisse für "{searchQuery}"
             </p>
 
-            {/* Virtualized Results List */}
-            <VirtualizedSearchResults
-              results={searchResults}
-              onItemClick={handleItemClick}
-              onAddClick={addToList}
-              height={window.innerHeight - 200} // Account for header and search bar
-            />
+            {/* Search Results Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isDesktop
+                  ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                  : 'repeat(2, 1fr)',
+                gap: isDesktop ? '24px' : '16px',
+                maxWidth: '100%',
+                margin: '0',
+              }}
+            >
+              {searchResults.map((item) => (
+                <div
+                  key={`${item.type}-${item.id}`}
+                  style={{
+                    position: 'relative',
+                  }}
+                >
+                  <div
+                    onClick={() => handleItemClick(item)}
+                    style={{
+                      width: '100%',
+                      aspectRatio: '2/3',
+                      position: 'relative',
+                      borderRadius: '6px',
+                      overflow: 'hidden',
+                      marginBottom: '6px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                    }}
+                  >
+                    <img
+                      src={
+                        item.poster_path
+                          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                          : '/placeholder.jpg'
+                      }
+                      alt={item.title || item.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+
+                    {/* Rating Badge */}
+                    {item.vote_average && item.vote_average > 0 && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '4px',
+                          right: '4px',
+                          padding: '2px 5px',
+                          background: 'rgba(0, 0, 0, 0.8)',
+                          backdropFilter: 'blur(10px)',
+                          borderRadius: '4px',
+                          fontSize: '9px',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                        }}
+                      >
+                        <Star
+                          style={{
+                            fontSize: '10px',
+                            color: currentTheme.status.warning,
+                          }}
+                        />
+                        {item.vote_average.toFixed(1)}
+                      </div>
+                    )}
+
+                    {/* Type Badge */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        left: '4px',
+                        padding: '2px 5px',
+                        background: item.type === 'series' 
+                          ? 'rgba(102, 126, 234, 0.9)'
+                          : 'rgba(255, 107, 107, 0.9)',
+                        borderRadius: '4px',
+                        fontSize: '8px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      {item.type === 'series' ? 'Serie' : 'Film'}
+                    </div>
+
+                    {/* Add/Check Button */}
+                    {!item.inList ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToList(item);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          bottom: '4px',
+                          right: '4px',
+                          width: '24px',
+                          height: '24px',
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          backdropFilter: 'blur(10px)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          padding: 0,
+                        }}
+                      >
+                        <Add
+                          style={{
+                            fontSize: '14px',
+                            color: 'white',
+                          }}
+                        />
+                      </button>
+                    ) : (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '4px',
+                          right: '4px',
+                          width: '24px',
+                          height: '24px',
+                          background: 'rgba(76, 209, 55, 0.9)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Check
+                          style={{
+                            fontSize: '14px',
+                            color: 'white',
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Title and Year */}
+                  <h4
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      margin: 0,
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {item.title || item.name}
+                  </h4>
+
+                  <p
+                    style={{
+                      fontSize: '11px',
+                      color: 'rgba(255, 255, 255, 0.4)',
+                      margin: '2px 0 0 0',
+                    }}
+                  >
+                    {item.release_date || item.first_air_date
+                      ? new Date(item.release_date || item.first_air_date).getFullYear()
+                      : 'TBA'}
+                  </p>
+                </div>
+              ))}
+            </div>
           </>
         ) : searchQuery && !loading ? (
           <p
