@@ -10,26 +10,17 @@ import {
   TrendingUp,
   Whatshot,
 } from '@mui/icons-material';
-import React, { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
-import {
-  genreIdMapForMovies,
-  genreIdMapForSeries,
-} from '../../config/menuItems';
+import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { MobileBackButton } from '../components/MobileBackButton';
-// import { Series } from '../../types/Series';
-// import { Movie } from '../../types/Movie';
-import {
-  logMovieAdded,
-  logSeriesAdded,
-} from '../../features/badges/minimalActivityLogger';
-// import { calculateOverallRating } from '../../lib/rating/rating';
 import { useTheme } from '../../contexts/ThemeContext';
+import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { MobileBackButton } from '../components/MobileBackButton';
 
-export const MobileDiscoverPage: React.FC = () => {
+export const MobileDiscoverPage = memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
@@ -61,28 +52,25 @@ export const MobileDiscoverPage: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Check if item is in list
-  const isInList = (id: string | number, type: 'series' | 'movie') => {
-    if (type === 'series') {
-      const found = seriesList.some(
-        (s: any) => s.id === id || s.id === id.toString()
-      );
-      if (found) console.log('Found in series list:', id);
-      return found;
-    } else {
-      const found = movieList.some(
-        (m: any) => m.id === id || m.id === id.toString()
-      );
-      if (found) console.log('Found in movie list:', id);
-      return found;
-    }
-  };
+  // Check if item is in list - memoized for performance
+  const isInList = useCallback(
+    (id: string | number, type: 'series' | 'movie') => {
+      if (type === 'series') {
+        const found = seriesList.some((s: any) => s.id === id || s.id === id.toString());
+        return found;
+      } else {
+        const found = movieList.some((m: any) => m.id === id || m.id === id.toString());
+        return found;
+      }
+    },
+    [seriesList, movieList]
+  );
 
-  // Get TMDB image URL
-  const getImageUrl = (path: string | null): string => {
+  // Get TMDB image URL - memoized
+  const getImageUrl = useCallback((path: string | null): string => {
     if (!path) return '/placeholder.jpg';
     return `https://image.tmdb.org/t/p/w500${path}`;
-  };
+  }, []);
 
   // Fetch from TMDB
   const fetchFromTMDB = useCallback(
@@ -135,9 +123,7 @@ export const MobileDiscoverPage: React.FC = () => {
           // Add sort for discover endpoint
           params.append(
             'sort_by',
-            activeCategory === 'top_rated'
-              ? 'vote_average.desc'
-              : 'popularity.desc'
+            activeCategory === 'top_rated' ? 'vote_average.desc' : 'popularity.desc'
           );
         }
 
@@ -146,10 +132,7 @@ export const MobileDiscoverPage: React.FC = () => {
 
         if (data.results) {
           const mappedResults = data.results
-            .filter(
-              (item: any) =>
-                !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
-            ) // Hide items already in list
+            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')) // Hide items already in list
             .map((item: any) => ({
               ...item,
               type: activeTab === 'series' ? 'series' : 'movie',
@@ -162,9 +145,7 @@ export const MobileDiscoverPage: React.FC = () => {
           } else {
             setResults((prev) => {
               // Filter out duplicates by creating a Set of existing IDs
-              const existingIds = new Set(
-                prev.map((item: any) => `${item.type}-${item.id}`)
-              );
+              const existingIds = new Set(prev.map((item: any) => `${item.type}-${item.id}`));
               const newResults = mappedResults.filter(
                 (item: any) => !existingIds.has(`${item.type}-${item.id}`)
               );
@@ -176,20 +157,11 @@ export const MobileDiscoverPage: React.FC = () => {
           setHasMore(currentPage < data.total_pages);
         }
       } catch (error) {
-        console.error('Error fetching from TMDB:', error);
       } finally {
         setLoading(false);
       }
     },
-    [
-      activeTab,
-      activeCategory,
-      selectedGenre,
-      page,
-      loading,
-      seriesList,
-      movieList,
-    ]
+    [activeTab, activeCategory, selectedGenre, page, loading, seriesList, movieList]
   );
 
   // Load initial data
@@ -225,10 +197,7 @@ export const MobileDiscoverPage: React.FC = () => {
 
         if (data.results) {
           const mappedResults = data.results
-            .filter(
-              (item: any) =>
-                !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
-            ) // Hide items already in list
+            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')) // Hide items already in list
             .slice(0, 20)
             .map((item: any) => ({
               ...item,
@@ -239,7 +208,6 @@ export const MobileDiscoverPage: React.FC = () => {
           setSearchResults(mappedResults);
         }
       } catch (error) {
-        console.error('Search error:', error);
       } finally {
         setSearchLoading(false);
       }
@@ -258,70 +226,60 @@ export const MobileDiscoverPage: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, showSearch, searchItems]);
 
-  // Add to list
-  const addToList = async (item: any) => {
-    if (!user) {
-      alert('Bitte einloggen!');
-      return;
-    }
-
-    const endpoint =
-      item.type === 'series'
-        ? 'https://serienapi.konrad-dinges.de/add'
-        : 'https://serienapi.konrad-dinges.de/addMovie';
-
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: import.meta.env.VITE_USER,
-          id: item.id,
-          uuid: user.uid,
-        }),
-      });
-
-      if (response.ok) {
-        setResults((prev) =>
-          prev.map((r) => (r.id === item.id ? { ...r, inList: true } : r))
-        );
-
-        // Activity-Logging für Friend + Badge-System (wie Desktop)
-        if (item.type === 'series') {
-          await logSeriesAdded(
-            user.uid,
-            item.name || item.title || 'Unbekannte Serie',
-            item.id
-          );
-        } else {
-          await logMovieAdded(
-            user.uid,
-            item.title || 'Unbekannter Film',
-            item.id
-          );
-        }
+  // Add to list - memoized
+  const addToList = useCallback(
+    async (item: any) => {
+      if (!user) {
+        alert('Bitte einloggen!');
+        return;
       }
-    } catch (error) {
-      console.error('Error adding item:', error);
-    }
-  };
 
-  // Handle item click
-  const handleItemClick = (item: any) => {
-    if (item.inList) {
-      navigate(
-        item.type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`
-      );
-    } else {
-      addToList(item);
-    }
-  };
+      const endpoint =
+        item.type === 'series'
+          ? 'https://serienapi.konrad-dinges.de/add'
+          : 'https://serienapi.konrad-dinges.de/addMovie';
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: import.meta.env.VITE_USER,
+            id: item.id,
+            uuid: user.uid,
+          }),
+        });
+
+        if (response.ok) {
+          setResults((prev) => prev.map((r) => (r.id === item.id ? { ...r, inList: true } : r)));
+
+          // Activity-Logging für Friend + Badge-System (wie Desktop)
+          if (item.type === 'series') {
+            await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id);
+          } else {
+            await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id);
+          }
+        }
+      } catch (error) {}
+    },
+    [user]
+  );
+
+  // Handle item click - memoized
+  const handleItemClick = useCallback(
+    (item: any) => {
+      if (item.inList) {
+        navigate(item.type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
+      } else {
+        addToList(item);
+      }
+    },
+    [navigate, addToList]
+  );
 
   // Load more on scroll
   const handleScroll = useCallback(() => {
-    const scrollContainer = document.querySelector(
-      '.mobile-discover-container'
-    );
+    const scrollContainer = document.querySelector('.mobile-discover-container');
     if (!scrollContainer) return;
 
     const scrollTop = scrollContainer.scrollTop;
@@ -329,30 +287,25 @@ export const MobileDiscoverPage: React.FC = () => {
     const clientHeight = scrollContainer.clientHeight;
 
     // Check if we're within 500px of the bottom (increased threshold)
-    if (
-      scrollHeight - scrollTop - clientHeight < 500 &&
-      hasMore &&
-      !loading &&
-      !showSearch
-    ) {
-      console.log('Loading more items...', { page, hasMore, loading });
+    if (scrollHeight - scrollTop - clientHeight < 500 && hasMore && !loading && !showSearch) {
       fetchFromTMDB(false); // Pass false to load next page, not reset
     }
   }, [hasMore, loading, fetchFromTMDB, showSearch, page]);
 
   // Attach scroll listener
   useEffect(() => {
-    const scrollContainer = document.querySelector(
-      '.mobile-discover-container'
-    );
+    const scrollContainer = document.querySelector('.mobile-discover-container');
     if (scrollContainer) {
       scrollContainer.addEventListener('scroll', handleScroll);
       return () => scrollContainer.removeEventListener('scroll', handleScroll);
     }
   }, [handleScroll]);
 
-  const genres =
-    activeTab === 'series' ? genreIdMapForSeries : genreIdMapForMovies;
+  // Memoize genres to prevent recreation on every render
+  const genres = useMemo(
+    () => (activeTab === 'series' ? genreIdMapForSeries : genreIdMapForMovies),
+    [activeTab]
+  );
 
   return (
     <div
@@ -385,9 +338,7 @@ export const MobileDiscoverPage: React.FC = () => {
               alignItems: 'flex-start',
             }}
           >
-            <div
-              style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}
-            >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               <MobileBackButton />
               <div>
                 <h1
@@ -444,10 +395,8 @@ export const MobileDiscoverPage: React.FC = () => {
             }}
           >
             <input
-              type='text'
-              placeholder={`${
-                activeTab === 'series' ? 'Serien' : 'Filme'
-              } suchen...`}
+              type="text"
+              placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -478,16 +427,10 @@ export const MobileDiscoverPage: React.FC = () => {
               flex: 1,
               padding: '12px',
               background:
-                activeTab === 'series'
-                  ? currentTheme.primary
-                  : `${currentTheme.text.primary}0D`,
-              border:
-                activeTab === 'series'
-                  ? 'none'
-                  : `1px solid ${currentTheme.border.default}`,
+                activeTab === 'series' ? currentTheme.primary : `${currentTheme.text.primary}0D`,
+              border: activeTab === 'series' ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '12px',
-              color:
-                activeTab === 'series' ? 'white' : currentTheme.text.primary,
+              color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
               fontSize: '14px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -510,13 +453,9 @@ export const MobileDiscoverPage: React.FC = () => {
                 activeTab === 'movies'
                   ? currentTheme.status.error
                   : `${currentTheme.text.primary}0D`,
-              border:
-                activeTab === 'movies'
-                  ? 'none'
-                  : `1px solid ${currentTheme.border.default}`,
+              border: activeTab === 'movies' ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '12px',
-              color:
-                activeTab === 'series' ? 'white' : currentTheme.text.primary,
+              color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
               fontSize: '14px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -554,8 +493,7 @@ export const MobileDiscoverPage: React.FC = () => {
                     ? `1px solid ${currentTheme.primary}66`
                     : `1px solid ${currentTheme.border.default}`,
                 borderRadius: '16px',
-                color:
-                  activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -563,12 +501,8 @@ export const MobileDiscoverPage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <TrendingUp
-                style={{ fontSize: '32px', color: currentTheme.primary }}
-              />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>
-                Im Trend
-              </span>
+              <TrendingUp style={{ fontSize: '32px', color: currentTheme.primary }} />
+              <span style={{ fontSize: '14px', fontWeight: 600 }}>Im Trend</span>
             </button>
 
             <button
@@ -584,8 +518,7 @@ export const MobileDiscoverPage: React.FC = () => {
                     ? `1px solid ${currentTheme.status.error}66`
                     : `1px solid ${currentTheme.border.default}`,
                 borderRadius: '16px',
-                color:
-                  activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -593,9 +526,7 @@ export const MobileDiscoverPage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <Whatshot
-                style={{ fontSize: '32px', color: currentTheme.status.error }}
-              />
+              <Whatshot style={{ fontSize: '32px', color: currentTheme.status.error }} />
               <span style={{ fontSize: '14px', fontWeight: 600 }}>Beliebt</span>
             </button>
 
@@ -612,8 +543,7 @@ export const MobileDiscoverPage: React.FC = () => {
                     ? `1px solid ${currentTheme.status.warning}66`
                     : `1px solid ${currentTheme.border.default}`,
                 borderRadius: '16px',
-                color:
-                  activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -621,12 +551,8 @@ export const MobileDiscoverPage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <Star
-                style={{ fontSize: '32px', color: currentTheme.status.warning }}
-              />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>
-                Top Bewertet
-              </span>
+              <Star style={{ fontSize: '32px', color: currentTheme.status.warning }} />
+              <span style={{ fontSize: '14px', fontWeight: 600 }}>Top Bewertet</span>
             </button>
 
             <button
@@ -642,8 +568,7 @@ export const MobileDiscoverPage: React.FC = () => {
                     ? `1px solid ${currentTheme.status.success}66`
                     : `1px solid ${currentTheme.border.default}`,
                 borderRadius: '16px',
-                color:
-                  activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -651,9 +576,7 @@ export const MobileDiscoverPage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <NewReleases
-                style={{ fontSize: '32px', color: currentTheme.status.success }}
-              />
+              <NewReleases style={{ fontSize: '32px', color: currentTheme.status.success }} />
               <span style={{ fontSize: '14px', fontWeight: 600 }}>
                 {activeTab === 'movies' ? 'Demnächst' : 'Läuft gerade'}
               </span>
@@ -678,8 +601,7 @@ export const MobileDiscoverPage: React.FC = () => {
                 background: `${currentTheme.text.primary}0D`,
                 border: `1px solid ${currentTheme.border.default}`,
                 borderRadius: '8px',
-                color:
-                  activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 fontSize: '14px',
                 fontWeight: 500,
                 cursor: 'pointer',
@@ -687,8 +609,7 @@ export const MobileDiscoverPage: React.FC = () => {
             >
               <FilterList style={{ fontSize: '18px' }} />
               Genre Filter
-              {selectedGenre &&
-                ` (${genres.find((g) => g.id === selectedGenre)?.name})`}
+              {selectedGenre && ` (${genres.find((g) => g.id === selectedGenre)?.name})`}
             </button>
 
             {showFilters && (
@@ -710,14 +631,9 @@ export const MobileDiscoverPage: React.FC = () => {
                     background: !selectedGenre
                       ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                       : 'rgba(255, 255, 255, 0.05)',
-                    border: !selectedGenre
-                      ? 'none'
-                      : '1px solid rgba(255, 255, 255, 0.1)',
+                    border: !selectedGenre ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '16px',
-                    color:
-                      activeTab === 'series'
-                        ? 'white'
-                        : currentTheme.text.primary,
+                    color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                     fontSize: '12px',
                     cursor: 'pointer',
                   }}
@@ -738,14 +654,9 @@ export const MobileDiscoverPage: React.FC = () => {
                           ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                           : 'rgba(255, 255, 255, 0.05)',
                       border:
-                        selectedGenre === genre.id
-                          ? 'none'
-                          : '1px solid rgba(255, 255, 255, 0.1)',
+                        selectedGenre === genre.id ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
                       borderRadius: '16px',
-                      color:
-                        activeTab === 'series'
-                          ? 'white'
-                          : currentTheme.text.primary,
+                      color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                       fontSize: '12px',
                       cursor: 'pointer',
                     }}
@@ -761,7 +672,7 @@ export const MobileDiscoverPage: React.FC = () => {
 
       {/* Scrollable Content Area */}
       <div
-        className='mobile-discover-container'
+        className="mobile-discover-container"
         style={{
           flex: 1,
           overflowY: 'auto',
@@ -779,9 +690,7 @@ export const MobileDiscoverPage: React.FC = () => {
                   padding: '40px',
                 }}
               >
-                <div style={{ color: currentTheme.text.muted }}>
-                  Suche läuft...
-                </div>
+                <div style={{ color: currentTheme.text.muted }}>Suche läuft...</div>
               </div>
             ) : searchResults.length === 0 && searchQuery.trim() ? (
               <div
@@ -961,9 +870,7 @@ export const MobileDiscoverPage: React.FC = () => {
                       }}
                     >
                       {item.release_date || item.first_air_date
-                        ? new Date(
-                            item.release_date || item.first_air_date
-                          ).getFullYear()
+                        ? new Date(item.release_date || item.first_air_date).getFullYear()
                         : 'TBA'}
                     </p>
                   </div>
@@ -1108,9 +1015,7 @@ export const MobileDiscoverPage: React.FC = () => {
                   }}
                 >
                   {item.release_date || item.first_air_date
-                    ? new Date(
-                        item.release_date || item.first_air_date
-                      ).getFullYear()
+                    ? new Date(item.release_date || item.first_air_date).getFullYear()
                     : 'TBA'}
                 </p>
               </div>
@@ -1136,4 +1041,6 @@ export const MobileDiscoverPage: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+MobileDiscoverPage.displayName = 'MobileDiscoverPage';

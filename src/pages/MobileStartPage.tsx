@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, Button, Container, Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
 import {
@@ -65,7 +64,7 @@ const FeatureCard = ({ icon, title, description, delay }: any) => (
   </motion.div>
 );
 
-export const MobileStartPage: React.FC = () => {
+export const MobileStartPage = () => {
   return (
     <Box
       sx={{

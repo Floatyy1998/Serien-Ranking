@@ -44,12 +44,7 @@ export const useDataProtection = () => {
       await update.operation();
       // Erfolgreich - entferne aus Queue
       pendingUpdatesRef.current.delete(update.id);
-    } catch (error) {
-      console.warn(
-        `⚠️ Update ${update.id} failed (attempt ${update.retryCount + 1}):`,
-        error
-      );
-
+    } catch {
       if (update.retryCount < update.maxRetries) {
         update.retryCount++;
         // Exponential backoff: 1s, 2s, 4s
@@ -64,9 +59,7 @@ export const useDataProtection = () => {
           }
         }, delay);
       } else {
-        console.error(
-          `❌ Update ${update.id} failed after ${update.maxRetries} attempts`
-        );
+        // console.error(`❌ Update ${update.id} failed after ${update.maxRetries} attempts`);
         pendingUpdatesRef.current.delete(update.id);
       }
     }
@@ -89,8 +82,8 @@ export const useDataProtection = () => {
 
     for (const update of pendingUpdatesRef.current.values()) {
       promises.push(
-        update.operation().catch((error) => {
-          console.error(`Emergency flush failed for ${update.id}:`, error);
+        update.operation().catch(() => {
+          // console.error(`Emergency flush failed for ${update.id}`);
         })
       );
     }
@@ -103,8 +96,8 @@ export const useDataProtection = () => {
           setTimeout(() => reject(new Error('Timeout')), 2000)
         ),
       ]);
-    } catch (error) {
-      console.warn('Some updates may not have completed before page unload');
+    } catch {
+      // console.warn('Some updates may not have completed before page unload');
     }
 
     pendingUpdatesRef.current.clear();
@@ -147,8 +140,8 @@ export const useDataProtection = () => {
                 // Micro-wait - sehr limitiert, aber besser als nichts
               }
             }
-          } catch (error) {
-            console.error(`Emergency update failed for ${update.id}:`, error);
+          } catch {
+            // console.error(`Emergency update failed for ${update.id}`);
           }
         }
 
@@ -159,18 +152,16 @@ export const useDataProtection = () => {
     const handleUnload = () => {
       // Letzter Versuch für Browser die das unterstützen
       if (hasPendingUpdates()) {
-        console.warn(
-          `🚨 Page unloading with ${pendingUpdatesRef.current.size} pending updates!`
-        );
+        // console.warn(`🚨 Page unloading with ${pendingUpdatesRef.current.size} pending updates!`);
         // Versuche ein letztes Mal alle Updates (sehr limitiert)
-        const pendingOps = Array.from(pendingUpdatesRef.current.values());
-        for (const update of pendingOps) {
-          try {
-            console.warn(`⚠️ Lost update: ${update.id}`);
-          } catch (error) {
-            console.error(`Unload cleanup failed for ${update.id}:`, error);
-          }
-        }
+        // const pendingOps = Array.from(pendingUpdatesRef.current.values());
+        // for (const update of pendingOps) {
+        //   try {
+        //     // console.warn(`⚠️ Lost update: ${update.id}`);
+        //   } catch {
+        //     // console.error(`Unload cleanup failed for ${update.id}`);
+        //   }
+        // }
       }
     };
 
@@ -182,7 +173,7 @@ export const useDataProtection = () => {
       const now = Date.now();
       for (const [id, update] of pendingUpdatesRef.current.entries()) {
         if (now - update.timestamp > 30000) {
-          console.warn(`Removing stale update: ${id}`);
+          // console.warn(`Removing stale update: ${id}`);
           pendingUpdatesRef.current.delete(id);
         }
       }

@@ -63,7 +63,7 @@ const ratingEmojis = [
   { value: 10, icon: <SentimentVerySatisfied />, label: 'Meisterwerk', color: '#00d2d3' },
 ];
 
-export const MobileRatingPage: React.FC = () => {
+export const MobileRatingPage = () => {
   const { id, type } = useParams<{ id: string; type: 'series' | 'movie' }>();
   const navigate = useNavigate();
   const { user } = useAuth()!;
@@ -84,8 +84,6 @@ export const MobileRatingPage: React.FC = () => {
   // Initialize ratings from Firebase genre-based structure
   useEffect(() => {
     if (item && user) {
-      console.log('Item type:', type);
-      console.log('Item genres from object:', item.genre?.genres);
       
       // Get ALL possible genres based on type (movie or series)
       // Use the complete genre list from menuItems
@@ -93,7 +91,6 @@ export const MobileRatingPage: React.FC = () => {
         ? genreMenuItemsForMovies.filter(g => g.value !== 'All').map(g => g.label)
         : genreMenuItems.filter(g => g.value !== 'All').map(g => g.label);
       
-      console.log('All possible genres for', type, ':', allPossibleGenres);
       
       // Initialize ratings object with ALL possible genres set to 0
       const loadedRatings: Record<string, number> = {};
@@ -118,7 +115,6 @@ export const MobileRatingPage: React.FC = () => {
         setOverallRating(0);
       }
       
-      console.log('Loaded ratings:', loadedRatings);
       setGenreRatings(loadedRatings);
     }
   }, [item, user, type]);
@@ -202,7 +198,6 @@ export const MobileRatingPage: React.FC = () => {
       
       navigate('/');
     } catch (error) {
-      console.error('Error saving rating:', error);
     } finally {
       setIsSaving(false);
     }
@@ -224,7 +219,6 @@ export const MobileRatingPage: React.FC = () => {
       
       navigate('/');
     } catch (error) {
-      console.error('Error deleting rating:', error);
     } finally {
       setIsSaving(false);
     }

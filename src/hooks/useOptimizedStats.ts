@@ -40,7 +40,8 @@ export const useOptimizedStats = (): Stats => {
     
     for (let i = 0; i < seriesList.length; i++) {
       const series = seriesList[i];
-      if (!series?.nmr) continue;
+      // Allow nmr: 0 as valid
+      if (!series || (series.nmr === undefined || series.nmr === null)) continue;
       
       totalSeries++;
       
@@ -85,7 +86,8 @@ export const useOptimizedStats = (): Stats => {
     
     for (let i = 0; i < movieList.length; i++) {
       const movie = movieList[i];
-      if (!movie?.nmr) continue;
+      // Allow nmr: 0 as valid
+      if (!movie || (movie.nmr === undefined || movie.nmr === null)) continue;
       
       totalMovies++;
       

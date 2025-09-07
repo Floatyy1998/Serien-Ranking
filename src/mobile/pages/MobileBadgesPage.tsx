@@ -21,7 +21,6 @@ import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MobileBackButton } from '../components/MobileBackButton';
 import { getFormattedDate } from '../../lib/date/date.utils';
-// import firebase from 'firebase/compat/app';
 import './MobileBadgesPage.css';
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -46,7 +45,7 @@ const categoryColors: Record<string, string> = {
   social: '#ee5a6f',
 };
 
-export const MobileBadgesPage: React.FC = () => {
+export const MobileBadgesPage = () => {
   const { } = useBadges();
   const { user } = useAuth()!;
   const { currentTheme } = useTheme();
@@ -76,7 +75,6 @@ export const MobileBadgesPage: React.FC = () => {
         const earnedBadges = await badgeSystem.getUserBadges();
         setUserBadges(earnedBadges);
       } catch (error) {
-        console.error('Failed to load user badges:', error);
         // Fallback to empty array
         setUserBadges([]);
       } finally {
@@ -143,7 +141,6 @@ export const MobileBadgesPage: React.FC = () => {
       const earnedBadges = await badgeSystem.getUserBadges();
       setUserBadges(earnedBadges);
     } catch (error) {
-      console.error('Failed to refresh badges:', error);
     } finally {
       setTimeout(() => setRefreshing(false), 500);
     }

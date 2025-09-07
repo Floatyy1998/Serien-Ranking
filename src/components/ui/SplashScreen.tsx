@@ -1,5 +1,5 @@
 import { Box, keyframes, styled } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // ============= MODERN ANIMATIONS =============
 
@@ -449,7 +449,7 @@ interface SplashScreenProps {
   minDisplayTime?: number;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
+export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [isHiding, setIsHiding] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('Initialisiere System');

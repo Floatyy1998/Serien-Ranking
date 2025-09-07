@@ -117,7 +117,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
       search: searchQuery,
       sortBy: selectedSort
     });
-  }, [selectedGenre, selectedProvider, selectedQuickFilter, searchQuery, selectedSort]);
+  }, [selectedGenre, selectedProvider, selectedQuickFilter, searchQuery, selectedSort, onFilterChange]);
 
   const clearFilters = () => {
     setSelectedGenre('');

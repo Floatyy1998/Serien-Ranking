@@ -14,7 +14,20 @@ export const useContinueWatching = () => {
   const cacheRef = useRef<{ items: any[] | null; deps: string }>({ items: null, deps: '' });
   
   const continueWatching = useMemo(() => {
-    const depsString = `${seriesList.length}`;
+    // Create a more detailed dependency string that includes watched status
+    // This will invalidate the cache when episodes are marked as watched
+    let watchedCount = 0;
+    for (const series of seriesList) {
+      if (series.seasons) {
+        for (const season of series.seasons) {
+          if (season.episodes) {
+            watchedCount += season.episodes.filter((ep: any) => ep.watched).length;
+          }
+        }
+      }
+    }
+    
+    const depsString = `${seriesList.length}-${watchedCount}`;
     
     if (cacheRef.current.items && cacheRef.current.deps === depsString) {
       return cacheRef.current.items;

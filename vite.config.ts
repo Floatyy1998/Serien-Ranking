@@ -2,12 +2,68 @@ import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
 import { defineConfig } from 'vite';
 import { criticalCSSPlugin } from './vite-plugin-critical-css';
+import { VitePWA } from 'vite-plugin-pwa';
+import viteCompression from 'vite-plugin-compression';
+import { visualizer } from 'rollup-plugin-visualizer';
+import path from 'path';
 
 dotenv.config();
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), criticalCSSPlugin()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
+        ],
+      },
+    }),
+    criticalCSSPlugin(),
+    // PWA with aggressive caching
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico'],
+      manifest: {
+        name: 'Serien Tracker',
+        short_name: 'Serien',
+        theme_color: '#8b5cf6',
+        background_color: '#0a0e1a',
+        display: 'standalone',
+        orientation: 'portrait',
+        icons: [
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tmdb-images',
+              expiration: { maxEntries: 1000, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/api\.themoviedb\.org\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'tmdb-api',
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 },
+            },
+          },
+        ],
+      },
+    }),
+    // Compression
+    viteCompression({ algorithm: 'gzip', ext: '.gz', threshold: 1024 }),
+    viteCompression({ algorithm: 'brotliCompress', ext: '.br', threshold: 1024 }),
+    visualizer({ open: false, gzipSize: true, brotliSize: true }),
+  ],
   define: {
     // Firebase Umgebungsvariablen - korrigierte Namen
     'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(
@@ -38,17 +94,29 @@ export default defineConfig({
     'process.env.VITE_API_TMDB': JSON.stringify(process.env.VITE_API_TMDB),
   },
   publicDir: 'public', // Stellen Sie sicher, dass dies korrekt konfiguriert ist
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@mobile': path.resolve(__dirname, './src/mobile'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@lib': path.resolve(__dirname, './src/lib'),
+    },
+  },
   build: {
-    chunkSizeWarningLimit: 200, // Aggressive limit for 90+ score
+    target: 'esnext',
+    chunkSizeWarningLimit: 150,
     minify: 'terser',
     cssMinify: true,
-    sourcemap: false, // Disable sourcemaps for production
+    cssCodeSplit: true,
+    sourcemap: false,
+    reportCompressedSize: false,
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
-        passes: 2, // More aggressive compression
+        passes: 2, // Optimized compression passes
         // Remove unsafe options that break Firebase
         unsafe: false,
         unsafe_comps: false,

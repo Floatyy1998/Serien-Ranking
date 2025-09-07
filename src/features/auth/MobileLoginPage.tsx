@@ -22,7 +22,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
 
-export const MobileLoginPage: React.FC = () => {
+export const MobileLoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

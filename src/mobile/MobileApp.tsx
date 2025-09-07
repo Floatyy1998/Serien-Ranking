@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { DynamicThemeProvider } from '../contexts/ThemeContext';
 import { MobileLayout } from './components/MobileLayout';
@@ -23,15 +22,15 @@ import { MobileThemePage } from './pages/MobileThemePage';
 import { MobileWatchNextPage } from './pages/MobileWatchNextPage';
 import './styles/MobileApp.css';
 
-export const MobileApp: React.FC = () => {
+export const MobileApp = () => {
   return (
     <DynamicThemeProvider>
-      <div className='mobile-app'>
+      <div className="mobile-app">
         <ScrollToTop />
         <Routes>
           {/* Main Pages */}
           <Route
-            path='/'
+            path="/"
             element={
               <MobileLayout>
                 <MobileHomePage />
@@ -39,7 +38,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/watchlist'
+            path="/watchlist"
             element={
               <MobileLayout>
                 <MobileWatchNextPage />
@@ -47,7 +46,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/ratings'
+            path="/ratings"
             element={
               <MobileLayout>
                 <MobileRatingsPage />
@@ -55,7 +54,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/profile'
+            path="/profile"
             element={
               <MobileLayout>
                 <MobileProfilePage />
@@ -65,7 +64,7 @@ export const MobileApp: React.FC = () => {
 
           {/* Additional Pages */}
           <Route
-            path='/new-episodes'
+            path="/new-episodes"
             element={
               <MobileLayout>
                 <MobileNewEpisodesPage />
@@ -73,7 +72,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/all-episodes'
+            path="/all-episodes"
             element={
               <MobileLayout>
                 <MobileNewEpisodesPage showAllSeries />
@@ -81,7 +80,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/discover'
+            path="/discover"
             element={
               <MobileLayout>
                 <MobileDiscoverPage />
@@ -89,7 +88,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/activity'
+            path="/activity"
             element={
               <MobileLayout hideNav>
                 <MobileActivityPage />
@@ -97,7 +96,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/search'
+            path="/search"
             element={
               <MobileLayout>
                 <MobileSearchPage />
@@ -105,7 +104,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/badges'
+            path="/badges"
             element={
               <MobileLayout hideNav>
                 <MobileBadgesPage />
@@ -113,7 +112,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/theme'
+            path="/theme"
             element={
               <MobileLayout hideNav>
                 <MobileThemePage />
@@ -121,7 +120,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/stats'
+            path="/stats"
             element={
               <MobileLayout hideNav>
                 <MobileStatsPage />
@@ -129,7 +128,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/settings'
+            path="/settings"
             element={
               <MobileLayout hideNav>
                 <MobileSettingsPage />
@@ -137,7 +136,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/profile-settings'
+            path="/profile-settings"
             element={
               <MobileLayout hideNav>
                 <MobileProfileSettingsPage />
@@ -147,7 +146,7 @@ export const MobileApp: React.FC = () => {
 
           {/* Detail Pages */}
           <Route
-            path='/series/:id'
+            path="/series/:id"
             element={
               <MobileLayout hideNav>
                 <MobileSeriesDetailPage />
@@ -155,7 +154,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/episodes/:id'
+            path="/episodes/:id"
             element={
               <MobileLayout hideNav>
                 <MobileEpisodeManagementPage />
@@ -163,7 +162,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/rating/:type/:id'
+            path="/rating/:type/:id"
             element={
               <MobileLayout hideNav>
                 <MobileRatingPage />
@@ -171,7 +170,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/movie/:id'
+            path="/movie/:id"
             element={
               <MobileLayout hideNav>
                 <MobileMovieDetailPage />
@@ -179,7 +178,7 @@ export const MobileApp: React.FC = () => {
             }
           />
           <Route
-            path='/friend/:id'
+            path="/friend/:id"
             element={
               <MobileLayout hideNav>
                 <MobileFriendProfilePage />
@@ -188,9 +187,9 @@ export const MobileApp: React.FC = () => {
           />
 
           {/* Redirect old routes */}
-          <Route path='/profile/:id' element={<MobileFriendProfilePage />} />
-          <Route path='/friends' element={<Navigate to='/activity' />} />
-          <Route path='*' element={<Navigate to='/' />} />
+          <Route path="/profile/:id" element={<MobileFriendProfilePage />} />
+          <Route path="/friends" element={<Navigate to="/activity" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </DynamicThemeProvider>

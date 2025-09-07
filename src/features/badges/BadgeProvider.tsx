@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { EarnedBadge } from './badgeDefinitions';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
@@ -24,7 +18,7 @@ interface BadgeProviderProps {
   children: ReactNode;
 }
 
-export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
+export const BadgeProvider = ({ children }: BadgeProviderProps) => {
   const auth = useAuth();
   const user = auth?.user;
 
@@ -40,9 +34,7 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         // Zusätzliche Duplikat-Filterung auf UI-Ebene
         setNewBadges((prev) => {
           const existingBadgeIds = new Set(prev.map((b) => b.id));
-          const newUniqueBadges = badges.filter(
-            (badge) => !existingBadgeIds.has(badge.id)
-          );
+          const newUniqueBadges = badges.filter((badge) => !existingBadgeIds.has(badge.id));
 
           if (newUniqueBadges.length > 0) {
             return [...prev, ...newUniqueBadges];
@@ -64,28 +56,20 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
       let cleanup: (() => void) | null = null;
 
       // Dynamischer Import um zirkuläre Abhängigkeiten zu vermeiden
-      import('./minimalActivityLogger').then(
-        ({ registerBadgeCallback, removeBadgeCallback }) => {
-          registerBadgeCallback(user.uid, handleNewBadges);
+      import('./minimalActivityLogger').then(({ registerBadgeCallback, removeBadgeCallback }) => {
+        registerBadgeCallback(user.uid, handleNewBadges);
 
-          cleanup = () => {
-            removeBadgeCallback(user.uid);
-          };
-        }
-      );
+        cleanup = () => {
+          removeBadgeCallback(user.uid);
+        };
+      });
 
       // Event-Listener für Badge-Dialog-Events
-      window.addEventListener(
-        'badgeDialogOpened',
-        handleBadgeDialogOpened as EventListener
-      );
+      window.addEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
 
       // Korrekte Cleanup-Funktion
       return () => {
-        window.removeEventListener(
-          'badgeDialogOpened',
-          handleBadgeDialogOpened as EventListener
-        );
+        window.removeEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
         if (cleanup) {
           cleanup();
         }
@@ -182,10 +166,7 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
       />
 
       {/* Badge Overview Dialog */}
-      <BadgeOverviewDialog
-        open={showOverviewDialog}
-        onClose={() => setShowOverviewDialog(false)}
-      />
+      <BadgeOverviewDialog open={showOverviewDialog} onClose={() => setShowOverviewDialog(false)} />
     </BadgeContext.Provider>
   );
 };

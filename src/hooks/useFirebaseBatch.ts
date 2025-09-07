@@ -43,13 +43,13 @@ export function useFirebaseBatch(config: BatchConfig = {}) {
       batchRef.current = [];
       firstUpdateRef.current = null;
     } catch (error) {
-      // console.error('❌ Batch update failed:', error);
+      // // console.error('❌ Batch update failed:', error);
       // Bei Fehler: Versuche einzelne Updates
       for (const { path, value } of batchRef.current) {
         try {
           await firebase.database().ref(path).set(value);
         } catch (singleError) {
-          // console.error(`❌ Single update failed for ${path}:`, singleError);
+          // // console.error(`❌ Single update failed for ${path}:`, singleError);
         }
       }
       batchRef.current = [];

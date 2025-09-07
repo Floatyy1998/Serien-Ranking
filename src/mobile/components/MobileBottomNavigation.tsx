@@ -1,14 +1,8 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Home,
-  PlayCircle,
-  Star,
-  Person,
-  BarChart,
-} from '@mui/icons-material';
+import { BarChart, Home, Person, PlayCircle, Star } from '@mui/icons-material';
 import { Badge } from '@mui/material';
+import { AnimatePresence, motion } from 'framer-motion';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useBadges } from '../../features/badges/BadgeProvider';
 import './MobileBottomNavigation.css';
@@ -21,7 +15,7 @@ interface NavItem {
   badge?: number | boolean;
 }
 
-export const MobileBottomNavigation: React.FC = () => {
+export const MobileBottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
@@ -59,15 +53,16 @@ export const MobileBottomNavigation: React.FC = () => {
       path: '/profile',
       icon: <Person />,
       label: 'Mehr',
-      badge: (unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0)) > 0 
-        ? (unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0)) 
-        : undefined,
+      badge:
+        unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0) > 0
+          ? unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0)
+          : undefined,
     },
   ];
 
   const isActive = (path: string) => {
     if (path === '/') {
-      return location.pathname === '/';
+      return location.pathname === '/' || location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };
@@ -77,7 +72,7 @@ export const MobileBottomNavigation: React.FC = () => {
     if (navigator.vibrate) {
       navigator.vibrate(10);
     }
-    
+
     // If already on the page, scroll to top
     if (isActive(path)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -87,10 +82,13 @@ export const MobileBottomNavigation: React.FC = () => {
   };
 
   // Hide on detail pages
-  const shouldHide = location.pathname.includes('/series/') || 
-                     location.pathname.includes('/movie/') ||
-                     location.pathname.includes('/rating/') ||  // Only hide for /rating/:type/:id
-                     location.pathname.includes('/episodes');
+  const shouldHide =
+    location.pathname.includes('/series/') ||
+    location.pathname.includes('/movie/') ||
+    location.pathname.includes('/rating/') || // Only hide for /rating/:type/:id
+    location.pathname.includes('/episodes') ||
+    location.pathname === '/all-episodes' ||
+    location.pathname === '/new-episodes';
 
   if (shouldHide) return null;
 
@@ -99,7 +97,7 @@ export const MobileBottomNavigation: React.FC = () => {
       <div className="nav-container">
         {navItems.map((item) => {
           const active = isActive(item.path);
-          
+
           return (
             <motion.button
               key={item.id}
@@ -123,11 +121,9 @@ export const MobileBottomNavigation: React.FC = () => {
                     },
                   }}
                 >
-                  <div className="nav-icon">
-                    {item.icon}
-                  </div>
+                  <div className="nav-icon">{item.icon}</div>
                 </Badge>
-                
+
                 {/* Active Indicator */}
                 <AnimatePresence>
                   {active && (
@@ -142,13 +138,13 @@ export const MobileBottomNavigation: React.FC = () => {
                   )}
                 </AnimatePresence>
               </div>
-              
+
               <span className="nav-label">{item.label}</span>
             </motion.button>
           );
         })}
       </div>
-      
+
       {/* Safe area for iPhone */}
       <div className="safe-area-bottom" />
     </div>

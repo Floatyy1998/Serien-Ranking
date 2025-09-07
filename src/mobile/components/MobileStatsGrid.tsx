@@ -19,6 +19,7 @@ import {
   ExpandLess,
 } from '@mui/icons-material';
 import { colors } from '../../theme';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useAuth } from '../../App';
@@ -32,7 +33,7 @@ interface StatCardProps {
   subValue?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color, subValue }) => (
+const StatCard = ({ icon, label, value, color, subValue }: StatCardProps) => (
   <Paper
     sx={{
       p: 2,
@@ -117,8 +118,9 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color, subValue
   </Paper>
 );
 
-export const MobileStatsGrid: React.FC = () => {
+export const MobileStatsGrid = () => {
   const [expanded, setExpanded] = useState(false);
+  const { currentTheme } = useTheme();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
@@ -127,7 +129,6 @@ export const MobileStatsGrid: React.FC = () => {
   // Calculate statistics
   const stats = React.useMemo(() => {
     if (!user?.uid) {
-      console.warn('MobileStatsGrid: No user found');
       return {
         totalSeries: 0, watchedEpisodes: 0, totalEpisodes: 0, totalMovies: 0,
         watchedMovies: 0, timeString: '0Min', totalHours: 0, seriesTimeString: '0Min', movieTimeString: '0Min',
@@ -137,25 +138,36 @@ export const MobileStatsGrid: React.FC = () => {
     }
     // Series stats - only count aired episodes
     const today = new Date();
-    const totalSeries = seriesList.filter(s => s && s.nmr).length;
+    // Allow nmr: 0 as valid
+    const totalSeries = seriesList.filter(s => s && (s.nmr !== undefined && s.nmr !== null)).length;
     
     // Count watched episodes (only aired ones)
     let watchedEpisodes = 0;
     let totalAiredEpisodes = 0;
     
     seriesList.forEach(series => {
-      if (!series || !series.nmr) return;
+      // Allow nmr: 0 as valid (only skip if undefined/null)
+      if (!series || series.nmr === undefined || series.nmr === null) return;
       
-      series.seasons?.forEach(season => {
-        season.episodes?.forEach(ep => {
+      series.seasons?.forEach((season) => {
+        season.episodes?.forEach((ep) => {
+          // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
+          const isWatched = !!(ep.firstWatchedAt || ep.watched === true || (ep.watched as any) === 1 || (ep.watched as any) === "true" || (ep.watchCount && ep.watchCount > 0));
+          
+          // Also count episodes without air_date (they should be considered aired)
           if (ep.air_date) {
             const airDate = new Date(ep.air_date);
             if (airDate <= today) {
               totalAiredEpisodes++;
-              if (ep.watched === true) {
-                // Für Fortschritt: Jede Episode zählt nur einmal, egal wie oft geschaut
+              if (isWatched) {
                 watchedEpisodes++;
               }
+            }
+          } else {
+            // No air_date means it's probably an old episode that's already aired
+            totalAiredEpisodes++;
+            if (isWatched) {
+              watchedEpisodes++;
             }
           }
         });
@@ -165,9 +177,11 @@ export const MobileStatsGrid: React.FC = () => {
     const totalEpisodes = totalAiredEpisodes;
 
     // Movies stats - only count valid movies with ratings
-    const totalMovies = movieList.filter(m => m && m.nmr).length;
+    // Allow nmr: 0 as valid
+    const totalMovies = movieList.filter(m => m && (m.nmr !== undefined && m.nmr !== null)).length;
     const watchedMovies = movieList.filter((movie: any) => {
-      if (!movie || !movie.nmr) return false;
+      // Allow nmr: 0 as valid
+      if (!movie || (movie.nmr === undefined || movie.nmr === null)) return false;
       // A movie is watched if it has a rating > 0
       const rating = parseFloat(calculateOverallRating(movie));
       return !isNaN(rating) && rating > 0;
@@ -179,15 +193,25 @@ export const MobileStatsGrid: React.FC = () => {
     
     // Series watch time
     seriesList.forEach(series => {
-      if (!series || !series.nmr) return;
+      // Allow nmr: 0 as valid (only skip if undefined/null)
+      if (!series || series.nmr === undefined || series.nmr === null) return;
       const runtime = series.episodeRuntime || 45;
       
       series.seasons?.forEach(season => {
         season.episodes?.forEach(ep => {
-          if (ep.air_date && ep.watched === true) {
-            const airDate = new Date(ep.air_date);
-            if (airDate <= today) {
-              // Count rewatches for time calculation
+          // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
+          const isWatched = !!(ep.firstWatchedAt || ep.watched === true || (ep.watched as any) === 1 || (ep.watched as any) === "true" || (ep.watchCount && ep.watchCount > 0));
+          
+          if (isWatched) {
+            if (ep.air_date) {
+              const airDate = new Date(ep.air_date);
+              if (airDate <= today) {
+                // Count rewatches for time calculation
+                const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
+                seriesMinutesWatched += runtime * count;
+              }
+            } else {
+              // No air_date means it's probably an old episode that's already aired
               const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
               seriesMinutesWatched += runtime * count;
             }
@@ -470,7 +494,7 @@ export const MobileStatsGrid: React.FC = () => {
               top: 0,
               height: '100%',
               width: `${stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes * 100) : 0}%`,
-              background: `linear-gradient(90deg, ${colors.primary}, ${colors.status.success})`,
+              background: `linear-gradient(90deg, ${currentTheme.primary || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
               transition: 'width 0.3s ease',
             }}
           />

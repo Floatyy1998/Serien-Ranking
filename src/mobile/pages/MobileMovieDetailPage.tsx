@@ -2,31 +2,31 @@ import { MobileBackButton } from '../components/MobileBackButton';
 import {
   Delete,
   Info,
+  People,
   Star,
-  StarBorder,
   Visibility,
 } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, memo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { Movie } from '../../types/Movie';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import { useTheme } from '../../contexts/ThemeContext';
+import { MobileCastCrew } from '../components/MobileCastCrew';
 
-export const MobileMovieDetailPage: React.FC = () => {
+export const MobileMovieDetailPage = memo(() => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { movieList } = useMovieList();
   const { currentTheme } = useTheme();
-  const [userRating, setUserRating] = useState<number>(0);
-  const [showRatingModal, setShowRatingModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tmdbMovie, setTmdbMovie] = useState<Movie | null>(null);
+  const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
 
   // Find the movie locally first
   const localMovie = useMemo(() => {
@@ -49,7 +49,7 @@ export const MobileMovieDetailPage: React.FC = () => {
             setTmdbBackdrop(data.backdrop_path);
           }
         })
-        .catch(err => console.error('Error fetching backdrop from TMDB:', err));
+        .catch(() => {});
     }
     
     // Full fetch if not found locally
@@ -83,7 +83,7 @@ export const MobileMovieDetailPage: React.FC = () => {
             setTmdbMovie(movie);
           }
         })
-        .catch((err) => console.error('Error fetching movie from TMDB:', err))
+        .catch(() => {})
         .finally(() => setLoading(false));
     }
   }, [localMovie, id, tmdbMovie]); // Add tmdbMovie to prevent re-fetching
@@ -136,29 +136,8 @@ export const MobileMovieDetailPage: React.FC = () => {
     return `${hours}h ${mins}m`;
   };
 
-  const handleRatingSubmit = async () => {
-    if (!movie || !user || userRating === 0) return;
 
-    try {
-      setLoading(true);
-
-      // Update rating in Firebase using correct path
-      const ratingRef = firebase
-        .database()
-        .ref(`${user.uid}/filme/${movie.nmr}/rating/${user.uid}`);
-
-      await ratingRef.set(userRating);
-
-      setShowRatingModal(false);
-      setUserRating(0);
-    } catch (error) {
-      console.error('Error updating movie rating:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddMovie = async () => {
+  const handleAddMovie = useCallback(async () => {
     if (!movie || !user) return;
 
     setIsAdding(true);
@@ -197,14 +176,13 @@ export const MobileMovieDetailPage: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error adding movie:', error);
       alert('Fehler beim Hinzufügen des Films.');
     } finally {
       setIsAdding(false);
     }
-  };
+  }, [movie, user]);
 
-  const handleDeleteMovie = async () => {
+  const handleDeleteMovie = useCallback(async () => {
     if (!movie || !user) return;
 
     try {
@@ -220,12 +198,11 @@ export const MobileMovieDetailPage: React.FC = () => {
       // Navigate back to home after successful deletion
       navigate('/');
     } catch (error) {
-      console.error('Error deleting movie:', error);
     } finally {
       setLoading(false);
       setShowDeleteConfirm(false);
     }
-  };
+  }, [movie, user, navigate]);
 
 
   if (!movie && !loading) {
@@ -504,7 +481,7 @@ export const MobileMovieDetailPage: React.FC = () => {
           {!isReadOnlyTmdbMovie && (
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
-                onClick={() => setShowRatingModal(true)}
+                onClick={() => navigate(`/rating/movie/${movie.id}`)}
                 disabled={loading}
                 style={{
                   flex: 1,
@@ -565,7 +542,75 @@ export const MobileMovieDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* Content */}
+      {/* Tab Navigation */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          padding: '0 20px',
+          marginBottom: '16px',
+        }}
+      >
+        <button
+          onClick={() => setActiveTab('info')}
+          style={{
+            flex: 1,
+            padding: '10px',
+            background:
+              activeTab === 'info'
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+            border: 'none',
+            borderRadius: '12px',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: activeTab === 'info' ? 600 : 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
+          <Info style={{ fontSize: '18px' }} />
+          Info
+        </button>
+
+        <button
+          onClick={() => setActiveTab('cast')}
+          style={{
+            flex: 1,
+            padding: '10px',
+            background:
+              activeTab === 'cast'
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+            border: 'none',
+            borderRadius: '12px',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: activeTab === 'cast' ? 600 : 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
+          <People style={{ fontSize: '18px' }} />
+          Besetzung
+        </button>
+      </div>
+
+      {/* Content based on active tab */}
+      {activeTab === 'cast' ? (
+        <MobileCastCrew
+          tmdbId={movie.id}
+          mediaType="movie"
+          seriesData={movie}
+          onPersonClick={(personId) => console.log('Person clicked:', personId)}
+        />
+      ) : (
       <div style={{ padding: '20px' }}>
         {/* Overview */}
         {(movie.beschreibung || movie.overview) && (
@@ -765,138 +810,6 @@ export const MobileMovieDetailPage: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Rating Modal */}
-      {showRatingModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              background: '#1a1a1a',
-              borderRadius: '16px',
-              padding: '24px',
-              width: '100%',
-              maxWidth: '400px',
-            }}
-          >
-            <h2
-              style={{
-                fontSize: '20px',
-                fontWeight: 600,
-                margin: '0 0 20px 0',
-                textAlign: 'center',
-              }}
-            >
-              Film bewerten
-            </h2>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '8px',
-                marginBottom: '24px',
-              }}
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                <button
-                  key={rating}
-                  onClick={() => setUserRating(rating)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color:
-                      rating <= (userRating || currentRating)
-                        ? '#ffd700'
-                        : 'rgba(255, 255, 255, 0.3)',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    padding: '0 2px',
-                  }}
-                >
-                  {rating <= (userRating || currentRating) ? (
-                    <Star />
-                  ) : (
-                    <StarBorder />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <div
-              style={{
-                fontSize: '24px',
-                fontWeight: 600,
-                textAlign: 'center',
-                marginBottom: '24px',
-              }}
-            >
-              {userRating || currentRating} / 10
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-              }}
-            >
-              <button
-                onClick={() => {
-                  setShowRatingModal(false);
-                  setUserRating(0);
-                }}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '8px',
-                  color: currentTheme.text.primary,
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-              >
-                Abbrechen
-              </button>
-              <button
-                onClick={handleRatingSubmit}
-                disabled={loading || userRating === 0}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background:
-                    loading || userRating === 0
-                      ? 'rgba(255, 255, 255, 0.1)'
-                      : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: currentTheme.text.primary,
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor:
-                    loading || userRating === 0 ? 'not-allowed' : 'pointer',
-                  opacity: loading || userRating === 0 ? 0.5 : 1,
-                }}
-              >
-                {loading ? 'Speichere...' : 'Speichern'}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Delete Confirmation - only for user's movies */}
@@ -999,4 +912,6 @@ export const MobileMovieDetailPage: React.FC = () => {
       )}
     </div>
   );
-};
+});
+
+MobileMovieDetailPage.displayName = 'MobileMovieDetailPage';
