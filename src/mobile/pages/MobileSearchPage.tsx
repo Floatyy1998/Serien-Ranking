@@ -1,4 +1,4 @@
-import { CalendarToday, Close, Movie, Search, TrendingUp } from '@mui/icons-material';
+import { CalendarToday, Check, Close, Movie, Search, TrendingUp } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
@@ -9,6 +9,7 @@ import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActi
 import { Movie as MovieType } from '../../types/Movie';
 import { Series } from '../../types/Series';
 import { VirtualizedSearchResults } from '../components/VirtualizedSearchResults';
+import { MobileDialog } from '../components/MobileDialog';
 // import { genreIdMapForSeries, genreIdMapForMovies } from '../../config/menuItems';
 
 export const MobileSearchPage: React.FC = () => {
@@ -16,12 +17,14 @@ export const MobileSearchPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const {} = useTheme();
+  const { currentTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'all' | 'series' | 'movies'>('all');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
   const [popularSearches] = useState([
     'Breaking Bad',
     'The Last of Us',
@@ -128,25 +131,20 @@ export const MobileSearchPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, searchTMDB]);
 
-  // Handle item click
+  // Handle item click - always navigate to detail page
   const handleItemClick = (item: any) => {
-    if (item.inList) {
-      // Navigate to detail page if already in list
-      if (item.type === 'series') {
-        navigate(`/series/${item.id}`);
-      } else {
-        navigate(`/movie/${item.id}`);
-      }
+    // Always navigate to detail page
+    if (item.type === 'series') {
+      navigate(`/series/${item.id}`);
     } else {
-      // Add to list
-      addToList(item);
+      navigate(`/movie/${item.id}`);
     }
   };
 
   // Add to list
   const addToList = async (item: any) => {
     if (!user) {
-      alert('Bitte einloggen!');
+      setDialog({ open: true, message: 'Bitte einloggen um Inhalte hinzuzufügen!', type: 'warning' });
       return;
     }
 
@@ -167,10 +165,15 @@ export const MobileSearchPage: React.FC = () => {
       });
 
       if (response.ok) {
-        // Update search results to show as added
-        setSearchResults((prev) =>
-          prev.map((r) => (r.id === item.id ? { ...r, inList: true } : r))
-        );
+        // Remove item from search results (like in MobileDiscoverPage)
+        setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
+        
+        // Show success snackbar
+        const title = item.title || item.name;
+        setSnackbar({ 
+          open: true, 
+          message: `"${title}" wurde erfolgreich hinzugefügt!` 
+        });
 
         // Activity-Logging für Friend + Badge-System (wie Desktop)
         if (item.media_type === 'tv' || endpoint.includes('/add')) {
@@ -178,9 +181,15 @@ export const MobileSearchPage: React.FC = () => {
         } else {
           await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id);
         }
+
+        // Hide snackbar after 3 seconds
+        setTimeout(() => {
+          setSnackbar({ open: false, message: '' });
+        }, 3000);
       }
     } catch (error) {
       console.error('Error adding item:', error);
+      setDialog({ open: true, message: 'Fehler beim Hinzufügen des Inhalts.', type: 'error' });
     }
   };
 
@@ -359,6 +368,7 @@ export const MobileSearchPage: React.FC = () => {
             <VirtualizedSearchResults
               results={searchResults}
               onItemClick={handleItemClick}
+              onAddClick={addToList}
               height={window.innerHeight - 200} // Account for header and search bar
             />
           </>
@@ -461,6 +471,40 @@ export const MobileSearchPage: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Success Snackbar */}
+      {snackbar.open && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: currentTheme.status.success,
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            maxWidth: 'calc(100% - 40px)',
+            transition: 'all 0.3s ease-out',
+          }}
+        >
+          <Check style={{ fontSize: '20px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
+        </div>
+      )}
+
+      {/* Dialog for alerts */}
+      <MobileDialog
+        open={dialog.open}
+        onClose={() => setDialog({ ...dialog, open: false })}
+        message={dialog.message}
+        type={dialog.type}
+      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import {
+  Check,
   ContentCopy,
   Edit,
   Link,
@@ -16,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MobileBackButton } from '../components/MobileBackButton';
+import { MobileDialog } from '../components/MobileDialog';
 
 export const MobileSettingsPage = () => {
   const navigate = useNavigate();
@@ -32,6 +34,8 @@ export const MobileSettingsPage = () => {
   const [isPublicProfile, setIsPublicProfile] = useState<boolean>(false);
   const [publicProfileId, setPublicProfileId] = useState<string>('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -76,7 +80,7 @@ export const MobileSettingsPage = () => {
     if (!file || !user) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Bild darf maximal 5MB groß sein');
+      setDialog({ open: true, message: 'Bild darf maximal 5MB groß sein', type: 'error' });
       return;
     }
 
@@ -94,9 +98,10 @@ export const MobileSettingsPage = () => {
       await user.reload();
 
       setPhotoURL(downloadURL);
-      alert('Profilbild erfolgreich hochgeladen!');
+      setSnackbar({ open: true, message: 'Profilbild erfolgreich hochgeladen!' });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
     } catch (error) {
-      alert('Fehler beim Hochladen des Bildes');
+      setDialog({ open: true, message: 'Fehler beim Hochladen des Bildes', type: 'error' });
     } finally {
       setUploading(false);
     }
@@ -109,9 +114,10 @@ export const MobileSettingsPage = () => {
       setSaving(true);
       await firebase.database().ref(`users/${user.uid}/username`).set(username);
       setUsernameEditable(false);
-      alert('Benutzername gespeichert!');
+      setSnackbar({ open: true, message: 'Benutzername gespeichert!' });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
     } catch (error) {
-      alert('Fehler beim Speichern des Benutzernamens');
+      setDialog({ open: true, message: 'Fehler beim Speichern des Benutzernamens', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -126,9 +132,10 @@ export const MobileSettingsPage = () => {
       await firebase.database().ref(`users/${user.uid}/displayName`).set(displayName);
       await user.reload();
       setDisplayNameEditable(false);
-      alert('Anzeigename gespeichert!');
+      setSnackbar({ open: true, message: 'Anzeigename gespeichert!' });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
     } catch (error) {
-      alert('Fehler beim Speichern des Anzeigenamens');
+      setDialog({ open: true, message: 'Fehler beim Speichern des Anzeigenamens', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -173,7 +180,8 @@ export const MobileSettingsPage = () => {
     const publicUrl = `${window.location.origin}/public/${publicProfileId}`;
     navigator.clipboard.writeText(publicUrl).then(() => {
       if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-      alert('Link kopiert!');
+      setSnackbar({ open: true, message: 'Link kopiert!' });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
     });
   };
 
@@ -964,6 +972,40 @@ export const MobileSettingsPage = () => {
           </div>
         </button>
       </div>
+
+      {/* Success Snackbar */}
+      {snackbar.open && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: currentTheme.status.success,
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            maxWidth: 'calc(100% - 40px)',
+            transition: 'all 0.3s ease-out',
+          }}
+        >
+          <Check style={{ fontSize: '20px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
+        </div>
+      )}
+
+      {/* Dialog for alerts */}
+      <MobileDialog
+        open={dialog.open}
+        onClose={() => setDialog({ ...dialog, open: false })}
+        message={dialog.message}
+        type={dialog.type}
+      />
     </div>
   );
 };

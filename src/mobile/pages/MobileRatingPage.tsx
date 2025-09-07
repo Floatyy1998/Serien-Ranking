@@ -1,4 +1,5 @@
 import {
+  Check,
   Delete,
   Movie,
   Save,
@@ -15,7 +16,7 @@ import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Drama, Heart, Smile, Sparkles, TrendingUp, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { genreMenuItems, genreMenuItemsForMovies } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -58,7 +59,6 @@ const ratingEmojis = [
 
 export const MobileRatingPage = () => {
   const { id, type } = useParams<{ id: string; type: 'series' | 'movie' }>();
-  const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
@@ -68,6 +68,7 @@ export const MobileRatingPage = () => {
   const [overallRating, setOverallRating] = useState(0);
   const [genreRatings, setGenreRatings] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
   // Get item based on type
   const item =
@@ -187,10 +188,27 @@ export const MobileRatingPage = () => {
             item.id
           );
         }
+        
+        // Show success snackbar
+        setSnackbar({ 
+          open: true, 
+          message: `Bewertung für "${item.title}" wurde gespeichert!` 
+        });
+        
+        // Hide snackbar after 3 seconds
+        setTimeout(() => {
+          setSnackbar({ open: false, message: '' });
+        }, 3000);
       }
-
-      navigate('/');
     } catch (error) {
+      // Show error snackbar
+      setSnackbar({ 
+        open: true, 
+        message: 'Fehler beim Speichern der Bewertung.' 
+      });
+      setTimeout(() => {
+        setSnackbar({ open: false, message: '' });
+      }, 3000);
     } finally {
       setIsSaving(false);
     }
@@ -209,9 +227,26 @@ export const MobileRatingPage = () => {
         .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
 
       await ratingRef.remove();
-
-      navigate('/');
+      
+      // Show success snackbar
+      setSnackbar({ 
+        open: true, 
+        message: `Bewertung für "${item.title}" wurde gelöscht!` 
+      });
+      
+      // Hide snackbar after 3 seconds
+      setTimeout(() => {
+        setSnackbar({ open: false, message: '' });
+      }, 3000);
     } catch (error) {
+      // Show error snackbar
+      setSnackbar({ 
+        open: true, 
+        message: 'Fehler beim Löschen der Bewertung.' 
+      });
+      setTimeout(() => {
+        setSnackbar({ open: false, message: '' });
+      }, 3000);
     } finally {
       setIsSaving(false);
     }
@@ -440,6 +475,32 @@ export const MobileRatingPage = () => {
           <span>Speichern</span>
         </motion.button>
       </div>
+
+      {/* Success/Error Snackbar */}
+      {snackbar.open && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: currentTheme.status.success,
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            maxWidth: 'calc(100% - 40px)',
+            transition: 'all 0.3s ease-out',
+          }}
+        >
+          <Check style={{ fontSize: '20px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
+        </div>
+      )}
     </div>
   );
 };

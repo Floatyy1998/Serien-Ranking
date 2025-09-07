@@ -18,6 +18,7 @@ interface SearchResult {
 interface VirtualizedSearchResultsProps {
   results: SearchResult[];
   onItemClick: (item: SearchResult) => void;
+  onAddClick?: (item: SearchResult) => void;
   height: number;
 }
 
@@ -29,14 +30,13 @@ const SearchResultRow = memo(
   }: {
     index: number;
     style: React.CSSProperties;
-    data: { results: SearchResult[]; onItemClick: (item: SearchResult) => void };
+    data: { results: SearchResult[]; onItemClick: (item: SearchResult) => void; onAddClick?: (item: SearchResult) => void };
   }) => {
     const item = data.results[index];
 
     return (
       <div style={style}>
-        <button
-          onClick={() => data.onItemClick(item)}
+        <div
           style={{
             width: '100%',
             display: 'flex',
@@ -46,18 +46,19 @@ const SearchResultRow = memo(
             background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '12px',
-            cursor: 'pointer',
             transition: 'all 0.2s',
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-          }}
         >
+          <div
+            onClick={() => data.onItemClick(item)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flex: 1,
+              cursor: 'pointer',
+            }}
+          >
           <img
             src={
               item.poster_path
@@ -151,23 +152,54 @@ const SearchResultRow = memo(
               </p>
             )}
           </div>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              flexShrink: 0,
-            }}
-          >
-            {item.inList ? (
-              <Check style={{ fontSize: '24px', color: '#4cd137' }} />
-            ) : (
-              <Add style={{ fontSize: '24px', color: 'rgba(255, 255, 255, 0.5)' }} />
-            )}
           </div>
-        </button>
+
+          {/* Separate button for add/check */}
+          {!item.inList && data.onAddClick ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                data.onAddClick!(item);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                flexShrink: 0,
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              }}
+            >
+              <Add style={{ fontSize: '24px', color: 'rgba(255, 255, 255, 0.8)' }} />
+            </button>
+          ) : item.inList ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                flexShrink: 0,
+                background: 'rgba(76, 209, 55, 0.2)',
+                borderRadius: '50%',
+              }}
+            >
+              <Check style={{ fontSize: '24px', color: '#4cd137' }} />
+            </div>
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -176,14 +208,14 @@ const SearchResultRow = memo(
 SearchResultRow.displayName = 'SearchResultRow';
 
 export const VirtualizedSearchResults: React.FC<VirtualizedSearchResultsProps> = memo(
-  ({ results, onItemClick, height }) => {
+  ({ results, onItemClick, onAddClick, height }) => {
     return (
       <List
         height={height}
         itemCount={results.length}
         itemSize={120} // Approximate height of each item
         width="100%"
-        itemData={{ results, onItemClick }}
+        itemData={{ results, onItemClick, onAddClick }}
       >
         {SearchResultRow}
       </List>

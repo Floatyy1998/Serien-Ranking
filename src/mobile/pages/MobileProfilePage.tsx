@@ -13,11 +13,15 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useBadges } from '../../features/badges/BadgeProvider';
 
 export const MobileProfilePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { currentTheme } = useTheme();
+  const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
+  const { unreadBadgesCount } = useBadges();
   
   // Load user data from Firebase Database
   const { data: userData } = useEnhancedFirebaseCache<any>(
@@ -282,7 +286,23 @@ export const MobileProfilePage = () => {
             <Group style={{ fontSize: '20px', color: currentTheme.primary }} />
             <span style={{ fontSize: '16px' }}>Aktivität & Freunde</span>
           </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {(unreadActivitiesCount + unreadRequestsCount) > 0 && (
+              <div style={{
+                background: currentTheme.status.error,
+                color: 'white',
+                borderRadius: '12px',
+                padding: '2px 8px',
+                fontSize: '12px',
+                fontWeight: 600,
+                minWidth: '20px',
+                textAlign: 'center'
+              }}>
+                {unreadActivitiesCount + unreadRequestsCount}
+              </div>
+            )}
+            <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
+          </div>
         </button>
         
         <button 
@@ -354,7 +374,23 @@ export const MobileProfilePage = () => {
             <EmojiEvents style={{ fontSize: '20px', color: currentTheme.status.warning }} />
             <span style={{ fontSize: '16px' }}>Erfolge</span>
           </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {(unreadBadgesCount || 0) > 0 && (
+              <div style={{
+                background: currentTheme.status.error,
+                color: 'white',
+                borderRadius: '12px',
+                padding: '2px 8px',
+                fontSize: '12px',
+                fontWeight: 600,
+                minWidth: '20px',
+                textAlign: 'center'
+              }}>
+                {unreadBadgesCount}
+              </div>
+            )}
+            <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
+          </div>
         </button>
         
         <button 
