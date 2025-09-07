@@ -238,7 +238,7 @@ export const MobileStatsGrid = () => {
 
     // Movie watch time
     movieList.forEach((movie: any) => {
-      if (movie && movie.nmr) {
+      if (movie && movie.nmr !== undefined && movie.nmr !== null) {
         const rating = parseFloat(calculateOverallRating(movie));
         const isWatched = !isNaN(rating) && rating > 0;
         if (isWatched) {
@@ -290,7 +290,7 @@ export const MobileStatsGrid = () => {
 
     // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
     const seriesWithRating = seriesList.filter((s: any) => {
-      if (!s || !s.nmr) return false;
+      if (!s || s.nmr === undefined || s.nmr === null) return false;
       const rating = parseFloat(calculateOverallRating(s));
       return !isNaN(rating) && rating > 0;
     });
@@ -302,7 +302,7 @@ export const MobileStatsGrid = () => {
         : 0;
 
     const moviesWithRating = movieList.filter((m: any) => {
-      if (!m || !m.nmr) return false;
+      if (!m || m.nmr === undefined || m.nmr === null) return false;
       const rating = parseFloat(calculateOverallRating(m));
       return !isNaN(rating) && rating > 0;
     });
@@ -316,7 +316,7 @@ export const MobileStatsGrid = () => {
     // Genres - fix genre detection and exclude "All"
     const genreCounts: Record<string, number> = {};
     [...seriesList, ...movieList].forEach((item: any) => {
-      if (!item || !item.nmr) return; // Only count valid items
+      if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
       // Handle different genre structures
       let genres: string[] = [];
@@ -345,7 +345,7 @@ export const MobileStatsGrid = () => {
     // Providers - fix provider detection with the correct data structure
     const providerCounts: Record<string, number> = {};
     [...seriesList, ...movieList].forEach((item: any) => {
-      if (!item || !item.nmr) return; // Only count valid items
+      if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
       // Check the actual provider structure used in the app
       let providers: any[] = [];
@@ -418,7 +418,7 @@ export const MobileStatsGrid = () => {
       topProvider,
       lastWeekWatched,
       completedSeries: seriesList.filter((s) => {
-        if (!s || !s.nmr || !s.seasons || s.seasons.length === 0) return false;
+        if (!s || s.nmr === undefined || s.nmr === null || !s.seasons || s.seasons.length === 0) return false;
 
         // Only count aired episodes for completion
         let totalAired = 0;
