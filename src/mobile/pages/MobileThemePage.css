@@ -20,8 +20,8 @@
 }
 
 .theme-header h1 {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 800;
   margin: 0;
   background: var(--color-primary);
   -webkit-background-clip: text;

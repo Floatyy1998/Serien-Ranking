@@ -379,7 +379,7 @@ export const MobileDiscoverPage = memo(() => {
             <div>
               <h1
                 style={{
-                  fontSize: '32px',
+                  fontSize: '24px',
                   fontWeight: 800,
                   margin: 0,
                   background: currentTheme.primary,
