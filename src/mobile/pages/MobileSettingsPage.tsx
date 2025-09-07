@@ -17,7 +17,7 @@ import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MobileBackButton } from '../components/MobileBackButton';
 
-export const MobileSettingsPage: React.FC = () => {
+export const MobileSettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { getMobileHeaderStyle, currentTheme } = useTheme();
@@ -57,7 +57,6 @@ export const MobileSettingsPage: React.FC = () => {
           setPublicProfileId('');
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
       }
     };
 
@@ -70,7 +69,6 @@ export const MobileSettingsPage: React.FC = () => {
         await firebase.auth().signOut();
         navigate('/');
       } catch (error) {
-        console.error('Logout failed:', error);
       }
     }
   };
@@ -174,7 +172,6 @@ export const MobileSettingsPage: React.FC = () => {
 
       if (navigator.vibrate) navigator.vibrate(50);
     } catch (error) {
-      console.error('Error updating public profile:', error);
     } finally {
       setIsLoadingProfile(false);
     }
@@ -205,7 +202,6 @@ export const MobileSettingsPage: React.FC = () => {
 
       if (navigator.vibrate) navigator.vibrate(100);
     } catch (error) {
-      console.error('Error regenerating public ID:', error);
     } finally {
       setIsLoadingProfile(false);
     }

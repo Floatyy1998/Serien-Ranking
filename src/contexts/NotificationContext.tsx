@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '../App';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -36,7 +36,7 @@ interface NotificationProviderProps {
   children: ReactNode;
 }
 
-export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
+export const NotificationProvider = ({ children }: NotificationProviderProps) => {
   const { user } = useAuth()!;
   const [notifications, setNotifications] = useState<Notification[]>([]);
 

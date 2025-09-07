@@ -36,7 +36,7 @@ class ServiceWorkerManager {
    */
   private async init(): Promise<void> {
     if (!this.isSupported) {
-      // console.warn(
+      // // console.warn(
       //   '⚠️ Service Worker wird von diesem Browser nicht unterstützt'
       // );
       return;
@@ -50,7 +50,7 @@ class ServiceWorkerManager {
       setTimeout(() => this.checkForUpdates(), 30000);
       setInterval(() => this.checkForUpdates(), 5 * 60 * 1000); // Alle 5 Minuten
     } catch (error) {
-      // console.error(
+      // // console.error(
       //   '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
       //   error
       // );
@@ -106,7 +106,7 @@ class ServiceWorkerManager {
 
     // Bei Controller-Wechsel einfach neu laden (ohne Notification-Spam)
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // console.log('🔄 Neuer Service Worker aktiv - Seite wird neu geladen');
+      // // console.log('🔄 Neuer Service Worker aktiv - Seite wird neu geladen');
 
       // Prüfe ob wir schon einen Reload gemacht haben (verhindert Endlosschleife)
       const reloadFlag = sessionStorage.getItem('sw-reloaded');
@@ -131,10 +131,10 @@ class ServiceWorkerManager {
   private handleWorkerMessage(data: any): void {
     switch (data.type) {
       case 'CACHE_UPDATED':
-        // console.log('📦 Cache aktualisiert:', data.version);
+        // // console.log('📦 Cache aktualisiert:', data.version);
         break;
       case 'SW_UPDATED':
-        // console.log('🆕 Service Worker aktualisiert:', data.version);
+        // // console.log('🆕 Service Worker aktualisiert:', data.version);
         this.notifyUpdateComplete();
         break;
       case 'OFFLINE_READY':
@@ -174,7 +174,7 @@ class ServiceWorkerManager {
         });
       }
     } catch (error) {
-      // console.error('❌ Service Worker Update fehlgeschlagen:', error);
+      // // console.error('❌ Service Worker Update fehlgeschlagen:', error);
     }
   }
 
@@ -188,7 +188,7 @@ class ServiceWorkerManager {
 
       await registration.update();
     } catch (error) {
-      // console.log('Update-Check fehlgeschlagen:', error);
+      // // console.log('Update-Check fehlgeschlagen:', error);
     }
   }
 
@@ -240,7 +240,7 @@ class ServiceWorkerManager {
         await (registration as any).sync.register(tag);
       }
     } catch (error) {
-      // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
+      // // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
     }
   }
 
@@ -260,7 +260,7 @@ class ServiceWorkerManager {
       await this.storeInIndexedDB('pendingUpdates', pendingUpdate);
       await this.registerBackgroundSync('firebase-sync');
     } catch (error) {
-      // console.error('❌ Failed to queue Firebase update:', error);
+      // // console.error('❌ Failed to queue Firebase update:', error);
     }
   }
 
@@ -319,12 +319,12 @@ class ServiceWorkerManager {
    * 🔔 UI Notifications
    */
   private showUpdateAvailable(): void {
-    // console.log('🆕 Update verfügbar');
+    // // console.log('🆕 Update verfügbar');
 
     // Zeige nur einmal pro Session eine Update-Notification
     const shown = sessionStorage.getItem('update-shown');
     if (shown) {
-      // console.log('Update-Notification bereits gezeigt');
+      // // console.log('Update-Notification bereits gezeigt');
       return;
     }
 

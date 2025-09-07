@@ -56,7 +56,7 @@ export const useTMDBTrending = () => {
         combinedItems.sort((a, b) => b.voteCount - a.voteCount);
         setTrending(combinedItems.slice(0, 20));
       } catch (error) {
-        console.error('Error fetching trending:', error);
+        // console.error('Error fetching trending:', error);
         setTrending([]);
       } finally {
         setLoading(false);

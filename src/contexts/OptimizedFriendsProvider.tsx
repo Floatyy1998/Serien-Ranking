@@ -191,23 +191,61 @@ export const OptimizedFriendsProvider = ({
         ).length;
         setUnreadRequestsCount(unreadCount);
       } catch (error) {
-        // console.warn('Failed to load friend requests:', error);
+        // // console.warn('Failed to load friend requests:', error);
       }
     };
 
     // Initial load
     loadRequests();
 
-    // Setup interval für Friend Requests
-    const interval = setInterval(
-      () => {
-        loadRequests();
-      },
-      unreadRequestsCount > 0 ? 30 * 1000 : 2 * 60 * 1000
-    );
+    // Real-time listeners for friend requests
+    const incomingRef = firebase
+      .database()
+      .ref('friendRequests')
+      .orderByChild('toUserId')
+      .equalTo(user.uid);
+    
+    const outgoingRef = firebase
+      .database()
+      .ref('friendRequests')
+      .orderByChild('fromUserId')
+      .equalTo(user.uid);
+
+    // Listen for changes to incoming requests
+    const incomingListener = incomingRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      const requests = data
+        ? Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }))
+        : [];
+      const pending = requests.filter((r) => r.status === 'pending');
+      setFriendRequests(pending);
+      
+      // Update unread count
+      const unreadCount = pending.filter(
+        (request) => request.sentAt > lastReadRequestsTime
+      ).length;
+      setUnreadRequestsCount(unreadCount);
+    });
+
+    // Listen for changes to outgoing requests
+    const outgoingListener = outgoingRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      const requests = data
+        ? Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }))
+        : [];
+      const pending = requests.filter((r) => r.status === 'pending');
+      setSentRequests(pending);
+    });
 
     return () => {
-      clearInterval(interval);
+      incomingRef.off('value', incomingListener);
+      outgoingRef.off('value', outgoingListener);
     };
   }, [user?.uid, lastReadRequestsTime]); // Stabile Dependencies
 
@@ -250,7 +288,7 @@ export const OptimizedFriendsProvider = ({
           }
           return [];
         } catch (error) {
-          // console.warn(
+          // // console.warn(
           //   `Failed to load activities for friend ${friend.uid}:`,
           //   error
           // );
@@ -269,7 +307,7 @@ export const OptimizedFriendsProvider = ({
       // Sortiere nach Zeitstempel und limitiere früher
       allActivities.sort((a, b) => b.timestamp - a.timestamp);
       const recentActivities = allActivities.slice(0, 100); // Show up to 100 activities
-      console.log('Loaded activities from friends:', allActivities.length, 'total, showing', recentActivities.length);
+      // console.log('Loaded activities from friends:', allActivities.length, 'total, showing', recentActivities.length);
       setFriendActivities(recentActivities);
 
       // Unread count
@@ -278,7 +316,7 @@ export const OptimizedFriendsProvider = ({
       ).length;
       setUnreadActivitiesCount(unreadCount);
     } catch (error) {
-      // console.warn('Failed to load friend activities:', error);
+      // // console.warn('Failed to load friend activities:', error);
     }
   }, [user, friends, lastReadActivitiesTime]);
 
@@ -420,13 +458,16 @@ export const OptimizedFriendsProvider = ({
         respondedAt: firebase.database.ServerValue.TIMESTAMP,
       });
 
+      // Remove the request from local state immediately
+      setFriendRequests(prev => prev.filter(req => req.id !== requestId));
+
       // Badge-Check ausführen (Social badges für neue Freunde)
       try {
         const badgeSystem = getOfflineBadgeSystem(user.uid);
         badgeSystem.invalidateCache(); // Cache leeren für frische Friend-Zählung
         await badgeSystem.checkForNewBadges();
       } catch (badgeError) {
-        // console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
+        // // console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
       }
 
       // Refresh friends data
@@ -444,6 +485,9 @@ export const OptimizedFriendsProvider = ({
         status: 'declined',
         respondedAt: firebase.database.ServerValue.TIMESTAMP,
       });
+
+      // Remove the request from local state immediately
+      setFriendRequests(prev => prev.filter(req => req.id !== requestId));
     } catch (error) {
       throw error;
     }
@@ -512,7 +556,7 @@ export const OptimizedFriendsProvider = ({
         }
       }
     } catch (error) {
-      // console.warn('Failed to update user activity:', error);
+      // // console.warn('Failed to update user activity:', error);
     }
   };
 

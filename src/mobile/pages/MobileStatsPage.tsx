@@ -1,9 +1,8 @@
-import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MobileBackButton } from '../components/MobileBackButton';
 import { MobileStatsGrid } from '../components/MobileStatsGrid';
 
-export const MobileStatsPage: React.FC = () => {
+export const MobileStatsPage = () => {
   const { getMobileHeaderStyle, currentTheme } = useTheme();
 
   return (

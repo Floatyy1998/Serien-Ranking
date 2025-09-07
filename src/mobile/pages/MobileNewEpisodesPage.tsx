@@ -12,13 +12,12 @@ import {
 } from '@mui/icons-material';
 import { MobileBackButton } from '../components/MobileBackButton';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
-// import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 
@@ -41,7 +40,7 @@ interface MobileNewEpisodesPageProps {
   showAllSeries?: boolean;
 }
 
-export const MobileNewEpisodesPage: React.FC<MobileNewEpisodesPageProps> = ({ showAllSeries = false }) => {
+export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisodesPageProps) => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
@@ -75,8 +74,6 @@ export const MobileNewEpisodesPage: React.FC<MobileNewEpisodesPageProps> = ({ sh
     today.setHours(0, 0, 0, 0);
     const episodes: UpcomingEpisode[] = [];
 
-    console.log('Checking', seriesList.length, 'series for new episodes');
-    console.log('Today:', today);
 
     seriesList.forEach((series) => {
       // Filter by watchlist unless showAllSeries is true
@@ -95,7 +92,6 @@ export const MobileNewEpisodesPage: React.FC<MobileNewEpisodesPageProps> = ({ sh
           if (!airDate) {
             // Debug: Log episodes without air dates
             if (episodeIndex === 0 && seasonIndex === 0) {
-              console.log('Episode without airDate in', series.title, episode);
             }
             return;
           }
@@ -182,7 +178,6 @@ export const MobileNewEpisodesPage: React.FC<MobileNewEpisodesPageProps> = ({ sh
 
       setMarkedWatched((prev) => new Set([...prev, key]));
     } catch (error) {
-      console.error('Error marking episode as watched:', error);
     }
   };
 
@@ -239,8 +234,7 @@ export const MobileNewEpisodesPage: React.FC<MobileNewEpisodesPageProps> = ({ sh
           await firstWatchedRef.set(new Date().toISOString());
         }
       } catch (error) {
-        console.error('Error marking episode as watched:', error);
-      }
+        }
     }
 
     // After animation, hide the episode

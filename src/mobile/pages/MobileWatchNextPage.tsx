@@ -17,7 +17,6 @@ import 'firebase/compat/database';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getFormattedDate } from '../../lib/date/date.utils';
-// import { cleanOverlappingEpisodes } from '../../lib/episode/cleanOverlappingEpisodes';
 
 interface NextEpisode {
   seriesId: number;
@@ -34,7 +33,7 @@ interface NextEpisode {
   targetWatchCount?: number;
 }
 
-export const MobileWatchNextPage: React.FC = () => {
+export const MobileWatchNextPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
@@ -435,7 +434,6 @@ export const MobileWatchNextPage: React.FC = () => {
           await updateEpisodeCounters(user.uid, false, episode.airDate);
         }
       } catch (error) {
-        console.error('Error marking episode as watched:', error);
       }
     }
     

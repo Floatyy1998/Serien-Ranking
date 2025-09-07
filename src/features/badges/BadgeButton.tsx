@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Badge,
   IconButton,
@@ -20,7 +20,7 @@ const pulseAnimation = keyframes`
   }
 `;
 
-const BadgeButton: React.FC = () => {
+const BadgeButton = () => {
   const { showBadgeOverview, newBadges } = useBadges();
   const [animate, setAnimate] = useState(false);
 

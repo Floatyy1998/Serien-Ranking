@@ -43,7 +43,7 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
-export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   const { user } = useAuth() || {};
   
   // Initialisiere Theme aus localStorage beim Start
@@ -55,7 +55,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
         return validateThemeConfig(parsed);
       }
     } catch (error) {
-      console.error('Fehler beim Laden des initialen Themes:', error);
+      // console.error('Fehler beim Laden des initialen Themes:', error);
     }
     return defaultThemeConfig;
   };
@@ -144,7 +144,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
           .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
           .remove();
       } catch (error) {
-        console.error('Fehler beim Löschen des Themes aus Firebase:', error);
+        // console.error('Fehler beim Löschen des Themes aus Firebase:', error);
       }
     }
   };
@@ -168,7 +168,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
           .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
           .set(config);
       } catch (error) {
-        console.error('Fehler beim Speichern des Themes in Firebase:', error);
+        // console.error('Fehler beim Speichern des Themes in Firebase:', error);
       }
     }
   };
@@ -190,7 +190,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
         try {
           loadedConfig = JSON.parse(savedConfig);
         } catch (error) {
-          console.error('Fehler beim Parsen des lokalen Themes:', error);
+          // console.error('Fehler beim Parsen des lokalen Themes:', error);
         }
       }
       
@@ -220,7 +220,7 @@ export const DynamicThemeProvider: React.FC<ThemeProviderProps> = ({ children })
         updateCSSVariables(currentTheme);
       }
     } catch (error) {
-      console.error('Fehler beim Laden des Themes:', error);
+      // console.error('Fehler beim Laden des Themes:', error);
       resetTheme();
     }
   };

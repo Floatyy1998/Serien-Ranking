@@ -1,18 +1,27 @@
+import { ArrowBack } from '@mui/icons-material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowBack } from '@mui/icons-material';
 
 interface MobileBackButtonProps {
   label?: string;
   style?: React.CSSProperties;
 }
 
-export const MobileBackButton: React.FC<MobileBackButtonProps> = ({ label, style }) => {
+export const MobileBackButton = ({ label, style }: MobileBackButtonProps) => {
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    // Try to go back in history, if no history go to home
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   return (
     <button
-      onClick={() => navigate('/')}
+      onClick={handleBack}
       style={{
         background: 'rgba(255, 255, 255, 0.1)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -26,9 +35,9 @@ export const MobileBackButton: React.FC<MobileBackButtonProps> = ({ label, style
         cursor: 'pointer',
         color: 'white',
         transition: 'all 0.2s ease',
-        ...style
+        ...style,
       }}
-      aria-label={label || 'Zurück zur Startseite'}
+      aria-label={label || 'Zurück'}
     >
       <ArrowBack style={{ fontSize: '20px' }} />
     </button>

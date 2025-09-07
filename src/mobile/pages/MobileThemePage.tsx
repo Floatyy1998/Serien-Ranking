@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MobileBackButton } from '../components/MobileBackButton';
 import {
@@ -32,7 +32,7 @@ const colorCategories = [
   { key: 'accentColor', name: 'Accent', icon: <Palette />, description: 'Akzentfarbe für Highlights' },
 ];
 
-export const MobileThemePage: React.FC = () => {
+export const MobileThemePage = () => {
   const {
     userConfig,
     updateTheme,

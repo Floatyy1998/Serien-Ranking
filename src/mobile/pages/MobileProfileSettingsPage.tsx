@@ -12,7 +12,7 @@ import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 
-export const MobileProfileSettingsPage: React.FC = () => {
+export const MobileProfileSettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { getMobileHeaderStyle } = useTheme();

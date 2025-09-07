@@ -1,30 +1,23 @@
-import React, { useState } from 'react';
+import { ArrowForward, Email, Lock, Person, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
-  Box,
-  TextField,
-  Button,
-  Typography,
   Alert,
-  InputAdornment,
-  IconButton,
+  Box,
+  Button,
   Container,
+  IconButton,
+  InputAdornment,
   Paper,
+  TextField,
+  Typography,
 } from '@mui/material';
-import {
-  Email,
-  Lock,
-  Person,
-  Visibility,
-  VisibilityOff,
-  ArrowForward,
-} from '@mui/icons-material';
-import { useNavigate, Link } from 'react-router-dom';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-export const MobileRegisterPage: React.FC = () => {
+export const MobileRegisterPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,9 +51,7 @@ export const MobileRegisterPage: React.FC = () => {
 
     try {
       // Create user account
-      const userCredential = await firebase
-        .auth()
-        .createUserWithEmailAndPassword(email, password);
+      const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
       if (userCredential.user) {
         // Update display name
@@ -173,9 +164,9 @@ export const MobileRegisterPage: React.FC = () => {
             }}
           >
             {error && (
-              <Alert 
-                severity="error" 
-                sx={{ 
+              <Alert
+                severity="error"
+                sx={{
                   mb: 3,
                   background: 'rgba(211, 47, 47, 0.1)',
                   color: '#ff5252',
@@ -385,10 +376,7 @@ export const MobileRegisterPage: React.FC = () => {
           </Paper>
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography
-              variant="body1"
-              sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
-            >
+            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
               Bereits ein Konto?{' '}
               <Link
                 to="/login"

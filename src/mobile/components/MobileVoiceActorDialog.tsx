@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Movie, Tv, Star } from '@mui/icons-material';
-// import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface VoiceActorDialogProps {
@@ -75,6 +74,7 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
     if (open && voiceActorId) {
       fetchVoiceActorDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, voiceActorId]);
 
   const fetchVoiceActorDetails = async () => {
@@ -177,7 +177,6 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
         setVoiceActorData(transformedData);
       }
     } catch (err) {
-      console.error('Error fetching voice actor details:', err);
       setError('Fehler beim Laden der Sprecher-Details');
     } finally {
       setLoading(false);

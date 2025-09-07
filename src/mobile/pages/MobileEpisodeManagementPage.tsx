@@ -19,7 +19,7 @@ import 'firebase/compat/database';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import './MobileEpisodeManagementPage.css';
 
-export const MobileEpisodeManagementPage: React.FC = () => {
+export const MobileEpisodeManagementPage = () => {
   const { id } = useParams();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
@@ -195,7 +195,6 @@ export const MobileEpisodeManagementPage: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('Error toggling episode:', error);
     }
   };
 
@@ -264,7 +263,6 @@ export const MobileEpisodeManagementPage: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error toggling season:', error);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import firebase from 'firebase/compat/app';
@@ -14,7 +14,7 @@ import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 
-export const MobileProfilePage: React.FC = () => {
+export const MobileProfilePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { currentTheme } = useTheme();
@@ -48,7 +48,8 @@ export const MobileProfilePage: React.FC = () => {
     
     // Series watch time - same calculation as MobileStatsGrid
     seriesList.forEach(series => {
-      if (!series || !series.nmr) return;
+      // Allow nmr: 0 as valid
+      if (!series || (series.nmr === undefined || series.nmr === null)) return;
       const runtime = series.episodeRuntime || 45;
       
       if (series.seasons) {
@@ -73,7 +74,8 @@ export const MobileProfilePage: React.FC = () => {
     
     // Movie watch time - use rating > 0 to determine if watched (same as MobileStatsGrid)
     movieList.forEach((movie: any) => {
-      if (movie && movie.nmr) {
+      // Allow nmr: 0 as valid
+      if (movie && (movie.nmr !== undefined && movie.nmr !== null)) {
         const rating = parseFloat(calculateOverallRating(movie));
         const isWatched = !isNaN(rating) && rating > 0;
         if (isWatched) {
@@ -112,7 +114,6 @@ export const MobileProfilePage: React.FC = () => {
       await firebase.auth().signOut();
       navigate('/');
     } catch (error) {
-      console.error('Logout failed:', error);
     }
   };
   
