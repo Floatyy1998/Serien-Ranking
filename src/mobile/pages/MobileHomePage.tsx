@@ -288,7 +288,7 @@ export const MobileHomePage: React.FC = () => {
           <div>
             <h1
               style={{
-                fontSize: '28px',
+                fontSize: '24px',
                 fontWeight: 800,
                 margin: '0 0 4px 0',
                 background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
