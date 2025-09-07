@@ -25,7 +25,7 @@ function calculateStats(data: any) {
   let watchlistCount = 0;
   let watchedEpisodes = 0;
   let totalAiredEpisodes = 0;
-  let todayUnwatchedEpisodes = 0;
+  let todayTotalEpisodes = 0;
   
   // Process series in worker thread
   for (let i = 0; i < seriesList.length; i++) {
@@ -46,22 +46,38 @@ function calculateStats(data: any) {
       
       for (let k = 0; k < episodes.length; k++) {
         const episode = episodes[k];
-        if (!episode.air_date) continue;
         
-        const airDate = new Date(episode.air_date);
-        if (isNaN(airDate.getTime())) continue;
+        // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
+        const isWatched = !!(
+          episode.firstWatchedAt ||
+          episode.watched === true ||
+          (episode.watched as any) === 1 ||
+          (episode.watched as any) === 'true' ||
+          (episode.watchCount && episode.watchCount > 0)
+        );
         
-        airDate.setHours(0, 0, 0, 0);
-        const airDateTime = airDate.getTime();
-        
-        if (airDateTime <= todayTime) {
-          totalAiredEpisodes++;
-          if (episode.watched === true) {
-            watchedEpisodes++;
+        if (episode.air_date) {
+          const airDate = new Date(episode.air_date);
+          if (!isNaN(airDate.getTime())) {
+            airDate.setHours(0, 0, 0, 0);
+            const airDateTime = airDate.getTime();
+            
+            if (airDateTime <= todayTime) {
+              totalAiredEpisodes++;
+              if (isWatched) {
+                watchedEpisodes++;
+              }
+              
+              if (airDateTime === todayTime) {
+                todayTotalEpisodes++;
+              }
+            }
           }
-          
-          if (airDateTime === todayTime && !episode.watched) {
-            todayUnwatchedEpisodes++;
+        } else {
+          // No air_date means it's probably an old episode that's already aired
+          totalAiredEpisodes++;
+          if (isWatched) {
+            watchedEpisodes++;
           }
         }
       }
@@ -98,7 +114,7 @@ function calculateStats(data: any) {
     totalEpisodes: totalAiredEpisodes,
     watchedMovies,
     watchlistCount,
-    todayEpisodes: todayUnwatchedEpisodes,
+    todayEpisodes: todayTotalEpisodes,
     progress,
   };
 }
