@@ -56,12 +56,29 @@ export const MobileProfilePage = () => {
         series.seasons.forEach(season => {
           if (season.episodes) {
             season.episodes.forEach(episode => {
-              if (episode.air_date && episode.watched === true) {
-                const airDate = new Date(episode.air_date);
-                if (airDate <= today) {
-                  // For episode count: count once
+              // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
+              const isWatched = !!(
+                episode.firstWatchedAt ||
+                episode.watched === true ||
+                (episode.watched as any) === 1 ||
+                (episode.watched as any) === 'true' ||
+                (episode.watchCount && episode.watchCount > 0)
+              );
+              
+              if (isWatched) {
+                // Check if episode has aired
+                if (episode.air_date) {
+                  const airDate = new Date(episode.air_date);
+                  if (airDate <= today) {
+                    // For episode count: count once
+                    watchedEpisodes++;
+                    // For time: count rewatches
+                    const watchCount = episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
+                    totalMinutesWatched += runtime * watchCount;
+                  }
+                } else {
+                  // No air_date means it's probably an old episode that's already aired
                   watchedEpisodes++;
-                  // For time: count rewatches
                   const watchCount = episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
                   totalMinutesWatched += runtime * watchCount;
                 }
@@ -97,9 +114,9 @@ export const MobileProfilePage = () => {
     if (years > 0) timeString += `${years}J `;
     if (months > 0) timeString += `${months}M `;
     if (days > 0) timeString += `${days}T `;
-    if (hours > 0) timeString += `${hours}h `;
-    if (minutes > 0) timeString += `${Math.floor(minutes)}m`;
-    if (!timeString) timeString = '0m';
+    if (hours > 0) timeString += `${hours}S `;
+    if (minutes > 0) timeString += `${Math.floor(minutes)}Min`;
+    if (!timeString) timeString = '0Min';
     
     return {
       totalSeries,
