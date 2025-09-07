@@ -1,7 +1,6 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
@@ -432,25 +431,6 @@ function AppContent() {
             <MovieListProvider>
               <StatsProvider>
                 <BadgeProvider>
-                  <Helmet>
-                    <title>TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien</title>
-                    <meta
-                      name="description"
-                      content="Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr."
-                    />
-                    <meta name="keywords" content="Serien, TV, Bewertung, Watchlist, TV-RANK" />
-                    <meta
-                      property="og:title"
-                      content="TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien"
-                    />
-                    <meta
-                      property="og:description"
-                      content="Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr."
-                    />
-                    <meta property="og:image" content="/favicon.ico" />
-                    <meta property="og:url" content="https://tv-rank.de" />
-                    <meta name="twitter:card" content="summary_large_image" />
-                  </Helmet>
                   <ThemeProvider theme={currentTheme}>
                     <CssBaseline />
                     <div className="w-full">
