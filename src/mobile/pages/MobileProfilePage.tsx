@@ -49,7 +49,7 @@ export const MobileProfilePage = () => {
     // Series watch time - same calculation as MobileStatsGrid
     seriesList.forEach(series => {
       // Allow nmr: 0 as valid
-      if (!series || (series.nmr === undefined || series.nmr === null)) return;
+      if (!series || series.nmr === undefined || series.nmr === null) return;
       const runtime = series.episodeRuntime || 45;
       
       if (series.seasons) {
@@ -75,7 +75,7 @@ export const MobileProfilePage = () => {
     // Movie watch time - use rating > 0 to determine if watched (same as MobileStatsGrid)
     movieList.forEach((movie: any) => {
       // Allow nmr: 0 as valid
-      if (movie && (movie.nmr !== undefined && movie.nmr !== null)) {
+      if (movie && movie.nmr !== undefined && movie.nmr !== null) {
         const rating = parseFloat(calculateOverallRating(movie));
         const isWatched = !isNaN(rating) && rating > 0;
         if (isWatched) {
