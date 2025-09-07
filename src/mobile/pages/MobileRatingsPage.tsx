@@ -7,7 +7,6 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { MobileBackButton } from '../components/MobileBackButton';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
 
 // TMDB Genre IDs mapping (unused but kept for reference)
@@ -25,21 +24,61 @@ export const MobileRatingsPage: React.FC = () => {
   const params = new URLSearchParams(location.search);
   const tabParam = params.get('tab');
 
-  const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
+  // Check if we're coming from a back navigation
+  const isBackNavigation = sessionStorage.getItem('ratingsBackNavigation') === 'true';
+  
+  // Clear the flag immediately after reading it
+  if (isBackNavigation) {
+    sessionStorage.removeItem('ratingsBackNavigation');
+  }
 
-  // Set tab from URL parameter
-  useEffect(() => {
-    if (tabParam === 'movies') {
-      setActiveTab('movies');
+  // Load persisted state from sessionStorage only if coming from back navigation
+  const loadPersistedState = () => {
+    if (isBackNavigation) {
+      const persistedFilters = sessionStorage.getItem('ratingsPageFilters');
+      const persistedTab = sessionStorage.getItem('ratingsPageTab');
+      
+      return {
+        filters: persistedFilters ? JSON.parse(persistedFilters) : {},
+        tab: (persistedTab as 'series' | 'movies') || 'series'
+      };
     }
-  }, [tabParam]);
+    // Clear session storage if not coming from back navigation
+    sessionStorage.removeItem('ratingsPageFilters');
+    sessionStorage.removeItem('ratingsPageTab');
+    return {
+      filters: {},
+      tab: 'series' as 'series' | 'movies'
+    };
+  };
+
+  const { filters: persistedFilters, tab: persistedTab } = loadPersistedState();
+  
+  const [activeTab, setActiveTab] = useState<'series' | 'movies'>(persistedTab);
   const [filters, setFilters] = useState<{
     genre?: string;
     provider?: string;
     quickFilter?: string;
     search?: string;
     sortBy?: string;
-  }>({});
+  }>(persistedFilters);
+
+  // Set tab from URL parameter or persisted state
+  useEffect(() => {
+    if (tabParam === 'movies') {
+      setActiveTab('movies');
+    }
+  }, [tabParam]);
+
+  // Persist filters to sessionStorage whenever they change
+  useEffect(() => {
+    sessionStorage.setItem('ratingsPageFilters', JSON.stringify(filters));
+  }, [filters]);
+
+  // Persist active tab to sessionStorage whenever it changes
+  useEffect(() => {
+    sessionStorage.setItem('ratingsPageTab', activeTab);
+  }, [activeTab]);
 
   // Helper function to get user rating (unused)
   // const getUserRating = (rating: any): number => {
@@ -111,7 +150,12 @@ export const MobileRatingsPage: React.FC = () => {
     }
 
     // Apply quick filters
-    if (filters.quickFilter === 'unrated') {
+    if (filters.quickFilter === 'watchlist') {
+      // Filter for series that are in the watchlist
+      filtered = filtered.filter((s) => {
+        return s.watchlist === true;
+      });
+    } else if (filters.quickFilter === 'unrated') {
       filtered = filtered.filter((s) => {
         const rating = parseFloat(calculateOverallRating(s));
         return isNaN(rating) || rating === 0;
@@ -262,7 +306,12 @@ export const MobileRatingsPage: React.FC = () => {
     }
 
     // Apply quick filters
-    if (filters.quickFilter === 'unrated') {
+    if (filters.quickFilter === 'watchlist') {
+      // Filter for movies that are in the watchlist
+      filtered = filtered.filter((m) => {
+        return m.watchlist === true;
+      });
+    } else if (filters.quickFilter === 'unrated') {
       filtered = filtered.filter((s) => {
         const rating = parseFloat(calculateOverallRating(s));
         return isNaN(rating) || rating === 0;
@@ -366,17 +415,7 @@ export const MobileRatingsPage: React.FC = () => {
           background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            marginBottom: '16px',
-          }}
-        >
-          <MobileBackButton />
-
-          <h1
+        <h1
             style={{
               fontSize: '24px',
               fontWeight: 700,
@@ -389,7 +428,6 @@ export const MobileRatingsPage: React.FC = () => {
             <Star style={{ fontSize: '28px', color: currentTheme.status.warning }} />
             Meine Bewertungen
           </h1>
-        </div>
 
         {/* Stats */}
         <div
@@ -526,7 +564,11 @@ export const MobileRatingsPage: React.FC = () => {
                 <motion.div
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate(isMovie ? `/movie/${item.id}` : `/series/${item.id}`)}
+                  onClick={() => {
+                    // Mark that we're navigating from ratings page
+                    sessionStorage.setItem('cameFromRatings', 'true');
+                    navigate(isMovie ? `/movie/${item.id}` : `/series/${item.id}`);
+                  }}
                   style={{
                     cursor: 'pointer',
                     position: 'relative',
@@ -725,6 +767,7 @@ export const MobileRatingsPage: React.FC = () => {
         onFilterChange={setFilters}
         isMovieMode={activeTab === 'movies'}
         isRatingsMode={true}
+        initialFilters={filters}
       />
     </div>
   );

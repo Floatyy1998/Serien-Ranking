@@ -27,6 +27,7 @@ import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { Series } from '../../types/Series';
 import { MobileBackButton } from '../components/MobileBackButton';
 import { MobileCastCrew } from '../components/MobileCastCrew';
+import { MobileDialog } from '../components/MobileDialog';
 import { MobileProviderBadges } from '../components/MobileProviderBadges';
 
 export const MobileSeriesDetailPage = memo(() => {
@@ -34,7 +35,7 @@ export const MobileSeriesDetailPage = memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
-  const {} = useTheme();
+  const { currentTheme } = useTheme();
   const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
   const [showRewatchDialog, setShowRewatchDialog] = useState<{
@@ -45,6 +46,8 @@ export const MobileSeriesDetailPage = memo(() => {
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
   const [tmdbSeries, setTmdbSeries] = useState<Series | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning'; onConfirm?: () => void }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
   // Firebase batch updates ready if needed
   // Using API instead of direct Firebase updates
@@ -226,39 +229,53 @@ export const MobileSeriesDetailPage = memo(() => {
           series.id
         );
 
-        alert('Serie erfolgreich hinzugefügt!');
-        // Reload page to show the series from user's list
-        window.location.reload();
+        setSnackbar({ open: true, message: 'Serie erfolgreich hinzugefügt!' });
+        setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+        
+        // Navigate to refresh the series data
+        navigate(`/series/${series.id}`, { replace: true });
       } else {
         const data = await response.json();
         if (data.error === 'Serie bereits vorhanden') {
-          alert('Serie ist bereits in deiner Liste!');
+          setDialog({ open: true, message: 'Serie ist bereits in deiner Liste!', type: 'warning' });
         } else {
           throw new Error('Fehler beim Hinzufügen');
         }
       }
     } catch (error) {
-      alert('Fehler beim Hinzufügen der Serie.');
+      setDialog({ open: true, message: 'Fehler beim Hinzufügen der Serie.', type: 'error' });
     } finally {
       setIsAdding(false);
     }
   }, [series, user]);
 
   // Handle series deletion - using Firebase directly - memoized
-  const handleDeleteSeries = useCallback(async () => {
-    if (!series || !user || !window.confirm('Möchtest du diese Serie wirklich löschen?')) return;
+  const handleDeleteSeries = useCallback(() => {
+    if (!series || !user) return;
 
-    setIsDeleting(true);
-    try {
-      // Delete directly from Firebase
-      await firebase.database().ref(`${user.uid}/serien/${series.nmr}`).remove();
-
-      navigate('/');
-    } catch (error) {
-      alert('Fehler beim Löschen der Serie.');
-    } finally {
-      setIsDeleting(false);
-    }
+    setDialog({ 
+      open: true, 
+      message: 'Möchtest du diese Serie wirklich löschen?', 
+      type: 'warning',
+      onConfirm: async () => {
+        setIsDeleting(true);
+        try {
+          // Delete directly from Firebase
+          await firebase.database().ref(`${user.uid}/serien/${series.nmr}`).remove();
+          
+          // Show success message
+          setSnackbar({ open: true, message: 'Serie erfolgreich gelöscht!' });
+          setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+          
+          // Series will be removed from list automatically via Firebase listener
+          // No navigation needed - stay on current page
+        } catch (error) {
+          setDialog({ open: true, message: 'Fehler beim Löschen der Serie.', type: 'error' });
+        } finally {
+          setIsDeleting(false);
+        }
+      }
+    });
   }, [series, user, navigate]);
 
   // Handle watchlist toggle - memoized
@@ -280,7 +297,7 @@ export const MobileSeriesDetailPage = memo(() => {
 
       // The context will update automatically through Firebase listeners
     } catch (error) {
-      alert('Fehler beim Aktualisieren der Watchlist.');
+      setDialog({ open: true, message: 'Fehler beim Aktualisieren der Watchlist.', type: 'error' });
     }
   }, [series, user]);
 
@@ -308,7 +325,7 @@ export const MobileSeriesDetailPage = memo(() => {
 
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
     } catch (error) {
-      alert('Fehler beim Rewatch der Episode.');
+      setDialog({ open: true, message: 'Fehler beim Rewatch der Episode.', type: 'error' });
     }
   };
 
@@ -344,7 +361,7 @@ export const MobileSeriesDetailPage = memo(() => {
 
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
     } catch (error) {
-      alert('Fehler beim Markieren als nicht gesehen.');
+      setDialog({ open: true, message: 'Fehler beim Markieren als nicht gesehen.', type: 'error' });
     }
   };
 
@@ -459,7 +476,7 @@ export const MobileSeriesDetailPage = memo(() => {
               position: 'absolute',
               top: 'calc(20px + env(safe-area-inset-top))',
               right: '20px',
-              background: isAdding ? 'rgba(0, 212, 170, 0.5)' : 'rgba(0, 212, 170, 0.8)',
+              background: isAdding ? `${currentTheme.status.success}88` : `${currentTheme.status.success}CC`,
               backdropFilter: 'blur(10px)',
               border: 'none',
               color: 'white',
@@ -1234,6 +1251,56 @@ export const MobileSeriesDetailPage = memo(() => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Dialog */}
+      <MobileDialog
+        open={dialog.open}
+        onClose={() => setDialog({ ...dialog, open: false })}
+        title={dialog.type === 'warning' ? 'Bestätigung' : dialog.type === 'error' ? 'Fehler' : 'Information'}
+        message={dialog.message}
+        type={dialog.type}
+        actions={dialog.onConfirm ? [
+          {
+            label: 'Abbrechen',
+            onClick: () => setDialog({ ...dialog, open: false }),
+            variant: 'secondary'
+          },
+          {
+            label: 'Bestätigen',
+            onClick: dialog.onConfirm,
+            variant: 'primary'
+          }
+        ] : []}
+      />
+
+      {/* Success Snackbar */}
+      {snackbar.open && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 'calc(20px + env(safe-area-inset-bottom))',
+            left: '20px',
+            right: '20px',
+            background: currentTheme.status.success,
+            color: 'white',
+            padding: '16px 20px',
+            borderRadius: '12px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            zIndex: 1000,
+            fontSize: '14px',
+            fontWeight: '600',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          <Check style={{ fontSize: '20px' }} />
+          <span>{snackbar.message}</span>
         </div>
       )}
     </div>

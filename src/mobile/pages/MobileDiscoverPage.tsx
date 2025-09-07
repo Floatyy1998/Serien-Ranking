@@ -18,7 +18,7 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { MobileBackButton } from '../components/MobileBackButton';
+import { MobileDialog } from '../components/MobileDialog';
 
 export const MobileDiscoverPage = memo(() => {
   const navigate = useNavigate();
@@ -35,6 +35,9 @@ export const MobileDiscoverPage = memo(() => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [addingItem, setAddingItem] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -164,10 +167,20 @@ export const MobileDiscoverPage = memo(() => {
     [activeTab, activeCategory, selectedGenre, page, loading, seriesList, movieList]
   );
 
-  // Load initial data
+  // Load initial data and trigger second page load if needed
   useEffect(() => {
     if (!showSearch) {
       fetchFromTMDB(true);
+      // Automatically load second page after initial load to ensure enough content for scrolling
+      setTimeout(() => {
+        const scrollContainer = document.querySelector('.mobile-discover-container');
+        if (scrollContainer) {
+          const hasScroll = scrollContainer.scrollHeight > scrollContainer.clientHeight;
+          if (!hasScroll && hasMore) {
+            fetchFromTMDB(false);
+          }
+        }
+      }, 500);
     }
   }, [activeTab, activeCategory, selectedGenre, showSearch]);
 
@@ -228,11 +241,18 @@ export const MobileDiscoverPage = memo(() => {
 
   // Add to list - memoized
   const addToList = useCallback(
-    async (item: any) => {
+    async (item: any, event?: React.MouseEvent) => {
+      if (event) {
+        event.stopPropagation();
+      }
+      
       if (!user) {
-        alert('Bitte einloggen!');
+        setDialog({ open: true, message: 'Bitte einloggen um Inhalte hinzuzufügen!', type: 'warning' });
         return;
       }
+
+      const itemKey = `${item.type}-${item.id}`;
+      setAddingItem(itemKey);
 
       const endpoint =
         item.type === 'series'
@@ -251,7 +271,16 @@ export const MobileDiscoverPage = memo(() => {
         });
 
         if (response.ok) {
-          setResults((prev) => prev.map((r) => (r.id === item.id ? { ...r, inList: true } : r)));
+          // Remove item from results immediately
+          setResults((prev) => prev.filter((r) => r.id !== item.id));
+          setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
+          
+          // Show success snackbar
+          const title = item.title || item.name;
+          setSnackbar({ 
+            open: true, 
+            message: `"${title}" wurde erfolgreich hinzugefügt!` 
+          });
 
           // Activity-Logging für Friend + Badge-System (wie Desktop)
           if (item.type === 'series') {
@@ -259,8 +288,17 @@ export const MobileDiscoverPage = memo(() => {
           } else {
             await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id);
           }
+
+          // Hide snackbar after 3 seconds
+          setTimeout(() => {
+            setSnackbar({ open: false, message: '' });
+          }, 3000);
         }
-      } catch (error) {}
+      } catch (error) {
+        console.error('Failed to add item:', error);
+      } finally {
+        setAddingItem(null);
+      }
     },
     [user]
   );
@@ -268,13 +306,10 @@ export const MobileDiscoverPage = memo(() => {
   // Handle item click - memoized
   const handleItemClick = useCallback(
     (item: any) => {
-      if (item.inList) {
-        navigate(item.type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
-      } else {
-        addToList(item);
-      }
+      // Always navigate to detail page
+      navigate(item.type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
     },
-    [navigate, addToList]
+    [navigate]
   );
 
   // Load more on scroll
@@ -286,11 +321,14 @@ export const MobileDiscoverPage = memo(() => {
     const scrollHeight = scrollContainer.scrollHeight;
     const clientHeight = scrollContainer.clientHeight;
 
-    // Check if we're within 500px of the bottom (increased threshold)
-    if (scrollHeight - scrollTop - clientHeight < 500 && hasMore && !loading && !showSearch) {
+    // Check if we're within 800px of the bottom and ensure minimum content height
+    // This helps trigger loading even with just 2 rows initially
+    const triggerDistance = Math.min(800, scrollHeight * 0.3);
+    
+    if (scrollHeight - scrollTop - clientHeight < triggerDistance && hasMore && !loading && !showSearch) {
       fetchFromTMDB(false); // Pass false to load next page, not reset
     }
-  }, [hasMore, loading, fetchFromTMDB, showSearch, page]);
+  }, [hasMore, loading, fetchFromTMDB, showSearch]);
 
   // Attach scroll listener
   useEffect(() => {
@@ -338,31 +376,28 @@ export const MobileDiscoverPage = memo(() => {
               alignItems: 'flex-start',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              <MobileBackButton />
-              <div>
-                <h1
-                  style={{
-                    fontSize: '32px',
-                    fontWeight: 800,
-                    margin: 0,
-                    background: currentTheme.primary,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  Entdecken
-                </h1>
-                <p
-                  style={{
-                    color: currentTheme.text.secondary,
-                    fontSize: '16px',
-                    margin: '4px 0 0 0',
-                  }}
-                >
-                  {showSearch ? 'Suche' : 'Trending & Beliebte Inhalte'}
-                </p>
-              </div>
+            <div>
+              <h1
+                style={{
+                  fontSize: '32px',
+                  fontWeight: 800,
+                  margin: 0,
+                  background: currentTheme.primary,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                Entdecken
+              </h1>
+              <p
+                style={{
+                  color: currentTheme.text.secondary,
+                  fontSize: '16px',
+                  margin: '4px 0 0 0',
+                }}
+              >
+                {showSearch ? 'Suche' : 'Trending & Beliebte Inhalte'}
+              </p>
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -741,13 +776,12 @@ export const MobileDiscoverPage = memo(() => {
                 {searchResults.map((item) => (
                   <div
                     key={`search-${item.type}-${item.id}`}
-                    onClick={() => handleItemClick(item)}
                     style={{
-                      cursor: 'pointer',
                       position: 'relative',
                     }}
                   >
                     <div
+                      onClick={() => handleItemClick(item)}
                       style={{
                         width: '100%',
                         aspectRatio: '2/3',
@@ -755,6 +789,7 @@ export const MobileDiscoverPage = memo(() => {
                         borderRadius: '8px',
                         overflow: 'hidden',
                         marginBottom: '8px',
+                        cursor: 'pointer',
                       }}
                     >
                       <img
@@ -795,53 +830,39 @@ export const MobileDiscoverPage = memo(() => {
                         </div>
                       )}
 
-                      {/* In List Badge */}
-                      {item.inList ? (
-                        <div
+                      {/* Add Button */}
+                      {!item.inList && (
+                        <button
+                          onClick={(e) => addToList(item, e)}
+                          disabled={addingItem === `${item.type}-${item.id}`}
                           style={{
                             position: 'absolute',
                             bottom: '8px',
                             right: '8px',
                             width: '28px',
                             height: '28px',
-                            background: 'rgba(76, 209, 55, 0.9)',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Check
-                            style={{
-                              fontSize: '18px',
-                              color: currentTheme.text.primary,
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: '8px',
-                            right: '8px',
-                            width: '28px',
-                            height: '28px',
-                            background: 'rgba(255, 255, 255, 0.2)',
+                            background: addingItem === `${item.type}-${item.id}` 
+                              ? 'rgba(255, 255, 255, 0.1)'
+                              : 'rgba(255, 255, 255, 0.2)',
                             backdropFilter: 'blur(10px)',
                             borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             border: '1px solid rgba(255, 255, 255, 0.3)',
+                            cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
+                            transition: 'all 0.2s ease',
+                            padding: 0,
                           }}
                         >
                           <Add
                             style={{
                               fontSize: '18px',
                               color: currentTheme.text.primary,
+                              opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
                             }}
                           />
-                        </div>
+                        </button>
                       )}
                     </div>
 
@@ -893,13 +914,12 @@ export const MobileDiscoverPage = memo(() => {
             {results.map((item) => (
               <div
                 key={`${item.type}-${item.id}`}
-                onClick={() => handleItemClick(item)}
                 style={{
-                  cursor: 'pointer',
                   position: 'relative',
                 }}
               >
                 <div
+                  onClick={() => handleItemClick(item)}
                   style={{
                     width: '100%',
                     aspectRatio: '2/3',
@@ -907,6 +927,7 @@ export const MobileDiscoverPage = memo(() => {
                     borderRadius: '8px',
                     overflow: 'hidden',
                     marginBottom: '8px',
+                    cursor: 'pointer',
                   }}
                 >
                   <img
@@ -947,46 +968,39 @@ export const MobileDiscoverPage = memo(() => {
                     </div>
                   )}
 
-                  {/* In List Badge */}
-                  {item.inList && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '8px',
-                        right: '8px',
-                        width: '28px',
-                        height: '28px',
-                        background: 'rgba(76, 209, 55, 0.9)',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Check style={{ fontSize: '18px', color: 'white' }} />
-                    </div>
-                  )}
-
                   {/* Add Button */}
                   {!item.inList && (
-                    <div
+                    <button
+                      onClick={(e) => addToList(item, e)}
+                      disabled={addingItem === `${item.type}-${item.id}`}
                       style={{
                         position: 'absolute',
                         bottom: '8px',
                         right: '8px',
                         width: '28px',
                         height: '28px',
-                        background: 'rgba(255, 255, 255, 0.2)',
+                        background: addingItem === `${item.type}-${item.id}` 
+                          ? 'rgba(255, 255, 255, 0.1)'
+                          : 'rgba(255, 255, 255, 0.2)',
                         backdropFilter: 'blur(10px)',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         border: '1px solid rgba(255, 255, 255, 0.3)',
+                        cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
+                        transition: 'all 0.2s ease',
+                        padding: 0,
                       }}
                     >
-                      <Add style={{ fontSize: '18px', color: 'white' }} />
-                    </div>
+                      <Add
+                        style={{
+                          fontSize: '18px',
+                          color: 'white',
+                          opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
+                        }}
+                      />
+                    </button>
                   )}
                 </div>
 
@@ -1039,6 +1053,40 @@ export const MobileDiscoverPage = memo(() => {
         {/* Bottom padding for better scrolling */}
         <div style={{ height: '100px' }} />
       </div>
+
+      {/* Snackbar for success feedback */}
+      {snackbar.open && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: currentTheme.status.success,
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            maxWidth: 'calc(100% - 40px)',
+            transition: 'all 0.3s ease-out',
+          }}
+        >
+          <Check style={{ fontSize: '20px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
+        </div>
+      )}
+
+      {/* Dialog for alerts */}
+      <MobileDialog
+        open={dialog.open}
+        onClose={() => setDialog({ ...dialog, open: false })}
+        message={dialog.message}
+        type={dialog.type}
+      />
     </div>
   );
 });

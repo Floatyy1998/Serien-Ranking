@@ -1,4 +1,5 @@
 import { MobileBackButton } from '../components/MobileBackButton';
+import { MobileDialog } from '../components/MobileDialog';
 import {
   Delete,
   Info,
@@ -27,6 +28,8 @@ export const MobileMovieDetailPage = memo(() => {
   const [loading, setLoading] = useState(false);
   const [tmdbMovie, setTmdbMovie] = useState<Movie | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
+  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning'; onConfirm?: () => void }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
   // Find the movie locally first
   const localMovie = useMemo(() => {
@@ -164,19 +167,22 @@ export const MobileMovieDetailPage = memo(() => {
           movie.id
         );
         
-        alert('Film erfolgreich hinzugefügt!');
-        // Reload page to show the movie from user's list
-        window.location.reload();
+        // Show success snackbar
+        setSnackbar({ open: true, message: 'Film erfolgreich hinzugefügt!' });
+        setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+        
+        // Navigate to the movie detail page with the movie data
+        navigate(`/movie/${movie.id}`);
       } else {
         const data = await response.json();
         if (data.error === 'Film bereits vorhanden') {
-          alert('Film ist bereits in deiner Liste!');
+          setDialog({ open: true, message: 'Film ist bereits in deiner Liste!', type: 'info' });
         } else {
           throw new Error('Fehler beim Hinzufügen');
         }
       }
     } catch (error) {
-      alert('Fehler beim Hinzufügen des Films.');
+      setDialog({ open: true, message: 'Fehler beim Hinzufügen des Films.', type: 'error' });
     } finally {
       setIsAdding(false);
     }
@@ -195,9 +201,15 @@ export const MobileMovieDetailPage = memo(() => {
 
       await movieRef.remove();
 
-      // Navigate back to home after successful deletion
-      navigate('/');
+      // Show success message
+      setSnackbar({ open: true, message: 'Film erfolgreich gelöscht!' });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+      
+      // Movie will be removed from list automatically via Firebase listener
+      // No navigation needed - stay on current page
+      setShowDeleteConfirm(false);
     } catch (error) {
+      setDialog({ open: true, message: 'Fehler beim Löschen des Films.', type: 'error' });
     } finally {
       setLoading(false);
       setShowDeleteConfirm(false);
@@ -333,8 +345,8 @@ export const MobileMovieDetailPage = memo(() => {
               disabled={isAdding}
               style={{
                 background: isAdding
-                  ? 'rgba(0, 212, 170, 0.5)'
-                  : 'rgba(0, 212, 170, 0.8)',
+                  ? `${currentTheme.status.success}88`
+                  : `${currentTheme.status.success}CC`,
                 backdropFilter: 'blur(10px)',
                 border: 'none',
                 color: currentTheme.text.primary,
@@ -355,7 +367,7 @@ export const MobileMovieDetailPage = memo(() => {
             <button
               onClick={() => setShowDeleteConfirm(true)}
               style={{
-                background: 'rgba(220, 53, 69, 0.8)',
+                background: `${currentTheme.status.error}CC`,
                 backdropFilter: 'blur(10px)',
                 border: 'none',
                 color: currentTheme.text.primary,
@@ -812,104 +824,52 @@ export const MobileMovieDetailPage = memo(() => {
       </div>
       )}
 
-      {/* Delete Confirmation - only for user's movies */}
-      {showDeleteConfirm && !isReadOnlyTmdbMovie && (
+      {/* Delete Confirmation Dialog */}
+      <MobileDialog
+        open={showDeleteConfirm && !isReadOnlyTmdbMovie}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Film löschen?"
+        message={`Möchtest du "${movie?.title}" wirklich aus deiner Sammlung entfernen? Diese Aktion kann nicht rückgängig gemacht werden.`}
+        type="warning"
+        actions={[
+          { label: 'Abbrechen', onClick: () => setShowDeleteConfirm(false), variant: 'secondary' },
+          { label: 'Löschen', onClick: handleDeleteMovie, variant: 'primary' }
+        ]}
+      />
+
+      {/* Success Snackbar */}
+      {snackbar.open && (
         <div
           style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: currentTheme.status.success,
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
+            gap: '8px',
+            maxWidth: 'calc(100% - 40px)',
+            transition: 'all 0.3s ease-out',
           }}
         >
-          <div
-            style={{
-              background: '#1a1a1a',
-              borderRadius: '16px',
-              padding: '24px',
-              width: '100%',
-              maxWidth: '400px',
-            }}
-          >
-            <h2
-              style={{
-                fontSize: '20px',
-                fontWeight: 600,
-                margin: '0 0 16px 0',
-                textAlign: 'center',
-              }}
-            >
-              Film löschen?
-            </h2>
-
-            <p
-              style={{
-                fontSize: '14px',
-                color: 'rgba(255, 255, 255, 0.7)',
-                margin: '0 0 24px 0',
-                textAlign: 'center',
-                lineHeight: 1.5,
-              }}
-            >
-              Möchtest du "{movie?.title}" wirklich aus deiner Sammlung
-              entfernen? Diese Aktion kann nicht rückgängig gemacht werden.
-            </p>
-
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-              }}
-            >
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '8px',
-                  color: currentTheme.text.primary,
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.5 : 1,
-                }}
-              >
-                Abbrechen
-              </button>
-              <button
-                onClick={handleDeleteMovie}
-                disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: loading
-                    ? 'rgba(220, 53, 69, 0.5)'
-                    : 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: currentTheme.text.primary,
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.7 : 1,
-                }}
-              >
-                {loading ? 'Lösche...' : 'Löschen'}
-              </button>
-            </div>
-          </div>
+          <Star style={{ fontSize: '20px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
         </div>
       )}
+
+      {/* Dialog for other alerts */}
+      <MobileDialog
+        open={dialog.open}
+        onClose={() => setDialog({ ...dialog, open: false })}
+        message={dialog.message}
+        type={dialog.type}
+      />
     </div>
   );
 });

@@ -1,4 +1,4 @@
-import { FilterList, NewReleases, PlaylistAdd, Schedule, Star } from '@mui/icons-material';
+import { FilterList, NewReleases, PlaylistAdd, Schedule, Star, Bookmark } from '@mui/icons-material';
 import { AnimatePresence, motion, useDragControls } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
@@ -14,6 +14,13 @@ interface MobileQuickFilterProps {
   isMovieMode?: boolean;
   isRatingsMode?: boolean;
   hasBottomNav?: boolean; // Optional prop to adjust FAB position
+  initialFilters?: {
+    genre?: string;
+    provider?: string;
+    quickFilter?: string;
+    search?: string;
+    sortBy?: string;
+  };
 }
 
 const seriesQuickFilters = [
@@ -30,10 +37,10 @@ const movieQuickFilters = [
 ];
 
 const ratingsQuickFilters = [
+  { value: 'watchlist', label: 'Watchlist', icon: Bookmark },
   { value: 'unrated', label: 'Ohne Bewertung', icon: Star },
   { value: 'started', label: 'Begonnen', icon: Schedule },
   { value: 'best-rated', label: 'Beste Bewertungen', icon: Star },
-  { value: 'worst-rated', label: 'Schlechteste Bewertungen', icon: Star },
   { value: 'recently-rated', label: 'Zuletzt Bewertet', icon: Schedule },
   { value: 'recently-added', label: 'Zuletzt Hinzugefügt', icon: PlaylistAdd },
 ];
@@ -43,13 +50,14 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
   isMovieMode = false,
   isRatingsMode = false,
   hasBottomNav = true, // Default to true for most pages
+  initialFilters = {},
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>('');
-  const [selectedProvider, setSelectedProvider] = useState<string>('');
-  const [selectedQuickFilter, setSelectedQuickFilter] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSort, setSelectedSort] = useState<string>('rating-desc');
+  const [selectedGenre, setSelectedGenre] = useState<string>(initialFilters.genre || '');
+  const [selectedProvider, setSelectedProvider] = useState<string>(initialFilters.provider || '');
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<string>(initialFilters.quickFilter || '');
+  const [searchQuery, setSearchQuery] = useState(initialFilters.search || '');
+  const [selectedSort, setSelectedSort] = useState<string>(initialFilters.sortBy || 'rating-desc');
   const dragControls = useDragControls();
 
   const quickFilters = isRatingsMode

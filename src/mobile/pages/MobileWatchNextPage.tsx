@@ -20,7 +20,6 @@ import { getFormattedDate } from '../../lib/date/date.utils';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { Series } from '../../types/Series';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
-import { MobileBackButton } from '../components/MobileBackButton';
 
 interface NextEpisode {
   seriesId: number;
@@ -477,34 +476,31 @@ export const MobileWatchNextPage = () => {
           background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-          <MobileBackButton />
+        <div style={{ marginBottom: '16px' }}>
+          <h1
+            style={{
+              fontSize: '24px',
+              fontWeight: 800,
+              margin: 0,
+              background: currentTheme.primary,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Als Nächstes
+          </h1>
+          <p
+            style={{
+              color: currentTheme.text.secondary,
+              fontSize: '14px',
+              margin: '4px 0 0 0',
+            }}
+          >
+            {nextEpisodes.length} nächste Episoden
+          </p>
+        </div>
 
-          <div style={{ flex: 1 }}>
-            <h1
-              style={{
-                fontSize: '24px',
-                fontWeight: 800,
-                margin: 0,
-                background: currentTheme.primary,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Als Nächstes
-            </h1>
-            <p
-              style={{
-                color: currentTheme.text.secondary,
-                fontSize: '14px',
-                margin: '4px 0 0 0',
-              }}
-            >
-              {nextEpisodes.length} nächste Episoden
-            </p>
-          </div>
-
-          <button
+        <button
             onClick={() => setShowFilter(!showFilter)}
             style={{
               padding: '10px',
@@ -522,7 +518,6 @@ export const MobileWatchNextPage = () => {
           >
             <FilterList />
           </button>
-        </div>
 
         {/* Filter Section */}
         {showFilter && (

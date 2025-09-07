@@ -1,6 +1,6 @@
 import { ArrowBack } from '@mui/icons-material';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface MobileBackButtonProps {
   label?: string;
@@ -9,9 +9,26 @@ interface MobileBackButtonProps {
 
 export const MobileBackButton = ({ label, style }: MobileBackButtonProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleBack = () => {
-    // Try to go back in history, if no history go to home
+    // Check if we came from ratings page
+    const cameFromRatings = sessionStorage.getItem('cameFromRatings') === 'true';
+    
+    // Check if we're navigating back FROM a detail page
+    const isFromDetailPage = location.pathname.includes('/series/') || 
+                            location.pathname.includes('/movie/') ||
+                            location.pathname.includes('/rating/');
+    
+    // If navigating back to ratings from a detail page, preserve filters
+    if (isFromDetailPage && cameFromRatings) {
+      // Clear the flag that we came from ratings
+      sessionStorage.removeItem('cameFromRatings');
+      // Set a flag that we're doing a back navigation to ratings
+      sessionStorage.setItem('ratingsBackNavigation', 'true');
+    }
+    
+    // Always use browser back navigation
     if (window.history.length > 1) {
       navigate(-1);
     } else {
