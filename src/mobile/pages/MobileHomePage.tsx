@@ -20,7 +20,7 @@ import { Badge, Chip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import React, { useEffect, useMemo, useState } from 'react';
+import { cloneElement, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
@@ -582,7 +582,7 @@ export const MobileHomePage: React.FC = () => {
               gap: '6px',
             }}
           >
-            {React.cloneElement(action.icon, { style: { fontSize: '22px' } })}
+            {cloneElement(action.icon, { style: { fontSize: '22px' } })}
             <span
               style={{
                 fontSize: '14px',
