@@ -6,6 +6,7 @@ import {
   ExpandMore,
   NewReleases,
   PlayCircle,
+  Search,
   Timer,
   Visibility,
   VisibilityOff,
@@ -58,6 +59,7 @@ export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisod
   const [swipeDirections, setSwipeDirections] = useState<
     Record<string, 'left' | 'right'>
   >({});
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Get TMDB image URL
   const getImageUrl = (posterObj: any): string => {
@@ -78,6 +80,9 @@ export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisod
     seriesList.forEach((series) => {
       // Filter by watchlist unless showAllSeries is true
       if (!showAllSeries && !series.watchlist) return;
+      
+      // Filter by search query
+      if (searchQuery && !series.title?.toLowerCase().includes(searchQuery.toLowerCase())) return;
       
       // Only check episodes in seasons, not API data (to avoid duplicates)
       if (!series.seasons) return;
@@ -134,7 +139,7 @@ export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisod
     episodes.sort((a, b) => a.airDate.getTime() - b.airDate.getTime());
 
     return episodes;
-  }, [seriesList]);
+  }, [seriesList, searchQuery, showAllSeries]);
 
   // Group episodes by date and then by series
   const groupedEpisodes = useMemo(() => {
@@ -313,6 +318,60 @@ export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisod
               {upcomingEpisodes.length} kommende Episoden
             </p>
           </div>
+        </div>
+
+        {/* Search Bar */}
+        <div
+          style={{
+            marginBottom: '16px',
+            position: 'relative',
+          }}
+        >
+          <Search
+            style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: '20px',
+              color: currentTheme.text.secondary,
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Nach Serie suchen..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 12px 10px 40px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: `1px solid ${currentTheme.primary}33`,
+              borderRadius: '12px',
+              color: currentTheme.text.primary,
+              fontSize: '14px',
+              outline: 'none',
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'transparent',
+                border: 'none',
+                color: currentTheme.text.secondary,
+                cursor: 'pointer',
+                padding: '4px',
+                fontSize: '14px',
+              }}
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Stats */}
