@@ -1,8 +1,8 @@
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
 import { defineConfig } from 'vite';
-import { criticalCSSPlugin } from './vite-plugin-critical-css';
 import { VitePWA } from 'vite-plugin-pwa';
+import { criticalCSSPlugin } from './vite-plugin-critical-css';
 // import viteCompression from 'vite-plugin-compression';
 // import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
@@ -14,12 +14,10 @@ export default defineConfig({
   plugins: [
     react({
       babel: {
-        plugins: [
-          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
-        ],
+        plugins: [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]],
       },
     }),
-    // criticalCSSPlugin(), // Temporarily disabled - causing build hang
+    criticalCSSPlugin(), // Temporarily disabled - causing build hang
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.ico'],
@@ -40,6 +38,9 @@ export default defineConfig({
         navigateFallback: null, // Disable navigate fallback to prevent loops
         skipWaiting: false, // Don't auto-activate new SW versions
         clientsClaim: false, // Don't auto-take control
+        cleanupOutdatedCaches: true,
+        // Disable verbose logging
+        disableDevLogs: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
@@ -68,27 +69,19 @@ export default defineConfig({
   ],
   define: {
     // Firebase Umgebungsvariablen - korrigierte Namen
-    'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(
-      process.env.VITE_FIREBASE_API_KEY
-    ),
-    'process.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(
-      process.env.VITE_FIREBASE_AUTH_DOMAIN
-    ),
+    'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(process.env.VITE_FIREBASE_API_KEY),
+    'process.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN),
     'process.env.VITE_FIREBASE_DATABASE_URL': JSON.stringify(
       process.env.VITE_FIREBASE_DATABASE_URL
     ),
-    'process.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(
-      process.env.VITE_FIREBASE_PROJECT_ID
-    ),
+    'process.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(process.env.VITE_FIREBASE_PROJECT_ID),
     'process.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(
       process.env.VITE_FIREBASE_STORAGE_BUCKET
     ),
     'process.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(
       process.env.VITE_FIREBASE_MESSAGING_SENDER_ID
     ),
-    'process.env.VITE_FIREBASE_APP_ID': JSON.stringify(
-      process.env.VITE_FIREBASE_APP_ID
-    ),
+    'process.env.VITE_FIREBASE_APP_ID': JSON.stringify(process.env.VITE_FIREBASE_APP_ID),
     'process.env.VITE_FIREBASE_MEASUREMENT_ID': JSON.stringify(
       process.env.VITE_FIREBASE_MEASUREMENT_ID
     ),
@@ -158,7 +151,7 @@ export default defineConfig({
               if (id.includes('/mobile/components/')) return 'mobile-components';
               return 'mobile-core';
             }
-            
+
             // Desktop components
             if (id.includes('/components/')) {
               if (id.includes('/components/domain/series/')) return 'comp-series';
@@ -167,7 +160,7 @@ export default defineConfig({
               if (id.includes('/components/ui/')) return 'comp-ui';
               return 'comp-core';
             }
-            
+
             // Features
             if (id.includes('/features/')) {
               if (id.includes('/features/badges/')) return 'feat-badges';
@@ -176,41 +169,43 @@ export default defineConfig({
               if (id.includes('/features/notifications/')) return 'feat-notifications';
               return 'feat-core';
             }
-            
+
             // Contexts
             if (id.includes('/contexts/')) return 'contexts';
-            
+
             // Utils
             if (id.includes('/utils/') || id.includes('/lib/')) return 'app-utils';
-            
+
             // Types
             if (id.includes('/types/')) return 'types';
-            
+
             return;
           }
-          
+
           // Bundle React ecosystem together
-          if (id.includes('react') || 
-              id.includes('scheduler') ||
-              id.includes('@emotion') || 
-              id.includes('emotion') || 
-              id.includes('stylis') ||
-              id.includes('prop-types')) {
+          if (
+            id.includes('react') ||
+            id.includes('scheduler') ||
+            id.includes('@emotion') ||
+            id.includes('emotion') ||
+            id.includes('stylis') ||
+            id.includes('prop-types')
+          ) {
             return 'react-vendor';
           }
-          
+
           // Firebase - all in one chunk
           if (id.includes('firebase')) {
             return 'firebase-all';
           }
-          
+
           // Emotion and MUI System are now bundled with react-vendor
-          
+
           // MUI - simpler chunking
           if (id.includes('@mui')) {
             return 'mui-all';
           }
-          
+
           // Framer Motion - all in one chunk to avoid circular deps
           if (id.includes('framer-motion')) {
             return 'framer-all';
@@ -219,7 +214,7 @@ export default defineConfig({
           if (id.includes('motion') && !id.includes('framer-motion')) {
             return 'motion-core';
           }
-          
+
           // Other libraries
           if (id.includes('dayjs')) return 'dayjs';
           if (id.includes('lucide')) return 'lucide';
@@ -232,9 +227,9 @@ export default defineConfig({
           if (id.includes('react-transition-group')) return 'transition';
           if (id.includes('@popperjs')) return 'popper';
           if (id.includes('idb')) return 'idb';
-          
+
           // react-window is now handled by the general react check above
-          
+
           // Small utilities
           if (id.includes('tslib')) return 'util-tslib';
           // prop-types is now in react-vendor
@@ -242,10 +237,10 @@ export default defineConfig({
           if (id.includes('cookie')) return 'util-cookie';
           if (id.includes('fast-deep-equal')) return 'util-equal';
           if (id.includes('clsx')) return 'util-clsx';
-          
+
           // Everything else
           return 'vendor';
-        }
+        },
       },
     },
   },
