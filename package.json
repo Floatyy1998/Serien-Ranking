@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "bump-version": "node scripts/bump-sw-version.js",
-    "build": "npm run bump-version && tsc && vite build && firebase deploy",
-    "build:local": "npm run bump-version && tsc && vite build",
+    "build": "tsc && vite build && firebase deploy",
+    "build:local": "tsc && vite build",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",

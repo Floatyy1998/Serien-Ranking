@@ -1,9 +1,9 @@
 import { Alert, Button, Card, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import React, { useEffect, useState } from 'react';
-import { colors } from '../../theme';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { colors } from '../../theme';
 interface VerifiedRouteProps {
   children: React.ReactNode;
 }
@@ -20,7 +20,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
     if (user) {
       // Setze sofort den Status
       setIsVerified(user.emailVerified);
-      
+
       // Nur im Hintergrund aktualisieren wenn online und nicht verifiziert
       if (navigator.onLine && !user.emailVerified) {
         user
@@ -38,7 +38,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
     } else {
       navigate('/login');
     }
-    
+
     // IMMER setAppReady aufrufen - egal ob User oder nicht
     window.setAppReady?.('emailVerification', true);
   }, [navigate]);
@@ -74,10 +74,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
         });
     }
   };
-  const handleSnackClose = (
-    _event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
+  const handleSnackClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return;
     setSnackOpen(false);
   };
@@ -100,7 +97,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
       <>
         <div
           style={{ height: 'calc(100vh - 120px)' }}
-          className='w-full bg-black flex items-center justify-center p-4'
+          className="w-full bg-black flex items-center justify-center p-4"
         >
           <Card
             sx={{
@@ -112,25 +109,22 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
               border: `1px solid ${colors.border.light}`,
             }}
           >
-            <main className='p-8 text-center'>
-              <h1 className='text-[var(--theme-primary)] text-4xl mb-8'>
-                Email nicht verifiziert
-              </h1>
-              <p className='text-[var(--theme-primary)] text-lg mb-12 leading-relaxed'>
-                Es sieht so aus, als ob Ihre Email noch nicht verifiziert wurde.
-                Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den
-                Verifizierungslink.
+            <main className="p-8 text-center">
+              <h1 className="text-[var(--theme-primary)] text-4xl mb-8">Email nicht verifiziert</h1>
+              <p className="text-[var(--theme-primary)] text-lg mb-12 leading-relaxed">
+                Es sieht so aus, als ob Ihre Email noch nicht verifiziert wurde. Bitte überprüfen
+                Sie Ihr Postfach und klicken Sie auf den Verifizierungslink.
               </p>
-              <div className='flex flex-col gap-4'>
+              <div className="flex flex-col gap-4">
                 <Button
-                  variant='contained'
+                  variant="contained"
                   onClick={() => resendVerification()}
-                  className='bg-[var(--theme-primary)] text-black font-medium px-8 py-3 rounded-lg hover:bg-[var(--theme-accent)] transition-colors'
+                  className="bg-[var(--theme-primary)] text-black font-medium px-8 py-3 rounded-lg hover:bg-[var(--theme-accent)] transition-colors"
                 >
                   LINK ERNEUT SENDEN
                 </Button>
                 <Button
-                  variant='outlined'
+                  variant="outlined"
                   onClick={handleLogout}
                   sx={{
                     color: 'var(--theme-primary)',
@@ -140,7 +134,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
                       backgroundColor: colors.overlay.light,
                     },
                   }}
-                  className='font-medium px-8 py-3 rounded-lg transition-colors'
+                  className="font-medium px-8 py-3 rounded-lg transition-colors"
                 >
                   AUSLOGGEN
                 </Button>
@@ -148,11 +142,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
             </main>
           </Card>
         </div>
-        <Snackbar
-          open={snackOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackClose}
-        >
+        <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
           <Alert
             onClose={handleSnackClose}
             severity={message.includes('Fehler') ? 'error' : 'success'}
@@ -167,11 +157,7 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   return (
     <>
       {children}
-      <Snackbar
-        open={snackOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackClose}
-      >
+      <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
         <Alert
           onClose={handleSnackClose}
           severity={message.includes('Fehler') ? 'error' : 'success'}

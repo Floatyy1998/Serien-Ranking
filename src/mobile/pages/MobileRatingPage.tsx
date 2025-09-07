@@ -1,38 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MobileBackButton } from '../components/MobileBackButton';
 import {
-  Star,
   Delete,
-  Save,
   Movie,
-  Tv,
-  SentimentVeryDissatisfied,
+  Save,
   SentimentDissatisfied,
   SentimentNeutral,
   SentimentSatisfied,
+  SentimentVeryDissatisfied,
   SentimentVerySatisfied,
+  Star,
+  Tv,
 } from '@mui/icons-material';
-import {
-  Zap,
-  Smile,
-  Drama,
-  Heart,
-  Sparkles,
-  TrendingUp,
-} from 'lucide-react';
-import { Series } from '../../types/Series';
-import { Movie as MovieType } from '../../types/Movie';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { calculateOverallRating } from '../../lib/rating/rating';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Drama, Heart, Smile, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../App';
+import { genreMenuItems, genreMenuItemsForMovies } from '../../config/menuItems';
+import { useMovieList } from '../../contexts/MovieListProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useTheme } from '../../contexts/ThemeContext';
 import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
-import { genreMenuItemsForMovies, genreMenuItems } from '../../config/menuItems';
+import { calculateOverallRating } from '../../lib/rating/rating';
+import { Movie as MovieType } from '../../types/Movie';
+import { Series } from '../../types/Series';
+import { MobileBackButton } from '../components/MobileBackButton';
 import './MobileRatingPage.css';
 
 const genreIcons: Record<string, React.ReactNode> = {
@@ -70,42 +63,42 @@ export const MobileRatingPage = () => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme } = useTheme();
-  
+
   const [activeTab, setActiveTab] = useState<'overall' | 'genre'>('overall');
   const [overallRating, setOverallRating] = useState(0);
   const [genreRatings, setGenreRatings] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
-  
-  // Get item based on type  
-  const item = type === 'series' 
-    ? seriesList.find((s: Series) => s.id.toString() === id)
-    : movieList.find((m: MovieType) => m.id.toString() === id);
+
+  // Get item based on type
+  const item =
+    type === 'series'
+      ? seriesList.find((s: Series) => s.id.toString() === id)
+      : movieList.find((m: MovieType) => m.id.toString() === id);
 
   // Initialize ratings from Firebase genre-based structure
   useEffect(() => {
     if (item && user) {
-      
       // Get ALL possible genres based on type (movie or series)
       // Use the complete genre list from menuItems
-      const allPossibleGenres = type === 'movie' 
-        ? genreMenuItemsForMovies.filter(g => g.value !== 'All').map(g => g.label)
-        : genreMenuItems.filter(g => g.value !== 'All').map(g => g.label);
-      
-      
+      const allPossibleGenres =
+        type === 'movie'
+          ? genreMenuItemsForMovies.filter((g) => g.value !== 'All').map((g) => g.label)
+          : genreMenuItems.filter((g) => g.value !== 'All').map((g) => g.label);
+
       // Initialize ratings object with ALL possible genres set to 0
       const loadedRatings: Record<string, number> = {};
-      allPossibleGenres.forEach(genre => {
+      allPossibleGenres.forEach((genre) => {
         loadedRatings[genre] = 0;
       });
-      
+
       // If there are saved ratings, load them
       if (item.rating && typeof item.rating === 'object') {
         // Calculate overall rating from saved genre ratings
         const overall = calculateOverallRating(item);
         setOverallRating(parseFloat(overall) || 0);
-        
+
         // Override with actual saved ratings
-        Object.keys(item.rating).forEach(genre => {
+        Object.keys(item.rating).forEach((genre) => {
           if (typeof item.rating[genre] === 'number') {
             loadedRatings[genre] = item.rating[genre];
           }
@@ -114,7 +107,7 @@ export const MobileRatingPage = () => {
         // No rating yet
         setOverallRating(0);
       }
-      
+
       setGenreRatings(loadedRatings);
     }
   }, [item, user, type]);
@@ -123,7 +116,7 @@ export const MobileRatingPage = () => {
   useEffect(() => {
     if (activeTab === 'genre' && Object.keys(genreRatings).length > 0) {
       // Only calculate average from genres that have been rated (> 0)
-      const ratedGenres = Object.values(genreRatings).filter(rating => rating > 0);
+      const ratedGenres = Object.values(genreRatings).filter((rating) => rating > 0);
       if (ratedGenres.length > 0) {
         const avg = ratedGenres.reduce((a, b) => a + b, 0) / ratedGenres.length;
         setOverallRating(Math.round(avg * 100) / 100); // Keep 2 decimal places
@@ -142,7 +135,7 @@ export const MobileRatingPage = () => {
   };
 
   const handleGenreRatingChange = (genre: string, value: number) => {
-    setGenreRatings(prev => ({ ...prev, [genre]: value }));
+    setGenreRatings((prev) => ({ ...prev, [genre]: value }));
     // Removed vibration to prevent any potential issues
   };
 
@@ -152,7 +145,7 @@ export const MobileRatingPage = () => {
 
     try {
       let ratingsToSave: { [key: string]: number } = {};
-      
+
       if (activeTab === 'genre' && Object.keys(genreRatings).length > 0) {
         // Save ONLY genres that have been rated (> 0)
         // This matches desktop behavior
@@ -164,9 +157,9 @@ export const MobileRatingPage = () => {
       } else {
         // Save overall rating for all genres
         const genres = item.genre?.genres || [];
-        
+
         if (genres.length > 0 && overallRating > 0) {
-          genres.forEach(genre => {
+          genres.forEach((genre) => {
             ratingsToSave[genre] = overallRating;
           });
         } else if (overallRating > 0) {
@@ -174,16 +167,16 @@ export const MobileRatingPage = () => {
           ratingsToSave['General'] = overallRating;
         }
       }
-      
+
       // Only save if there are ratings to save
       if (Object.keys(ratingsToSave).length > 0) {
         // Update rating in Firebase using correct path structure
         const ratingRef = firebase
           .database()
           .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
-        
+
         await ratingRef.set(ratingsToSave);
-        
+
         // Activity-Logging für Friend + Badge-System (wie Desktop)
         if (user?.uid && overallRating > 0) {
           await logRatingAdded(
@@ -195,7 +188,7 @@ export const MobileRatingPage = () => {
           );
         }
       }
-      
+
       navigate('/');
     } catch (error) {
     } finally {
@@ -206,7 +199,7 @@ export const MobileRatingPage = () => {
   const handleDelete = async () => {
     if (!user || !item) return;
     if (!window.confirm(`Bewertung für ${item.title} wirklich löschen?`)) return;
-    
+
     setIsSaving(true);
 
     try {
@@ -214,9 +207,9 @@ export const MobileRatingPage = () => {
       const ratingRef = firebase
         .database()
         .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
-      
+
       await ratingRef.remove();
-      
+
       navigate('/');
     } catch (error) {
     } finally {
@@ -227,9 +220,12 @@ export const MobileRatingPage = () => {
   if (!item) {
     return (
       <div className="mobile-rating-page">
-        <div className="rating-header" style={{
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
-        }}>
+        <div
+          className="rating-header"
+          style={{
+            background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          }}
+        >
           <MobileBackButton />
           <h1>Nicht gefunden</h1>
         </div>
@@ -240,9 +236,12 @@ export const MobileRatingPage = () => {
   return (
     <div className="mobile-rating-page">
       {/* Native Header */}
-      <div className="rating-header" style={{
-        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
-      }}>
+      <div
+        className="rating-header"
+        style={{
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+        }}
+      >
         <MobileBackButton />
         <div className="header-content">
           <div className="title-row">
@@ -255,7 +254,7 @@ export const MobileRatingPage = () => {
 
       {/* Current Rating Display */}
       <div className="current-rating">
-        <motion.div 
+        <motion.div
           className="rating-display"
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 0.3 }}
@@ -286,9 +285,7 @@ export const MobileRatingPage = () => {
       )}
 
       {/* Rating Content */}
-      <div 
-        className="rating-content"
-      >
+      <div className="rating-content">
         <AnimatePresence mode="wait">
           {activeTab === 'overall' ? (
             <motion.div
@@ -301,24 +298,24 @@ export const MobileRatingPage = () => {
             >
               {/* Emoji Rating Selector */}
               <div className="emoji-selector">
-                {ratingEmojis.map(emoji => (
+                {ratingEmojis.map((emoji) => (
                   <motion.button
                     key={emoji.value}
                     className={`emoji-button ${Math.round(overallRating) === emoji.value ? 'active' : ''}`}
                     onClick={() => handleRatingChange(emoji.value)}
                     whileTap={{ scale: 0.9 }}
                     style={{
-                      border: Math.round(overallRating) === emoji.value 
-                        ? `2px solid ${emoji.color}` 
-                        : '2px solid rgba(255, 255, 255, 0.1)',
-                      background: Math.round(overallRating) === emoji.value 
-                        ? `${emoji.color}20` 
-                        : currentTheme.background.surface,
+                      border:
+                        Math.round(overallRating) === emoji.value
+                          ? `2px solid ${emoji.color}`
+                          : '2px solid rgba(255, 255, 255, 0.1)',
+                      background:
+                        Math.round(overallRating) === emoji.value
+                          ? `${emoji.color}20`
+                          : currentTheme.background.surface,
                     }}
                   >
-                    <div style={{ color: emoji.color }}>
-                      {emoji.icon}
-                    </div>
+                    <div style={{ color: emoji.color }}>{emoji.icon}</div>
                     <span>{emoji.label}</span>
                   </motion.button>
                 ))}
@@ -335,7 +332,7 @@ export const MobileRatingPage = () => {
                   onChange={(e) => handleRatingChange(parseFloat(e.target.value))}
                   className="genre-slider"
                   style={{
-                    background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, rgba(255, 255, 255, 0.1) ${overallRating * 10}%, rgba(255, 255, 255, 0.1) 100%)`
+                    background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, rgba(255, 255, 255, 0.1) ${overallRating * 10}%, rgba(255, 255, 255, 0.1) 100%)`,
                   }}
                 />
                 <div className="slider-labels">
@@ -349,7 +346,7 @@ export const MobileRatingPage = () => {
               <div className="quick-ratings">
                 <h3>Schnellbewertung</h3>
                 <div className="quick-buttons">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                     <motion.button
                       key={value}
                       className={`quick-button ${Math.round(overallRating) === value ? 'active' : ''}`}
@@ -371,29 +368,29 @@ export const MobileRatingPage = () => {
               transition={{ duration: 0.2 }}
               className="genre-ratings"
             >
-              {Object.keys(genreRatings).map(genre => (
+              {Object.keys(genreRatings).map((genre) => (
                 <div key={genre} className="genre-rating-item">
                   <div className="genre-header">
                     <div className="genre-info">
-                      <div 
+                      <div
                         className="genre-icon"
-                        style={{ 
+                        style={{
                           background: `${genreColors[genre] || '#667eea'}20`,
-                          color: genreColors[genre] || '#667eea'
+                          color: genreColors[genre] || '#667eea',
                         }}
                       >
                         {genreIcons[genre] || <Star />}
                       </div>
                       <span className="genre-name">{genre}</span>
                     </div>
-                    <span 
+                    <span
                       className="genre-value"
                       style={{ color: genreColors[genre] || '#667eea' }}
                     >
                       {(genreRatings[genre] || 0).toFixed(2)}
                     </span>
                   </div>
-                  
+
                   <input
                     type="range"
                     min="0"
@@ -403,7 +400,7 @@ export const MobileRatingPage = () => {
                     onChange={(e) => handleGenreRatingChange(genre, parseFloat(e.target.value))}
                     className="genre-slider"
                     style={{
-                      background: `linear-gradient(to right, ${genreColors[genre] || '#667eea'} 0%, ${genreColors[genre] || '#667eea'} ${(genreRatings[genre] || 0) * 10}%, rgba(255, 255, 255, 0.1) ${(genreRatings[genre] || 0) * 10}%, rgba(255, 255, 255, 0.1) 100%)`
+                      background: `linear-gradient(to right, ${genreColors[genre] || '#667eea'} 0%, ${genreColors[genre] || '#667eea'} ${(genreRatings[genre] || 0) * 10}%, rgba(255, 255, 255, 0.1) ${(genreRatings[genre] || 0) * 10}%, rgba(255, 255, 255, 0.1) 100%)`,
                     }}
                   />
                 </div>
@@ -423,7 +420,7 @@ export const MobileRatingPage = () => {
 
       {/* Bottom Actions */}
       <div className="bottom-actions">
-        <motion.button 
+        <motion.button
           className="action-button delete"
           onClick={handleDelete}
           whileTap={{ scale: 0.95 }}
@@ -432,8 +429,8 @@ export const MobileRatingPage = () => {
           <Delete />
           <span>Löschen</span>
         </motion.button>
-        
-        <motion.button 
+
+        <motion.button
           className="action-button save"
           onClick={handleSave}
           whileTap={{ scale: 0.95 }}

@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 import { defineConfig } from 'vite';
 import { criticalCSSPlugin } from './vite-plugin-critical-css';
 import { VitePWA } from 'vite-plugin-pwa';
-import viteCompression from 'vite-plugin-compression';
-import { visualizer } from 'rollup-plugin-visualizer';
+// import viteCompression from 'vite-plugin-compression';
+// import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
 dotenv.config();
@@ -19,10 +19,9 @@ export default defineConfig({
         ],
       },
     }),
-    criticalCSSPlugin(),
-    // PWA with aggressive caching
+    // criticalCSSPlugin(), // Temporarily disabled - causing build hang
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico'],
       manifest: {
         name: 'Serien Tracker',
@@ -38,6 +37,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp}'],
+        navigateFallback: null, // Disable navigate fallback to prevent loops
+        skipWaiting: false, // Don't auto-activate new SW versions
+        clientsClaim: false, // Don't auto-take control
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
@@ -59,10 +61,10 @@ export default defineConfig({
         ],
       },
     }),
-    // Compression
-    viteCompression({ algorithm: 'gzip', ext: '.gz', threshold: 1024 }),
-    viteCompression({ algorithm: 'brotliCompress', ext: '.br', threshold: 1024 }),
-    visualizer({ open: false, gzipSize: true, brotliSize: true }),
+    // Compression - temporarily disabled
+    // viteCompression({ algorithm: 'gzip', ext: '.gz', threshold: 1024 }),
+    // viteCompression({ algorithm: 'brotliCompress', ext: '.br', threshold: 1024 }),
+    // visualizer({ open: false, gzipSize: true, brotliSize: true }),
   ],
   define: {
     // Firebase Umgebungsvariablen - korrigierte Namen

@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { 
-  FilterList, 
-  Star, NewReleases, Schedule, PlaylistAdd 
-} from '@mui/icons-material';
+import { FilterList, NewReleases, PlaylistAdd, Schedule, Star } from '@mui/icons-material';
+import { AnimatePresence, motion, useDragControls } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
 
 interface MobileQuickFilterProps {
@@ -16,7 +13,7 @@ interface MobileQuickFilterProps {
   }) => void;
   isMovieMode?: boolean;
   isRatingsMode?: boolean;
-  hasBottomNav?: boolean;  // Optional prop to adjust FAB position
+  hasBottomNav?: boolean; // Optional prop to adjust FAB position
 }
 
 const seriesQuickFilters = [
@@ -45,7 +42,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
   onFilterChange,
   isMovieMode = false,
   isRatingsMode = false,
-  hasBottomNav = true  // Default to true for most pages
+  hasBottomNav = true, // Default to true for most pages
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>('');
@@ -54,11 +51,15 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSort, setSelectedSort] = useState<string>('rating-desc');
   const dragControls = useDragControls();
-  
-  const quickFilters = isRatingsMode 
-    ? ratingsQuickFilters 
-    : (isMovieMode ? movieQuickFilters : seriesQuickFilters);
-  const activeFiltersCount = [selectedGenre, selectedProvider, selectedQuickFilter].filter(Boolean).length;
+
+  const quickFilters = isRatingsMode
+    ? ratingsQuickFilters
+    : isMovieMode
+      ? movieQuickFilters
+      : seriesQuickFilters;
+  const activeFiltersCount = [selectedGenre, selectedProvider, selectedQuickFilter].filter(
+    Boolean
+  ).length;
 
   // Lock body scroll when filter panel is open
   useEffect(() => {
@@ -66,14 +67,14 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
       const scrollY = window.scrollY;
       const body = document.body;
       const documentElement = document.documentElement;
-      
+
       // Store current position
       body.style.position = 'fixed';
       body.style.top = `-${scrollY}px`;
       body.style.left = '0';
       body.style.right = '0';
       body.style.overflow = 'hidden';
-      
+
       // Also lock the html element on iOS
       documentElement.style.overflow = 'hidden';
       documentElement.style.height = '100%';
@@ -81,23 +82,23 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
       const body = document.body;
       const documentElement = document.documentElement;
       const scrollY = body.style.top;
-      
+
       // Reset styles
       body.style.position = '';
       body.style.top = '';
       body.style.left = '';
       body.style.right = '';
       body.style.overflow = '';
-      
+
       documentElement.style.overflow = '';
       documentElement.style.height = '';
-      
+
       // Restore scroll position
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || '0') * -1);
       }
     }
-    
+
     return () => {
       document.body.style.position = '';
       document.body.style.top = '';
@@ -115,9 +116,16 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
       provider: selectedProvider,
       quickFilter: selectedQuickFilter,
       search: searchQuery,
-      sortBy: selectedSort
+      sortBy: selectedSort,
     });
-  }, [selectedGenre, selectedProvider, selectedQuickFilter, searchQuery, selectedSort, onFilterChange]);
+  }, [
+    selectedGenre,
+    selectedProvider,
+    selectedQuickFilter,
+    searchQuery,
+    selectedSort,
+    onFilterChange,
+  ]);
 
   const clearFilters = () => {
     setSelectedGenre('');
@@ -134,7 +142,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
-          bottom: hasBottomNav ? '120px' : '30px',  // Adjust based on navbar presence
+          bottom: hasBottomNav ? '120px' : '30px', // Adjust based on navbar presence
           right: '20px',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           border: 'none',
@@ -147,25 +155,27 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
           color: 'white',
           boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
           cursor: 'pointer',
-          zIndex: 1000
+          zIndex: 1000,
         }}
       >
         <FilterList />
         {activeFiltersCount > 0 && (
-          <span style={{
-            position: 'absolute',
-            top: '-4px',
-            right: '-4px',
-            background: '#ff4757',
-            borderRadius: '50%',
-            width: '20px',
-            height: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '11px',
-            fontWeight: 'bold'
-          }}>
+          <span
+            style={{
+              position: 'absolute',
+              top: '-4px',
+              right: '-4px',
+              background: '#ff4757',
+              borderRadius: '50%',
+              width: '20px',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              fontWeight: 'bold',
+            }}
+          >
             {activeFiltersCount}
           </span>
         )}
@@ -188,7 +198,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                 right: 0,
                 bottom: 0,
                 background: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 9998
+                zIndex: 9998,
               }}
             />
 
@@ -220,7 +230,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                 maxHeight: hasBottomNav ? 'calc(80vh - 60px)' : '80vh',
                 display: 'flex',
                 flexDirection: 'column',
-                zIndex: 9999
+                zIndex: 9999,
               }}
               onClick={(e) => e.stopPropagation()}
               onScroll={(e) => e.stopPropagation()}
@@ -228,7 +238,7 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
               onTouchMove={(e) => e.stopPropagation()}
             >
               {/* Drag Handle - Only this area triggers drag */}
-              <div 
+              <div
                 onPointerDown={(e) => dragControls.start(e)}
                 style={{
                   paddingTop: '12px',
@@ -236,32 +246,34 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                   display: 'flex',
                   justifyContent: 'center',
                   cursor: 'grab',
-                  touchAction: 'none'
+                  touchAction: 'none',
                 }}
               >
-                <div style={{
-                  width: '40px',
-                  height: '5px',
-                  borderRadius: '3px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                  pointerEvents: 'none'
-                }} />
+                <div
+                  style={{
+                    width: '40px',
+                    height: '5px',
+                    borderRadius: '3px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    pointerEvents: 'none',
+                  }}
+                />
               </div>
-              
+
               {/* Panel Scrollable Content */}
               <div
                 style={{
                   padding: '24px',
                   paddingTop: '0',
-                  paddingBottom: hasBottomNav 
-                    ? 'calc(60px + 24px + env(safe-area-inset-bottom))' 
+                  paddingBottom: hasBottomNav
+                    ? 'calc(60px + 24px + env(safe-area-inset-bottom))'
                     : 'calc(24px + env(safe-area-inset-bottom))',
                   overflowY: 'auto',
                   overflowX: 'hidden',
                   WebkitOverflowScrolling: 'touch',
                   flex: 1,
                   overscrollBehavior: 'contain',
-                  touchAction: 'pan-y'
+                  touchAction: 'pan-y',
                 }}
                 onScroll={(e) => {
                   e.stopPropagation();
@@ -270,140 +282,73 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                   if (target.scrollTop === 0 && (e as any).deltaY < 0) {
                     e.preventDefault();
                   }
-                  if (target.scrollTop + target.clientHeight >= target.scrollHeight && (e as any).deltaY > 0) {
+                  if (
+                    target.scrollTop + target.clientHeight >= target.scrollHeight &&
+                    (e as any).deltaY > 0
+                  ) {
                     e.preventDefault();
                   }
                 }}
-            >
-              {/* Header */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '24px'
-              }}>
-                <h2 style={{
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  margin: 0,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  Filter & Sortierung
-                </h2>
-                
-                {activeFiltersCount > 0 && (
-                  <button
-                    onClick={clearFilters}
+              >
+                {/* Header */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '24px',
+                  }}
+                >
+                  <h2
                     style={{
-                      background: 'rgba(255, 71, 87, 0.1)',
-                      border: '1px solid rgba(255, 71, 87, 0.3)',
-                      borderRadius: '20px',
-                      padding: '6px 12px',
-                      color: '#ff4757',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer'
+                      fontSize: '20px',
+                      fontWeight: 700,
+                      margin: 0,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
                     }}
                   >
-                    Zurücksetzen
-                  </button>
-                )}
-              </div>
+                    Filter & Sortierung
+                  </h2>
 
-              {/* Search */}
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  display: 'block',
-                  marginBottom: '8px'
-                }}>
-                  Suche
-                </label>
-                <input
-                  type="text"
-                  placeholder={`${isMovieMode ? 'Film' : 'Serie'} suchen...`}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
-                    color: 'white',
-                    fontSize: '14px'
-                  }}
-                />
-              </div>
-
-              {/* Quick Filters */}
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  display: 'block',
-                  marginBottom: '12px'
-                }}>
-                  Schnellfilter
-                </label>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: '8px'
-                }}>
-                  {quickFilters.map((filter) => {
-                    const Icon = filter.icon;
-                    const isActive = selectedQuickFilter === filter.value;
-                    
-                    return (
-                      <button
-                        key={filter.value}
-                        onClick={() => setSelectedQuickFilter(isActive ? '' : filter.value)}
-                        style={{
-                          padding: '12px',
-                          background: isActive 
-                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                            : 'rgba(255, 255, 255, 0.05)',
-                          border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                          borderRadius: '12px',
-                          color: 'white',
-                          fontSize: '13px',
-                          fontWeight: isActive ? 600 : 500,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        <Icon style={{ fontSize: '16px' }} />
-                        {filter.label}
-                      </button>
-                    );
-                  })}
+                  {activeFiltersCount > 0 && (
+                    <button
+                      onClick={clearFilters}
+                      style={{
+                        background: 'rgba(255, 71, 87, 0.1)',
+                        border: '1px solid rgba(255, 71, 87, 0.3)',
+                        borderRadius: '20px',
+                        padding: '6px 12px',
+                        color: '#ff4757',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Zurücksetzen
+                    </button>
+                  )}
                 </div>
-              </div>
 
-              {/* Sort Options - Only for Ratings Mode */}
-              {isRatingsMode && (
+                {/* Search */}
                 <div style={{ marginBottom: '24px' }}>
-                  <label style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    display: 'block',
-                    marginBottom: '12px'
-                  }}>
-                    Sortierung
+                  <label
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      display: 'block',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    Suche
                   </label>
-                  <select
-                    value={selectedSort}
-                    onChange={(e) => setSelectedSort(e.target.value)}
+                  <input
+                    type="text"
+                    placeholder={`${isMovieMode ? 'Film' : 'Serie'} suchen...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
                       width: '100%',
                       padding: '12px 16px',
@@ -411,131 +356,263 @@ export const MobileQuickFilter: React.FC<MobileQuickFilterProps> = ({
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       borderRadius: '12px',
                       color: 'white',
-                      fontSize: '14px'
+                      fontSize: '14px',
+                    }}
+                  />
+                </div>
+
+                {/* Quick Filters */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      display: 'block',
+                      marginBottom: '12px',
                     }}
                   >
-                    <option value="rating-desc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Beste zuerst</option>
-                    <option value="rating-asc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Schlechteste zuerst</option>
-                    <option value="name-asc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Name A-Z</option>
-                    <option value="name-desc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Name Z-A</option>
-                    <option value="date-desc" style={{ background: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}>Neueste zuerst</option>
-                  </select>
-                </div>
-              )}
+                    Schnellfilter
+                  </label>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: '8px',
+                    }}
+                  >
+                    {quickFilters.map((filter) => {
+                      const Icon = filter.icon;
+                      const isActive = selectedQuickFilter === filter.value;
 
-              {/* Genre Filter */}
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  display: 'block',
-                  marginBottom: '12px'
-                }}>
-                  Genre
-                </label>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: '8px',
-                  maxHeight: '200px',
-                  overflowY: 'auto'
-                }}>
-                  {genreMenuItems.map((genre) => {
-                    const isActive = selectedGenre === genre.value;
-                    
-                    return (
-                      <button
-                        key={genre.value}
-                        onClick={() => setSelectedGenre(isActive ? '' : genre.value)}
-                        style={{
-                          padding: '10px',
-                          background: isActive 
-                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                            : 'rgba(255, 255, 255, 0.05)',
-                          border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                          borderRadius: '8px',
-                          color: 'white',
-                          fontSize: '12px',
-                          fontWeight: isActive ? 600 : 500,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        {genre.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Provider Filter */}
-              <div>
-                <label style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  display: 'block',
-                  marginBottom: '12px'
-                }}>
-                  Streaming-Anbieter
-                </label>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '8px'
-                }}>
-                  {providerMenuItems.map((provider) => {
-                    const isActive = selectedProvider === provider.value;
-                    
-                    return (
-                      <button
-                        key={provider.value}
-                        onClick={() => setSelectedProvider(isActive ? '' : provider.value)}
-                        title={provider.label}
-                        style={{
-                          padding: '12px',
-                          background: isActive 
-                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                            : 'rgba(255, 255, 255, 0.05)',
-                          border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          position: 'relative',
-                          overflow: 'hidden'
-                        }}
-                      >
-                        {(provider as any)?.icon ? (
-                          <img 
-                            src={(provider as any).icon} 
-                            alt={provider.label}
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              objectFit: 'contain',
-                              filter: isActive ? 'brightness(1.2)' : 'none'
-                            }}
-                          />
-                        ) : (
-                          <span style={{
-                            fontSize: '8px',
-                            fontWeight: 600,
+                      return (
+                        <button
+                          key={filter.value}
+                          onClick={() => setSelectedQuickFilter(isActive ? '' : filter.value)}
+                          style={{
+                            padding: '12px',
+                            background: isActive
+                              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                              : 'rgba(255, 255, 255, 0.05)',
+                            border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                            borderRadius: '12px',
                             color: 'white',
-                            textAlign: 'center',
-                            lineHeight: '1.1'
-                          }}>
-                            {provider.label}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                            fontSize: '13px',
+                            fontWeight: isActive ? 600 : 500,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          <Icon style={{ fontSize: '16px' }} />
+                          {filter.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+
+                {/* Sort Options - Only for Ratings Mode */}
+                {isRatingsMode && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <label
+                      style={{
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        display: 'block',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      Sortierung
+                    </label>
+                    <select
+                      value={selectedSort}
+                      onChange={(e) => setSelectedSort(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        color: 'white',
+                        fontSize: '14px',
+                      }}
+                    >
+                      <option
+                        value="rating-desc"
+                        style={{
+                          background: 'var(--color-background-surface)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      >
+                        Beste zuerst
+                      </option>
+                      <option
+                        value="rating-asc"
+                        style={{
+                          background: 'var(--color-background-surface)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      >
+                        Schlechteste zuerst
+                      </option>
+                      <option
+                        value="name-asc"
+                        style={{
+                          background: 'var(--color-background-surface)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      >
+                        Name A-Z
+                      </option>
+                      <option
+                        value="name-desc"
+                        style={{
+                          background: 'var(--color-background-surface)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      >
+                        Name Z-A
+                      </option>
+                      <option
+                        value="date-desc"
+                        style={{
+                          background: 'var(--color-background-surface)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      >
+                        Neueste zuerst
+                      </option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Genre Filter */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      display: 'block',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    Genre
+                  </label>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: '8px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {genreMenuItems.map((genre) => {
+                      const isActive = selectedGenre === genre.value;
+
+                      return (
+                        <button
+                          key={genre.value}
+                          onClick={() => setSelectedGenre(isActive ? '' : genre.value)}
+                          style={{
+                            padding: '10px',
+                            background: isActive
+                              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                              : 'rgba(255, 255, 255, 0.05)',
+                            border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                            borderRadius: '8px',
+                            color: 'white',
+                            fontSize: '12px',
+                            fontWeight: isActive ? 600 : 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          {genre.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Provider Filter */}
+                <div>
+                  <label
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      display: 'block',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    Streaming-Anbieter
+                  </label>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(4, 1fr)',
+                      gap: '8px',
+                    }}
+                  >
+                    {providerMenuItems.map((provider) => {
+                      const isActive = selectedProvider === provider.value;
+
+                      return (
+                        <button
+                          key={provider.value}
+                          onClick={() => setSelectedProvider(isActive ? '' : provider.value)}
+                          title={provider.label}
+                          style={{
+                            padding: '12px',
+                            background: isActive
+                              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                              : 'rgba(255, 255, 255, 0.05)',
+                            border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            position: 'relative',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {(provider as any)?.icon ? (
+                            <img
+                              src={(provider as any).icon}
+                              alt={provider.label}
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                objectFit: 'contain',
+                                filter: isActive ? 'brightness(1.2)' : 'none',
+                              }}
+                            />
+                          ) : (
+                            <span
+                              style={{
+                                fontSize: '8px',
+                                fontWeight: 600,
+                                color: 'white',
+                                textAlign: 'center',
+                                lineHeight: '1.1',
+                              }}
+                            >
+                              {provider.label}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </motion.div>
           </>

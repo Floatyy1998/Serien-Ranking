@@ -6,6 +6,9 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(<AppWithSplash />);
+// Service Worker is now handled by Vite PWA plugin (sw.js)
+// Commenting out manual registration to avoid conflicts
+/*
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js').then(
@@ -48,3 +51,4 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+*/

@@ -1,6 +1,6 @@
 import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -19,8 +19,7 @@ export const MobileRatingsPage: React.FC = () => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const { currentTheme, getMobilePageBackground, getMobileHeaderStyle } =
-    useTheme();
+  const { currentTheme, getMobilePageBackground, getMobileHeaderStyle } = useTheme();
 
   // Check for tab parameter in URL
   const params = new URLSearchParams(location.search);
@@ -93,22 +92,13 @@ export const MobileRatingsPage: React.FC = () => {
 
       // Log first item to debug provider structure
       if (filtered.length > 0) {
-        console.log(
-          'Sample provider structure:',
-          filtered[0].title,
-          filtered[0].provider
-        );
+        console.log('Sample provider structure:', filtered[0].title, filtered[0].provider);
       }
 
       filtered = filtered.filter((series) => {
         // Provider structure: series.provider.provider[]
-        if (
-          series.provider?.provider &&
-          Array.isArray(series.provider.provider)
-        ) {
-          return series.provider.provider.some(
-            (p: any) => p.name === filters.provider
-          );
+        if (series.provider?.provider && Array.isArray(series.provider.provider)) {
+          return series.provider.provider.some((p: any) => p.name === filters.provider);
         }
         return false;
       });
@@ -117,9 +107,7 @@ export const MobileRatingsPage: React.FC = () => {
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter((series) =>
-        series.title?.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter((series) => series.title?.toLowerCase().includes(searchLower));
     }
 
     // Apply quick filters
@@ -176,10 +164,7 @@ export const MobileRatingsPage: React.FC = () => {
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID (proxy for when added)
       // No filter needed since we want to show all recently added items
-      console.log(
-        'Recently added filter active, total items before sort:',
-        filtered.length
-      );
+      console.log('Recently added filter active, total items before sort:', filtered.length);
       console.log(
         'Last 5 nmrs:',
         filtered.slice(-5).map((s) => ({ nmr: s.nmr, title: s.title }))
@@ -191,8 +176,8 @@ export const MobileRatingsPage: React.FC = () => {
       filters.quickFilter === 'recently-rated'
         ? 'date-desc'
         : filters.quickFilter === 'recently-added'
-        ? 'date-desc'
-        : filters.sortBy || 'rating-desc';
+          ? 'date-desc'
+          : filters.sortBy || 'rating-desc';
     filtered.sort((a, b) => {
       const ratingA = parseFloat(calculateOverallRating(a));
       const ratingB = parseFloat(calculateOverallRating(b));
@@ -245,9 +230,7 @@ export const MobileRatingsPage: React.FC = () => {
         // Genres können in movie.genres oder movie.genre.genres sein
         const genres = movie.genre?.genres || [];
         if (Array.isArray(genres)) {
-          return genres.some(
-            (g: string) => g.toLowerCase() === filters.genre!.toLowerCase()
-          );
+          return genres.some((g: string) => g.toLowerCase() === filters.genre!.toLowerCase());
         }
         return false;
       });
@@ -260,22 +243,13 @@ export const MobileRatingsPage: React.FC = () => {
 
       // Log first item to debug provider structure
       if (filtered.length > 0) {
-        console.log(
-          'Sample provider structure:',
-          filtered[0].title,
-          filtered[0].provider
-        );
+        console.log('Sample provider structure:', filtered[0].title, filtered[0].provider);
       }
 
       filtered = filtered.filter((movie) => {
         // Provider structure: movie.provider.provider[]
-        if (
-          movie.provider?.provider &&
-          Array.isArray(movie.provider.provider)
-        ) {
-          return movie.provider.provider.some(
-            (p: any) => p.name === filters.provider
-          );
+        if (movie.provider?.provider && Array.isArray(movie.provider.provider)) {
+          return movie.provider.provider.some((p: any) => p.name === filters.provider);
         }
         return false;
       });
@@ -284,9 +258,7 @@ export const MobileRatingsPage: React.FC = () => {
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter((movie) =>
-        movie.title?.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter((movie) => movie.title?.toLowerCase().includes(searchLower));
     }
 
     // Apply quick filters
@@ -317,10 +289,7 @@ export const MobileRatingsPage: React.FC = () => {
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID (proxy for when added)
       // No filter needed since we want to show all recently added items
-      console.log(
-        'Recently added filter active, total items before sort:',
-        filtered.length
-      );
+      console.log('Recently added filter active, total items before sort:', filtered.length);
       console.log(
         'Last 5 nmrs:',
         filtered.slice(-5).map((s) => ({ nmr: s.nmr, title: s.title }))
@@ -332,8 +301,8 @@ export const MobileRatingsPage: React.FC = () => {
       filters.quickFilter === 'recently-rated'
         ? 'date-desc'
         : filters.quickFilter === 'recently-added'
-        ? 'date-desc'
-        : filters.sortBy || 'rating-desc';
+          ? 'date-desc'
+          : filters.sortBy || 'rating-desc';
     filtered.sort((a, b) => {
       const ratingA = parseFloat(calculateOverallRating(a));
       const ratingB = parseFloat(calculateOverallRating(b));
@@ -376,10 +345,8 @@ export const MobileRatingsPage: React.FC = () => {
 
   const averageRating =
     itemsWithRating.length > 0
-      ? itemsWithRating.reduce(
-          (acc, item) => acc + parseFloat(calculateOverallRating(item)),
-          0
-        ) / itemsWithRating.length
+      ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateOverallRating(item)), 0) /
+        itemsWithRating.length
       : 0;
 
   return (
@@ -419,9 +386,7 @@ export const MobileRatingsPage: React.FC = () => {
               gap: '12px',
             }}
           >
-            <Star
-              style={{ fontSize: '28px', color: currentTheme.status.warning }}
-            />
+            <Star style={{ fontSize: '28px', color: currentTheme.status.warning }} />
             Meine Bewertungen
           </h1>
         </div>
@@ -455,9 +420,7 @@ export const MobileRatingsPage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background:
-              activeTab === 'series'
-                ? currentTheme.primary
-                : currentTheme.background.surface,
+              activeTab === 'series' ? currentTheme.primary : currentTheme.background.surface,
             border: 'none',
             borderRadius: '12px 0 0 12px',
             color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
@@ -480,9 +443,7 @@ export const MobileRatingsPage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background:
-              activeTab === 'movies'
-                ? currentTheme.status.error
-                : currentTheme.background.surface,
+              activeTab === 'movies' ? currentTheme.status.error : currentTheme.background.surface,
             border: 'none',
             borderRadius: '0 12px 12px 0',
             color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
@@ -510,14 +471,9 @@ export const MobileRatingsPage: React.FC = () => {
               color: currentTheme.text.muted,
             }}
           >
-            <Star
-              style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}
-            />
+            <Star style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
             <h3>Noch keine Bewertungen</h3>
-            <p>
-              Bewerte {activeTab === 'series' ? 'Serien' : 'Filme'} um sie hier
-              zu sehen!
-            </p>
+            <p>Bewerte {activeTab === 'series' ? 'Serien' : 'Filme'} um sie hier zu sehen!</p>
           </div>
         ) : (
           <div
@@ -527,8 +483,8 @@ export const MobileRatingsPage: React.FC = () => {
                 window.innerWidth >= 1200
                   ? 'repeat(8, 1fr)'
                   : window.innerWidth >= 768
-                  ? 'repeat(5, 1fr)'
-                  : 'repeat(auto-fill, minmax(120px, 1fr))',
+                    ? 'repeat(5, 1fr)'
+                    : 'repeat(auto-fill, minmax(120px, 1fr))',
               gap: '16px',
             }}
           >
@@ -562,9 +518,7 @@ export const MobileRatingsPage: React.FC = () => {
                   });
 
                   progress =
-                    totalAiredEpisodes > 0
-                      ? (watchedEpisodes / totalAiredEpisodes) * 100
-                      : 0;
+                    totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
                 }
               }
 
@@ -572,11 +526,7 @@ export const MobileRatingsPage: React.FC = () => {
                 <motion.div
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() =>
-                    navigate(
-                      isMovie ? `/movie/${item.id}` : `/series/${item.id}`
-                    )
-                  }
+                  onClick={() => navigate(isMovie ? `/movie/${item.id}` : `/series/${item.id}`)}
                   style={{
                     cursor: 'pointer',
                     position: 'relative',
@@ -596,78 +546,73 @@ export const MobileRatingsPage: React.FC = () => {
                     />
 
                     {/* Provider Badges */}
-                    {item.provider?.provider &&
-                      item.provider.provider.length > 0 && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '8px',
-                            left: '8px',
-                            display: 'flex',
-                            gap: '4px',
-                          }}
-                        >
-                          {Array.from(
-                            new Set(
-                              item.provider.provider.map((p: any) => p.name)
-                            )
-                          )
-                            .slice(0, 2)
-                            .map((name) => {
-                              const provider = item.provider?.provider.find(
-                                (p: any) => p.name === name
-                              );
-                              return provider ? (
-                                <div
-                                  key={provider.id}
+                    {item.provider?.provider && item.provider.provider.length > 0 && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          left: '8px',
+                          display: 'flex',
+                          gap: '4px',
+                        }}
+                      >
+                        {Array.from(new Set(item.provider.provider.map((p: any) => p.name)))
+                          .slice(0, 2)
+                          .map((name) => {
+                            const provider = item.provider?.provider.find(
+                              (p: any) => p.name === name
+                            );
+                            return provider ? (
+                              <div
+                                key={provider.id}
+                                style={{
+                                  background: `${currentTheme.background.default}99`,
+                                  backdropFilter: 'blur(8px)',
+                                  border: `1px solid ${currentTheme.border.default}`,
+                                  borderRadius: '8px',
+                                  padding: '2px',
+                                  width: '28px',
+                                  height: '28px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <img
+                                  src={provider.logo}
+                                  alt={provider.name}
                                   style={{
-                                    background: `${currentTheme.background.default}99`,
-                                    backdropFilter: 'blur(8px)',
-                                    border: `1px solid ${currentTheme.border.default}`,
-                                    borderRadius: '8px',
-                                    padding: '2px',
-                                    width: '28px',
-                                    height: '28px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '4px',
+                                    objectFit: 'cover',
                                   }}
-                                >
-                                  <img
-                                    src={provider.logo}
-                                    alt={provider.name}
-                                    style={{
-                                      width: '24px',
-                                      height: '24px',
-                                      borderRadius: '4px',
-                                      objectFit: 'cover',
-                                    }}
-                                  />
-                                </div>
-                              ) : null;
-                            })}
-                          {item.provider.provider.length > 2 && (
-                            <div
-                              style={{
-                                background: `${currentTheme.background.default}99`,
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '8px',
-                                width: '28px',
-                                height: '28px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: currentTheme.text.primary,
-                              }}
-                            >
-                              +{item.provider.provider.length - 2}
-                            </div>
-                          )}
-                        </div>
-                      )}
+                                />
+                              </div>
+                            ) : null;
+                          })}
+                        {item.provider.provider.length > 2 && (
+                          <div
+                            style={{
+                              background: `${currentTheme.background.default}99`,
+                              backdropFilter: 'blur(8px)',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
+                              borderRadius: '8px',
+                              width: '28px',
+                              height: '28px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: currentTheme.text.primary,
+                            }}
+                          >
+                            +{item.provider.provider.length - 2}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Rating Badge */}
                     {!isNaN(rating) && rating > 0 && (

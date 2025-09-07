@@ -1,5 +1,5 @@
 import { ArrowBack } from '@mui/icons-material';
-import React from 'react';
+import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface MobileBackButtonProps {

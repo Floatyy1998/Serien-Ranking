@@ -1,22 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MobileBackButton } from '../components/MobileBackButton';
-import {
-  Check,
-  Refresh,
-  ExpandMore,
-  ExpandLess,
-  DateRange,
-  Visibility,
-} from '@mui/icons-material';
-import { Series } from '../../types/Series';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
+import { Check, DateRange, ExpandLess, ExpandMore, Refresh, Visibility } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useAuth } from '../../App';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import { Series } from '../../types/Series';
+import { MobileBackButton } from '../components/MobileBackButton';
 import './MobileEpisodeManagementPage.css';
 
 export const MobileEpisodeManagementPage = () => {
@@ -29,22 +22,25 @@ export const MobileEpisodeManagementPage = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const [showWatchDialog, setShowWatchDialog] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState<{seasonIndex: number, episodeIndex: number, episode: any} | null>(null);
-  
+  const [selectedEpisode, setSelectedEpisode] = useState<{
+    seasonIndex: number;
+    episodeIndex: number;
+    episode: any;
+  } | null>(null);
+
   const series = seriesList.find((s: Series) => s.id === Number(id));
 
   useEffect(() => {
     if (series) {
       // Find first season with unwatched episodes
-      const firstUnwatchedSeason = series.seasons?.findIndex(season => 
-        season.episodes?.some(ep => !ep.watched)
+      const firstUnwatchedSeason = series.seasons?.findIndex((season) =>
+        season.episodes?.some((ep) => !ep.watched)
       );
       if (firstUnwatchedSeason !== undefined && firstUnwatchedSeason !== -1) {
         setSelectedSeason(firstUnwatchedSeason);
       }
     }
   }, [series]);
-
 
   // Pull to refresh
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -54,7 +50,7 @@ export const MobileEpisodeManagementPage = () => {
   const handleTouchMove = (e: React.TouchEvent) => {
     const currentY = e.touches[0].clientY;
     const diff = currentY - startY.current;
-    
+
     if (diff > 100 && scrollContainerRef.current?.scrollTop === 0) {
       setIsRefreshing(true);
     }
@@ -97,19 +93,23 @@ export const MobileEpisodeManagementPage = () => {
     }
   };
 
-  const handleEpisodeToggle = async (seasonIndex: number, episodeIndex: number, longPress = false) => {
+  const handleEpisodeToggle = async (
+    seasonIndex: number,
+    episodeIndex: number,
+    longPress = false
+  ) => {
     if (!series || !user) return;
-    
+
     const season = series.seasons[seasonIndex];
     const episode = season.episodes![episodeIndex];
-    
+
     try {
       const currentWatchCount = episode.watchCount || 0;
       const isWatched = episode.watched;
-      
+
       let newWatched: boolean;
       let newWatchCount: number;
-      
+
       if (longPress && isWatched) {
         // Long press on watched episode: decrement watch count
         if (currentWatchCount > 1) {
@@ -130,7 +130,7 @@ export const MobileEpisodeManagementPage = () => {
         newWatched = true;
         newWatchCount = 1;
       }
-      
+
       const updatedEpisodes = season.episodes!.map((e, idx) => {
         if (idx === episodeIndex) {
           // Ensure data consistency: watched episodes must have watchCount >= 1
@@ -140,7 +140,7 @@ export const MobileEpisodeManagementPage = () => {
           if (!newWatched) {
             newWatchCount = 0;
           }
-          
+
           if (newWatched) {
             return {
               ...e,
@@ -158,23 +158,22 @@ export const MobileEpisodeManagementPage = () => {
         }
         return e;
       });
-      
+
       const updatedSeasons = series.seasons.map((s, idx) => {
         if (idx === seasonIndex) {
           return { ...s, episodes: updatedEpisodes };
         }
         return s;
       });
-      
+
       // Use Firebase batch update for better performance
       // Update seasons in Firebase using direct Firebase calls
-      const seasonsRef = firebase
-        .database()
-        .ref(`${user.uid}/serien/${series.nmr}/seasons`);
+      const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
-      
+
       // Badge system logging for episode changes
-      if (!episode.watched && newWatched) { // Episode wird als gesehen markiert
+      if (!episode.watched && newWatched) {
+        // Episode wird als gesehen markiert
         const { updateEpisodeCounters } = await import(
           '../../features/badges/minimalActivityLogger'
         );
@@ -194,18 +193,17 @@ export const MobileEpisodeManagementPage = () => {
           episode.air_date
         );
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleSeasonToggle = async (seasonIndex: number) => {
     if (!series || !user) return;
-    
+
     const season = series.seasons[seasonIndex];
-    const allWatched = season.episodes?.every(ep => ep.watched);
-    
+    const allWatched = season.episodes?.every((ep) => ep.watched);
+
     try {
-      const updatedEpisodes = season.episodes?.map(ep => {
+      const updatedEpisodes = season.episodes?.map((ep) => {
         if (!allWatched) {
           // Mark all as watched
           return {
@@ -223,24 +221,22 @@ export const MobileEpisodeManagementPage = () => {
           };
         }
       });
-      
+
       const updatedSeasons = series.seasons.map((s, idx) => {
         if (idx === seasonIndex) {
           return { ...s, episodes: updatedEpisodes };
         }
         return s;
       });
-      
+
       // Use Firebase batch update for better performance
       // Update seasons in Firebase using direct Firebase calls
-      const seasonsRef = firebase
-        .database()
-        .ref(`${user.uid}/serien/${series.nmr}/seasons`);
+      const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
-      
+
       // Badge system logging for season changes
       if (!allWatched && updatedEpisodes) {
-        const previouslyUnwatched = season.episodes?.filter(ep => !ep.watched) || [];
+        const previouslyUnwatched = season.episodes?.filter((ep) => !ep.watched) || [];
         if (previouslyUnwatched.length === season.episodes?.length) {
           // Whole season completed
           const { logSeasonWatchedClean } = await import(
@@ -252,7 +248,7 @@ export const MobileEpisodeManagementPage = () => {
           const { updateEpisodeCounters } = await import(
             '../../features/badges/minimalActivityLogger'
           );
-          
+
           for (const episode of previouslyUnwatched) {
             await updateEpisodeCounters(
               user.uid,
@@ -262,16 +258,18 @@ export const MobileEpisodeManagementPage = () => {
           }
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   if (!series) {
     return (
       <div className="mobile-episode-page">
-        <div className="episode-header" style={{
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
-        }}>
+        <div
+          className="episode-header"
+          style={{
+            background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          }}
+        >
           <MobileBackButton />
           <h1>Serie nicht gefunden</h1>
         </div>
@@ -280,16 +278,19 @@ export const MobileEpisodeManagementPage = () => {
   }
 
   const currentSeason = series.seasons[selectedSeason];
-  const watchedCount = currentSeason?.episodes?.filter(ep => ep.watched).length || 0;
+  const watchedCount = currentSeason?.episodes?.filter((ep) => ep.watched).length || 0;
   const totalCount = currentSeason?.episodes?.length || 0;
   const progress = totalCount > 0 ? (watchedCount / totalCount) * 100 : 0;
 
   return (
     <div className="mobile-episode-page">
       {/* Native App Header */}
-      <div className="episode-header" style={{
-        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`
-      }}>
+      <div
+        className="episode-header"
+        style={{
+          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+        }}
+      >
         <MobileBackButton />
         <div className="header-content">
           <h1>{series.title}</h1>
@@ -313,14 +314,14 @@ export const MobileEpisodeManagementPage = () => {
 
       {/* Season Tabs with Swipe */}
       <div className="season-tabs">
-        <button 
+        <button
           className="tab-nav-button"
           onClick={handleSwipeRight}
           disabled={selectedSeason === 0}
         >
           <ExpandLess />
         </button>
-        
+
         <div className="tabs-container">
           {series.seasons.map((season, index) => (
             <button
@@ -330,13 +331,14 @@ export const MobileEpisodeManagementPage = () => {
             >
               <span className="season-label">S{season.seasonNumber + 1}</span>
               <span className="season-count">
-                {season.episodes?.filter(ep => ep.watched).length || 0}/{season.episodes?.length || 0}
+                {season.episodes?.filter((ep) => ep.watched).length || 0}/
+                {season.episodes?.length || 0}
               </span>
             </button>
           ))}
         </div>
 
-        <button 
+        <button
           className="tab-nav-button"
           onClick={handleSwipeLeft}
           disabled={!series || selectedSeason === series.seasons.length - 1}
@@ -354,16 +356,15 @@ export const MobileEpisodeManagementPage = () => {
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
-        <button 
-          className="mark-all-button"
-          onClick={() => handleSeasonToggle(selectedSeason)}
-        >
-          {watchedCount === totalCount ? 'Alle als ungesehen markieren' : 'Alle als gesehen markieren'}
+        <button className="mark-all-button" onClick={() => handleSeasonToggle(selectedSeason)}>
+          {watchedCount === totalCount
+            ? 'Alle als ungesehen markieren'
+            : 'Alle als gesehen markieren'}
         </button>
       </div>
 
       {/* Episodes List */}
-      <div 
+      <div
         className="episodes-container"
         ref={scrollContainerRef}
         onTouchStart={handleTouchStart}
@@ -387,7 +388,7 @@ export const MobileEpisodeManagementPage = () => {
                 onClick={() => handleEpisodeClick(selectedSeason, index)}
               >
                 <div className="episode-number">{index + 1}</div>
-                
+
                 <div className="episode-details">
                   <h3>{episode.name}</h3>
                   <div className="episode-meta">
@@ -425,10 +426,7 @@ export const MobileEpisodeManagementPage = () => {
 
       {/* Watch Count Dialog */}
       {showWatchDialog && selectedEpisode && (
-        <div 
-          className="watch-dialog-overlay"
-          onClick={() => setShowWatchDialog(false)}
-        >
+        <div className="watch-dialog-overlay" onClick={() => setShowWatchDialog(false)}>
           <motion.div
             className="watch-dialog"
             initial={{ scale: 0.8, opacity: 0 }}
@@ -440,7 +438,7 @@ export const MobileEpisodeManagementPage = () => {
               <h3>{selectedEpisode.episode.name}</h3>
               <p>Aktuell: {selectedEpisode.episode.watchCount || 1}x gesehen</p>
             </div>
-            
+
             <div className="dialog-buttons">
               <button
                 className="dialog-button increase"
@@ -451,28 +449,28 @@ export const MobileEpisodeManagementPage = () => {
               >
                 +1 (nochmal gesehen)
               </button>
-              
+
               <button
                 className="dialog-button decrease"
                 onClick={() => {
-                  handleEpisodeToggle(selectedEpisode.seasonIndex, selectedEpisode.episodeIndex, true);
+                  handleEpisodeToggle(
+                    selectedEpisode.seasonIndex,
+                    selectedEpisode.episodeIndex,
+                    true
+                  );
                   setShowWatchDialog(false);
                 }}
               >
                 -1 (weniger gesehen)
               </button>
-              
-              <button
-                className="dialog-button cancel"
-                onClick={() => setShowWatchDialog(false)}
-              >
+
+              <button className="dialog-button cancel" onClick={() => setShowWatchDialog(false)}>
                 Abbrechen
               </button>
             </div>
           </motion.div>
         </div>
       )}
-
     </div>
   );
 };

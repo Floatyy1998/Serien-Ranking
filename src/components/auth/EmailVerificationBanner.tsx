@@ -1,11 +1,11 @@
-import { Alert, Button, Snackbar } from '@mui/material';
 import { Email, Warning } from '@mui/icons-material';
+import { Alert, Button, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { colors, commonStyles } from '../../theme';
 import { useAuth } from '../../App';
+import { colors, commonStyles } from '../../theme';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;
@@ -25,7 +25,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
     if (user) {
       // Setze sofort den aktuellen Status
       setIsVerified(user.emailVerified);
-      
+
       // Nur wenn online, versuche zu aktualisieren (ohne Loading anzuzeigen)
       if (navigator.onLine && !user.emailVerified) {
         user
@@ -79,10 +79,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
     }
   };
 
-  const handleSnackClose = (
-    _event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
+  const handleSnackClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return;
     setSnackOpen(false);
   };
@@ -229,11 +226,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           {children}
         </div>
 
-        <Snackbar
-          open={snackOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackClose}
-        >
+        <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
           <Alert
             onClose={handleSnackClose}
             severity={message.includes('Fehler') ? 'error' : 'success'}
@@ -249,11 +242,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   return (
     <>
       {children}
-      <Snackbar
-        open={snackOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackClose}
-      >
+      <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
         <Alert
           onClose={handleSnackClose}
           severity={message.includes('Fehler') ? 'error' : 'success'}

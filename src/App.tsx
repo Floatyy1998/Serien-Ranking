@@ -1,20 +1,8 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import firebase from 'firebase/compat/app';
-import React, {
-  createContext,
-  lazy,
-  Suspense,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import {
-  Navigate,
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { UpdateNotification } from './components/ui/UpdateNotification';
@@ -31,9 +19,7 @@ import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { updateTheme } from './theme';
 
 // Lazy load mobile app for all platforms
-const MobileApp = lazy(() =>
-  import('./mobile/MobileApp').then((m) => ({ default: m.MobileApp }))
-);
+const MobileApp = lazy(() => import('./mobile/MobileApp').then((m) => ({ default: m.MobileApp })));
 const StartPage = lazy(() =>
   import('./pages/MobileStartPage').then((m) => ({
     default: m.MobileStartPage,
@@ -163,9 +149,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // console.log(
                 //   'No local theme found, checking for cloud theme as fallback...'
                 // );
-                const themeRef = firebase
-                  .database()
-                  .ref(`users/${user.uid}/theme`);
+                const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
                 try {
                   const themeSnapshot = await themeRef.once('value');
                   const cloudTheme = themeSnapshot.val();
@@ -174,30 +158,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // console.log('Cloud theme found as fallback, applying...');
                     // Cloud-Theme als Fallback verwenden
                     const root = document.documentElement;
-                    root.style.setProperty(
-                      '--theme-primary',
-                      cloudTheme.primaryColor || '#00fed7'
-                    );
-                    const primaryHover = adjustBrightness(
-                      cloudTheme.primaryColor || '#00fed7',
-                      10
-                    );
-                    root.style.setProperty(
-                      '--theme-primary-hover',
-                      primaryHover
-                    );
-                    root.style.setProperty(
-                      '--theme-accent',
-                      cloudTheme.accentColor || '#ff6b6b'
-                    );
+                    root.style.setProperty('--theme-primary', cloudTheme.primaryColor || '#00fed7');
+                    const primaryHover = adjustBrightness(cloudTheme.primaryColor || '#00fed7', 10);
+                    root.style.setProperty('--theme-primary-hover', primaryHover);
+                    root.style.setProperty('--theme-accent', cloudTheme.accentColor || '#ff6b6b');
                     root.style.setProperty(
                       '--theme-background',
                       cloudTheme.backgroundColor || '#000000'
                     );
-                    root.style.setProperty(
-                      '--theme-surface',
-                      cloudTheme.surfaceColor || '#2d2d30'
-                    );
+                    root.style.setProperty('--theme-surface', cloudTheme.surfaceColor || '#2d2d30');
                     root.style.setProperty(
                       '--theme-text-primary',
                       cloudTheme.primaryColor || '#00fed7'
@@ -205,17 +174,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
                     // Update theme-color Meta-Tag für PWA Status Bar
-                    updateThemeColorMeta(
-                      cloudTheme.backgroundColor || '#000000'
-                    );
+                    updateThemeColorMeta(cloudTheme.backgroundColor || '#000000');
 
                     // WICHTIG: Cloud-Theme temporär im localStorage speichern,
                     // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
                     // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
-                    localStorage.setItem(
-                      'customTheme',
-                      JSON.stringify(cloudTheme)
-                    );
+                    localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
                     // console.log('Cloud-Theme temporär im localStorage gespeichert für BackgroundMedia');
 
                     window.dispatchEvent(new CustomEvent('themeChanged'));
@@ -237,10 +201,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const userData = {
                   uid: user.uid,
                   email: user.email,
-                  displayName:
-                    user.displayName ||
-                    user.email?.split('@')[0] ||
-                    'Unbekannt',
+                  displayName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
                   photoURL: user.photoURL || null,
                   createdAt: firebase.database.ServerValue.TIMESTAMP,
                   lastActive: firebase.database.ServerValue.TIMESTAMP,
@@ -328,9 +289,7 @@ const adjustBrightness = (color: string, percent: number) => {
 
 // Funktion zum Updaten des theme-color Meta-Tags
 const updateThemeColorMeta = (backgroundColor: string) => {
-  const metaThemeColor = document.getElementById(
-    'theme-color-meta'
-  ) as HTMLMetaElement;
+  const metaThemeColor = document.getElementById('theme-color-meta') as HTMLMetaElement;
   if (metaThemeColor) {
     metaThemeColor.content = backgroundColor;
   }
@@ -378,15 +337,9 @@ const loadSavedTheme = async (userId?: string) => {
     const primaryHover = adjustBrightness(theme.primaryColor || '#00fed7', 10);
     root.style.setProperty('--theme-primary-hover', primaryHover);
     root.style.setProperty('--theme-accent', theme.accentColor || '#ff6b6b');
-    root.style.setProperty(
-      '--theme-background',
-      theme.backgroundColor || '#000000'
-    );
+    root.style.setProperty('--theme-background', theme.backgroundColor || '#000000');
     root.style.setProperty('--theme-surface', theme.surfaceColor || '#2d2d30');
-    root.style.setProperty(
-      '--theme-text-primary',
-      theme.primaryColor || '#00fed7'
-    );
+    root.style.setProperty('--theme-text-primary', theme.primaryColor || '#00fed7');
     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
     // Mobile-first app - no background images needed
@@ -396,10 +349,7 @@ const loadSavedTheme = async (userId?: string) => {
   } else {
     // Stelle sicher, dass Default-Werte gesetzt sind
     root.style.setProperty('--theme-primary', '#00fed7');
-    root.style.setProperty(
-      '--theme-primary-hover',
-      adjustBrightness('#00fed7', 10)
-    );
+    root.style.setProperty('--theme-primary-hover', adjustBrightness('#00fed7', 10));
     root.style.setProperty('--theme-accent', '#ff6b6b');
     root.style.setProperty('--theme-background', '#000000');
     root.style.setProperty('--theme-surface', '#2d2d30');
@@ -412,10 +362,10 @@ const loadSavedTheme = async (userId?: string) => {
 };
 
 export function App() {
-  const [isThemeLoaded, setIsThemeLoaded] = React.useState(false);
+  const [isThemeLoaded, setIsThemeLoaded] = useState(false);
 
   // Theme beim App-Start laden - aber NACH Firebase Initialisierung
-  React.useEffect(() => {
+  useEffect(() => {
     // Sofort lokales Theme laden für schnellen Start (braucht kein Firebase)
     const initializeTheme = async () => {
       // Erst mal lokales Theme laden (sofort verfügbar, braucht kein Firebase)
@@ -454,10 +404,10 @@ export function App() {
 
 function AppContent() {
   // Theme initial mit updateTheme erstellen um CSS-Variablen zu lesen
-  const [currentTheme, setCurrentTheme] = React.useState(() => updateTheme());
+  const [currentTheme, setCurrentTheme] = useState(() => updateTheme());
 
   // Theme bei Änderungen aktualisieren
-  React.useEffect(() => {
+  useEffect(() => {
     const handleThemeChange = () => {
       const newTheme = updateTheme();
       setCurrentTheme(newTheme);
@@ -483,71 +433,50 @@ function AppContent() {
               <StatsProvider>
                 <BadgeProvider>
                   <Helmet>
-                    <title>
-                      TV-RANK - Entdecke, bewerte und verwalte deine
-                      Lieblingsserien
-                    </title>
+                    <title>TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien</title>
                     <meta
-                      name='description'
-                      content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
+                      name="description"
+                      content="Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr."
+                    />
+                    <meta name="keywords" content="Serien, TV, Bewertung, Watchlist, TV-RANK" />
+                    <meta
+                      property="og:title"
+                      content="TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien"
                     />
                     <meta
-                      name='keywords'
-                      content='Serien, TV, Bewertung, Watchlist, TV-RANK'
+                      property="og:description"
+                      content="Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr."
                     />
-                    <meta
-                      property='og:title'
-                      content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
-                    />
-                    <meta
-                      property='og:description'
-                      content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-                    />
-                    <meta property='og:image' content='/favicon.ico' />
-                    <meta property='og:url' content='https://tv-rank.de' />
-                    <meta name='twitter:card' content='summary_large_image' />
+                    <meta property="og:image" content="/favicon.ico" />
+                    <meta property="og:url" content="https://tv-rank.de" />
+                    <meta name="twitter:card" content="summary_large_image" />
                   </Helmet>
                   <ThemeProvider theme={currentTheme}>
                     <CssBaseline />
-                    <div className='w-full'>
+                    <div className="w-full">
                       <UpdateNotification />
-                      <main className='w-full'>
+                      <main className="w-full">
                         <Suspense fallback={<PageLoader />}>
                           <Routes>
                             <Route
-                              path='/login'
+                              path="/login"
                               element={
                                 <AuthContext.Consumer>
-                                  {(auth) =>
-                                    auth?.user ? (
-                                      <Navigate to='/' />
-                                    ) : (
-                                      <LoginPage />
-                                    )
-                                  }
+                                  {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
                                 </AuthContext.Consumer>
                               }
                             />
                             <Route
-                              path='/register'
+                              path="/register"
                               element={
                                 <AuthContext.Consumer>
-                                  {(auth) =>
-                                    auth?.user ? (
-                                      <Navigate to='/' />
-                                    ) : (
-                                      <RegisterPage />
-                                    )
-                                  }
+                                  {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
                                 </AuthContext.Consumer>
                               }
                             />
+                            <Route path="/public/:publicId" element={<PublicProfilePage />} />
                             <Route
-                              path='/public/:publicId'
-                              element={<PublicProfilePage />}
-                            />
-                            <Route
-                              path='/*'
+                              path="/*"
                               element={
                                 <AuthContext.Consumer>
                                   {(auth) => {
@@ -569,7 +498,7 @@ function AppContent() {
                                 </AuthContext.Consumer>
                               }
                             />
-                            <Route path='*' element={<Navigate to='/' />} />
+                            <Route path="*" element={<Navigate to="/" />} />
                           </Routes>
                         </Suspense>
                       </main>

@@ -1,5 +1,5 @@
 import firebase from 'firebase/compat/app';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '../App';
 import { useOptimizedFriends } from './OptimizedFriendsProvider';
 
@@ -10,28 +10,20 @@ interface NotificationContextType {
   markAllActivitiesAsRead: () => Promise<void>;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined
-);
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error(
-      'useNotifications must be used within a NotificationProvider'
-    );
+    throw new Error('useNotifications must be used within a NotificationProvider');
   }
   return context;
 };
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth()!;
   const { friends } = useOptimizedFriends();
-  const [friendUnreadActivities, setFriendUnreadActivities] = useState<
-    Record<string, number>
-  >({});
+  const [friendUnreadActivities, setFriendUnreadActivities] = useState<Record<string, number>>({});
   const [totalUnreadActivities, setTotalUnreadActivities] = useState(0);
 
   // Lade initial ungelesene Aktivitäten
@@ -61,9 +53,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
           const activitiesSnapshot = await activitiesRef.once('value');
           const activitiesData = activitiesSnapshot.val();
 
-          const unreadCount = activitiesData
-            ? Object.keys(activitiesData).length
-            : 0;
+          const unreadCount = activitiesData ? Object.keys(activitiesData).length : 0;
 
           // Cap individual friend unread count at 20
           const cappedUnreadCount = Math.min(unreadCount, 20);
@@ -110,10 +100,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
             const updated = { ...prev, [friend.uid]: newCount };
 
             // Update total with cap at 20
-            const newTotal = Math.min(Object.values(updated).reduce(
-              (sum, count) => sum + count,
-              0
-            ), 20);
+            const newTotal = Math.min(
+              Object.values(updated).reduce((sum, count) => sum + count, 0),
+              20
+            );
             setTotalUnreadActivities(newTotal);
 
             return updated;
@@ -134,17 +124,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       const now = Date.now();
-      await firebase
-        .database()
-        .ref(`users/${user.uid}/lastReadActivities/${friendId}`)
-        .set(now);
+      await firebase.database().ref(`users/${user.uid}/lastReadActivities/${friendId}`).set(now);
 
       setFriendUnreadActivities((prev) => {
         const updated = { ...prev, [friendId]: 0 };
-        const newTotal = Math.min(Object.values(updated).reduce(
-          (sum, count) => sum + count,
-          0
-        ), 20);
+        const newTotal = Math.min(
+          Object.values(updated).reduce((sum, count) => sum + count, 0),
+          20
+        );
         setTotalUnreadActivities(newTotal);
         return updated;
       });

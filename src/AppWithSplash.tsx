@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { SplashScreen } from './components/ui/SplashScreen';
+import { useEffect, useRef, useState } from 'react';
 import { App } from './App';
+import { SplashScreen } from './components/ui/SplashScreen';
 
 /**
  * Globaler Ready-Tracker
@@ -29,12 +29,12 @@ if (typeof window !== 'undefined') {
     emailVerification: false,
     initialData: false,
   };
-  
+
   window.setAppReady = (key, value) => {
     window.appReadyStatus[key] = value;
     // console.log(`[AppReady] ${key}: ${value}`, window.appReadyStatus);
   };
-  
+
   window.splashScreenComplete = false;
 }
 
@@ -46,7 +46,7 @@ export const AppWithSplash: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [isAppMounted, setIsAppMounted] = useState(false);
   const [allSystemsReady, setAllSystemsReady] = useState(false);
-  const checkInterval = useRef<NodeJS.Timeout | undefined>(undefined);
+  const checkInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   useEffect(() => {
     // Mount App im Hintergrund nach kurzer Verzögerung
@@ -58,13 +58,13 @@ export const AppWithSplash: React.FC = () => {
     // Prüfe regelmäßig ob alle Systeme ready sind
     checkInterval.current = setInterval(() => {
       const status = window.appReadyStatus;
-      const isReady = 
-        status.theme && 
-        status.auth && 
-        status.firebase && 
+      const isReady =
+        status.theme &&
+        status.auth &&
+        status.firebase &&
         status.emailVerification &&
         status.initialData;
-      
+
       if (isReady && !allSystemsReady) {
         // console.log('[AppWithSplash] 🎉 ALLE SYSTEME BEREIT!', status);
         setAllSystemsReady(true);
@@ -92,7 +92,8 @@ export const AppWithSplash: React.FC = () => {
 
   // Check if we're on auth pages - if so, skip splash screen
   const currentPath = window.location.pathname;
-  const isAuthPage = currentPath === '/login' || currentPath === '/register' || currentPath === '/start';
+  const isAuthPage =
+    currentPath === '/login' || currentPath === '/register' || currentPath === '/start';
 
   // Skip splash screen for auth pages
   if (isAuthPage) {
