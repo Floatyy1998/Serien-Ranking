@@ -486,11 +486,11 @@ export const MobileDiscoverPage = memo(() => {
               padding: '12px',
               background:
                 activeTab === 'movies'
-                  ? currentTheme.status.error
+                  ? `${currentTheme.primary}CC`
                   : `${currentTheme.text.primary}0D`,
               border: activeTab === 'movies' ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '12px',
-              color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
+              color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
               fontSize: '14px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -518,7 +518,7 @@ export const MobileDiscoverPage = memo(() => {
             <button
               onClick={() => setActiveCategory('trending')}
               style={{
-                padding: '20px',
+                padding: isDesktop ? '8px 12px' : '10px',
                 background:
                   activeCategory === 'trending'
                     ? `${currentTheme.primary}33`
@@ -527,23 +527,23 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'trending'
                     ? `1px solid ${currentTheme.primary}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '16px',
+                borderRadius: '12px',
                 color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '4px',
               }}
             >
-              <TrendingUp style={{ fontSize: '32px', color: currentTheme.primary }} />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>Im Trend</span>
+              <TrendingUp style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.primary }} />
+              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>Im Trend</span>
             </button>
 
             <button
               onClick={() => setActiveCategory('popular')}
               style={{
-                padding: '20px',
+                padding: isDesktop ? '8px 12px' : '10px',
                 background:
                   activeCategory === 'popular'
                     ? `${currentTheme.status.error}33`
@@ -552,23 +552,23 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'popular'
                     ? `1px solid ${currentTheme.status.error}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '16px',
+                borderRadius: '12px',
                 color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '4px',
               }}
             >
-              <Whatshot style={{ fontSize: '32px', color: currentTheme.status.error }} />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>Beliebt</span>
+              <Whatshot style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.status.error }} />
+              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>Beliebt</span>
             </button>
 
             <button
               onClick={() => setActiveCategory('top_rated')}
               style={{
-                padding: '20px',
+                padding: isDesktop ? '8px 12px' : '10px',
                 background:
                   activeCategory === 'top_rated'
                     ? `${currentTheme.status.warning}33`
@@ -577,23 +577,23 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'top_rated'
                     ? `1px solid ${currentTheme.status.warning}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '16px',
+                borderRadius: '12px',
                 color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '4px',
               }}
             >
-              <Star style={{ fontSize: '32px', color: currentTheme.status.warning }} />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>Top Bewertet</span>
+              <Star style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.status.warning }} />
+              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>Top Bewertet</span>
             </button>
 
             <button
               onClick={() => setActiveCategory('upcoming')}
               style={{
-                padding: '20px',
+                padding: isDesktop ? '8px 12px' : '10px',
                 background:
                   activeCategory === 'upcoming'
                     ? `${currentTheme.status.success}33`
@@ -602,17 +602,17 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'upcoming'
                     ? `1px solid ${currentTheme.status.success}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '16px',
+                borderRadius: '12px',
                 color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '4px',
               }}
             >
-              <NewReleases style={{ fontSize: '32px', color: currentTheme.status.success }} />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>
+              <NewReleases style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.status.success }} />
+              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>
                 {activeTab === 'movies' ? 'Demnächst' : 'Läuft gerade'}
               </span>
             </button>

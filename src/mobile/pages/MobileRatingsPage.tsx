@@ -481,7 +481,7 @@ export const MobileRatingsPage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background:
-              activeTab === 'movies' ? currentTheme.status.error : currentTheme.background.surface,
+              activeTab === 'movies' ? `${currentTheme.primary}CC` : currentTheme.background.surface,
             border: 'none',
             borderRadius: '0 12px 12px 0',
             color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,

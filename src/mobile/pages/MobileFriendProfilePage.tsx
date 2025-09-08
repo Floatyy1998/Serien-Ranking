@@ -449,7 +449,7 @@ export const MobileFriendProfilePage: React.FC = () => {
           style={{
             flex: 1,
             padding: '12px',
-            background: activeTab === 'movies' ? currentTheme.status.error : 'transparent',
+            background: activeTab === 'movies' ? `${currentTheme.primary}CC` : 'transparent',
             border: 'none',
             borderRadius: '0 12px 12px 0',
             color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
