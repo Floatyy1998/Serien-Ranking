@@ -76,6 +76,16 @@ export const MobileHomePage: React.FC = () => {
   );
   const [hiddenContinueEpisodes, setHiddenContinueEpisodes] = useState<Set<string>>(new Set());
   const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+
+  // Handle resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Update time every minute
   useEffect(() => {
@@ -444,8 +454,8 @@ export const MobileHomePage: React.FC = () => {
             background:
               'linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 180, 216, 0.2) 100%)',
             border: '1px solid rgba(0, 212, 170, 0.3)',
-            borderRadius: '20px',
-            padding: '20px',
+            borderRadius: isDesktop ? '16px' : '16px',
+            padding: isDesktop ? '12px' : '14px',
             cursor: 'pointer',
             position: 'relative',
             overflow: 'hidden',
@@ -456,8 +466,8 @@ export const MobileHomePage: React.FC = () => {
               position: 'absolute',
               top: '-20px',
               right: '-20px',
-              width: '80px',
-              height: '80px',
+              width: isDesktop ? '60px' : '80px',
+              height: isDesktop ? '60px' : '80px',
               background: `${currentTheme.status.success}33`,
               borderRadius: '50%',
               filter: 'blur(30px)',
@@ -466,15 +476,15 @@ export const MobileHomePage: React.FC = () => {
 
           <PlayCircle
             style={{
-              fontSize: '32px',
+              fontSize: isDesktop ? '24px' : '24px',
               color: currentTheme.status.success,
-              marginBottom: '8px',
+              marginBottom: isDesktop ? '4px' : '8px',
             }}
           />
-          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}>Weiterschauen</h3>
+          <h3 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Weiterschauen</h3>
           <p
             style={{
-              fontSize: '13px',
+              fontSize: isDesktop ? '11px' : '12px',
               color: currentTheme.text.secondary,
               margin: 0,
             }}
@@ -489,8 +499,8 @@ export const MobileHomePage: React.FC = () => {
           style={{
             background: `linear-gradient(135deg, ${currentTheme.primary}33 0%, ${currentTheme.accent}33 100%)`,
             border: `1px solid ${currentTheme.primary}4D`,
-            borderRadius: '20px',
-            padding: '20px',
+            borderRadius: isDesktop ? '16px' : '16px',
+            padding: isDesktop ? '12px' : '14px',
             cursor: 'pointer',
             position: 'relative',
             overflow: 'hidden',
@@ -501,8 +511,8 @@ export const MobileHomePage: React.FC = () => {
               position: 'absolute',
               top: '-20px',
               right: '-20px',
-              width: '80px',
-              height: '80px',
+              width: isDesktop ? '60px' : '80px',
+              height: isDesktop ? '60px' : '80px',
               background: `${currentTheme.primary}33`,
               borderRadius: '50%',
               filter: 'blur(30px)',
@@ -511,15 +521,15 @@ export const MobileHomePage: React.FC = () => {
 
           <AutoAwesome
             style={{
-              fontSize: '32px',
+              fontSize: isDesktop ? '24px' : '24px',
               color: currentTheme.primary,
-              marginBottom: '8px',
+              marginBottom: isDesktop ? '4px' : '8px',
             }}
           />
-          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}>Entdecken</h3>
+          <h3 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Entdecken</h3>
           <p
             style={{
-              fontSize: '13px',
+              fontSize: isDesktop ? '11px' : '12px',
               color: currentTheme.text.secondary,
               margin: 0,
             }}
@@ -570,22 +580,22 @@ export const MobileHomePage: React.FC = () => {
             whileTap={{ scale: 0.9 }}
             onClick={() => navigate(action.path)}
             style={{
-              padding: '16px 8px',
+              padding: isDesktop ? '10px 6px' : '10px 8px',
               background: 'rgba(255, 255, 255, 0.03)',
               border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '16px',
+              borderRadius: isDesktop ? '12px' : '12px',
               color: action.color,
               cursor: 'pointer',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '6px',
+              gap: isDesktop ? '4px' : '6px',
             }}
           >
-            {cloneElement(action.icon, { style: { fontSize: '22px' } })}
+            {cloneElement(action.icon, { style: { fontSize: isDesktop ? '18px' : '18px' } })}
             <span
               style={{
-                fontSize: '14px',
+                fontSize: isDesktop ? '11px' : '11px',
                 fontWeight: 600,
                 color: currentTheme.text.primary,
               }}

@@ -522,7 +522,7 @@ export const MobilePublicProfilePage: React.FC = () => {
             flex: 1,
             padding: '12px',
             background:
-              activeTab === 'movies' ? 'var(--color-primary)' : 'var(--color-background-surface)',
+              activeTab === 'movies' ? 'rgba(103, 58, 183, 0.8)' : 'var(--color-background-surface)',
             border: activeTab === 'movies' ? 'none' : '1px solid var(--color-border-default)',
             borderRadius: '12px',
             color: activeTab === 'movies' ? 'white' : 'var(--color-text-secondary)',
