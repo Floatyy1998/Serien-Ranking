@@ -17,6 +17,8 @@ import { Movie } from '../../types/Movie';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MobileCastCrew } from '../components/MobileCastCrew';
+import { MobileProviderBadges } from '../components/MobileProviderBadges';
+import { motion } from 'framer-motion';
 
 export const MobileMovieDetailPage = memo(() => {
   const { id } = useParams();
@@ -38,18 +40,31 @@ export const MobileMovieDetailPage = memo(() => {
 
   // State for backdrop from TMDB
   const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
+  // State for providers
+  const [providers, setProviders] = useState<any>(null);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
     
-    // ALWAYS fetch backdrop from TMDB (local data never has it)
+    // ALWAYS fetch backdrop and providers from TMDB
     if (id && apiKey) {
+      // Fetch backdrop
       fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE`)
         .then(res => res.json())
         .then(data => {
           if (data.backdrop_path) {
             setTmdbBackdrop(data.backdrop_path);
+          }
+        })
+        .catch(() => {});
+      
+      // Fetch providers
+      fetch(`https://api.themoviedb.org/3/movie/${id}/watch/providers?api_key=${apiKey}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.results?.DE?.flatrate) {
+            setProviders(data.results.DE.flatrate);
           }
         })
         .catch(() => {});
@@ -104,14 +119,6 @@ export const MobileMovieDetailPage = memo(() => {
     return movie.rating[user.uid] || 0;
   }, [movie, user]);
 
-  // Get TMDB image URL
-  const getImageUrl = (posterObj: any): string => {
-    if (!posterObj) return '/placeholder.jpg';
-    const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w500${path}`;
-  };
 
   // Get backdrop URL - use actual backdrop field or TMDB backdrop
   const getBackdropUrl = (backdropPath: string | undefined): string => {
@@ -396,133 +403,107 @@ export const MobileMovieDetailPage = memo(() => {
             right: '20px',
           }}
         >
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-            <img
-              src={getImageUrl(movie.poster)}
-              alt={movie.title}
-              style={{
-                width: '120px',
-                height: '180px',
-                objectFit: 'cover',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-              }}
-            />
+          <h1
+            style={{
+              fontSize: '28px',
+              margin: '0 0 8px 0',
+              fontWeight: 'bold',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
+            }}
+          >
+            {movie.title}
+          </h1>
 
-            <div style={{ flex: 1 }}>
-              <h1
-                style={{
-                  fontSize: '26px',
-                  margin: '0 0 8px 0',
-                  fontWeight: 700,
-                }}
-              >
-                {movie.title}
-              </h1>
-
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                  fontSize: '14px',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  marginBottom: '16px',
-                }}
-              >
-                {movie.release_date && (
-                  <span>{new Date(movie.release_date).getFullYear()}</span>
-                )}
-                {movie.runtime && <span>• {formatRuntime(movie.runtime)}</span>}
-                {/* No TMDB rating available in current data structure */}
-              </div>
-
-              {/* Rating */}
-              {averageRating > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    marginBottom: '12px',
-                  }}
-                >
-                  <Star style={{ fontSize: '20px', color: currentTheme.status.warning }} />
-                  <span style={{ fontSize: '18px', fontWeight: 600 }}>
-                    {averageRating}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '13px',
-                      color: 'rgba(255, 255, 255, 0.5)',
-                    }}
-                  >
-                    (
-                    {
-                      Object.keys(movie.rating || {}).filter(
-                        (uid) => movie.rating![uid] > 0
-                      ).length
-                    }{' '}
-                    Bewertungen)
-                  </span>
-                </div>
-              )}
-
-              {/* User Rating */}
-              {isWatched && (
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '4px 12px',
-                    background: 'rgba(76, 209, 55, 0.2)',
-                    border: '1px solid rgba(76, 209, 55, 0.4)',
-                    borderRadius: '20px',
-                    fontSize: '13px',
-                  }}
-                >
-                  <Visibility style={{ fontSize: '16px' }} />
-                  Gesehen • {currentRating}/10
-                </div>
-              )}
-            </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              fontSize: '14px',
+              opacity: 0.9,
+              marginBottom: '8px',
+            }}
+          >
+            {movie.release_date && (
+              <span>{new Date(movie.release_date).getFullYear()}</span>
+            )}
+            {movie.runtime && <span>• {formatRuntime(movie.runtime)}</span>}
+            {averageRating > 0 && (
+              <span style={{ color: '#ffd700' }}>
+                • ⭐ {averageRating} ({Object.keys(movie.rating || {}).filter(
+                  (uid) => movie.rating![uid] > 0
+                ).length})
+              </span>
+            )}
           </div>
 
-          {/* Action Buttons - only for user's movies */}
-          {!isReadOnlyTmdbMovie && (
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={() => navigate(`/rating/movie/${movie.id}`)}
-                disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: isWatched
-                    ? 'rgba(255, 215, 0, 0.2)'
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: isWatched
-                    ? '1px solid rgba(255, 215, 0, 0.4)'
-                    : 'none',
-                  borderRadius: '12px',
-                  color: currentTheme.text.primary,
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  opacity: loading ? 0.7 : 1,
-                }}
-              >
-                <Star style={{ fontSize: '20px' }} />
-                {isWatched ? `Bewertung ändern (${currentRating})` : 'Bewerten'}
-              </button>
+          {/* Provider Badges unter der Info-Zeile */}
+          {((movie.provider?.provider && movie.provider.provider.length > 0) || providers) && (
+            <div style={{ marginBottom: '16px' }}>
+              <MobileProviderBadges
+                providers={(movie.provider?.provider && movie.provider.provider.length > 0) ? movie.provider.provider : providers}
+                size="large"
+                maxDisplay={6}
+                showNames={false}
+              />
             </div>
           )}
+
+          {/* User Rating */}
+          {isWatched && (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 12px',
+                background: 'rgba(76, 209, 55, 0.2)',
+                border: '1px solid rgba(76, 209, 55, 0.4)',
+                borderRadius: '20px',
+                fontSize: '13px',
+              }}
+            >
+              <Visibility style={{ fontSize: '16px' }} />
+              Gesehen • {currentRating}/10
+            </div>
+          )}
+
         </div>
       </div>
+
+      {/* Action Buttons - for user's movies */}
+      {!isReadOnlyTmdbMovie && (
+        <div style={{ padding: '20px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(`/rating/movie/${movie.id}`)}
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: '12px',
+              background: isWatched
+                ? 'rgba(255, 215, 0, 0.2)'
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              border: isWatched
+                ? '1px solid rgba(255, 215, 0, 0.4)'
+                : 'none',
+              borderRadius: '12px',
+              color: currentTheme.text.primary,
+              fontSize: '16px',
+              fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            <Star />
+            {isWatched ? `Bewertung ändern (${currentRating})` : 'Bewerten'}
+          </motion.button>
+        </div>
+      )}
 
       {/* Add button for TMDB movies as full-width button at the bottom */}
       {isReadOnlyTmdbMovie && (
@@ -620,7 +601,6 @@ export const MobileMovieDetailPage = memo(() => {
           tmdbId={movie.id}
           mediaType="movie"
           seriesData={movie}
-          onPersonClick={(personId) => console.log('Person clicked:', personId)}
         />
       ) : (
       <div style={{ padding: '20px' }}>

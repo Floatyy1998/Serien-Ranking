@@ -25,7 +25,7 @@ interface MobileCastCrewProps {
 export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
   tmdbId,
   mediaType,
-  onPersonClick = () => {},
+  onPersonClick,
   seriesData,
 }) => {
   const { currentTheme } = useTheme();

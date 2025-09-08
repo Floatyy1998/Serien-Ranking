@@ -3,8 +3,6 @@ import firebase from 'firebase/compat/app';
 import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
-// BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
-import { UpdateNotification } from './components/ui/UpdateNotification';
 // Badge Migration Tools für Development
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
@@ -434,7 +432,6 @@ function AppContent() {
                   <ThemeProvider theme={currentTheme}>
                     <CssBaseline />
                     <div className="w-full">
-                      <UpdateNotification />
                       <main className="w-full">
                         <Suspense fallback={<PageLoader />}>
                           <Routes>

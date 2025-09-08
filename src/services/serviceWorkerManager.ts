@@ -65,8 +65,8 @@ class ServiceWorkerManager {
       return this.registrationPromise;
     }
 
-    // KEINE dynamische URL mehr - das verursacht ständige Updates!
-    const swUrl = '/service-worker.js';
+    // Use Vite PWA's sw.js instead of legacy service-worker.js
+    const swUrl = '/sw.js';
 
     this.registrationPromise = navigator.serviceWorker.register(swUrl, {
       scope: '/',

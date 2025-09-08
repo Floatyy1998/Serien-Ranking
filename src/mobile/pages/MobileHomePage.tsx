@@ -1185,6 +1185,7 @@ export const MobileHomePage: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '2px',
+                      zIndex: 1,
                     }}
                   >
                     <TrendingUp style={{ fontSize: '12px' }} />#{index + 1}
