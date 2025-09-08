@@ -64,18 +64,33 @@ export const MobileSeriesDetailPage = memo(() => {
 
   // State for backdrop from TMDB
   const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
+  // State for providers
+  const [providers, setProviders] = useState<any>(null);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
 
-    // ALWAYS fetch backdrop from TMDB (local data never has it)
+    // ALWAYS fetch backdrop and providers from TMDB
     if (id && apiKey) {
+      // Fetch backdrop
       fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE`)
         .then((res) => res.json())
         .then((data) => {
           if (data.backdrop_path) {
             setTmdbBackdrop(data.backdrop_path);
+          }
+        })
+        .catch(() => {
+          // Handle error silently
+        });
+
+      // Fetch providers
+      fetch(`https://api.themoviedb.org/3/tv/${id}/watch/providers?api_key=${apiKey}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.results?.DE?.flatrate) {
+            setProviders(data.results.DE.flatrate);
           }
         })
         .catch(() => {
@@ -506,24 +521,14 @@ export const MobileSeriesDetailPage = memo(() => {
         >
           <h1
             style={{
-              fontSize: '24px',
+              fontSize: '28px',
               fontWeight: 'bold',
               margin: '0 0 8px 0',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
             }}
           >
             {series.title}
           </h1>
-
-          {/* Provider Badges */}
-          {series.watch_providers && (
-            <div style={{ marginBottom: '8px' }}>
-              <MobileProviderBadges
-                providers={series.watch_providers}
-                size="medium"
-                maxDisplay={4}
-              />
-            </div>
-          )}
 
           <div
             style={{
@@ -531,7 +536,7 @@ export const MobileSeriesDetailPage = memo(() => {
               alignItems: 'center',
               gap: '12px',
               fontSize: '14px',
-              opacity: 0.8,
+              opacity: 0.9,
               marginBottom: '12px',
             }}
           >
@@ -570,6 +575,18 @@ export const MobileSeriesDetailPage = memo(() => {
                 {progressStats.watched} von {progressStats.total} Episoden (
                 {progressStats.percentage}%)
               </p>
+            </div>
+          )}
+
+          {/* Provider Badges unter dem Fortschrittsbalken */}
+          {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
+            <div>
+              <MobileProviderBadges
+                providers={(series.provider?.provider && series.provider.provider.length > 0) ? series.provider.provider : providers}
+                size="large"
+                maxDisplay={6}
+                showNames={false}
+              />
             </div>
           )}
         </div>
@@ -732,7 +749,6 @@ export const MobileSeriesDetailPage = memo(() => {
           tmdbId={series.tmdb_id || series.id}
           mediaType="tv"
           seriesData={series}
-          onPersonClick={(personId) => console.log('Person clicked:', personId)}
         />
       ) : (
         <>
