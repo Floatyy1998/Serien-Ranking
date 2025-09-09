@@ -559,7 +559,7 @@ export const MobileHomePage: React.FC = () => {
           {
             icon: <CalendarToday />,
             label: 'Kalender',
-            path: '/all-episodes',
+            path: '/new-episodes',
             color: currentTheme.status.success,
           },
           {

@@ -231,11 +231,7 @@
 }
 
 .episode-item.watched {
-  background: linear-gradient(
-    90deg,
-    rgba(102, 126, 234, 0.1) 0%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
   border-color: rgba(102, 126, 234, 0.2);
 }
 
@@ -313,7 +309,7 @@
   top: -4px;
   right: -4px;
   background: var(--color-error);
-  color: var(--color-text-primary);
+  color: white;
   font-size: 10px;
   font-weight: 700;
   padding: 2px 4px;
