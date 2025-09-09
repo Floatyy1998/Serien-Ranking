@@ -72,14 +72,6 @@ export const MobileApp = () => {
             }
           />
           <Route
-            path="/all-episodes"
-            element={
-              <MobileLayout>
-                <MobileNewEpisodesPage showAllSeries />
-              </MobileLayout>
-            }
-          />
-          <Route
             path="/discover"
             element={
               <MobileLayout>

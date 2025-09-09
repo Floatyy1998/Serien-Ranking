@@ -87,7 +87,6 @@ export const MobileBottomNavigation = () => {
     location.pathname.includes('/movie/') ||
     location.pathname.includes('/rating/') || // Only hide for /rating/:type/:id
     location.pathname.includes('/episodes') ||
-    location.pathname === '/all-episodes' ||
     location.pathname === '/new-episodes';
 
   if (shouldHide) return null;

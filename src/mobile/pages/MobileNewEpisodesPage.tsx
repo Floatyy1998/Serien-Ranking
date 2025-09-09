@@ -37,15 +37,12 @@ interface UpcomingEpisode {
   watched: boolean;
 }
 
-interface MobileNewEpisodesPageProps {
-  showAllSeries?: boolean;
-}
-
-export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisodesPageProps) => {
+export const MobileNewEpisodesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
+  const [showAllSeries, setShowAllSeries] = useState<boolean>(true);
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(
@@ -382,6 +379,7 @@ export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisod
           }}
         >
           <div
+            onClick={() => setShowAllSeries(!showAllSeries)}
             style={{
               background: showAllSeries 
                 ? `${currentTheme.primary}1A`
@@ -397,6 +395,8 @@ export const MobileNewEpisodesPage = ({ showAllSeries = false }: MobileNewEpisod
               fontSize: '13px',
               whiteSpace: 'nowrap',
               fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
             }}
           >
             {showAllSeries ? (
