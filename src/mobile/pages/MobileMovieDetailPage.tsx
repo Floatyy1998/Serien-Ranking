@@ -430,9 +430,7 @@ export const MobileMovieDetailPage = memo(() => {
             {movie.runtime && <span>• {formatRuntime(movie.runtime)}</span>}
             {averageRating > 0 && (
               <span style={{ color: '#ffd700' }}>
-                • ⭐ {averageRating} ({Object.keys(movie.rating || {}).filter(
-                  (uid) => movie.rating![uid] > 0
-                ).length})
+                • ⭐ {averageRating}
               </span>
             )}
           </div>
