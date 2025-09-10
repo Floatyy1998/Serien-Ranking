@@ -101,7 +101,8 @@ export const useContinueWatching = () => {
                   progress: percentage,
                   nextEpisode: {
                     seasonNumber: season.seasonNumber || 1,
-                    episodeNumber: k + 1,
+                    seasonNumberForAPI: season.season_number ?? season.seasonNumber, // Use DB value for API calls
+                    episodeNumber: episode.episode_number || k + 1,
                     name: episode.name,
                     seasonIndex: j,
                     episodeIndex: k,

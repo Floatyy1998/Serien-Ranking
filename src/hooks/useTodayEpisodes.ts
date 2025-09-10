@@ -60,7 +60,7 @@ export const useTodayEpisodes = () => {
               seriesTitle: series.title,
               poster: getImageUrl(series.poster),
               seasonNumber: season.seasonNumber || 1,
-              episodeNumber: k + 1,
+              episodeNumber: episode.episode_number || k + 1,
               seasonIndex: actualSeasonIndex,
               episodeIndex: k,
               episodeId: episode.id,

@@ -5,19 +5,19 @@ import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { Movie as MovieType } from '../../types/Movie';
 import { Series } from '../../types/Series';
 // Removed VirtualizedSearchResults import - using custom grid layout
 import { MobileDialog } from '../components/MobileDialog';
 import { MobileBackButton } from '../components/MobileBackButton';
+import apiService from '../../services/api.service';
 // import { genreIdMapForSeries, genreIdMapForMovies } from '../../config/menuItems';
 
 export const MobileSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
-  const { movieList } = useMovieList();
+  const { seriesList, addSeries, refetchSeries } = useSeriesList();
+  const { movieList, addMovie, refetchMovies } = useMovieList();
   const { currentTheme } = useTheme();
   
   // Check if we came back via navigation (back button)
@@ -201,45 +201,29 @@ export const MobileSearchPage: React.FC = () => {
       return;
     }
 
-    const endpoint =
-      item.type === 'series'
-        ? 'https://serienapi.konrad-dinges.de/add'
-        : 'https://serienapi.konrad-dinges.de/addMovie';
-
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: import.meta.env.VITE_USER,
-          id: item.id,
-          uuid: user.uid,
-        }),
+      // Use the context methods to update state
+      if (item.type === 'series' || item.media_type === 'tv') {
+        await addSeries(item.id);
+      } else {
+        await addMovie(item.id);
+      }
+      
+      // Remove item from search results (like in MobileDiscoverPage)
+      setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
+      
+      // Show success snackbar
+      const title = item.title || item.name;
+      setSnackbar({ 
+        open: true, 
+        message: `"${title}" wurde erfolgreich hinzugefügt!` 
       });
 
-      if (response.ok) {
-        // Remove item from search results (like in MobileDiscoverPage)
-        setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
-        
-        // Show success snackbar
-        const title = item.title || item.name;
-        setSnackbar({ 
-          open: true, 
-          message: `"${title}" wurde erfolgreich hinzugefügt!` 
-        });
 
-        // Activity-Logging für Friend + Badge-System (wie Desktop)
-        if (item.media_type === 'tv' || endpoint.includes('/add')) {
-          await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id);
-        } else {
-          await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id);
-        }
-
-        // Hide snackbar after 3 seconds
-        setTimeout(() => {
-          setSnackbar({ open: false, message: '' });
-        }, 3000);
-      }
+      // Hide snackbar after 3 seconds
+      setTimeout(() => {
+        setSnackbar({ open: false, message: '' });
+      }, 3000);
     } catch (error) {
       console.error('Error adding item:', error);
       setDialog({ open: true, message: 'Fehler beim Hinzufügen des Inhalts.', type: 'error' });

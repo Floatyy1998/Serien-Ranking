@@ -3,7 +3,6 @@ import { DynamicThemeProvider } from '../contexts/ThemeContext';
 import { MobileLayout } from './components/MobileLayout';
 import { ScrollToTop } from './components/ScrollToTop';
 import { MobileActivityPage } from './pages/MobileActivityPage';
-import { MobileBadgesPage } from './pages/MobileBadgesPage';
 import { MobileDiscoverPage } from './pages/MobileDiscoverPage';
 import { MobileEpisodeManagementPage } from './pages/MobileEpisodeManagementPage';
 import { MobileFriendProfilePage } from './pages/MobileFriendProfilePage';
@@ -92,14 +91,6 @@ export const MobileApp = () => {
             element={
               <MobileLayout>
                 <MobileSearchPage />
-              </MobileLayout>
-            }
-          />
-          <Route
-            path="/badges"
-            element={
-              <MobileLayout hideNav>
-                <MobileBadgesPage />
               </MobileLayout>
             }
           />

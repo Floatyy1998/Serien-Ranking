@@ -1,5 +1,3 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import {
   createContext,
   useCallback,
@@ -7,10 +5,9 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { useAuth } from '../App';
-import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
+import { useAuth } from '../components/auth/AuthProvider';
+import apiService from '../services/api.service';
 import { Friend, FriendActivity, FriendRequest } from '../types/Friend';
-import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 
 interface OptimizedFriendsContextType {
   friends: Friend[];
@@ -22,7 +19,7 @@ interface OptimizedFriendsContextType {
   unreadActivitiesCount: number;
   markRequestsAsRead: () => void;
   markActivitiesAsRead: () => void;
-  sendFriendRequest: (username: string) => Promise<boolean>;
+  sendFriendRequest: (username: string, message?: string) => Promise<boolean>;
   acceptFriendRequest: (requestId: string) => Promise<void>;
   declineFriendRequest: (requestId: string) => Promise<void>;
   removeFriend: (friendId: string) => Promise<void>;
@@ -56,514 +53,288 @@ export const OptimizedFriendsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { user } = useAuth()!;
-
-  // 🚀 Enhanced Cache mit Offline-Support für Freunde
-  const {
-    data: friendsData,
-    loading: friendsLoading,
-    refetch: refetchFriends,
-  } = useEnhancedFirebaseCache<Record<string, Friend>>(
-    user ? `users/${user.uid}/friends` : '',
-    {
-      ttl: 2 * 60 * 1000, // 2 Minuten Cache
-      useRealtimeListener: true, // Realtime für sofortige Updates
-      enableOfflineSupport: true, // Offline-First Unterstützung
-      syncOnReconnect: true, // Auto-Sync bei Reconnect
-    }
-  );
-
+  const { user, isOffline } = useAuth();
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
-  const [friendActivities, setFriendActivities] = useState<FriendActivity[]>(
-    []
-  );
+  const [friendActivities, setFriendActivities] = useState<FriendActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastReadRequestsTime, setLastReadRequestsTime] = useState<number>(0);
-  const [lastReadActivitiesTime, setLastReadActivitiesTime] =
-    useState<number>(0);
+  const [lastReadActivitiesTime, setLastReadActivitiesTime] = useState<number>(0);
   const [unreadRequestsCount, setUnreadRequestsCount] = useState(0);
   const [unreadActivitiesCount, setUnreadActivitiesCount] = useState(0);
 
-  const friends: Friend[] = friendsData ? Object.values(friendsData) : [];
-
-  // LocalStorage-Keys für die letzten Lesezeiten
+  // LocalStorage-Keys for read times
   const getLastReadKey = (type: 'requests' | 'activities') =>
     `friends_last_read_${type}_${user?.uid}`;
 
-  // Lade gespeicherte Lesezeiten
+  // Load saved read times
   useEffect(() => {
     if (user) {
-      const savedRequestsTime = localStorage.getItem(
-        getLastReadKey('requests')
-      );
-      const savedActivitiesTime = localStorage.getItem(
-        getLastReadKey('activities')
-      );
+      const savedRequestsTime = localStorage.getItem(getLastReadKey('requests'));
+      const savedActivitiesTime = localStorage.getItem(getLastReadKey('activities'));
 
-      setLastReadRequestsTime(
-        savedRequestsTime ? parseInt(savedRequestsTime) : 0
-      );
-      setLastReadActivitiesTime(
-        savedActivitiesTime ? parseInt(savedActivitiesTime) : 0
-      );
+      setLastReadRequestsTime(savedRequestsTime ? parseInt(savedRequestsTime) : 0);
+      setLastReadActivitiesTime(savedActivitiesTime ? parseInt(savedActivitiesTime) : 0);
     }
   }, [user]);
 
-  // 🚀 Optimiert: Friend Requests nur alle 2 Minuten laden + Smart Caching
-  useEffect(() => {
+  // Fetch friends from API
+  const fetchFriends = useCallback(async () => {
     if (!user) {
-      setFriendRequests([]);
-      setSentRequests([]);
+      setFriends([]);
       setLoading(false);
       return;
     }
 
-    let requestsCache: {
-      timestamp: number;
-      data: { incoming: FriendRequest[]; outgoing: FriendRequest[] };
-    } | null = null;
-    const CACHE_DURATION = 60 * 1000; // 1 Minute Cache
-
-    const loadRequests = async (forceRefresh = false) => {
-      // Prüfe Cache zuerst (außer bei forceRefresh)
-      if (
-        !forceRefresh &&
-        requestsCache &&
-        Date.now() - requestsCache.timestamp < CACHE_DURATION
-      ) {
-        setFriendRequests(requestsCache.data.incoming);
-        setSentRequests(requestsCache.data.outgoing);
-        return;
-      }
-
-      try {
-        // Parallele Abfragen für bessere Performance
-        const [incomingSnapshot, outgoingSnapshot] = await Promise.all([
-          firebase
-            .database()
-            .ref('friendRequests')
-            .orderByChild('toUserId')
-            .equalTo(user.uid)
-            .once('value'),
-          firebase
-            .database()
-            .ref('friendRequests')
-            .orderByChild('fromUserId')
-            .equalTo(user.uid)
-            .once('value'),
-        ]);
-
-        const incomingData = incomingSnapshot.val();
-        const incomingRequests = incomingData
-          ? Object.keys(incomingData).map((key) => ({
-              id: key,
-              ...incomingData[key],
-            }))
-          : [];
-        const pendingIncoming = incomingRequests.filter(
-          (r) => r.status === 'pending'
-        );
-
-        const outgoingData = outgoingSnapshot.val();
-        const outgoingRequests = outgoingData
-          ? Object.keys(outgoingData).map((key) => ({
-              id: key,
-              ...outgoingData[key],
-            }))
-          : [];
-        const pendingOutgoing = outgoingRequests.filter(
-          (r) => r.status === 'pending'
-        );
-
-        // Cache aktualisieren
-        requestsCache = {
-          timestamp: Date.now(),
-          data: { incoming: pendingIncoming, outgoing: pendingOutgoing },
-        };
-
-        setFriendRequests(pendingIncoming);
-        setSentRequests(pendingOutgoing);
-
-        // Unread count
-        const unreadCount = pendingIncoming.filter(
-          (request) => request.sentAt > lastReadRequestsTime
-        ).length;
-        setUnreadRequestsCount(unreadCount);
-      } catch (error) {
-        // // console.warn('Failed to load friend requests:', error);
-      }
-    };
-
-    // Initial load
-    loadRequests();
-
-    // Real-time listeners for friend requests
-    const incomingRef = firebase
-      .database()
-      .ref('friendRequests')
-      .orderByChild('toUserId')
-      .equalTo(user.uid);
-    
-    const outgoingRef = firebase
-      .database()
-      .ref('friendRequests')
-      .orderByChild('fromUserId')
-      .equalTo(user.uid);
-
-    // Listen for changes to incoming requests
-    const incomingListener = incomingRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      const requests = data
-        ? Object.keys(data).map((key) => ({
-            id: key,
-            ...data[key],
-          }))
-        : [];
-      const pending = requests.filter((r) => r.status === 'pending');
-      setFriendRequests(pending);
+    try {
+      setLoading(true);
+      const friendsData = await apiService.getFriends();
+      setFriends(friendsData);
       
-      // Update unread count
-      const unreadCount = pending.filter(
-        (request) => request.sentAt > lastReadRequestsTime
-      ).length;
-      setUnreadRequestsCount(unreadCount);
-    });
+      // Cache for offline
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`friends_${user.uid}`, JSON.stringify(friendsData));
+      }
+    } catch (error) {
+      console.error('Failed to fetch friends:', error);
+      
+      // Load from cache if offline
+      if (isOffline && typeof window !== 'undefined') {
+        const cached = localStorage.getItem(`friends_${user.uid}`);
+        if (cached) {
+          try {
+            setFriends(JSON.parse(cached));
+          } catch (e) {
+            console.error('Failed to parse cached friends:', e);
+          }
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [user, isOffline]);
 
-    // Listen for changes to outgoing requests
-    const outgoingListener = outgoingRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      const requests = data
-        ? Object.keys(data).map((key) => ({
-            id: key,
-            ...data[key],
-          }))
-        : [];
-      const pending = requests.filter((r) => r.status === 'pending');
-      setSentRequests(pending);
-    });
-
-    return () => {
-      incomingRef.off('value', incomingListener);
-      outgoingRef.off('value', outgoingListener);
-    };
-  }, [user?.uid, lastReadRequestsTime]); // Stabile Dependencies
-
-  // 🚀 Optimiert: Friend Activities mit intelligenter Paginierung und Caching
-  const loadFriendActivities = useCallback(async () => {
-    if (!user || friends.length === 0) {
-      setFriendActivities([]);
-      setUnreadActivitiesCount(0);
+  // Fetch friend requests
+  const fetchRequests = useCallback(async () => {
+    if (!user) {
+      setFriendRequests([]);
+      setSentRequests([]);
       return;
     }
 
     try {
-      const allActivities: FriendActivity[] = [];
-
-      // Load from ALL friends, not just the first 8
-      const activeFriends = friends;
-
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; // Load last 7 days of activities
-
-      // Batch alle Requests parallel statt sequenziell
-      const activityPromises = activeFriends.map(async (friend) => {
-        try {
-          const activitiesRef = firebase
-            .database()
-            .ref(`activities/${friend.uid}`)
-            .orderByChild('timestamp')
-            .startAt(sevenDaysAgo)
-            .limitToLast(20); // Get last 20 activities per friend
-
-          const snapshot = await activitiesRef.once('value');
-          const data = snapshot.val();
-
-          if (data) {
-            return Object.keys(data).map((key) => ({
-              id: key,
-              userId: friend.uid,  // Add the friend's userId to each activity
-              userName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
-              ...data[key],
-            }));
+      const { incoming, outgoing } = await apiService.getFriendRequests();
+      
+      setFriendRequests(incoming);
+      setSentRequests(outgoing);
+      
+      // Calculate unread count
+      const unreadCount = incoming.filter(
+        req => new Date(req.sentAt).getTime() > lastReadRequestsTime
+      ).length;
+      setUnreadRequestsCount(unreadCount);
+      
+      // Cache for offline
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`friend_requests_${user.uid}`, JSON.stringify({ incoming, outgoing }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch friend requests:', error);
+      
+      // Load from cache if offline
+      if (isOffline && typeof window !== 'undefined') {
+        const cached = localStorage.getItem(`friend_requests_${user.uid}`);
+        if (cached) {
+          try {
+            const { incoming, outgoing } = JSON.parse(cached);
+            setFriendRequests(incoming);
+            setSentRequests(outgoing);
+          } catch (e) {
+            console.error('Failed to parse cached requests:', e);
           }
-          return [];
-        } catch (error) {
-          // // console.warn(
-          //   `Failed to load activities for friend ${friend.uid}:`,
-          //   error
-          // );
-          return [];
         }
-      });
+      }
+    }
+  }, [user, isOffline, lastReadRequestsTime]);
 
-      // Warte auf alle Requests parallel
-      const activityResults = await Promise.all(activityPromises);
+  // Fetch activities
+  const fetchActivities = useCallback(async () => {
+    if (!user) {
+      setFriendActivities([]);
+      return;
+    }
 
-      // Flatten und sammle alle Activities
-      activityResults.forEach((activities) => {
-        allActivities.push(...activities);
-      });
-
-      // Sortiere nach Zeitstempel und limitiere früher
-      allActivities.sort((a, b) => b.timestamp - a.timestamp);
-      const recentActivities = allActivities.slice(0, 100); // Show up to 100 activities
-      // console.log('Loaded activities from friends:', allActivities.length, 'total, showing', recentActivities.length);
-      setFriendActivities(recentActivities);
-
-      // Unread count
-      const unreadCount = recentActivities.filter(
-        (activity) => activity.timestamp > lastReadActivitiesTime
+    try {
+      const activities = await apiService.getActivities(50, 0);
+      setFriendActivities(activities);
+      
+      // Calculate unread count
+      const unreadCount = activities.filter(
+        activity => new Date(activity.timestamp).getTime() > lastReadActivitiesTime
       ).length;
       setUnreadActivitiesCount(unreadCount);
+      
+      // Cache for offline
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`friend_activities_${user.uid}`, JSON.stringify(activities));
+      }
     } catch (error) {
-      // // console.warn('Failed to load friend activities:', error);
+      console.error('Failed to fetch activities:', error);
+      
+      // Load from cache if offline
+      if (isOffline && typeof window !== 'undefined') {
+        const cached = localStorage.getItem(`friend_activities_${user.uid}`);
+        if (cached) {
+          try {
+            setFriendActivities(JSON.parse(cached));
+          } catch (e) {
+            console.error('Failed to parse cached activities:', e);
+          }
+        }
+      }
     }
-  }, [user, friends, lastReadActivitiesTime]);
+  }, [user, isOffline, lastReadActivitiesTime]);
 
-  // Smart loading: Nur initial und dann adaptive Intervalle
+  // Initial fetch
   useEffect(() => {
-    if (!user || friends.length === 0) return;
+    fetchFriends();
+    fetchRequests();
+    fetchActivities();
+  }, [fetchFriends, fetchRequests, fetchActivities]);
 
-    // Initial load
-    loadFriendActivities();
+  // Setup WebSocket listeners
+  useEffect(() => {
+    if (!user) return;
 
-    // Adaptive Intervalle basierend auf Aktivität
-    const getActivityInterval = () => {
-      if (unreadActivitiesCount > 0) return 2 * 60 * 1000; // 2 Minuten wenn ungelesen
-      if (friendActivities.length > 10) return 3 * 60 * 1000; // 3 Minuten wenn viel Aktivität
-      return 5 * 60 * 1000; // 5 Minuten standard
+    const socket = apiService.getSocket();
+    if (!socket) return;
+
+    const handleFriendRequest = (data: any) => {
+      fetchRequests();
+      setUnreadRequestsCount(prev => prev + 1);
     };
 
-    // Setup interval
-    const interval = setInterval(() => {
-      loadFriendActivities();
-    }, getActivityInterval());
+    const handleFriendRequestAccepted = (data: any) => {
+      fetchFriends();
+      fetchRequests();
+    };
+
+    const handleNewActivity = (data: any) => {
+      setFriendActivities(prev => [data, ...prev].slice(0, 50));
+      setUnreadActivitiesCount(prev => prev + 1);
+    };
+
+    const handleFriendOnline = (data: any) => {
+      setFriends(prev => prev.map(f => 
+        f.uid === data.userId ? { ...f, isOnline: true } : f
+      ));
+    };
+
+    const handleFriendOffline = (data: any) => {
+      setFriends(prev => prev.map(f => 
+        f.uid === data.userId ? { ...f, isOnline: false } : f
+      ));
+    };
+
+    socket.on('friendRequest', handleFriendRequest);
+    socket.on('friendRequestAccepted', handleFriendRequestAccepted);
+    socket.on('newActivity', handleNewActivity);
+    socket.on('friendOnline', handleFriendOnline);
+    socket.on('friendOffline', handleFriendOffline);
 
     return () => {
-      clearInterval(interval);
+      socket.off('friendRequest', handleFriendRequest);
+      socket.off('friendRequestAccepted', handleFriendRequestAccepted);
+      socket.off('newActivity', handleNewActivity);
+      socket.off('friendOnline', handleFriendOnline);
+      socket.off('friendOffline', handleFriendOffline);
     };
-  }, [user?.uid, friends.length]); // Stabile Dependencies
+  }, [user, fetchFriends, fetchRequests]);
 
-  useEffect(() => {
-    setLoading(friendsLoading);
-  }, [friendsLoading]);
-
-  // Funktionen zum Markieren als gelesen
   const markRequestsAsRead = useCallback(() => {
     const now = Date.now();
     setLastReadRequestsTime(now);
-    localStorage.setItem(getLastReadKey('requests'), now.toString());
     setUnreadRequestsCount(0);
-  }, [getLastReadKey]);
+    if (user) {
+      localStorage.setItem(getLastReadKey('requests'), now.toString());
+    }
+  }, [user]);
 
   const markActivitiesAsRead = useCallback(() => {
     const now = Date.now();
     setLastReadActivitiesTime(now);
-    localStorage.setItem(getLastReadKey('activities'), now.toString());
     setUnreadActivitiesCount(0);
-  }, [getLastReadKey]);
+    if (user) {
+      localStorage.setItem(getLastReadKey('activities'), now.toString());
+    }
+  }, [user]);
 
-  const sendFriendRequest = async (username: string): Promise<boolean> => {
-    if (!user) return false;
-
+  const sendFriendRequest = useCallback(async (username: string, message?: string) => {
     try {
-      const usersRef = firebase.database().ref('users');
-      const snapshot = await usersRef
-        .orderByChild('username')
-        .equalTo(username)
-        .once('value');
-      const userData = snapshot.val();
-
-      if (!userData) return false;
-
-      const targetUserId = Object.keys(userData)[0];
-      const targetUserData = userData[targetUserId];
-
-      // Aktueller User Daten laden für fromUsername/fromUserEmail
-      const currentUserRef = firebase.database().ref(`users/${user.uid}`);
-      const currentUserSnapshot = await currentUserRef.once('value');
-      const currentUserData = currentUserSnapshot.val();
-
-      const requestRef = firebase.database().ref('friendRequests').push();
-
-      await requestRef.set({
-        fromUserId: user.uid,
-        toUserId: targetUserId,
-        fromUsername:
-          currentUserData?.username || user.displayName || 'Unbekannt',
-        toUsername: targetUserData?.username || username,
-        fromUserEmail: currentUserData?.email || user.email || '',
-        toUserEmail: targetUserData?.email || '',
-        status: 'pending',
-        sentAt: firebase.database.ServerValue.TIMESTAMP,
-      });
-
+      await apiService.sendFriendRequest(username, message);
+      await fetchRequests();
       return true;
     } catch (error) {
-      throw error;
+      console.error('Failed to send friend request:', error);
+      return false;
     }
-  };
+  }, [fetchRequests]);
 
-  const acceptFriendRequest = async (requestId: string): Promise<void> => {
-    if (!user) return;
-
+  const acceptFriendRequest = useCallback(async (requestId: string) => {
     try {
-      const requestRef = firebase.database().ref(`friendRequests/${requestId}`);
-      const snapshot = await requestRef.once('value');
-      const request = snapshot.val();
-
-      if (!request) return;
-
-      const fromUserRef = firebase
-        .database()
-        .ref(`users/${request.fromUserId}`);
-      const fromUserSnapshot = await fromUserRef.once('value');
-      const fromUserData = fromUserSnapshot.val();
-
-      const currentUserRef = firebase.database().ref(`users/${user.uid}`);
-      const currentUserSnapshot = await currentUserRef.once('value');
-      const currentUserData = currentUserSnapshot.val();
-
-      // Freund zur eigenen Liste hinzufügen
-      await firebase
-        .database()
-        .ref(`users/${user.uid}/friends/${request.fromUserId}`)
-        .set({
-          uid: request.fromUserId,
-          email: fromUserData?.email,
-          username: fromUserData?.username || 'unknown',
-          displayName: fromUserData?.displayName || fromUserData?.username,
-          photoURL: fromUserData?.photoURL || null,
-          friendsSince: firebase.database.ServerValue.TIMESTAMP,
-        });
-
-      // Sich selbst zur Freundesliste hinzufügen
-      await firebase
-        .database()
-        .ref(`users/${request.fromUserId}/friends/${user.uid}`)
-        .set({
-          uid: user.uid,
-          email: user.email,
-          username: currentUserData?.username || 'unknown',
-          displayName:
-            currentUserData?.displayName ||
-            currentUserData?.username ||
-            user.displayName,
-          photoURL: currentUserData?.photoURL || user.photoURL || null,
-          friendsSince: firebase.database.ServerValue.TIMESTAMP,
-        });
-
-      await firebase.database().ref(`friendRequests/${requestId}`).update({
-        status: 'accepted',
-        respondedAt: firebase.database.ServerValue.TIMESTAMP,
-      });
-
-      // Remove the request from local state immediately
-      setFriendRequests(prev => prev.filter(req => req.id !== requestId));
-
-      // Badge-Check ausführen (Social badges für neue Freunde)
-      try {
-        const badgeSystem = getOfflineBadgeSystem(user.uid);
-        badgeSystem.invalidateCache(); // Cache leeren für frische Friend-Zählung
-        await badgeSystem.checkForNewBadges();
-      } catch (badgeError) {
-        // // console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
-      }
-
-      // Refresh friends data
-      refetchFriends();
+      await apiService.acceptFriendRequest(requestId);
+      await fetchFriends();
+      await fetchRequests();
     } catch (error) {
+      console.error('Failed to accept friend request:', error);
       throw error;
     }
-  };
+  }, [fetchFriends, fetchRequests]);
 
-  const declineFriendRequest = async (requestId: string): Promise<void> => {
-    if (!user) return;
-
+  const declineFriendRequest = useCallback(async (requestId: string) => {
     try {
-      await firebase.database().ref(`friendRequests/${requestId}`).update({
-        status: 'declined',
-        respondedAt: firebase.database.ServerValue.TIMESTAMP,
-      });
-
-      // Remove the request from local state immediately
-      setFriendRequests(prev => prev.filter(req => req.id !== requestId));
+      await apiService.declineFriendRequest(requestId);
+      await fetchRequests();
     } catch (error) {
+      console.error('Failed to decline friend request:', error);
       throw error;
     }
-  };
+  }, [fetchRequests]);
 
-  const removeFriend = async (friendId: string): Promise<void> => {
-    if (!user) return;
-
+  const removeFriend = useCallback(async (friendId: string) => {
     try {
-      await firebase
-        .database()
-        .ref(`users/${user.uid}/friends/${friendId}`)
-        .remove();
-
-      await firebase
-        .database()
-        .ref(`users/${friendId}/friends/${user.uid}`)
-        .remove();
-
-      // Refresh friends data
-      refetchFriends();
+      await apiService.removeFriend(friendId);
+      await fetchFriends();
     } catch (error) {
+      console.error('Failed to remove friend:', error);
       throw error;
     }
-  };
+  }, [fetchFriends]);
 
-  const updateUserActivity = async (
+  const updateUserActivity = useCallback(async (
     activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
-  ): Promise<void> => {
+  ) => {
     if (!user) return;
 
     try {
-      const activitiesRef = firebase.database().ref(`activities/${user.uid}`);
-
-      // Add new activity
-      const newActivityRef = activitiesRef.push();
-      await newActivityRef.set({
-        ...activity,
-        userId: user.uid,
-        userName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-      });
-
-      // Limit to max 20 activities
-      const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
-      const activities = snapshot.val();
+      await apiService.createActivity(
+        activity.type,
+        activity.data,
+        'friends'
+      );
       
-      if (activities) {
-        const activityKeys = Object.keys(activities);
-        if (activityKeys.length > 20) {
-          // Sort by timestamp and remove oldest entries
-          const sortedKeys = activityKeys.sort((a, b) => {
-            const timestampA = activities[a].timestamp || 0;
-            const timestampB = activities[b].timestamp || 0;
-            return timestampA - timestampB;
-          });
-          
-          // Remove excess activities (keep only newest 20)
-          const toRemove = sortedKeys.slice(0, activityKeys.length - 20);
-          const updates: { [key: string]: null } = {};
-          toRemove.forEach(key => {
-            updates[key] = null;
-          });
-          
-          await activitiesRef.update(updates);
-        }
-      }
+      // Emit via WebSocket for real-time updates
+      const socket = apiService.getSocket();
+      socket?.emit('activity', {
+        type: activity.type,
+        data: activity.data,
+        visibility: 'friends'
+      });
     } catch (error) {
-      // // console.warn('Failed to update user activity:', error);
+      console.error('Failed to update activity:', error);
     }
-  };
-
-  const refreshFriends = useCallback(() => {
-    refetchFriends();
-    loadFriendActivities();
-  }, [refetchFriends, loadFriendActivities]);
+  }, [user]);
 
   return (
     <OptimizedFriendsContext.Provider
@@ -582,7 +353,7 @@ export const OptimizedFriendsProvider = ({
         declineFriendRequest,
         removeFriend,
         updateUserActivity,
-        refreshFriends,
+        refreshFriends: fetchFriends,
       }}
     >
       {children}
@@ -590,4 +361,10 @@ export const OptimizedFriendsProvider = ({
   );
 };
 
-export const useOptimizedFriends = () => useContext(OptimizedFriendsContext);
+export const useOptimizedFriends = () => {
+  const context = useContext(OptimizedFriendsContext);
+  if (!context) {
+    throw new Error('useOptimizedFriends must be used within OptimizedFriendsProvider');
+  }
+  return context;
+};

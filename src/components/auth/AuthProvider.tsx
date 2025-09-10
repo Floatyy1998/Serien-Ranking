@@ -1,12 +1,34 @@
-import firebase from 'firebase/compat/app';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { offlineFirebaseService } from '../../services/offlineFirebaseService';
+import apiService from '../../services/api.service';
+
+interface User {
+  uid: string;
+  email: string;
+  username: string;
+  displayName: string;
+  profileImage?: string;
+  photoURL?: string; // Firebase/imported field name
+  theme?: {
+    primaryColor: string;
+    mode: 'light' | 'dark' | 'auto';
+  };
+  stats?: {
+    totalSeries: number;
+    totalMovies: number;
+    totalWatchTime: number;
+    episodesWatched: number;
+  };
+}
 
 interface AuthContextType {
-  user: firebase.User | null;
-  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   authStateResolved: boolean;
   isOffline: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, username: string, displayName?: string) => Promise<void>;
+  logout: () => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -20,10 +42,9 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<firebase.User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [authStateResolved, setAuthStateResolved] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const [firebaseInitialized, setFirebaseInitialized] = useState(false);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -39,108 +60,114 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Initialize Firebase
+  // Check auth state on mount
   useEffect(() => {
-    import('../../firebase/initFirebase')
-      .then((module) => {
-        try {
-          module.initFirebase();
-          setFirebaseInitialized(true);
-          window.setAppReady?.('firebase', true);
-        } catch (error) {
-          console.error('Firebase initialization error:', error);
-          setAuthStateResolved(true);
-          window.setAppReady?.('firebase', true);
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        if (token) {
+          const userData = await apiService.getCurrentUser();
+          setUser(userData);
+          apiService.connectSocket();
         }
-      })
-      .catch((error) => {
-        console.error('Failed to load Firebase module:', error);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        localStorage.removeItem('auth_token');
+      } finally {
         setAuthStateResolved(true);
-        window.setAppReady?.('firebase', true);
-      });
+        window.setAppReady?.('auth', true);
+        window.setAppReady?.('firebase', true); // For compatibility
+        window.setAppReady?.('emailVerification', true);
+      }
+    };
+
+    checkAuth();
   }, []);
 
-  // Handle auth state changes
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await apiService.login(email, password);
+      setUser(response.user);
+      
+      // Update last login in backend is handled by the API
+      window.location.href = '/';
+    } catch (error: any) {
+      console.error('Login error:', error);
+      throw new Error(error.response?.data?.error || 'Login failed');
+    }
+  };
+
+  const register = async (email: string, password: string, username: string, displayName?: string) => {
+    try {
+      const response = await apiService.register(email, password, username, displayName);
+      setUser(response.user);
+      
+      window.location.href = '/';
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      throw new Error(error.response?.data?.error || 'Registration failed');
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await apiService.logout();
+      setUser(null);
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails on backend, clear local state
+      localStorage.removeItem('auth_token');
+      setUser(null);
+      window.location.href = '/login';
+    }
+  };
+
+  const updateProfile = async (updates: Partial<User>) => {
+    try {
+      const updatedUser = await apiService.updateProfile(updates);
+      setUser(updatedUser);
+    } catch (error: any) {
+      console.error('Profile update error:', error);
+      throw new Error(error.response?.data?.error || 'Profile update failed');
+    }
+  };
+
+  // Handle offline mode with cached data
   useEffect(() => {
-    if (!firebaseInitialized) return;
+    if (isOffline && user) {
+      // Store user data in localStorage for offline access
+      localStorage.setItem('cached_user', JSON.stringify(user));
+    }
+  }, [isOffline, user]);
 
-    let unsubscribe: firebase.Unsubscribe | undefined;
-
-    const setupAuthListener = async () => {
-      if (isOffline) {
+  // Load cached user data when offline
+  useEffect(() => {
+    if (isOffline && !user) {
+      const cachedUser = localStorage.getItem('cached_user');
+      if (cachedUser) {
         try {
-          const cachedUser = await offlineFirebaseService.getCachedUser();
-          if (cachedUser) {
-            setUser(cachedUser as firebase.User);
-          }
+          const userData = JSON.parse(cachedUser);
+          setUser(userData);
         } catch (error) {
-          console.error('Failed to get cached user:', error);
+          console.error('Failed to parse cached user:', error);
         }
-        setAuthStateResolved(true);
-        return;
       }
-
-      try {
-        unsubscribe = firebase.auth().onAuthStateChanged(
-          async (firebaseUser) => {
-            if (firebaseUser) {
-              try {
-                await offlineFirebaseService.cacheUser(firebaseUser);
-
-                // Set up user profile if needed
-                const userRef = firebase.database().ref(`users/${firebaseUser.uid}`);
-                const snapshot = await userRef.once('value');
-
-                if (!snapshot.exists()) {
-                  const userData = {
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0],
-                    profilePicture: firebaseUser.photoURL || null,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP,
-                    lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                  };
-                  await userRef.set(userData);
-                } else {
-                  await userRef.update({
-                    lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                  });
-                }
-              } catch (error) {
-                console.error('Error setting up user profile:', error);
-              }
-            } else {
-              await offlineFirebaseService.clearCachedUser();
-            }
-
-            setUser(firebaseUser);
-            setAuthStateResolved(true);
-            window.setAppReady?.('auth', true);
-            window.setAppReady?.('emailVerification', true);
-          },
-          (error) => {
-            console.error('Auth state change error:', error);
-            setAuthStateResolved(true);
-            window.setAppReady?.('auth', true);
-            window.setAppReady?.('emailVerification', true);
-          }
-        );
-      } catch (error) {
-        console.error('Failed to set up auth listener:', error);
-        setAuthStateResolved(true);
-      }
-    };
-
-    setupAuthListener();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [firebaseInitialized, isOffline]);
+    }
+  }, [isOffline]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, authStateResolved, isOffline }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      setUser, 
+      authStateResolved, 
+      isOffline,
+      login,
+      register,
+      logout,
+      updateProfile
+    }}>
       {children}
     </AuthContext.Provider>
   );

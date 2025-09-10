@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '../App';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import apiService from '../services/api.service';
 
 interface Notification {
   id: string;
@@ -46,28 +45,45 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       return;
     }
 
-    // Load notifications from Firebase
-    const notificationsRef = firebase.database().ref(`users/${user.uid}/notifications`);
-    
-    const handleData = (snapshot: firebase.database.DataSnapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const notificationsList = Object.entries(data).map(([id, notification]: [string, any]) => ({
-          id,
-          ...notification,
-        }));
+    // Load notifications from backend
+    const loadNotifications = async () => {
+      try {
+        const notificationsList = await apiService.getNotifications();
         // Sort by timestamp, newest first
-        notificationsList.sort((a, b) => b.timestamp - a.timestamp);
+        notificationsList.sort((a: any, b: any) => b.timestamp - a.timestamp);
         setNotifications(notificationsList);
-      } else {
+      } catch (error) {
+        console.error('Error loading notifications:', error);
         setNotifications([]);
       }
     };
 
-    notificationsRef.on('value', handleData);
+    loadNotifications();
+
+    // Setup WebSocket listener for real-time notifications
+    const socket = apiService.getSocket();
+    if (socket) {
+      socket.on('notification', (notification: Notification) => {
+        setNotifications(prev => [notification, ...prev]);
+      });
+
+      socket.on('notification:read', (notificationId: string) => {
+        setNotifications(prev => 
+          prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+        );
+      });
+
+      socket.on('notifications:cleared', () => {
+        setNotifications([]);
+      });
+    }
 
     return () => {
-      notificationsRef.off('value', handleData);
+      if (socket) {
+        socket.off('notification');
+        socket.off('notification:read');
+        socket.off('notifications:cleared');
+      }
     };
   }, [user]);
 
@@ -76,62 +92,48 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const addNotification = async (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     if (!user) return;
 
-    const newNotification = {
-      ...notification,
-      timestamp: Date.now(),
-      read: false,
-    };
-
-    const notificationsRef = firebase.database().ref(`users/${user.uid}/notifications`);
-    await notificationsRef.push(newNotification);
-
-    // Also add to local state immediately
-    const id = `temp_${Date.now()}`;
-    setNotifications(prev => [{
-      id,
-      ...newNotification,
-    }, ...prev]);
+    try {
+      const newNotification = await apiService.createNotification(notification);
+      // Also add to local state immediately
+      setNotifications(prev => [newNotification, ...prev]);
+    } catch (error) {
+      console.error('Error adding notification:', error);
+    }
   };
 
   const markAsRead = async (notificationId: string) => {
     if (!user) return;
 
-    await firebase.database()
-      .ref(`users/${user.uid}/notifications/${notificationId}/read`)
-      .set(true);
-
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-    );
+    try {
+      await apiService.markNotificationAsRead(notificationId);
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
   const markAllAsRead = async () => {
     if (!user) return;
 
-    const updates: any = {};
-    notifications.forEach(n => {
-      if (!n.read) {
-        updates[`${n.id}/read`] = true;
-      }
-    });
-
-    if (Object.keys(updates).length > 0) {
-      await firebase.database()
-        .ref(`users/${user.uid}/notifications`)
-        .update(updates);
-
+    try {
+      await apiService.markAllNotificationsAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
     }
   };
 
   const clearNotifications = async () => {
     if (!user) return;
 
-    await firebase.database()
-      .ref(`users/${user.uid}/notifications`)
-      .remove();
-
-    setNotifications([]);
+    try {
+      await apiService.clearNotifications();
+      setNotifications([]);
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
   };
 
   const value: NotificationContextType = {

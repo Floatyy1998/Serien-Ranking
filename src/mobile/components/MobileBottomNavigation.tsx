@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useBadges } from '../../features/badges/BadgeProvider';
 import './MobileBottomNavigation.css';
 
 interface NavItem {
@@ -19,7 +18,6 @@ export const MobileBottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
-  const { unreadBadgesCount } = useBadges();
   // const { totalUnreadActivities } = useNotifications();
   // const { unreadCount: generalNotificationCount } = useGeneralNotifications();
 
@@ -54,8 +52,8 @@ export const MobileBottomNavigation = () => {
       icon: <Person />,
       label: 'Mehr',
       badge:
-        unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0) > 0
-          ? unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0)
+        unreadActivitiesCount + unreadRequestsCount > 0
+          ? unreadActivitiesCount + unreadRequestsCount
           : undefined,
     },
   ];

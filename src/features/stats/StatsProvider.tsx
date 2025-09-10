@@ -1,4 +1,3 @@
-import 'firebase/compat/database';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { StatsData } from '../../types/StatsData';

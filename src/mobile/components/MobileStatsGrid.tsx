@@ -148,13 +148,32 @@ export const MobileStatsGrid = () => {
     // Count watched episodes (only aired ones)
     let watchedEpisodes = 0;
     let totalAiredEpisodes = 0;
+    
+    // Debug logging
+    console.log('Calculating stats from seriesList:', seriesList.length, 'series');
 
     seriesList.forEach((series) => {
       // Allow nmr: 0 as valid (only skip if undefined/null)
-      if (!series || series.nmr === undefined || series.nmr === null) return;
+      if (!series) return;
+      
+      // Debug: Check why series might be skipped
+      if (series.id === 1769) {
+        console.log('Johnny Test nmr check:', {
+          id: series.id,
+          title: series.title,
+          nmr: series.nmr,
+          hasNmr: series.nmr !== undefined && series.nmr !== null,
+          seasonsCount: series.seasons?.length,
+          firstSeasonEpisodes: series.seasons?.[0]?.episodes?.length
+        });
+      }
+      
+      // Skip series without nmr only if we're filtering for rated series
+      // But for episode counting, we should count ALL series
+      // if (!series || series.nmr === undefined || series.nmr === null) return;
 
-      series.seasons?.forEach((season) => {
-        season.episodes?.forEach((ep) => {
+      series.seasons?.forEach((season, sIndex) => {
+        season.episodes?.forEach((ep, eIndex) => {
           // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
           const isWatched = !!(
             ep.firstWatchedAt ||
@@ -163,6 +182,16 @@ export const MobileStatsGrid = () => {
             (ep.watched as any) === 'true' ||
             (ep.watchCount && ep.watchCount > 0)
           );
+          
+          // Debug first few episodes
+          if (series.id === 1769 && sIndex === 0 && eIndex < 10) {
+            console.log(`Episode S${sIndex+1}E${eIndex+1}:`, {
+              watched: ep.watched,
+              watchCount: ep.watchCount,
+              firstWatchedAt: ep.firstWatchedAt,
+              isWatched
+            });
+          }
 
           // Also count episodes without air_date (they should be considered aired)
           if (ep.air_date) {
@@ -183,6 +212,8 @@ export const MobileStatsGrid = () => {
         });
       });
     });
+    
+    console.log('Stats calculated:', { watchedEpisodes, totalAiredEpisodes });
 
     const totalEpisodes = totalAiredEpisodes;
 

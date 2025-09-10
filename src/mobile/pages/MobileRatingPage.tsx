@@ -11,18 +11,16 @@ import {
   Star,
   Tv,
 } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Drama, Heart, Smile, Sparkles, TrendingUp, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../components/auth/AuthProvider';
+import apiService from '../../services/api.service';
 import { genreMenuItems, genreMenuItemsForMovies } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { Movie as MovieType } from '../../types/Movie';
 import { Series } from '../../types/Series';
@@ -171,23 +169,13 @@ export const MobileRatingPage = () => {
 
       // Only save if there are ratings to save
       if (Object.keys(ratingsToSave).length > 0) {
-        // Update rating in Firebase using correct path structure
-        const ratingRef = firebase
-          .database()
-          .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
-
-        await ratingRef.set(ratingsToSave);
-
-        // Activity-Logging für Friend + Badge-System (wie Desktop)
-        if (user?.uid && overallRating > 0) {
-          await logRatingAdded(
-            user.uid,
-            item.title || 'Unbekannter Titel',
-            type === 'series' ? 'series' : 'movie',
-            overallRating,
-            item.id
-          );
+        // Update rating via API
+        if (type === 'series') {
+          await apiService.updateSeries(item.id.toString(), { rating: ratingsToSave });
+        } else {
+          await apiService.updateMovie(item.id.toString(), { rating: ratingsToSave });
         }
+
         
         // Show success snackbar
         setSnackbar({ 
@@ -222,11 +210,11 @@ export const MobileRatingPage = () => {
 
     try {
       // Delete only the rating, not the entire item
-      const ratingRef = firebase
-        .database()
-        .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
-
-      await ratingRef.remove();
+      if (type === 'series') {
+        await apiService.updateSeries(item.id.toString(), { rating: {} });
+      } else {
+        await apiService.updateMovie(item.id.toString(), { rating: {} });
+      }
       
       // Show success snackbar
       setSnackbar({ 

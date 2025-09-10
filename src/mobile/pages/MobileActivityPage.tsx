@@ -1,9 +1,8 @@
 import { Cancel, CheckCircle, Close, Groups, Person, PersonAdd } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../components/auth/AuthProvider';
+import apiService from '../../services/api.service';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
@@ -61,7 +60,7 @@ export const MobileActivityPage = () => {
     }
   }, [activeTab, unreadActivitiesCount, unreadRequestsCount]);
 
-  // Load friend profiles from Firebase Database (like desktop version)
+  // Load friend profiles from API
   useEffect(() => {
     if (friends.length === 0) {
       setFriendProfiles({});
@@ -75,10 +74,9 @@ export const MobileActivityPage = () => {
       await Promise.all(
         friends.map(async (friend) => {
           try {
-            const userRef = firebase.database().ref(`users/${friend.uid}`);
-            const snapshot = await userRef.once('value');
-            if (snapshot.exists()) {
-              newProfiles[friend.uid] = snapshot.val();
+            const profile = await apiService.getPublicProfile(friend.username);
+            if (profile) {
+              newProfiles[friend.uid] = profile;
             }
           } catch (error) {}
         })
@@ -90,17 +88,16 @@ export const MobileActivityPage = () => {
     loadFriendProfiles();
   }, [friends]);
 
-  // Load request profiles from Firebase Database (like desktop version)
+  // Load request profiles from API
   useEffect(() => {
     const loadRequestProfiles = async () => {
       const profiles: Record<string, any> = {};
 
       for (const request of friendRequests) {
         try {
-          const userRef = firebase.database().ref(`users/${request.fromUserId}`);
-          const snapshot = await userRef.once('value');
-          if (snapshot.exists()) {
-            profiles[request.fromUserId] = snapshot.val();
+          const profile = await apiService.getPublicProfile(request.fromUsername || request.fromUserId);
+          if (profile) {
+            profiles[request.fromUserId] = profile;
           }
         } catch (error) {}
       }
@@ -133,50 +130,30 @@ export const MobileActivityPage = () => {
     try {
       setSearching(true);
 
-      const usersRef = firebase.database().ref('users');
-      const snapshot = await usersRef.once('value');
-      const usersData = snapshot.val();
+      const searchResultsData = await apiService.searchUsers(friendUsername);
 
-      if (!usersData) {
+      if (!searchResultsData || searchResultsData.length === 0) {
         setSearchResults([]);
         return;
       }
 
-      const results: UserSearchResult[] = [];
-
       const currentFriendIds = friends.map((f) => f.uid);
       const sentRequestIds = sentRequests.map((r) => r.toUserId);
 
-      Object.keys(usersData).forEach((uid) => {
-        const userData = usersData[uid];
-
-        if (uid === user.uid) return;
-        if (!userData.username) return;
-
-        const searchInUsername = userData.username
-          .toLowerCase()
-          .includes(friendUsername.toLowerCase());
-        const searchInDisplayName = userData.displayName
-          ?.toLowerCase()
-          .includes(friendUsername.toLowerCase());
-
-        if (searchInUsername || searchInDisplayName) {
-          const isAlreadyFriend = currentFriendIds.includes(uid);
-          const hasPendingRequest = sentRequestIds.includes(uid);
-
-          results.push({
-            uid,
-            username: userData.username,
-            displayName: userData.displayName,
-            photoURL: userData.photoURL,
-            isAlreadyFriend,
-            hasPendingRequest,
-          });
-        }
-      });
+      const results: UserSearchResult[] = searchResultsData
+        .filter((userData: any) => userData.uid !== user.uid)
+        .map((userData: any) => ({
+          uid: userData.uid || userData._id,
+          username: userData.username,
+          displayName: userData.displayName,
+          photoURL: userData.photoURL,
+          isAlreadyFriend: currentFriendIds.includes(userData.uid || userData._id),
+          hasPendingRequest: sentRequestIds.includes(userData.uid || userData._id),
+        }));
 
       setSearchResults(results.slice(0, 10)); // Limit to 10 results
     } catch (error) {
+      console.error('Search users failed:', error);
     } finally {
       setSearching(false);
     }
@@ -184,35 +161,41 @@ export const MobileActivityPage = () => {
 
   // Get item details for activity
   const getItemDetails = (activity: FriendActivity) => {
-    const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
+    const data = activity.data || {};
+    const seriesId = data.seriesId;
+    const movieId = data.movieId;
+    const poster = data.poster;
+    const seriesTitle = data.seriesTitle;
+    const movieTitle = data.movieTitle;
 
     if (
       activity.type === 'series_added' ||
-      activity.type === 'series_rated' ||
-      (activity as any).itemType === 'series'
+      activity.type === 'series_completed' ||
+      activity.type === 'episode_watched' ||
+      (activity.type === 'rating_updated' && seriesId)
     ) {
-      const series = seriesList.find((s) => s.id === tmdbId || s.id === Number(tmdbId));
+      const series = seriesList.find((s) => s.id === seriesId || s.id === Number(seriesId));
       // If not found, create a minimal object with the poster path
       if (!series) {
         return {
-          id: tmdbId,
-          title: (activity as any).itemTitle || 'Unbekannte Serie',
-          poster: (activity as any).posterPath || (activity as any).poster,
+          id: seriesId,
+          title: seriesTitle || 'Unbekannte Serie',
+          poster: poster,
         };
       }
       return series;
     } else if (
       activity.type === 'movie_added' ||
-      activity.type === 'movie_rated' ||
-      (activity as any).itemType === 'movie'
+      activity.type === 'movie_watched' ||
+      (activity.type === 'rating_updated' && movieId)
     ) {
-      const movie = movieList.find((m) => m.id === tmdbId || m.id === Number(tmdbId));
+      const movie = movieList.find((m) => m.id === movieId || m.id === Number(movieId));
       // If not found, create a minimal object with the poster path
       if (!movie) {
         return {
-          id: tmdbId,
-          title: (activity as any).itemTitle || 'Unbekannter Film',
-          poster: (activity as any).posterPath || (activity as any).poster,
+          id: movieId,
+          title: movieTitle || 'Unbekannter Film',
+          poster: poster,
         };
       }
       return movie;
@@ -231,23 +214,28 @@ export const MobileActivityPage = () => {
 
   // Format activity message
   const formatActivityMessage = (activity: FriendActivity): string => {
-    const rating = (activity as any).rating;
-    const itemTitle = (activity as any).itemTitle;
+    const data = activity.data || {};
+    const rating = data.rating;
+    const seriesTitle = data.seriesTitle;
+    const movieTitle = data.movieTitle;
+    const episodeTitle = data.episodeTitle;
+    const friendUsername = data.friendUsername;
 
     if (activity.type === 'series_added') {
-      return `hat "${itemTitle}" hinzugefügt`;
-    } else if (
-      activity.type === 'series_rated' ||
-      ((activity as any).itemType === 'series' && rating)
-    ) {
-      return `hat "${itemTitle}" bewertet (${rating}/10)`;
+      return `hat "${seriesTitle || 'Unbekannte Serie'}" hinzugefügt`;
+    } else if (activity.type === 'series_completed') {
+      return `hat "${seriesTitle || 'Unbekannte Serie'}" abgeschlossen`;
+    } else if (activity.type === 'episode_watched') {
+      return `hat "${episodeTitle || 'Episode'}" von "${seriesTitle || 'Serie'}" geschaut`;
     } else if (activity.type === 'movie_added') {
-      return `hat "${itemTitle}" hinzugefügt`;
-    } else if (
-      activity.type === 'movie_rated' ||
-      ((activity as any).itemType === 'movie' && rating)
-    ) {
-      return `hat "${itemTitle}" bewertet (${rating}/10)`;
+      return `hat "${movieTitle || 'Unbekannter Film'}" hinzugefügt`;
+    } else if (activity.type === 'movie_watched') {
+      return `hat "${movieTitle || 'Unbekannter Film'}" geschaut`;
+    } else if (activity.type === 'rating_updated') {
+      const title = seriesTitle || movieTitle || 'Unbekannt';
+      return `hat "${title}" bewertet (${rating}/10)`;
+    } else if (activity.type === 'friend_added') {
+      return `ist jetzt mit ${friendUsername || 'jemandem'} befreundet`;
     }
     return 'hat etwas gemacht';
   };
@@ -580,13 +568,16 @@ export const MobileActivityPage = () => {
               sortedActivities.map((activity) => {
                 const item = getItemDetails(activity);
                 const isNew = activity.timestamp > Date.now() - 24 * 60 * 60 * 1000;
-                // userName is now added when loading activities
-                const friendName = activity.userName || 'Unbekannt';
-                // Find the friend object and get their updated profile
-                const friendObj = friends.find((f) => f.uid === activity.userId);
-                const activityProfile = friendObj
-                  ? friendProfiles[friendObj.uid] || friendObj
-                  : null;
+                
+                // Use user data from activity first (comes from backend)
+                const activityUser = (activity as any).user;
+                const friendName = activityUser?.displayName || activityUser?.username || activity.userName || 'Unbekannt';
+                const profileImage = activityUser?.profileImage || activityUser?.photoURL || 
+                  (activityUser?.username ? `https://ui-avatars.com/api/?name=${activityUser.username}&background=random` : null);
+                
+                // Fallback to friend object if no user data in activity
+                const friendObj = !activityUser ? friends.find((f) => f.uid === activity.userId) : null;
+                const activityProfile = activityUser || (friendObj ? friendProfiles[friendObj.uid] || friendObj : null);
 
                 return (
                   <div
@@ -604,18 +595,15 @@ export const MobileActivityPage = () => {
                       transition: 'all 0.2s ease',
                     }}
                     onClick={() => {
-                      const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
-                      const itemType = (activity as any).itemType;
+                      const data = activity.data || {};
+                      const seriesId = data.seriesId;
+                      const movieId = data.movieId;
 
-                      // Determine correct type based on activity type
-                      const isMovie =
-                        itemType === 'movie' ||
-                        activity.type === 'movie_added' ||
-                        activity.type === 'movie_rated' ||
-                        activity.type?.includes('movie');
-
-                      if (tmdbId) {
-                        navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
+                      // Navigate based on available IDs
+                      if (movieId) {
+                        navigate(`/movie/${movieId}`);
+                      } else if (seriesId) {
+                        navigate(`/series/${seriesId}`);
                       }
                     }}
                   >
@@ -625,22 +613,30 @@ export const MobileActivityPage = () => {
                         width: '40px',
                         height: '40px',
                         borderRadius: '50%',
-                        ...(activityProfile?.photoURL
-                          ? {
-                              backgroundImage: `url("${activityProfile.photoURL}")`,
-                              backgroundPosition: 'center',
-                              backgroundSize: 'cover',
-                            }
-                          : {
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            }),
+                        overflow: 'hidden',
+                        flexShrink: 0,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        flexShrink: 0,
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       }}
                     >
-                      {!activityProfile?.photoURL && <Person style={{ fontSize: '20px' }} />}
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt={friendName}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <Person style={{ fontSize: '20px', color: 'white' }} />
+                      )}
                     </div>
 
                     {/* Activity Content */}

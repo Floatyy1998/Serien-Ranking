@@ -1,10 +1,9 @@
 import { Check, DateRange, ExpandLess, ExpandMore, Refresh, Visibility } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../components/auth/AuthProvider';
+import apiService from '../../services/api.service';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
@@ -15,7 +14,7 @@ import './MobileEpisodeManagementPage.css';
 export const MobileEpisodeManagementPage = () => {
   const { id } = useParams();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { seriesList, updateEpisode, refetchSeries } = useSeriesList();
   const { currentTheme } = useTheme();
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -28,7 +27,7 @@ export const MobileEpisodeManagementPage = () => {
     episode: any;
   } | null>(null);
 
-  const series = seriesList.find((s: Series) => s.id === Number(id));
+  const series = seriesList.find((s: Series) => s.id === Number(id) || s._id === id || s.tmdbId === Number(id));
 
   useEffect(() => {
     if (series) {
@@ -131,68 +130,32 @@ export const MobileEpisodeManagementPage = () => {
         newWatchCount = 1;
       }
 
-      const updatedEpisodes = season.episodes!.map((e, idx) => {
-        if (idx === episodeIndex) {
-          // Ensure data consistency: watched episodes must have watchCount >= 1
-          if (newWatched && newWatchCount < 1) {
-            newWatchCount = 1;
-          }
-          if (!newWatched) {
-            newWatchCount = 0;
-          }
 
-          if (newWatched) {
-            return {
-              ...e,
-              watched: true,
-              watchCount: newWatchCount,
-              firstWatchedAt: e.firstWatchedAt || new Date().toISOString(),
-            };
-          } else {
-            const { watchCount, firstWatchedAt, ...episodeWithoutFields } = e;
-            return {
-              ...episodeWithoutFields,
-              watched: false,
-            };
-          }
-        }
-        return e;
-      });
-
-      const updatedSeasons = series.seasons.map((s, idx) => {
-        if (idx === seasonIndex) {
-          return { ...s, episodes: updatedEpisodes };
-        }
-        return s;
-      });
-
-      // Use Firebase batch update for better performance
-      // Update seasons in Firebase using direct Firebase calls
-      const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
-      await seasonsRef.set(updatedSeasons);
-
-      // Badge system logging for episode changes
-      if (!episode.watched && newWatched) {
-        // Episode wird als gesehen markiert
-        const { updateEpisodeCounters } = await import(
-          '../../features/badges/minimalActivityLogger'
-        );
-        await updateEpisodeCounters(
-          user.uid,
-          false, // nicht rewatch
-          episode.air_date
-        );
-      } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
-        // Rewatch case
-        const { updateEpisodeCounters } = await import(
-          '../../features/badges/minimalActivityLogger'
-        );
-        await updateEpisodeCounters(
-          user.uid,
-          true, // rewatch
-          episode.air_date
-        );
+      // Update episode using API
+      // Use seasonNumber if available, fallback to season_number
+      const seasonNum = season.season_number ?? season.seasonNumber;
+      const episodeNum = episode.episode_number;
+      
+      if (newWatched) {
+        await updateEpisode(series.id.toString(), {
+          seasonNumber: seasonNum,
+          episodeNumber: episodeNum,
+          watched: true,
+          watchCount: newWatchCount,
+          firstWatchedAt: episode.firstWatchedAt || new Date().toISOString()
+        });
+      } else {
+        await updateEpisode(series.id.toString(), {
+          seasonNumber: seasonNum,
+          episodeNumber: episodeNum,
+          watched: false,
+          watchCount: 0
+        });
       }
+      
+      // Force refresh to ensure UI updates
+      setTimeout(() => refetchSeries(), 100);
+
     } catch (error) {}
   };
 
@@ -203,62 +166,22 @@ export const MobileEpisodeManagementPage = () => {
     const allWatched = season.episodes?.every((ep) => ep.watched);
 
     try {
-      const updatedEpisodes = season.episodes?.map((ep) => {
-        if (!allWatched) {
-          // Mark all as watched
-          return {
-            ...ep,
-            watched: true,
-            watchCount: 1,
-            firstWatchedAt: ep.firstWatchedAt || new Date().toISOString(),
-          };
-        } else {
-          // Mark all as unwatched
-          const { watchCount, firstWatchedAt, ...episodeWithoutFields } = ep;
-          return {
-            ...episodeWithoutFields,
-            watched: false,
-          };
-        }
-      });
-
-      const updatedSeasons = series.seasons.map((s, idx) => {
-        if (idx === seasonIndex) {
-          return { ...s, episodes: updatedEpisodes };
-        }
-        return s;
-      });
-
-      // Use Firebase batch update for better performance
-      // Update seasons in Firebase using direct Firebase calls
-      const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
-      await seasonsRef.set(updatedSeasons);
-
-      // Badge system logging for season changes
-      if (!allWatched && updatedEpisodes) {
-        const previouslyUnwatched = season.episodes?.filter((ep) => !ep.watched) || [];
-        if (previouslyUnwatched.length === season.episodes?.length) {
-          // Whole season completed
-          const { logSeasonWatchedClean } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
-          await logSeasonWatchedClean(user.uid, season.episodes?.length || 0);
-        } else {
-          // Partial season completion - log individual episodes
-          const { updateEpisodeCounters } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
-
-          for (const episode of previouslyUnwatched) {
-            await updateEpisodeCounters(
-              user.uid,
-              false, // nicht rewatch
-              episode.air_date
-            );
-          }
-        }
+      // Update all episodes in the season using API
+      const seasonNum = season.season_number ?? season.seasonNumber;
+      if (!allWatched) {
+        // Mark all as watched
+        await apiService.updateSeasonWatched(series.id.toString(), seasonNum, true);
+      } else {
+        // Mark all as unwatched
+        await apiService.updateSeasonWatched(series.id.toString(), seasonNum, false);
       }
-    } catch (error) {}
+
+      // Refetch the series to update the local state
+      await refetchSeries(series.id.toString());
+
+    } catch (error) {
+      console.error('Failed to update season watched status:', error);
+    }
   };
 
   if (!series) {
@@ -387,7 +310,7 @@ export const MobileEpisodeManagementPage = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleEpisodeClick(selectedSeason, index)}
               >
-                <div className="episode-number">{index + 1}</div>
+                <div className="episode-number">{episode.episode_number || index + 1}</div>
 
                 <div className="episode-details">
                   <h3>{episode.name}</h3>

@@ -1,7 +1,7 @@
-import firebase from 'firebase/compat/app';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '../App';
 import { useOptimizedFriends } from './OptimizedFriendsProvider';
+import apiService from '../services/api.service';
 
 interface NotificationContextType {
   totalUnreadActivities: number;
@@ -31,42 +31,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (!user || friends.length === 0) return;
 
     const loadUnreadActivities = async () => {
-      const unreadCounts: Record<string, number> = {};
-      let total = 0;
-
-      for (const friend of friends) {
-        try {
-          // Lade letzte Lesezeit für diesen Freund
-          const lastReadRef = firebase
-            .database()
-            .ref(`users/${user.uid}/lastReadActivities/${friend.uid}`);
-          const lastReadSnapshot = await lastReadRef.once('value');
-          const lastReadTime = lastReadSnapshot.val() || 0;
-
-          // Lade Aktivitäten des Freundes
-          const activitiesRef = firebase
-            .database()
-            .ref(`activities/${friend.uid}`)
-            .orderByChild('timestamp')
-            .startAt(lastReadTime + 1);
-
-          const activitiesSnapshot = await activitiesRef.once('value');
-          const activitiesData = activitiesSnapshot.val();
-
-          const unreadCount = activitiesData ? Object.keys(activitiesData).length : 0;
-
-          // Cap individual friend unread count at 20
-          const cappedUnreadCount = Math.min(unreadCount, 20);
-          unreadCounts[friend.uid] = cappedUnreadCount;
-          total += cappedUnreadCount;
-        } catch (error) {
-          unreadCounts[friend.uid] = 0;
-        }
+      try {
+        const unreadData = await apiService.getUnreadActivities();
+        setFriendUnreadActivities(unreadData.friendUnreadCounts || {});
+        // Cap total unread activities at 20
+        setTotalUnreadActivities(Math.min(unreadData.total || 0, 20));
+      } catch (error) {
+        console.error('Error loading unread activities:', error);
+        setFriendUnreadActivities({});
+        setTotalUnreadActivities(0);
       }
-
-      setFriendUnreadActivities(unreadCounts);
-      // Cap total unread activities at 20
-      setTotalUnreadActivities(Math.min(total, 20));
     };
 
     loadUnreadActivities();
@@ -76,46 +50,52 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     if (!user || friends.length === 0) return;
 
-    const listeners: Array<() => void> = [];
+    const socket = apiService.getSocket();
+    if (!socket) return;
 
-    friends.forEach((friend) => {
-      const activitiesRef = firebase.database().ref(`activities/${friend.uid}`);
+    // Listen for new activities
+    const handleNewActivity = (data: { friendId: string; activity: any }) => {
+      setFriendUnreadActivities((prev) => {
+        const newCount = Math.min((prev[data.friendId] || 0) + 1, 20);
+        const updated = { ...prev, [data.friendId]: newCount };
 
-      const listener = activitiesRef.on('child_added', async (snapshot) => {
-        if (!snapshot.exists()) return;
+        // Update total with cap at 20
+        const newTotal = Math.min(
+          Object.values(updated).reduce((sum, count) => sum + count, 0),
+          20
+        );
+        setTotalUnreadActivities(newTotal);
 
-        const activity = snapshot.val();
-        const activityTime = activity.timestamp;
-
-        // Prüfe ob diese Aktivität nach der letzten Lesezeit ist
-        const lastReadRef = firebase
-          .database()
-          .ref(`users/${user.uid}/lastReadActivities/${friend.uid}`);
-        const lastReadSnapshot = await lastReadRef.once('value');
-        const lastReadTime = lastReadSnapshot.val() || 0;
-
-        if (activityTime > lastReadTime) {
-          setFriendUnreadActivities((prev) => {
-            const newCount = Math.min((prev[friend.uid] || 0) + 1, 20);
-            const updated = { ...prev, [friend.uid]: newCount };
-
-            // Update total with cap at 20
-            const newTotal = Math.min(
-              Object.values(updated).reduce((sum, count) => sum + count, 0),
-              20
-            );
-            setTotalUnreadActivities(newTotal);
-
-            return updated;
-          });
-        }
+        return updated;
       });
+    };
 
-      listeners.push(() => activitiesRef.off('child_added', listener));
-    });
+    // Listen for read status updates
+    const handleActivitiesRead = (data: { friendId?: string }) => {
+      if (data.friendId) {
+        // Mark specific friend's activities as read
+        setFriendUnreadActivities((prev) => {
+          const updated = { ...prev, [data.friendId]: 0 };
+          const newTotal = Math.min(
+            Object.values(updated).reduce((sum, count) => sum + count, 0),
+            20
+          );
+          setTotalUnreadActivities(newTotal);
+          return updated;
+        });
+      } else {
+        // Mark all activities as read
+        setFriendUnreadActivities({});
+        setTotalUnreadActivities(0);
+      }
+    };
+
+    socket.on('friend:newActivity', handleNewActivity);
+    socket.on('activities:read', handleActivitiesRead);
 
     return () => {
-      listeners.forEach((cleanup) => cleanup());
+      socket.off('friend:newActivity', handleNewActivity);
+      socket.off('activities:read', handleActivitiesRead);
     };
   }, [user, friends]);
 
@@ -123,8 +103,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (!user) return;
 
     try {
-      const now = Date.now();
-      await firebase.database().ref(`users/${user.uid}/lastReadActivities/${friendId}`).set(now);
+      await apiService.markActivitiesAsRead(friendId);
 
       setFriendUnreadActivities((prev) => {
         const updated = { ...prev, [friendId]: 0 };
@@ -135,25 +114,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         setTotalUnreadActivities(newTotal);
         return updated;
       });
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error marking activities as read:', error);
+    }
   };
 
   const markAllActivitiesAsRead = async () => {
     if (!user) return;
 
     try {
-      const now = Date.now();
-      const updates: Record<string, number> = {};
-
-      friends.forEach((friend) => {
-        updates[`users/${user.uid}/lastReadActivities/${friend.uid}`] = now;
-      });
-
-      await firebase.database().ref().update(updates);
-
+      await apiService.markAllActivitiesAsRead();
       setFriendUnreadActivities({});
       setTotalUnreadActivities(0);
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error marking all activities as read:', error);
+    }
   };
 
   return (

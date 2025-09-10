@@ -37,7 +37,7 @@ export const useTopRated = () => {
     
     ratedSeries.sort((a, b) => b.rating - a.rating);
     
-    for (let i = 0; i < Math.min(5, ratedSeries.length); i++) {
+    for (let i = 0; i < Math.min(15, ratedSeries.length); i++) {
       const { item: series, rating } = ratedSeries[i];
       items.push({
         type: 'series',
@@ -60,7 +60,7 @@ export const useTopRated = () => {
     
     ratedMovies.sort((a, b) => b.rating - a.rating);
     
-    for (let i = 0; i < Math.min(5, ratedMovies.length); i++) {
+    for (let i = 0; i < Math.min(15, ratedMovies.length); i++) {
       const { item: movie, rating } = ratedMovies[i];
       items.push({
         type: 'movie',
@@ -72,7 +72,7 @@ export const useTopRated = () => {
     }
     
     items.sort((a, b) => b.rating - a.rating);
-    const result = items.slice(0, 10);
+    const result = items.slice(0, 30);
     cacheRef.current = { items: result, deps: depsString };
     return result;
   }, [seriesList, movieList]);

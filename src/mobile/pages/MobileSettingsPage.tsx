@@ -9,12 +9,10 @@ import {
   Public,
   Refresh,
 } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
-import 'firebase/compat/storage';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../components/auth/AuthProvider';
+import apiService from '../../services/api.service';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MobileBackButton } from '../components/MobileBackButton';
 import { MobileDialog } from '../components/MobileDialog';
@@ -43,9 +41,7 @@ export const MobileSettingsPage = () => {
 
     const loadUserData = async () => {
       try {
-        const userRef = firebase.database().ref(`users/${user.uid}`);
-        const snapshot = await userRef.once('value');
-        const userData = snapshot.val();
+        const userData = await apiService.getUserProfile();
 
         if (userData) {
           setUsername(userData.username || '');
@@ -69,7 +65,8 @@ export const MobileSettingsPage = () => {
   const handleLogout = async () => {
     if (window.confirm('Möchtest du dich wirklich abmelden?')) {
       try {
-        await firebase.auth().signOut();
+        const { logout } = useAuth()!;
+        await logout();
         navigate('/');
       } catch (error) {}
     }
@@ -87,15 +84,7 @@ export const MobileSettingsPage = () => {
     try {
       setUploading(true);
 
-      const storageRef = firebase.storage().ref();
-      const imageRef = storageRef.child(`profile-images/${user.uid}`);
-
-      await imageRef.put(file);
-      const downloadURL = await imageRef.getDownloadURL();
-
-      await user.updateProfile({ photoURL: downloadURL });
-      await firebase.database().ref(`users/${user.uid}/photoURL`).set(downloadURL);
-      await user.reload();
+      const downloadURL = await apiService.uploadProfileImage(file);
 
       setPhotoURL(downloadURL);
       setSnackbar({ open: true, message: 'Profilbild erfolgreich hochgeladen!' });
@@ -112,7 +101,7 @@ export const MobileSettingsPage = () => {
 
     try {
       setSaving(true);
-      await firebase.database().ref(`users/${user.uid}/username`).set(username);
+      await apiService.updateProfile({ username });
       setUsernameEditable(false);
       setSnackbar({ open: true, message: 'Benutzername gespeichert!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
@@ -128,9 +117,7 @@ export const MobileSettingsPage = () => {
 
     try {
       setSaving(true);
-      await user.updateProfile({ displayName: displayName });
-      await firebase.database().ref(`users/${user.uid}/displayName`).set(displayName);
-      await user.reload();
+      await apiService.updateProfile({ displayName });
       setDisplayNameEditable(false);
       setSnackbar({ open: true, message: 'Anzeigename gespeichert!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
@@ -156,13 +143,10 @@ export const MobileSettingsPage = () => {
         newPublicProfileId = generatePublicId();
       }
 
-      await firebase
-        .database()
-        .ref(`users/${user.uid}`)
-        .update({
-          isPublicProfile: enabled,
-          publicProfileId: enabled ? newPublicProfileId : null,
-        });
+      await apiService.updateProfile({
+        isPublicProfile: enabled,
+        publicProfileId: enabled ? newPublicProfileId : null,
+      });
 
       setIsPublicProfile(enabled);
       setPublicProfileId(enabled ? newPublicProfileId : '');
@@ -192,7 +176,7 @@ export const MobileSettingsPage = () => {
     try {
       const newPublicProfileId = generatePublicId();
 
-      await firebase.database().ref(`users/${user.uid}`).update({
+      await apiService.updateProfile({
         publicProfileId: newPublicProfileId,
       });
 

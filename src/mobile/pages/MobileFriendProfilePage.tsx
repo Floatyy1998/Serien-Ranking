@@ -2,9 +2,8 @@ import { ArrowBack, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-ma
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-// import { useAuth } from '../../App';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+// import { useAuth } from '../../components/auth/AuthProvider';
+import apiService from '../../services/api.service';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
@@ -48,54 +47,38 @@ export const MobileFriendProfilePage: React.FC = () => {
       try {
         setLoading(true);
 
-        // Load friend's name
-        const userRef = firebase.database().ref(`users/${friendId}`);
-        const userSnapshot = await userRef.once('value');
-        const userData = userSnapshot.val();
+        // Load friend's public profile
+        const userData = await apiService.getPublicProfile(friendId);
         setFriendName(userData?.displayName || 'User');
 
         // Load friend's series
-        const seriesRef = firebase.database().ref(`${friendId}/serien`);
-        const seriesSnapshot = await seriesRef.once('value');
-        const seriesData = seriesSnapshot.val() || {};
-
-        const seriesList: FriendItem[] = [];
-        for (const [key, value] of Object.entries(seriesData)) {
-          const series = value as any;
-          seriesList.push({
-            id: series.id || parseInt(key),
-            nmr: series.nmr || parseInt(key),
-            title: series.title || 'Unknown',
-            poster: series.poster,
-            rating: series.rating,
-            genre: series.genre,
-            genres: series.genre?.genres || [],
-            provider: series.provider,
-            seasons: series.seasons,
-          });
-        }
+        const seriesData = await apiService.getUserSeries(friendId);
+        const seriesList: FriendItem[] = seriesData ? seriesData.map((series: any) => ({
+          id: series.id || series._id,
+          nmr: series.nmr || 0,
+          title: series.title || 'Unknown',
+          poster: series.poster,
+          rating: series.rating,
+          genre: series.genre,
+          genres: series.genre?.genres || [],
+          provider: series.provider,
+          seasons: series.seasons,
+        })) : [];
         setFriendSeries(seriesList);
 
         // Load friend's movies
-        const moviesRef = firebase.database().ref(`${friendId}/filme`);
-        const moviesSnapshot = await moviesRef.once('value');
-        const moviesData = moviesSnapshot.val() || {};
-
-        const moviesList: FriendItem[] = [];
-        for (const [key, value] of Object.entries(moviesData)) {
-          const movie = value as any;
-          moviesList.push({
-            id: movie.id || parseInt(key),
-            nmr: movie.nmr || parseInt(key),
-            title: movie.title || 'Unknown',
-            poster: movie.poster,
-            rating: movie.rating,
-            genre: movie.genre,
-            genres: movie.genre?.genres || [],
-            provider: movie.provider,
-            release_date: movie.release_date,
-          });
-        }
+        const moviesData = await apiService.getUserMovies(friendId);
+        const moviesList: FriendItem[] = moviesData ? moviesData.map((movie: any) => ({
+          id: movie.id || movie._id,
+          nmr: movie.nmr || 0,
+          title: movie.title || 'Unknown',
+          poster: movie.poster,
+          rating: movie.rating,
+          genre: movie.genre,
+          genres: movie.genre?.genres || [],
+          provider: movie.provider,
+          release_date: movie.release_date,
+        })) : [];
         setFriendMovies(moviesList);
       } catch (error) {
         console.error('Error loading friend data:', error);

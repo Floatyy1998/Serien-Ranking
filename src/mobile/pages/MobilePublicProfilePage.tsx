@@ -1,9 +1,8 @@
 import { ArrowBack, Movie as MovieIcon, Public, Star, Tv as TvIcon } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import apiService from '../../services/api.service';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { MobileQuickFilter } from '../components/MobileQuickFilter';
 
@@ -45,51 +44,26 @@ export const MobilePublicProfilePage: React.FC = () => {
       try {
         console.log('Starting to load public profile for ID:', publicId);
 
-        // Find user with this public profile ID
-        const usersRef = firebase.database().ref('users');
-        const usersSnapshot = await usersRef.once('value');
-        const users = usersSnapshot.val();
-
-        console.log('Found users in database:', users ? Object.keys(users).length : 0);
-
-        let foundUser = null;
-        let foundUserId = null;
-
-        if (users) {
-          for (const [userId, userData] of Object.entries(users)) {
-            const user = userData as any;
-            console.log(
-              `Checking user ${userId}: publicProfileId=${user.publicProfileId}, isPublicProfile=${user.isPublicProfile}`
-            );
-            if (user.publicProfileId === publicId && user.isPublicProfile) {
-              foundUser = user;
-              foundUserId = userId;
-              console.log('Found matching user:', userId, user);
-              break;
-            }
-          }
-        }
-
-        if (!foundUser || !foundUserId) {
+        // Find user with this public profile ID through API
+        const publicProfile = await apiService.getPublicProfile(publicId);
+        
+        if (!publicProfile) {
           console.log('Public profile not found or not public');
           setProfileExists(false);
           setLoading(false);
           return;
         }
 
-        console.log(`Loading public profile for: ${foundUser.username || foundUser.displayName}`);
-        setProfileName(foundUser.username || foundUser.displayName || 'Unbekannt');
+        console.log(`Loading public profile for: ${publicProfile.username || publicProfile.displayName}`);
+        setProfileName(publicProfile.username || publicProfile.displayName || 'Unbekannt');
 
         // Load user's series
-        const seriesRef = firebase.database().ref(`${foundUserId}/serien`);
-        console.log(`Loading series from: ${foundUserId}/serien`);
-        const seriesSnapshot = await seriesRef.once('value');
-        const series = seriesSnapshot.val();
+        const series = publicProfile.series;
         console.log('Raw series data:', series);
 
-        if (series) {
-          const seriesArray = Object.entries(series).map(([id, data]: [string, any]) => ({
-            id: parseInt(id),
+        if (series && series.length > 0) {
+          const seriesArray = series.map((data: any) => ({
+            id: data.id || data._id,
             nmr: data.nmr || 0,
             title: data.title,
             poster: data.poster,
@@ -107,10 +81,7 @@ export const MobilePublicProfilePage: React.FC = () => {
         }
 
         // Load user's movies
-        const moviesRef = firebase.database().ref(`${foundUserId}/filme`);
-        console.log(`Loading movies from: ${foundUserId}/filme`);
-        const moviesSnapshot = await moviesRef.once('value');
-        const movies = moviesSnapshot.val();
+        const movies = publicProfile.movies;
         console.log('Raw movies data:', movies);
 
         if (movies) {

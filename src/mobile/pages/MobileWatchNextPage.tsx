@@ -8,8 +8,7 @@ import {
   PlayCircle,
   Repeat,
 } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import apiService from '../../services/api.service';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +38,7 @@ interface NextEpisode {
 export const MobileWatchNextPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { seriesList, updateEpisode } = useSeriesList();
   const { currentTheme } = useTheme();
   const [showFilter, setShowFilter] = useState(false);
   const [filterInput, setFilterInput] = useState('');
@@ -86,15 +85,12 @@ export const MobileWatchNextPage = () => {
   useEffect(() => {
     if (!user) return;
 
-    const orderRef = firebase.database().ref(`users/${user.uid}/watchlistOrder`);
-    orderRef.on('value', (snapshot) => {
-      const order = snapshot.val();
+    // Load watchlist order from API
+    apiService.getWatchlistOrder().then((order) => {
       if (order && Array.isArray(order)) {
         setWatchlistOrder(order);
       }
     });
-
-    return () => orderRef.off();
   }, [user]);
 
   // Add non-passive touch event listeners when dragging is active
@@ -200,8 +196,8 @@ export const MobileWatchNextPage = () => {
                 seasonIndex: seasonIndex,
                 episodeIndex: rewatchEpisode.episodeIndex,
                 seasonNumber: rewatchEpisode.seasonNumber,
-                episodeNumber: rewatchEpisode.episodeIndex + 1,
-                episodeName: rewatchEpisode.name || `Episode ${rewatchEpisode.episodeIndex + 1}`,
+                episodeNumber: rewatchEpisode.episode_number || rewatchEpisode.episodeIndex + 1,
+                episodeName: rewatchEpisode.name || `Episode ${rewatchEpisode.episode_number || rewatchEpisode.episodeIndex + 1}`,
                 airDate: rewatchEpisode.air_date,
                 isRewatch: true,
                 currentWatchCount: rewatchEpisode.currentWatchCount,
@@ -238,8 +234,8 @@ export const MobileWatchNextPage = () => {
               seasonIndex,
               episodeIndex,
               seasonNumber: season.seasonNumber,
-              episodeNumber: episodeIndex + 1,
-              episodeName: episode.name || `Episode ${episodeIndex + 1}`,
+              episodeNumber: episode.episode_number || episodeIndex + 1,
+              episodeName: episode.name || `Episode ${episode.episode_number || episodeIndex + 1}`,
               airDate: episode.air_date,
             });
             foundUnwatched = true;
@@ -316,7 +312,7 @@ export const MobileWatchNextPage = () => {
       // Remove duplicates and keep first occurrence
       const uniqueOrder = [...new Set(newOrder)];
       setWatchlistOrder(uniqueOrder);
-      await firebase.database().ref(`users/${user.uid}/watchlistOrder`).set(uniqueOrder);
+      await apiService.updateWatchlistOrder(uniqueOrder);
     }
 
     setDraggedIndex(null);
@@ -376,7 +372,7 @@ export const MobileWatchNextPage = () => {
       const newOrder = newEpisodes.map((ep) => ep.seriesId);
       const uniqueOrder = [...new Set(newOrder)];
       setWatchlistOrder(uniqueOrder);
-      await firebase.database().ref(`users/${user.uid}/watchlistOrder`).set(uniqueOrder);
+      await apiService.updateWatchlistOrder(uniqueOrder);
     }
 
     setDraggedIndex(null);
@@ -396,63 +392,29 @@ export const MobileWatchNextPage = () => {
     // Add to completing set for animation
     setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
 
-    // Mark episode as watched in Firebase
+    // Mark episode as watched via API
     if (user) {
       const series = seriesList.find((s) => s.id === episode.seriesId);
       if (!series) return;
 
       try {
-        const watchedRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-          );
-        await watchedRef.set(true);
-
         // Handle rewatch: increment watchCount
-        if (episode.isRewatch) {
-          const watchCountRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-            );
-          const newCount = (episode.currentWatchCount || 0) + 1;
-          await watchCountRef.set(newCount);
+        const newWatchCount = episode.isRewatch 
+          ? (episode.currentWatchCount || 0) + 1 
+          : 1;
 
-          // Badge-System für Rewatch
-          const { updateEpisodeCounters } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
-          await updateEpisodeCounters(user.uid, true, episode.airDate);
-        } else {
-          // Update firstWatchedAt if not set
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
-            );
-          const snapshot = await firstWatchedRef.once('value');
-          if (!snapshot.val()) {
-            await firstWatchedRef.set(new Date().toISOString());
-          }
+        // Use context's updateEpisode to update both API and local state
+        await updateEpisode(series.id.toString(), {
+          seasonNumber: episode.seasonNumber, // Already 1-based
+          episodeNumber: episode.episodeNumber, // Already 1-based
+          watched: true,
+          watchCount: newWatchCount,
+          firstWatchedAt: episode.isRewatch ? undefined : new Date().toISOString()
+        });
 
-          // Also update watchCount if needed
-          const watchCountRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-            );
-          const watchCountSnapshot = await watchCountRef.once('value');
-          const currentCount = watchCountSnapshot.val() || 0;
-          await watchCountRef.set(currentCount + 1);
-
-          // Badge-System für normale Episode
-          const { updateEpisodeCounters } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
-          await updateEpisodeCounters(user.uid, false, episode.airDate);
-        }
-      } catch (error) {}
+      } catch (error) {
+        console.error('Error marking episode as watched:', error);
+      }
     }
 
     // After animation, hide the episode

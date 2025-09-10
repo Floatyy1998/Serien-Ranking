@@ -13,18 +13,18 @@ import {
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
+import apiService from '../../services/api.service';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { MobileDialog } from '../components/MobileDialog';
 
 export const MobileDiscoverPage = memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
-  const { movieList } = useMovieList();
+  const { seriesList, addSeries } = useSeriesList();
+  const { movieList, addMovie } = useMovieList();
   const { currentTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
@@ -254,46 +254,33 @@ export const MobileDiscoverPage = memo(() => {
       const itemKey = `${item.type}-${item.id}`;
       setAddingItem(itemKey);
 
-      const endpoint =
-        item.type === 'series'
-          ? 'https://serienapi.konrad-dinges.de/add'
-          : 'https://serienapi.konrad-dinges.de/addMovie';
-
       try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user: import.meta.env.VITE_USER,
-            id: item.id,
-            uuid: user.uid,
-          }),
+        if (item.type === 'series') {
+          await addSeries(item.id);
+        } else {
+          await addMovie(item.id);
+        }
+
+        // Remove item from results immediately
+        setResults((prev) => prev.filter((r) => r.id !== item.id));
+        setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
+        
+        // Show success snackbar
+        const title = item.title || item.name;
+        setSnackbar({ 
+          open: true, 
+          message: `"${title}" wurde erfolgreich hinzugefügt!` 
         });
 
-        if (response.ok) {
-          // Remove item from results immediately
-          setResults((prev) => prev.filter((r) => r.id !== item.id));
-          setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
-          
-          // Show success snackbar
-          const title = item.title || item.name;
-          setSnackbar({ 
-            open: true, 
-            message: `"${title}" wurde erfolgreich hinzugefügt!` 
-          });
-
-          // Activity-Logging für Friend + Badge-System (wie Desktop)
-          if (item.type === 'series') {
-            await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id);
-          } else {
-            await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id);
-          }
-
-          // Hide snackbar after 3 seconds
-          setTimeout(() => {
-            setSnackbar({ open: false, message: '' });
-          }, 3000);
+        // Activity-Logging für Friend + Badge-System (wie Desktop)
+        if (item.type === 'series') {
+        } else {
         }
+
+        // Hide snackbar after 3 seconds
+        setTimeout(() => {
+          setSnackbar({ open: false, message: '' });
+        }, 3000);
       } catch (error) {
         console.error('Failed to add item:', error);
       } finally {

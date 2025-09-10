@@ -65,10 +65,10 @@
     />
     <meta http-equiv="Pragma" content="no-cache" />
 
-    <!-- Allow external resources including Firebase WebSocket -->
+    <!-- Allow external resources including Firebase WebSocket and local development -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="img-src 'self' data: https: http: blob:; connect-src 'self' https: wss: ws:; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https: http: blob:;"
+      content="img-src 'self' data: https: http: blob:; connect-src 'self' https: http: wss: ws: http://localhost:*; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https: http: blob:;"
     />
     <meta http-equiv="Expires" content="0" />
   </head>

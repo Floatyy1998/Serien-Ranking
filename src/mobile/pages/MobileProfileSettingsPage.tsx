@@ -9,14 +9,11 @@ import {
   Share,
   Tour,
 } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
-import 'firebase/compat/storage';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../components/auth/AuthProvider';
+import apiService from '../../services/api.service';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 
 export const MobileProfileSettingsPage = () => {
   const navigate = useNavigate();
@@ -37,31 +34,39 @@ export const MobileProfileSettingsPage = () => {
   const [usernameEditable, setUsernameEditable] = useState(false);
   const [displayNameEditable, setDisplayNameEditable] = useState(false);
 
-  // Load user data from Firebase
-  const { data: userData, loading: userDataLoading } = useEnhancedFirebaseCache<any>(
-    user ? `users/${user.uid}` : '',
-    {
-      ttl: 5 * 60 * 1000,
-      useRealtimeListener: true,
-      enableOfflineSupport: true,
-    }
-  );
+  // Load user data from API
+  const [userData, setUserData] = useState<any>(null);
+  const [userDataLoading, setUserDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || userDataLoading) return;
-
-    if (userData) {
-      setUsername(userData.username || '');
-      setDisplayName(userData.displayName || '');
-      setPhotoURL(userData.photoURL || user.photoURL || '');
-      setIsPublic(userData.isPublic || false);
-    } else {
-      setUsername('');
-      setDisplayName(user.displayName || '');
-      setPhotoURL(user.photoURL || '');
-      setIsPublic(false);
-    }
-  }, [user, userData, userDataLoading]);
+    const loadUserData = async () => {
+      if (!user) return;
+      
+      setUserDataLoading(true);
+      try {
+        const data = await apiService.getUserProfile();
+        setUserData(data);
+        
+        if (data) {
+          setUsername(data.username || '');
+          setDisplayName(data.displayName || '');
+          setPhotoURL(data.photoURL || user.photoURL || '');
+          setIsPublic(data.isPublic || false);
+        } else {
+          setUsername('');
+          setDisplayName(user.displayName || '');
+          setPhotoURL(user.photoURL || '');
+          setIsPublic(false);
+        }
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+      } finally {
+        setUserDataLoading(false);
+      }
+    };
+    
+    loadUserData();
+  }, [user]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -76,16 +81,7 @@ export const MobileProfileSettingsPage = () => {
       setUploading(true);
       setError('');
 
-      const storageRef = firebase.storage().ref();
-      const imageRef = storageRef.child(`profile-images/${user.uid}`);
-
-      await imageRef.put(file);
-      const downloadURL = await imageRef.getDownloadURL();
-
-      await user.updateProfile({ photoURL: downloadURL });
-      await firebase.database().ref(`users/${user.uid}/photoURL`).set(downloadURL);
-
-      await user.reload();
+      const downloadURL = await apiService.uploadProfileImage(file);
 
       setPhotoURL(downloadURL);
       setSuccess('Profilbild erfolgreich hochgeladen');
@@ -104,16 +100,8 @@ export const MobileProfileSettingsPage = () => {
     if (!user) return false;
 
     try {
-      const usersRef = firebase.database().ref('users');
-      const snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
-
-      const data = snapshot.val();
-      if (!data) return true;
-
-      const existingUsers = Object.keys(data);
-      return (
-        existingUsers.length === 0 || (existingUsers.length === 1 && existingUsers[0] === user.uid)
-      );
+      const isAvailable = await apiService.checkUsernameAvailability(username);
+      return isAvailable;
     } catch (error) {
       return false;
     }
@@ -144,22 +132,12 @@ export const MobileProfileSettingsPage = () => {
         return;
       }
 
-      // Update Firebase
-      await firebase
-        .database()
-        .ref(`users/${user.uid}`)
-        .update({
-          username: username,
-          displayName: displayName || username,
-          photoURL: photoURL || null,
-          isPublic: isPublic,
-          lastActive: firebase.database.ServerValue.TIMESTAMP,
-        });
-
-      // Update Firebase Auth
-      await user.updateProfile({
+      // Update user profile via API
+      await apiService.updateProfile({
+        username: username,
         displayName: displayName || username,
         photoURL: photoURL || null,
+        isPublic: isPublic,
       });
 
       setSuccess('Profil erfolgreich aktualisiert');
@@ -177,7 +155,7 @@ export const MobileProfileSettingsPage = () => {
 
     try {
       const newPublicState = !isPublic;
-      await firebase.database().ref(`users/${user.uid}/isPublic`).set(newPublicState);
+      await apiService.updateProfile({ isPublic: newPublicState });
       setIsPublic(newPublicState);
       setSuccess(
         newPublicState ? 'Deine Liste ist jetzt öffentlich!' : 'Deine Liste ist jetzt privat!'
@@ -197,7 +175,7 @@ export const MobileProfileSettingsPage = () => {
     if (!user) return;
 
     try {
-      await firebase.database().ref(`users/${user.uid}`).update({
+      await apiService.updateProfile({
         hasCompletedTour: false,
         tourCompletedAt: null,
         tourStep: 0,

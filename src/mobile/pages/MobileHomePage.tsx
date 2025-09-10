@@ -10,6 +10,7 @@ import {
   Movie as MovieIcon,
   NewReleases,
   Notifications,
+  Person,
   PlayCircle,
   Search,
   Star,
@@ -17,8 +18,7 @@ import {
   Tv,
 } from '@mui/icons-material';
 import { Badge, Chip } from '@mui/material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import apiService from '../../services/api.service';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { cloneElement, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +44,19 @@ export const MobileHomePage: React.FC = () => {
   }
 
   const { user } = authContext;
+  
+  // Debug: Check what data we have
+  useEffect(() => {
+    if (user) {
+      console.log('User data:', {
+        username: user.username,
+        photoURL: user.photoURL,
+        profileImage: user.profileImage,
+        hasPhotoURL: !!user.photoURL,
+        hasProfileImage: !!user.profileImage
+      });
+    }
+  }, [user]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -116,7 +129,7 @@ export const MobileHomePage: React.FC = () => {
   const recommendations: any[] = []; // TODO: Create separate hook if needed
 
   // Get the total count of series with unwatched episodes in watchlist
-  const { seriesList } = useSeriesList();
+  const { seriesList, updateEpisode } = useSeriesList();
   const totalSeriesWithUnwatched = useMemo(() => {
     const today = new Date();
     let count = 0;
@@ -167,35 +180,17 @@ export const MobileHomePage: React.FC = () => {
     // Add to completing set for animation
     setCompletingContinueEpisodes((prev) => new Set(prev).add(episodeKey));
 
-    // Mark episode as watched in Firebase
-    if (user && item.nmr !== undefined) {
+    // Mark episode as watched via API
+    if (user && item.id) {
       try {
-        const ref = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/watched`
-          );
-        await ref.set(true);
-
-        // Also update watchCount if needed
-        const watchCountRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/watchCount`
-          );
-        const snapshot = await watchCountRef.once('value');
-        const currentCount = snapshot.val() || 0;
-        await watchCountRef.set(currentCount + 1);
-
-        // Update firstWatchedAt if this is the first time
-        if (currentCount === 0) {
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/firstWatchedAt`
-            );
-          await firstWatchedRef.set(new Date().toISOString());
-        }
+        // Use context's updateEpisode to update both API and local state
+        await updateEpisode(item.id.toString(), {
+          seasonNumber: item.nextEpisode.seasonNumberForAPI, // Use DB season_number for API
+          episodeNumber: item.nextEpisode.episodeNumber, // Already 1-based
+          watched: true,
+          watchCount: 1,
+          firstWatchedAt: new Date().toISOString()
+        });
       } catch (error) {
         console.error('Error marking episode as watched:', error);
       }
@@ -225,39 +220,26 @@ export const MobileHomePage: React.FC = () => {
     // Add to completing set for animation
     setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
 
-    // Mark episode as watched in Firebase directly (like in MobileNewEpisodesPage)
-    if (user) {
+    // Mark episode as watched via API
+    if (user && episode.seriesId) {
       try {
-        // Use the pre-calculated 0-based indexes
-        const seasonIndex = episode.seasonIndex;
-        const episodeIndex = episode.episodeIndex;
-
-        const ref = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watched`
-          );
-        await ref.set(true);
-
-        // Also update watchCount if needed
-        const watchCountRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/watchCount`
-          );
-        const snapshot = await watchCountRef.once('value');
-        const currentCount = snapshot.val() || 0;
-        await watchCountRef.set(currentCount + 1);
-
-        // Update firstWatchedAt if this is the first time
-        if (currentCount === 0) {
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`
-            );
-          await firstWatchedRef.set(new Date().toISOString());
-        }
+        console.log('Marking episode as watched:', {
+          seriesId: episode.seriesId,
+          seasonNumber: episode.seasonNumber,
+          episodeNumber: episode.episodeNumber,
+          seasonIndex: episode.seasonIndex,
+          episodeIndex: episode.episodeIndex
+        });
+        
+        // Use context's updateEpisode to update both API and local state
+        // seasonNumber is 0-based (array index), API needs to match DB structure
+        await updateEpisode(episode.seriesId.toString(), {
+          seasonNumber: episode.seasonNumber, // Already 1-based
+          episodeNumber: episode.episodeNumber, // Already 1-based
+          watched: true,
+          watchCount: 1,
+          firstWatchedAt: new Date().toISOString()
+        });
       } catch (error) {
         console.error('Error marking episode as watched:', error);
       }
@@ -345,18 +327,35 @@ export const MobileHomePage: React.FC = () => {
               </motion.button>
             </Badge>
 
-            <motion.button
+            <motion.div
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/profile')}
               style={{
                 width: '40px',
                 height: '40px',
                 borderRadius: '50%',
-                background: `url(${user?.photoURL}) center/cover`,
+                ...(user?.photoURL || user?.profileImage
+                  ? {
+                      backgroundImage: `url("${user.photoURL || user.profileImage}")`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
+                    }
+                  : {
+                      background: currentTheme.primary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }
+                ),
                 border: `2px solid ${currentTheme.primary}`,
                 cursor: 'pointer',
               }}
-            />
+            >
+              {!(user?.photoURL || user?.profileImage) && (
+                <Person style={{ fontSize: '20px', color: 'white' }} />
+              )}
+            </motion.div>
           </div>
         </div>
       </header>
@@ -563,9 +562,9 @@ export const MobileHomePage: React.FC = () => {
             color: currentTheme.status.success,
           },
           {
-            icon: <EmojiEvents />,
-            label: 'Badges',
-            path: '/badges',
+            icon: <PlayCircle />,
+            label: 'Watchlist',
+            path: '/watchlist',
             color: currentTheme.status.error,
           },
           {
@@ -1164,7 +1163,7 @@ export const MobileHomePage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/${item.type}/${item.id}`)}
                 style={{
-                  minWidth: window.innerWidth >= 768 ? '240px' : '140px',
+                  minWidth: window.innerWidth >= 768 ? '160px' : '140px',
                   cursor: 'pointer',
                 }}
               >
@@ -1318,7 +1317,9 @@ export const MobileHomePage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/${item.type}/${item.id}`)}
                 style={{
-                  minWidth: window.innerWidth >= 768 ? '240px' : '140px',
+                  width: window.innerWidth >= 768 ? '160px' : '140px',
+                  minWidth: window.innerWidth >= 768 ? '160px' : '140px',
+                  flexShrink: 0,
                   cursor: 'pointer',
                 }}
               >

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
+import { motion } from 'framer-motion';
+import { useAuth } from '../../components/auth/AuthProvider';
+import apiService from '../../services/api.service';
 import { 
   Person, Settings, Logout, Star, PlayCircle, 
   CalendarToday, Movie, TrendingUp, EmojiEvents,
@@ -10,28 +10,32 @@ import {
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
-import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useEffect, useState } from 'react';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useBadges } from '../../features/badges/BadgeProvider';
 
 export const MobileProfilePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user, logout } = useAuth()!;
   const { currentTheme } = useTheme();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
-  const { unreadBadgesCount } = useBadges();
   
-  // Load user data from Firebase Database
-  const { data: userData } = useEnhancedFirebaseCache<any>(
-    user ? `users/${user.uid}` : '',
-    {
-      ttl: 5 * 60 * 1000,
-      useRealtimeListener: true,
-      enableOfflineSupport: true,
-    }
-  );
+  // Load user data from API
+  const [userData, setUserData] = useState<any>(null);
+  
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) return;
+      try {
+        const data = await apiService.getUserProfile();
+        setUserData(data);
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+      }
+    };
+    loadUserData();
+  }, [user]);
   
   
   const { seriesList } = useSeriesList();
@@ -131,10 +135,13 @@ export const MobileProfilePage = () => {
   }, [seriesList, movieList]);
   
   const handleLogout = async () => {
+    console.log('Logout button clicked');
     try {
-      await firebase.auth().signOut();
-      navigate('/');
+      console.log('Calling logout function');
+      await logout();
+      // Navigation happens automatically in logout function
     } catch (error) {
+      console.error('Logout error:', error);
     }
   };
   
@@ -151,8 +158,8 @@ export const MobileProfilePage = () => {
           width: '80px',
           height: '80px',
           borderRadius: '50%',
-          ...((userData?.photoURL || user?.photoURL) ? {
-            backgroundImage: `url("${userData?.photoURL || user?.photoURL}")`,
+          ...((userData?.photoURL || user?.profileImage) ? {
+            backgroundImage: `url("${userData?.photoURL || user?.profileImage}")`,
             backgroundPosition: 'center',
             backgroundSize: 'cover'
           } : {
@@ -164,7 +171,7 @@ export const MobileProfilePage = () => {
           margin: '0 auto 16px',
           boxShadow: `0 4px 12px ${currentTheme.primary}4D`
         }}>
-          {!(userData?.photoURL || user?.photoURL) && <Person style={{ fontSize: '40px' }} />}
+          {!(userData?.photoURL || user?.profileImage) && <Person style={{ fontSize: '40px' }} />}
         </div>
         
         <h2 style={{ 
@@ -354,44 +361,6 @@ export const MobileProfilePage = () => {
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
         </button>
         
-        <button 
-          onClick={() => navigate('/badges')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <EmojiEvents style={{ fontSize: '20px', color: currentTheme.status.warning }} />
-            <span style={{ fontSize: '16px' }}>Erfolge</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {(unreadBadgesCount || 0) > 0 && (
-              <div style={{
-                background: currentTheme.status.error,
-                color: 'white',
-                borderRadius: '12px',
-                padding: '2px 8px',
-                fontSize: '12px',
-                fontWeight: 600,
-                minWidth: '20px',
-                textAlign: 'center'
-              }}>
-                {unreadBadgesCount}
-              </div>
-            )}
-            <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-          </div>
-        </button>
         
         <button 
           onClick={() => navigate('/theme')}
@@ -439,7 +408,8 @@ export const MobileProfilePage = () => {
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
         </button>
         
-        <button 
+        <motion.button 
+          whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
           style={{
             width: '100%',
@@ -460,7 +430,7 @@ export const MobileProfilePage = () => {
             <span style={{ fontSize: '16px' }}>Abmelden</span>
           </div>
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-        </button>
+        </motion.button>
       </div>
     </div>
   );

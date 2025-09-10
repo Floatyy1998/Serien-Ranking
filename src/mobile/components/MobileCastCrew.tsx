@@ -40,23 +40,79 @@ export const MobileCastCrew: React.FC<MobileCastCrewProps> = ({
   const [voiceActorLoading, setVoiceActorLoading] = useState(false);
 
   // Check if anime - multiple detection methods
-  // Method 1: Check for Animation genre (id 16) and Asian origin
+  // Method 1: Check for Animation genre and Asian origin
+  
+  // Helper function to check if a genre string contains animation/anime keywords
+  const checkGenreString = (str: string) => {
+    const normalized = str.toLowerCase();
+    return normalized.includes('animation') || 
+           normalized.includes('anime') || 
+           normalized.includes('animiert');
+  };
+  
+  // Check all possible genre field formats
   const hasAnimationGenre =
-    seriesData?.genres?.some((g: any) => g.id === 16) ||
-    seriesData?.genre?.genres?.some((g: string) => g.toLowerCase().includes('animation'));
+    // TMDB genre objects array (e.g., [{id: 16, name: "Animation"}])
+    seriesData?.genres?.some?.((g: any) => {
+      if (typeof g === 'object' && g !== null) {
+        return g.id === 16 || (g.name && checkGenreString(g.name));
+      }
+      if (typeof g === 'string') {
+        return checkGenreString(g);
+      }
+      return false;
+    }) ||
+    // Firebase nested genre.genres (can be object with genre keys)
+    (seriesData?.genre?.genres && typeof seriesData.genre.genres === 'object' && 
+      !Array.isArray(seriesData.genre.genres) &&
+      Object.values(seriesData.genre.genres).some((g: any) => 
+        typeof g === 'string' && checkGenreString(g)
+      )) ||
+    // Firebase genre.genres as array
+    (Array.isArray(seriesData?.genre?.genres) && 
+      seriesData.genre.genres.some((g: any) => 
+        typeof g === 'string' && checkGenreString(g)
+      )) ||
+    // Firebase genre.genres as string
+    (typeof seriesData?.genre?.genres === 'string' && 
+      checkGenreString(seriesData.genre.genres)) ||
+    // Direct genre field as string (Firebase legacy)
+    (typeof seriesData?.genre === 'string' && checkGenreString(seriesData.genre));
 
+  // Check origin country - anime typically from Japan, Korea, or China
   const isFromAsianCountry =
-    seriesData?.origin_country?.some((c: string) => ['JP', 'CN', 'KR'].includes(c)) || false;
+    seriesData?.origin_country?.some?.((c: string) => 
+      ['JP', 'CN', 'KR', 'TW'].includes(c)
+    ) || 
+    seriesData?.originalCountry?.some?.((c: string) => 
+      ['JP', 'CN', 'KR', 'TW'].includes(c)
+    ) || false;
 
-  // Method 2: Check for anime-related keywords in title or genres
+  // Method 2: Check for anime-related keywords in title or other fields
   const hasAnimeKeywords =
-    seriesData?.genre?.genres?.some((g: string) => g.toLowerCase().includes('anime')) ||
-    seriesData?.title?.toLowerCase().includes('anime');
+    seriesData?.title?.toLowerCase().includes('anime') ||
+    seriesData?.name?.toLowerCase().includes('anime') ||
+    // Check if it's explicitly marked as anime in any field
+    seriesData?.type?.toLowerCase() === 'anime' ||
+    seriesData?.mediaType?.toLowerCase() === 'anime';
 
-  // If we have Animation genre but no origin_country data, assume it's anime
-  // Most western animations don't have "Animation" as genre in TMDB
+  // Determine if it's anime based on multiple factors
   const isAnime =
-    hasAnimeKeywords || (hasAnimationGenre && (isFromAsianCountry || !seriesData?.origin_country));
+    hasAnimeKeywords || 
+    (hasAnimationGenre && isFromAsianCountry) || 
+    (hasAnimationGenre && !seriesData?.origin_country && !seriesData?.originalCountry); // Animation without origin = likely anime
+
+  // Debug logging for development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Anime detection:', {
+      title: seriesData?.title,
+      hasAnimationGenre,
+      isFromAsianCountry,
+      hasAnimeKeywords,
+      isAnime,
+      genres: seriesData?.genre?.genres
+    });
+  }
 
   // Set initial tab based on whether it's anime
   const [activeTab, setActiveTab] = useState<'cast' | 'crew' | 'characters'>(

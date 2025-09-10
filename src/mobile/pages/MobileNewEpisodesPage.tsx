@@ -15,12 +15,11 @@ import { MobileBackButton } from '../components/MobileBackButton';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../components/auth/AuthProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import apiService from '../../services/api.service';
 
 interface UpcomingEpisode {
   seriesId: number;
@@ -40,7 +39,7 @@ interface UpcomingEpisode {
 export const MobileNewEpisodesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { seriesList, updateEpisode } = useSeriesList();
   const { currentTheme } = useTheme();
   const [showAllSeries, setShowAllSeries] = useState<boolean>(true);
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
@@ -120,9 +119,9 @@ export const MobileNewEpisodesPage = () => {
               seriesNmr: series.nmr,
               seasonIndex,
               episodeIndex,
-              episodeName: episode.name || `Episode ${episodeIndex + 1}`,
-              episodeNumber: episodeIndex + 1,
-              seasonNumber: (season.seasonNumber ?? seasonIndex) + 1,
+              episodeName: episode.name || `Episode ${episode.episode_number || episodeIndex + 1}`,
+              episodeNumber: episode.episode_number || episodeIndex + 1,
+              seasonNumber: season.seasonNumber ?? seasonIndex + 1,
               airDate: episodeDate,
               daysUntil,
               watched: !!episode.watched,
@@ -171,12 +170,14 @@ export const MobileNewEpisodesPage = () => {
     const key = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
 
     try {
-      const ref = firebase
-        .database()
-        .ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-        );
-      await ref.set(true);
+      const series = seriesList.find(s => s.nmr === episode.seriesNmr);
+      if (series) {
+        await updateEpisode(series.id.toString(), {
+          seasonNumber: episode.seasonNumber,
+          episodeNumber: episode.episodeNumber,
+          watched: true
+        });
+      }
 
       setMarkedWatched((prev) => new Set([...prev, key]));
     } catch (error) {
@@ -206,36 +207,22 @@ export const MobileNewEpisodesPage = () => {
     // Add to completing set for animation
     setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
 
-    // Mark episode as watched in Firebase
+    // Mark episode as watched via API
     if (user) {
       try {
-        const ref = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-          );
-        await ref.set(true);
-
-        // Also update watchCount if needed
-        const watchCountRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-          );
-        const snapshot = await watchCountRef.once('value');
-        const currentCount = snapshot.val() || 0;
-        await watchCountRef.set(currentCount + 1);
-
-        // Update firstWatchedAt if this is the first time
-        if (currentCount === 0) {
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
-            );
-          await firstWatchedRef.set(new Date().toISOString());
+        const series = seriesList.find(s => s.nmr === episode.seriesNmr);
+        if (series) {
+          const currentCount = episode.watchCount || 0;
+          await updateEpisode(series.id.toString(), {
+            seasonNumber: episode.seasonNumber,
+            episodeNumber: episode.episodeNumber,
+            watched: true,
+            watchCount: currentCount + 1,
+            firstWatchedAt: currentCount === 0 ? new Date().toISOString() : undefined
+          });
         }
       } catch (error) {
+        console.error('Failed to mark episode as watched:', error);
         }
     }
 
@@ -714,7 +701,7 @@ export const MobileNewEpisodesPage = () => {
                                     : 'rgba(255, 255, 255, 0.6)',
                                 }}
                               >
-                                S{String(episode.seasonNumber).padStart(2, '0')}
+                                S{String(episode.seasonNumber + 1).padStart(2, '0')}
                                 E
                                 {String(episode.episodeNumber).padStart(2, '0')}{' '}
                                 • {episode.episodeName}
@@ -930,7 +917,7 @@ export const MobileNewEpisodesPage = () => {
                                       }}
                                     >
                                       S
-                                      {String(episode.seasonNumber).padStart(
+                                      {String(episode.seasonNumber + 1).padStart(
                                         2,
                                         '0'
                                       )}

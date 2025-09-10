@@ -1,4 +1,5 @@
 export interface Series {
+  _id?: string; // MongoDB ObjectId
   begründung: string;
   beschreibung: string;
   episodeCount: number;
@@ -7,6 +8,7 @@ export interface Series {
     genres: string[];
   };
   id: number;
+  tmdbId?: number; // TMDB ID
   imdb: {
     imdb_id: string;
   };

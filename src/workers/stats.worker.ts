@@ -155,15 +155,33 @@ function processEpisodes(data: any) {
         episodeDate.setHours(0, 0, 0, 0);
         
         if (episodeDate.getTime() === todayTime) {
-          const actualSeasonIndex = series.seasons?.findIndex((s: any) => s.seasonNumber === season.seasonNumber) ?? 0;
+          // Find actual season index
+          const actualSeasonIndex = j; // Use the iteration index directly
+          
+          // Get season number - use what's stored in DB
+          // seasonNumber and season_number should be the same (actual TMDB season number)
+          const seasonNum = season.seasonNumber ?? season.season_number ?? (j + 1);
+          
+          // Debug log for problematic series
+          if (series.id === 107113) {
+            console.log('Processing episode for series 107113:', {
+              seriesTitle: series.title,
+              seasonIndex: j,
+              seasonNumber: seasonNum,
+              season_number: season.season_number,
+              seasonNumber_field: season.seasonNumber,
+              episodeNumber: episode.episode_number,
+              episodeIndex: k
+            });
+          }
           
           episodes.push({
             seriesId: series.id,
             seriesNmr: series.nmr,
             seriesTitle: series.title,
             poster: getImageUrl(series.poster),
-            seasonNumber: season.seasonNumber || 1,
-            episodeNumber: k + 1,
+            seasonNumber: seasonNum, // Use actual season number from DB
+            episodeNumber: episode.episode_number || (k + 1), // Use episode_number if available
             seasonIndex: actualSeasonIndex,
             episodeIndex: k,
             episodeId: episode.id,

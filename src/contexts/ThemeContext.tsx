@@ -1,8 +1,7 @@
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { useAuth } from '../App';
+import { useAuth } from '../components/auth/AuthProvider';
+import apiService from '../services/api.service';
 import {
   createMuiTheme,
   defaultThemeConfig,
@@ -119,6 +118,10 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   // Theme aus localStorage laden (mit Firebase als Fallback)
   useEffect(() => {
     loadTheme();
+    // Mark theme as ready for splash screen
+    if (typeof window !== 'undefined' && window.setAppReady) {
+      window.setAppReady('theme', true);
+    }
   }, [user]);
 
   // Theme aktualisieren
@@ -144,15 +147,12 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     updateCSSVariables(newTheme);
     localStorage.removeItem('customTheme'); // Gleicher Key wie Desktop!
 
-    // Lösche auch aus Firebase
+    // Lösche auch aus API
     if (user?.uid) {
       try {
-        await firebase
-          .database()
-          .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
-          .remove();
+        await apiService.updateProfile({ theme: null });
       } catch (error) {
-        // console.error('Fehler beim Löschen des Themes aus Firebase:', error);
+        // console.error('Fehler beim Löschen des Themes:', error);
       }
     }
   };
@@ -169,15 +169,12 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     // WICHTIG: Verwende 'customTheme' als Key, genau wie Desktop!
     localStorage.setItem('customTheme', JSON.stringify(config));
 
-    // Speichere in Firebase nur wenn Sync-Mode auf 'cloud' steht
+    // Speichere in API nur wenn Sync-Mode auf 'cloud' steht
     if (syncMode === 'cloud' && user?.uid) {
       try {
-        await firebase
-          .database()
-          .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
-          .set(config);
+        await apiService.updateProfile({ theme: config });
       } catch (error) {
-        // console.error('Fehler beim Speichern des Themes in Firebase:', error);
+        // console.error('Fehler beim Speichern des Themes:', error);
       }
     }
   };
@@ -205,15 +202,15 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
 
       // Falls kein lokales Theme, Cloud-Theme als Fallback
       if (!loadedConfig && user?.uid) {
-        const snapshot = await firebase
-          .database()
-          .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
-          .once('value');
-
-        if (snapshot.exists()) {
-          loadedConfig = snapshot.val();
-          // WICHTIG: Speichere Cloud-Theme im localStorage für nächsten Load
-          localStorage.setItem('customTheme', JSON.stringify(loadedConfig));
+        try {
+          const userData = await apiService.getUserProfile();
+          if (userData?.theme) {
+            loadedConfig = userData.theme;
+            // WICHTIG: Speichere Cloud-Theme im localStorage für nächsten Load
+            localStorage.setItem('customTheme', JSON.stringify(loadedConfig));
+          }
+        } catch (error) {
+          // console.error('Fehler beim Laden des Themes von API:', error);
         }
       }
 

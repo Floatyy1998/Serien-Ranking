@@ -250,12 +250,6 @@ export const MobileStartPage = () => {
               delay={0.3}
             />
             <FeatureCard
-              icon={<EmojiEvents sx={{ fontSize: 40 }} />}
-              title="Badges & Erfolge"
-              description="Sammle Badges für deine Aktivitäten und zeige deine Achievements."
-              delay={0.4}
-            />
-            <FeatureCard
               icon={<People sx={{ fontSize: 40 }} />}
               title="Freunde-System"
               description="Teile deine Listen mit Freunden und entdecke, was andere schauen."

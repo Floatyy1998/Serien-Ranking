@@ -10,19 +10,22 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../components/auth/AuthProvider';
 
 export const MobileLoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,18 +33,56 @@ export const MobileLoginPage = () => {
     setLoading(true);
 
     try {
-      await firebase.auth().signInWithEmailAndPassword(email, password);
+      await login(email, password);
       navigate('/');
     } catch (error: any) {
-      if (error.code === 'auth/user-not-found') {
+      const errorMessage = error.message || 'Ein Fehler ist aufgetreten';
+
+      if (errorMessage.includes('Password reset required')) {
+        setError('Bitte setzen Sie ein neues Passwort für Ihren Account.');
+        setShowPasswordReset(true);
+        setResetEmail(email);
+      } else if (errorMessage.includes('Invalid credentials')) {
+        setError('E-Mail oder Passwort ist falsch.');
+      } else if (errorMessage.includes('User not found')) {
         setError('Kein Benutzer mit dieser E-Mail-Adresse gefunden.');
-      } else if (error.code === 'auth/wrong-password') {
-        setError('Falsches Passwort.');
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (errorMessage.includes('invalid')) {
         setError('Ungültige E-Mail-Adresse.');
       } else {
-        setError('Ein Fehler ist aufgetreten. Bitte versuche es später erneut.');
+        setError(errorMessage);
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    setError('');
+    setResetMessage('');
+    setLoading(true);
+
+    try {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? '/api' : 'https://serienapi.konrad-dinges.de/api');
+      const response = await fetch(`${apiUrl}/auth/request-password-reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResetMessage(
+          'Eine E-Mail mit Anweisungen zum Zurücksetzen des Passworts wurde gesendet.'
+        );
+        setShowPasswordReset(false);
+      } else {
+        setError(data.error || 'Fehler beim Senden der Reset-E-Mail');
+      }
+    } catch (error) {
+      setError('Netzwerkfehler. Bitte versuchen Sie es später erneut.');
     } finally {
       setLoading(false);
     }
@@ -134,6 +175,64 @@ export const MobileLoginPage = () => {
               >
                 {error}
               </Alert>
+            )}
+
+            {resetMessage && (
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 3,
+                  background: 'rgba(46, 125, 50, 0.1)',
+                  color: '#66bb6a',
+                }}
+              >
+                {resetMessage}
+              </Alert>
+            )}
+
+            {showPasswordReset && (
+              <Box sx={{ mb: 3, p: 2, background: 'rgba(255, 152, 0, 0.1)', borderRadius: 2 }}>
+                <Typography sx={{ color: '#ffa726', mb: 2 }}>Firebase-Konto Migration</Typography>
+                <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2, fontSize: '0.9rem' }}>
+                  Ihr Konto wurde von Firebase migriert. Bitte fordern Sie ein neues Passwort an.
+                </Typography>
+                <TextField
+                  fullWidth
+                  label="E-Mail für Passwort-Reset"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  margin="normal"
+                  sx={{
+                    mb: 2,
+                    '& .MuiOutlinedInput-root': {
+                      color: 'white',
+                      '& fieldset': {
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'rgba(255, 255, 255, 0.5)',
+                    },
+                  }}
+                />
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handlePasswordReset}
+                  disabled={loading || !resetEmail}
+                  sx={{
+                    borderColor: '#ffa726',
+                    color: '#ffa726',
+                    '&:hover': {
+                      borderColor: '#ffb74d',
+                      background: 'rgba(255, 152, 0, 0.1)',
+                    },
+                  }}
+                >
+                  {loading ? 'Sende...' : 'Passwort-Reset anfordern'}
+                </Button>
+              </Box>
             )}
 
             <form onSubmit={handleSubmit}>

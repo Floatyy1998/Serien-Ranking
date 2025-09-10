@@ -10,15 +10,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../components/auth/AuthProvider';
 
 export const MobileRegisterPage = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,40 +46,28 @@ export const MobileRegisterPage = () => {
       return;
     }
 
+    // Check if username contains only valid characters
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      setError('Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Create user account
-      const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-
-      if (userCredential.user) {
-        // Update display name
-        await userCredential.user.updateProfile({
-          displayName: username,
-        });
-
-        // Save user data to database
-        await firebase.database().ref(`users/${userCredential.user.uid}`).set({
-          uid: userCredential.user.uid,
-          email: userCredential.user.email,
-          username: username,
-          displayName: username,
-          createdAt: firebase.database.ServerValue.TIMESTAMP,
-          lastActive: firebase.database.ServerValue.TIMESTAMP,
-          isOnline: true,
-        });
-
-        navigate('/');
-      }
+      await register(email, password, username, username);
+      navigate('/');
     } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
+      const errorMessage = error.message || 'Ein Fehler ist aufgetreten';
+      
+      if (errorMessage.includes('Email already exists')) {
         setError('Diese E-Mail-Adresse wird bereits verwendet.');
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (errorMessage.includes('Username already taken')) {
+        setError('Dieser Benutzername ist bereits vergeben.');
+      } else if (errorMessage.includes('invalid')) {
         setError('Ungültige E-Mail-Adresse.');
-      } else if (error.code === 'auth/weak-password') {
-        setError('Passwort ist zu schwach.');
       } else {
-        setError('Ein Fehler ist aufgetreten. Bitte versuche es später erneut.');
+        setError(errorMessage);
       }
     } finally {
       setLoading(false);

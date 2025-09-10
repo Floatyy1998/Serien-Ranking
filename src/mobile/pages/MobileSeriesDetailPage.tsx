@@ -14,27 +14,24 @@ import {
   Star,
   Visibility,
 } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../components/auth/AuthProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import apiService from '../../services/api.service';
 import { Series } from '../../types/Series';
 import { MobileBackButton } from '../components/MobileBackButton';
 import { MobileCastCrew } from '../components/MobileCastCrew';
 import { MobileDialog } from '../components/MobileDialog';
-import { MobileProviderBadges } from '../components/MobileProviderBadges';
 
 export const MobileSeriesDetailPage = memo(() => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { seriesList, addSeries, deleteSeries, updateSeries } = useSeriesList();
   const { currentTheme } = useTheme();
   const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -46,8 +43,16 @@ export const MobileSeriesDetailPage = memo(() => {
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
   const [tmdbSeries, setTmdbSeries] = useState<Series | null>(null);
   const [loading, setLoading] = useState(false);
-  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning'; onConfirm?: () => void }>({ open: false, message: '', type: 'info' });
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    onConfirm?: () => void;
+  }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
 
   // Firebase batch updates ready if needed
   // Using API instead of direct Firebase updates
@@ -225,38 +230,14 @@ export const MobileSeriesDetailPage = memo(() => {
 
     setIsAdding(true);
     try {
-      const response = await fetch('https://serienapi.konrad-dinges.de/add', {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: import.meta.env.VITE_USER,
-          id: series.id,
-          uuid: user.uid,
-        }),
-      });
+      await addSeries(series.id);
 
-      if (response.ok) {
-        // Activity-Logging für Friend + Badge-System (wie Desktop)
-        await logSeriesAdded(
-          user.uid,
-          series.name || series.title || 'Unbekannte Serie',
-          series.id
-        );
 
-        setSnackbar({ open: true, message: 'Serie erfolgreich hinzugefügt!' });
-        setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
-        
-        // Navigate to refresh the series data
-        navigate(`/series/${series.id}`, { replace: true });
-      } else {
-        const data = await response.json();
-        if (data.error === 'Serie bereits vorhanden') {
-          setDialog({ open: true, message: 'Serie ist bereits in deiner Liste!', type: 'warning' });
-        } else {
-          throw new Error('Fehler beim Hinzufügen');
-        }
-      }
+      setSnackbar({ open: true, message: 'Serie erfolgreich hinzugefügt!' });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+
+      // Navigate to refresh the series data
+      navigate(`/series/${series.id}`, { replace: true });
     } catch (error) {
       setDialog({ open: true, message: 'Fehler beim Hinzufügen der Serie.', type: 'error' });
     } finally {
@@ -268,28 +249,27 @@ export const MobileSeriesDetailPage = memo(() => {
   const handleDeleteSeries = useCallback(() => {
     if (!series || !user) return;
 
-    setDialog({ 
-      open: true, 
-      message: 'Möchtest du diese Serie wirklich löschen?', 
+    setDialog({
+      open: true,
+      message: 'Möchtest du diese Serie wirklich löschen?',
       type: 'warning',
       onConfirm: async () => {
         setIsDeleting(true);
         try {
-          // Delete directly from Firebase
-          await firebase.database().ref(`${user.uid}/serien/${series.nmr}`).remove();
-          
+          // Delete using context method
+          await deleteSeries(series.id.toString());
+
           // Show success message
           setSnackbar({ open: true, message: 'Serie erfolgreich gelöscht!' });
           setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
-          
-          // Series will be removed from list automatically via Firebase listener
-          // No navigation needed - stay on current page
+
+          // Navigate back after deletion
         } catch (error) {
           setDialog({ open: true, message: 'Fehler beim Löschen der Serie.', type: 'error' });
         } finally {
           setIsDeleting(false);
         }
-      }
+      },
     });
   }, [series, user, navigate]);
 
@@ -298,19 +278,12 @@ export const MobileSeriesDetailPage = memo(() => {
     if (!series || !user) return;
 
     try {
-      // Use Firebase directly like desktop
-      const ref = firebase.database().ref(`${user.uid}/serien/${series.nmr}/watchlist`);
-
+      // Use context method to update watchlist
       const newWatchlistStatus = !series.watchlist;
-      await ref.set(newWatchlistStatus);
+      await updateSeries(series.id.toString(), { watchlist: newWatchlistStatus });
 
-      // Badge-System für Watchlist (nur wenn hinzugefügt)
-      if (newWatchlistStatus) {
-        const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
-        await logWatchlistAdded(user.uid, series.title, series.id);
-      }
 
-      // The context will update automatically through Firebase listeners
+      // The context will update automatically through API response
     } catch (error) {
       setDialog({ open: true, message: 'Fehler beim Aktualisieren der Watchlist.', type: 'error' });
     }
@@ -321,22 +294,22 @@ export const MobileSeriesDetailPage = memo(() => {
     if (!series || !user) return;
 
     try {
-      // Find the season and episode indices
-      const seasonIndex = series.seasons?.findIndex((s: any) =>
+      // Find the season and episode number
+      const season = series.seasons?.find((s: any) =>
         s.episodes?.some((e: any) => e.id === episode.id)
       );
-      const episodeIndex = series.seasons?.[seasonIndex]?.episodes?.findIndex(
-        (e: any) => e.id === episode.id
-      );
 
-      if (seasonIndex === -1 || episodeIndex === -1) {
-        throw new Error('Episode not found');
+      if (!season) {
+        throw new Error('Season not found');
       }
 
-      const episodePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
       const newWatchCount = (episode.watchCount || 1) + 1;
 
-      await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
+      await apiService.updateEpisode(series.id.toString(), {
+        seasonNumber: season.season_number,
+        episodeNumber: episode.episode_number,
+        watchCount: newWatchCount,
+      });
 
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
     } catch (error) {
@@ -349,29 +322,31 @@ export const MobileSeriesDetailPage = memo(() => {
     if (!series || !user) return;
 
     try {
-      // Find the season and episode indices
-      const seasonIndex = series.seasons?.findIndex((s: any) =>
+      // Find the season
+      const season = series.seasons?.find((s: any) =>
         s.episodes?.some((e: any) => e.id === episode.id)
       );
-      const episodeIndex = series.seasons?.[seasonIndex]?.episodes?.findIndex(
-        (e: any) => e.id === episode.id
-      );
 
-      if (seasonIndex === -1 || episodeIndex === -1) {
-        throw new Error('Episode not found');
+      if (!season) {
+        throw new Error('Season not found');
       }
-
-      const episodePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
 
       if (episode.watchCount && episode.watchCount > 1) {
         // Reduce watch count
         const newWatchCount = episode.watchCount - 1;
-        await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
+        await apiService.updateEpisode(series.id.toString(), {
+          seasonNumber: season.season_number,
+          episodeNumber: episode.episode_number,
+          watchCount: newWatchCount,
+        });
       } else {
         // Mark as unwatched completely
-        await firebase.database().ref(`${episodePath}/watched`).remove();
-        await firebase.database().ref(`${episodePath}/watchCount`).remove();
-        await firebase.database().ref(`${episodePath}/firstWatchedAt`).remove();
+        await apiService.updateEpisode(series.id.toString(), {
+          seasonNumber: season.season_number,
+          episodeNumber: episode.episode_number,
+          watched: false,
+          watchCount: 0,
+        });
       }
 
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
@@ -491,7 +466,9 @@ export const MobileSeriesDetailPage = memo(() => {
               position: 'absolute',
               top: 'calc(20px + env(safe-area-inset-top))',
               right: '20px',
-              background: isAdding ? `${currentTheme.status.success}88` : `${currentTheme.status.success}CC`,
+              background: isAdding
+                ? `${currentTheme.status.success}88`
+                : `${currentTheme.status.success}CC`,
               backdropFilter: 'blur(10px)',
               border: 'none',
               color: 'white',
@@ -578,17 +555,6 @@ export const MobileSeriesDetailPage = memo(() => {
             </div>
           )}
 
-          {/* Provider Badges unter dem Fortschrittsbalken */}
-          {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
-            <div>
-              <MobileProviderBadges
-                providers={(series.provider?.provider && series.provider.provider.length > 0) ? series.provider.provider : providers}
-                size="large"
-                maxDisplay={6}
-                showNames={false}
-              />
-            </div>
-          )}
         </div>
       </div>
 
@@ -745,11 +711,7 @@ export const MobileSeriesDetailPage = memo(() => {
 
       {/* Content based on active tab */}
       {activeTab === 'cast' ? (
-        <MobileCastCrew
-          tmdbId={series.tmdb_id || series.id}
-          mediaType="tv"
-          seriesData={series}
-        />
+        <MobileCastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
       ) : (
         <>
           {/* Series Description */}
@@ -952,7 +914,7 @@ export const MobileSeriesDetailPage = memo(() => {
                                       position: 'relative',
                                     }}
                                   >
-                                    {episodeIndex + 1}
+                                    {episode.episode_number || episodeIndex + 1}
                                     {(episode.watchCount || 0) > 1 && (
                                       <span
                                         style={{
@@ -1274,21 +1236,31 @@ export const MobileSeriesDetailPage = memo(() => {
       <MobileDialog
         open={dialog.open}
         onClose={() => setDialog({ ...dialog, open: false })}
-        title={dialog.type === 'warning' ? 'Bestätigung' : dialog.type === 'error' ? 'Fehler' : 'Information'}
+        title={
+          dialog.type === 'warning'
+            ? 'Bestätigung'
+            : dialog.type === 'error'
+              ? 'Fehler'
+              : 'Information'
+        }
         message={dialog.message}
         type={dialog.type}
-        actions={dialog.onConfirm ? [
-          {
-            label: 'Abbrechen',
-            onClick: () => setDialog({ ...dialog, open: false }),
-            variant: 'secondary'
-          },
-          {
-            label: 'Bestätigen',
-            onClick: dialog.onConfirm,
-            variant: 'primary'
-          }
-        ] : []}
+        actions={
+          dialog.onConfirm
+            ? [
+                {
+                  label: 'Abbrechen',
+                  onClick: () => setDialog({ ...dialog, open: false }),
+                  variant: 'secondary',
+                },
+                {
+                  label: 'Bestätigen',
+                  onClick: dialog.onConfirm,
+                  variant: 'primary',
+                },
+              ]
+            : []
+        }
       />
 
       {/* Success Snackbar */}

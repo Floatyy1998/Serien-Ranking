@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "bump-version": "node scripts/bump-sw-version.js",
-    "build": "tsc && vite build && firebase deploy",
+    "build": "tsc && vite build",
     "build:local": "tsc && vite build",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
@@ -27,7 +27,8 @@
     "@mui/x-date-pickers": "^8.11.1",
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.2",
-    "firebase": "^12.2.1",
+    "axios": "^1.7.2",
+    "socket.io-client": "^4.7.5",
     "framer-motion": "^12.23.12",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.525.0",

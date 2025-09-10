@@ -64,7 +64,11 @@ export const calculateOverallRating = (series: Series | Movie) => {
   let genreCount = 0;
 
   try {
-    Object.entries(series.rating).forEach(([, value]) => {
+    if (!series.rating || typeof series.rating !== 'object') {
+      return '0.00';
+    }
+
+    Object.entries(series.rating).forEach(([key, value]) => {
       if (value > 0) {
         totalRating += value;
         genreCount += 1;
@@ -77,6 +81,7 @@ export const calculateOverallRating = (series: Series | Movie) => {
     const roundedRating = addZeroes(round(overallRating, 0.01));
     return roundedRating;
   } catch (error) {
+    console.error('Error in calculateOverallRating:', error);
     return '0.00';
   }
 };

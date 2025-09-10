@@ -1,5 +1,5 @@
-import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
+import apiService from '../../services/api.service';
 
 export interface NewSeasonData {
   seriesId: number;
@@ -14,9 +14,8 @@ export const getStoredSeasonData = async (
   userId: string
 ): Promise<Record<string, NewSeasonData>> => {
   try {
-    const ref = firebase.database().ref(`${userId}/newSeasonData`);
-    const snapshot = await ref.once('value');
-    return snapshot.val() || {};
+    const data = await apiService.getNewSeasonData();
+    return data || {};
   } catch {
     return {};
   }
@@ -27,9 +26,10 @@ export const storeSeasonData = async (
   data: Record<string, NewSeasonData>
 ) => {
   try {
-    const ref = firebase.database().ref(`${userId}/newSeasonData`);
-    await ref.set(data);
-  } catch (error) {}
+    await apiService.updateNewSeasonData(data);
+  } catch (error) {
+    console.error('Error storing season data:', error);
+  }
 };
 
 export const detectNewSeasons = async (
@@ -117,4 +117,3 @@ export const markSeasonAsNotified = async (
     await storeSeasonData(userId, storedData);
   }
 };
-
