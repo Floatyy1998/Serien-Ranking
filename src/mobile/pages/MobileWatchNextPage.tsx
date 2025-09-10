@@ -713,7 +713,7 @@ export const MobileWatchNextPage = () => {
                         position: 'relative',
                       }}
                     >
-                      {/* Swipe Overlay for episodes */}
+                      {/* Swipe Overlay for episodes - only when NOT in custom order mode */}
                       {!customOrderActive && (
                         <motion.div
                           drag="x"
@@ -752,7 +752,7 @@ export const MobileWatchNextPage = () => {
                             position: 'absolute',
                             top: 0,
                             left: '60px', // Start after the poster
-                            right: 0,
+                            right: '100px', // Leave space for the button on the right
                             bottom: 0,
                             zIndex: 1,
                           }}
@@ -933,7 +933,7 @@ export const MobileWatchNextPage = () => {
                           </div>
                         )}
 
-                        {/* Replaced button with AnimatePresence for swipe */}
+                        {/* Button for completing episodes */}
                         <AnimatePresence mode="wait">
                           {isCompleting ? (
                             <motion.div
@@ -945,6 +945,8 @@ export const MobileWatchNextPage = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
+                                position: 'relative',
+                                zIndex: 2,
                               }}
                             >
                               <Check
@@ -959,6 +961,8 @@ export const MobileWatchNextPage = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
+                                position: 'relative',
+                                zIndex: 2,
                               }}
                             >
                               <PlayCircle
@@ -984,6 +988,8 @@ export const MobileWatchNextPage = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
+                                position: 'relative',
+                                zIndex: 2,
                               }}
                             >
                               <CheckBoxOutlineBlank
