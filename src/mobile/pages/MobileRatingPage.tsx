@@ -92,16 +92,23 @@ export const MobileRatingPage = () => {
 
       // If there are saved ratings, load them
       if (item.rating && typeof item.rating === 'object') {
-        // Calculate overall rating from saved genre ratings
-        const overall = calculateOverallRating(item);
-        setOverallRating(parseFloat(overall) || 0);
+        if (type === 'movie') {
+          // For movies: rating[userId] contains the user's rating
+          const userRating = item.rating[user.uid] || 0;
+          setOverallRating(userRating);
+          // For movies, we don't use genre ratings - just overall
+        } else {
+          // For series: Calculate overall rating from saved genre ratings
+          const overall = calculateOverallRating(item);
+          setOverallRating(parseFloat(overall) || 0);
 
-        // Override with actual saved ratings
-        Object.keys(item.rating).forEach((genre) => {
-          if (typeof item.rating[genre] === 'number') {
-            loadedRatings[genre] = item.rating[genre];
-          }
-        });
+          // Override with actual saved ratings
+          Object.keys(item.rating).forEach((genre) => {
+            if (typeof item.rating[genre] === 'number') {
+              loadedRatings[genre] = item.rating[genre];
+            }
+          });
+        }
       } else {
         // No rating yet
         setOverallRating(0);
@@ -168,12 +175,14 @@ export const MobileRatingPage = () => {
       }
 
       // Only save if there are ratings to save
-      if (Object.keys(ratingsToSave).length > 0) {
+      if (Object.keys(ratingsToSave).length > 0 || type === 'movie') {
         // Update rating via API
         if (type === 'series') {
           await apiService.updateSeries(item.id.toString(), { rating: ratingsToSave });
         } else {
-          await apiService.updateMovie(item.id.toString(), { rating: ratingsToSave });
+          // For movies, save user-specific rating
+          const movieRating = overallRating > 0 ? { [user.uid]: overallRating } : {};
+          await apiService.updateMovie(item.id.toString(), { rating: movieRating });
         }
 
         
@@ -213,7 +222,10 @@ export const MobileRatingPage = () => {
       if (type === 'series') {
         await apiService.updateSeries(item.id.toString(), { rating: {} });
       } else {
-        await apiService.updateMovie(item.id.toString(), { rating: {} });
+        // For movies, remove the user's rating
+        const updatedRating = { ...item.rating };
+        delete updatedRating[user.uid];
+        await apiService.updateMovie(item.id.toString(), { rating: updatedRating });
       }
       
       // Show success snackbar
@@ -289,8 +301,8 @@ export const MobileRatingPage = () => {
         </motion.div>
       </div>
 
-      {/* Tab Navigation */}
-      {Object.keys(genreRatings).length > 0 && (
+      {/* Tab Navigation - only show for series */}
+      {type === 'series' && Object.keys(genreRatings).length > 0 && (
         <div className="tab-navigation">
           <button
             className={`tab ${activeTab === 'overall' ? 'active' : ''}`}

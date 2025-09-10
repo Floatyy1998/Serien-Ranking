@@ -101,7 +101,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (typeof window !== 'undefined') {
         try {
           // Create minimal cache data - only essential fields
-          const cacheData = data.map(series => ({
+          const cacheData = data.map((series: any) => ({
             id: series.id,
             tmdbId: series.tmdbId,
             title: series.title,
@@ -113,11 +113,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
             rating: series.rating,
             progress: series.progress,
             // Store only essential season/episode data
-            seasons: series.seasons?.map(season => ({
+            seasons: series.seasons?.map((season: any) => ({
               season_number: season.season_number,
               seasonNumber: season.seasonNumber,
               episode_count: season.episode_count,
-              episodes: season.episodes?.map(ep => ({
+              episodes: season.episodes?.map((ep: any) => ({
                 episode_number: ep.episode_number,
                 watched: ep.watched,
                 watchCount: ep.watchCount,
@@ -163,7 +163,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
             });
             
             // Try caching again with even more minimal data
-            const minimalCache = data.map(series => ({
+            const minimalCache = data.map((series: any) => ({
               id: series.id,
               tmdbId: series.tmdbId,
               title: series.title,

@@ -406,6 +406,11 @@ class ApiService {
     return response.data;
   }
 
+  async checkUsernameAvailability(username: string) {
+    const response = await this.api.get(`/users/check-username/${username}`);
+    return response.data.available;
+  }
+
   // Season management methods
   async updateSeasonWatched(seriesId: string, seasonNumber: number, watched: boolean) {
     const response = await this.api.put(`/series/${seriesId}/seasons/${seasonNumber}/watched`, {

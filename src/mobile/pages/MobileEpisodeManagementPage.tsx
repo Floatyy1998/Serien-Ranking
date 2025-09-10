@@ -177,7 +177,7 @@ export const MobileEpisodeManagementPage = () => {
       }
 
       // Refetch the series to update the local state
-      await refetchSeries(series.id.toString());
+      await refetchSeries();
 
     } catch (error) {
       console.error('Failed to update season watched status:', error);

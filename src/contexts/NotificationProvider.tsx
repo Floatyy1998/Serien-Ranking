@@ -75,9 +75,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (data.friendId) {
         // Mark specific friend's activities as read
         setFriendUnreadActivities((prev) => {
-          const updated = { ...prev, [data.friendId]: 0 };
+          const updated: Record<string, number> = { ...prev };
+          updated[data.friendId as string] = 0;
           const newTotal = Math.min(
-            Object.values(updated).reduce((sum, count) => sum + count, 0),
+            Object.values(updated).reduce((sum: number, count: number) => sum + count, 0),
             20
           );
           setTotalUnreadActivities(newTotal);

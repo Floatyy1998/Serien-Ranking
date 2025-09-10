@@ -50,7 +50,7 @@ export const MobileWatchNextPage = () => {
   const [sortOption, setSortOption] = useState(
     localStorage.getItem('watchNextSortOption') || 'name-asc'
   );
-  const [watchlistOrder, setWatchlistOrder] = useState<number[]>([]);
+  const [watchlistOrder, setWatchlistOrder] = useState<string[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [currentTouchIndex, setCurrentTouchIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -196,8 +196,8 @@ export const MobileWatchNextPage = () => {
                 seasonIndex: seasonIndex,
                 episodeIndex: rewatchEpisode.episodeIndex,
                 seasonNumber: rewatchEpisode.seasonNumber,
-                episodeNumber: rewatchEpisode.episode_number || rewatchEpisode.episodeIndex + 1,
-                episodeName: rewatchEpisode.name || `Episode ${rewatchEpisode.episode_number || rewatchEpisode.episodeIndex + 1}`,
+                episodeNumber: (rewatchEpisode as any).episode_number || rewatchEpisode.episodeIndex + 1,
+                episodeName: rewatchEpisode.name || `Episode ${(rewatchEpisode as any).episode_number || rewatchEpisode.episodeIndex + 1}`,
                 airDate: rewatchEpisode.air_date,
                 isRewatch: true,
                 currentWatchCount: rewatchEpisode.currentWatchCount,
@@ -270,8 +270,8 @@ export const MobileWatchNextPage = () => {
     } else if (watchlistOrder.length > 0) {
       // Apply custom order
       sortedEpisodes.sort((a, b) => {
-        const indexA = watchlistOrder.indexOf(a.seriesId);
-        const indexB = watchlistOrder.indexOf(b.seriesId);
+        const indexA = watchlistOrder.indexOf(a.seriesId.toString());
+        const indexB = watchlistOrder.indexOf(b.seriesId.toString());
         if (indexA === -1) return 1;
         if (indexB === -1) return -1;
         return indexA - indexB;
@@ -308,7 +308,7 @@ export const MobileWatchNextPage = () => {
 
     // Update order in Firebase
     if (user && customOrderActive) {
-      const newOrder = newEpisodes.map((ep) => ep.seriesId);
+      const newOrder = newEpisodes.map((ep) => ep.seriesId.toString());
       // Remove duplicates and keep first occurrence
       const uniqueOrder = [...new Set(newOrder)];
       setWatchlistOrder(uniqueOrder);
@@ -369,7 +369,7 @@ export const MobileWatchNextPage = () => {
 
     // Update order in Firebase
     if (user && customOrderActive) {
-      const newOrder = newEpisodes.map((ep) => ep.seriesId);
+      const newOrder = newEpisodes.map((ep) => ep.seriesId.toString());
       const uniqueOrder = [...new Set(newOrder)];
       setWatchlistOrder(uniqueOrder);
       await apiService.updateWatchlistOrder(uniqueOrder);

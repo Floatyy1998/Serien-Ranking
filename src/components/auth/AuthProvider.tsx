@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } finally {
         setAuthStateResolved(true);
         window.setAppReady?.('auth', true);
-        window.setAppReady?.('firebase', true); // For compatibility
+        // window.setAppReady?.('firebase', true); // Removed - not in type definition
         window.setAppReady?.('emailVerification', true);
       }
     };

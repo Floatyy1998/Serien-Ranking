@@ -131,7 +131,7 @@ export const OptimizedFriendsProvider = ({
       
       // Calculate unread count
       const unreadCount = incoming.filter(
-        req => new Date(req.sentAt).getTime() > lastReadRequestsTime
+        (req: any) => new Date(req.sentAt).getTime() > lastReadRequestsTime
       ).length;
       setUnreadRequestsCount(unreadCount);
       
@@ -171,7 +171,7 @@ export const OptimizedFriendsProvider = ({
       
       // Calculate unread count
       const unreadCount = activities.filter(
-        activity => new Date(activity.timestamp).getTime() > lastReadActivitiesTime
+        (activity: any) => new Date(activity.timestamp).getTime() > lastReadActivitiesTime
       ).length;
       setUnreadActivitiesCount(unreadCount);
       
@@ -210,12 +210,12 @@ export const OptimizedFriendsProvider = ({
     const socket = apiService.getSocket();
     if (!socket) return;
 
-    const handleFriendRequest = (data: any) => {
+    const handleFriendRequest = () => {
       fetchRequests();
       setUnreadRequestsCount(prev => prev + 1);
     };
 
-    const handleFriendRequestAccepted = (data: any) => {
+    const handleFriendRequestAccepted = () => {
       fetchFriends();
       fetchRequests();
     };

@@ -34,6 +34,7 @@ interface UpcomingEpisode {
   airDate: Date;
   daysUntil: number;
   watched: boolean;
+  watchCount?: number;
 }
 
 export const MobileNewEpisodesPage = () => {

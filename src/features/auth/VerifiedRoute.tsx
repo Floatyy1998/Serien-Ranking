@@ -1,8 +1,8 @@
-import { Alert, Button, Card, Snackbar } from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/auth/AuthProvider';
-import { colors } from '../../theme';
+// import { colors } from '../../theme';
 
 interface VerifiedRouteProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ interface VerifiedRouteProps {
 
 export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
   const { user, logout } = useAuth();
-  const [message, setMessage] = useState('');
+  const [message] = useState(''); // setMessage unused for now
   const [snackOpen, setSnackOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -29,9 +29,9 @@ export const VerifiedRoute = ({ children }: VerifiedRouteProps) => {
     setSnackOpen(false);
   };
 
-  const handleLogout = async () => {
-    await logout();
-  };
+  // const handleLogout = async () => {
+  //   await logout();
+  // };
 
   // Since email verification is not working without email service,
   // always show the children content

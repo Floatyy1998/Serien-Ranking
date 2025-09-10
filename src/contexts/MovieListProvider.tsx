@@ -112,11 +112,11 @@ export const MovieListProvider = ({
   const updateMovie = useCallback(async (movieId: string, updates: Partial<Movie>) => {
     try {
       const updatedMovie = await apiService.updateMovie(movieId, updates);
-      setMovieList(prev => prev.map(m => m._id === movieId ? updatedMovie : m));
+      setMovieList(prev => prev.map(m => m.id.toString() === movieId ? updatedMovie : m));
       
       // Update cache
       if (typeof window !== 'undefined' && user) {
-        const updated = movieList.map(m => m._id === movieId ? updatedMovie : m);
+        const updated = movieList.map(m => m.id.toString() === movieId ? updatedMovie : m);
         localStorage.setItem(`movies_${user.uid}`, JSON.stringify(updated));
       }
     } catch (error) {
@@ -128,11 +128,11 @@ export const MovieListProvider = ({
   const deleteMovie = useCallback(async (movieId: string) => {
     try {
       await apiService.deleteMovie(movieId);
-      setMovieList(prev => prev.filter(m => m._id !== movieId));
+      setMovieList(prev => prev.filter(m => m.id.toString() !== movieId));
       
       // Update cache
       if (typeof window !== 'undefined' && user) {
-        const updated = movieList.filter(m => m._id !== movieId);
+        const updated = movieList.filter(m => m.id.toString() !== movieId);
         localStorage.setItem(`movies_${user.uid}`, JSON.stringify(updated));
       }
     } catch (error) {

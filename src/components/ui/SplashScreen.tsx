@@ -458,11 +458,10 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   useEffect(() => {
     const checkProgress = setInterval(() => {
       const status = window.appReadyStatus || {};
-      const totalSystems = 5;
+      const totalSystems = 4;
       const readySystems = [
         status.theme,
         status.auth,
-        status.firebase,
         status.emailVerification,
         status.initialData,
       ].filter(Boolean).length;

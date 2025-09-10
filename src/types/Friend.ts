@@ -59,11 +59,15 @@ export interface FriendActivity {
     | 'series_added_to_watchlist'
     | 'series_removed_from_watchlist'
     | 'movie_added_to_watchlist'
-    | 'movie_removed_from_watchlist';
+    | 'movie_removed_from_watchlist'
+    | 'series_completed'
+    | 'movie_watched'
+    | 'friend_added';
   itemTitle: string;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
   rating?: number;
   timestamp: number;
+  data?: any; // Additional activity data
 }
 
 export interface FriendStats {
