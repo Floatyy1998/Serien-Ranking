@@ -1,9 +1,9 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { EarnedBadge } from './badgeDefinitions';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
 import BadgeNotification from './BadgeNotification';
-import BadgeOverviewDialog from './BadgeOverviewDialog';
 
 interface BadgeContextType {
   showBadgeOverview: () => void;
@@ -21,11 +21,11 @@ interface BadgeProviderProps {
 export const BadgeProvider = ({ children }: BadgeProviderProps) => {
   const auth = useAuth();
   const user = auth?.user;
+  const navigate = useNavigate();
 
   const [newBadges, setNewBadges] = useState<EarnedBadge[]>([]);
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState(0);
   const [showNotification, setShowNotification] = useState(false);
-  const [showOverviewDialog, setShowOverviewDialog] = useState(false);
 
   // Registriere Badge-Callback beim minimalActivityLogger
   useEffect(() => {
@@ -135,7 +135,8 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
       }
     }
 
-    setShowOverviewDialog(true);
+    // Always navigate to badges page
+    navigate('/badges');
   };
 
   const clearNewBadges = () => {
@@ -164,9 +165,6 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
         onClose={handleCloseNotification}
         onViewAllBadges={showBadgeOverview}
       />
-
-      {/* Badge Overview Dialog */}
-      <BadgeOverviewDialog open={showOverviewDialog} onClose={() => setShowOverviewDialog(false)} />
     </BadgeContext.Provider>
   );
 };
