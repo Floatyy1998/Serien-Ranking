@@ -73,8 +73,8 @@ export const MobileRatingPage = () => {
   // Get item based on type
   const item =
     type === 'series'
-      ? seriesList.find((s: Series) => s.id.toString() === id)
-      : movieList.find((m: MovieType) => m.id.toString() === id);
+      ? seriesList.find((s: Series) => s.id && s.id.toString() === id)
+      : movieList.find((m: MovieType) => m.id && m.id.toString() === id);
 
   // Initialize ratings from Firebase genre-based structure
   useEffect(() => {

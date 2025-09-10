@@ -24,6 +24,7 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import { calculateOverallRating } from '../../lib/rating/rating';
 import { Series } from '../../types/Series';
 import { MobileBackButton } from '../components/MobileBackButton';
 import { MobileCastCrew } from '../components/MobileCastCrew';
@@ -169,11 +170,11 @@ export const MobileSeriesDetailPage = memo(() => {
     return `https://image.tmdb.org/t/p/original${backdropPath}`;
   };
 
-  // Calculate user rating - using real Firebase structure
-  const userRating = useMemo(() => {
-    if (!user?.uid || !series?.rating) return 0;
-    return series.rating[user.uid] || 0;
-  }, [series, user]);
+  // Calculate overall rating from genre ratings
+  const overallRating = useMemo(() => {
+    if (!series) return '0.00';
+    return calculateOverallRating(series);
+  }, [series]);
 
   // Calculate progress statistics - only count aired episodes
   const progressStats = useMemo(() => {
@@ -542,7 +543,11 @@ export const MobileSeriesDetailPage = memo(() => {
           >
             {series.release_date && <span>{new Date(series.release_date).getFullYear()}</span>}
             {series.seasons && <span>• {series.seasons.length} Staffeln</span>}
-            {userRating > 0 && <span style={{ color: '#ffd700' }}>• ⭐ {userRating}/10</span>}
+            {parseFloat(overallRating) > 0 && (
+              <span style={{ color: '#ffd700' }}>
+                • ⭐ {overallRating}
+              </span>
+            )}
           </div>
 
           {/* Progress Bar */}
@@ -632,10 +637,10 @@ export const MobileSeriesDetailPage = memo(() => {
             style={{
               flex: 1,
               padding: '12px',
-              background: userRating
+              background: parseFloat(overallRating) > 0
                 ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
-              border: userRating
+              border: parseFloat(overallRating) > 0
                 ? '1px solid rgba(255, 215, 0, 0.3)'
                 : '1px solid rgba(255, 255, 255, 0.1)',
               color: 'white',
@@ -652,10 +657,10 @@ export const MobileSeriesDetailPage = memo(() => {
             <Star
               style={{
                 fontSize: '18px',
-                color: userRating ? '#ffd700' : 'white',
+                color: parseFloat(overallRating) > 0 ? '#ffd700' : 'white',
               }}
             />
-            {userRating ? `${userRating}/10` : 'Bewerten'}
+            Bewerten
           </motion.button>
 
           <motion.button
