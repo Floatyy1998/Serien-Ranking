@@ -1,4 +1,13 @@
-import { Add, CalendarToday, Check, Close, Movie, Search, Star, TrendingUp } from '@mui/icons-material';
+import {
+  Add,
+  CalendarToday,
+  Check,
+  Close,
+  Movie,
+  Search,
+  Star,
+  TrendingUp,
+} from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
@@ -9,8 +18,8 @@ import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActi
 import { Movie as MovieType } from '../../types/Movie';
 import { Series } from '../../types/Series';
 // Removed VirtualizedSearchResults import - using custom grid layout
-import { MobileDialog } from '../components/MobileDialog';
 import { MobileBackButton } from '../components/MobileBackButton';
+import { MobileDialog } from '../components/MobileDialog';
 // import { genreIdMapForSeries, genreIdMapForMovies } from '../../config/menuItems';
 
 export const MobileSearchPage: React.FC = () => {
@@ -19,10 +28,10 @@ export const MobileSearchPage: React.FC = () => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme } = useTheme();
-  
+
   // Check if we came back via navigation (back button)
   const isReturning = window.history.state?.usr?.returning === true;
-  
+
   // Restore search state from sessionStorage only if returning
   const [searchQuery, setSearchQuery] = useState(() => {
     if (isReturning) {
@@ -50,8 +59,15 @@ export const MobileSearchPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
   const [isDesktop] = useState(window.innerWidth >= 768);
   const [popularSearches] = useState([
     'Breaking Bad',
@@ -173,7 +189,7 @@ export const MobileSearchPage: React.FC = () => {
       setSkipInitialSearch(false);
       return;
     }
-    
+
     const timer = setTimeout(() => {
       searchTMDB(searchQuery);
     }, 500);
@@ -185,7 +201,7 @@ export const MobileSearchPage: React.FC = () => {
   const handleItemClick = (item: any) => {
     // Set flag for returning navigation
     window.history.replaceState({ ...window.history.state, usr: { returning: true } }, '');
-    
+
     // Always navigate to detail page
     if (item.type === 'series') {
       navigate(`/series/${item.id}`);
@@ -197,7 +213,11 @@ export const MobileSearchPage: React.FC = () => {
   // Add to list
   const addToList = async (item: any) => {
     if (!user) {
-      setDialog({ open: true, message: 'Bitte einloggen um Inhalte hinzuzufügen!', type: 'warning' });
+      setDialog({
+        open: true,
+        message: 'Bitte einloggen um Inhalte hinzuzufügen!',
+        type: 'warning',
+      });
       return;
     }
 
@@ -220,12 +240,12 @@ export const MobileSearchPage: React.FC = () => {
       if (response.ok) {
         // Remove item from search results (like in MobileDiscoverPage)
         setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
-        
+
         // Show success snackbar
         const title = item.title || item.name;
-        setSnackbar({ 
-          open: true, 
-          message: `"${title}" wurde erfolgreich hinzugefügt!` 
+        setSnackbar({
+          open: true,
+          message: `"${title}" wurde erfolgreich hinzugefügt!`,
         });
 
         // Activity-Logging für Friend + Badge-System (wie Desktop)
@@ -293,7 +313,7 @@ export const MobileSearchPage: React.FC = () => {
           </div>
           <div style={{ width: '40px' }}></div> {/* Spacer for alignment */}
         </div>
-        
+
         <div
           style={{
             padding: '0 20px 20px',
@@ -499,7 +519,7 @@ export const MobileSearchPage: React.FC = () => {
                           background: 'rgba(0, 0, 0, 0.8)',
                           backdropFilter: 'blur(10px)',
                           borderRadius: '4px',
-                          fontSize: '9px',
+                          fontSize: '11px',
                           fontWeight: 600,
                           display: 'flex',
                           alignItems: 'center',
@@ -523,14 +543,16 @@ export const MobileSearchPage: React.FC = () => {
                         top: '4px',
                         left: '4px',
                         padding: '2px 5px',
-                        background: item.type === 'series' 
-                          ? 'rgba(102, 126, 234, 0.9)'
-                          : 'rgba(255, 107, 107, 0.9)',
+                        background:
+                          item.type === 'series'
+                            ? 'rgba(102, 126, 234, 0.9)'
+                            : 'rgba(255, 107, 107, 0.9)',
                         borderRadius: '4px',
-                        fontSize: '8px',
+                        fontSize: '10px',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
+                        color: 'white',
                       }}
                     >
                       {item.type === 'series' ? 'Serie' : 'Film'}
