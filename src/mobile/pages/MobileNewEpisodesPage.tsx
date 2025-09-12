@@ -148,6 +148,7 @@ export const MobileNewEpisodesPage = () => {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
+        year: 'numeric',
       });
 
       if (!groups[dateKey]) {
@@ -295,8 +296,8 @@ export const MobileNewEpisodesPage = () => {
           <div>
             <h1
               style={{
-                fontSize: '24px',
-                fontWeight: 800,
+                fontSize: '20px',
+                fontWeight: 700,
                 margin: 0,
                 background: currentTheme.primary,
                 WebkitBackgroundClip: 'text',
