@@ -229,13 +229,13 @@ export function getGreeting(hour: number): Greeting {
     greetings = nightGreetings;
   }
   
-  // Use hour as seed for consistent greeting within the same hour
-  // Changes only when the hour changes
-  const today = new Date();
-  const seed = today.getFullYear() * 10000 + 
-               today.getMonth() * 100 + 
-               today.getDate() + 
-               hour;
+  // Use current time for seed
+  // This ensures a new random greeting every hour
+  const now = new Date();
+  const seed = now.getFullYear() * 1000000 + 
+               now.getMonth() * 10000 + 
+               now.getDate() * 100 + 
+               now.getHours();
   
   // Simple hash function for better distribution
   let hash = seed;
