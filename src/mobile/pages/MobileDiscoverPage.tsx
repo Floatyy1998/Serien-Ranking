@@ -365,58 +365,70 @@ export const MobileDiscoverPage = memo(() => {
         {/* Header */}
         <header
           style={{
-            padding: '20px',
-            paddingTop: 'calc(20px + env(safe-area-inset-top))',
+            padding: '12px 16px',
+            paddingTop: 'calc(12px + env(safe-area-inset-top))',
           }}
         >
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'flex-start',
+              alignItems: 'center',
             }}
           >
-            <div>
-              <h1
-                style={{
-                  fontSize: '24px',
-                  fontWeight: 800,
-                  margin: 0,
-                  background: currentTheme.primary,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                Entdecken
-              </h1>
-              <p
-                style={{
-                  color: currentTheme.text.secondary,
-                  fontSize: '16px',
-                  margin: '4px 0 0 0',
-                }}
-              >
-                {showSearch ? 'Suche' : 'Trending & Beliebte Inhalte'}
-              </p>
-            </div>
+            <h1
+              style={{
+                fontSize: '20px',
+                fontWeight: 700,
+                margin: 0,
+                background: currentTheme.primary,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Entdecken
+            </h1>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {!showSearch && (
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  style={{
+                    padding: '8px',
+                    background: selectedGenre ? `${currentTheme.primary}33` : `${currentTheme.text.primary}0D`,
+                    border: `1px solid ${selectedGenre ? currentTheme.primary : currentTheme.border.default}`,
+                    borderRadius: '8px',
+                    color: selectedGenre ? currentTheme.primary : currentTheme.text.primary,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title={selectedGenre ? genres.find((g) => g.id === selectedGenre)?.name : 'Genre Filter'}
+                >
+                  <FilterList style={{ fontSize: '18px' }} />
+                </button>
+              )}
+              
               <button
                 onClick={() => {
                   setShowSearch(!showSearch);
+                  if (!showSearch) {
+                    setShowFilters(false);
+                  }
                 }}
                 style={{
-                  padding: '10px',
+                  padding: '8px',
                   background: showSearch
                     ? `${currentTheme.primary}33`
                     : `${currentTheme.text.primary}0D`,
-                  border: `1px solid ${currentTheme.border.default}`,
-                  borderRadius: '12px',
-                  color: currentTheme.text.primary,
+                  border: `1px solid ${showSearch ? currentTheme.primary : currentTheme.border.default}`,
+                  borderRadius: '8px',
+                  color: showSearch ? currentTheme.primary : currentTheme.text.primary,
                   cursor: 'pointer',
                 }}
               >
-                <Search />
+                <Search style={{ fontSize: '18px' }} />
               </button>
             </div>
           </div>
@@ -426,7 +438,7 @@ export const MobileDiscoverPage = memo(() => {
         {showSearch && (
           <div
             style={{
-              padding: '0 20px 20px 20px',
+              padding: '0 16px 8px 16px',
             }}
           >
             <input
@@ -436,12 +448,12 @@ export const MobileDiscoverPage = memo(() => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 width: '100%',
-                padding: '16px',
+                padding: '10px 12px',
                 background: `${currentTheme.text.primary}0D`,
                 border: `1px solid ${currentTheme.border.default}`,
-                borderRadius: '12px',
+                borderRadius: '8px',
                 color: currentTheme.text.primary,
-                fontSize: '16px',
+                fontSize: '14px',
               }}
             />
           </div>
@@ -451,31 +463,30 @@ export const MobileDiscoverPage = memo(() => {
         <div
           style={{
             display: 'flex',
-            padding: '20px',
-            paddingTop: '0',
-            gap: '12px',
+            padding: '8px 16px',
+            gap: '8px',
           }}
         >
           <button
             onClick={() => setActiveTab('series')}
             style={{
               flex: 1,
-              padding: '12px',
+              padding: '8px',
               background:
                 activeTab === 'series' ? currentTheme.primary : `${currentTheme.text.primary}0D`,
               border: activeTab === 'series' ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '12px',
+              borderRadius: '8px',
               color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
+              gap: '4px',
             }}
           >
-            <CalendarToday style={{ fontSize: '18px' }} />
+            <CalendarToday style={{ fontSize: '16px' }} />
             Serien
           </button>
 
@@ -483,24 +494,24 @@ export const MobileDiscoverPage = memo(() => {
             onClick={() => setActiveTab('movies')}
             style={{
               flex: 1,
-              padding: '12px',
+              padding: '8px',
               background:
                 activeTab === 'movies'
                   ? `${currentTheme.primary}CC`
                   : `${currentTheme.text.primary}0D`,
               border: activeTab === 'movies' ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '12px',
+              borderRadius: '8px',
               color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
+              gap: '4px',
             }}
           >
-            <MovieIcon style={{ fontSize: '18px' }} />
+            <MovieIcon style={{ fontSize: '16px' }} />
             Filme
           </button>
         </div>
@@ -510,15 +521,15 @@ export const MobileDiscoverPage = memo(() => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '12px',
-              padding: '0 20px 20px 20px',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '8px',
+              padding: '0 16px 12px 16px',
             }}
           >
             <button
               onClick={() => setActiveCategory('trending')}
               style={{
-                padding: isDesktop ? '8px 12px' : '10px',
+                padding: '8px 4px',
                 background:
                   activeCategory === 'trending'
                     ? `${currentTheme.primary}33`
@@ -527,23 +538,23 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'trending'
                     ? `1px solid ${currentTheme.primary}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '12px',
-                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                borderRadius: '8px',
+                color: activeCategory === 'trending' ? currentTheme.primary : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '2px',
               }}
             >
-              <TrendingUp style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.primary }} />
-              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>Im Trend</span>
+              <TrendingUp style={{ fontSize: '18px' }} />
+              <span style={{ fontSize: '10px', fontWeight: 600 }}>Trend</span>
             </button>
 
             <button
               onClick={() => setActiveCategory('popular')}
               style={{
-                padding: isDesktop ? '8px 12px' : '10px',
+                padding: '8px 4px',
                 background:
                   activeCategory === 'popular'
                     ? `${currentTheme.status.error}33`
@@ -552,23 +563,23 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'popular'
                     ? `1px solid ${currentTheme.status.error}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '12px',
-                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                borderRadius: '8px',
+                color: activeCategory === 'popular' ? currentTheme.status.error : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '2px',
               }}
             >
-              <Whatshot style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.status.error }} />
-              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>Beliebt</span>
+              <Whatshot style={{ fontSize: '18px' }} />
+              <span style={{ fontSize: '10px', fontWeight: 600 }}>Beliebt</span>
             </button>
 
             <button
               onClick={() => setActiveCategory('top_rated')}
               style={{
-                padding: isDesktop ? '8px 12px' : '10px',
+                padding: '8px 4px',
                 background:
                   activeCategory === 'top_rated'
                     ? `${currentTheme.status.warning}33`
@@ -577,23 +588,23 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'top_rated'
                     ? `1px solid ${currentTheme.status.warning}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '12px',
-                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                borderRadius: '8px',
+                color: activeCategory === 'top_rated' ? currentTheme.status.warning : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '2px',
               }}
             >
-              <Star style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.status.warning }} />
-              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>Top Bewertet</span>
+              <Star style={{ fontSize: '18px' }} />
+              <span style={{ fontSize: '10px', fontWeight: 600 }}>Top</span>
             </button>
 
             <button
               onClick={() => setActiveCategory('upcoming')}
               style={{
-                padding: isDesktop ? '8px 12px' : '10px',
+                padding: '8px 4px',
                 background:
                   activeCategory === 'upcoming'
                     ? `${currentTheme.status.success}33`
@@ -602,105 +613,92 @@ export const MobileDiscoverPage = memo(() => {
                   activeCategory === 'upcoming'
                     ? `1px solid ${currentTheme.status.success}66`
                     : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '12px',
-                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
+                borderRadius: '8px',
+                color: activeCategory === 'upcoming' ? currentTheme.status.success : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '2px',
               }}
             >
-              <NewReleases style={{ fontSize: isDesktop ? '18px' : '20px', color: currentTheme.status.success }} />
-              <span style={{ fontSize: isDesktop ? '12px' : '11px', fontWeight: 600 }}>
-                {activeTab === 'movies' ? 'Demnächst' : 'Läuft gerade'}
+              <NewReleases style={{ fontSize: '18px' }} />
+              <span style={{ fontSize: '10px', fontWeight: 600 }}>
+                {activeTab === 'movies' ? 'Neu' : 'Läuft'}
               </span>
             </button>
           </div>
         )}
 
-        {/* Genre Filter */}
-        {!showSearch && (
+        {/* Genre Filter Dropdown */}
+        {showFilters && !showSearch && (
           <div
             style={{
-              padding: '0 20px 20px 20px',
+              padding: '0 16px 12px 16px',
             }}
           >
-            <button
-              onClick={() => setShowFilters(!showFilters)}
+            <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                background: `${currentTheme.text.primary}0D`,
-                border: `1px solid ${currentTheme.border.default}`,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '6px',
+                maxHeight: '150px',
+                overflowY: 'auto',
+                padding: '8px',
+                background: `${currentTheme.text.primary}08`,
                 borderRadius: '8px',
-                color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: 'pointer',
+                border: `1px solid ${currentTheme.border.default}`,
               }}
             >
-              <FilterList style={{ fontSize: '18px' }} />
-              Genre Filter
-              {selectedGenre && ` (${genres.find((g) => g.id === selectedGenre)?.name})`}
-            </button>
-
-            {showFilters && (
-              <div
+              <button
+                onClick={() => {
+                  setSelectedGenre(null);
+                  setShowFilters(false);
+                }}
                 style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                  marginTop: '12px',
+                  padding: '6px 8px',
+                  background: !selectedGenre ? `${currentTheme.primary}33` : 'transparent',
+                  border: !selectedGenre
+                    ? `1px solid ${currentTheme.primary}66`
+                    : `1px solid ${currentTheme.border.default}`,
+                  borderRadius: '6px',
+                  color: !selectedGenre ? currentTheme.primary : currentTheme.text.primary,
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  textAlign: 'center',
                 }}
               >
+                Alle
+              </button>
+              {genres.map((genre) => (
                 <button
+                  key={genre.id}
                   onClick={() => {
-                    setSelectedGenre(null);
+                    setSelectedGenre(genre.id);
                     setShowFilters(false);
                   }}
                   style={{
-                    padding: '6px 12px',
-                    background: !selectedGenre
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'rgba(255, 255, 255, 0.05)',
-                    border: !selectedGenre ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '16px',
-                    color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
-                    fontSize: '12px',
+                    padding: '6px 8px',
+                    background:
+                      selectedGenre === genre.id ? `${currentTheme.primary}33` : 'transparent',
+                    border:
+                      selectedGenre === genre.id
+                        ? `1px solid ${currentTheme.primary}66`
+                        : `1px solid ${currentTheme.border.default}`,
+                    borderRadius: '6px',
+                    color: selectedGenre === genre.id ? currentTheme.primary : currentTheme.text.primary,
+                    fontSize: '11px',
                     cursor: 'pointer',
+                    textAlign: 'center',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }}
                 >
-                  Alle
+                  {genre.name}
                 </button>
-                {genres.map((genre) => (
-                  <button
-                    key={genre.id}
-                    onClick={() => {
-                      setSelectedGenre(genre.id);
-                      setShowFilters(false);
-                    }}
-                    style={{
-                      padding: '6px 12px',
-                      background:
-                        selectedGenre === genre.id
-                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                          : 'rgba(255, 255, 255, 0.05)',
-                      border:
-                        selectedGenre === genre.id ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '16px',
-                      color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {genre.name}
-                  </button>
-                ))}
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -712,7 +710,7 @@ export const MobileDiscoverPage = memo(() => {
           flex: 1,
           overflowY: 'auto',
           overflowX: 'hidden',
-          padding: '20px',
+          padding: '16px',
         }}
       >
         {showSearch ? (

@@ -403,8 +403,8 @@ export const MobileActivityPage = () => {
             <div>
               <h1
                 style={{
-                  fontSize: '24px',
-                  fontWeight: 800,
+                  fontSize: '20px',
+                  fontWeight: 700,
                   margin: 0,
                   background: currentTheme.primary,
                   WebkitBackgroundClip: 'text',

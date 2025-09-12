@@ -417,7 +417,7 @@ export const MobileRatingsPage: React.FC = () => {
       >
         <h1
             style={{
-              fontSize: '24px',
+              fontSize: '20px',
               fontWeight: 700,
               margin: '0',
               display: 'flex',

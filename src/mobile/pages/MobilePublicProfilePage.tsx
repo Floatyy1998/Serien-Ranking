@@ -456,7 +456,7 @@ export const MobilePublicProfilePage: React.FC = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Public style={{ fontSize: '20px', opacity: 0.7 }} />
-              <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>{profileName}</h1>
+              <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>{profileName}</h1>
             </div>
             <p
               style={{

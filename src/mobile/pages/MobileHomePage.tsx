@@ -22,6 +22,7 @@ import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { cloneElement, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getGreeting } from '../utils/greetings';
 import { useAuth } from '../../App';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
@@ -77,6 +78,22 @@ export const MobileHomePage: React.FC = () => {
   const [hiddenContinueEpisodes, setHiddenContinueEpisodes] = useState<Set<string>>(new Set());
   const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
+  
+  // Close tooltip when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.greeting-text') && !target.closest('.greeting-tooltip')) {
+        setGreetingInfo(null);
+      }
+    };
+    
+    if (greetingInfo) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [greetingInfo]);
 
   // Handle resize
   useEffect(() => {
@@ -87,9 +104,9 @@ export const MobileHomePage: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Update time every minute
+  // Update time every second for clock display
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -98,14 +115,8 @@ export const MobileHomePage: React.FC = () => {
   //   return rating[user.uid] || 0;
   // };
 
-  // Get greeting based on time
-  const getGreeting = () => {
-    const hour = currentTime.getHours();
-    if (hour < 12) return 'Guten Morgen';
-    if (hour < 17) return 'Guten Tag';
-    if (hour < 22) return 'Guten Abend';
-    return 'Gute Nacht';
-  };
+  // Use the imported greeting function
+  const greeting = useMemo(() => getGreeting(currentTime.getHours()), [currentTime]);
 
   // Use optimized hooks for heavy computations
   const stats = useWebWorkerStatsOptimized();
@@ -278,8 +289,58 @@ export const MobileHomePage: React.FC = () => {
     <div
       style={{
         overflowY: 'auto',
+        position: 'relative',
       }}
     >
+      {/* Tooltip - shows language info and is clickable */}
+      {greetingInfo && (
+        <div
+          className="greeting-tooltip"
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (greeting.title && greeting.type) {
+              try {
+                const apiKey = import.meta.env.VITE_API_TMDB;
+                const searchUrl = `https://api.themoviedb.org/3/search/${greeting.type}?api_key=${apiKey}&query=${encodeURIComponent(greeting.title)}&language=de-DE`;
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                  const result = data.results[0];
+                  navigate(`/${greeting.type}/${result.id}`);
+                  setGreetingInfo(null);
+                }
+              } catch (error) {
+                console.error('Error searching TMDB:', error);
+              }
+            }
+          }}
+          style={{
+            position: 'fixed',
+            top: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: currentTheme.primary,
+            borderRadius: '6px',
+            padding: '8px 16px',
+            fontSize: '13px',
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+            zIndex: 99999,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            color: '#ffffff',
+            pointerEvents: 'auto',
+            cursor: greeting.title ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <span style={{ color: '#ffffff' }}>
+            {greetingInfo}
+            {greeting.title && ' →'}
+          </span>
+        </div>
+      )}
+      
       {/* Premium Header */}
       <header
         style={{
@@ -306,7 +367,22 @@ export const MobileHomePage: React.FC = () => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              {getGreeting()}, {user?.displayName?.split(' ')[0] || 'User'}!
+              <span 
+                className="greeting-text"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setGreetingInfo(greetingInfo ? null : greeting.lang);
+                }}
+                style={{ 
+                  cursor: 'pointer',
+                  textDecoration: greeting.title ? 'underline dotted' : 'none',
+                  textDecorationColor: currentTheme.primary,
+                  textUnderlineOffset: '3px',
+                }}
+              >
+                {greeting.text}
+              </span>
+              , {user?.displayName?.split(' ')[0] || 'User'}!
             </h1>
             <p
               style={{
@@ -319,7 +395,10 @@ export const MobileHomePage: React.FC = () => {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long',
-              })}
+              })} • {currentTime.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })} Uhr
             </p>
           </div>
 

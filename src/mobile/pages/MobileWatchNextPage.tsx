@@ -2,8 +2,8 @@ import {
   ArrowDownward,
   ArrowUpward,
   Check,
-  CheckBoxOutlineBlank,
   DragHandle,
+  Edit,
   FilterList,
   PlayCircle,
   Repeat,
@@ -48,6 +48,7 @@ export const MobileWatchNextPage = () => {
   const [customOrderActive, setCustomOrderActive] = useState(
     localStorage.getItem('watchNextCustomOrderActive') === 'true'
   );
+  const [editModeActive, setEditModeActive] = useState(false);
   const [sortOption, setSortOption] = useState(
     localStorage.getItem('watchNextSortOption') || 'name-asc'
   );
@@ -97,37 +98,44 @@ export const MobileWatchNextPage = () => {
     return () => orderRef.off();
   }, [user]);
 
-  // Add non-passive touch event listeners when dragging is active
+  // Handle drag state changes and prevent scroll during drag
   useEffect(() => {
-    if (draggedIndex !== null) {
-      const handleTouchMoveNonPassive = (e: TouchEvent) => {
-        // Only prevent default to stop scrolling
-        e.preventDefault();
+    if (draggedIndex !== null && editModeActive) {
+      // Prevent ALL scrolling during drag (except auto-scroll)
+      const preventScroll = (e: Event) => {
+        // Always prevent default scroll when dragging
+        if (e.cancelable) {
+          e.preventDefault();
+        }
       };
 
-      // Add non-passive listener to window to prevent scrolling during drag
-      window.addEventListener('touchmove', handleTouchMoveNonPassive, { passive: false });
+      // Add to both document and container
+      const container = document.querySelector('.episodes-scroll-container');
 
-      // Store current scroll position and lock body
-      const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.top = `-${scrollY}px`;
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+      if (container) {
+        container.addEventListener('touchmove', preventScroll, { passive: false });
+      }
 
       return () => {
-        window.removeEventListener('touchmove', handleTouchMoveNonPassive);
-
-        // Restore scroll position
-        const storedScrollY = parseInt(document.body.style.top || '0') * -1;
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
-        document.body.style.top = '';
-        window.scrollTo(0, storedScrollY);
+        document.removeEventListener('touchmove', preventScroll);
+        if (container) {
+          container.removeEventListener('touchmove', preventScroll);
+        }
       };
+    } else {
+      // Clear auto-scroll when drag ends
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+        autoScrollIntervalRef.current = null;
+        isAutoScrollingRef.current = false;
+      }
+      if (autoScrollAnimationRef.current) {
+        cancelAnimationFrame(autoScrollAnimationRef.current);
+        autoScrollAnimationRef.current = null;
+      }
     }
-  }, [draggedIndex]);
+  }, [draggedIndex, editModeActive]);
 
   // Helper functions
   const getImageUrl = (posterObj: any): string => {
@@ -299,10 +307,67 @@ export const MobileWatchNextPage = () => {
     if (draggedIndex !== null && draggedIndex !== index) {
       setCurrentTouchIndex(index);
     }
+    
+    // Auto-scroll for desktop drag
+    if (draggedIndex !== null) {
+      const mouseY = e.clientY;
+      const viewportHeight = window.innerHeight;
+      const scrollThreshold = 150;
+      
+      const isNearTop = mouseY < scrollThreshold;
+      const isNearBottom = mouseY > viewportHeight - scrollThreshold;
+      
+      // Start auto-scroll if near edges
+      if ((isNearTop || isNearBottom) && !autoScrollIntervalRef.current) {
+        autoScrollIntervalRef.current = setInterval(() => {
+          const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
+          if (!container || draggedIndex === null) {
+            if (autoScrollIntervalRef.current) {
+              clearInterval(autoScrollIntervalRef.current);
+              autoScrollIntervalRef.current = null;
+            }
+            return;
+          }
+          
+          const scrollTop = container.scrollTop;
+          const scrollHeight = container.scrollHeight;
+          const clientHeight = container.clientHeight;
+          const maxScroll = Math.max(0, scrollHeight - clientHeight);
+          
+          // Get current mouse position from the latest event
+          const currentMouseY = e.clientY;
+          const currentIsNearTop = currentMouseY < scrollThreshold;
+          const currentIsNearBottom = currentMouseY > viewportHeight - scrollThreshold;
+          
+          if (currentIsNearTop && scrollTop > 0) {
+            const distanceFromTop = Math.max(1, scrollThreshold - currentMouseY);
+            const speedFactor = distanceFromTop / scrollThreshold;
+            const scrollAmount = Math.ceil(100 * speedFactor);
+            container.scrollTop = Math.max(0, scrollTop - scrollAmount);
+          } else if (currentIsNearBottom && scrollTop < maxScroll) {
+            const distanceFromBottom = currentMouseY - (viewportHeight - scrollThreshold);
+            const speedFactor = distanceFromBottom / scrollThreshold;
+            const scrollAmount = Math.ceil(100 * speedFactor);
+            container.scrollTop = Math.min(maxScroll, scrollTop + scrollAmount);
+          }
+        }, 20);
+      } else if (!isNearTop && !isNearBottom && autoScrollIntervalRef.current) {
+        // Stop auto-scroll when moved away from edges
+        clearInterval(autoScrollIntervalRef.current);
+        autoScrollIntervalRef.current = null;
+      }
+    }
   };
 
   const handleDrop = async (e: React.DragEvent | React.TouchEvent, dropIndex: number) => {
     e.preventDefault();
+    
+    // Clear auto-scroll on drop
+    if (autoScrollIntervalRef.current) {
+      clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+    
     if (draggedIndex === null || draggedIndex === dropIndex) return;
 
     const newEpisodes = [...nextEpisodes];
@@ -311,7 +376,7 @@ export const MobileWatchNextPage = () => {
     newEpisodes.splice(dropIndex, 0, draggedItem);
 
     // Update order in Firebase
-    if (user && customOrderActive) {
+    if (user && editModeActive) {
       const newOrder = newEpisodes.map((ep) => ep.seriesId);
       // Remove duplicates and keep first occurrence
       const uniqueOrder = [...new Set(newOrder)];
@@ -322,17 +387,193 @@ export const MobileWatchNextPage = () => {
     setDraggedIndex(null);
   };
 
-  const handleTouchStart = (_e: React.TouchEvent, index: number) => {
-    if (!customOrderActive) return;
-    setDraggedIndex(index);
-    setCurrentTouchIndex(index);
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const dragDelayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const autoScrollAnimationRef = useRef<number | null>(null);
+  const currentTouchPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const lastTouchPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const touchDirectionRef = useRef<'up' | 'down' | null>(null);
+  const isAutoScrollingRef = useRef<boolean>(false);
+
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    if (!editModeActive) return;
+
+    const touch = e.touches[0];
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+    };
+
+    // Start drag after a delay to allow normal scrolling
+    dragDelayTimerRef.current = setTimeout(() => {
+      // Prevent any ongoing scrolling when drag starts
+      if (document.scrollingElement) {
+        document.scrollingElement.scrollTop = document.scrollingElement.scrollTop;
+      }
+      setDraggedIndex(index);
+      setCurrentTouchIndex(index);
+    }, 150); // Reduced delay to 150ms for better responsiveness
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!customOrderActive || draggedIndex === null) return;
+    if (!editModeActive) return;
 
     const touch = e.touches[0];
+
+    // Track movement direction
+    if (lastTouchPositionRef.current && draggedIndex !== null) {
+      const deltaY = touch.clientY - lastTouchPositionRef.current.y;
+      if (Math.abs(deltaY) > 2) {
+        // Only update if significant movement
+        touchDirectionRef.current = deltaY < 0 ? 'up' : 'down';
+      }
+    }
+
+    // Update current and last touch position
+    lastTouchPositionRef.current = currentTouchPositionRef.current;
+    currentTouchPositionRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+
+    // If drag hasn't started yet, check if movement exceeds threshold
+    if (draggedIndex === null && touchStartRef.current && dragDelayTimerRef.current) {
+      const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+      const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+
+      // If user has moved significantly, cancel the drag delay (they're scrolling)
+      if (deltaX > 10 || deltaY > 10) {
+        clearTimeout(dragDelayTimerRef.current);
+        dragDelayTimerRef.current = null;
+        touchStartRef.current = null;
+        return;
+      }
+    }
+
+    // Only proceed with drag logic if drag has actually started
+    if (draggedIndex === null) return;
+
+    // Find the element under the current touch position
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (elementBelow) {
+      // Find the closest episode card
+      const card = elementBelow.closest('.episode-card');
+      if (card) {
+        // Get all episode cards
+        const allCards = Array.from(document.querySelectorAll('.episode-card'));
+        const targetIndex = allCards.indexOf(card as HTMLElement);
+
+        if (targetIndex !== -1 && targetIndex !== draggedIndex) {
+          setCurrentTouchIndex(targetIndex);
+        }
+      }
+    }
+
     const currentY = touch.clientY;
+    const viewportHeight = window.innerHeight;
+    const scrollThreshold = 150; // Start scrolling when within 150px of edge
+    const stopThreshold = 180; // Stop only when moved 180px away from edge (hysteresis)
+
+    // Check if we're near edges AND moving in that direction
+    const isNearTop = currentY < scrollThreshold;
+    const isNearBottom = currentY > viewportHeight - scrollThreshold;
+    const isMovingUp = touchDirectionRef.current === 'up';
+    const isMovingDown = touchDirectionRef.current === 'down';
+
+    // Only auto-scroll if near edge AND moving towards it
+    const shouldStartScrollUp = isNearTop && isMovingUp;
+    const shouldStartScrollDown = isNearBottom && isMovingDown;
+    const shouldStopScroll = currentY > stopThreshold && currentY < viewportHeight - stopThreshold;
+
+    // Start auto-scrolling if near edges and not already scrolling
+    if ((shouldStartScrollUp || shouldStartScrollDown) && !isAutoScrollingRef.current) {
+      isAutoScrollingRef.current = true;
+
+      // Clear any existing interval first
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+      }
+
+      autoScrollIntervalRef.current = setInterval(() => {
+        // Check if drag is still active - use refs to get current values
+        if (!currentTouchPositionRef.current) {
+          isAutoScrollingRef.current = false;
+          if (autoScrollIntervalRef.current) {
+            clearInterval(autoScrollIntervalRef.current);
+            autoScrollIntervalRef.current = null;
+          }
+          return;
+        }
+
+        // Use the current touch position from the ref
+        const touchY = currentTouchPositionRef.current.y;
+        const scrollThreshold = 150; // Same threshold as in main function
+        const viewportHeight = window.innerHeight;
+        const isNearTop = touchY < scrollThreshold;
+        const isNearBottom = touchY > viewportHeight - scrollThreshold;
+
+        // Only scroll if still near edges
+        if (!isNearTop && !isNearBottom) {
+          isAutoScrollingRef.current = false;
+          clearInterval(autoScrollIntervalRef.current!);
+          autoScrollIntervalRef.current = null;
+          return;
+        }
+
+        // Get container element
+        const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
+        if (!container) {
+          isAutoScrollingRef.current = false;
+          clearInterval(autoScrollIntervalRef.current!);
+          autoScrollIntervalRef.current = null;
+          return;
+        }
+
+        // Get container scroll position and dimensions
+        const scrollTop = container.scrollTop;
+        const scrollHeight = container.scrollHeight;
+        const clientHeight = container.clientHeight;
+        const maxScroll = Math.max(0, scrollHeight - clientHeight);
+
+        // Check if container has content to scroll
+        const hasScrollableContent = scrollHeight > clientHeight;
+
+        // If page isn't scrollable, stop auto-scroll
+        if (!hasScrollableContent) {
+          isAutoScrollingRef.current = false;
+          clearInterval(autoScrollIntervalRef.current!);
+          autoScrollIntervalRef.current = null;
+          return;
+        }
+
+        if (isNearTop && scrollTop > 0) {
+          // Calculate scroll speed based on distance from edge
+          const distanceFromTop = Math.max(1, scrollThreshold - touchY);
+          const speedFactor = distanceFromTop / scrollThreshold;
+          const scrollAmount = Math.ceil(1500 * speedFactor); // MASSIVE speed increase to 1500
+
+          // Scroll container up
+          container.scrollTop = Math.max(0, scrollTop - scrollAmount);
+        } else if (isNearBottom && scrollTop < maxScroll) {
+          // Calculate scroll speed based on distance from edge
+          const distanceFromBottom = touchY - (viewportHeight - scrollThreshold);
+          const speedFactor = distanceFromBottom / scrollThreshold;
+          const scrollAmount = Math.ceil(1500 * speedFactor); // MASSIVE speed increase to 1500
+
+          // Scroll container down
+          container.scrollTop = Math.min(maxScroll, scrollTop + scrollAmount);
+        }
+      }, 10); // Run every 10ms (100fps) for smoother, faster scrolling
+    } else if (shouldStopScroll && isAutoScrollingRef.current) {
+      // Stop auto-scrolling only when moved far enough away from edges
+      isAutoScrollingRef.current = false;
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+        autoScrollIntervalRef.current = null;
+      }
+    }
 
     // Find the element under the touch point using elementFromPoint
     // We need to temporarily hide the dragged element to find what's underneath
@@ -360,6 +601,29 @@ export const MobileWatchNextPage = () => {
   };
 
   const handleTouchEnd = async () => {
+    // Clear the drag delay timer if it's still running
+    if (dragDelayTimerRef.current) {
+      clearTimeout(dragDelayTimerRef.current);
+      dragDelayTimerRef.current = null;
+    }
+
+    // Clear auto-scroll if active
+    if (autoScrollIntervalRef.current) {
+      clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+
+    // Cancel animation frame
+    if (autoScrollAnimationRef.current) {
+      cancelAnimationFrame(autoScrollAnimationRef.current);
+      autoScrollAnimationRef.current = null;
+    }
+
+    // Clear flags
+    isAutoScrollingRef.current = false;
+    touchStartRef.current = null;
+    currentTouchPositionRef.current = null;
+
     if (draggedIndex === null || currentTouchIndex === null || draggedIndex === currentTouchIndex) {
       setDraggedIndex(null);
       setCurrentTouchIndex(null);
@@ -372,7 +636,7 @@ export const MobileWatchNextPage = () => {
     newEpisodes.splice(currentTouchIndex, 0, draggedItem);
 
     // Update order in Firebase
-    if (user && customOrderActive) {
+    if (user && editModeActive) {
       const newOrder = newEpisodes.map((ep) => ep.seriesId);
       const uniqueOrder = [...new Set(newOrder)];
       setWatchlistOrder(uniqueOrder);
@@ -467,20 +731,34 @@ export const MobileWatchNextPage = () => {
   };
 
   return (
-    <div ref={containerRef}>
+    <div
+      ref={containerRef}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+    >
       {/* Header */}
       <header
         style={{
           padding: '20px',
           paddingTop: 'calc(20px + env(safe-area-inset-top))',
           background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          flexShrink: 0,
         }}
       >
         <div style={{ marginBottom: '16px' }}>
           <h1
             style={{
-              fontSize: '24px',
-              fontWeight: 800,
+              fontSize: '20px',
+              fontWeight: 700,
               margin: 0,
               background: currentTheme.primary,
               WebkitBackgroundClip: 'text',
@@ -500,13 +778,31 @@ export const MobileWatchNextPage = () => {
           </p>
         </div>
 
-        <button
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {customOrderActive && (
+            <button
+              onClick={() => setEditModeActive(!editModeActive)}
+              style={{
+                padding: '10px',
+                background: editModeActive ? `${currentTheme.primary}33` : `${currentTheme.text.primary}0D`,
+                border: `1px solid ${editModeActive ? currentTheme.primary : currentTheme.border.default}`,
+                borderRadius: '12px',
+                color: editModeActive ? currentTheme.primary : currentTheme.text.primary,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Edit />
+            </button>
+          )}
+          
+          <button
             onClick={() => setShowFilter(!showFilter)}
             style={{
               padding: '10px',
-              background: showFilter
-                ? `${currentTheme.primary}33`
-                : `${currentTheme.text.primary}0D`,
+              background: showFilter ? `${currentTheme.primary}33` : `${currentTheme.text.primary}0D`,
               border: `1px solid ${currentTheme.border.default}`,
               borderRadius: '12px',
               color: currentTheme.text.primary,
@@ -518,6 +814,7 @@ export const MobileWatchNextPage = () => {
           >
             <FilterList />
           </button>
+        </div>
 
         {/* Filter Section */}
         {showFilter && (
@@ -571,7 +868,12 @@ export const MobileWatchNextPage = () => {
               </button>
 
               <button
-                onClick={() => setCustomOrderActive(!customOrderActive)}
+                onClick={() => {
+                  setCustomOrderActive(!customOrderActive);
+                  if (customOrderActive) {
+                    setEditModeActive(false);
+                  }
+                }}
                 style={{
                   padding: '8px 12px',
                   background: customOrderActive
@@ -663,8 +965,20 @@ export const MobileWatchNextPage = () => {
         )}
       </header>
 
-      {/* Content */}
-      <div style={{ padding: '0 20px' }}>
+      {/* Scrollable Content Container */}
+      <div
+        className="episodes-scroll-container"
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: '20px',
+          WebkitOverflowScrolling: 'touch',
+          position: 'relative',
+          // Disable touch scrolling when dragging
+          touchAction: draggedIndex !== null && editModeActive ? 'none' : 'auto',
+        }}
+      >
         {nextEpisodes.length === 0 ? (
           <div
             style={{
@@ -696,6 +1010,7 @@ export const MobileWatchNextPage = () => {
                     <motion.div
                       key={episodeKey}
                       data-block-swipe
+                      data-index={index}
                       className="episode-card"
                       layout
                       initial={{ opacity: 0, y: 20 }}
@@ -713,8 +1028,8 @@ export const MobileWatchNextPage = () => {
                         position: 'relative',
                       }}
                     >
-                      {/* Swipe Overlay for episodes - only when NOT in custom order mode */}
-                      {!customOrderActive && (
+                      {/* Swipe Overlay for episodes - only when edit mode is NOT active */}
+                      {!editModeActive && (
                         <motion.div
                           drag="x"
                           dragConstraints={{ left: 0, right: 0 }}
@@ -759,19 +1074,19 @@ export const MobileWatchNextPage = () => {
                         />
                       )}
 
-                      {/* Card content with drag handles for custom order */}
+                      {/* Card content */}
                       <div
-                        draggable={customOrderActive}
+                        draggable={editModeActive}
                         onDragStart={
-                          customOrderActive ? (e) => handleDragStart(e as any, index) : undefined
+                          editModeActive ? (e) => handleDragStart(e as any, index) : undefined
                         }
-                        onDragOver={customOrderActive ? (e) => handleDragOver(e, index) : undefined}
-                        onDrop={customOrderActive ? (e) => handleDrop(e as any, index) : undefined}
+                        onDragOver={editModeActive ? (e) => handleDragOver(e, index) : undefined}
+                        onDrop={editModeActive ? (e) => handleDrop(e as any, index) : undefined}
                         onTouchStart={
-                          customOrderActive ? (e) => handleTouchStart(e, index) : undefined
+                          editModeActive ? (e) => handleTouchStart(e, index) : undefined
                         }
-                        onTouchMove={customOrderActive ? handleTouchMove : undefined}
-                        onTouchEnd={customOrderActive ? handleTouchEnd : undefined}
+                        onTouchMove={editModeActive ? handleTouchMove : undefined}
+                        onTouchEnd={editModeActive ? handleTouchEnd : undefined}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -799,7 +1114,7 @@ export const MobileWatchNextPage = () => {
                             draggedIndex !== index
                               ? '7px'
                               : '8px',
-                          cursor: customOrderActive ? 'move' : 'pointer',
+                          cursor: editModeActive ? 'move' : 'pointer',
                           opacity: draggedIndex === index ? 0.6 : 1,
                           transform:
                             draggedIndex === index
@@ -874,12 +1189,12 @@ export const MobileWatchNextPage = () => {
                         <div
                           style={{
                             flex: 1,
-                            pointerEvents: customOrderActive ? 'auto' : 'none',
+                            pointerEvents: editModeActive ? 'auto' : 'none',
                             position: 'relative',
                             zIndex: 2,
                           }}
                           onClick={() =>
-                            !customOrderActive && navigate(`/series/${episode.seriesId}`)
+                            !editModeActive && navigate(`/series/${episode.seriesId}`)
                           }
                         >
                           <h4 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
@@ -920,84 +1235,65 @@ export const MobileWatchNextPage = () => {
                             </p>
                           )}
                         </div>
-                        {customOrderActive && (
+                        {editModeActive && (
                           <div
                             style={{
                               display: 'flex',
                               alignItems: 'center',
-                              padding: '4px',
+                              padding: '12px 8px',
                               color: currentTheme.text.muted,
+                              cursor: 'grab',
                             }}
                           >
-                            <DragHandle style={{ fontSize: '20px' }} />
+                            <DragHandle style={{ fontSize: '24px' }} />
                           </div>
                         )}
 
-                        {/* Button for completing episodes */}
-                        <AnimatePresence mode="wait">
-                          {isCompleting ? (
-                            <motion.div
-                              initial={{ scale: 0, rotate: -180 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              exit={{ scale: 0, rotate: 180 }}
-                              style={{
-                                padding: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                position: 'relative',
-                                zIndex: 2,
-                              }}
-                            >
-                              <Check
-                                style={{ fontSize: '24px', color: currentTheme.status.success }}
-                              />
-                            </motion.div>
-                          ) : !customOrderActive ? (
-                            <motion.div
-                              animate={{ x: isSwiping ? 10 : 0 }}
-                              style={{
-                                padding: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                position: 'relative',
-                                zIndex: 2,
-                              }}
-                            >
-                              <PlayCircle
+                        {/* Button/Icon on the right side - show when edit mode is NOT active */}
+                        {!editModeActive && (
+                          <AnimatePresence mode="wait">
+                            {isCompleting ? (
+                              <motion.div
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                exit={{ scale: 0, rotate: 180 }}
                                 style={{
-                                  fontSize: '24px',
-                                  color: episode.isRewatch
-                                    ? currentTheme.status.warning
-                                    : currentTheme.status.success,
+                                  padding: '8px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  position: 'relative',
+                                  zIndex: 2,
                                 }}
-                              />
-                            </motion.div>
-                          ) : (
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await handleEpisodeComplete(episode);
-                              }}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                padding: '8px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                position: 'relative',
-                                zIndex: 2,
-                              }}
-                            >
-                              <CheckBoxOutlineBlank
-                                style={{ fontSize: '24px', color: currentTheme.status.success }}
-                              />
-                            </button>
-                          )}
-                        </AnimatePresence>
+                              >
+                                <Check
+                                  style={{ fontSize: '24px', color: currentTheme.status.success }}
+                                />
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                animate={{ x: isSwiping ? 10 : 0 }}
+                                style={{
+                                  padding: '8px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  position: 'relative',
+                                  zIndex: 2,
+                                }}
+                              >
+                                <PlayCircle
+                                  style={{
+                                    fontSize: '24px',
+                                    color: episode.isRewatch
+                                      ? currentTheme.status.warning
+                                      : currentTheme.status.success,
+                                  }}
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -1005,6 +1301,9 @@ export const MobileWatchNextPage = () => {
             </AnimatePresence>
           </div>
         )}
+
+        {/* Padding at bottom to prevent last item being hidden by navbar */}
+        <div style={{ height: '100px' }} />
       </div>
     </div>
   );
