@@ -100,7 +100,8 @@
   flex: 1;
   display: flex;
   gap: 8px;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
