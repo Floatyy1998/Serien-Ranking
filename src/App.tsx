@@ -3,6 +3,7 @@ import firebase from 'firebase/compat/app';
 import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
+// BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 // Badge Migration Tools für Development
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
@@ -11,30 +12,30 @@ import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
-import './mobile/styles/performance.css';
+import './styles/performance.css';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { updateTheme } from './theme';
 
 // Lazy load mobile app for all platforms
-const MobileApp = lazy(() => import('./mobile/MobileApp').then((m) => ({ default: m.MobileApp })));
+const MobileApp = lazy(() => import('./MobileApp').then((m) => ({ default: m.MobileApp })));
 const StartPage = lazy(() =>
-  import('./pages/MobileStartPage').then((m) => ({
-    default: m.MobileStartPage,
+  import('./pages/StartPage').then((m) => ({
+    default: m.StartPage,
   }))
 );
 const LoginPage = lazy(() =>
-  import('./features/auth/MobileLoginPage').then((m) => ({
-    default: m.MobileLoginPage,
+  import('./features/auth/LoginPage').then((m) => ({
+    default: m.LoginPage,
   }))
 );
 const RegisterPage = lazy(() =>
-  import('./features/auth/MobileRegisterPage').then((m) => ({
-    default: m.MobileRegisterPage,
+  import('./features/auth/RegisterPage').then((m) => ({
+    default: m.RegisterPage,
   }))
 );
 const PublicProfilePage = lazy(() =>
-  import('./mobile/pages/MobilePublicProfilePage').then((m) => ({
-    default: m.MobilePublicProfilePage,
+  import('./pages/PublicProfilePage').then((m) => ({
+    default: m.PublicProfilePage,
   }))
 );
 
