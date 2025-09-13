@@ -34,6 +34,7 @@ import { useWebWorkerStatsOptimized } from '../hooks/useWebWorkerStatsOptimized'
 import { useWebWorkerTodayEpisodes } from '../hooks/useWebWorkerTodayEpisodes';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { StatsGrid } from '../components/StatsGrid';
+import { NewSeasonNotification } from '../components/NewSeasonNotification';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ export const HomePage: React.FC = () => {
     return <div>Redirecting to login...</div>;
   }
   const { unreadActivitiesCount } = useOptimizedFriends();
+  const { seriesWithNewSeasons, clearNewSeasons } = useSeriesList();
   const { currentTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   // const [selectedCategory, setSelectedCategory] = useState<
@@ -292,6 +294,13 @@ export const HomePage: React.FC = () => {
         position: 'relative',
       }}
     >
+      {/* New Season Notification */}
+      {seriesWithNewSeasons && seriesWithNewSeasons.length > 0 && (
+        <NewSeasonNotification
+          series={seriesWithNewSeasons}
+          onDismiss={clearNewSeasons}
+        />
+      )}
       {/* Tooltip - shows language info and is clickable */}
       {greetingInfo && (
         <div

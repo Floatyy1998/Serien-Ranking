@@ -1,0 +1,352 @@
+.new-season-notification {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  margin: 0 auto; /* Zentriert das Element */
+  z-index: 1000;
+  max-width: 480px;
+  width: calc(100% - 32px);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.new-icon {
+  font-size: 28px;
+}
+
+.new-icon.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.series-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.series-poster {
+  width: 50px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.series-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.series-details h4 {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.season-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.85rem;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.view-button,
+.watchlist-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.view-button:hover,
+.watchlist-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.watchlist-button {
+  backdrop-filter: blur(10px);
+}
+
+.watchlist-button.added {
+  cursor: default;
+  opacity: 0.9;
+}
+
+.watchlist-button svg {
+  font-size: 18px;
+}
+
+.view-button svg {
+  font-size: 20px;
+}
+
+.navigation-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 8px;
+  transition: opacity 0.2s;
+}
+
+.nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.dot.active {
+  width: 24px;
+  border-radius: 4px;
+}
+
+.counter {
+  text-align: center;
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Mobile adjustments */
+@media (max-width: 500px) {
+  .new-season-notification {
+    top: 65px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 14px;
+  }
+
+  .notification-header {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .notification-header h3 {
+    font-size: 1rem;
+  }
+
+  .new-icon {
+    font-size: 24px;
+  }
+
+  /* Komplett neue Mobile-Struktur */
+  .series-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+    background: none;
+  }
+
+  /* Obere Reihe: Poster + Infos nebeneinander */
+  .series-poster {
+    display: none; /* Verstecke Poster auf Mobile für mehr Platz */
+  }
+
+  .series-details {
+    width: 100%;
+    margin: 0;
+  }
+
+  .series-details h4 {
+    font-size: 1.1rem;
+    margin: 0 0 6px 0;
+    font-weight: 600;
+    color: inherit;
+  }
+
+  .season-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 12px;
+  }
+  
+  .season-info svg {
+    font-size: 16px;
+  }
+
+  /* Buttons untereinander für bessere Touch-Targets */
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .view-button,
+  .watchlist-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .watchlist-button span,
+  .view-button span {
+    display: inline;
+    font-size: 0.95rem;
+  }
+
+  .watchlist-button svg,
+  .view-button svg {
+    font-size: 20px;
+  }
+
+  .view-button,
+  .watchlist-button {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+
+  .watchlist-button span,
+  .view-button span {
+    display: inline; /* Zeige Text auf Mobile */
+    font-size: 0.75rem;
+  }
+
+  .watchlist-button svg,
+  .view-button svg {
+    font-size: 16px;
+  }
+
+  .navigation-dots {
+    margin-top: 6px;
+    gap: 8px;
+  }
+
+  .nav-button {
+    font-size: 20px;
+    padding: 0 4px;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .dot.active {
+    width: 18px;
+  }
+
+  .counter {
+    font-size: 0.75rem;
+    margin-top: 4px;
+  }
+}

@@ -13,6 +13,9 @@ interface SeriesListContextType {
   refetchSeries: () => void;
   isOffline: boolean;
   isStale: boolean;
+  // Test functions for development
+  simulateNewSeason?: (seriesId: number) => void;
+  forceDetection?: () => void;
 }
 
 export const SeriesListContext = createContext<SeriesListContextType>({
@@ -36,8 +39,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
+          console.log('📦 Loaded from sessionStorage:', parsed);
           return parsed;
-        } catch (e) {}
+        } catch (e) {
+          console.error('❌ Error parsing sessionStorage:', e);
+        }
       }
     }
     return [];
@@ -127,9 +133,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         const newSeasons = await detectNewSeasons(seriesList, userId);
 
         if (newSeasons.length > 0) {
+          console.log('🎉 New seasons detected:', newSeasons);
           // Speichere in sessionStorage
           if (typeof window !== 'undefined') {
-            sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newSeasons));
+            const dataToStore = JSON.stringify(newSeasons);
+            console.log('💾 Storing to sessionStorage:', dataToStore);
+            sessionStorage.setItem('seriesWithNewSeasons', dataToStore);
           }
           setSeriesWithNewSeasons(newSeasons);
           // Force update
@@ -223,6 +232,52 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     refetch();
   }, [refetch]);
 
+  // TEST FUNCTIONS - Only available in development
+  const simulateNewSeason = useCallback((seriesId: number) => {
+    if (process.env.NODE_ENV !== 'development') return;
+    
+    const series = seriesList.find(s => s.id === seriesId);
+    if (series) {
+      // Create a test series with increased season count
+      const testSeries = {
+        ...series,
+        seasonCount: (series.seasonCount || 0) + 1
+      };
+      
+      // Add to new seasons list
+      setSeriesWithNewSeasons(prev => [...prev, testSeries]);
+      
+      // Store in sessionStorage
+      if (typeof window !== 'undefined') {
+        const newList = [...seriesWithNewSeasons, testSeries];
+        sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newList));
+      }
+      
+      console.log(`🧪 Simulated new season for ${series.title || series.original_name}: Season ${testSeries.seasonCount}`);
+      console.log('🧪 Test Series Data:', testSeries);
+    }
+  }, [seriesList, seriesWithNewSeasons]);
+
+  const forceDetection = useCallback(() => {
+    if (process.env.NODE_ENV !== 'development') return;
+    
+    // Reset detection state
+    detectionRunRef.current = false;
+    setHasCheckedForNewSeasons(false);
+    
+    // Clear sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('hasCheckedForNewSeasons');
+      sessionStorage.removeItem('seriesWithNewSeasons');
+    }
+    
+    // Force run detection
+    if (user && seriesList.length > 0) {
+      console.log('🧪 Forcing new season detection...');
+      runNewSeasonDetection(seriesList, user.uid);
+    }
+  }, [user, seriesList, runNewSeasonDetection]);
+
   return (
     <SeriesListContext.Provider
       value={{
@@ -234,6 +289,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         refetchSeries,
         isOffline,
         isStale,
+        ...(process.env.NODE_ENV === 'development' ? {
+          simulateNewSeason,
+          forceDetection
+        } : {})
       }}
     >
       {children}
