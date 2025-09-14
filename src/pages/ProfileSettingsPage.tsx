@@ -67,8 +67,8 @@ export const ProfileSettingsPage = () => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Bild darf maximal 5MB groß sein');
+    if (file.size > 100 * 1024 * 1024) {
+      setError('Bild darf maximal 100MB groß sein');
       return;
     }
 
