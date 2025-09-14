@@ -102,15 +102,6 @@ export const RatingsPage: React.FC = () => {
 
     // Apply filters
     if (filters.genre && filters.genre !== 'All') {
-      console.log('Genre filter active:', filters.genre);
-      console.log('Before genre filter:', filtered.length);
-
-      // Log first few items to debug
-      filtered.slice(0, 3).forEach((series) => {
-        const genres = series.genre?.genres || [];
-        console.log(`${series.title} genres:`, genres);
-      });
-
       filtered = filtered.filter((series) => {
         // Genres können in series.genres oder series.genre.genres sein
         const genres = series.genre?.genres || [];
@@ -122,18 +113,9 @@ export const RatingsPage: React.FC = () => {
         }
         return false;
       });
-      console.log('After genre filter:', filtered.length);
     }
 
     if (filters.provider && filters.provider !== 'All') {
-      console.log('Provider filter active:', filters.provider);
-      console.log('Before provider filter:', filtered.length);
-
-      // Log first item to debug provider structure
-      if (filtered.length > 0) {
-        console.log('Sample provider structure:', filtered[0].title, filtered[0].provider);
-      }
-
       filtered = filtered.filter((series) => {
         // Provider structure: series.provider.provider[]
         if (series.provider?.provider && Array.isArray(series.provider.provider)) {
@@ -141,7 +123,6 @@ export const RatingsPage: React.FC = () => {
         }
         return false;
       });
-      console.log('After provider filter:', filtered.length);
     }
 
     if (filters.search) {
@@ -189,15 +170,31 @@ export const RatingsPage: React.FC = () => {
         // Begonnen aber nicht fertig (zwischen 1% und 99%)
         return watchedEpisodes > 0 && watchedEpisodes < totalAiredEpisodes;
       });
-    } else if (filters.quickFilter === 'best-rated') {
+    } else if (filters.quickFilter === 'not-started') {
+      // Serien die noch nicht begonnen wurden (keine Episoden geschaut)
       filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateOverallRating(s));
-        return !isNaN(rating) && rating >= 8;
-      });
-    } else if (filters.quickFilter === 'worst-rated') {
-      filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateOverallRating(s));
-        return !isNaN(rating) && rating > 0 && rating <= 5;
+        const series = s as any; // Type assertion
+        if (!series.seasons) return true; // Wenn keine Seasons-Daten vorhanden sind, als nicht begonnen betrachten
+
+        let watchedEpisodes = 0;
+        const today = new Date();
+
+        series.seasons.forEach((season: any) => {
+          if (season.episodes) {
+            season.episodes.forEach((ep: any) => {
+              // Nur ausgestrahlte Episoden zählen (mit air_date in der Vergangenheit)
+              if (ep.air_date) {
+                const airDate = new Date(ep.air_date);
+                if (airDate <= today && ep.watched) {
+                  watchedEpisodes++;
+                }
+              }
+            });
+          }
+        });
+
+        // Noch nicht begonnen (keine Episoden geschaut)
+        return watchedEpisodes === 0;
       });
     } else if (filters.quickFilter === 'recently-rated') {
       // Only show items with ratings for this filter
@@ -208,11 +205,6 @@ export const RatingsPage: React.FC = () => {
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID (proxy for when added)
       // No filter needed since we want to show all recently added items
-      console.log('Recently added filter active, total items before sort:', filtered.length);
-      console.log(
-        'Last 5 nmrs:',
-        filtered.slice(-5).map((s) => ({ nmr: s.nmr, title: s.title }))
-      );
     }
 
     // Apply sorting
@@ -244,13 +236,6 @@ export const RatingsPage: React.FC = () => {
       }
     });
 
-    console.log(`Found ${filtered.length} rated series with overall ratings`);
-    if (filters.quickFilter === 'recently-added') {
-      console.log(
-        'After sorting, first 5 items:',
-        filtered.slice(0, 5).map((s) => ({ nmr: s.nmr, title: s.title }))
-      );
-    }
     return filtered;
   }, [seriesList, filters, user]);
 
@@ -261,15 +246,6 @@ export const RatingsPage: React.FC = () => {
 
     // Apply filters
     if (filters.genre && filters.genre !== 'All') {
-      console.log('Movie genre filter active:', filters.genre);
-      console.log('Before genre filter:', filtered.length);
-
-      // Log first few items to debug
-      filtered.slice(0, 3).forEach((movie) => {
-        const genres = movie.genre?.genres || [];
-        console.log(`${movie.title} genres:`, genres);
-      });
-
       filtered = filtered.filter((movie) => {
         // Genres können in movie.genres oder movie.genre.genres sein
         const genres = movie.genre?.genres || [];
@@ -282,14 +258,6 @@ export const RatingsPage: React.FC = () => {
     }
 
     if (filters.provider && filters.provider !== 'All') {
-      console.log('Movie provider filter active:', filters.provider);
-      console.log('Before provider filter:', filtered.length);
-
-      // Log first item to debug provider structure
-      if (filtered.length > 0) {
-        console.log('Sample provider structure:', filtered[0].title, filtered[0].provider);
-      }
-
       filtered = filtered.filter((movie) => {
         // Provider structure: movie.provider.provider[]
         if (movie.provider?.provider && Array.isArray(movie.provider.provider)) {
@@ -297,7 +265,6 @@ export const RatingsPage: React.FC = () => {
         }
         return false;
       });
-      console.log('After provider filter:', filtered.length);
     }
 
     if (filters.search) {
@@ -319,15 +286,11 @@ export const RatingsPage: React.FC = () => {
     } else if (filters.quickFilter === 'started') {
       // Movies don't have seasons, so skip this filter for movies
       filtered = []; // No movies can be "started" since they don't have episodes
-    } else if (filters.quickFilter === 'best-rated') {
-      filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateOverallRating(s));
-        return !isNaN(rating) && rating >= 8;
-      });
-    } else if (filters.quickFilter === 'worst-rated') {
-      filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateOverallRating(s));
-        return !isNaN(rating) && rating > 0 && rating <= 5;
+    } else if (filters.quickFilter === 'not-started') {
+      // For movies: items that haven't been watched (no rating or rating is 0)
+      filtered = filtered.filter((m) => {
+        const rating = parseFloat(calculateOverallRating(m));
+        return isNaN(rating) || rating === 0;
       });
     } else if (filters.quickFilter === 'recently-rated') {
       // Only show items with ratings for this filter
@@ -338,11 +301,6 @@ export const RatingsPage: React.FC = () => {
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID (proxy for when added)
       // No filter needed since we want to show all recently added items
-      console.log('Recently added filter active, total items before sort:', filtered.length);
-      console.log(
-        'Last 5 nmrs:',
-        filtered.slice(-5).map((s) => ({ nmr: s.nmr, title: s.title }))
-      );
     }
 
     // Apply sorting
@@ -374,13 +332,6 @@ export const RatingsPage: React.FC = () => {
       }
     });
 
-    console.log(`Found ${filtered.length} rated movies with overall ratings`);
-    if (filters.quickFilter === 'recently-added') {
-      console.log(
-        'After sorting movies, first 5 items:',
-        filtered.slice(0, 5).map((m) => ({ nmr: m.nmr, title: m.title }))
-      );
-    }
     return filtered;
   }, [movieList, filters, user]);
 

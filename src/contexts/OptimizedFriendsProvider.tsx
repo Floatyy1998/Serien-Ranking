@@ -25,6 +25,7 @@ interface OptimizedFriendsContextType {
   sendFriendRequest: (username: string) => Promise<boolean>;
   acceptFriendRequest: (requestId: string) => Promise<void>;
   declineFriendRequest: (requestId: string) => Promise<void>;
+  cancelFriendRequest: (requestId: string) => Promise<void>;
   removeFriend: (friendId: string) => Promise<void>;
   updateUserActivity: (
     activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
@@ -46,6 +47,7 @@ export const OptimizedFriendsContext =
     sendFriendRequest: async () => false,
     acceptFriendRequest: async () => {},
     declineFriendRequest: async () => {},
+    cancelFriendRequest: async () => {},
     removeFriend: async () => {},
     updateUserActivity: async () => {},
     refreshFriends: () => {},
@@ -87,26 +89,33 @@ export const OptimizedFriendsProvider = ({
 
   const friends: Friend[] = friendsData ? Object.values(friendsData) : [];
 
-  // LocalStorage-Keys für die letzten Lesezeiten
-  const getLastReadKey = (type: 'requests' | 'activities') =>
-    `friends_last_read_${type}_${user?.uid}`;
-
-  // Lade gespeicherte Lesezeiten
+  // Lade gespeicherte Lesezeiten aus Firebase
   useEffect(() => {
     if (user) {
-      const savedRequestsTime = localStorage.getItem(
-        getLastReadKey('requests')
-      );
-      const savedActivitiesTime = localStorage.getItem(
-        getLastReadKey('activities')
-      );
+      const loadReadTimes = async () => {
+        try {
+          const readTimesRef = firebase.database().ref(`users/${user.uid}/readTimes`);
+          const snapshot = await readTimesRef.once('value');
+          const data = snapshot.val();
 
-      setLastReadRequestsTime(
-        savedRequestsTime ? parseInt(savedRequestsTime) : 0
-      );
-      setLastReadActivitiesTime(
-        savedActivitiesTime ? parseInt(savedActivitiesTime) : 0
-      );
+          if (data) {
+            setLastReadRequestsTime(data.requests || 0);
+            setLastReadActivitiesTime(data.activities || 0);
+          } else {
+            // Initialize with 0 on first use to show all as unread
+            setLastReadRequestsTime(0);
+            setLastReadActivitiesTime(0);
+            // Don't save to Firebase yet - wait for user to actually mark as read
+          }
+        } catch (error) {
+          console.error('Failed to load read times:', error);
+          // Fallback to 0 to show all as unread
+          setLastReadRequestsTime(0);
+          setLastReadActivitiesTime(0);
+        }
+      };
+
+      loadReadTimes();
     }
   }, [user]);
 
@@ -349,19 +358,31 @@ export const OptimizedFriendsProvider = ({
   }, [friendsLoading]);
 
   // Funktionen zum Markieren als gelesen
-  const markRequestsAsRead = useCallback(() => {
+  const markRequestsAsRead = useCallback(async () => {
+    if (!user) return;
     const now = Date.now();
     setLastReadRequestsTime(now);
-    localStorage.setItem(getLastReadKey('requests'), now.toString());
     setUnreadRequestsCount(0);
-  }, [getLastReadKey]);
 
-  const markActivitiesAsRead = useCallback(() => {
+    try {
+      await firebase.database().ref(`users/${user.uid}/readTimes/requests`).set(now);
+    } catch (error) {
+      console.error('Failed to save read time:', error);
+    }
+  }, [user]);
+
+  const markActivitiesAsRead = useCallback(async () => {
+    if (!user) return;
     const now = Date.now();
     setLastReadActivitiesTime(now);
-    localStorage.setItem(getLastReadKey('activities'), now.toString());
     setUnreadActivitiesCount(0);
-  }, [getLastReadKey]);
+
+    try {
+      await firebase.database().ref(`users/${user.uid}/readTimes/activities`).set(now);
+    } catch (error) {
+      console.error('Failed to save read time:', error);
+    }
+  }, [user]);
 
   const sendFriendRequest = async (username: string): Promise<boolean> => {
     if (!user) return false;
@@ -493,6 +514,20 @@ export const OptimizedFriendsProvider = ({
     }
   };
 
+  const cancelFriendRequest = async (requestId: string): Promise<void> => {
+    if (!user) return;
+
+    try {
+      // Delete the request from Firebase
+      await firebase.database().ref(`friendRequests/${requestId}`).remove();
+
+      // Remove from local state immediately
+      setSentRequests(prev => prev.filter(req => req.id !== requestId));
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const removeFriend = async (friendId: string): Promise<void> => {
     if (!user) return;
 
@@ -531,27 +566,27 @@ export const OptimizedFriendsProvider = ({
         timestamp: firebase.database.ServerValue.TIMESTAMP,
       });
 
-      // Limit to max 20 activities
+      // Limit to max 30 activities per user
       const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
       const activities = snapshot.val();
-      
+
       if (activities) {
         const activityKeys = Object.keys(activities);
-        if (activityKeys.length > 20) {
+        if (activityKeys.length > 30) {
           // Sort by timestamp and remove oldest entries
           const sortedKeys = activityKeys.sort((a, b) => {
             const timestampA = activities[a].timestamp || 0;
             const timestampB = activities[b].timestamp || 0;
             return timestampA - timestampB;
           });
-          
-          // Remove excess activities (keep only newest 20)
-          const toRemove = sortedKeys.slice(0, activityKeys.length - 20);
+
+          // Remove excess activities (keep only newest 30)
+          const toRemove = sortedKeys.slice(0, activityKeys.length - 30);
           const updates: { [key: string]: null } = {};
           toRemove.forEach(key => {
             updates[key] = null;
           });
-          
+
           await activitiesRef.update(updates);
         }
       }
@@ -580,6 +615,7 @@ export const OptimizedFriendsProvider = ({
         sendFriendRequest,
         acceptFriendRequest,
         declineFriendRequest,
+        cancelFriendRequest,
         removeFriend,
         updateUserActivity,
         refreshFriends,

@@ -1,9 +1,8 @@
-import { Cancel, CheckCircle, Close, Groups, Person, PersonAdd } from '@mui/icons-material';
+import { Cancel, CheckCircle, Groups, Person, PersonAdd } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../App';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
@@ -11,19 +10,11 @@ import { useTheme } from '../contexts/ThemeContext';
 import { getFormattedDate } from '../lib/date/date.utils';
 import { FriendActivity } from '../types/Friend';
 import { BackButton } from '../components/BackButton';
+import { AddFriendDialog } from '../components/AddFriendDialog';
 
-interface UserSearchResult {
-  uid: string;
-  username: string;
-  displayName: string;
-  photoURL?: string;
-  isAlreadyFriend: boolean;
-  hasPendingRequest: boolean;
-}
 
 export const ActivityPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
   const { currentTheme, getMobileHeaderStyle } = useTheme();
   const {
     friends,
@@ -36,7 +27,7 @@ export const ActivityPage = () => {
     markRequestsAsRead,
     acceptFriendRequest,
     declineFriendRequest,
-    sendFriendRequest,
+    cancelFriendRequest,
   } = useOptimizedFriends();
 
   const { seriesList } = useSeriesList();
@@ -44,22 +35,22 @@ export const ActivityPage = () => {
 
   const [activeTab, setActiveTab] = useState<'activity' | 'friends' | 'requests'>('activity');
   const [showAddFriend, setShowAddFriend] = useState(false);
-  const [friendUsername, setFriendUsername] = useState('');
-  const [addingFriend, setAddingFriend] = useState(false);
   const [tmdbPosters, setTmdbPosters] = useState<Record<string, string>>({});
-  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
   const [requestProfiles, setRequestProfiles] = useState<Record<string, any>>({});
 
   // Mark as read when viewing
   useEffect(() => {
-    if (activeTab === 'activity' && unreadActivitiesCount > 0) {
-      markActivitiesAsRead();
-    } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
-      markRequestsAsRead();
-    }
-  }, [activeTab, unreadActivitiesCount, unreadRequestsCount]);
+    const markAsRead = async () => {
+      if (activeTab === 'activity' && unreadActivitiesCount > 0) {
+        await markActivitiesAsRead();
+      } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
+        await markRequestsAsRead();
+      }
+    };
+
+    markAsRead();
+  }, [activeTab, unreadActivitiesCount, unreadRequestsCount, markActivitiesAsRead, markRequestsAsRead]);
 
   // Load friend profiles from Firebase Database (like desktop version)
   useEffect(() => {
@@ -113,74 +104,6 @@ export const ActivityPage = () => {
     }
   }, [friendRequests]);
 
-  // Search for users when friendUsername changes
-  useEffect(() => {
-    if (friendUsername.length < 3) {
-      setSearchResults([]);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      searchUsers();
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [friendUsername]);
-
-  const searchUsers = async () => {
-    if (!user || friendUsername.length < 3) return;
-
-    try {
-      setSearching(true);
-
-      const usersRef = firebase.database().ref('users');
-      const snapshot = await usersRef.once('value');
-      const usersData = snapshot.val();
-
-      if (!usersData) {
-        setSearchResults([]);
-        return;
-      }
-
-      const results: UserSearchResult[] = [];
-
-      const currentFriendIds = friends.map((f) => f.uid);
-      const sentRequestIds = sentRequests.map((r) => r.toUserId);
-
-      Object.keys(usersData).forEach((uid) => {
-        const userData = usersData[uid];
-
-        if (uid === user.uid) return;
-        if (!userData.username) return;
-
-        const searchInUsername = userData.username
-          .toLowerCase()
-          .includes(friendUsername.toLowerCase());
-        const searchInDisplayName = userData.displayName
-          ?.toLowerCase()
-          .includes(friendUsername.toLowerCase());
-
-        if (searchInUsername || searchInDisplayName) {
-          const isAlreadyFriend = currentFriendIds.includes(uid);
-          const hasPendingRequest = sentRequestIds.includes(uid);
-
-          results.push({
-            uid,
-            username: userData.username,
-            displayName: userData.displayName,
-            photoURL: userData.photoURL,
-            isAlreadyFriend,
-            hasPendingRequest,
-          });
-        }
-      });
-
-      setSearchResults(results.slice(0, 10)); // Limit to 10 results
-    } catch (error) {
-    } finally {
-      setSearching(false);
-    }
-  };
 
   // Get item details for activity
   const getItemDetails = (activity: FriendActivity) => {
@@ -352,33 +275,6 @@ export const ActivityPage = () => {
     fetchMissingPosters();
   }, [friendActivities.length]); // Only depend on activities length, not tmdbPosters
 
-  // Handle add friend
-  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-  const [requestSent, setRequestSent] = useState(false);
-
-  const handleAddFriend = async (targetUser?: UserSearchResult) => {
-    const username = targetUser ? targetUser.username : friendUsername.trim();
-    if (!username) return;
-
-    setAddingFriend(true);
-    try {
-      const success = await sendFriendRequest(username);
-      if (success) {
-        setRequestSent(true);
-        setTimeout(() => {
-          setFriendUsername('');
-          setSearchResults([]);
-          setShowAddFriend(false);
-          setSelectedUser(null);
-          setRequestSent(false);
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Fehler beim Senden der Anfrage:', error);
-    } finally {
-      setAddingFriend(false);
-    }
-  };
 
   return (
     <div>
@@ -593,8 +489,8 @@ export const ActivityPage = () => {
                     key={activity.id}
                     style={{
                       display: 'flex',
-                      gap: '12px',
-                      padding: '12px',
+                      gap: '10px',
+                      padding: '10px',
                       background: isNew ? 'rgba(102, 126, 234, 0.05)' : 'rgba(255, 255, 255, 0.02)',
                       border: isNew
                         ? '1px solid rgba(102, 126, 234, 0.2)'
@@ -602,6 +498,8 @@ export const ActivityPage = () => {
                       borderRadius: '12px',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
+                      overflow: 'hidden',
+                      position: 'relative',
                     }}
                     onClick={() => {
                       const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
@@ -622,8 +520,8 @@ export const ActivityPage = () => {
                     {/* User Avatar */}
                     <div
                       style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '36px',
+                        height: '36px',
                         borderRadius: '50%',
                         ...(activityProfile?.photoURL
                           ? {
@@ -640,36 +538,45 @@ export const ActivityPage = () => {
                         flexShrink: 0,
                       }}
                     >
-                      {!activityProfile?.photoURL && <Person style={{ fontSize: '20px' }} />}
+                      {!activityProfile?.photoURL && <Person style={{ fontSize: '18px' }} />}
                     </div>
 
                     {/* Activity Content */}
-                    <div style={{ flex: 1 }}>
+                    <div style={{
+                      flex: 1,
+                      minWidth: 0, // Allow flex child to shrink below content size
+                      overflow: 'hidden'
+                    }}>
                       <div
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
                           marginBottom: '4px',
                         }}
                       >
-                        <span
-                          style={{
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: 'white',
-                          }}
-                        >
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: 'white',
+                          marginBottom: '2px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
                           {activityProfile?.displayName || friendName}
-                        </span>
-                        <span
+                        </div>
+                        <div
                           style={{
                             fontSize: '13px',
-                            color: 'rgba(255, 255, 255, 0.5)',
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            lineHeight: '1.4',
                           }}
                         >
                           {formatActivityMessage(activity)}
-                        </span>
+                        </div>
                       </div>
 
                       {/* Remove duplicate title display since it's in the message now */}
@@ -701,11 +608,14 @@ export const ActivityPage = () => {
                             src={posterUrl}
                             alt={item?.title || (activity as any).itemTitle}
                             style={{
-                              width: '50px',
-                              height: '75px',
+                              width: '45px',
+                              height: '67px',
                               objectFit: 'cover',
                               borderRadius: '6px',
                               flexShrink: 0,
+                            }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
                         );
@@ -1028,6 +938,24 @@ export const ActivityPage = () => {
                           Ausstehend • {formatTimeAgo((request as any).timestamp || Date.now())}
                         </p>
                       </div>
+
+                      <button
+                        onClick={() => cancelFriendRequest(request.id)}
+                        style={{
+                          padding: '8px',
+                          background: 'rgba(232, 65, 24, 0.2)',
+                          border: '1px solid rgba(232, 65, 24, 0.4)',
+                          borderRadius: '6px',
+                          color: '#e84118',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        title="Anfrage zurückziehen"
+                      >
+                        <Cancel style={{ fontSize: '20px' }} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -1056,367 +984,11 @@ export const ActivityPage = () => {
         )}
       </div>
 
-      {/* Add Friend Modal */}
-      {showAddFriend && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              background: '#1a1a1a',
-              borderRadius: '16px',
-              padding: '24px',
-              width: '100%',
-              maxWidth: '400px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '20px',
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: '20px',
-                  fontWeight: 600,
-                  margin: 0,
-                }}
-              >
-                Freund hinzufügen
-              </h2>
-              <button
-                onClick={() => setShowAddFriend(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
-                <Close />
-              </button>
-            </div>
-
-            <input
-              type="text"
-              value={friendUsername}
-              onChange={(e) => setFriendUsername(e.target.value)}
-              placeholder="Benutzername eingeben..."
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                color: currentTheme.text.primary,
-                fontSize: '16px',
-                marginBottom: '20px',
-                outline: 'none',
-              }}
-            />
-
-            {/* Search Results */}
-            {searching && (
-              <div
-                style={{
-                  padding: '20px',
-                  textAlign: 'center',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                }}
-              >
-                Suche...
-              </div>
-            )}
-
-            {searchResults.length > 0 && (
-              <div
-                style={{
-                  marginBottom: '20px',
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                }}
-              >
-                {searchResults.map((result) => (
-                  <button
-                    key={result.uid}
-                    onClick={() => setSelectedUser(result)}
-                    disabled={result.isAlreadyFriend || result.hasPendingRequest}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: '8px',
-                      color: currentTheme.text.primary,
-                      cursor:
-                        result.isAlreadyFriend || result.hasPendingRequest || addingFriend
-                          ? 'not-allowed'
-                          : 'pointer',
-                      opacity:
-                        result.isAlreadyFriend || result.hasPendingRequest || addingFriend
-                          ? 0.5
-                          : 1,
-                      marginBottom: '8px',
-                      textAlign: 'left',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        ...(result.photoURL
-                          ? {
-                              backgroundImage: `url("${result.photoURL}")`,
-                              backgroundPosition: 'center',
-                              backgroundSize: 'cover',
-                            }
-                          : {
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            }),
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {!result.photoURL && <Person style={{ fontSize: '20px' }} />}
-                    </div>
-
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          marginBottom: '2px',
-                        }}
-                      >
-                        {result.displayName || result.username}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: 'rgba(255, 255, 255, 0.5)',
-                        }}
-                      >
-                        @{result.username}
-                        {result.isAlreadyFriend && ' • Bereits befreundet'}
-                        {result.hasPendingRequest && ' • Anfrage gesendet'}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {friendUsername.length >= 3 && searchResults.length === 0 && !searching && (
-              <div
-                style={{
-                  padding: '20px',
-                  textAlign: 'center',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  marginBottom: '20px',
-                }}
-              >
-                Keine Benutzer gefunden
-              </div>
-            )}
-
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-              }}
-            >
-              <button
-                onClick={() => setShowAddFriend(false)}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '8px',
-                  color: currentTheme.text.primary,
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-              >
-                Abbrechen
-              </button>
-              <button
-                onClick={() => handleAddFriend()}
-                disabled={addingFriend || !friendUsername.trim()}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: currentTheme.primary,
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: currentTheme.text.primary,
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor: addingFriend || !friendUsername.trim() ? 'not-allowed' : 'pointer',
-                  opacity: addingFriend || !friendUsername.trim() ? 0.5 : 1,
-                }}
-              >
-                {addingFriend ? 'Sende...' : 'Senden'}
-              </button>
-            </div>
-
-            {/* Selected User Confirmation */}
-            {selectedUser && (
-              <div
-                style={{
-                  marginTop: '20px',
-                  padding: '16px',
-                  background: currentTheme.background.surface,
-                  borderRadius: '12px',
-                  border: `1px solid ${currentTheme.border}`,
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: '14px',
-                    color: currentTheme.text.secondary,
-                    marginBottom: '12px',
-                  }}
-                >
-                  Freundschaftsanfrage senden an:
-                </p>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    marginBottom: '16px',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      ...(selectedUser.photoURL
-                        ? {
-                            backgroundImage: `url("${selectedUser.photoURL}")`,
-                            backgroundPosition: 'center',
-                            backgroundSize: 'cover',
-                          }
-                        : {
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          }),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {!selectedUser.photoURL && (
-                      <Person style={{ fontSize: '20px', color: 'white' }} />
-                    )}
-                  </div>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: '16px',
-                        fontWeight: 600,
-                        color: currentTheme.text.primary,
-                        margin: 0,
-                      }}
-                    >
-                      {selectedUser.displayName || selectedUser.username}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: '13px',
-                        color: currentTheme.text.secondary,
-                        margin: 0,
-                      }}
-                    >
-                      @{selectedUser.username}
-                    </p>
-                  </div>
-                </div>
-
-                {requestSent ? (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px',
-                      background: `${currentTheme.status.success}20`,
-                      borderRadius: '8px',
-                      color: currentTheme.status.success,
-                    }}
-                  >
-                    <CheckCircle style={{ fontSize: '20px' }} />
-                    <span style={{ fontSize: '14px', fontWeight: 500 }}>
-                      Anfrage erfolgreich gesendet!
-                    </span>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => setSelectedUser(null)}
-                      style={{
-                        flex: 1,
-                        padding: '10px',
-                        background: 'transparent',
-                        border: `1px solid ${currentTheme.border}`,
-                        borderRadius: '8px',
-                        color: currentTheme.text.secondary,
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Abbrechen
-                    </button>
-                    <button
-                      onClick={() => handleAddFriend(selectedUser)}
-                      disabled={addingFriend}
-                      style={{
-                        flex: 1,
-                        padding: '10px',
-                        background: currentTheme.primary,
-                        border: 'none',
-                        borderRadius: '8px',
-                        color: 'white',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        cursor: addingFriend ? 'not-allowed' : 'pointer',
-                        opacity: addingFriend ? 0.5 : 1,
-                      }}
-                    >
-                      {addingFriend ? 'Sende...' : 'Anfrage senden'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* New Add Friend Dialog */}
+      <AddFriendDialog
+        isOpen={showAddFriend}
+        onClose={() => setShowAddFriend(false)}
+      />
     </div>
   );
 };
