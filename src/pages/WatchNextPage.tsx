@@ -1307,8 +1307,8 @@ export const WatchNextPage = () => {
 
         {/* Padding at bottom to prevent last item being hidden by navbar */}
         <div style={{
-          height: 'calc(100px + env(safe-area-inset-bottom))',
-          paddingBottom: 'env(safe-area-inset-bottom)'
+          height: 'calc(120px + env(safe-area-inset-bottom))',
+          paddingBottom: 'calc(20px + env(safe-area-inset-bottom))'
         }} />
       </div>
     </div>
