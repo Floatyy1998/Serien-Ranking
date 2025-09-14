@@ -42,6 +42,10 @@ export const MovieDetailPage = memo(() => {
   const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
   // State for providers
   const [providers, setProviders] = useState<any>(null);
+  // State for TMDB rating data
+  const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(null);
+  // State for IMDB rating from OMDb
+  const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
@@ -49,12 +53,19 @@ export const MovieDetailPage = memo(() => {
     
     // ALWAYS fetch backdrop and providers from TMDB
     if (id && apiKey) {
-      // Fetch backdrop
+      // Fetch backdrop and TMDB rating
       fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE`)
         .then(res => res.json())
         .then(data => {
           if (data.backdrop_path) {
             setTmdbBackdrop(data.backdrop_path);
+          }
+          // Store TMDB rating data
+          if (data.vote_average && data.vote_count) {
+            setTmdbRating({
+              vote_average: data.vote_average,
+              vote_count: data.vote_count
+            });
           }
         })
         .catch(() => {});
@@ -108,6 +119,28 @@ export const MovieDetailPage = memo(() => {
 
   // Use local movie if available, otherwise use TMDB movie
   const movie = localMovie || tmdbMovie;
+
+  // Fetch IMDB rating from OMDb API
+  useEffect(() => {
+    const omdbKey = import.meta.env.VITE_API_OMDb;
+    const imdbId = movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id;
+
+    if (imdbId && omdbKey) {
+      fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${omdbKey}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.imdbRating && data.imdbRating !== 'N/A') {
+            setImdbRating({
+              rating: parseFloat(data.imdbRating),
+              votes: data.imdbVotes || '0'
+            });
+          }
+        })
+        .catch(() => {
+          // Handle error silently
+        });
+    }
+  }, [movie, localMovie]);
 
   // Check if this is a TMDB-only movie (not in user's list)
   const isReadOnlyTmdbMovie = !localMovie && !!tmdbMovie;
@@ -432,6 +465,86 @@ export const MovieDetailPage = memo(() => {
               <span style={{ color: '#ffd700' }}>
                 • ⭐ {averageRating}
               </span>
+            )}
+          </div>
+
+          {/* Ratings from TMDB and IMDB */}
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            marginBottom: '16px',
+            flexWrap: 'wrap'
+          }}>
+            {/* TMDB Rating */}
+            {tmdbRating && (
+              <a
+                href={`https://www.themoviedb.org/movie/${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  background: 'rgba(0, 188, 212, 0.15)',
+                  border: '1px solid rgba(0, 188, 212, 0.3)',
+                  borderRadius: '16px',
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  color: 'white'
+                }}
+              >
+                <span style={{
+                  fontWeight: 900,
+                  fontSize: '11px',
+                  background: '#01b4e4',
+                  color: '#0d253f',
+                  padding: '2px 4px',
+                  borderRadius: '4px'
+                }}>TMDB</span>
+                <span style={{ fontWeight: 600 }}>
+                  {tmdbRating.vote_average.toFixed(1)}/10
+                </span>
+                <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                  ({(tmdbRating.vote_count / 1000).toFixed(1)}k)
+                </span>
+              </a>
+            )}
+
+            {/* IMDB Rating from OMDb */}
+            {imdbRating && (
+              <a
+                href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  background: 'rgba(245, 197, 24, 0.15)',
+                  border: '1px solid rgba(245, 197, 24, 0.3)',
+                  borderRadius: '16px',
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  color: 'white'
+                }}
+              >
+                <span style={{
+                  fontWeight: 900,
+                  fontSize: '11px',
+                  background: '#F5C518',
+                  color: '#000',
+                  padding: '2px 4px',
+                  borderRadius: '4px'
+                }}>IMDb</span>
+                <span style={{ fontWeight: 600 }}>
+                  {imdbRating.rating.toFixed(1)}/10
+                </span>
+                <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                  ({(parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)}k)
+                </span>
+              </a>
             )}
           </div>
 

@@ -46,6 +46,49 @@ export const DiscoverPage = memo(() => {
   const [showSearch, setShowSearch] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
+  // Track initial mount to prevent double fetching
+  const [isInitialMount, setIsInitialMount] = useState(true);
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  // Reset or restore filters when component mounts
+  useEffect(() => {
+    // Check if we're coming from a detail page
+    const isComingFromDetail = sessionStorage.getItem('comingFromDetail') === 'true';
+
+    if (isComingFromDetail) {
+      // Restore saved filter state
+      const savedState = sessionStorage.getItem('discoverFilters');
+      if (savedState) {
+        setIsRestoring(true);
+        const filters = JSON.parse(savedState);
+        setActiveTab(filters.activeTab || 'series');
+        setActiveCategory(filters.activeCategory || 'trending');
+        setSelectedGenre(filters.selectedGenre || null);
+        setShowFilters(filters.showFilters || false);
+        setSearchQuery(filters.searchQuery || '');
+        setShowSearch(filters.showSearch || false);
+
+        // Small delay to ensure state is set
+        setTimeout(() => {
+          setIsRestoring(false);
+          setIsInitialMount(false);
+        }, 100);
+      }
+      // Clear the flag
+      sessionStorage.removeItem('comingFromDetail');
+      sessionStorage.removeItem('discoverFilters');
+    } else {
+      // Reset filters only when freshly navigating to the page
+      setActiveTab('series');
+      setActiveCategory('trending');
+      setSelectedGenre(null);
+      setShowFilters(false);
+      setSearchQuery('');
+      setShowSearch(false);
+      setIsInitialMount(false);
+    }
+  }, []);
+
   // Handle resize
   useEffect(() => {
     const handleResize = () => {
@@ -164,11 +207,14 @@ export const DiscoverPage = memo(() => {
         setLoading(false);
       }
     },
-    [activeTab, activeCategory, selectedGenre, page, loading, seriesList, movieList]
+    [activeTab, activeCategory, selectedGenre, page, loading, isInList]
   );
 
   // Load initial data and trigger second page load if needed
   useEffect(() => {
+    // Skip if we're still in initial mount or restoring
+    if (isInitialMount || isRestoring) return;
+
     if (!showSearch) {
       fetchFromTMDB(true);
       // Automatically load second page after initial load to ensure enough content for scrolling
@@ -182,7 +228,7 @@ export const DiscoverPage = memo(() => {
         }
       }, 500);
     }
-  }, [activeTab, activeCategory, selectedGenre, showSearch]);
+  }, [activeTab, activeCategory, selectedGenre, showSearch, isInitialMount, isRestoring]);
 
   // Search function
   const searchItems = useCallback(
@@ -225,7 +271,7 @@ export const DiscoverPage = memo(() => {
         setSearchLoading(false);
       }
     },
-    [activeTab, seriesList, movieList]
+    [activeTab, isInList]
   );
 
   // Debounced search
@@ -306,10 +352,22 @@ export const DiscoverPage = memo(() => {
   // Handle item click - memoized
   const handleItemClick = useCallback(
     (item: any) => {
+      // Save current filter state
+      const filterState = {
+        activeTab,
+        activeCategory,
+        selectedGenre,
+        showFilters,
+        searchQuery,
+        showSearch
+      };
+      sessionStorage.setItem('discoverFilters', JSON.stringify(filterState));
+      // Set flag to preserve filters when coming back
+      sessionStorage.setItem('comingFromDetail', 'true');
       // Always navigate to detail page
       navigate(item.type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
     },
-    [navigate]
+    [navigate, activeTab, activeCategory, selectedGenre, showFilters, searchQuery, showSearch]
   );
 
   // Load more on scroll
