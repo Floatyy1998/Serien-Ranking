@@ -79,8 +79,8 @@ export const SettingsPage = () => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setDialog({ open: true, message: 'Bild darf maximal 5MB groß sein', type: 'error' });
+    if (file.size > 100 * 1024 * 1024) {
+      setDialog({ open: true, message: 'Bild darf maximal 100MB groß sein', type: 'error' });
       return;
     }
 
