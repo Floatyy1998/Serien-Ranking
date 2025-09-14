@@ -1,4 +1,4 @@
-import { ArrowBack, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
+import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -8,6 +8,7 @@ import 'firebase/compat/database';
 import { useTheme } from '../contexts/ThemeContext';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { QuickFilter } from '../components/QuickFilter';
+import { BackButton } from '../components/BackButton';
 
 interface FriendItem {
   id: number;
@@ -182,15 +183,28 @@ export const FriendProfilePage: React.FC = () => {
 
         return watchedEpisodes > 0 && watchedEpisodes < totalAiredEpisodes;
       });
-    } else if (filters.quickFilter === 'best-rated') {
+    } else if (filters.quickFilter === 'not-started') {
+      // For series: items that haven't been started (no episodes watched)
       filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateFriendRating(s));
-        return !isNaN(rating) && rating >= 8;
-      });
-    } else if (filters.quickFilter === 'worst-rated') {
-      filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateFriendRating(s));
-        return !isNaN(rating) && rating > 0 && rating <= 6;
+        if (!s.seasons) return true; // If no seasons data, consider as not started
+
+        let watchedEpisodes = 0;
+        const today = new Date();
+
+        s.seasons.forEach((season: any) => {
+          if (season.episodes) {
+            season.episodes.forEach((ep: any) => {
+              if (ep.air_date) {
+                const airDate = new Date(ep.air_date);
+                if (airDate <= today && ep.watched) {
+                  watchedEpisodes++;
+                }
+              }
+            });
+          }
+        });
+
+        return watchedEpisodes === 0;
       });
     } else if (filters.quickFilter === 'recently-rated') {
       filtered = filtered.filter((s) => {
@@ -267,15 +281,11 @@ export const FriendProfilePage: React.FC = () => {
         const rating = parseFloat(calculateFriendRating(m));
         return isNaN(rating) || rating === 0;
       });
-    } else if (filters.quickFilter === 'best-rated') {
+    } else if (filters.quickFilter === 'not-started') {
+      // For movies: items that haven't been watched (no rating or rating is 0)
       filtered = filtered.filter((m) => {
         const rating = parseFloat(calculateFriendRating(m));
-        return !isNaN(rating) && rating >= 8;
-      });
-    } else if (filters.quickFilter === 'worst-rated') {
-      filtered = filtered.filter((m) => {
-        const rating = parseFloat(calculateFriendRating(m));
-        return !isNaN(rating) && rating > 0 && rating <= 6;
+        return isNaN(rating) || rating === 0;
       });
     } else if (filters.quickFilter === 'recently-rated') {
       filtered = filtered.filter((m) => {
@@ -359,25 +369,7 @@ export const FriendProfilePage: React.FC = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              background: currentTheme.background.surface,
-              border: 'none',
-              color: currentTheme.text.primary,
-              fontSize: '20px',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-            }}
-          >
-            <ArrowBack />
-          </button>
+          <BackButton />
 
           <div>
             <h1

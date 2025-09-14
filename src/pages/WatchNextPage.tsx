@@ -967,7 +967,7 @@ export const WatchNextPage = () => {
 
       {/* Scrollable Content Container */}
       <div
-        className="episodes-scroll-container"
+        className="episodes-scroll-container hide-scrollbar"
         style={{
           flex: 1,
           overflowY: 'auto',
@@ -977,6 +977,9 @@ export const WatchNextPage = () => {
           position: 'relative',
           // Disable touch scrolling when dragging
           touchAction: draggedIndex !== null && editModeActive ? 'none' : 'auto',
+          // Force hide scrollbar for this specific container
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
         {nextEpisodes.length === 0 ? (
@@ -1303,7 +1306,10 @@ export const WatchNextPage = () => {
         )}
 
         {/* Padding at bottom to prevent last item being hidden by navbar */}
-        <div style={{ height: '100px' }} />
+        <div style={{
+          height: 'calc(100px + env(safe-area-inset-bottom))',
+          paddingBottom: 'env(safe-area-inset-bottom)'
+        }} />
       </div>
     </div>
   );

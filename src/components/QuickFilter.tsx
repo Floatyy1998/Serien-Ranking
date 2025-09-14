@@ -40,7 +40,7 @@ const ratingsQuickFilters = [
   { value: 'watchlist', label: 'Watchlist', icon: Bookmark },
   { value: 'unrated', label: 'Ohne Bewertung', icon: Star },
   { value: 'started', label: 'Begonnen', icon: Schedule },
-  { value: 'best-rated', label: 'Beste Bewertungen', icon: Star },
+  { value: 'not-started', label: 'Noch nicht begonnen', icon: Schedule },
   { value: 'recently-rated', label: 'Zuletzt Bewertet', icon: Schedule },
   { value: 'recently-added', label: 'Zuletzt Hinzugefügt', icon: PlaylistAdd },
 ];
@@ -606,11 +606,11 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                           ) : (
                             <span
                               style={{
-                                fontSize: '8px',
+                                fontSize: '12px',
                                 fontWeight: 600,
                                 color: 'white',
                                 textAlign: 'center',
-                                lineHeight: '1.1',
+                                lineHeight: '1.2',
                               }}
                             >
                               {provider.label}
