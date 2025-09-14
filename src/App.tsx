@@ -7,13 +7,12 @@ import { EmailVerificationBanner } from './components/auth/EmailVerificationBann
 // Badge Migration Tools für Development
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
-import { NotificationProvider } from './contexts/NotificationProvider';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
-import './styles/performance.css';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
+import './styles/performance.css';
 import { updateTheme } from './theme';
 
 // Lazy load mobile app for all platforms
@@ -424,70 +423,68 @@ function AppContent() {
 
   return (
     <OptimizedFriendsProvider>
-      <NotificationProvider>
-        <GeneralNotificationProvider>
-          <SeriesListProvider>
-            <MovieListProvider>
-              <StatsProvider>
-                <BadgeProvider>
-                  <ThemeProvider theme={currentTheme}>
-                    <CssBaseline />
-                    <div className="w-full">
-                      <main className="w-full">
-                        <Suspense fallback={<PageLoader />}>
-                          <Routes>
-                            <Route
-                              path="/login"
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route
-                              path="/register"
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route path="/public/:publicId" element={<PublicProfilePage />} />
-                            <Route
-                              path="/*"
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) => {
-                                    // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
-                                    if (auth?.user) {
-                                      return (
-                                        <EmailVerificationBanner>
-                                          <MobileApp />
-                                        </EmailVerificationBanner>
-                                      );
-                                    } else if (auth?.authStateResolved) {
-                                      // Wenn kein User da ist, zeige StartPage
-                                      return <StartPage />;
-                                    } else {
-                                      // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
-                                      return null;
-                                    }
-                                  }}
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route path="*" element={<Navigate to="/" />} />
-                          </Routes>
-                        </Suspense>
-                      </main>
-                    </div>
-                  </ThemeProvider>
-                </BadgeProvider>
-              </StatsProvider>
-            </MovieListProvider>
-          </SeriesListProvider>
-        </GeneralNotificationProvider>
-      </NotificationProvider>
+      <GeneralNotificationProvider>
+        <SeriesListProvider>
+          <MovieListProvider>
+            <StatsProvider>
+              <BadgeProvider>
+                <ThemeProvider theme={currentTheme}>
+                  <CssBaseline />
+                  <div className="w-full">
+                    <main className="w-full">
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route
+                            path="/login"
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route
+                            path="/register"
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route path="/public/:publicId" element={<PublicProfilePage />} />
+                          <Route
+                            path="/*"
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => {
+                                  // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
+                                  if (auth?.user) {
+                                    return (
+                                      <EmailVerificationBanner>
+                                        <MobileApp />
+                                      </EmailVerificationBanner>
+                                    );
+                                  } else if (auth?.authStateResolved) {
+                                    // Wenn kein User da ist, zeige StartPage
+                                    return <StartPage />;
+                                  } else {
+                                    // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
+                                    return null;
+                                  }
+                                }}
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route path="*" element={<Navigate to="/" />} />
+                        </Routes>
+                      </Suspense>
+                    </main>
+                  </div>
+                </ThemeProvider>
+              </BadgeProvider>
+            </StatsProvider>
+          </MovieListProvider>
+        </SeriesListProvider>
+      </GeneralNotificationProvider>
     </OptimizedFriendsProvider>
   );
 }
