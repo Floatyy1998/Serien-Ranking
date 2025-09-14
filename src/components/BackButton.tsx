@@ -14,20 +14,25 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
   const handleBack = () => {
     // Check if we came from ratings page
     const cameFromRatings = sessionStorage.getItem('cameFromRatings') === 'true';
-    
+
     // Check if we're navigating back FROM a detail page
-    const isFromDetailPage = location.pathname.includes('/series/') || 
-                            location.pathname.includes('/movie/') ||
-                            location.pathname.includes('/rating/');
-    
+    const isFromDetailPage = location.pathname.includes('/series/') ||
+                            location.pathname.includes('/movie/');
+    const isFromRatingDetail = location.pathname.includes('/rating/');
+
+    // If navigating back FROM a series/movie detail page, set flag to preserve filters on Discover page
+    if (isFromDetailPage) {
+      sessionStorage.setItem('comingFromDetail', 'true');
+    }
+
     // If navigating back to ratings from a detail page, preserve filters
-    if (isFromDetailPage && cameFromRatings) {
+    if ((isFromDetailPage || isFromRatingDetail) && cameFromRatings) {
       // Clear the flag that we came from ratings
       sessionStorage.removeItem('cameFromRatings');
       // Set a flag that we're doing a back navigation to ratings
       sessionStorage.setItem('ratingsBackNavigation', 'true');
     }
-    
+
     // Always use browser back navigation
     if (window.history.length > 1) {
       navigate(-1);

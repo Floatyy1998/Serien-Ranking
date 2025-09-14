@@ -927,6 +927,167 @@ export const SettingsPage = () => {
           </div>
         </div>
 
+        {/* Legal & Data Sources */}
+        <div
+          style={{
+            padding: '20px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
+            marginTop: '20px',
+          }}
+        >
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: 600,
+              margin: '0 0 16px 0',
+              color: 'white',
+            }}
+          >
+            Rechtliches & Datenquellen
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              onClick={() => navigate('/privacy')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '14px',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <span>Datenschutzerklärung</span>
+              <span style={{ opacity: 0.5 }}>→</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/impressum')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '14px',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <span>Impressum</span>
+              <span style={{ opacity: 0.5 }}>→</span>
+            </button>
+          </div>
+
+          <div
+            style={{
+              marginTop: '20px',
+              padding: '16px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: '8px',
+            }}
+          >
+            <h4
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                margin: '0 0 12px 0',
+                color: 'rgba(255, 255, 255, 0.9)',
+              }}
+            >
+              Datenquellen
+            </h4>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                fontSize: '12px',
+                color: 'rgba(255, 255, 255, 0.7)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Streaming-Anbieter:</span>
+                <a
+                  href="https://www.justwatch.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: currentTheme.primary, textDecoration: 'none' }}
+                >
+                  JustWatch
+                </a>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Episoden-Informationen:</span>
+                <a
+                  href="https://thetvdb.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: currentTheme.primary, textDecoration: 'none' }}
+                >
+                  TheTVDB
+                </a>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Film- & Seriendaten:</span>
+                <a
+                  href="https://www.themoviedb.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: currentTheme.primary, textDecoration: 'none' }}
+                >
+                  TMDB
+                </a>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Bewertungen:</span>
+                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <a
+                    href="https://www.imdb.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: currentTheme.primary, textDecoration: 'none' }}
+                  >
+                    IMDb
+                  </a>
+                  <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px' }}>(via</span>
+                  <a
+                    href="https://www.omdbapi.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: currentTheme.primary, textDecoration: 'none' }}
+                  >
+                    OMDb
+                  </a>
+                  <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px' }}>)</span>
+                </div>
+              </div>
+            </div>
+            <p
+              style={{
+                fontSize: '10px',
+                color: 'rgba(255, 255, 255, 0.5)',
+                marginTop: '12px',
+                marginBottom: 0,
+                textAlign: 'center',
+              }}
+            >
+              Alle Logos und Marken sind Eigentum ihrer jeweiligen Inhaber
+            </p>
+          </div>
+        </div>
+
         {/* Logout */}
         <button
           onClick={handleLogout}

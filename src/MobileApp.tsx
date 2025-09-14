@@ -20,6 +20,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { StatsPage } from './pages/StatsPage';
 import { ThemePage } from './pages/ThemePage';
 import { WatchNextPage } from './pages/WatchNextPage';
+import { ImpressumPage } from './pages/ImpressumPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 import './styles/App.css';
 
 export const MobileApp = () => {
@@ -174,6 +176,24 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <FriendProfilePage />
+              </Layout>
+            }
+          />
+
+          {/* Legal Pages */}
+          <Route
+            path="/impressum"
+            element={
+              <Layout hideNav>
+                <ImpressumPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/privacy"
+            element={
+              <Layout hideNav>
+                <PrivacyPage />
               </Layout>
             }
           />
