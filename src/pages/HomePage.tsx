@@ -27,6 +27,7 @@ import { useAuth } from '../App';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
+import { petService } from '../services/petService';
 import { useContinueWatching } from '../hooks/useContinueWatching';
 import { useTMDBTrending } from '../hooks/useTMDBTrending';
 import { useTopRated } from '../hooks/useTopRated';
@@ -208,6 +209,9 @@ export const HomePage: React.FC = () => {
               `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/firstWatchedAt`
             );
           await firstWatchedRef.set(new Date().toISOString());
+
+          // Pet XP geben (nur beim ersten Schauen)
+          await petService.watchedEpisode(user.uid);
         }
       } catch (error) {
         console.error('Error marking episode as watched:', error);
@@ -272,7 +276,6 @@ export const HomePage: React.FC = () => {
           await firstWatchedRef.set(new Date().toISOString());
 
           // Pet XP geben (nur beim ersten Schauen)
-          const { petService } = await import('../services/petService');
           await petService.watchedEpisode(user.uid);
         }
       } catch (error) {

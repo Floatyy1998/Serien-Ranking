@@ -8,6 +8,7 @@ import { useAuth } from '../App';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../lib/date/episodeDate.utils';
+import { petService } from '../services/petService';
 import { Series } from '../types/Series';
 import { BackButton } from '../components/BackButton';
 import './EpisodeManagementPage.css';
@@ -184,7 +185,6 @@ export const EpisodeManagementPage = () => {
         );
 
         // Pet XP geben
-        const { petService } = await import('../services/petService');
         await petService.watchedEpisode(user.uid);
       } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
         // Rewatch case
