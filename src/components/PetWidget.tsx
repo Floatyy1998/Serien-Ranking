@@ -1,10 +1,10 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../App';
 import { useTheme } from '../contexts/ThemeContext';
-import { Pet } from '../types/pet.types';
 import { petService } from '../services/petService';
+import { Pet } from '../types/pet.types';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
 
 export const PetWidget: React.FC = () => {
@@ -26,11 +26,14 @@ export const PetWidget: React.FC = () => {
   useEffect(() => {
     if (!user || !pet) return;
 
-    const interval = setInterval(() => {
-      petService.updatePetStatus(user.uid).then(updatedPet => {
-        if (updatedPet) setPet(updatedPet);
-      });
-    }, 5 * 60 * 1000);
+    const interval = setInterval(
+      () => {
+        petService.updatePetStatus(user.uid).then((updatedPet) => {
+          if (updatedPet) setPet(updatedPet);
+        });
+      },
+      5 * 60 * 1000
+    );
 
     return () => clearInterval(interval);
   }, [user, pet]);
@@ -64,7 +67,7 @@ export const PetWidget: React.FC = () => {
         className="pet-widget"
         style={{
           position: 'fixed',
-          bottom: '90px',
+          bottom: 'calc(90px + env(safe-area-inset-bottom))',
           right: '15px',
           background: currentTheme.background.card + 'f0',
           backdropFilter: 'blur(10px)',
@@ -107,12 +110,12 @@ export const PetWidget: React.FC = () => {
           <motion.div
             animate={{
               rotate: [0, 10, -10, 0],
-              y: [0, -5, 0]
+              y: [0, -5, 0],
             }}
             transition={{
               duration: 2,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: 'easeInOut',
             }}
             style={{
               fontSize: '36px',
@@ -121,20 +124,24 @@ export const PetWidget: React.FC = () => {
           >
             🥚
           </motion.div>
-          <h4 style={{
-            color: currentTheme.text.primary,
-            margin: '0 0 4px',
-            fontSize: '14px',
-            fontWeight: '600'
-          }}>
+          <h4
+            style={{
+              color: currentTheme.text.primary,
+              margin: '0 0 4px',
+              fontSize: '14px',
+              fontWeight: '600',
+            }}
+          >
             Hol dir ein Pet!
           </h4>
-          <p style={{
-            color: currentTheme.text.secondary,
-            fontSize: '11px',
-            margin: 0,
-            opacity: 0.8
-          }}>
+          <p
+            style={{
+              color: currentTheme.text.secondary,
+              fontSize: '11px',
+              margin: 0,
+              opacity: 0.8,
+            }}
+          >
             Tippe zum Starten
           </p>
         </div>
@@ -154,7 +161,7 @@ export const PetWidget: React.FC = () => {
           className="pet-widget"
           style={{
             position: 'fixed',
-            bottom: '83px',
+            bottom: 'calc(75px + env(safe-area-inset-bottom))',
             right: '15px',
             zIndex: 100,
             cursor: 'pointer',
@@ -166,7 +173,7 @@ export const PetWidget: React.FC = () => {
             {/* Pet anzeigen */}
             <motion.div
               animate={pet.isAlive ? { y: [0, -3, 0] } : {}}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
               <EvolvingPixelPet pet={pet} size={70} animated={pet.isAlive} />
             </motion.div>
@@ -189,21 +196,23 @@ export const PetWidget: React.FC = () => {
 
             {/* Level Badge nur für lebende Pets */}
             {pet.isAlive && pet.level > 1 && (
-              <div style={{
-                position: 'absolute',
-                bottom: '-2px',
-                right: '-2px',
-                background: currentTheme.primary,
-                color: '#fff',
-                borderRadius: '50%',
-                width: '16px',
-                height: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '9px',
-                fontWeight: 'bold',
-              }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  right: '-2px',
+                  background: currentTheme.primary,
+                  color: '#fff',
+                  borderRadius: '50%',
+                  width: '16px',
+                  height: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                }}
+              >
                 {pet.level}
               </div>
             )}
