@@ -117,13 +117,15 @@ class PetService {
     if (newLevel > pet.level) {
       pet.level = newLevel;
       pet.happiness = 100; // Level up macht glücklich!
+      pet.hunger = 0; // Level up macht satt!
     }
 
     await firebase.database().ref(`pets/${userId}`).update({
       episodesWatched: pet.episodesWatched,
       experience: pet.experience,
       level: pet.level,
-      happiness: pet.happiness
+      happiness: pet.happiness,
+      hunger: pet.hunger
     });
 
     return pet;
