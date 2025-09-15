@@ -35,7 +35,6 @@ import { useWebWorkerTodayEpisodes } from '../hooks/useWebWorkerTodayEpisodes';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { StatsGrid } from '../components/StatsGrid';
 import { NewSeasonNotification } from '../components/NewSeasonNotification';
-import { PetWidget } from '../components/PetWidget';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -1571,8 +1570,6 @@ export const HomePage: React.FC = () => {
         <StatsGrid />
       </div>
 
-      {/* Pet Widget */}
-      <PetWidget />
     </div>
   );
 };

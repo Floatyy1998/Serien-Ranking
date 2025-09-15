@@ -15,6 +15,10 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef(0);
 
+  // Detect if mobile device - slower on desktop, normal on mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+  const animationSpeed = isMobile ? 1 : 0.4; // Mobile gets full speed, desktop gets 40% speed
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -45,7 +49,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.fillRect(0, 0, size, size);
       }
 
-      const bounceOffset = animated ? Math.sin(frameRef.current * 0.05) * 2 : 0;
+      const bounceOffset = animated ? Math.sin(frameRef.current * 0.05 * animationSpeed) * 2 : 0;
 
       // Evolution basierend auf Level
       if (pet.type === 'cat') {
@@ -347,7 +351,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       ctx.fillRect((centerX + 2) * ps, (centerY + 13) * ps + offset, ps * 2, ps);
 
       // Schwanz (wedelt)
-      const tailWag = animated ? Math.sin(frameRef.current * 0.15) * 2 : 0;
+      const tailWag = animated ? Math.sin(frameRef.current * 0.15 * animationSpeed) * 2 : 0;
       ctx.fillStyle = color;
       ctx.fillRect((centerX + 4 + tailWag) * ps, (centerY + 6) * ps + offset, ps * 3, ps * 2);
       ctx.fillRect((centerX + 6 + tailWag) * ps, (centerY + 5) * ps + offset, ps * 2, ps * 2);
@@ -499,7 +503,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       }
 
       // Flügel (Fledermaus-artig)
-      const wingFlap = animated ? Math.sin(frameRef.current * 0.1) * 2 : 0;
+      const wingFlap = animated ? Math.sin(frameRef.current * 0.1 * animationSpeed) * 2 : 0;
       // Linker Flügel
       ctx.fillStyle = dark;
       ctx.fillRect((centerX - 5 - wingFlap) * ps, (centerY - 1) * ps + offset, ps * 3, ps * 8);
@@ -599,7 +603,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       // Level Features
       if (level >= 5) {
         // Größere Flügel
-        const wingFlap = animated ? Math.sin(frameRef.current * 0.1) * 1.5 : 0;
+        const wingFlap = animated ? Math.sin(frameRef.current * 0.1 * animationSpeed) * 1.5 : 0;
         ctx.fillStyle = dark + 'AA';
         ctx.fillRect((centerX - 6 - wingFlap) * ps, (centerY) * ps + offset, ps * 2, ps * 6);
         ctx.fillRect((centerX + 4 + wingFlap) * ps, (centerY) * ps + offset, ps * 2, ps * 6);
@@ -620,7 +624,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
     const drawBird = (ctx: any, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
       const centerX = 16;
       const centerY = 16;
-      const wingFlap = animated ? Math.sin(frameRef.current * 0.2) * 3 : 0;
+      const wingFlap = animated ? Math.sin(frameRef.current * 0.2 * animationSpeed) * 3 : 0;
 
       // Kopf (rund mit Federkrone)
       ctx.fillStyle = color;
@@ -1068,7 +1072,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [pet, size, animated]);
+  }, [pet, size, animated, animationSpeed]);
 
   // Farbe dunkler/heller machen
   const adjustColor = (color: string, amount: number): string => {
