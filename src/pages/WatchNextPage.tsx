@@ -17,6 +17,7 @@ import { useAuth } from '../App';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { getFormattedDate } from '../lib/date/date.utils';
+import { petService } from '../services/petService';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../lib/validation/rewatch.utils';
 import { Series } from '../types/Series';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
@@ -719,6 +720,11 @@ export const WatchNextPage = () => {
             '../features/badges/minimalActivityLogger'
           );
           await updateEpisodeCounters(user.uid, false, episode.airDate);
+        }
+
+        // XP für das Pet vergeben (nur bei nicht-Rewatch)
+        if (!episode.isRewatch) {
+          await petService.watchedEpisode(user.uid);
         }
       } catch (error) {}
     }

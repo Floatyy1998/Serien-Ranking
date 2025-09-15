@@ -21,6 +21,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { petService } from '../services/petService';
 
 interface UpcomingEpisode {
   seriesId: number;
@@ -179,6 +180,29 @@ export const NewEpisodesPage = () => {
         );
       await ref.set(true);
 
+      // Update watchCount
+      const watchCountRef = firebase
+        .database()
+        .ref(
+          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
+        );
+      const snapshot = await watchCountRef.once('value');
+      const currentCount = snapshot.val() || 0;
+      await watchCountRef.set(currentCount + 1);
+
+      // Update firstWatchedAt if this is the first time
+      if (currentCount === 0) {
+        const firstWatchedRef = firebase
+          .database()
+          .ref(
+            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
+          );
+        await firstWatchedRef.set(new Date().toISOString());
+
+        // Pet XP geben (nur beim ersten Schauen)
+        await petService.watchedEpisode(user.uid);
+      }
+
       setMarkedWatched((prev) => new Set([...prev, key]));
     } catch (error) {
     }
@@ -235,6 +259,9 @@ export const NewEpisodesPage = () => {
               `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
             );
           await firstWatchedRef.set(new Date().toISOString());
+
+          // Pet XP geben (nur beim ersten Schauen)
+          await petService.watchedEpisode(user.uid);
         }
       } catch (error) {
         }
