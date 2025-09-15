@@ -228,11 +228,31 @@
 .quick-buttons {
   display: flex;
   gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+}
+
+.quick-buttons::-webkit-scrollbar {
+  height: 4px;
+}
+
+.quick-buttons::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.quick-buttons::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 2px;
 }
 
 .quick-button {
-  flex: 1;
-  padding: 16px;
+  flex: 0 0 auto;
+  min-width: 60px;
+  padding: 16px 12px;
   background: var(--color-background-surface);
   border: 1px solid var(--color-border-default);
   border-radius: 12px;
@@ -242,6 +262,7 @@
   cursor: pointer;
   transition: all 0.2s;
   -webkit-tap-highlight-color: transparent;
+  scroll-snap-align: start;
 }
 
 .quick-button.active {
