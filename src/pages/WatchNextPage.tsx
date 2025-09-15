@@ -700,6 +700,10 @@ export const WatchNextPage = () => {
             await firstWatchedRef.set(new Date().toISOString());
           }
 
+          // Pet XP geben
+          const { petService } = await import('../services/petService');
+          await petService.watchedEpisode(user.uid);
+
           // Also update watchCount if needed
           const watchCountRef = firebase
             .database()

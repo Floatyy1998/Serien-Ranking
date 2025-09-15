@@ -35,6 +35,7 @@ import { useWebWorkerTodayEpisodes } from '../hooks/useWebWorkerTodayEpisodes';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { StatsGrid } from '../components/StatsGrid';
 import { NewSeasonNotification } from '../components/NewSeasonNotification';
+import { PetWidget } from '../components/PetWidget';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -270,6 +271,10 @@ export const HomePage: React.FC = () => {
               `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`
             );
           await firstWatchedRef.set(new Date().toISOString());
+
+          // Pet XP geben (nur beim ersten Schauen)
+          const { petService } = await import('../services/petService');
+          await petService.watchedEpisode(user.uid);
         }
       } catch (error) {
         console.error('Error marking episode as watched:', error);
@@ -1565,6 +1570,9 @@ export const HomePage: React.FC = () => {
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
         <StatsGrid />
       </div>
+
+      {/* Pet Widget */}
+      <PetWidget />
     </div>
   );
 };
