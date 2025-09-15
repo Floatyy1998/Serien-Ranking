@@ -22,6 +22,7 @@ import { ThemePage } from './pages/ThemePage';
 import { WatchNextPage } from './pages/WatchNextPage';
 import { ImpressumPage } from './pages/ImpressumPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { PetsPage } from './pages/PetsPage';
 import './styles/App.css';
 
 export const MobileApp = () => {
@@ -102,6 +103,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <BadgesPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/pets"
+            element={
+              <Layout hideNav>
+                <PetsPage />
               </Layout>
             }
           />

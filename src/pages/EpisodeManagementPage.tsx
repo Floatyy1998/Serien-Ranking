@@ -182,6 +182,10 @@ export const EpisodeManagementPage = () => {
           false, // nicht rewatch
           episode.air_date
         );
+
+        // Pet XP geben
+        const { petService } = await import('../services/petService');
+        await petService.watchedEpisode(user.uid);
       } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
         // Rewatch case
         const { updateEpisodeCounters } = await import(
@@ -256,6 +260,12 @@ export const EpisodeManagementPage = () => {
               episode.air_date
             );
           }
+        }
+
+        // Pet XP für alle neu gesehenen Episoden geben
+        const { petService } = await import('../services/petService');
+        for (let i = 0; i < previouslyUnwatched.length; i++) {
+          await petService.watchedEpisode(user.uid);
         }
       }
     } catch (error) {}
