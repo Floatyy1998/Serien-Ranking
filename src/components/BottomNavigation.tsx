@@ -5,6 +5,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useBadges } from '../features/badges/BadgeProvider';
+import { PetWidget } from './PetWidget';
 import './BottomNavigation.css';
 
 interface NavItem {
@@ -92,60 +93,65 @@ export const BottomNavigation = () => {
   if (shouldHide) return null;
 
   return (
-    <div className="mobile-bottom-navigation">
-      <div className="nav-container">
-        {navItems.map((item) => {
-          const active = isActive(item.path);
+    <>
+      {/* Pet Widget */}
+      <PetWidget />
 
-          return (
-            <motion.button
-              key={item.id}
-              className={`nav-item ${active ? 'active' : ''}`}
-              onClick={() => handleNavigation(item.path)}
-              whileTap={{ scale: 0.9 }}
-            >
-              <div className="nav-icon-container">
-                <Badge
-                  badgeContent={item.badge}
-                  color="error"
-                  variant={typeof item.badge === 'boolean' ? 'dot' : 'standard'}
-                  sx={{
-                    '& .MuiBadge-badge': {
-                      fontSize: '10px',
-                      height: '16px',
-                      minWidth: '16px',
-                      padding: '0 4px',
-                      background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
-                      boxShadow: '0 2px 4px rgba(255, 107, 107, 0.3)',
-                    },
-                  }}
-                >
-                  <div className="nav-icon">{item.icon}</div>
-                </Badge>
+      <div className="mobile-bottom-navigation">
+        <div className="nav-container">
+          {navItems.map((item) => {
+            const active = isActive(item.path);
 
-                {/* Active Indicator */}
-                <AnimatePresence>
-                  {active && (
-                    <motion.div
-                      className="active-indicator"
-                      layoutId="activeTab"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </AnimatePresence>
-              </div>
+            return (
+              <motion.button
+                key={item.id}
+                className={`nav-item ${active ? 'active' : ''}`}
+                onClick={() => handleNavigation(item.path)}
+                whileTap={{ scale: 0.9 }}
+              >
+                <div className="nav-icon-container">
+                  <Badge
+                    badgeContent={item.badge}
+                    color="error"
+                    variant={typeof item.badge === 'boolean' ? 'dot' : 'standard'}
+                    sx={{
+                      '& .MuiBadge-badge': {
+                        fontSize: '10px',
+                        height: '16px',
+                        minWidth: '16px',
+                        padding: '0 4px',
+                        background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
+                        boxShadow: '0 2px 4px rgba(255, 107, 107, 0.3)',
+                      },
+                    }}
+                  >
+                    <div className="nav-icon">{item.icon}</div>
+                  </Badge>
 
-              <span className="nav-label">{item.label}</span>
-            </motion.button>
-          );
-        })}
+                  {/* Active Indicator */}
+                  <AnimatePresence>
+                    {active && (
+                      <motion.div
+                        className="active-indicator"
+                        layoutId="activeTab"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <span className="nav-label">{item.label}</span>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Safe area for iPhone */}
+        <div className="safe-area-bottom" />
       </div>
-
-      {/* Safe area for iPhone */}
-      <div className="safe-area-bottom" />
-    </div>
+    </>
   );
 };
