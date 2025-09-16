@@ -145,11 +145,21 @@ class PetService {
     pet.episodesWatched++;
     pet.experience += 10;
 
-    // Level up alle 100 XP
-    const newLevel = Math.floor(pet.experience / 100) + 1;
+    // Level up alle 100 XP - berechne korrekt mit Übertrag
+    const xpPerLevel = 100;
+    let newLevel = pet.level;
+    let currentXP = pet.experience;
+
+    // Prüfe für Level-Ups
+    while (currentXP >= xpPerLevel * newLevel) {
+      currentXP -= xpPerLevel * newLevel;
+      newLevel++;
+    }
+
     const hasLeveledUp = newLevel > pet.level;
     if (hasLeveledUp) {
       pet.level = newLevel;
+      pet.experience = currentXP; // Setze XP auf den Übertrag
       pet.happiness = 100; // Level up macht glücklich!
       pet.hunger = 0; // Level up macht satt!
     }
@@ -328,11 +338,21 @@ class PetService {
     pet.experience += xpGain;
     pet.totalSeriesWatched = (pet.totalSeriesWatched || 0) + 1;
 
-    // Level up alle 100 XP
-    const newLevel = Math.floor(pet.experience / 100) + 1;
+    // Level up alle 100 XP - berechne korrekt mit Übertrag
+    const xpPerLevel = 100;
+    let newLevel = pet.level;
+    let currentXP = pet.experience;
+
+    // Prüfe für Level-Ups
+    while (currentXP >= xpPerLevel * newLevel) {
+      currentXP -= xpPerLevel * newLevel;
+      newLevel++;
+    }
+
     const hasLeveledUp = newLevel > pet.level;
     if (hasLeveledUp) {
       pet.level = newLevel;
+      pet.experience = currentXP; // Setze XP auf den Übertrag
       pet.happiness = 100;
       pet.hunger = 0;
 
