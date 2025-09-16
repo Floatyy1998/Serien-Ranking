@@ -41,7 +41,7 @@ const ratingsQuickFilters = [
   { value: 'unrated', label: 'Ohne Bewertung', icon: Star },
   { value: 'started', label: 'Begonnen', icon: Schedule },
   { value: 'not-started', label: 'Noch nicht begonnen', icon: Schedule },
-  { value: 'recently-rated', label: 'Zuletzt Bewertet', icon: Schedule },
+  { value: 'ongoing', label: 'Fortlaufend', icon: Schedule },
   { value: 'recently-added', label: 'Zuletzt Hinzugefügt', icon: PlaylistAdd },
 ];
 

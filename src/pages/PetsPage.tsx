@@ -418,7 +418,8 @@ export const PetsPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           gap: '12px',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          flexWrap: 'wrap'
         }}>
           <div style={{
             background: `${currentTheme.primary}20`,
@@ -442,11 +443,40 @@ export const PetsPage: React.FC = () => {
           }}>
             {PET_TYPE_NAMES[pet.type]}
           </div>
+          {pet.favoriteGenre && (
+            <div style={{
+              background: '#ffd70020',
+              color: '#ffd700',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '16px',
+              fontWeight: '700',
+              border: '1px solid #ffd70040',
+              position: 'relative'
+            }}>
+              ⭐ {pet.favoriteGenre}
+              <div style={{
+                position: 'absolute',
+                bottom: '-20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                fontSize: '10px',
+                color: currentTheme.text.secondary,
+                whiteSpace: 'nowrap',
+                background: currentTheme.background.card + 'dd',
+                padding: '2px 6px',
+                borderRadius: '8px',
+                opacity: 0.8
+              }}>
+                Doppelte XP!
+              </div>
+            </div>
+          )}
         </div>
         <p style={{
           color: currentTheme.text.secondary,
           fontSize: '14px',
-          margin: 0,
+          margin: pet.favoriteGenre ? '20px 0 0 0' : '0',
           opacity: 0.8
         }}>
           Erstellt: {pet.createdAt ? new Date(pet.createdAt).toLocaleDateString('de-DE', {
@@ -455,6 +485,18 @@ export const PetsPage: React.FC = () => {
             year: 'numeric'
           }) : 'Unbekannt'}
         </p>
+        {pet.favoriteGenre && (
+          <p style={{
+            color: currentTheme.text.secondary,
+            fontSize: '12px',
+            margin: '8px 0 0 0',
+            opacity: 0.7,
+            textAlign: 'center',
+            fontStyle: 'italic'
+          }}>
+            💡 Schaue {pet.favoriteGenre}-Serien für doppelte XP!
+          </p>
+        )}
       </motion.div>
 
       {/* Main Pet Display */}

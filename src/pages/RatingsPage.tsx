@@ -196,11 +196,11 @@ export const RatingsPage: React.FC = () => {
         // Noch nicht begonnen (keine Episoden geschaut)
         return watchedEpisodes === 0;
       });
-    } else if (filters.quickFilter === 'recently-rated') {
-      // Only show items with ratings for this filter
+    } else if (filters.quickFilter === 'ongoing') {
+      // Show ongoing series (still running)
       filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateOverallRating(s));
-        return !isNaN(rating) && rating > 0;
+        const status = s.status?.toLowerCase();
+        return status === 'returning series' || status === 'ongoing' || (!status && s.production?.production === true);
       });
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID (proxy for when added)
@@ -209,8 +209,8 @@ export const RatingsPage: React.FC = () => {
 
     // Apply sorting
     const sortBy =
-      filters.quickFilter === 'recently-rated'
-        ? 'date-desc'
+      filters.quickFilter === 'ongoing'
+        ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';
@@ -292,12 +292,10 @@ export const RatingsPage: React.FC = () => {
         const rating = parseFloat(calculateOverallRating(m));
         return isNaN(rating) || rating === 0;
       });
-    } else if (filters.quickFilter === 'recently-rated') {
-      // Only show items with ratings for this filter
-      filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateOverallRating(s));
-        return !isNaN(rating) && rating > 0;
-      });
+    } else if (filters.quickFilter === 'ongoing') {
+      // Show ongoing movies (still running - nicht applicable für Filme, zeige alle)
+      // Für Filme ist "ongoing" nicht relevant, also alle anzeigen
+      // Keine Filterung
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID (proxy for when added)
       // No filter needed since we want to show all recently added items
@@ -305,8 +303,8 @@ export const RatingsPage: React.FC = () => {
 
     // Apply sorting
     const sortBy =
-      filters.quickFilter === 'recently-rated'
-        ? 'date-desc'
+      filters.quickFilter === 'ongoing'
+        ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';
