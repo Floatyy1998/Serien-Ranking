@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pet, PET_COLORS } from '../types/pet.types';
+import { petMoodService } from '../services/petMoodService';
 
 interface EvolvingPixelPetProps {
   pet: Pet;
@@ -10,14 +11,21 @@ interface EvolvingPixelPetProps {
 export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
   pet,
   size = 128,
-  animated = true
+  animated = true,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef(0);
+  const [currentMood] = useState(() => petMoodService.calculateCurrentMood(pet));
 
   // Detect if mobile device - slower on desktop, normal on mobile
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
   const animationSpeed = isMobile ? 1 : 0.4; // Mobile gets full speed, desktop gets 40% speed
+
+  // Mood-basierte Animation Speed
+  const moodSpeedMultiplier = currentMood === 'excited' ? 1.5 :
+                              currentMood === 'playful' ? 1.3 :
+                              currentMood === 'sleepy' ? 0.5 :
+                              currentMood === 'sad' ? 0.7 : 1;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -49,20 +57,36 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.fillRect(0, 0, size, size);
       }
 
-      const bounceOffset = animated ? Math.sin(frameRef.current * 0.05 * animationSpeed) * 2 : 0;
+      // Einfache Bounce-Animation
+      const bounceOffset = animated ? Math.sin(frameRef.current * 0.05 * animationSpeed * moodSpeedMultiplier) * 2 : 0;
 
-      // Evolution basierend auf Level
+      // Mood-basierte Bounce-Intensität
+      const moodBounce = currentMood === 'excited' ? bounceOffset * 2 :
+                        currentMood === 'playful' ? bounceOffset * 1.5 :
+                        currentMood === 'sleepy' ? bounceOffset * 0.5 : bounceOffset;
+
+      // Zeichne zuerst das Pet
       if (pet.type === 'cat') {
-        drawCat(ctx, pet, pet.level, pixelSize, color, darkColor, lightColor, bounceOffset);
+        drawCat(ctx, pet, pet.level, pixelSize, color, darkColor, lightColor, moodBounce);
       } else if (pet.type === 'dog') {
-        drawDog(ctx, pet, pet.level, pixelSize, color, darkColor, lightColor, bounceOffset, animated);
+        drawDog(ctx, pet, pet.level, pixelSize, color, darkColor, lightColor, moodBounce, animated);
       } else if (pet.type === 'dragon') {
-        drawDragon(ctx, pet.level, pixelSize, color, darkColor, lightColor, bounceOffset);
+        drawDragon(ctx, pet.level, pixelSize, color, darkColor, lightColor, moodBounce);
       } else if (pet.type === 'bird') {
-        drawBird(ctx, pet.level, pixelSize, color, darkColor, lightColor, bounceOffset, animated);
+        drawBird(ctx, pet.level, pixelSize, color, darkColor, lightColor, moodBounce, animated);
       } else if (pet.type === 'fox') {
-        drawFox(ctx, pet.level, pixelSize, color, darkColor, lightColor, bounceOffset);
+        drawFox(ctx, pet.level, pixelSize, color, darkColor, lightColor, moodBounce);
       }
+
+      // Dann zeichne ALLE Accessoires OBEN DRAUF
+      if (pet.accessories && pet.accessories.length > 0) {
+        pet.accessories.forEach(accessory => {
+          if (!accessory.equipped) return;
+          drawAccessory(ctx, accessory, pixelSize, moodBounce);
+        });
+      }
+
+      // Mood-Indikator entfernt - wird schon im PetWidget angezeigt
 
       // Status-Effekte
       if (pet.happiness < 30) {
@@ -86,6 +110,126 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       }
     };
 
+    const drawAccessory = (ctx: any, accessory: any, ps: number, offset: number) => {
+      const centerX = 16;
+      const centerY = 16;
+
+      // Zeichne Accessoire basierend auf Typ - ALLE Accessoires deutlich sichtbar
+      switch (accessory.type) {
+          case 'hat':
+            if (accessory.id === 'santaHat') {
+              // Weihnachtsmütze - größer und deutlicher
+              ctx.fillStyle = '#DC143C';
+              ctx.fillRect((centerX - 4) * ps, (centerY - 12) * ps + offset, ps * 8, ps * 4);
+              ctx.fillRect((centerX - 3) * ps, (centerY - 13) * ps + offset, ps * 6, ps);
+              ctx.fillRect((centerX - 2) * ps, (centerY - 14) * ps + offset, ps * 4, ps);
+              ctx.fillStyle = '#FFF';
+              ctx.fillRect((centerX - 4) * ps, (centerY - 9) * ps + offset, ps * 8, ps);
+              ctx.fillRect((centerX + 2) * ps, (centerY - 15) * ps + offset, ps * 2, ps * 2);
+            } else if (accessory.id === 'partyHat') {
+              // Partyhut - bunter und auffälliger
+              ctx.fillStyle = '#FFD700';
+              ctx.fillRect((centerX - 3) * ps, (centerY - 11) * ps + offset, ps * 6, ps * 2);
+              ctx.fillRect((centerX - 2) * ps, (centerY - 13) * ps + offset, ps * 4, ps * 2);
+              ctx.fillRect((centerX - 1) * ps, (centerY - 15) * ps + offset, ps * 2, ps * 2);
+              ctx.fillStyle = '#FF69B4';
+              ctx.fillRect(centerX * ps, (centerY - 16) * ps + offset, ps * 2, ps * 2);
+            }
+            break;
+          case 'glasses':
+            if (accessory.id === 'sunglasses') {
+              // Sonnenbrille - größer und dunkler
+              ctx.fillStyle = '#000';
+              ctx.fillRect((centerX - 5) * ps, (centerY - 3) * ps + offset, ps * 3, ps * 2);
+              ctx.fillRect((centerX + 2) * ps, (centerY - 3) * ps + offset, ps * 3, ps * 2);
+              ctx.fillRect((centerX - 2) * ps, (centerY - 2.5) * ps + offset, ps * 4, ps);
+              // Rahmen
+              ctx.strokeStyle = '#333';
+              ctx.lineWidth = ps * 0.3;
+              ctx.strokeRect((centerX - 5) * ps, (centerY - 3) * ps + offset, ps * 3, ps * 2);
+              ctx.strokeRect((centerX + 2) * ps, (centerY - 3) * ps + offset, ps * 3, ps * 2);
+            }
+            break;
+          case 'crown':
+            // Krone - viel größer und königlicher
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect((centerX - 4) * ps, (centerY - 9) * ps + offset, ps * 8, ps * 2);
+            // Zacken
+            ctx.fillRect((centerX - 3) * ps, (centerY - 12) * ps + offset, ps, ps * 3);
+            ctx.fillRect((centerX - 1) * ps, (centerY - 11) * ps + offset, ps, ps * 2);
+            ctx.fillRect((centerX + 1) * ps, (centerY - 12) * ps + offset, ps, ps * 3);
+            ctx.fillRect((centerX + 3) * ps, (centerY - 11) * ps + offset, ps, ps * 2);
+            // Juwelen - größer und bunter
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect((centerX - 2.5) * ps, (centerY - 8.5) * ps + offset, ps * 0.8, ps * 0.8);
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(centerX * ps, (centerY - 8.5) * ps + offset, ps * 0.8, ps * 0.8);
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect((centerX + 2.5) * ps, (centerY - 8.5) * ps + offset, ps * 0.8, ps * 0.8);
+            break;
+          case 'collar':
+            // Halsband - dicker und auffälliger
+            ctx.fillStyle = accessory.color || '#8B4513';
+            ctx.fillRect((centerX - 5) * ps, (centerY + 3) * ps + offset, ps * 10, ps * 1.5);
+            // Nieten
+            ctx.fillStyle = '#C0C0C0';
+            for (let i = -4; i <= 4; i += 2) {
+              ctx.fillRect((centerX + i) * ps, (centerY + 3.2) * ps + offset, ps * 0.6, ps * 0.6);
+            }
+            // Anhänger - größer
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(centerX * ps, (centerY + 5.5) * ps + offset, ps * 1, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          case 'bow':
+            // Schleife - größer und auffälliger
+            ctx.fillStyle = accessory.color || '#FF69B4';
+            ctx.fillRect((centerX - 3) * ps, (centerY + 2) * ps + offset, ps * 6, ps);
+            ctx.fillRect((centerX - 4) * ps, (centerY + 1.5) * ps + offset, ps * 3, ps * 2);
+            ctx.fillRect((centerX + 1) * ps, (centerY + 1.5) * ps + offset, ps * 3, ps * 2);
+            // Mittelknoten
+            ctx.fillStyle = '#CC1493';
+            ctx.fillRect((centerX - 1) * ps, (centerY + 1.5) * ps + offset, ps * 2, ps * 2);
+            break;
+          case 'scarf':
+            // Schal - viel deutlicher
+            ctx.fillStyle = '#B22222';
+            ctx.fillRect((centerX - 5) * ps, (centerY + 2) * ps + offset, ps * 10, ps * 2);
+            // Fransen links
+            ctx.fillRect((centerX - 7) * ps, (centerY + 5) * ps + offset, ps * 2, ps * 3);
+            ctx.fillRect((centerX - 8) * ps, (centerY + 6) * ps + offset, ps, ps * 2);
+            // Fransen rechts
+            ctx.fillRect((centerX + 5) * ps, (centerY + 5) * ps + offset, ps * 2, ps * 3);
+            ctx.fillRect((centerX + 7) * ps, (centerY + 6) * ps + offset, ps, ps * 2);
+            // Muster
+            ctx.fillStyle = '#FFF';
+            for (let i = -4; i <= 4; i += 2) {
+              ctx.fillRect((centerX + i) * ps, (centerY + 2.5) * ps + offset, ps * 0.5, ps * 0.5);
+            }
+            break;
+          case 'bandana':
+            // Bandana - sehr auffällig
+            ctx.fillStyle = accessory.color || '#FF0000';
+            ctx.fillRect((centerX - 6) * ps, (centerY - 5) * ps + offset, ps * 12, ps * 3);
+            ctx.fillRect((centerX - 4) * ps, (centerY - 6) * ps + offset, ps * 8, ps);
+            // Knoten hinten
+            ctx.fillRect((centerX + 5) * ps, (centerY - 4) * ps + offset, ps * 3, ps * 2);
+            ctx.fillRect((centerX + 6) * ps, (centerY - 3) * ps + offset, ps, ps);
+            // Muster
+            ctx.fillStyle = '#FFF';
+            for (let i = -3; i <= 3; i += 2) {
+              ctx.fillRect((centerX + i) * ps, (centerY - 4.5) * ps + offset, ps * 0.8, ps * 0.8);
+            }
+            break;
+          default:
+            // Fallback für unbekannte Accessoire-Typen
+            break;
+        }
+    };
+
+    // drawMoodIndicator entfernt - nicht mehr benötigt
+
     const drawCat = (ctx: any, _pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number) => {
       const centerX = 16;
       const centerY = 16;
@@ -97,7 +241,8 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       ctx.fillStyle = color;
       // Hauptkopf
       ctx.fillRect((centerX - 4 * headSize) * ps, (centerY - 4) * ps + offset, ps * 8 * headSize, ps * 6);
-      // Rundungen oben und unten
+
+      // Rundungen oben und unten ZUERST
       ctx.fillRect((centerX - 3 * headSize) * ps, (centerY - 5) * ps + offset, ps * 6 * headSize, ps);
       ctx.fillRect((centerX - 3 * headSize) * ps, (centerY + 2) * ps + offset, ps * 6 * headSize, ps);
 
@@ -124,6 +269,8 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       ctx.fillStyle = '#FFB6C1';
       ctx.fillRect((centerX - 2) * ps, (centerY - 6) * ps + offset, ps, ps);
       ctx.fillRect((centerX + 1) * ps, (centerY - 6) * ps + offset, ps, ps);
+
+      // KEINE MUSTER MEHR - sauberes Design
 
       // Körper Evolution (wird größer)
       const bodyWidth = level >= 10 ? 8 : level >= 7 ? 7.5 : level >= 3 ? 6.5 : 6;

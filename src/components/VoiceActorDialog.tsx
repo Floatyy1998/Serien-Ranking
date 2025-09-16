@@ -190,11 +190,12 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
     if (!date) return null;
     const { year, month, day } = date;
     if (!year) return null;
-    const parts = [];
-    if (day) parts.push(day.toString().padStart(2, '0'));
-    if (month) parts.push(month.toString().padStart(2, '0'));
-    parts.push(year.toString());
-    return parts.join('.');
+
+    const dayStr = day ? day.toString().padStart(2, '0') : '01';
+    const monthStr = month ? month.toString().padStart(2, '0') : '01';
+    const yearStr = year.toString();
+
+    return `${dayStr}.${monthStr}.${yearStr}`;
   };
 
   // const calculateAge = (birthDate: any, deathDate: any) => {
