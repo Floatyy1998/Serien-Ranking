@@ -494,17 +494,29 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       // Remove the request from local state immediately
       setFriendRequests((prev) => prev.filter((req) => req.id !== requestId));
 
-      // Badge-Check ausführen (Social badges für neue Freunde)
-      try {
-        const badgeSystem = getOfflineBadgeSystem(user.uid);
-        badgeSystem.invalidateCache(); // Cache leeren für frische Friend-Zählung
-        await badgeSystem.checkForNewBadges();
-      } catch (badgeError) {
-        // // console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
-      }
+      // Refresh friends data FIRST to ensure database is updated
+      await refetchFriends();
 
-      // Refresh friends data
-      refetchFriends();
+      // Badge-Check ausführen AFTER friend data is refreshed
+      // Small delay to ensure database propagation
+      setTimeout(async () => {
+        try {
+          const badgeSystem = getOfflineBadgeSystem(user.uid);
+          badgeSystem.invalidateCache(); // Cache leeren für frische Friend-Zählung
+          const newBadges = await badgeSystem.checkForNewBadges();
+
+          // Also check for the friend who sent the request
+          const friendBadgeSystem = getOfflineBadgeSystem(request.fromUserId);
+          friendBadgeSystem.invalidateCache();
+          await friendBadgeSystem.checkForNewBadges();
+
+          if (newBadges.length > 0) {
+            console.log('New badges earned:', newBadges);
+          }
+        } catch (badgeError) {
+          console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
+        }
+      }, 1000); // 1 second delay for database propagation
     } catch (error) {
       throw error;
     }

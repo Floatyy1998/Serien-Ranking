@@ -107,6 +107,39 @@ export const BadgesPage = () => {
     return () => clearInterval(interval);
   }, [badgeProgress]);
 
+  const checkForNewBadges = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { getOfflineBadgeSystem } = await import('../features/badges/offlineBadgeSystem');
+      const badgeSystem = getOfflineBadgeSystem(user.uid);
+
+      // Cache invalidieren für frische Daten
+      badgeSystem.invalidateCache();
+
+      // Nach neuen Badges suchen
+      const newBadges = await badgeSystem.checkForNewBadges();
+
+      if (newBadges.length > 0) {
+        console.log('Neue Badges gefunden:', newBadges);
+        // Event für neue Badges auslösen
+        window.dispatchEvent(
+          new CustomEvent('badgeProgressUpdate', {
+            detail: { newBadges },
+          })
+        );
+      }
+
+      // Daten neu laden
+      await loadBadgeData();
+    } catch (error) {
+      console.error('Fehler beim Badge-Check:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadBadgeData = async () => {
     if (!user) return;
 
@@ -523,6 +556,28 @@ export const BadgesPage = () => {
               {earnedBadges.length} / {BADGE_DEFINITIONS.length} verdient
             </p>
           </div>
+          <button
+            onClick={checkForNewBadges}
+            disabled={loading}
+            style={{
+              background: currentTheme.primary,
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.5 : 1,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <Refresh style={{ fontSize: '14px' }} />
+            Check
+          </button>
         </div>
 
         {/* Category Tabs */}
