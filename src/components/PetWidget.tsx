@@ -25,8 +25,12 @@ export const PetWidget: React.FC = () => {
     top: 0,
     bottom: window.innerHeight - 70
   });
-  const [position, setPosition] = useState({ x: 15, y: window.innerHeight - 200 });
-  const [relativePosition, setRelativePosition] = useState({ xPercent: 2, yPercent: 80 }); // Default: 2% from left, 80% from top
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [edgePosition, setEdgePosition] = useState({
+    edge: 'bottom-right' as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+    offsetX: 2,
+    offsetY: 2
+  });
 
   useEffect(() => {
     if (user) {
@@ -35,51 +39,134 @@ export const PetWidget: React.FC = () => {
     }
   }, [user]);
 
+  const getNavbarHeight = () => {
+    // Navbar: padding 8px top/bottom + safe-area-inset-bottom + icon container height (32px)
+    const basePadding = 16; // 8px top + 8px bottom
+    const iconContainerHeight = 32;
+    const labelHeight = 14; // Approximate label height
+    const safeAreaBottom = window.innerHeight - (window.visualViewport?.height || window.innerHeight);
+    return basePadding + iconContainerHeight + labelHeight + safeAreaBottom;
+  };
+
   const loadPosition = async () => {
     if (!user) return;
 
     try {
       const savedPosition = await petService.getPetWidgetPosition(user.uid);
-      if (savedPosition && savedPosition.xPercent !== undefined && savedPosition.yPercent !== undefined) {
-        setRelativePosition(savedPosition);
-        // Convert percentage to pixels for current screen
-        const screenWidth = window.innerWidth || 1920;
-        const screenHeight = window.innerHeight || 1080;
-        const pixelX = (savedPosition.xPercent / 100) * screenWidth;
-        const pixelY = (savedPosition.yPercent / 100) * screenHeight;
-        setPosition({ x: pixelX, y: pixelY });
+      if (savedPosition && savedPosition.edge !== undefined) {
+        // If we have edge-based position saved
+        setEdgePosition(savedPosition);
+        calculateAndSetPixelPosition(savedPosition);
+      } else if (savedPosition && savedPosition.xPercent !== undefined) {
+        // Legacy percentage-based position - convert to edge-based
+        const convertedEdge = convertPercentToEdge(savedPosition);
+        setEdgePosition(convertedEdge);
+        calculateAndSetPixelPosition(convertedEdge);
+      } else {
+        // Set default position on first load
+        calculateAndSetPixelPosition(edgePosition);
       }
     } catch (error) {
       console.error('Error loading pet position:', error);
+      calculateAndSetPixelPosition(edgePosition);
     }
+  };
+
+  const convertPercentToEdge = (percentPos: { xPercent: number; yPercent: number }) => {
+    // Convert legacy percentage to edge-based
+    const isLeft = percentPos.xPercent < 50;
+    const isTop = percentPos.yPercent < 50;
+
+    let edge: typeof edgePosition.edge;
+    if (isTop && isLeft) edge = 'top-left';
+    else if (isTop && !isLeft) edge = 'top-right';
+    else if (!isTop && isLeft) edge = 'bottom-left';
+    else edge = 'bottom-right';
+
+    return {
+      edge,
+      offsetX: 2,
+      offsetY: 2
+    };
+  };
+
+  const calculateAndSetPixelPosition = (edgePos: typeof edgePosition) => {
+    const screenWidth = window.innerWidth || 1920;
+    const screenHeight = window.innerHeight || 1080;
+    const widgetSize = 70;
+    const navbarHeight = getNavbarHeight();
+
+    let x: number, y: number;
+
+    switch (edgePos.edge) {
+      case 'top-left':
+        x = edgePos.offsetX;
+        y = edgePos.offsetY;
+        break;
+      case 'top-right':
+        x = screenWidth - widgetSize - edgePos.offsetX;
+        y = edgePos.offsetY;
+        break;
+      case 'bottom-left':
+        x = edgePos.offsetX;
+        y = screenHeight - navbarHeight - widgetSize - edgePos.offsetY;
+        break;
+      case 'bottom-right':
+        x = screenWidth - widgetSize - edgePos.offsetX;
+        y = screenHeight - navbarHeight - widgetSize - edgePos.offsetY;
+        break;
+    }
+
+    setPosition({ x, y });
   };
 
   const savePosition = async (newPosition: { x: number; y: number }) => {
     if (!user) return;
 
     try {
-      // Ensure valid dimensions to avoid NaN
       const screenWidth = window.innerWidth || 1920;
       const screenHeight = window.innerHeight || 1080;
-
-      // Convert pixels to percentage for cross-device compatibility
-      // Account for widget size (70px) to prevent it from going off-screen
       const widgetSize = 70;
-      const maxXPercent = ((screenWidth - widgetSize) / screenWidth) * 100;
-      const maxYPercent = ((screenHeight - widgetSize) / screenHeight) * 100;
+      const navbarHeight = getNavbarHeight();
 
-      const xPercent = Math.max(0, Math.min(maxXPercent, (newPosition.x / screenWidth) * 100));
-      const yPercent = Math.max(0, Math.min(maxYPercent, (newPosition.y / screenHeight) * 100));
+      // Determine which edge the widget is closest to
+      const centerX = newPosition.x + widgetSize / 2;
+      const centerY = newPosition.y + widgetSize / 2;
 
-      // Validate percentages are not NaN
-      if (isNaN(xPercent) || isNaN(yPercent)) {
-        console.error('Invalid position percentages:', { xPercent, yPercent, newPosition, screenWidth, screenHeight });
-        return;
+      const distanceToLeft = centerX;
+      const distanceToRight = screenWidth - centerX;
+      const distanceToTop = centerY;
+      const distanceToBottom = screenHeight - centerY;
+
+      const isCloserToLeft = distanceToLeft < distanceToRight;
+      const isCloserToTop = distanceToTop < distanceToBottom;
+
+      let edge: typeof edgePosition.edge;
+      let offsetX: number;
+      let offsetY: number;
+
+      if (isCloserToTop && isCloserToLeft) {
+        edge = 'top-left';
+        offsetX = newPosition.x;
+        offsetY = newPosition.y;
+      } else if (isCloserToTop && !isCloserToLeft) {
+        edge = 'top-right';
+        offsetX = screenWidth - newPosition.x - widgetSize;
+        offsetY = newPosition.y;
+      } else if (!isCloserToTop && isCloserToLeft) {
+        edge = 'bottom-left';
+        offsetX = newPosition.x;
+        offsetY = screenHeight - navbarHeight - newPosition.y - widgetSize;
+      } else {
+        edge = 'bottom-right';
+        offsetX = screenWidth - newPosition.x - widgetSize;
+        offsetY = screenHeight - navbarHeight - newPosition.y - widgetSize;
       }
 
-      const relativePos = { xPercent, yPercent };
-      await petService.savePetWidgetPosition(user.uid, relativePos);
-      setRelativePosition(relativePos);
+      const newEdgePosition = { edge, offsetX, offsetY };
+
+      await petService.savePetWidgetPosition(user.uid, newEdgePosition);
+      setEdgePosition(newEdgePosition);
       setPosition(newPosition);
     } catch (error) {
       console.error('Error saving pet position:', error);
@@ -105,24 +192,28 @@ export const PetWidget: React.FC = () => {
   // Update drag constraints and position on window resize
   useEffect(() => {
     const updateConstraintsAndPosition = () => {
-      setDragConstraints({
-        left: 0,
-        right: window.innerWidth - 70,
-        top: 0,
-        bottom: window.innerHeight - 70
-      });
-
-      // Recalculate position based on stored percentage
       const screenWidth = window.innerWidth || 1920;
       const screenHeight = window.innerHeight || 1080;
-      const pixelX = (relativePosition.xPercent / 100) * screenWidth;
-      const pixelY = (relativePosition.yPercent / 100) * screenHeight;
-      setPosition({ x: pixelX, y: pixelY });
+      const widgetSize = 70;
+      const navbarHeight = getNavbarHeight();
+
+      setDragConstraints({
+        left: 0,
+        right: screenWidth - widgetSize,
+        top: 0,
+        bottom: screenHeight - navbarHeight - widgetSize
+      });
+
+      // Recalculate position based on stored edge position
+      calculateAndSetPixelPosition(edgePosition);
     };
 
     window.addEventListener('resize', updateConstraintsAndPosition);
+    // Run once on mount
+    updateConstraintsAndPosition();
+
     return () => window.removeEventListener('resize', updateConstraintsAndPosition);
-  }, [relativePosition]);
+  }, [edgePosition]);
 
   const loadPet = async () => {
     if (!user) return;
@@ -153,8 +244,8 @@ export const PetWidget: React.FC = () => {
         className="pet-widget"
         style={{
           position: 'fixed',
-          left: '15px',
-          top: `${window.innerHeight - 200}px`,
+          left: position.x || 15,
+          top: position.y || window.innerHeight - 200,
           background: currentTheme.background.card + 'f0',
           backdropFilter: 'blur(10px)',
           borderRadius: '16px',

@@ -481,7 +481,7 @@ class PetService {
   }
 
   // Pet Widget Position Management (in percentage values for cross-device compatibility)
-  async getPetWidgetPosition(userId: string): Promise<{ xPercent: number; yPercent: number } | null> {
+  async getPetWidgetPosition(userId: string): Promise<any> {
     try {
       const snapshot = await firebase.database().ref(`petWidget/${userId}/position`).once('value');
       return snapshot.val();
@@ -491,7 +491,7 @@ class PetService {
     }
   }
 
-  async savePetWidgetPosition(userId: string, position: { xPercent: number; yPercent: number }): Promise<void> {
+  async savePetWidgetPosition(userId: string, position: any): Promise<void> {
     try {
       await firebase.database().ref(`petWidget/${userId}/position`).set(position);
     } catch (error) {
