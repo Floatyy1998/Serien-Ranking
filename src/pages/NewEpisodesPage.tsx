@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import { BackButton } from '../components/BackButton';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
@@ -22,6 +22,7 @@ import { HorizontalScrollContainer } from '../components/HorizontalScrollContain
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { petService } from '../services/petService';
+import { ScrollToTopButton } from '../components/ScrollToTopButton';
 
 interface UpcomingEpisode {
   seriesId: number;
@@ -58,6 +59,58 @@ export const NewEpisodesPage = () => {
     Record<string, 'left' | 'right'>
   >({});
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Save scroll position when navigating away to SeriesDetailPage
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const scrollY = window.scrollY || window.pageYOffset;
+      if (scrollY > 0) {
+        sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
+      }
+    };
+
+    // Save scroll position before navigation
+    return () => {
+      handleBeforeUnload();
+    };
+  }, []);
+
+  // Restore scroll position when coming back from SeriesDetailPage with back button
+  useEffect(() => {
+    // Check if we're coming from a detail page via back navigation
+    const comingFromDetail = sessionStorage.getItem('comingFromDetail') === 'true';
+    const savedPosition = sessionStorage.getItem('newEpisodesScrollPosition');
+
+
+    if (comingFromDetail && savedPosition !== null) {
+      const scrollY = parseInt(savedPosition, 10) || 0;
+
+      // The app uses a scrollable container (.mobile-content) not window scroll
+      const scrollContainer = document.querySelector('.mobile-content');
+
+      // Try multiple timeouts to ensure scroll works
+      requestAnimationFrame(() => {
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollY;
+        }
+        // Also try after a delay
+        setTimeout(() => {
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollY;
+          }
+        }, 100);
+        setTimeout(() => {
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollY;
+          }
+        }, 300);
+      });
+
+      // Clear the flags after restoring
+      sessionStorage.removeItem('comingFromDetail');
+      sessionStorage.removeItem('newEpisodesScrollPosition');
+    }
+  }, []);
 
   // Get TMDB image URL
   const getImageUrl = (posterObj: any): string => {
@@ -696,9 +749,16 @@ export const NewEpisodesPage = () => {
                             <img
                               src={getImageUrl(episode.seriesPoster)}
                               alt={episode.seriesName}
-                              onClick={() =>
-                                navigate(`/series/${episode.seriesId}`)
-                              }
+                              onClick={() => {
+                                // Save current scroll position before navigating
+                                // The app uses a scrollable container (.mobile-content) not window scroll
+                                const scrollContainer = document.querySelector('.mobile-content');
+                                const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
+                                // Always save position, even if it's 0
+                                sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
+                                sessionStorage.setItem('comingFromDetail', 'false'); // Will be set to true by BackButton
+                                navigate(`/series/${episode.seriesId}`);
+                              }}
                               style={{
                                 width: '48px',
                                 height: '72px',
@@ -857,6 +917,13 @@ export const NewEpisodesPage = () => {
                             alt={firstEpisode.seriesName}
                             onClick={(e) => {
                               e.stopPropagation();
+                              // Save current scroll position before navigating
+                              // The app uses a scrollable container (.mobile-content) not window scroll
+                              const scrollContainer = document.querySelector('.mobile-content');
+                              const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
+                              // Always save position, even if it's 0
+                              sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
+                              sessionStorage.setItem('comingFromDetail', 'false'); // Will be set to true by BackButton
                               navigate(`/series/${firstEpisode.seriesId}`);
                             }}
                             style={{
@@ -1031,6 +1098,9 @@ export const NewEpisodesPage = () => {
           ))
         )}
       </div>
+
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton hasNavbar={false} />
     </div>
   );
 };

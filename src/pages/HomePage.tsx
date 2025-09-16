@@ -82,7 +82,7 @@ export const HomePage: React.FC = () => {
   const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
-  
+
   // Close tooltip when clicking elsewhere
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
