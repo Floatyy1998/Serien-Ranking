@@ -17,6 +17,7 @@ export const PetsPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [petName, setPetName] = useState('');
   const [selectedType, setSelectedType] = useState<Pet['type']>('cat');
+  const [activeColorBorder, setActiveColorBorder] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -30,7 +31,9 @@ export const PetsPage: React.FC = () => {
       const userPet = await petService.getUserPet(user.uid);
       if (userPet) {
         const updatedPet = await petService.updatePetStatus(user.uid);
-        setPet(updatedPet || userPet);
+        const finalPet = updatedPet || userPet;
+        setPet(finalPet);
+        setActiveColorBorder(finalPet.color);
       } else {
         setShowCreateModal(true);
       }
@@ -85,6 +88,10 @@ export const PetsPage: React.FC = () => {
 
   const changeColor = async (newColor: string) => {
     if (!user || !pet) return;
+
+    // Sofort Border-State aktualisieren (nur ein Button selected)
+    setActiveColorBorder(newColor);
+
     try {
       const updatedPet = await petService.changePetColor(user.uid, newColor);
       if (updatedPet) {
@@ -92,16 +99,50 @@ export const PetsPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error changing color:', error);
+      // Bei Fehler auf ursprüngliche Farbe zurücksetzen
+      setActiveColorBorder(pet.color);
     }
   };
 
   const toggleAccessory = async (accessoryId: string) => {
     if (!user || !pet) return;
+
+    // Optimistic update - sofort UI aktualisieren
+    const currentAccessories = pet.accessories || [];
+    const accessoryIndex = currentAccessories.findIndex(acc => acc.id === accessoryId);
+
+    let newAccessories;
+    if (accessoryIndex >= 0) {
+      // Toggle existing accessory
+      newAccessories = currentAccessories.map(acc =>
+        acc.id === accessoryId ? { ...acc, equipped: !acc.equipped } : acc
+      );
+    } else {
+      // Add new accessory
+      const accessoryInfo = ACCESSORIES[accessoryId];
+      if (accessoryInfo) {
+        newAccessories = [...currentAccessories, {
+          id: accessoryId,
+          type: accessoryInfo.type,
+          name: accessoryInfo.name,
+          icon: accessoryInfo.icon,
+          equipped: true
+        }];
+      } else {
+        newAccessories = currentAccessories;
+      }
+    }
+
+    const optimisticPet = { ...pet, accessories: newAccessories };
+    setPet(optimisticPet);
+
     try {
       const updatedPet = await petService.toggleAccessory(user.uid, accessoryId);
       if (updatedPet) setPet(updatedPet);
     } catch (error) {
       console.error('Error toggling accessory:', error);
+      // Revert on error
+      setPet(pet);
     }
   };
 
@@ -671,28 +712,34 @@ export const PetsPage: React.FC = () => {
           justifyContent: 'center',
           flexWrap: 'wrap'
         }}>
-          {Object.entries(PET_COLORS).map(([colorKey, colorValue]) => (
-            <motion.button
-              key={colorKey}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => changeColor(colorKey)}
-              style={{
-                width: '40px',
-                height: '40px',
-                background: colorValue,
-                border: pet.color === colorKey
-                  ? `3px solid ${currentTheme.primary}`
-                  : `2px solid ${currentTheme.border}60`,
-                borderRadius: '50%',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: pet.color === colorKey
-                  ? `0 0 20px ${currentTheme.primary}60`
-                  : `0 4px 12px ${colorValue}40`
-              }}
-            />
-          ))}
+          {Object.entries(PET_COLORS).map(([colorKey, colorValue]) => {
+            // Verwende separaten Border-State für saubere UI-Kontrolle
+            // Fallback auf pet.color wenn activeColorBorder noch null ist
+            const currentActive = activeColorBorder || pet?.color || '';
+            const isSelected = currentActive === colorKey;
+            console.log('NEW VERSION - activeColorBorder:', activeColorBorder, 'pet.color:', pet?.color, 'currentActive:', currentActive, 'colorKey:', colorKey, 'isSelected:', isSelected);
+            return (
+              <motion.button
+                key={`${colorKey}-${activeColorBorder}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => changeColor(colorKey)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: colorValue,
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  // Nur aktive Buttons haben einen Border
+                  border: isSelected ? `3px solid ${currentTheme.primary}` : 'none',
+                  boxShadow: isSelected
+                    ? `0 0 20px ${currentTheme.primary}60`
+                    : `0 4px 12px ${colorValue}40`
+                }}
+              />
+            );
+          })}
         </div>
       </motion.div>
 
@@ -722,7 +769,7 @@ export const PetsPage: React.FC = () => {
             const isEquipped = pet.accessories?.some(acc => acc.id === accessoryId && acc.equipped);
             return (
               <motion.button
-                key={accessoryId}
+                key={`${accessoryId}-${isEquipped}`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => toggleAccessory(accessoryId)}
@@ -732,14 +779,13 @@ export const PetsPage: React.FC = () => {
                     ? `${currentTheme.primary}40`
                     : `${currentTheme.background.card}80`,
                   backdropFilter: 'blur(10px)',
-                  border: isEquipped
-                    ? `2px solid ${currentTheme.primary}`
-                    : `1px solid ${currentTheme.border}40`,
+                  // Nur ausgerüstete Accessoires haben einen Border
+                  border: isEquipped ? `2px solid ${currentTheme.primary}` : 'none',
                   borderRadius: '16px',
                   color: currentTheme.text.primary,
                   fontSize: '20px',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                   textAlign: 'center'
                 }}
               >
