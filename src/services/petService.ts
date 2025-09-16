@@ -159,14 +159,14 @@ class PetService {
     } else {
       const hoursSinceLastUpdate = minutesSinceLastUpdate / 60;
 
-      // Hunger steigt um 1 pro Stunde seit letztem Update
-      // Bei Start-Hunger von 50: Nach 50h erreicht Hunger 100
-      // Wenn Pet mit Hunger 30 gefüttert wird: Nach 70h erreicht Hunger 100
-      const hungerIncrease = Math.floor(hoursSinceLastUpdate * 1);
+      // Hunger steigt um 2 pro Stunde seit letztem Update (schneller als vorher)
+      // Bei Start-Hunger von 50: Nach 25h erreicht Hunger 100
+      // Wenn Pet mit Hunger 30 gefüttert wird: Nach 35h erreicht Hunger 100
+      const hungerIncrease = Math.floor(hoursSinceLastUpdate * 2);
       pet.hunger = Math.min(100, pet.hunger + hungerIncrease);
 
-      // Happiness sinkt langsam über Zeit (1 pro Stunde seit letztem Update, vorher 2)
-      const happinessDecrease = Math.floor(hoursSinceLastUpdate * 1);
+      // Happiness sinkt schneller über Zeit (1.5 pro Stunde seit letztem Update)
+      const happinessDecrease = Math.floor(hoursSinceLastUpdate * 1.5);
       pet.happiness = Math.max(0, pet.happiness - happinessDecrease);
     }
 
