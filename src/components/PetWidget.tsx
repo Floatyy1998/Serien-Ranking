@@ -395,28 +395,6 @@ export const PetWidget: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Level Badge nur für lebende Pets */}
-            {pet.isAlive && pet.level > 1 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '-2px',
-                  right: '-2px',
-                  background: currentTheme.primary,
-                  color: '#fff',
-                  borderRadius: '50%',
-                  width: '16px',
-                  height: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                }}
-              >
-                {pet.level}
-              </div>
-            )}
 
             {/* Feed Indicator wenn hungrig (nur lebende Pets) */}
             {pet.isAlive && pet.hunger > 70 && (

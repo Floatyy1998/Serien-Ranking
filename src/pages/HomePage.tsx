@@ -210,8 +210,9 @@ export const HomePage: React.FC = () => {
             );
           await firstWatchedRef.set(new Date().toISOString());
 
-          // Pet XP geben (nur beim ersten Schauen)
-          await petService.watchedEpisode(user.uid);
+          // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
+          const seriesGenre = item.genre?.genres?.[0] || 'Drama'; // Fallback Genre
+          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
         }
       } catch (error) {
         console.error('Error marking episode as watched:', error);
@@ -275,8 +276,9 @@ export const HomePage: React.FC = () => {
             );
           await firstWatchedRef.set(new Date().toISOString());
 
-          // Pet XP geben (nur beim ersten Schauen)
-          await petService.watchedEpisode(user.uid);
+          // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
+          const seriesGenre = episode.seriesGenre?.[0] || 'Drama'; // Fallback Genre
+          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
         }
       } catch (error) {
         console.error('Error marking episode as watched:', error);

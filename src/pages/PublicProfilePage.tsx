@@ -19,6 +19,10 @@ interface PublicItem {
   provider?: any;
   seasons?: any[];
   release_date?: string;
+  status?: string;
+  production?: {
+    production: boolean;
+  };
 }
 
 export const PublicProfilePage: React.FC = () => {
@@ -264,19 +268,19 @@ export const PublicProfilePage: React.FC = () => {
         // Noch nicht begonnen (keine Episoden geschaut)
         return watchedEpisodes === 0;
       });
-    } else if (filters.quickFilter === 'recently-rated') {
-      filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculatePublicRating(s));
-        return !isNaN(rating) && rating > 0;
-      });
+    } else if (filters.quickFilter === 'ongoing') {
+      // Public-Daten haben oft keine status/production Felder
+      // Fallback: Zeige alle Serien, da wir nicht wissen können welche fortlaufend sind
+      console.log('Public Profile - ONGOING filter: Public data has no status info, showing all series');
+      // filtered bleibt unverändert (alle Serien)
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID
     }
 
     // Apply sorting
     const sortBy =
-      filters.quickFilter === 'recently-rated'
-        ? 'date-desc'
+      filters.quickFilter === 'ongoing'
+        ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';
@@ -348,19 +352,17 @@ export const PublicProfilePage: React.FC = () => {
         const rating = parseFloat(calculatePublicRating(m));
         return isNaN(rating) || rating === 0;
       });
-    } else if (filters.quickFilter === 'recently-rated') {
-      filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculatePublicRating(s));
-        return !isNaN(rating) && rating > 0;
-      });
+    } else if (filters.quickFilter === 'ongoing') {
+      // Für Filme ist "ongoing" nicht relevant, also alle anzeigen
+      // Keine Filterung
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID
     }
 
     // Apply sorting
     const sortBy =
-      filters.quickFilter === 'recently-rated'
-        ? 'date-desc'
+      filters.quickFilter === 'ongoing'
+        ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';

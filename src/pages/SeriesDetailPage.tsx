@@ -580,14 +580,129 @@ export const SeriesDetailPage = memo(() => {
               fontSize: '14px',
               opacity: 0.9,
               marginBottom: '12px',
+              flexWrap: 'wrap'
             }}
           >
             {series.release_date && <span>{new Date(series.release_date).getFullYear()}</span>}
             {series.seasons && <span>• {series.seasons.length} Staffeln</span>}
+            {series.status && (
+              <span>
+                • {series.status === 'Returning Series' || series.status === 'ongoing' ? 'Wird fortgesetzt' :
+                    series.status === 'Ended' || series.status === 'Canceled' ? 'Beendet' :
+                    series.status}
+              </span>
+            )}
             {parseFloat(overallRating) > 0 && (
               <span style={{ color: '#ffd700' }}>
                 • ⭐ {overallRating}
               </span>
+            )}
+          </div>
+
+          {/* Status Badge & Genres */}
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            marginBottom: '12px',
+            flexWrap: 'wrap',
+            alignItems: 'center'
+          }}>
+            {/* Status Badge */}
+            {(() => {
+              const isOngoing = series.status === 'Returning Series' || series.status === 'ongoing' ||
+                               (!series.status && series.production?.production === true);
+              const isEnded = series.status === 'Ended' || series.status === 'Canceled' ||
+                              (!series.status && series.production?.production === false);
+
+              if (isOngoing) {
+                return (
+                  <span style={{
+                    background: 'rgba(76, 175, 80, 0.2)',
+                    border: '1px solid rgba(76, 175, 80, 0.4)',
+                    borderRadius: '12px',
+                    padding: '4px 10px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#4CAF50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <div style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      background: '#4CAF50'
+                    }} />
+                    Fortlaufend
+                  </span>
+                );
+              } else if (isEnded) {
+                return (
+                  <span style={{
+                    background: 'rgba(158, 158, 158, 0.2)',
+                    border: '1px solid rgba(158, 158, 158, 0.4)',
+                    borderRadius: '12px',
+                    padding: '4px 10px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#9E9E9E',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <div style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      background: '#9E9E9E'
+                    }} />
+                    Beendet
+                  </span>
+                );
+              }
+              return null;
+            })()}
+
+            {/* Genres */}
+            {((series.genre?.genres && series.genre.genres.length > 0) || (tmdbSeries?.genre?.genres && tmdbSeries.genre.genres.length > 0)) && (
+              <>
+                {(series.genre?.genres || tmdbSeries?.genre?.genres || [])
+                  .filter(genre => genre && genre.trim() !== '' && genre !== 'All')
+                  .slice(0, 4)
+                  .map((genre, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      padding: '4px 10px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      color: 'white'
+                    }}
+                  >
+                    {genre}
+                  </span>
+                ))}
+                {(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length > 4 && (
+                  <span
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      padding: '4px 10px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      color: 'white',
+                      opacity: 0.7
+                    }}
+                  >
+                    +{(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length - 4}
+                  </span>
+                )}
+              </>
             )}
           </div>
 

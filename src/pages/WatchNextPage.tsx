@@ -764,9 +764,10 @@ export const WatchNextPage = () => {
             await firstWatchedRef.set(new Date().toISOString());
           }
 
-          // Pet XP geben
+          // Pet XP geben mit Genre-Bonus
           const { petService } = await import('../services/petService');
-          await petService.watchedEpisode(user.uid);
+          const seriesGenre = series.genre?.genres?.[0] || 'Drama'; // Fallback Genre
+          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
 
           // Also update watchCount if needed
           const watchCountRef = firebase
@@ -785,9 +786,10 @@ export const WatchNextPage = () => {
           await updateEpisodeCounters(user.uid, false, episode.airDate);
         }
 
-        // XP für das Pet vergeben (nur bei nicht-Rewatch)
+        // XP für das Pet vergeben mit Genre-Bonus (nur bei nicht-Rewatch)
         if (!episode.isRewatch) {
-          await petService.watchedEpisode(user.uid);
+          const seriesGenre = series.genre?.genres?.[0] || 'Drama'; // Fallback Genre
+          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
         }
       } catch (error) {}
     }

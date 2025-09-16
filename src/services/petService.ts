@@ -74,6 +74,13 @@ class PetService {
       await firebase.database().ref(`pets/${userId}/createdAt`).set(petData.createdAt);
     }
 
+    // Migration: Falls favoriteGenre fehlt oder "All" ist, füge ein zufälliges hinzu
+    if (!petData.favoriteGenre || petData.favoriteGenre === 'All') {
+      const randomGenre = GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)];
+      petData.favoriteGenre = randomGenre;
+      await firebase.database().ref(`pets/${userId}/favoriteGenre`).set(randomGenre);
+    }
+
     return {
       ...petData,
       lastFed: new Date(petData.lastFed),
@@ -140,19 +147,26 @@ class PetService {
 
     // Level up alle 100 XP
     const newLevel = Math.floor(pet.experience / 100) + 1;
-    if (newLevel > pet.level) {
+    const hasLeveledUp = newLevel > pet.level;
+    if (hasLeveledUp) {
       pet.level = newLevel;
       pet.happiness = 100; // Level up macht glücklich!
       pet.hunger = 0; // Level up macht satt!
     }
 
-    await firebase.database().ref(`pets/${userId}`).update({
+    const updateData: any = {
       episodesWatched: pet.episodesWatched,
       experience: pet.experience,
-      level: pet.level,
-      happiness: pet.happiness,
-      hunger: pet.hunger
-    });
+      level: pet.level
+    };
+
+    // Nur bei Level-Up Hunger/Happiness updaten
+    if (hasLeveledUp) {
+      updateData.happiness = pet.happiness;
+      updateData.hunger = pet.hunger;
+    }
+
+    await firebase.database().ref(`pets/${userId}`).update(updateData);
 
     return pet;
   }
@@ -185,14 +199,14 @@ class PetService {
     } else {
       const hoursSinceLastUpdate = minutesSinceLastUpdate / 60;
 
-      // Hunger steigt um 2 pro Stunde seit letztem Update (schneller als vorher)
-      // Bei Start-Hunger von 50: Nach 25h erreicht Hunger 100
-      // Wenn Pet mit Hunger 30 gefüttert wird: Nach 35h erreicht Hunger 100
-      const hungerIncrease = Math.floor(hoursSinceLastUpdate * 2);
+      // Hunger steigt um 4 pro Stunde seit letztem Update (noch schneller)
+      // Bei Start-Hunger von 50: Nach 12.5h erreicht Hunger 100
+      // Wenn Pet mit Hunger 30 gefüttert wird: Nach 17.5h erreicht Hunger 100
+      const hungerIncrease = Math.floor(hoursSinceLastUpdate * 4);
       pet.hunger = Math.min(100, pet.hunger + hungerIncrease);
 
-      // Happiness sinkt schneller über Zeit (1.5 pro Stunde seit letztem Update)
-      const happinessDecrease = Math.floor(hoursSinceLastUpdate * 1.5);
+      // Happiness sinkt schneller über Zeit (3 pro Stunde seit letztem Update)
+      const happinessDecrease = Math.floor(hoursSinceLastUpdate * 3);
       pet.happiness = Math.max(0, pet.happiness - happinessDecrease);
     }
 
@@ -304,8 +318,8 @@ class PetService {
 
     let xpGain = 10; // Standard XP
 
-    // Doppelte XP wenn Lieblings-Genre!
-    if (pet.favoriteGenre === genre) {
+    // Doppelte XP wenn Lieblings-Genre! (aber nie für "All")
+    if (pet.favoriteGenre === genre && genre !== 'All') {
       xpGain = 20;
       pet.happiness = Math.min(100, pet.happiness + 5); // Extra Happiness für Lieblings-Genre
     }
@@ -316,7 +330,8 @@ class PetService {
 
     // Level up alle 100 XP
     const newLevel = Math.floor(pet.experience / 100) + 1;
-    if (newLevel > pet.level) {
+    const hasLeveledUp = newLevel > pet.level;
+    if (hasLeveledUp) {
       pet.level = newLevel;
       pet.happiness = 100;
       pet.hunger = 0;
@@ -328,14 +343,20 @@ class PetService {
     // Check für Achievement-basierte Freischaltungen
     await this.checkAchievements(pet);
 
-    await firebase.database().ref(`pets/${userId}`).update({
+    const updateData: any = {
       episodesWatched: pet.episodesWatched,
       experience: pet.experience,
       level: pet.level,
-      happiness: pet.happiness,
-      hunger: pet.hunger,
       totalSeriesWatched: pet.totalSeriesWatched
-    });
+    };
+
+    // Nur bei Level-Up Hunger/Happiness updaten
+    if (hasLeveledUp) {
+      updateData.happiness = pet.happiness;
+      updateData.hunger = pet.hunger;
+    }
+
+    await firebase.database().ref(`pets/${userId}`).update(updateData);
 
     return pet;
   }

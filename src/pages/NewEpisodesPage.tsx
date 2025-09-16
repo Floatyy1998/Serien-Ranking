@@ -252,8 +252,10 @@ export const NewEpisodesPage = () => {
           );
         await firstWatchedRef.set(new Date().toISOString());
 
-        // Pet XP geben (nur beim ersten Schauen)
-        await petService.watchedEpisode(user.uid);
+        // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
+        const series = seriesList.find(s => s.id === episode.seriesId);
+        const seriesGenre = series?.genre?.genres?.[0] || 'Drama'; // Fallback Genre
+        await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
       }
 
       setMarkedWatched((prev) => new Set([...prev, key]));
@@ -313,8 +315,10 @@ export const NewEpisodesPage = () => {
             );
           await firstWatchedRef.set(new Date().toISOString());
 
-          // Pet XP geben (nur beim ersten Schauen)
-          await petService.watchedEpisode(user.uid);
+          // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
+          const series = seriesList.find(s => s.id === episode.seriesId);
+          const seriesGenre = series?.genre?.genres?.[0] || 'Drama'; // Fallback Genre
+          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
         }
       } catch (error) {
         }

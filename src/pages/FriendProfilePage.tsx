@@ -21,6 +21,10 @@ interface FriendItem {
   provider?: any;
   seasons?: any[];
   release_date?: string;
+  status?: string;
+  production?: {
+    production: boolean;
+  };
 }
 
 export const FriendProfilePage: React.FC = () => {
@@ -40,6 +44,18 @@ export const FriendProfilePage: React.FC = () => {
     search?: string;
     sortBy?: string;
   }>({});
+
+  // Debug Filter Changes
+  useEffect(() => {
+    console.log('Friend Profile - Filter Changed:', filters);
+  }, [filters]);
+
+  // Debug: Komplette Serie-Struktur ausgeben
+  useEffect(() => {
+    if (friendSeries.length > 0) {
+      console.log('Friend Profile - Complete series structure:', friendSeries[0]);
+    }
+  }, [friendSeries]);
 
   // Load friend's data
   useEffect(() => {
@@ -73,6 +89,8 @@ export const FriendProfilePage: React.FC = () => {
             genres: series.genre?.genres || [],
             provider: series.provider,
             seasons: series.seasons,
+            status: series.status,
+            production: series.production,
           });
         }
         setFriendSeries(seriesList);
@@ -95,6 +113,8 @@ export const FriendProfilePage: React.FC = () => {
             genres: movie.genre?.genres || [],
             provider: movie.provider,
             release_date: movie.release_date,
+            status: movie.status,
+            production: movie.production,
           });
         }
         setFriendMovies(moviesList);
@@ -206,10 +226,19 @@ export const FriendProfilePage: React.FC = () => {
 
         return watchedEpisodes === 0;
       });
-    } else if (filters.quickFilter === 'recently-rated') {
+    } else if (filters.quickFilter === 'ongoing') {
       filtered = filtered.filter((s) => {
-        const rating = parseFloat(calculateFriendRating(s));
-        return !isNaN(rating) && rating > 0;
+        const status = s.status?.toLowerCase();
+        const isOngoing = status === 'returning series' || status === 'ongoing' || (!status && s.production?.production === true);
+
+        console.log('Friend Profile ongoing check:', {
+          title: s.title,
+          status: s.status,
+          production: s.production,
+          isOngoing
+        });
+
+        return isOngoing;
       });
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorting will handle the "recently added" part
@@ -217,8 +246,8 @@ export const FriendProfilePage: React.FC = () => {
 
     // Apply sorting - special handling for certain quickfilters
     const sortBy =
-      filters.quickFilter === 'recently-rated'
-        ? 'date-desc'
+      filters.quickFilter === 'ongoing'
+        ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';
@@ -287,19 +316,17 @@ export const FriendProfilePage: React.FC = () => {
         const rating = parseFloat(calculateFriendRating(m));
         return isNaN(rating) || rating === 0;
       });
-    } else if (filters.quickFilter === 'recently-rated') {
-      filtered = filtered.filter((m) => {
-        const rating = parseFloat(calculateFriendRating(m));
-        return !isNaN(rating) && rating > 0;
-      });
+    } else if (filters.quickFilter === 'ongoing') {
+      // Für Filme ist "ongoing" nicht relevant, also alle anzeigen
+      // Keine Filterung
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorting will handle the "recently added" part
     }
 
     // Apply sorting - special handling for certain quickfilters
     const sortBy =
-      filters.quickFilter === 'recently-rated'
-        ? 'date-desc'
+      filters.quickFilter === 'ongoing'
+        ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';
