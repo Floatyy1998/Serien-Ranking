@@ -20,9 +20,12 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
                             location.pathname.includes('/movie/');
     const isFromRatingDetail = location.pathname.includes('/rating/');
 
+
     // If navigating back FROM a series/movie detail page, set flag to preserve filters on Discover page
     if (isFromDetailPage) {
       sessionStorage.setItem('comingFromDetail', 'true');
+      // Also save current URL so we know where we're coming from
+      sessionStorage.setItem('returnUrl', window.location.pathname);
     }
 
     // If navigating back to ratings from a detail page, preserve filters
