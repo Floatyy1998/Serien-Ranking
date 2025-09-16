@@ -155,8 +155,9 @@ export const ActivityPage = () => {
     if (days < 7) return `vor ${days}d`;
 
     return new Date(timestamp).toLocaleDateString('de-DE', {
-      day: 'numeric',
-      month: 'short'
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
     });
   };
 

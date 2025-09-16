@@ -185,7 +185,10 @@ export const EpisodeManagementPage = () => {
         );
 
         // Pet XP geben
-        await petService.watchedEpisode(user.uid);
+        // Genre-basierter Pet-Boost
+        const genres = series?.genre || series?.genres || [];
+        const genre = Array.isArray(genres) ? genres[0] : 'Drama';
+        await petService.watchedSeriesWithGenre(user.uid, genre);
       } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
         // Rewatch case
         const { updateEpisodeCounters } = await import(
@@ -265,7 +268,10 @@ export const EpisodeManagementPage = () => {
         // Pet XP für alle neu gesehenen Episoden geben
         const { petService } = await import('../services/petService');
         for (let i = 0; i < previouslyUnwatched.length; i++) {
-          await petService.watchedEpisode(user.uid);
+          // Genre-basierter Pet-Boost
+        const genres = series?.genre || series?.genres || [];
+        const genre = Array.isArray(genres) ? genres[0] : 'Drama';
+        await petService.watchedSeriesWithGenre(user.uid, genre);
         }
       }
     } catch (error) {}

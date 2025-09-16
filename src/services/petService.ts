@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { Pet, PET_COLORS } from '../types/pet.types';
+import { Pet, PET_COLORS, ACCESSORIES, GENRE_FAVORITES, PetAccessory } from '../types/pet.types';
 
 class PetService {
   // Erstelle ein neues Pet für den User
@@ -35,7 +35,25 @@ class PetService {
       pattern: patterns[Math.floor(Math.random() * patterns.length)],
       eyeColor: eyeColors[Math.floor(Math.random() * eyeColors.length)],
       personality: personalities[Math.floor(Math.random() * personalities.length)],
-      size: sizes[Math.floor(Math.random() * sizes.length)]
+      size: sizes[Math.floor(Math.random() * sizes.length)],
+      // Neue Features
+      mood: 'happy',
+      favoriteGenre: GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)],
+      accessories: [
+        // Start-Accessoire (Halsband)
+        {
+          id: 'collar',
+          type: 'collar' as const,
+          name: 'Halsband',
+          icon: '📿',
+          equipped: true, // Direkt ausgerüstet
+          color: '#8B4513'
+        }
+      ],
+      unlockedColors: [],
+      unlockedPatterns: [],
+      totalSeriesWatched: 0,
+      achievementPoints: 0
     };
 
     await firebase.database().ref(`pets/${userId}`).set(newPet);
@@ -48,6 +66,14 @@ class PetService {
     if (!snapshot.exists()) return null;
 
     const petData = snapshot.val();
+
+    // Falls createdAt fehlt, setze es auf das heutige Datum und speichere es
+    if (!petData.createdAt) {
+      const now = new Date();
+      petData.createdAt = now.getTime();
+      await firebase.database().ref(`pets/${userId}/createdAt`).set(petData.createdAt);
+    }
+
     return {
       ...petData,
       lastFed: new Date(petData.lastFed),
@@ -269,6 +295,208 @@ class PetService {
   // Lösche Pet (für Reset)
   async deletePet(userId: string): Promise<void> {
     await firebase.database().ref(`pets/${userId}`).remove();
+  }
+
+  // Schaue Serie mit Genre-Boost
+  async watchedSeriesWithGenre(userId: string, genre: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId);
+    if (!pet || !pet.isAlive) return pet;
+
+    let xpGain = 10; // Standard XP
+
+    // Doppelte XP wenn Lieblings-Genre!
+    if (pet.favoriteGenre === genre) {
+      xpGain = 20;
+      pet.happiness = Math.min(100, pet.happiness + 5); // Extra Happiness für Lieblings-Genre
+    }
+
+    pet.episodesWatched++;
+    pet.experience += xpGain;
+    pet.totalSeriesWatched = (pet.totalSeriesWatched || 0) + 1;
+
+    // Level up alle 100 XP
+    const newLevel = Math.floor(pet.experience / 100) + 1;
+    if (newLevel > pet.level) {
+      pet.level = newLevel;
+      pet.happiness = 100;
+      pet.hunger = 0;
+
+      // Schalte Accessoires bei bestimmten Levels frei
+      await this.checkAndUnlockAccessories(pet);
+    }
+
+    // Check für Achievement-basierte Freischaltungen
+    await this.checkAchievements(pet);
+
+    await firebase.database().ref(`pets/${userId}`).update({
+      episodesWatched: pet.episodesWatched,
+      experience: pet.experience,
+      level: pet.level,
+      happiness: pet.happiness,
+      hunger: pet.hunger,
+      totalSeriesWatched: pet.totalSeriesWatched
+    });
+
+    return pet;
+  }
+
+  // Accessoire ausrüsten/ablegen
+  async toggleAccessory(userId: string, accessoryId: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId);
+    if (!pet) return null;
+
+    if (!pet.accessories) {
+      pet.accessories = [];
+    }
+
+    const existingAccessory = pet.accessories.find(a => a.id === accessoryId);
+
+    if (existingAccessory) {
+      existingAccessory.equipped = !existingAccessory.equipped;
+    } else {
+      // Neues Accessoire hinzufügen
+      const accessoryData = ACCESSORIES[accessoryId];
+      if (accessoryData) {
+        const newAccessory: PetAccessory = {
+          id: accessoryId,
+          ...accessoryData,
+          equipped: true
+        };
+        pet.accessories.push(newAccessory);
+      }
+    }
+
+    await firebase.database().ref(`pets/${userId}/accessories`).set(pet.accessories);
+    return pet;
+  }
+
+  // Prüfe und schalte Accessoires frei
+  private async checkAndUnlockAccessories(pet: Pet): Promise<void> {
+    const month = new Date().getMonth() + 1;
+
+    // Level-basierte Freischaltungen
+    if (pet.level >= 10 && !this.hasAccessory(pet, 'crown')) {
+      if (!pet.accessories) pet.accessories = [];
+      pet.accessories.push({
+        id: 'crown',
+        type: 'crown' as const,
+        name: 'Krone',
+        icon: '👑',
+        equipped: false
+      });
+      await firebase.database().ref(`pets/${pet.userId}/accessories`).set(pet.accessories);
+    }
+
+    // Zeit-basierte Freischaltungen
+    if (month === 12 && !this.hasAccessory(pet, 'santaHat')) {
+      if (!pet.accessories) pet.accessories = [];
+      pet.accessories.push({
+        id: 'santaHat',
+        type: 'hat' as const,
+        name: 'Weihnachtsmütze',
+        icon: '🎅',
+        equipped: false
+      });
+      await firebase.database().ref(`pets/${pet.userId}/accessories`).set(pet.accessories);
+    }
+
+    if ((month >= 6 && month <= 8) && !this.hasAccessory(pet, 'sunglasses')) {
+      if (!pet.accessories) pet.accessories = [];
+      pet.accessories.push({
+        id: 'sunglasses',
+        type: 'glasses' as const,
+        name: 'Sonnenbrille',
+        icon: '🕶️',
+        equipped: false
+      });
+      await firebase.database().ref(`pets/${pet.userId}/accessories`).set(pet.accessories);
+    }
+  }
+
+  // Check Achievements für spezielle Farben/Muster
+  private async checkAchievements(pet: Pet): Promise<void> {
+    const updates: any = {};
+
+    // Farben-Freischaltungen
+    if (pet.totalSeriesWatched! >= 25 && !pet.unlockedColors?.includes('silver')) {
+      pet.unlockedColors = [...(pet.unlockedColors || []), 'silver'];
+      updates.unlockedColors = pet.unlockedColors;
+    }
+
+    if (pet.totalSeriesWatched! >= 50 && !pet.unlockedColors?.includes('gold')) {
+      pet.unlockedColors = [...(pet.unlockedColors || []), 'gold'];
+      updates.unlockedColors = pet.unlockedColors;
+    }
+
+    if (pet.totalSeriesWatched! >= 100 && !pet.unlockedColors?.includes('rainbow')) {
+      pet.unlockedColors = [...(pet.unlockedColors || []), 'rainbow'];
+      updates.unlockedColors = pet.unlockedColors;
+    }
+
+    // Muster-Freischaltungen
+    if (pet.episodesWatched >= 200 && !pet.unlockedPatterns?.includes('galaxy')) {
+      pet.unlockedPatterns = [...(pet.unlockedPatterns || []), 'galaxy'];
+      updates.unlockedPatterns = pet.unlockedPatterns;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await firebase.database().ref(`pets/${pet.userId}`).update(updates);
+    }
+  }
+
+  private hasAccessory(pet: Pet, accessoryId: string): boolean {
+    return pet.accessories?.some(a => a.id === accessoryId) || false;
+  }
+
+  // Ändere Pet-Farbe
+  async changePetColor(userId: string, newColor: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId);
+    if (!pet) return null;
+
+    // Prüfe ob Farbe freigeschaltet ist
+    if (!PET_COLORS[newColor] && !pet.unlockedColors?.includes(newColor)) {
+      return pet; // Farbe nicht verfügbar
+    }
+
+    pet.color = newColor;
+    await firebase.database().ref(`pets/${userId}/color`).set(newColor);
+    return pet;
+  }
+
+  // Ändere Pet-Muster
+  async changePetPattern(userId: string, newPattern: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId);
+    if (!pet) return null;
+
+    const basicPatterns = ['spots', 'stripes', 'plain', 'patches'];
+
+    // Prüfe ob Muster verfügbar ist
+    if (!basicPatterns.includes(newPattern) && !pet.unlockedPatterns?.includes(newPattern)) {
+      return pet; // Muster nicht verfügbar
+    }
+
+    pet.pattern = newPattern as any; // Allow special patterns
+    await firebase.database().ref(`pets/${userId}/pattern`).set(newPattern);
+    return pet;
+  }
+
+  // Pet Widget Position Management (in percentage values for cross-device compatibility)
+  async getPetWidgetPosition(userId: string): Promise<{ xPercent: number; yPercent: number } | null> {
+    try {
+      const snapshot = await firebase.database().ref(`petWidget/${userId}/position`).once('value');
+      return snapshot.val();
+    } catch (error) {
+      console.error('Error getting pet widget position:', error);
+      return null;
+    }
+  }
+
+  async savePetWidgetPosition(userId: string, position: { xPercent: number; yPercent: number }): Promise<void> {
+    try {
+      await firebase.database().ref(`petWidget/${userId}/position`).set(position);
+    } catch (error) {
+      console.error('Error saving pet widget position:', error);
+    }
   }
 }
 
