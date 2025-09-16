@@ -206,7 +206,8 @@ export const updateEpisodeCounters = async (
 export const logSeriesAdded = async (
   userId: string,
   seriesTitle: string,
-  tmdbId: number
+  tmdbId: number,
+  posterPath?: string
 ): Promise<EarnedBadge[]> => {
   try {
     // Friend-Activity
@@ -214,6 +215,8 @@ export const logSeriesAdded = async (
       type: 'series_added',
       itemTitle: seriesTitle,
       tmdbId,
+      itemType: 'series',
+      ...(posterPath && { posterPath }),
     });
 
     // Social-Counter für Badge-System
@@ -238,7 +241,8 @@ export const logSeriesAdded = async (
 export const logMovieAdded = async (
   userId: string,
   movieTitle: string,
-  tmdbId: number
+  tmdbId: number,
+  posterPath?: string
 ): Promise<EarnedBadge[]> => {
   try {
     // Friend-Activity
@@ -246,6 +250,8 @@ export const logMovieAdded = async (
       type: 'movie_added',
       itemTitle: movieTitle,
       tmdbId,
+      itemType: 'movie',
+      ...(posterPath && { posterPath }),
     });
 
     // Social-Counter für Badge-System

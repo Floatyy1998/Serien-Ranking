@@ -272,10 +272,18 @@ export const SeriesDetailPage = memo(() => {
 
       if (response.ok) {
         // Activity-Logging für Friend + Badge-System (wie Desktop)
+        // Bei lokalen Serien ist es series.poster.poster, bei TMDB ist es in tmdbSeries
+        let posterPath: string | undefined;
+        if (series.poster && typeof series.poster === 'object' && series.poster.poster) {
+          posterPath = series.poster.poster;
+        } else if (tmdbSeries && 'poster_path' in tmdbSeries) {
+          posterPath = (tmdbSeries as any).poster_path;
+        }
         await logSeriesAdded(
           user.uid,
           series.name || series.title || 'Unbekannte Serie',
-          series.id
+          series.id,
+          posterPath
         );
 
         setSnackbar({ open: true, message: 'Serie erfolgreich hinzugefügt!' });

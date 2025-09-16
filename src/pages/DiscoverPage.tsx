@@ -329,10 +329,11 @@ export const DiscoverPage = memo(() => {
           });
 
           // Activity-Logging für Friend + Badge-System (wie Desktop)
+          const posterPath = item.poster_path;
           if (item.type === 'series') {
-            await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id);
+            await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id, posterPath);
           } else {
-            await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id);
+            await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
           }
 
           // Hide snackbar after 3 seconds
