@@ -67,8 +67,8 @@ export const PetWidget: React.FC = () => {
         className="pet-widget"
         style={{
           position: 'fixed',
-          bottom: 'calc(90px + env(safe-area-inset-bottom))',
-          right: '15px',
+          bottom: 'calc(80px + env(safe-area-inset-bottom))',
+          left: '15px',
           background: currentTheme.background.card + 'f0',
           backdropFilter: 'blur(10px)',
           borderRadius: '16px',
@@ -161,8 +161,8 @@ export const PetWidget: React.FC = () => {
           className="pet-widget"
           style={{
             position: 'fixed',
-            bottom: 'calc(75px + env(safe-area-inset-bottom))',
-            right: '15px',
+            bottom: 'calc(80px + env(safe-area-inset-bottom))',
+            left: '15px',
             zIndex: 100,
             cursor: 'pointer',
             filter: pet.isAlive ? 'none' : 'grayscale(100%)',
