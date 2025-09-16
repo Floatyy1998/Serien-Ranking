@@ -201,10 +201,18 @@ export const MovieDetailPage = memo(() => {
 
       if (response.ok) {
         // Activity-Logging für Friend + Badge-System (wie Desktop)
+        // Bei lokalen Filmen ist es movie.poster.poster, bei TMDB ist es in tmdbMovie
+        let posterPath: string | undefined;
+        if (movie.poster && typeof movie.poster === 'object' && movie.poster.poster) {
+          posterPath = movie.poster.poster;
+        } else if (tmdbMovie && 'poster_path' in tmdbMovie) {
+          posterPath = (tmdbMovie as any).poster_path;
+        }
         await logMovieAdded(
           user.uid,
           movie.title || 'Unbekannter Film',
-          movie.id
+          movie.id,
+          posterPath
         );
         
         // Show success snackbar

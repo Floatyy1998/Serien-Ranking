@@ -1,4 +1,4 @@
-import { Cancel, CheckCircle, Groups, Person, PersonAdd } from '@mui/icons-material';
+import { Cancel, CheckCircle, Person, PersonAdd, Movie as MovieIcon, Tv as TvIcon, Star, ExpandMore } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,11 +7,9 @@ import { useMovieList } from '../contexts/MovieListProvider';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
-import { getFormattedDate } from '../lib/date/date.utils';
 import { FriendActivity } from '../types/Friend';
 import { BackButton } from '../components/BackButton';
 import { AddFriendDialog } from '../components/AddFriendDialog';
-
 
 export const ActivityPage = () => {
   const navigate = useNavigate();
@@ -38,31 +36,24 @@ export const ActivityPage = () => {
   const [tmdbPosters, setTmdbPosters] = useState<Record<string, string>>({});
   const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
   const [requestProfiles, setRequestProfiles] = useState<Record<string, any>>({});
+  const [filterType, setFilterType] = useState<'all' | 'movies' | 'series'>('all');
+  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
 
-  // Mark as read when viewing
+  // Mark as read
   useEffect(() => {
-    const markAsRead = async () => {
-      if (activeTab === 'activity' && unreadActivitiesCount > 0) {
-        await markActivitiesAsRead();
-      } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
-        await markRequestsAsRead();
-      }
-    };
-
-    markAsRead();
-  }, [activeTab, unreadActivitiesCount, unreadRequestsCount, markActivitiesAsRead, markRequestsAsRead]);
-
-  // Load friend profiles from Firebase Database (like desktop version)
-  useEffect(() => {
-    if (friends.length === 0) {
-      setFriendProfiles({});
-      return;
+    if (activeTab === 'activity' && unreadActivitiesCount > 0) {
+      markActivitiesAsRead();
+    } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
+      markRequestsAsRead();
     }
+  }, [activeTab, unreadActivitiesCount, unreadRequestsCount]);
 
-    const loadFriendProfiles = async () => {
+  // Load profiles
+  useEffect(() => {
+    if (friends.length === 0) return;
+
+    const loadProfiles = async () => {
       const newProfiles: Record<string, any> = {};
-
-      // Load all profiles in parallel
       await Promise.all(
         friends.map(async (friend) => {
           try {
@@ -74,18 +65,16 @@ export const ActivityPage = () => {
           } catch (error) {}
         })
       );
-
       setFriendProfiles(newProfiles);
     };
 
-    loadFriendProfiles();
+    loadProfiles();
   }, [friends]);
 
-  // Load request profiles from Firebase Database (like desktop version)
+  // Load request profiles
   useEffect(() => {
     const loadRequestProfiles = async () => {
       const profiles: Record<string, any> = {};
-
       for (const request of friendRequests) {
         try {
           const userRef = firebase.database().ref(`users/${request.fromUserId}`);
@@ -95,7 +84,6 @@ export const ActivityPage = () => {
           }
         } catch (error) {}
       }
-
       setRequestProfiles(profiles);
     };
 
@@ -104,8 +92,7 @@ export const ActivityPage = () => {
     }
   }, [friendRequests]);
 
-
-  // Get item details for activity
+  // Get item details
   const getItemDetails = (activity: FriendActivity) => {
     const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
 
@@ -115,7 +102,6 @@ export const ActivityPage = () => {
       (activity as any).itemType === 'series'
     ) {
       const series = seriesList.find((s) => s.id === tmdbId || s.id === Number(tmdbId));
-      // If not found, create a minimal object with the poster path
       if (!series) {
         return {
           id: tmdbId,
@@ -124,13 +110,8 @@ export const ActivityPage = () => {
         };
       }
       return series;
-    } else if (
-      activity.type === 'movie_added' ||
-      activity.type === 'movie_rated' ||
-      (activity as any).itemType === 'movie'
-    ) {
+    } else {
       const movie = movieList.find((m) => m.id === tmdbId || m.id === Number(tmdbId));
-      // If not found, create a minimal object with the poster path
       if (!movie) {
         return {
           id: tmdbId,
@@ -140,42 +121,27 @@ export const ActivityPage = () => {
       }
       return movie;
     }
-    return null;
   };
 
-  // Get TMDB image URL
+  // Get image URL
   const getImageUrl = (posterObj: any): string => {
     if (!posterObj) return '/placeholder.jpg';
-    const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
+
+    let path: string;
+    if (typeof posterObj === 'object' && posterObj.poster) {
+      path = posterObj.poster;
+    } else if (typeof posterObj === 'string') {
+      path = posterObj;
+    } else {
+      return '/placeholder.jpg';
+    }
+
     if (!path) return '/placeholder.jpg';
     if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w185${path}`;
+    return `https://image.tmdb.org/t/p/w342${path}`;
   };
 
-  // Format activity message
-  const formatActivityMessage = (activity: FriendActivity): string => {
-    const rating = (activity as any).rating;
-    const itemTitle = (activity as any).itemTitle;
-
-    if (activity.type === 'series_added') {
-      return `hat "${itemTitle}" hinzugefügt`;
-    } else if (
-      activity.type === 'series_rated' ||
-      ((activity as any).itemType === 'series' && rating)
-    ) {
-      return `hat "${itemTitle}" bewertet (${rating}/10)`;
-    } else if (activity.type === 'movie_added') {
-      return `hat "${itemTitle}" hinzugefügt`;
-    } else if (
-      activity.type === 'movie_rated' ||
-      ((activity as any).itemType === 'movie' && rating)
-    ) {
-      return `hat "${itemTitle}" bewertet (${rating}/10)`;
-    }
-    return 'hat etwas gemacht';
-  };
-
-  // Format time ago
+  // Format time
   const formatTimeAgo = (timestamp: number): string => {
     const now = Date.now();
     const diff = now - timestamp;
@@ -184,21 +150,75 @@ export const ActivityPage = () => {
     const days = Math.floor(diff / 86400000);
 
     if (minutes < 1) return 'gerade eben';
-    if (minutes < 60) return `vor ${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}`;
-    if (hours < 24) return `vor ${hours} ${hours === 1 ? 'Stunde' : 'Stunden'}`;
-    if (days < 7) return `vor ${days} ${days === 1 ? 'Tag' : 'Tagen'}`;
+    if (minutes < 60) return `vor ${minutes}m`;
+    if (hours < 24) return `vor ${hours}h`;
+    if (days < 7) return `vor ${days}d`;
 
-    return getFormattedDate(new Date(timestamp).toISOString());
+    return new Date(timestamp).toLocaleDateString('de-DE', {
+      day: 'numeric',
+      month: 'short'
+    });
   };
 
-  // Sort activities by timestamp
-  const sortedActivities = useMemo(() => {
-    if (friendActivities.length > 0) {
-    }
-    return [...friendActivities].sort((a, b) => b.timestamp - a.timestamp);
-  }, [friendActivities]);
+  // Filter and group activities by user
+  const groupedActivities = useMemo(() => {
+    let filtered = [...friendActivities];
 
-  // Fetch missing posters from TMDB - only when friendActivities change, not tmdbPosters
+    // Apply type filter
+    if (filterType === 'movies') {
+      filtered = filtered.filter(activity =>
+        activity.type === 'movie_added' ||
+        activity.type === 'movie_rated' ||
+        (activity as any).itemType === 'movie'
+      );
+    } else if (filterType === 'series') {
+      filtered = filtered.filter(activity =>
+        activity.type === 'series_added' ||
+        activity.type === 'series_rated' ||
+        ((activity as any).itemType === 'series' || (!(activity as any).itemType && activity.type !== 'movie_added' && activity.type !== 'movie_rated'))
+      );
+    }
+
+    // Group by user
+    const groups = new Map<string, FriendActivity[]>();
+
+    filtered.forEach(activity => {
+      const userId = activity.userId;
+      if (!groups.has(userId)) {
+        groups.set(userId, []);
+      }
+      groups.get(userId)!.push(activity);
+    });
+
+    // Sort activities within each group by timestamp (newest first)
+    groups.forEach(activities => {
+      activities.sort((a, b) => b.timestamp - a.timestamp);
+    });
+
+    // Convert to array and sort by most recent activity per user
+    const sortedGroups = Array.from(groups.entries()).sort((a, b) => {
+      const aLatest = a[1][0]?.timestamp || 0;
+      const bLatest = b[1][0]?.timestamp || 0;
+      return bLatest - aLatest;
+    });
+
+    return sortedGroups;
+  }, [friendActivities, filterType]);
+
+  // Toggle user expansion
+  const toggleUserExpanded = (userId: string) => {
+    setExpandedUsers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  // Fetch missing posters
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
     if (!apiKey || friendActivities.length === 0) return;
@@ -212,30 +232,18 @@ export const ActivityPage = () => {
 
         if (!tmdbId) continue;
 
-        // Check if we already have this poster cached
         const cacheKey = `${itemType}_${tmdbId}`;
         if (tmdbPosters[cacheKey]) continue;
 
-        // Check if it's in local list (without using getItemDetails to avoid loops)
-        if (
-          itemType === 'series' ||
-          activity.type === 'series_added' ||
-          activity.type === 'series_rated'
-        ) {
+        // Check if already in local list
+        if (itemType === 'series') {
           const series = seriesList.find((s) => s.id === tmdbId || s.id === Number(tmdbId));
-          if (series && series.poster && typeof series.poster === 'object' && series.poster.poster)
-            continue;
-        } else if (
-          itemType === 'movie' ||
-          activity.type === 'movie_added' ||
-          activity.type === 'movie_rated'
-        ) {
+          if (series?.poster?.poster) continue;
+        } else {
           const movie = movieList.find((m) => m.id === tmdbId || m.id === Number(tmdbId));
-          if (movie && movie.poster && typeof movie.poster === 'object' && movie.poster.poster)
-            continue;
+          if (movie?.poster?.poster) continue;
         }
 
-        // Check if activity already has posterPath
         if ((activity as any).posterPath || (activity as any).poster) continue;
 
         postersToFetch.push({
@@ -244,28 +252,25 @@ export const ActivityPage = () => {
         });
       }
 
-      // Only fetch if we have posters to fetch
       if (postersToFetch.length === 0) return;
 
-      // Batch fetch all missing posters
       const newPosters: Record<string, string> = {};
-      const promises = postersToFetch.map(async ({ id, type }) => {
-        try {
-          const endpoint = type === 'movie' ? 'movie' : 'tv';
-          const response = await fetch(
-            `https://api.themoviedb.org/3/${endpoint}/${id}?api_key=${apiKey}&language=de-DE`
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.poster_path) {
-              newPosters[`${type}_${id}`] = data.poster_path;
+      await Promise.all(
+        postersToFetch.map(async ({ id, type }) => {
+          try {
+            const endpoint = type === 'movie' ? 'movie' : 'tv';
+            const response = await fetch(
+              `https://api.themoviedb.org/3/${endpoint}/${id}?api_key=${apiKey}&language=de-DE`
+            );
+            if (response.ok) {
+              const data = await response.json();
+              if (data.poster_path) {
+                newPosters[`${type}_${id}`] = data.poster_path;
+              }
             }
-          }
-        } catch (error) {}
-      });
-
-      await Promise.all(promises);
+          } catch (error) {}
+        })
+      );
 
       if (Object.keys(newPosters).length > 0) {
         setTmdbPosters((prev) => ({ ...prev, ...newPosters }));
@@ -273,18 +278,18 @@ export const ActivityPage = () => {
     };
 
     fetchMissingPosters();
-  }, [friendActivities.length]); // Only depend on activities length, not tmdbPosters
-
+  }, [friendActivities.length]);
 
   return (
-    <div>
+    <div style={{ minHeight: '100vh', background: currentTheme.background.default }}>
       {/* Header */}
       <header
         style={{
           ...getMobileHeaderStyle('transparent'),
           padding: '20px',
           paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          background: currentTheme.background.default,
+          borderBottom: `1px solid ${currentTheme.border.default}22`,
         }}
       >
         <div
@@ -294,31 +299,18 @@ export const ActivityPage = () => {
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <BackButton />
-            <div>
-              <h1
-                style={{
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  margin: 0,
-                  background: currentTheme.primary,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                Aktivität
-              </h1>
-              <p
-                style={{
-                  color: currentTheme.text.secondary,
-                  fontSize: '16px',
-                  margin: '4px 0 0 0',
-                }}
-              >
-                {friends.length} Freunde • {sortedActivities.length} Aktivitäten
-              </p>
-            </div>
+            <h1
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                margin: 0,
+                color: currentTheme.text.primary,
+              }}
+            >
+              Aktivität
+            </h1>
           </div>
 
           <button
@@ -329,7 +321,7 @@ export const ActivityPage = () => {
               borderRadius: '50%',
               background: currentTheme.primary,
               border: 'none',
-              color: 'white', // Always white text on primary background
+              color: 'white',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -339,6 +331,7 @@ export const ActivityPage = () => {
             <PersonAdd />
           </button>
         </div>
+
       </header>
 
       {/* Tabs */}
@@ -372,7 +365,7 @@ export const ActivityPage = () => {
           }}
         >
           Aktivität
-          {unreadActivitiesCount > 0 && (
+          {unreadActivitiesCount > 0 && activeTab !== 'activity' && (
             <span
               style={{
                 position: 'absolute',
@@ -443,6 +436,7 @@ export const ActivityPage = () => {
                 borderRadius: '10px',
                 fontSize: '11px',
                 fontWeight: 600,
+                color: 'white',
               }}
             >
               {friendRequests.length}
@@ -454,198 +448,360 @@ export const ActivityPage = () => {
       {/* Content */}
       <div style={{ padding: '20px' }}>
         {activeTab === 'activity' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {sortedActivities.length === 0 ? (
+          <div>
+            {/* Filter Pills */}
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '20px',
+            }}>
+              <button
+                onClick={() => setFilterType('all')}
+                style={{
+                  padding: '8px 16px',
+                  background: filterType === 'all' ? currentTheme.primary : currentTheme.background.surface,
+                  border: `1px solid ${filterType === 'all' ? currentTheme.primary : currentTheme.border.default}33`,
+                  borderRadius: '20px',
+                  color: filterType === 'all' ? 'white' : currentTheme.text.primary,
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Alle
+              </button>
+              <button
+                onClick={() => setFilterType('series')}
+                style={{
+                  padding: '8px 16px',
+                  background: filterType === 'series' ? currentTheme.primary : currentTheme.background.surface,
+                  border: `1px solid ${filterType === 'series' ? currentTheme.primary : currentTheme.border.default}33`,
+                  borderRadius: '20px',
+                  color: filterType === 'series' ? 'white' : currentTheme.text.primary,
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Serien
+              </button>
+              <button
+                onClick={() => setFilterType('movies')}
+                style={{
+                  padding: '8px 16px',
+                  background: filterType === 'movies' ? currentTheme.primary : currentTheme.background.surface,
+                  border: `1px solid ${filterType === 'movies' ? currentTheme.primary : currentTheme.border.default}33`,
+                  borderRadius: '20px',
+                  color: filterType === 'movies' ? 'white' : currentTheme.text.primary,
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Filme
+              </button>
+            </div>
+
+            {/* Activities List with Accordions */}
+            {groupedActivities.length === 0 ? (
               <div
                 style={{
                   textAlign: 'center',
-                  padding: '40px',
-                  color: 'rgba(255, 255, 255, 0.5)',
+                  padding: '60px 20px',
+                  color: currentTheme.text.secondary,
                 }}
               >
-                <Groups
-                  style={{
-                    fontSize: '48px',
-                    marginBottom: '16px',
-                    opacity: 0.3,
-                  }}
-                />
-                <p>Noch keine Aktivitäten von Freunden</p>
+                <div style={{ fontSize: '60px', marginBottom: '16px', opacity: 0.2 }}>
+                  🎬
+                </div>
+                <p style={{ fontSize: '16px', marginBottom: '8px' }}>Noch keine Aktivitäten</p>
+                <p style={{ fontSize: '14px', opacity: 0.7 }}>
+                  {filterType !== 'all'
+                    ? `Keine ${filterType === 'movies' ? 'Filme' : 'Serien'} vorhanden`
+                    : 'Deine Freunde haben noch nichts geteilt'}
+                </p>
               </div>
             ) : (
-              sortedActivities.map((activity) => {
-                const item = getItemDetails(activity);
-                const isNew = activity.timestamp > Date.now() - 24 * 60 * 60 * 1000;
-                // userName is now added when loading activities
-                const friendName = activity.userName || 'Unbekannt';
-                // Find the friend object and get their updated profile
-                const friendObj = friends.find((f) => f.uid === activity.userId);
-                const activityProfile = friendObj
-                  ? friendProfiles[friendObj.uid] || friendObj
-                  : null;
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {groupedActivities.map(([userId, activities]) => {
+                  const friendObj = friends.find((f) => f.uid === userId);
+                  const userProfile = friendObj
+                    ? friendProfiles[friendObj.uid] || friendObj
+                    : null;
+                  const isExpanded = expandedUsers.has(userId);
+                  const latestActivity = activities[0];
 
-                return (
-                  <div
-                    key={activity.id}
-                    style={{
-                      display: 'flex',
-                      gap: '10px',
-                      padding: '10px',
-                      background: isNew ? 'rgba(102, 126, 234, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-                      border: isNew
-                        ? '1px solid rgba(102, 126, 234, 0.2)'
-                        : '1px solid rgba(255, 255, 255, 0.05)',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      overflow: 'hidden',
-                      position: 'relative',
-                    }}
-                    onClick={() => {
-                      const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
-                      const itemType = (activity as any).itemType;
-
-                      // Determine correct type based on activity type
-                      const isMovie =
-                        itemType === 'movie' ||
-                        activity.type === 'movie_added' ||
-                        activity.type === 'movie_rated' ||
-                        activity.type?.includes('movie');
-
-                      if (tmdbId) {
-                        navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
-                      }
-                    }}
-                  >
-                    {/* User Avatar */}
+                  return (
                     <div
+                      key={userId}
                       style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        ...(activityProfile?.photoURL
-                          ? {
-                              backgroundImage: `url("${activityProfile.photoURL}")`,
-                              backgroundPosition: 'center',
-                              backgroundSize: 'cover',
-                            }
-                          : {
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            }),
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
+                        background: currentTheme.background.surface,
+                        borderRadius: '12px',
+                        border: `1px solid ${currentTheme.border.default}22`,
+                        overflow: 'hidden',
                       }}
                     >
-                      {!activityProfile?.photoURL && <Person style={{ fontSize: '18px' }} />}
-                    </div>
-
-                    {/* Activity Content */}
-                    <div style={{
-                      flex: 1,
-                      minWidth: 0, // Allow flex child to shrink below content size
-                      overflow: 'hidden'
-                    }}>
-                      <div
+                      {/* Accordion Header */}
+                      <button
+                        onClick={() => toggleUserExpanded(userId)}
                         style={{
-                          marginBottom: '4px',
+                          width: '100%',
+                          padding: '16px',
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = `${currentTheme.primary}08`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
                         }}
                       >
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          color: 'white',
-                          marginBottom: '2px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}>
-                          {activityProfile?.displayName || friendName}
-                        </div>
+                        {/* User Avatar */}
                         <div
                           style={{
-                            fontSize: '13px',
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            lineHeight: '1.4',
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '50%',
+                            ...(userProfile?.photoURL
+                              ? {
+                                  backgroundImage: `url("${userProfile.photoURL}")`,
+                                  backgroundPosition: 'center',
+                                  backgroundSize: 'cover',
+                                }
+                              : {
+                                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}66)`,
+                                }),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
                           }}
                         >
-                          {formatActivityMessage(activity)}
+                          {!userProfile?.photoURL && (
+                            <Person style={{ fontSize: '24px', color: 'white' }} />
+                          )}
                         </div>
-                      </div>
 
-                      {/* Remove duplicate title display since it's in the message now */}
+                        {/* User Info */}
+                        <div style={{ flex: 1, textAlign: 'left' }}>
+                          <div style={{
+                            fontSize: '16px',
+                            fontWeight: 600,
+                            color: currentTheme.text.primary,
+                            marginBottom: '4px',
+                          }}>
+                            {userProfile?.displayName || latestActivity.userName || 'Unbekannt'}
+                          </div>
+                          <div style={{
+                            fontSize: '13px',
+                            color: currentTheme.text.secondary,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}>
+                            <span>{activities.length} {activities.length === 1 ? 'Aktivität' : 'Aktivitäten'}</span>
+                            <span>·</span>
+                            <span>{formatTimeAgo(latestActivity.timestamp)}</span>
+                          </div>
+                        </div>
 
-                      <span
-                        style={{
-                          fontSize: '12px',
-                          color: 'rgba(255, 255, 255, 0.4)',
-                        }}
-                      >
-                        {formatTimeAgo(activity.timestamp)}
-                      </span>
+                        {/* Expand/Collapse Icon */}
+                        <div style={{
+                          color: currentTheme.text.secondary,
+                          transition: 'transform 0.3s',
+                          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                        }}>
+                          <ExpandMore />
+                        </div>
+                      </button>
+
+                      {/* Accordion Content */}
+                      {isExpanded && (
+                        <div style={{
+                          borderTop: `1px solid ${currentTheme.border.default}22`,
+                          padding: '12px',
+                        }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {activities.map((activity) => {
+                              const item = getItemDetails(activity);
+                              const isMovie = activity.type === 'movie_added' ||
+                                              activity.type === 'movie_rated' ||
+                                              (activity as any).itemType === 'movie';
+                              const rating = (activity as any).rating;
+                              const hasRating = rating && rating > 0;
+                              const isAdded = activity.type === 'movie_added' || activity.type === 'series_added';
+
+                              const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
+                              const itemType = (activity as any).itemType;
+                              const cacheKey = `${itemType}_${tmdbId}`;
+                              const tmdbPoster = tmdbPosters[cacheKey];
+                              const posterUrl = tmdbPoster
+                                ? `https://image.tmdb.org/t/p/w342${tmdbPoster}`
+                                : getImageUrl(item?.poster);
+
+                              return (
+                                <div
+                                  key={activity.id}
+                                  onClick={() => {
+                                    if (tmdbId) {
+                                      navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
+                                    }
+                                  }}
+                                  style={{
+                                    display: 'flex',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    background: currentTheme.background.default,
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateX(4px)';
+                                    e.currentTarget.style.background = `${currentTheme.primary}08`;
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateX(0)';
+                                    e.currentTarget.style.background = currentTheme.background.default;
+                                  }}
+                                >
+                                  {/* Poster Thumbnail */}
+                                  {posterUrl && posterUrl !== '/placeholder.jpg' && (
+                                    <div style={{
+                                      width: '60px',
+                                      height: '90px',
+                                      borderRadius: '6px',
+                                      overflow: 'hidden',
+                                      flexShrink: 0,
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                    }}>
+                                      <img
+                                        src={posterUrl}
+                                        alt={item?.title || (activity as any).itemTitle}
+                                        style={{
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'cover',
+                                        }}
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* Content */}
+                                  <div style={{
+                                    flex: 1,
+                                    minWidth: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px',
+                                  }}>
+                                    {/* Title with Type Icon */}
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                    }}>
+                                      {isMovie ? (
+                                        <MovieIcon style={{
+                                          fontSize: '16px',
+                                          color: currentTheme.text.secondary,
+                                          opacity: 0.6,
+                                        }} />
+                                      ) : (
+                                        <TvIcon style={{
+                                          fontSize: '16px',
+                                          color: currentTheme.text.secondary,
+                                          opacity: 0.6,
+                                        }} />
+                                      )}
+                                      <span style={{
+                                        fontSize: '15px',
+                                        fontWeight: 600,
+                                        color: currentTheme.text.primary,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}>
+                                        {(activity as any).itemTitle || item?.title || 'Unbekannt'}
+                                      </span>
+                                    </div>
+
+                                    {/* Action and Rating */}
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
+                                    }}>
+                                      <span style={{
+                                        fontSize: '13px',
+                                        color: currentTheme.text.secondary,
+                                      }}>
+                                        {isAdded ? 'Hinzugefügt' : 'Bewertet'}
+                                      </span>
+                                      {hasRating && (
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '3px',
+                                          padding: '2px 6px',
+                                          background: `${currentTheme.primary}15`,
+                                          borderRadius: '10px',
+                                        }}>
+                                          <Star style={{ fontSize: '12px', color: currentTheme.primary }} />
+                                          <span style={{
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            color: currentTheme.primary,
+                                          }}>
+                                            {rating}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Time */}
+                                    <span style={{
+                                      fontSize: '12px',
+                                      color: currentTheme.text.secondary,
+                                      opacity: 0.7,
+                                    }}>
+                                      {formatTimeAgo(activity.timestamp)}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Item Poster */}
-                    {(() => {
-                      const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
-                      const itemType = (activity as any).itemType;
-                      const cacheKey = `${itemType}_${tmdbId}`;
-                      const tmdbPoster = tmdbPosters[cacheKey];
-
-                      if (item || tmdbPoster) {
-                        const posterUrl = tmdbPoster
-                          ? `https://image.tmdb.org/t/p/w185${tmdbPoster}`
-                          : getImageUrl(item?.poster);
-
-                        return (
-                          <img
-                            src={posterUrl}
-                            alt={item?.title || (activity as any).itemTitle}
-                            style={{
-                              width: '45px',
-                              height: '67px',
-                              objectFit: 'cover',
-                              borderRadius: '6px',
-                              flexShrink: 0,
-                            }}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
 
         {activeTab === 'friends' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div>
             {friends.length === 0 ? (
               <div
                 style={{
                   textAlign: 'center',
-                  padding: '40px',
-                  color: 'rgba(255, 255, 255, 0.5)',
+                  padding: '60px 20px',
+                  color: currentTheme.text.secondary,
                 }}
               >
-                <Groups
-                  style={{
-                    fontSize: '48px',
-                    marginBottom: '16px',
-                    opacity: 0.3,
-                  }}
-                />
+                <Person style={{ fontSize: '60px', opacity: 0.2, marginBottom: '16px' }} />
                 <p>Noch keine Freunde hinzugefügt</p>
                 <button
                   onClick={() => setShowAddFriend(true)}
@@ -655,6 +811,7 @@ export const ActivityPage = () => {
                     background: currentTheme.primary,
                     border: 'none',
                     borderRadius: '8px',
+                    color: 'white',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -668,20 +825,21 @@ export const ActivityPage = () => {
                 const currentProfile = friendProfiles[friend.uid] || friend;
                 return (
                   <button
-                    key={(friend as any).id || friend.uid || Math.random()}
-                    onClick={() => navigate(`/friend/${(friend as any).id || friend.uid}`)}
+                    key={friend.uid}
+                    onClick={() => navigate(`/friend/${friend.uid}`)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      background: currentTheme.background.surface,
+                      border: `1px solid ${currentTheme.border.default}22`,
                       borderRadius: '8px',
                       color: currentTheme.text.primary,
                       cursor: 'pointer',
                       textAlign: 'left',
                       width: '100%',
+                      marginBottom: '8px',
                     }}
                   >
                     <div
@@ -696,14 +854,14 @@ export const ActivityPage = () => {
                               backgroundSize: 'cover',
                             }
                           : {
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}66)`,
                             }),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      {!currentProfile.photoURL && <Person style={{ fontSize: '24px' }} />}
+                      {!currentProfile.photoURL && <Person style={{ fontSize: '24px', color: 'white' }} />}
                     </div>
 
                     <div style={{ flex: 1 }}>
@@ -719,24 +877,13 @@ export const ActivityPage = () => {
                       <p
                         style={{
                           fontSize: '13px',
-                          color: 'rgba(255, 255, 255, 0.5)',
+                          color: currentTheme.text.secondary,
                           margin: 0,
                         }}
                       >
                         @{currentProfile.username}
                       </p>
                     </div>
-
-                    {friend.isOnline && (
-                      <div
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          background: '#4cd137',
-                          borderRadius: '50%',
-                        }}
-                      />
-                    )}
                   </button>
                 );
               })
@@ -752,138 +899,15 @@ export const ActivityPage = () => {
                   style={{
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: currentTheme.text.secondary,
                     marginBottom: '12px',
                   }}
                 >
                   Eingehende Anfragen
                 </h3>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}
-                >
-                  {friendRequests.map((request) => {
-                    const requestProfile = requestProfiles[request.fromUserId] || {};
-                    return (
-                      <div
-                        key={request.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px',
-                          background: 'rgba(102, 126, 234, 0.05)',
-                          border: '1px solid rgba(102, 126, 234, 0.2)',
-                          borderRadius: '8px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            ...(requestProfile.photoURL
-                              ? {
-                                  backgroundImage: `url("${requestProfile.photoURL}")`,
-                                  backgroundPosition: 'center',
-                                  backgroundSize: 'cover',
-                                }
-                              : {
-                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                }),
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {!requestProfile.photoURL && <Person style={{ fontSize: '20px' }} />}
-                        </div>
-
-                        <div style={{ flex: 1 }}>
-                          <h4
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              margin: 0,
-                            }}
-                          >
-                            {requestProfile.displayName || request.fromUsername}
-                          </h4>
-                          <p
-                            style={{
-                              fontSize: '12px',
-                              color: 'rgba(255, 255, 255, 0.5)',
-                              margin: 0,
-                            }}
-                          >
-                            {formatTimeAgo((request as any).timestamp || Date.now())}
-                          </p>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            onClick={() => acceptFriendRequest(request.id)}
-                            style={{
-                              padding: '8px',
-                              background: 'rgba(76, 209, 55, 0.2)',
-                              border: '1px solid rgba(76, 209, 55, 0.4)',
-                              borderRadius: '6px',
-                              color: '#4cd137',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <CheckCircle style={{ fontSize: '20px' }} />
-                          </button>
-                          <button
-                            onClick={() => declineFriendRequest(request.id)}
-                            style={{
-                              padding: '8px',
-                              background: 'rgba(255, 107, 107, 0.2)',
-                              border: '1px solid rgba(255, 107, 107, 0.4)',
-                              borderRadius: '6px',
-                              color: '#ff6b6b',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <Cancel style={{ fontSize: '20px' }} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {sentRequests.length > 0 && (
-              <div>
-                <h3
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    marginBottom: '12px',
-                  }}
-                >
-                  Gesendete Anfragen
-                </h3>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}
-                >
-                  {sentRequests.map((request) => (
+                {friendRequests.map((request) => {
+                  const requestProfile = requestProfiles[request.fromUserId] || {};
+                  return (
                     <div
                       key={request.id}
                       style={{
@@ -891,9 +915,10 @@ export const ActivityPage = () => {
                         alignItems: 'center',
                         gap: '12px',
                         padding: '12px',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        background: currentTheme.background.surface,
+                        border: `1px solid ${currentTheme.primary}33`,
                         borderRadius: '8px',
+                        marginBottom: '8px',
                       }}
                     >
                       <div
@@ -901,21 +926,21 @@ export const ActivityPage = () => {
                           width: '40px',
                           height: '40px',
                           borderRadius: '50%',
-                          ...((request as any).toPhotoURL
+                          ...(requestProfile.photoURL
                             ? {
-                                backgroundImage: `url("${(request as any).toPhotoURL}")`,
+                                backgroundImage: `url("${requestProfile.photoURL}")`,
                                 backgroundPosition: 'center',
                                 backgroundSize: 'cover',
                               }
                             : {
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}66)`,
                               }),
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}
                       >
-                        {!(request as any).toPhotoURL && <Person style={{ fontSize: '20px' }} />}
+                        {!requestProfile.photoURL && <Person style={{ fontSize: '20px', color: 'white' }} />}
                       </div>
 
                       <div style={{ flex: 1 }}>
@@ -926,39 +951,115 @@ export const ActivityPage = () => {
                             margin: 0,
                           }}
                         >
-                          {request.toUsername}
+                          {requestProfile.displayName || request.fromUsername}
                         </h4>
                         <p
                           style={{
                             fontSize: '12px',
-                            color: 'rgba(255, 255, 255, 0.5)',
+                            color: currentTheme.text.secondary,
                             margin: 0,
                           }}
                         >
-                          Ausstehend • {formatTimeAgo((request as any).timestamp || Date.now())}
+                          {formatTimeAgo((request as any).timestamp || Date.now())}
                         </p>
                       </div>
 
-                      <button
-                        onClick={() => cancelFriendRequest(request.id)}
-                        style={{
-                          padding: '8px',
-                          background: 'rgba(232, 65, 24, 0.2)',
-                          border: '1px solid rgba(232, 65, 24, 0.4)',
-                          borderRadius: '6px',
-                          color: '#e84118',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        title="Anfrage zurückziehen"
-                      >
-                        <Cancel style={{ fontSize: '20px' }} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => acceptFriendRequest(request.id)}
+                          style={{
+                            padding: '8px',
+                            background: '#4cd137',
+                            border: 'none',
+                            borderRadius: '6px',
+                            color: 'white',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <CheckCircle style={{ fontSize: '20px' }} />
+                        </button>
+                        <button
+                          onClick={() => declineFriendRequest(request.id)}
+                          style={{
+                            padding: '8px',
+                            background: '#e84118',
+                            border: 'none',
+                            borderRadius: '6px',
+                            color: 'white',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Cancel style={{ fontSize: '20px' }} />
+                        </button>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {sentRequests.length > 0 && (
+              <div>
+                <h3
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: currentTheme.text.secondary,
+                    marginBottom: '12px',
+                  }}
+                >
+                  Gesendete Anfragen
+                </h3>
+                {sentRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      background: currentTheme.background.surface,
+                      border: `1px solid ${currentTheme.border.default}22`,
+                      borderRadius: '8px',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <Person style={{ fontSize: '20px', color: currentTheme.text.secondary }} />
+                    <div style={{ flex: 1 }}>
+                      <h4
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          margin: 0,
+                        }}
+                      >
+                        {request.toUsername}
+                      </h4>
+                      <p
+                        style={{
+                          fontSize: '12px',
+                          color: currentTheme.text.secondary,
+                          margin: 0,
+                        }}
+                      >
+                        Ausstehend
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => cancelFriendRequest(request.id)}
+                      style={{
+                        padding: '8px',
+                        background: currentTheme.background.surface,
+                        border: `1px solid ${currentTheme.border.default}`,
+                        borderRadius: '6px',
+                        color: currentTheme.text.secondary,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Cancel style={{ fontSize: '20px' }} />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -966,17 +1067,11 @@ export const ActivityPage = () => {
               <div
                 style={{
                   textAlign: 'center',
-                  padding: '40px',
-                  color: 'rgba(255, 255, 255, 0.5)',
+                  padding: '60px 20px',
+                  color: currentTheme.text.secondary,
                 }}
               >
-                <PersonAdd
-                  style={{
-                    fontSize: '48px',
-                    marginBottom: '16px',
-                    opacity: 0.3,
-                  }}
-                />
+                <PersonAdd style={{ fontSize: '60px', opacity: 0.2, marginBottom: '16px' }} />
                 <p>Keine offenen Anfragen</p>
               </div>
             )}
@@ -984,7 +1079,6 @@ export const ActivityPage = () => {
         )}
       </div>
 
-      {/* New Add Friend Dialog */}
       <AddFriendDialog
         isOpen={showAddFriend}
         onClose={() => setShowAddFriend(false)}

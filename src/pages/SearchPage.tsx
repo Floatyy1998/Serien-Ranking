@@ -249,10 +249,11 @@ export const SearchPage: React.FC = () => {
         });
 
         // Activity-Logging für Friend + Badge-System (wie Desktop)
+        const posterPath = item.poster_path;
         if (item.media_type === 'tv' || endpoint.includes('/add')) {
-          await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id);
+          await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id, posterPath);
         } else {
-          await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id);
+          await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
         }
 
         // Hide snackbar after 3 seconds
