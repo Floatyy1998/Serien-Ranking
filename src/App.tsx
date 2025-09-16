@@ -132,6 +132,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   photoURL: user.photoURL,
                 })
               );
+
+              // Automatischer Badge-Check beim App-Start
+              // Verzögerung damit alle Daten geladen sind
+              setTimeout(async () => {
+                try {
+                  const { getOfflineBadgeSystem } = await import('./features/badges/offlineBadgeSystem');
+                  const badgeSystem = getOfflineBadgeSystem(user.uid);
+
+                  // Prüfe ob wir kürzlich schon gecheckt haben (innerhalb der letzten 5 Minuten)
+                  const lastCheckKey = `lastBadgeCheck_${user.uid}`;
+                  const lastCheck = localStorage.getItem(lastCheckKey);
+                  const now = Date.now();
+                  const fiveMinutes = 5 * 60 * 1000;
+
+                  if (!lastCheck || (now - parseInt(lastCheck)) > fiveMinutes) {
+                    console.log('Performing automatic badge check on app start...');
+                    const newBadges = await badgeSystem.checkForNewBadges();
+
+                    if (newBadges.length > 0) {
+                      console.log('New badges earned on app start:', newBadges);
+                      // Event für neue Badges auslösen
+                      window.dispatchEvent(
+                        new CustomEvent('badgeProgressUpdate', {
+                          detail: { newBadges },
+                        })
+                      );
+                    }
+
+                    // Zeitstempel für letzten Check speichern
+                    localStorage.setItem(lastCheckKey, now.toString());
+                  }
+                } catch (error) {
+                  console.error('Error during automatic badge check:', error);
+                }
+              }, 3000); // 3 Sekunden Verzögerung für App-Initialisierung
             } else {
               localStorage.removeItem('cachedUser');
             }
