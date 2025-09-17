@@ -1,4 +1,4 @@
-import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
+import { Movie as MovieIcon, Star, Tv as TvIcon, WatchLater } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -23,68 +23,83 @@ export const RatingsPage: React.FC = () => {
 
   // Simple local state management
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>(() => {
-    try {
-      const stored = sessionStorage.getItem('ratingsPageState');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.activeTab || 'series';
+    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
+    if (fromMobileBackButton) {
+      try {
+        const stored = sessionStorage.getItem('ratingsPageState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed.activeTab || 'series';
+        }
+      } catch (error) {
+        console.error('Error loading activeTab:', error);
       }
-    } catch (error) {
-      console.error('Error loading activeTab:', error);
     }
     return 'series';
   });
 
   const [sortOption, setSortOption] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem('ratingsPageState');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.sortOption || 'rating-desc';
+    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
+    if (fromMobileBackButton) {
+      try {
+        const stored = sessionStorage.getItem('ratingsPageState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed.sortOption || 'rating-desc';
+        }
+      } catch (error) {
+        console.error('Error loading sortOption:', error);
       }
-    } catch (error) {
-      console.error('Error loading sortOption:', error);
     }
     return 'rating-desc';
   });
 
   const [selectedGenre, setSelectedGenre] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem('ratingsPageState');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.selectedGenre || 'Alle';
+    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
+    if (fromMobileBackButton) {
+      try {
+        const stored = sessionStorage.getItem('ratingsPageState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed.selectedGenre || 'Alle';
+        }
+      } catch (error) {
+        console.error('Error loading selectedGenre:', error);
       }
-    } catch (error) {
-      console.error('Error loading selectedGenre:', error);
     }
     return 'Alle';
   });
 
   const [selectedProvider, setSelectedProvider] = useState<string | null>(() => {
-    try {
-      const stored = sessionStorage.getItem('ratingsPageState');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.selectedProvider || null;
+    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
+    if (fromMobileBackButton) {
+      try {
+        const stored = sessionStorage.getItem('ratingsPageState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed.selectedProvider || null;
+        }
+      } catch (error) {
+        console.error('Error loading selectedProvider:', error);
       }
-    } catch (error) {
-      console.error('Error loading selectedProvider:', error);
     }
     return null;
   });
 
-  const [showUnrated, setShowUnrated] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem('ratingsPageState');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.showUnrated || false;
+  const [quickFilter, setQuickFilter] = useState<string | null>(() => {
+    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
+    if (fromMobileBackButton) {
+      try {
+        const stored = sessionStorage.getItem('ratingsPageState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed.quickFilter || null;
+        }
+      } catch (error) {
+        console.error('Error loading quickFilter:', error);
       }
-    } catch (error) {
-      console.error('Error loading showUnrated:', error);
     }
-    return false;
+    return null;
   });
 
   // Save state to sessionStorage whenever any state changes
@@ -94,18 +109,19 @@ export const RatingsPage: React.FC = () => {
       sortOption,
       selectedGenre,
       selectedProvider,
-      showUnrated
+      quickFilter
     };
     try {
       sessionStorage.setItem('ratingsPageState', JSON.stringify(state));
     } catch (error) {
       console.error('Error saving state:', error);
     }
-  }, [activeTab, sortOption, selectedGenre, selectedProvider, showUnrated]);
+  }, [activeTab, sortOption, selectedGenre, selectedProvider, quickFilter]);
 
-  // Check for tab parameter in URL
+  // Check for tab parameter in URL and navigation source
   const params = new URLSearchParams(location.search);
   const tabParam = params.get('tab');
+  const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
 
   // Initialize filters from state
   const filters: {
@@ -118,17 +134,32 @@ export const RatingsPage: React.FC = () => {
     sortBy: sortOption,
     genre: selectedGenre !== 'Alle' ? selectedGenre : undefined,
     provider: selectedProvider || undefined,
-    quickFilter: showUnrated ? 'unrated' : undefined,
+    quickFilter: quickFilter || undefined,
     search: undefined
   };
 
-  // Set tab from URL parameter only once on mount
+  // Handle navigation - reset by default, restore only if coming from MobileBackButton
   useEffect(() => {
-    if (tabParam === 'movies') {
+    if (!fromMobileBackButton) {
+      // Reset everything by default (except when coming back from detail pages)
+      setActiveTab(tabParam === 'movies' ? 'movies' : 'series');
+      setSortOption('rating-desc');
+      setSelectedGenre('Alle');
+      setSelectedProvider(null);
+      setQuickFilter(null);
+
+      // Reset scroll position
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+    } else if (tabParam === 'movies') {
+      // Only set tab if restoring state but URL has different tab
       setActiveTab('movies');
     }
+
+    // Don't clear the flag here - it's needed for scroll restoration
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only on mount
+  }, [location.pathname, location.search]); // React to navigation changes
 
   // Restore scroll position only when coming back from detail pages
   useEffect(() => {
@@ -142,16 +173,8 @@ export const RatingsPage: React.FC = () => {
       // Delay to ensure DOM is ready
       setTimeout(() => {
         try {
-          // Get the current tab from sessionStorage directly (not from state)
-          const storedState = sessionStorage.getItem('ratingsPageState');
-          let currentTab = 'series'; // default
-          if (storedState) {
-            const parsed = JSON.parse(storedState);
-            currentTab = parsed.activeTab || 'series';
-          }
-
-          // Use tab-specific scroll position
-          const scrollKey = `ratingsPageScroll_${currentTab}`;
+          // Use tab-specific scroll position based on current activeTab
+          const scrollKey = `ratingsPageScroll_${activeTab}`;
           const position = sessionStorage.getItem(scrollKey);
           if (position && scrollRef.current) {
             const scrollTop = parseInt(position, 10);
@@ -164,8 +187,7 @@ export const RatingsPage: React.FC = () => {
         }
       }, 300); // Increased delay to ensure DOM is fully ready
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [activeTab]); // Run when activeTab changes
 
   // Save scroll position before navigating away
   const handleItemClick = (item: any, type: 'series' | 'movie') => {
@@ -635,6 +657,19 @@ export const RatingsPage: React.FC = () => {
                     <img
                       src={getImageUrl(item.poster)}
                       alt={item.title}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (!target.src.includes('data:image/svg')) {
+                          target.src = `data:image/svg+xml;base64,${btoa(`
+                            <svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
+                              <rect width="100%" height="100%" fill="${currentTheme.background.surface}"/>
+                              <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${currentTheme.text.muted}" font-family="Arial" font-size="16">
+                                Kein Poster
+                              </text>
+                            </svg>
+                          `)}`;
+                        }
+                      }}
                       style={{
                         width: '100%',
                         aspectRatio: '2/3',
@@ -740,6 +775,36 @@ export const RatingsPage: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Watchlist Badge */}
+                    {item.watchlist === true && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: (!isNaN(rating) && rating > 0) ? '44px' : '8px',
+                          right: '8px',
+                          background: `${currentTheme.background.default}CC`,
+                          backdropFilter: 'blur(8px)',
+                          border: `1px solid ${currentTheme.status.info}66`,
+                          borderRadius: '12px',
+                          padding: '4px 6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: currentTheme.status.info.main,
+                        }}
+                      >
+                        <WatchLater
+                          style={{
+                            fontSize: '11px',
+                            color: currentTheme.status.info.main,
+                          }}
+                        />
+                        Watch
+                      </div>
+                    )}
+
                     {/* Progress Bar for Series */}
                     {!isMovie && progress > 0 && (
                       <div
@@ -826,7 +891,7 @@ export const RatingsPage: React.FC = () => {
           if (newFilters.sortBy) setSortOption(newFilters.sortBy);
           if (newFilters.genre !== undefined) setSelectedGenre(newFilters.genre || 'Alle');
           if (newFilters.provider !== undefined) setSelectedProvider(newFilters.provider);
-          if (newFilters.quickFilter !== undefined) setShowUnrated(newFilters.quickFilter === 'unrated');
+          if (newFilters.quickFilter !== undefined) setQuickFilter(newFilters.quickFilter || null);
         }}
         isMovieMode={activeTab === 'movies'}
         isRatingsMode={true}

@@ -10,7 +10,7 @@ import {
   TrendingUp,
   Whatshot,
 } from '@mui/icons-material';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../config/menuItems';
@@ -46,9 +46,30 @@ export const DiscoverPage = memo(() => {
   const [showSearch, setShowSearch] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
-  // Track initial mount to prevent double fetching
-  const [isInitialMount, setIsInitialMount] = useState(true);
   const [isRestoring, setIsRestoring] = useState(false);
+
+  // Use refs to access current values in scroll handler
+  const pageRef = useRef(page);
+  const hasMoreRef = useRef(hasMore);
+  const loadingRef = useRef(loading);
+  const showSearchRef = useRef(showSearch);
+
+  // Update refs when state changes
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+
+  useEffect(() => {
+    showSearchRef.current = showSearch;
+  }, [showSearch]);
 
   // Reset or restore filters when component mounts
   useEffect(() => {
@@ -71,7 +92,13 @@ export const DiscoverPage = memo(() => {
         // Small delay to ensure state is set
         setTimeout(() => {
           setIsRestoring(false);
-          setIsInitialMount(false);
+          // Trigger fetch after state is restored
+          setTimeout(() => {
+            if (!showSearch) {
+              // Call fetchFromTMDB directly with current restored state
+              fetchFromTMDB(true);
+            }
+          }, 100);
         }, 100);
       }
       // Clear the flag
@@ -85,7 +112,6 @@ export const DiscoverPage = memo(() => {
       setShowFilters(false);
       setSearchQuery('');
       setShowSearch(false);
-      setIsInitialMount(false);
     }
   }, []);
 
@@ -112,6 +138,7 @@ export const DiscoverPage = memo(() => {
     [seriesList, movieList]
   );
 
+
   // Get TMDB image URL - memoized
   const getImageUrl = useCallback((path: string | null): string => {
     if (!path) return '/placeholder.jpg';
@@ -122,8 +149,8 @@ export const DiscoverPage = memo(() => {
   const fetchFromTMDB = useCallback(
     async (reset = false) => {
       if (loading) return;
-      setLoading(true);
 
+      setLoading(true);
       const currentPage = reset ? 1 : page + 1;
 
       try {
@@ -203,6 +230,9 @@ export const DiscoverPage = memo(() => {
           setHasMore(currentPage < data.total_pages);
         }
       } catch (error) {
+        console.error('Error fetching from TMDB:', error);
+        // Set hasMore to false to prevent infinite retries
+        setHasMore(false);
       } finally {
         setLoading(false);
       }
@@ -210,25 +240,36 @@ export const DiscoverPage = memo(() => {
     [activeTab, activeCategory, selectedGenre, page, loading, isInList]
   );
 
-  // Load initial data and trigger second page load if needed
+  // Load initial data when filters change
   useEffect(() => {
-    // Skip if we're still in initial mount or restoring
-    if (isInitialMount || isRestoring) return;
+    // Skip if we're restoring
+    if (isRestoring) return;
 
     if (!showSearch) {
+      setResults([]);
+      setPage(1);
+      setHasMore(true);
       fetchFromTMDB(true);
-      // Automatically load second page after initial load to ensure enough content for scrolling
-      setTimeout(() => {
+    }
+  }, [activeTab, activeCategory, selectedGenre, showSearch, isRestoring]);
+
+  // Auto-load more content if there's not enough to scroll
+  useEffect(() => {
+    if (results.length > 0 && hasMore && !loading && !showSearch) {
+      const checkNeedMoreContent = () => {
         const scrollContainer = document.querySelector('.mobile-discover-container');
         if (scrollContainer) {
-          const hasScroll = scrollContainer.scrollHeight > scrollContainer.clientHeight;
-          if (!hasScroll && hasMore) {
+          const { scrollHeight, clientHeight } = scrollContainer;
+          if (scrollHeight <= clientHeight) {
             fetchFromTMDB(false);
           }
         }
-      }, 500);
+      };
+
+      // Small delay to ensure DOM is updated
+      setTimeout(checkNeedMoreContent, 100);
     }
-  }, [activeTab, activeCategory, selectedGenre, showSearch, isInitialMount, isRestoring]);
+  }, [results.length, hasMore, loading, showSearch, fetchFromTMDB]);
 
   // Search function
   const searchItems = useCallback(
@@ -371,32 +412,31 @@ export const DiscoverPage = memo(() => {
     [navigate, activeTab, activeCategory, selectedGenre, showFilters, searchQuery, showSearch]
   );
 
-  // Load more on scroll
-  const handleScroll = useCallback(() => {
-    const scrollContainer = document.querySelector('.mobile-discover-container');
-    if (!scrollContainer) return;
-
-    const scrollTop = scrollContainer.scrollTop;
-    const scrollHeight = scrollContainer.scrollHeight;
-    const clientHeight = scrollContainer.clientHeight;
-
-    // Check if we're within 800px of the bottom and ensure minimum content height
-    // This helps trigger loading even with just 2 rows initially
-    const triggerDistance = Math.min(800, scrollHeight * 0.3);
-    
-    if (scrollHeight - scrollTop - clientHeight < triggerDistance && hasMore && !loading && !showSearch) {
-      fetchFromTMDB(false); // Pass false to load next page, not reset
-    }
-  }, [hasMore, loading, fetchFromTMDB, showSearch]);
-
   // Attach scroll listener
   useEffect(() => {
     const scrollContainer = document.querySelector('.mobile-discover-container');
     if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll);
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      const scrollHandler = () => {
+        if (!scrollContainer) return;
+
+        const scrollTop = scrollContainer.scrollTop;
+        const scrollHeight = scrollContainer.scrollHeight;
+        const clientHeight = scrollContainer.clientHeight;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+
+        // Check if we're near the bottom (500px threshold)
+        if (distanceFromBottom < 500 && hasMoreRef.current && !loadingRef.current && !showSearchRef.current) {
+          fetchFromTMDB(false);
+        }
+      };
+
+      scrollContainer.addEventListener('scroll', scrollHandler);
+      return () => {
+        scrollContainer.removeEventListener('scroll', scrollHandler);
+      };
     }
-  }, [handleScroll]);
+  }, [fetchFromTMDB]);
 
   // Memoize genres to prevent recreation on every render
   const genres = useMemo(
@@ -852,6 +892,19 @@ export const DiscoverPage = memo(() => {
                       <img
                         src={getImageUrl(item.poster_path)}
                         alt={item.title || item.name}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (!target.src.includes('data:image/svg')) {
+                            target.src = `data:image/svg+xml;base64,${btoa(`
+                              <svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="100%" height="100%" fill="${currentTheme.background.surface}"/>
+                                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${currentTheme.text.muted}" font-family="Arial" font-size="16">
+                                  Kein Poster
+                                </text>
+                              </svg>
+                            `)}`;
+                          }
+                        }}
                         style={{
                           width: '100%',
                           height: '100%',
@@ -886,6 +939,7 @@ export const DiscoverPage = memo(() => {
                           {item.vote_average.toFixed(1)}
                         </div>
                       )}
+
 
                       {/* Add Button */}
                       {!item.inList && (
@@ -990,6 +1044,19 @@ export const DiscoverPage = memo(() => {
                   <img
                     src={getImageUrl(item.poster_path)}
                     alt={item.title || item.name}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (!target.src.includes('data:image/svg')) {
+                        target.src = `data:image/svg+xml;base64,${btoa(`
+                          <svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="100%" height="100%" fill="${currentTheme.background.surface}"/>
+                            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${currentTheme.text.muted}" font-family="Arial" font-size="16">
+                              Kein Poster
+                            </text>
+                          </svg>
+                        `)}`;
+                      }
+                    }}
                     style={{
                       width: '100%',
                       height: '100%',
@@ -1024,6 +1091,7 @@ export const DiscoverPage = memo(() => {
                       {item.vote_average.toFixed(1)}
                     </div>
                   )}
+
 
                   {/* Add Button */}
                   {!item.inList && (
