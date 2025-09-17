@@ -9,6 +9,7 @@ import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
+import { RatingsStateProvider } from './contexts/RatingsStateContext';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
@@ -463,12 +464,13 @@ function AppContent() {
           <MovieListProvider>
             <StatsProvider>
               <BadgeProvider>
-                <ThemeProvider theme={currentTheme}>
-                  <CssBaseline />
-                  <div className="w-full">
-                    <main className="w-full">
-                      <Suspense fallback={<PageLoader />}>
-                        <Routes>
+                <RatingsStateProvider>
+                  <ThemeProvider theme={currentTheme}>
+                    <CssBaseline />
+                    <div className="w-full">
+                      <main className="w-full">
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
                           <Route
                             path="/login"
                             element={
@@ -515,6 +517,7 @@ function AppContent() {
                     </main>
                   </div>
                 </ThemeProvider>
+                </RatingsStateProvider>
               </BadgeProvider>
             </StatsProvider>
           </MovieListProvider>

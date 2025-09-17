@@ -1,6 +1,6 @@
 import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useMovieList } from '../contexts/MovieListProvider';
@@ -19,66 +19,174 @@ export const RatingsPage: React.FC = () => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme, getMobilePageBackground, getMobileHeaderStyle } = useTheme();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Simple local state management
+  const [activeTab, setActiveTab] = useState<'series' | 'movies'>(() => {
+    try {
+      const stored = sessionStorage.getItem('ratingsPageState');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.activeTab || 'series';
+      }
+    } catch (error) {
+      console.error('Error loading activeTab:', error);
+    }
+    return 'series';
+  });
+
+  const [sortOption, setSortOption] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('ratingsPageState');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.sortOption || 'rating-desc';
+      }
+    } catch (error) {
+      console.error('Error loading sortOption:', error);
+    }
+    return 'rating-desc';
+  });
+
+  const [selectedGenre, setSelectedGenre] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('ratingsPageState');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.selectedGenre || 'Alle';
+      }
+    } catch (error) {
+      console.error('Error loading selectedGenre:', error);
+    }
+    return 'Alle';
+  });
+
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(() => {
+    try {
+      const stored = sessionStorage.getItem('ratingsPageState');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.selectedProvider || null;
+      }
+    } catch (error) {
+      console.error('Error loading selectedProvider:', error);
+    }
+    return null;
+  });
+
+  const [showUnrated, setShowUnrated] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('ratingsPageState');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.showUnrated || false;
+      }
+    } catch (error) {
+      console.error('Error loading showUnrated:', error);
+    }
+    return false;
+  });
+
+  // Save state to sessionStorage whenever any state changes
+  useEffect(() => {
+    const state = {
+      activeTab,
+      sortOption,
+      selectedGenre,
+      selectedProvider,
+      showUnrated
+    };
+    try {
+      sessionStorage.setItem('ratingsPageState', JSON.stringify(state));
+    } catch (error) {
+      console.error('Error saving state:', error);
+    }
+  }, [activeTab, sortOption, selectedGenre, selectedProvider, showUnrated]);
 
   // Check for tab parameter in URL
   const params = new URLSearchParams(location.search);
   const tabParam = params.get('tab');
 
-  // Check if we're coming from a back navigation
-  const isBackNavigation = sessionStorage.getItem('ratingsBackNavigation') === 'true';
-  
-  // Clear the flag immediately after reading it
-  if (isBackNavigation) {
-    sessionStorage.removeItem('ratingsBackNavigation');
-  }
-
-  // Load persisted state from sessionStorage only if coming from back navigation
-  const loadPersistedState = () => {
-    if (isBackNavigation) {
-      const persistedFilters = sessionStorage.getItem('ratingsPageFilters');
-      const persistedTab = sessionStorage.getItem('ratingsPageTab');
-      
-      return {
-        filters: persistedFilters ? JSON.parse(persistedFilters) : {},
-        tab: (persistedTab as 'series' | 'movies') || 'series'
-      };
-    }
-    // Clear session storage if not coming from back navigation
-    sessionStorage.removeItem('ratingsPageFilters');
-    sessionStorage.removeItem('ratingsPageTab');
-    return {
-      filters: {},
-      tab: 'series' as 'series' | 'movies'
-    };
-  };
-
-  const { filters: persistedFilters, tab: persistedTab } = loadPersistedState();
-  
-  const [activeTab, setActiveTab] = useState<'series' | 'movies'>(persistedTab);
-  const [filters, setFilters] = useState<{
+  // Initialize filters from state
+  const filters: {
+    sortBy?: string;
     genre?: string;
     provider?: string;
     quickFilter?: string;
     search?: string;
-    sortBy?: string;
-  }>(persistedFilters);
+  } = {
+    sortBy: sortOption,
+    genre: selectedGenre !== 'Alle' ? selectedGenre : undefined,
+    provider: selectedProvider || undefined,
+    quickFilter: showUnrated ? 'unrated' : undefined,
+    search: undefined
+  };
 
-  // Set tab from URL parameter or persisted state
+  // Set tab from URL parameter only once on mount
   useEffect(() => {
     if (tabParam === 'movies') {
       setActiveTab('movies');
     }
-  }, [tabParam]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only on mount
 
-  // Persist filters to sessionStorage whenever they change
+  // Restore scroll position only when coming back from detail pages
   useEffect(() => {
-    sessionStorage.setItem('ratingsPageFilters', JSON.stringify(filters));
-  }, [filters]);
+    // Check if we should restore scroll position
+    const shouldRestore = sessionStorage.getItem('shouldRestoreRatingsScroll');
 
-  // Persist active tab to sessionStorage whenever it changes
-  useEffect(() => {
-    sessionStorage.setItem('ratingsPageTab', activeTab);
-  }, [activeTab]);
+    if (shouldRestore === 'true') {
+      // Clear the flag immediately
+      sessionStorage.removeItem('shouldRestoreRatingsScroll');
+
+      // Delay to ensure DOM is ready
+      setTimeout(() => {
+        try {
+          // Get the current tab from sessionStorage directly (not from state)
+          const storedState = sessionStorage.getItem('ratingsPageState');
+          let currentTab = 'series'; // default
+          if (storedState) {
+            const parsed = JSON.parse(storedState);
+            currentTab = parsed.activeTab || 'series';
+          }
+
+          // Use tab-specific scroll position
+          const scrollKey = `ratingsPageScroll_${currentTab}`;
+          const position = sessionStorage.getItem(scrollKey);
+          if (position && scrollRef.current) {
+            const scrollTop = parseInt(position, 10);
+            if (scrollTop > 0) {
+              scrollRef.current.scrollTop = scrollTop;
+            }
+          }
+        } catch (error) {
+          console.error('Error restoring scroll position:', error);
+        }
+      }, 300); // Increased delay to ensure DOM is fully ready
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  // Save scroll position before navigating away
+  const handleItemClick = (item: any, type: 'series' | 'movie') => {
+    if (scrollRef.current) {
+      const position = scrollRef.current.scrollTop;
+      try {
+        // Save tab-specific scroll position
+        const scrollKey = `ratingsPageScroll_${activeTab}`;
+        sessionStorage.setItem(scrollKey, position.toString());
+        // Set flag that we're navigating to a detail page
+        sessionStorage.setItem('shouldRestoreRatingsScroll', 'true');
+      } catch (error) {
+        console.error('Error saving scroll position:', error);
+      }
+    }
+    if (type === 'series') {
+      navigate(`/series/${item.id}`);
+    } else {
+      navigate(`/movie/${item.id}`);
+    }
+  };
 
   // Helper function to get user rating (unused)
   // const getUserRating = (rating: any): number => {
@@ -349,10 +457,13 @@ export const RatingsPage: React.FC = () => {
 
   return (
     <div
+      ref={scrollRef}
       style={{
         minHeight: '100vh',
         background: getMobilePageBackground(), // Dynamisch: transparent wenn Bild, sonst undurchsichtig
         color: currentTheme.text.primary,
+        overflow: 'auto',
+        height: '100vh',
       }}
     >
       {/* Header */}
@@ -448,6 +559,7 @@ export const RatingsPage: React.FC = () => {
         </button>
       </div>
 
+
       {/* Items Grid */}
       <div style={{ padding: '0 20px' }}>
         {currentItems.length === 0 ? (
@@ -513,11 +625,7 @@ export const RatingsPage: React.FC = () => {
                 <motion.div
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    // Mark that we're navigating from ratings page
-                    sessionStorage.setItem('cameFromRatings', 'true');
-                    navigate(isMovie ? `/movie/${item.id}` : `/series/${item.id}`);
-                  }}
+                  onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
                   style={{
                     cursor: 'pointer',
                     position: 'relative',
@@ -713,7 +821,13 @@ export const RatingsPage: React.FC = () => {
 
       {/* QuickFilter FAB */}
       <QuickFilter
-        onFilterChange={setFilters}
+        onFilterChange={(newFilters) => {
+          // Update state directly
+          if (newFilters.sortBy) setSortOption(newFilters.sortBy);
+          if (newFilters.genre !== undefined) setSelectedGenre(newFilters.genre || 'Alle');
+          if (newFilters.provider !== undefined) setSelectedProvider(newFilters.provider);
+          if (newFilters.quickFilter !== undefined) setShowUnrated(newFilters.quickFilter === 'unrated');
+        }}
         isMovieMode={activeTab === 'movies'}
         isRatingsMode={true}
         initialFilters={filters}
