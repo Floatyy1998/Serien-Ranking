@@ -50,6 +50,18 @@ export const SeriesDetailPage = memo(() => {
   const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning'; onConfirm?: () => void }>({ open: false, message: '', type: 'info' });
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
+  // Responsive state
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Firebase batch updates ready if needed
   // Using API instead of direct Firebase updates
   // const { flushBatch } = useFirebaseBatch({
@@ -482,7 +494,7 @@ export const SeriesDetailPage = memo(() => {
         style={{
           position: 'relative',
           width: '100%',
-          height: window.innerWidth >= 768 ? '400px' : '300px',
+          height: isMobile ? '250px' : '400px',
           overflow: 'hidden',
           background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))',
         }}
@@ -517,8 +529,9 @@ export const SeriesDetailPage = memo(() => {
         <div
           style={{
             position: 'absolute',
-            top: 'calc(20px + env(safe-area-inset-top))',
-            left: '20px',
+            top: isMobile ? 'calc(10px + env(safe-area-inset-top))' : 'calc(20px + env(safe-area-inset-top))',
+            left: isMobile ? '10px' : '20px',
+            zIndex: 10,
           }}
         >
           <BackButton style={{ backdropFilter: 'blur(10px)' }} />
@@ -531,8 +544,9 @@ export const SeriesDetailPage = memo(() => {
             disabled={isAdding}
             style={{
               position: 'absolute',
-              top: 'calc(20px + env(safe-area-inset-top))',
-              right: '20px',
+              top: isMobile ? 'calc(10px + env(safe-area-inset-top))' : 'calc(20px + env(safe-area-inset-top))',
+              right: isMobile ? '10px' : '20px',
+              zIndex: 10,
               background: isAdding ? `${currentTheme.status.success}88` : `${currentTheme.status.success}CC`,
               backdropFilter: 'blur(10px)',
               border: 'none',
@@ -556,17 +570,25 @@ export const SeriesDetailPage = memo(() => {
         <div
           style={{
             position: 'absolute',
-            bottom: '20px',
-            left: '20px',
-            right: '20px',
+            bottom: isMobile ? '10px' : '20px',
+            left: isMobile ? '10px' : '20px',
+            right: isMobile ? '10px' : '20px',
+            maxWidth: '100%',
           }}
         >
           <h1
             style={{
-              fontSize: '28px',
+              fontSize: isMobile ? '22px' : '28px',
               fontWeight: 'bold',
-              margin: '0 0 8px 0',
+              margin: '0 0 4px 0',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
+              wordBreak: 'break-word',
+              lineHeight: isMobile ? 1.1 : 1.2,
+              display: '-webkit-box',
+              WebkitLineClamp: isMobile ? 2 : 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
             {series.title}
@@ -576,10 +598,10 @@ export const SeriesDetailPage = memo(() => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              fontSize: '14px',
+              gap: isMobile ? '6px' : '12px',
+              fontSize: isMobile ? '13px' : '14px',
               opacity: 0.9,
-              marginBottom: '12px',
+              marginBottom: isMobile ? '6px' : '12px',
               flexWrap: 'wrap'
             }}
           >
@@ -602,8 +624,8 @@ export const SeriesDetailPage = memo(() => {
           {/* Status Badge & Genres */}
           <div style={{
             display: 'flex',
-            gap: '8px',
-            marginBottom: '12px',
+            gap: isMobile ? '4px' : '8px',
+            marginBottom: isMobile ? '6px' : '12px',
             flexWrap: 'wrap',
             alignItems: 'center'
           }}>
@@ -619,9 +641,9 @@ export const SeriesDetailPage = memo(() => {
                   <span style={{
                     background: 'rgba(76, 175, 80, 0.2)',
                     border: '1px solid rgba(76, 175, 80, 0.4)',
-                    borderRadius: '12px',
-                    padding: '4px 10px',
-                    fontSize: '12px',
+                    borderRadius: isMobile ? '8px' : '12px',
+                    padding: isMobile ? '3px 8px' : '4px 10px',
+                    fontSize: isMobile ? '11px' : '12px',
                     fontWeight: '500',
                     color: '#4CAF50',
                     display: 'flex',
@@ -642,9 +664,9 @@ export const SeriesDetailPage = memo(() => {
                   <span style={{
                     background: 'rgba(158, 158, 158, 0.2)',
                     border: '1px solid rgba(158, 158, 158, 0.4)',
-                    borderRadius: '12px',
-                    padding: '4px 10px',
-                    fontSize: '12px',
+                    borderRadius: isMobile ? '8px' : '12px',
+                    padding: isMobile ? '3px 8px' : '4px 10px',
+                    fontSize: isMobile ? '11px' : '12px',
                     fontWeight: '500',
                     color: '#9E9E9E',
                     display: 'flex',
@@ -669,16 +691,16 @@ export const SeriesDetailPage = memo(() => {
               <>
                 {(series.genre?.genres || tmdbSeries?.genre?.genres || [])
                   .filter(genre => genre && genre.trim() !== '' && genre !== 'All')
-                  .slice(0, 4)
+                  .slice(0, isMobile ? 2 : 4)
                   .map((genre, index) => (
                   <span
                     key={index}
                     style={{
                       background: 'rgba(255, 255, 255, 0.1)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '12px',
-                      padding: '4px 10px',
-                      fontSize: '12px',
+                      borderRadius: isMobile ? '8px' : '12px',
+                      padding: isMobile ? '2px 6px' : '4px 10px',
+                      fontSize: isMobile ? '10px' : '12px',
                       fontWeight: '500',
                       color: 'white'
                     }}
@@ -686,20 +708,20 @@ export const SeriesDetailPage = memo(() => {
                     {genre}
                   </span>
                 ))}
-                {(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length > 4 && (
+                {(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length > (isMobile ? 2 : 4) && (
                   <span
                     style={{
                       background: 'rgba(255, 255, 255, 0.1)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '12px',
-                      padding: '4px 10px',
-                      fontSize: '12px',
+                      borderRadius: isMobile ? '8px' : '12px',
+                      padding: isMobile ? '2px 6px' : '4px 10px',
+                      fontSize: isMobile ? '10px' : '12px',
                       fontWeight: '500',
                       color: 'white',
                       opacity: 0.7
                     }}
                   >
-                    +{(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length - 4}
+                    +{(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length - (isMobile ? 2 : 4)}
                   </span>
                 )}
               </>
@@ -708,7 +730,7 @@ export const SeriesDetailPage = memo(() => {
 
           {/* Progress Bar */}
           {progressStats.total > 0 && (
-            <div style={{ marginBottom: '12px' }}>
+            <div style={{ marginBottom: isMobile ? '6px' : '12px' }}>
               <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.2)',
@@ -728,7 +750,7 @@ export const SeriesDetailPage = memo(() => {
               </div>
               <p
                 style={{
-                  fontSize: '12px',
+                  fontSize: isMobile ? '11px' : '12px',
                   margin: '4px 0 0 0',
                   opacity: 0.7,
                 }}
@@ -740,6 +762,7 @@ export const SeriesDetailPage = memo(() => {
           )}
 
           {/* Ratings from TMDB and IMDB */}
+          {!isMobile && (
           <div style={{
             display: 'flex',
             gap: '12px',
@@ -818,14 +841,15 @@ export const SeriesDetailPage = memo(() => {
               </a>
             )}
           </div>
+          )}
 
           {/* Provider Badges unter dem Fortschrittsbalken */}
           {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
             <div>
               <ProviderBadges
                 providers={(series.provider?.provider && series.provider.provider.length > 0) ? series.provider.provider : providers}
-                size="large"
-                maxDisplay={6}
+                size={isMobile ? "medium" : "large"}
+                maxDisplay={isMobile ? 4 : 6}
                 showNames={false}
               />
             </div>
