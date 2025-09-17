@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material';
 import { Box, Collapse, IconButton, Paper, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
@@ -25,10 +26,12 @@ interface StatCardProps {
   value: string | number;
   color: string;
   subValue?: string;
+  onClick?: () => void;
 }
 
-const StatCard = ({ icon, label, value, color, subValue }: StatCardProps) => (
+const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProps) => (
   <Paper
+    onClick={onClick}
     sx={{
       p: 2,
       background: colors.background.card,
@@ -37,9 +40,14 @@ const StatCard = ({ icon, label, value, color, subValue }: StatCardProps) => (
       position: 'relative',
       overflow: 'hidden',
       transition: 'all 0.3s ease',
+      cursor: onClick ? 'pointer' : 'default',
       '&:active': {
         transform: 'scale(0.98)',
       },
+      '&:hover': onClick ? {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      } : {},
     }}
   >
     <Box
@@ -114,6 +122,7 @@ const StatCard = ({ icon, label, value, color, subValue }: StatCardProps) => (
 
 export const StatsGrid = () => {
   const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
@@ -443,6 +452,27 @@ export const StatsGrid = () => {
     };
   }, [seriesList, movieList, user]);
 
+  // Navigation handlers
+  const handleSeriesClick = () => {
+    navigate('/ratings'); // Default to series tab
+  };
+
+  const handleMoviesClick = () => {
+    navigate('/ratings?tab=movies'); // Only this one goes to movies tab
+  };
+
+  const handleSeriesRatingClick = () => {
+    navigate('/ratings'); // Default to series tab
+  };
+
+  const handleMovieRatingClick = () => {
+    navigate('/ratings'); // Also default to series tab
+  };
+
+  const handleWeeklyEpisodesClick = () => {
+    navigate('/watchlist');
+  };
+
   return (
     <Box>
       {/* Header with expand button */}
@@ -565,6 +595,7 @@ export const StatsGrid = () => {
               ? `${stats.completedSeries} von ${stats.totalSeries} komplett`
               : 'In deiner Sammlung'
           }
+          onClick={handleSeriesClick}
         />
 
         <StatCard
@@ -573,6 +604,7 @@ export const StatsGrid = () => {
           value={stats.totalMovies}
           color={colors.text.accent}
           subValue={`${stats.watchedMovies} von ${stats.totalMovies} geschaut`}
+          onClick={handleMoviesClick}
         />
       </Box>
 
@@ -599,6 +631,7 @@ export const StatsGrid = () => {
             value={`${stats.lastWeekWatched} Episoden`}
             color={colors.status.success}
             subValue="neu geschaut"
+            onClick={handleWeeklyEpisodesClick}
           />
 
           <StatCard
@@ -621,6 +654,7 @@ export const StatsGrid = () => {
             label="Ø Serien-Bewertung"
             value={`⭐ ${stats.avgSeriesRating}`}
             color={colors.status.warning}
+            onClick={handleSeriesRatingClick}
           />
 
           <StatCard
@@ -628,6 +662,7 @@ export const StatsGrid = () => {
             label="Ø Film-Bewertung"
             value={`⭐ ${stats.avgMovieRating}`}
             color={colors.status.warning}
+            onClick={handleMovieRatingClick}
           />
 
           {/* Präferenzen */}
