@@ -378,8 +378,15 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const markRequestsAsRead = useCallback(async () => {
     if (!user) return;
     const now = Date.now();
+
+    // Immediately update the unread count based on the new timestamp
+    setFriendRequests(prevRequests => {
+      const stillUnread = prevRequests.filter(request => request.sentAt > now);
+      setUnreadRequestsCount(stillUnread.length);
+      return prevRequests;
+    });
+
     setLastReadRequestsTime(now);
-    setUnreadRequestsCount(0);
 
     try {
       await firebase.database().ref(`users/${user.uid}/readTimes/requests`).set(now);
@@ -392,8 +399,15 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     if (!user) return;
     const now = Date.now();
     console.log('✅ Marking activities as read at:', new Date(now).toLocaleString());
+
+    // Immediately update the unread count based on the new timestamp
+    setFriendActivities(prevActivities => {
+      const stillUnread = prevActivities.filter(activity => activity.timestamp > now);
+      setUnreadActivitiesCount(stillUnread.length);
+      return prevActivities;
+    });
+
     setLastReadActivitiesTime(now);
-    setUnreadActivitiesCount(0);
 
     try {
       console.log('💾 Saving read time to Firebase...');
