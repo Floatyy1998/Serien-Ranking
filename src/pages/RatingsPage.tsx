@@ -481,59 +481,67 @@ export const RatingsPage: React.FC = () => {
     <div
       ref={scrollRef}
       style={{
-        minHeight: '100vh',
+        minHeight: '100%',
         background: getMobilePageBackground(), // Dynamisch: transparent wenn Bild, sonst undurchsichtig
         color: currentTheme.text.primary,
-        overflow: 'auto',
-        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          ...getMobileHeaderStyle('transparent'),
-          padding: '20px',
-          paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-        }}
-      >
-        <h1
+      {/* Sticky Header */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        background: getMobilePageBackground(),
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)'
+      }}>
+        <div
+          style={{
+            ...getMobileHeaderStyle('transparent'),
+            padding: '20px',
+            paddingTop: 'calc(20px + env(safe-area-inset-top))',
+            background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          }}
+        >
+          <h1
+              style={{
+                fontSize: '20px',
+                fontWeight: 700,
+                margin: '0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}
+            >
+              <Star style={{ fontSize: '28px', color: currentTheme.status.warning }} />
+              Meine Bewertungen
+            </h1>
+
+          {/* Stats */}
+          <div
             style={{
-              fontSize: '20px',
-              fontWeight: 700,
-              margin: '0',
               display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
+              gap: '16px',
+              marginTop: '16px',
+              fontSize: '14px',
+              color: currentTheme.text.secondary,
             }}
           >
-            <Star style={{ fontSize: '28px', color: currentTheme.status.warning }} />
-            Meine Bewertungen
-          </h1>
+            <span>{itemsWithRating.length} bewertet</span>
+            <span>Ø {averageRating.toFixed(1)} ⭐</span>
+          </div>
+        </div>
 
-        {/* Stats */}
+        {/* Tab Navigation */}
         <div
           style={{
             display: 'flex',
-            gap: '16px',
-            marginTop: '16px',
-            fontSize: '14px',
-            color: currentTheme.text.secondary,
+            padding: '0 20px',
+            marginBottom: '16px',
           }}
         >
-          <span>{itemsWithRating.length} bewertet</span>
-          <span>Ø {averageRating.toFixed(1)} ⭐</span>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div
-        style={{
-          display: 'flex',
-          padding: '0 20px',
-          marginBottom: '16px',
-        }}
-      >
         <button
           onClick={() => setActiveTab('series')}
           style={{
@@ -579,11 +587,14 @@ export const RatingsPage: React.FC = () => {
           <MovieIcon style={{ fontSize: '20px' }} />
           Filme ({ratedMovies.length})
         </button>
+        </div>
       </div>
 
-
       {/* Items Grid */}
-      <div style={{ padding: '0 20px' }}>
+      <div style={{
+        padding: '0 20px',
+        flex: 1
+      }}>
         {currentItems.length === 0 ? (
           <div
             style={{
@@ -880,6 +891,8 @@ export const RatingsPage: React.FC = () => {
                 </motion.div>
               );
             })}
+            {/* Spacer for navbar */}
+            <div style={{ gridColumn: '1 / -1', height: '20px' }} />
           </div>
         )}
       </div>

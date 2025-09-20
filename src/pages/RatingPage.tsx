@@ -1,7 +1,6 @@
 import {
   Check,
   Delete,
-  Movie,
   Save,
   SentimentDissatisfied,
   SentimentNeutral,
@@ -9,7 +8,6 @@ import {
   SentimentVeryDissatisfied,
   SentimentVerySatisfied,
   Star,
-  Tv,
 } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -269,8 +267,8 @@ export const RatingPage = () => {
   }
 
   return (
-    <div className="mobile-rating-page">
-      {/* Native Header */}
+    <div className="rating-page">
+      {/* Compact Header */}
       <div
         className="rating-header"
         style={{
@@ -278,46 +276,32 @@ export const RatingPage = () => {
         }}
       >
         <BackButton />
-        <div className="header-content">
-          <div className="title-row">
-            {type === 'series' ? <Tv /> : <Movie />}
-            <h1>{item.title}</h1>
+        <div className="header-info">
+          <h1>{item.title}</h1>
+          <div className="rating-badge">
+            <Star style={{ fontSize: 16 }} />
+            <span>{overallRating.toFixed(1)}</span>
           </div>
-          <p>Bewertung</p>
         </div>
-      </div>
-
-      {/* Current Rating Display */}
-      <div className="current-rating">
-        <motion.div
-          className="rating-display"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 0.3 }}
-          key={overallRating}
-        >
-          <Star className="star-icon" />
-          <span className="rating-value">{overallRating.toFixed(2)}</span>
-          <span className="rating-max">/10</span>
-        </motion.div>
       </div>
 
       {/* Tab Navigation */}
-      {Object.keys(genreRatings).length > 0 && (
-        <div className="tab-navigation">
+      <div className="tab-container">
+        <button
+          className={`tab-btn ${activeTab === 'overall' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overall')}
+        >
+          Gesamtbewertung
+        </button>
+        {Object.keys(genreRatings).length > 0 && (
           <button
-            className={`tab ${activeTab === 'overall' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overall')}
-          >
-            Gesamt
-          </button>
-          <button
-            className={`tab ${activeTab === 'genre' ? 'active' : ''}`}
+            className={`tab-btn ${activeTab === 'genre' ? 'active' : ''}`}
             onClick={() => setActiveTab('genre')}
           >
-            Nach Genre
+            Genres
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Rating Content */}
       <div className="rating-content">
@@ -325,66 +309,66 @@ export const RatingPage = () => {
           {activeTab === 'overall' ? (
             <motion.div
               key="overall"
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -100, opacity: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="overall-rating"
+              className="overall-section"
             >
-              {/* Emoji Rating Selector */}
-              <div className="emoji-selector">
-                {ratingEmojis.map((emoji) => (
-                  <motion.button
-                    key={emoji.value}
-                    className={`emoji-button ${Math.round(overallRating) === emoji.value ? 'active' : ''}`}
-                    onClick={() => handleRatingChange(emoji.value)}
-                    whileTap={{ scale: 0.9 }}
-                    style={{
-                      border:
-                        Math.round(overallRating) === emoji.value
-                          ? `2px solid ${emoji.color}`
-                          : '2px solid rgba(255, 255, 255, 0.1)',
-                      background:
-                        Math.round(overallRating) === emoji.value
-                          ? `${emoji.color}20`
-                          : currentTheme.background.surface,
-                    }}
-                  >
-                    <div style={{ color: emoji.color }}>{emoji.icon}</div>
-                    <span>{emoji.label}</span>
-                  </motion.button>
-                ))}
+              {/* Main Rating Display */}
+              <div className="main-rating">
+                <div className="rating-circle">
+                  <span className="rating-number">{overallRating.toFixed(1)}</span>
+                  <span className="rating-label">von 10</span>
+                </div>
+
+                {/* Emoji Indicators */}
+                <div className="emoji-indicators">
+                  {ratingEmojis.map((emoji) => (
+                    <motion.div
+                      key={emoji.value}
+                      className={`emoji-indicator ${Math.round(overallRating) === emoji.value ? 'active' : ''}`}
+                      onClick={() => handleRatingChange(emoji.value)}
+                      whileTap={{ scale: 0.9 }}
+                      style={{
+                        opacity: Math.round(overallRating) === emoji.value ? 1 : 0.3,
+                        color: emoji.color
+                      }}
+                    >
+                      {emoji.icon}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
 
               {/* Rating Slider */}
-              <div className="rating-slider">
+              <div className="slider-container">
                 <input
                   type="range"
                   min="0"
                   max="10"
-                  step="0.01"
+                  step="0.1"
                   value={overallRating}
                   onChange={(e) => handleRatingChange(parseFloat(e.target.value))}
-                  className="genre-slider"
+                  className="rating-range"
                   style={{
-                    background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, rgba(255, 255, 255, 0.1) ${overallRating * 10}%, rgba(255, 255, 255, 0.1) 100%)`,
+                    background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, var(--color-background-surface) ${overallRating * 10}%, var(--color-background-surface) 100%)`,
                   }}
                 />
-                <div className="slider-labels">
-                  <span>0</span>
-                  <span>5</span>
-                  <span>10</span>
+                <div className="slider-marks">
+                  {[0, 2, 4, 6, 8, 10].map((value) => (
+                    <span key={value} className="mark">{value}</span>
+                  ))}
                 </div>
               </div>
 
-              {/* Quick Rating Buttons */}
-              <div className="quick-ratings">
-                <h3>Schnellbewertung</h3>
-                <div className="quick-buttons">
+              {/* Quick Select Grid */}
+              <div className="quick-select">
+                <div className="quick-grid">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                     <motion.button
                       key={value}
-                      className={`quick-button ${Math.round(overallRating) === value ? 'active' : ''}`}
+                      className={`quick-btn ${Math.round(overallRating) === value ? 'active' : ''}`}
                       onClick={() => handleRatingChange(value)}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -418,36 +402,22 @@ export const RatingPage = () => {
                       </div>
                       <span className="genre-name">{genre}</span>
                     </div>
-                    <span
-                      className="genre-value"
-                      style={{ color: genreColors[genre] || '#667eea' }}
-                    >
-                      {(genreRatings[genre] || 0).toFixed(2)}
-                    </span>
+                    <span className="genre-value">{genreRatings[genre].toFixed(1)}</span>
                   </div>
-
                   <input
                     type="range"
                     min="0"
                     max="10"
-                    step="0.01"
-                    value={genreRatings[genre] || 0}
+                    step="0.1"
+                    value={genreRatings[genre]}
                     onChange={(e) => handleGenreRatingChange(genre, parseFloat(e.target.value))}
-                    className="genre-slider"
+                    className="genre-range"
                     style={{
-                      background: `linear-gradient(to right, ${genreColors[genre] || '#667eea'} 0%, ${genreColors[genre] || '#667eea'} ${(genreRatings[genre] || 0) * 10}%, rgba(255, 255, 255, 0.1) ${(genreRatings[genre] || 0) * 10}%, rgba(255, 255, 255, 0.1) 100%)`,
+                      background: `linear-gradient(to right, ${genreColors[genre] || '#667eea'} 0%, ${genreColors[genre] || '#667eea'} ${genreRatings[genre] * 10}%, var(--color-background-surface) ${genreRatings[genre] * 10}%, var(--color-background-surface) 100%)`,
                     }}
                   />
                 </div>
               ))}
-
-              <div className="average-display">
-                <span>Durchschnitt (nur bewertete Genres)</span>
-                <div className="average-value">
-                  <Star />
-                  <span>{overallRating.toFixed(2)}</span>
-                </div>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -447,20 +447,29 @@ export const DiscoverPage = memo(() => {
   return (
     <div
       style={{
-        height: '100vh',
+        minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
         background: currentTheme.background.default,
-        overflow: 'hidden',
       }}
     >
-      {/* Fixed Header and Controls */}
+      {/* Sticky Header and Controls */}
       <div
         style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
           flexShrink: 0,
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          background: currentTheme.background.default,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         }}
       >
+        <div
+          style={{
+            background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          }}
+        >
         {/* Header */}
         <header
           style={{
@@ -800,6 +809,7 @@ export const DiscoverPage = memo(() => {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Scrollable Content Area */}
@@ -1176,7 +1186,7 @@ export const DiscoverPage = memo(() => {
         )}
 
         {/* Bottom padding for better scrolling */}
-        <div style={{ height: '100px' }} />
+        <div style={{ height: '20px' }} />
       </div>
 
       {/* Snackbar for success feedback */}
