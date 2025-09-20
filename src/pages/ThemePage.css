@@ -1,8 +1,6 @@
 .mobile-theme-page {
-  height: 100vh;
+  min-height: 100vh;
   background: var(--color-background-default);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Header */
@@ -14,8 +12,7 @@
   /* background wird inline in der Komponente gesetzt */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 100;
 }
 

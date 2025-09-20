@@ -1,17 +1,15 @@
 .mobile-episode-page {
-  height: 100vh;
+  min-height: 100vh;
   background: var(--color-background-default);
   color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
 }
 
 /* Native Header */
 .episode-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 100;
   /* background wird inline in der Komponente gesetzt */
   backdrop-filter: blur(20px);
