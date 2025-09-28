@@ -100,7 +100,7 @@ export const useContinueWatching = () => {
                   poster: getImageUrl(series.poster),
                   progress: percentage,
                   nextEpisode: {
-                    seasonNumber: season.seasonNumber || 1,
+                    seasonNumber: (season.seasonNumber ?? 0) + 1,
                     episodeNumber: k + 1,
                     name: episode.name,
                     seasonIndex: j,
@@ -108,6 +108,7 @@ export const useContinueWatching = () => {
                   },
                   airDate: episode.air_date,
                   lastWatchedAt: lastWatchedAt || '1900-01-01',
+                  genre: series.genre,
                 });
                 foundNext = true;
                 break;

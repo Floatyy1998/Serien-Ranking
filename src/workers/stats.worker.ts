@@ -162,13 +162,14 @@ function processEpisodes(data: any) {
             seriesNmr: series.nmr,
             seriesTitle: series.title,
             poster: getImageUrl(series.poster),
-            seasonNumber: season.seasonNumber || 1,
+            seasonNumber: (season.seasonNumber ?? 0) + 1,
             episodeNumber: k + 1,
             seasonIndex: actualSeasonIndex,
             episodeIndex: k,
             episodeId: episode.id,
             episodeName: episode.name,
             watched: episode.watched,
+            seriesGenre: series.genre?.genres,
           });
         }
       }

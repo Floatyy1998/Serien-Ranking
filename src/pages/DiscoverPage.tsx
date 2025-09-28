@@ -5,6 +5,7 @@ import {
   FilterList,
   Movie as MovieIcon,
   NewReleases,
+  Recommend,
   Search,
   Star,
   TrendingUp,
@@ -20,6 +21,156 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { Dialog } from '../components/Dialog';
 
+// Memoized components for better performance
+const ItemCard = memo(({
+  item,
+  onItemClick,
+  onAddToList,
+  addingItem,
+  currentTheme,
+  isDesktop
+}: any) => {
+  const handleImageError = useCallback((e: any) => {
+    const target = e.target as HTMLImageElement;
+    if (!target.src.includes('data:image/svg')) {
+      target.src = `data:image/svg+xml;base64,${btoa(`
+        <svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100%" height="100%" fill="${currentTheme.background.surface}"/>
+          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${currentTheme.text.muted}" font-family="Arial" font-size="16">
+            Kein Poster
+          </text>
+        </svg>
+      `)}`;
+    }
+  }, [currentTheme]);
+
+  const imageUrl = useMemo(() => {
+    if (!item.poster_path) return '/placeholder.jpg';
+    return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+  }, [item.poster_path]);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div
+        onClick={() => onItemClick(item)}
+        style={{
+          width: '100%',
+          aspectRatio: '2/3',
+          position: 'relative',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          marginBottom: '8px',
+          cursor: 'pointer',
+        }}
+      >
+        <img
+          src={imageUrl}
+          alt={item.title || item.name}
+          onError={handleImageError}
+          loading="lazy"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+
+        {item.vote_average > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              padding: '4px 8px',
+              background: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '2px',
+            }}
+          >
+            <Star
+              style={{
+                fontSize: '12px',
+                color: currentTheme.status.warning,
+              }}
+            />
+            {item.vote_average.toFixed(1)}
+          </div>
+        )}
+
+        {!item.inList && (
+          <button
+            onClick={(e) => onAddToList(item, e)}
+            disabled={addingItem === `${item.type}-${item.id}`}
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '8px',
+              width: '28px',
+              height: '28px',
+              background: addingItem === `${item.type}-${item.id}`
+                ? 'rgba(255, 255, 255, 0.1)'
+                : 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
+              transition: 'all 0.2s ease',
+              padding: 0,
+            }}
+          >
+            <Add
+              style={{
+                fontSize: '18px',
+                color: 'white',
+                opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
+              }}
+            />
+          </button>
+        )}
+      </div>
+
+      <h4
+        style={{
+          fontSize: isDesktop ? '14px' : '12px',
+          fontWeight: isDesktop ? 600 : 500,
+          margin: 0,
+          color: 'rgba(255, 255, 255, 0.9)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          lineHeight: 1.3,
+        }}
+      >
+        {item.title || item.name}
+      </h4>
+
+      <p
+        style={{
+          fontSize: '11px',
+          color: 'rgba(255, 255, 255, 0.4)',
+          margin: '2px 0 0 0',
+        }}
+      >
+        {item.release_date || item.first_air_date
+          ? new Date(item.release_date || item.first_air_date).getFullYear()
+          : 'TBA'}
+      </p>
+    </div>
+  );
+});
+
+ItemCard.displayName = 'ItemCard';
+
 export const DiscoverPage = memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
@@ -29,7 +180,7 @@ export const DiscoverPage = memo(() => {
 
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
   const [activeCategory, setActiveCategory] = useState<
-    'trending' | 'popular' | 'top_rated' | 'upcoming'
+    'trending' | 'popular' | 'top_rated' | 'upcoming' | 'recommendations'
   >('trending');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,14 +196,22 @@ export const DiscoverPage = memo(() => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recommendationsHasMore, setRecommendationsHasMore] = useState(true);
+  const [usedRecommendationSources, setUsedRecommendationSources] = useState<Set<string>>(new Set());
 
   const [isRestoring, setIsRestoring] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(220); // Default height
 
   // Use refs to access current values in scroll handler
   const pageRef = useRef(page);
   const hasMoreRef = useRef(hasMore);
   const loadingRef = useRef(loading);
   const showSearchRef = useRef(showSearch);
+  const recommendationsLoadingRef = useRef(recommendationsLoading);
+  const recommendationsHasMoreRef = useRef(recommendationsHasMore);
+  const activeCategoryRef = useRef(activeCategory);
 
   // Update refs when state changes
   useEffect(() => {
@@ -71,13 +230,51 @@ export const DiscoverPage = memo(() => {
     showSearchRef.current = showSearch;
   }, [showSearch]);
 
+  useEffect(() => {
+    recommendationsLoadingRef.current = recommendationsLoading;
+  }, [recommendationsLoading]);
+
+  useEffect(() => {
+    recommendationsHasMoreRef.current = recommendationsHasMore;
+  }, [recommendationsHasMore]);
+
+  useEffect(() => {
+    activeCategoryRef.current = activeCategory;
+  }, [activeCategory]);
+
+  // Calculate header height dynamically
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      const headerElement = document.querySelector('[data-header="discover-header"]');
+      if (headerElement) {
+        const height = headerElement.getBoundingClientRect().height;
+        setHeaderHeight(height + 10); // Add small buffer
+      }
+    };
+
+    // Update on mount and resize
+    updateHeaderHeight();
+    const handleResize = () => {
+      updateHeaderHeight();
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Also update when content changes (filters, search, etc.)
+    const timeoutId = setTimeout(updateHeaderHeight, 100);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, [showSearch, showFilters, activeTab, activeCategory]);
+
   // Reset or restore filters when component mounts
   useEffect(() => {
-    // Check if we're coming from a detail page
     const isComingFromDetail = sessionStorage.getItem('comingFromDetail') === 'true';
 
     if (isComingFromDetail) {
-      // Restore saved filter state
       const savedState = sessionStorage.getItem('discoverFilters');
       if (savedState) {
         setIsRestoring(true);
@@ -89,23 +286,22 @@ export const DiscoverPage = memo(() => {
         setSearchQuery(filters.searchQuery || '');
         setShowSearch(filters.showSearch || false);
 
-        // Small delay to ensure state is set
         setTimeout(() => {
           setIsRestoring(false);
-          // Trigger fetch after state is restored
           setTimeout(() => {
             if (!showSearch) {
-              // Call fetchFromTMDB directly with current restored state
-              fetchFromTMDB(true);
+              if (filters.activeCategory === 'recommendations') {
+                fetchRecommendations(true);
+              } else {
+                fetchFromTMDB(true);
+              }
             }
           }, 100);
         }, 100);
       }
-      // Clear the flag
       sessionStorage.removeItem('comingFromDetail');
       sessionStorage.removeItem('discoverFilters');
     } else {
-      // Reset filters only when freshly navigating to the page
       setActiveTab('series');
       setActiveCategory('trending');
       setSelectedGenre(null);
@@ -115,35 +311,119 @@ export const DiscoverPage = memo(() => {
     }
   }, []);
 
-  // Handle resize
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
-  // Check if item is in list - memoized for performance
+  // Check if item is in list
   const isInList = useCallback(
     (id: string | number, type: 'series' | 'movie') => {
       if (type === 'series') {
-        const found = seriesList.some((s: any) => s.id === id || s.id === id.toString());
-        return found;
+        return seriesList.some((s: any) => s.id === id || s.id === id.toString());
       } else {
-        const found = movieList.some((m: any) => m.id === id || m.id === id.toString());
-        return found;
+        return movieList.some((m: any) => m.id === id || m.id === id.toString());
       }
     },
     [seriesList, movieList]
   );
 
+  // Fetch recommendations based on user's list
+  const fetchRecommendations = useCallback(async (reset = false) => {
+    if (recommendationsLoading) return;
 
-  // Get TMDB image URL - memoized
-  const getImageUrl = useCallback((path: string | null): string => {
-    if (!path) return '/placeholder.jpg';
-    return `https://image.tmdb.org/t/p/w500${path}`;
-  }, []);
+    setRecommendationsLoading(true);
+
+    try {
+      const userItems = activeTab === 'series' ? seriesList : movieList;
+
+      if (userItems.length === 0) {
+        setRecommendations([]);
+        setRecommendationsHasMore(false);
+        setRecommendationsLoading(false);
+        return;
+      }
+
+      // Reset state if this is a fresh fetch
+      if (reset) {
+        setUsedRecommendationSources(new Set());
+        setRecommendations([]);
+        setRecommendationsHasMore(true);
+      }
+
+      const currentUsedSources = reset ? new Set<string>() : new Set(usedRecommendationSources);
+      const availableItems = userItems.filter(item => !currentUsedSources.has(item.id.toString()));
+
+      // If we've used all items, we can't get more recommendations
+      if (availableItems.length === 0) {
+        setRecommendationsHasMore(false);
+        setRecommendationsLoading(false);
+        return;
+      }
+
+      // Get random items from user's list for recommendations (3 items per batch)
+      const shuffled = [...availableItems].sort(() => 0.5 - Math.random());
+      const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
+
+      const allRecommendations: any[] = [];
+      const existingIds = new Set(recommendations.map(r => r.id));
+
+      const mediaType = activeTab === 'series' ? 'tv' : 'movie';
+
+      for (const item of selectedItems) {
+        const endpoint = `https://api.themoviedb.org/3/${mediaType}/${item.id}/recommendations`;
+        const params = new URLSearchParams({
+          api_key: import.meta.env.VITE_API_TMDB,
+          language: 'de-DE',
+        });
+
+        const response = await fetch(`${endpoint}?${params}`);
+        const data = await response.json();
+
+        if (data.results) {
+          data.results.forEach((rec: any) => {
+            if (
+              !existingIds.has(rec.id) &&
+              !isInList(rec.id, activeTab === 'series' ? 'series' : 'movie')
+            ) {
+              existingIds.add(rec.id);
+              allRecommendations.push({
+                ...rec,
+                type: activeTab === 'series' ? 'series' : 'movie',
+                inList: false,
+                basedOn: (item as any).title || (item as any).name,
+              });
+            }
+          });
+        }
+
+        // Mark this item as used
+        currentUsedSources.add(item.id.toString());
+      }
+
+      // Shuffle new recommendations
+      const shuffledRecommendations = allRecommendations
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 20); // 20 per batch
+
+      // Update state
+      setUsedRecommendationSources(currentUsedSources);
+
+      if (reset) {
+        setRecommendations(shuffledRecommendations);
+      } else {
+        setRecommendations(prev => [...prev, ...shuffledRecommendations]);
+      }
+
+      // Check if we have more sources available
+      const remainingItems = userItems.filter(item => !currentUsedSources.has(item.id.toString()));
+      setRecommendationsHasMore(remainingItems.length > 0);
+
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      if (reset) {
+        setRecommendations([]);
+      }
+    } finally {
+      setRecommendationsLoading(false);
+    }
+  }, [activeTab, seriesList, movieList, isInList, recommendationsLoading, recommendations, usedRecommendationSources]);
 
   // Fetch from TMDB
   const fetchFromTMDB = useCallback(
@@ -157,11 +437,9 @@ export const DiscoverPage = memo(() => {
         let endpoint = '';
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
 
-        // Use discover endpoint when genre filter is active
         if (selectedGenre) {
           endpoint = `https://api.themoviedb.org/3/discover/${mediaType}`;
         } else {
-          // Build endpoint based on category
           switch (activeCategory) {
             case 'trending':
               endpoint = `https://api.themoviedb.org/3/trending/${mediaType}/week`;
@@ -182,7 +460,6 @@ export const DiscoverPage = memo(() => {
           }
         }
 
-        // Add parameters
         const params = new URLSearchParams({
           api_key: import.meta.env.VITE_API_TMDB,
           language: 'de-DE',
@@ -190,10 +467,8 @@ export const DiscoverPage = memo(() => {
           region: 'DE',
         });
 
-        // Add genre filter if selected
         if (selectedGenre) {
           params.append('with_genres', selectedGenre.toString());
-          // Add sort for discover endpoint
           params.append(
             'sort_by',
             activeCategory === 'top_rated' ? 'vote_average.desc' : 'popularity.desc'
@@ -205,11 +480,11 @@ export const DiscoverPage = memo(() => {
 
         if (data.results) {
           const mappedResults = data.results
-            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')) // Hide items already in list
+            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
             .map((item: any) => ({
               ...item,
               type: activeTab === 'series' ? 'series' : 'movie',
-              inList: false, // Since we filtered them out
+              inList: false,
             }));
 
           if (reset) {
@@ -217,7 +492,6 @@ export const DiscoverPage = memo(() => {
             setPage(1);
           } else {
             setResults((prev) => {
-              // Filter out duplicates by creating a Set of existing IDs
               const existingIds = new Set(prev.map((item: any) => `${item.type}-${item.id}`));
               const newResults = mappedResults.filter(
                 (item: any) => !existingIds.has(`${item.type}-${item.id}`)
@@ -231,7 +505,6 @@ export const DiscoverPage = memo(() => {
         }
       } catch (error) {
         console.error('Error fetching from TMDB:', error);
-        // Set hasMore to false to prevent infinite retries
         setHasMore(false);
       } finally {
         setLoading(false);
@@ -242,10 +515,11 @@ export const DiscoverPage = memo(() => {
 
   // Load initial data when filters change
   useEffect(() => {
-    // Skip if we're restoring
     if (isRestoring) return;
 
-    if (!showSearch) {
+    if (activeCategory === 'recommendations') {
+      fetchRecommendations(true);
+    } else if (!showSearch) {
       setResults([]);
       setPage(1);
       setHasMore(true);
@@ -255,21 +529,69 @@ export const DiscoverPage = memo(() => {
 
   // Auto-load more content if there's not enough to scroll
   useEffect(() => {
-    if (results.length > 0 && hasMore && !loading && !showSearch) {
-      const checkNeedMoreContent = () => {
-        const scrollContainer = document.querySelector('.mobile-discover-container');
-        if (scrollContainer) {
-          const { scrollHeight, clientHeight } = scrollContainer;
-          if (scrollHeight <= clientHeight) {
+    if (activeCategory === 'recommendations') {
+      // Auto-load for recommendations
+      if (recommendations.length > 0 && recommendationsHasMore && !recommendationsLoading && !showSearch) {
+        const checkNeedMoreContent = () => {
+          const scrollContainer = document.querySelector('.mobile-discover-container');
+          if (scrollContainer) {
+            const { scrollHeight, clientHeight } = scrollContainer;
+            if (scrollHeight <= clientHeight) {
+              fetchRecommendations(false);
+            }
+          }
+        };
+        setTimeout(checkNeedMoreContent, 100);
+      }
+    } else {
+      // Auto-load for normal TMDB results
+      if (results.length > 0 && hasMore && !loading && !showSearch) {
+        const checkNeedMoreContent = () => {
+          const scrollContainer = document.querySelector('.mobile-discover-container');
+          if (scrollContainer) {
+            const { scrollHeight, clientHeight } = scrollContainer;
+            if (scrollHeight <= clientHeight) {
+              fetchFromTMDB(false);
+            }
+          }
+        };
+        setTimeout(checkNeedMoreContent, 100);
+      }
+    }
+  }, [results.length, hasMore, loading, showSearch, activeCategory, fetchFromTMDB, recommendations.length, recommendationsHasMore, recommendationsLoading, fetchRecommendations]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const scrollContainer = document.querySelector('.mobile-discover-container');
+    if (scrollContainer) {
+      const scrollHandler = () => {
+        if (!scrollContainer) return;
+
+        const scrollTop = scrollContainer.scrollTop;
+        const scrollHeight = scrollContainer.scrollHeight;
+        const clientHeight = scrollContainer.clientHeight;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+        // Check if we're near the bottom (500px threshold)
+        if (distanceFromBottom < 500) {
+          if (activeCategoryRef.current === 'recommendations') {
+            // Handle recommendations infinite scroll
+            if (recommendationsHasMoreRef.current && !recommendationsLoadingRef.current) {
+              fetchRecommendations(false);
+            }
+          } else if (hasMoreRef.current && !loadingRef.current && !showSearchRef.current) {
+            // Handle normal TMDB infinite scroll
             fetchFromTMDB(false);
           }
         }
       };
 
-      // Small delay to ensure DOM is updated
-      setTimeout(checkNeedMoreContent, 100);
+      scrollContainer.addEventListener('scroll', scrollHandler);
+      return () => {
+        scrollContainer.removeEventListener('scroll', scrollHandler);
+      };
     }
-  }, [results.length, hasMore, loading, showSearch, fetchFromTMDB]);
+  }, [fetchFromTMDB, fetchRecommendations, activeCategory]);
 
   // Search function
   const searchItems = useCallback(
@@ -297,17 +619,18 @@ export const DiscoverPage = memo(() => {
 
         if (data.results) {
           const mappedResults = data.results
-            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')) // Hide items already in list
+            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
             .slice(0, 20)
             .map((item: any) => ({
               ...item,
               type: activeTab === 'series' ? 'series' : 'movie',
-              inList: false, // Since we filtered them out
+              inList: false,
             }));
 
           setSearchResults(mappedResults);
         }
       } catch (error) {
+        console.error('Search error:', error);
       } finally {
         setSearchLoading(false);
       }
@@ -326,13 +649,13 @@ export const DiscoverPage = memo(() => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, showSearch, searchItems]);
 
-  // Add to list - memoized
+  // Add to list
   const addToList = useCallback(
     async (item: any, event?: React.MouseEvent) => {
       if (event) {
         event.stopPropagation();
       }
-      
+
       if (!user) {
         setDialog({ open: true, message: 'Bitte einloggen um Inhalte hinzuzufügen!', type: 'warning' });
         return;
@@ -358,18 +681,16 @@ export const DiscoverPage = memo(() => {
         });
 
         if (response.ok) {
-          // Remove item from results immediately
           setResults((prev) => prev.filter((r) => r.id !== item.id));
           setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
-          
-          // Show success snackbar
+          setRecommendations((prev) => prev.filter((r) => r.id !== item.id));
+
           const title = item.title || item.name;
-          setSnackbar({ 
-            open: true, 
-            message: `"${title}" wurde erfolgreich hinzugefügt!` 
+          setSnackbar({
+            open: true,
+            message: `"${title}" wurde erfolgreich hinzugefügt!`
           });
 
-          // Activity-Logging für Friend + Badge-System (wie Desktop)
           const posterPath = item.poster_path;
           if (item.type === 'series') {
             await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id, posterPath);
@@ -377,7 +698,6 @@ export const DiscoverPage = memo(() => {
             await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
           }
 
-          // Hide snackbar after 3 seconds
           setTimeout(() => {
             setSnackbar({ open: false, message: '' });
           }, 3000);
@@ -391,10 +711,9 @@ export const DiscoverPage = memo(() => {
     [user]
   );
 
-  // Handle item click - memoized
+  // Handle item click
   const handleItemClick = useCallback(
     (item: any) => {
-      // Save current filter state
       const filterState = {
         activeTab,
         activeCategory,
@@ -404,62 +723,37 @@ export const DiscoverPage = memo(() => {
         showSearch
       };
       sessionStorage.setItem('discoverFilters', JSON.stringify(filterState));
-      // Set flag to preserve filters when coming back
       sessionStorage.setItem('comingFromDetail', 'true');
-      // Always navigate to detail page
       navigate(item.type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
     },
     [navigate, activeTab, activeCategory, selectedGenre, showFilters, searchQuery, showSearch]
   );
 
-  // Attach scroll listener
-  useEffect(() => {
-    const scrollContainer = document.querySelector('.mobile-discover-container');
-    if (scrollContainer) {
-      const scrollHandler = () => {
-        if (!scrollContainer) return;
-
-        const scrollTop = scrollContainer.scrollTop;
-        const scrollHeight = scrollContainer.scrollHeight;
-        const clientHeight = scrollContainer.clientHeight;
-        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-
-
-        // Check if we're near the bottom (500px threshold)
-        if (distanceFromBottom < 500 && hasMoreRef.current && !loadingRef.current && !showSearchRef.current) {
-          fetchFromTMDB(false);
-        }
-      };
-
-      scrollContainer.addEventListener('scroll', scrollHandler);
-      return () => {
-        scrollContainer.removeEventListener('scroll', scrollHandler);
-      };
-    }
-  }, [fetchFromTMDB]);
-
-  // Memoize genres to prevent recreation on every render
+  // Memoize genres
   const genres = useMemo(
     () => (activeTab === 'series' ? genreIdMapForSeries : genreIdMapForMovies),
     [activeTab]
   );
 
+
   return (
     <div
       style={{
-        minHeight: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        height: '100vh',
         background: currentTheme.background.default,
+        overflow: 'hidden',
+        position: 'relative',
       }}
     >
-      {/* Sticky Header and Controls */}
+      {/* Fixed Header and Controls */}
       <div
+        data-header="discover-header"
         style={{
-          position: 'sticky',
+          position: 'fixed',
           top: 0,
+          left: 0,
+          right: 0,
           zIndex: 100,
-          flexShrink: 0,
           background: currentTheme.background.default,
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -498,7 +792,7 @@ export const DiscoverPage = memo(() => {
             </h1>
 
             <div style={{ display: 'flex', gap: '6px' }}>
-              {!showSearch && (
+              {!showSearch && activeCategory !== 'recommendations' && (
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   style={{
@@ -517,27 +811,27 @@ export const DiscoverPage = memo(() => {
                   <FilterList style={{ fontSize: '18px' }} />
                 </button>
               )}
-              
+
               <button
-                onClick={() => {
-                  setShowSearch(!showSearch);
-                  if (!showSearch) {
-                    setShowFilters(false);
-                  }
-                }}
-                style={{
-                  padding: '8px',
-                  background: showSearch
-                    ? `${currentTheme.primary}33`
-                    : `${currentTheme.text.primary}0D`,
-                  border: `1px solid ${showSearch ? currentTheme.primary : currentTheme.border.default}`,
-                  borderRadius: '8px',
-                  color: showSearch ? currentTheme.primary : currentTheme.text.primary,
-                  cursor: 'pointer',
-                }}
-              >
-                <Search style={{ fontSize: '18px' }} />
-              </button>
+                  onClick={() => {
+                    setShowSearch(!showSearch);
+                    if (!showSearch) {
+                      setShowFilters(false);
+                    }
+                  }}
+                  style={{
+                    padding: '8px',
+                    background: showSearch
+                      ? `${currentTheme.primary}33`
+                      : `${currentTheme.text.primary}0D`,
+                    border: `1px solid ${showSearch ? currentTheme.primary : currentTheme.border.default}`,
+                    borderRadius: '8px',
+                    color: showSearch ? currentTheme.primary : currentTheme.text.primary,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Search style={{ fontSize: '18px' }} />
+                </button>
             </div>
           </div>
         </header>
@@ -576,7 +870,10 @@ export const DiscoverPage = memo(() => {
           }}
         >
           <button
-            onClick={() => setActiveTab('series')}
+            onClick={() => {
+              setActiveTab('series');
+              setShowSearch(false);
+            }}
             style={{
               flex: 1,
               padding: '8px',
@@ -599,7 +896,10 @@ export const DiscoverPage = memo(() => {
           </button>
 
           <button
-            onClick={() => setActiveTab('movies')}
+            onClick={() => {
+              setActiveTab('movies');
+              setShowSearch(false);
+            }}
             style={{
               flex: 1,
               padding: '8px',
@@ -622,6 +922,7 @@ export const DiscoverPage = memo(() => {
             <MovieIcon style={{ fontSize: '16px' }} />
             Filme
           </button>
+
         </div>
 
         {/* Categories */}
@@ -629,7 +930,7 @@ export const DiscoverPage = memo(() => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(5, 1fr)',
               gap: '8px',
               padding: '0 16px 12px 16px',
             }}
@@ -735,11 +1036,36 @@ export const DiscoverPage = memo(() => {
                 {activeTab === 'movies' ? 'Neu' : 'Läuft'}
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveCategory('recommendations')}
+              style={{
+                padding: '8px 4px',
+                background:
+                  activeCategory === 'recommendations'
+                    ? `${currentTheme.status.success}33`
+                    : `${currentTheme.text.primary}08`,
+                border:
+                  activeCategory === 'recommendations'
+                    ? `1px solid ${currentTheme.status.success}66`
+                    : `1px solid ${currentTheme.border.default}`,
+                borderRadius: '8px',
+                color: activeCategory === 'recommendations' ? currentTheme.status.success : currentTheme.text.primary,
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '2px',
+              }}
+            >
+              <Recommend style={{ fontSize: '18px' }} />
+              <span style={{ fontSize: '10px', fontWeight: 600 }}>Für dich</span>
+            </button>
           </div>
         )}
 
         {/* Genre Filter Dropdown */}
-        {showFilters && !showSearch && (
+        {showFilters && !showSearch && activeCategory !== 'recommendations' && (
           <div
             style={{
               padding: '0 16px 12px 16px',
@@ -816,13 +1142,94 @@ export const DiscoverPage = memo(() => {
       <div
         className="mobile-discover-container"
         style={{
-          flex: 1,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           overflowY: 'auto',
           overflowX: 'hidden',
-          padding: '16px',
         }}
       >
-        {showSearch ? (
+        {/* Spacer for fixed header */}
+        <div style={{ height: `${headerHeight}px` }} />
+
+        <div style={{ padding: '16px' }}>
+        {activeCategory === 'recommendations' ? (
+          recommendationsLoading && recommendations.length === 0 ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '40px',
+              }}
+            >
+              <div style={{ color: currentTheme.text.muted }}>Lade Empfehlungen...</div>
+            </div>
+          ) : !recommendationsLoading && recommendations.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: 'rgba(255, 255, 255, 0.4)',
+              }}
+            >
+              <Recommend
+                style={{
+                  fontSize: '48px',
+                  marginBottom: '16px',
+                  opacity: 0.3,
+                }}
+              />
+              <p style={{ fontSize: '16px', marginBottom: '8px' }}>
+                {seriesList.length === 0 && movieList.length === 0
+                  ? 'Keine Empfehlungen verfügbar'
+                  : 'Keine Empfehlungen verfügbar'}
+              </p>
+              <p style={{ fontSize: '13px' }}>
+                {seriesList.length === 0 && movieList.length === 0
+                  ? 'Füge erst Serien oder Filme zu deiner Liste hinzu'
+                  : ''}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: currentTheme.text.muted,
+                  marginBottom: '16px',
+                  textAlign: 'center',
+                }}
+              >
+                Basierend auf deiner Liste
+              </p>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isDesktop
+                    ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                    : 'repeat(2, 1fr)',
+                  gap: isDesktop ? '24px' : '16px',
+                  maxWidth: '100%',
+                  margin: '0',
+                }}
+              >
+                {recommendations.map((item) => (
+                  <ItemCard
+                    key={`rec-${item.type}-${item.id}`}
+                    item={item}
+                    onItemClick={handleItemClick}
+                    onAddToList={addToList}
+                    addingItem={addingItem}
+                    currentTheme={currentTheme}
+                    isDesktop={isDesktop}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        ) : showSearch ? (
           <div>
             {searchLoading ? (
               <div
@@ -881,141 +1288,15 @@ export const DiscoverPage = memo(() => {
                 }}
               >
                 {searchResults.map((item) => (
-                  <div
+                  <ItemCard
                     key={`search-${item.type}-${item.id}`}
-                    style={{
-                      position: 'relative',
-                    }}
-                  >
-                    <div
-                      onClick={() => handleItemClick(item)}
-                      style={{
-                        width: '100%',
-                        aspectRatio: '2/3',
-                        position: 'relative',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        marginBottom: '8px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <img
-                        src={getImageUrl(item.poster_path)}
-                        alt={item.title || item.name}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          if (!target.src.includes('data:image/svg')) {
-                            target.src = `data:image/svg+xml;base64,${btoa(`
-                              <svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="100%" height="100%" fill="${currentTheme.background.surface}"/>
-                                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${currentTheme.text.muted}" font-family="Arial" font-size="16">
-                                  Kein Poster
-                                </text>
-                              </svg>
-                            `)}`;
-                          }
-                        }}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-
-                      {/* Rating Badge */}
-                      {item.vote_average > 0 && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            padding: '4px 8px',
-                            background: 'rgba(0, 0, 0, 0.8)',
-                            backdropFilter: 'blur(10px)',
-                            borderRadius: '6px',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '2px',
-                          }}
-                        >
-                          <Star
-                            style={{
-                              fontSize: '12px',
-                              color: currentTheme.status.warning,
-                            }}
-                          />
-                          {item.vote_average.toFixed(1)}
-                        </div>
-                      )}
-
-
-                      {/* Add Button */}
-                      {!item.inList && (
-                        <button
-                          onClick={(e) => addToList(item, e)}
-                          disabled={addingItem === `${item.type}-${item.id}`}
-                          style={{
-                            position: 'absolute',
-                            bottom: '8px',
-                            right: '8px',
-                            width: '28px',
-                            height: '28px',
-                            background: addingItem === `${item.type}-${item.id}` 
-                              ? 'rgba(255, 255, 255, 0.1)'
-                              : 'rgba(255, 255, 255, 0.2)',
-                            backdropFilter: 'blur(10px)',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
-                            transition: 'all 0.2s ease',
-                            padding: 0,
-                          }}
-                        >
-                          <Add
-                            style={{
-                              fontSize: '18px',
-                              color: currentTheme.text.primary,
-                              opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
-                            }}
-                          />
-                        </button>
-                      )}
-                    </div>
-
-                    <h4
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
-                        margin: 0,
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {item.title || item.name}
-                    </h4>
-
-                    <p
-                      style={{
-                        fontSize: '11px',
-                        color: 'rgba(255, 255, 255, 0.4)',
-                        margin: '2px 0 0 0',
-                      }}
-                    >
-                      {item.release_date || item.first_air_date
-                        ? new Date(item.release_date || item.first_air_date).getFullYear()
-                        : 'TBA'}
-                    </p>
-                  </div>
+                    item={item}
+                    onItemClick={handleItemClick}
+                    onAddToList={addToList}
+                    addingItem={addingItem}
+                    currentTheme={currentTheme}
+                    isDesktop={isDesktop}
+                  />
                 ))}
               </div>
             )}
@@ -1033,147 +1314,22 @@ export const DiscoverPage = memo(() => {
             }}
           >
             {results.map((item) => (
-              <div
+              <ItemCard
                 key={`${item.type}-${item.id}`}
-                style={{
-                  position: 'relative',
-                }}
-              >
-                <div
-                  onClick={() => handleItemClick(item)}
-                  style={{
-                    width: '100%',
-                    aspectRatio: '2/3',
-                    position: 'relative',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    marginBottom: '8px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <img
-                    src={getImageUrl(item.poster_path)}
-                    alt={item.title || item.name}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      if (!target.src.includes('data:image/svg')) {
-                        target.src = `data:image/svg+xml;base64,${btoa(`
-                          <svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="100%" height="100%" fill="${currentTheme.background.surface}"/>
-                            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${currentTheme.text.muted}" font-family="Arial" font-size="16">
-                              Kein Poster
-                            </text>
-                          </svg>
-                        `)}`;
-                      }
-                    }}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                  />
-
-                  {/* Rating Badge */}
-                  {item.vote_average > 0 && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '8px',
-                        right: '8px',
-                        padding: '4px 8px',
-                        background: 'rgba(0, 0, 0, 0.8)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                      }}
-                    >
-                      <Star
-                        style={{
-                          fontSize: '12px',
-                          color: currentTheme.status.warning,
-                        }}
-                      />
-                      {item.vote_average.toFixed(1)}
-                    </div>
-                  )}
-
-
-                  {/* Add Button */}
-                  {!item.inList && (
-                    <button
-                      onClick={(e) => addToList(item, e)}
-                      disabled={addingItem === `${item.type}-${item.id}`}
-                      style={{
-                        position: 'absolute',
-                        bottom: '8px',
-                        right: '8px',
-                        width: '28px',
-                        height: '28px',
-                        background: addingItem === `${item.type}-${item.id}` 
-                          ? 'rgba(255, 255, 255, 0.1)'
-                          : 'rgba(255, 255, 255, 0.2)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
-                        transition: 'all 0.2s ease',
-                        padding: 0,
-                      }}
-                    >
-                      <Add
-                        style={{
-                          fontSize: '18px',
-                          color: 'white',
-                          opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
-                        }}
-                      />
-                    </button>
-                  )}
-                </div>
-
-                <h4
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    margin: 0,
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {item.title || item.name}
-                </h4>
-
-                <p
-                  style={{
-                    fontSize: '11px',
-                    color: 'rgba(255, 255, 255, 0.4)',
-                    margin: '2px 0 0 0',
-                  }}
-                >
-                  {item.release_date || item.first_air_date
-                    ? new Date(item.release_date || item.first_air_date).getFullYear()
-                    : 'TBA'}
-                </p>
-              </div>
+                item={item}
+                onItemClick={handleItemClick}
+                onAddToList={addToList}
+                addingItem={addingItem}
+                currentTheme={currentTheme}
+                isDesktop={isDesktop}
+              />
             ))}
           </div>
         )}
 
         {/* Loading indicator */}
-        {loading && !showSearch && (
+        {((loading && !showSearch && activeCategory !== 'recommendations') ||
+          (recommendationsLoading && activeCategory === 'recommendations' && recommendations.length > 0)) && (
           <div
             style={{
               display: 'flex',
@@ -1185,8 +1341,9 @@ export const DiscoverPage = memo(() => {
           </div>
         )}
 
-        {/* Bottom padding for better scrolling */}
-        <div style={{ height: '20px' }} />
+        {/* Bottom padding */}
+        <div style={{ height: '80px' }} />
+        </div>
       </div>
 
       {/* Snackbar for success feedback */}

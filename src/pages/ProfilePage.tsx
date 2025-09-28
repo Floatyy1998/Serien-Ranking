@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { 
-  Person, Settings, Logout, Star, PlayCircle, 
+import {
+  Person, Settings, Logout, Star, PlayCircle,
   CalendarToday, Movie, TrendingUp, EmojiEvents,
   ChevronRight, Palette, Search, Group
 } from '@mui/icons-material';
@@ -416,7 +416,7 @@ export const ProfilePage = () => {
           <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
         </button>
         
-        <button 
+        <button
           onClick={() => navigate('/settings')}
           style={{
             width: '100%',

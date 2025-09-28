@@ -2,7 +2,7 @@ import { Movie as MovieIcon, Public, Star, Tv as TvIcon } from '@mui/icons-mater
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { QuickFilter } from '../components/QuickFilter';
@@ -28,6 +28,7 @@ interface PublicItem {
 export const PublicProfilePage: React.FC = () => {
   const { publicId } = useParams();
   const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Try to use theme, but fallback to default if not in ThemeProvider
   let currentTheme: any;
@@ -391,6 +392,108 @@ export const PublicProfilePage: React.FC = () => {
 
   const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
 
+  // Restore scroll position only when coming back from detail pages
+  useEffect(() => {
+    // Check if we should restore scroll position
+    const shouldRestore = sessionStorage.getItem('shouldRestorePublicProfileScroll');
+
+    if (shouldRestore === 'true' && currentItems.length > 0) {
+      // Clear the flag immediately
+      sessionStorage.removeItem('shouldRestorePublicProfileScroll');
+
+      // Use public profile specific scroll position
+      const scrollKey = `publicProfilePageScroll_${publicId}_${activeTab}`;
+      const position = sessionStorage.getItem(scrollKey);
+      const scrollSource = sessionStorage.getItem(`publicProfilePageScrollSource_${publicId}_${activeTab}`);
+
+      if (position) {
+        const scrollTop = parseInt(position, 10);
+        if (scrollTop > 0) {
+          // Wait for DOM to be fully rendered
+          const restoreScroll = () => {
+            // Find the correct parent element
+            if (scrollSource && scrollSource.startsWith('parent-')) {
+              const parentIndex = parseInt(scrollSource.split('-')[1], 10);
+              let element = scrollRef.current?.parentElement;
+              for (let i = 0; i < parentIndex && element; i++) {
+                element = element.parentElement;
+              }
+              if (element) {
+                // Wait for the element to be scrollable
+                if (element.scrollHeight > element.clientHeight) {
+                  element.scrollTop = scrollTop;
+
+                  // Verify it worked and retry if needed
+                  setTimeout(() => {
+                    if (element && element.scrollTop < scrollTop * 0.8) {
+                      element.scrollTop = scrollTop;
+                    }
+                  }, 50);
+                } else {
+                  setTimeout(restoreScroll, 200);
+                }
+              }
+            }
+          };
+
+          setTimeout(restoreScroll, 500);
+        }
+      }
+    }
+  }, [publicId, activeTab, currentItems.length]); // Trigger when publicId, items are loaded and tab changes
+
+  // Save scroll position before navigating away
+  const handleItemClick = (item: any, type: 'series' | 'movie') => {
+    // Try to get scroll position from multiple sources
+    let position = 0;
+    let scrollSource = '';
+
+    // Check all possible parents for scroll
+    let element = scrollRef.current?.parentElement;
+    let parentIndex = 0;
+    while (element && parentIndex < 5) {
+      if (element.scrollTop > 0) {
+        position = element.scrollTop;
+        scrollSource = `parent-${parentIndex}`;
+        break;
+      }
+      element = element.parentElement;
+      parentIndex++;
+    }
+
+    // If no parent scroll found, try the usual suspects
+    if (position === 0) {
+      if (scrollRef.current && scrollRef.current.scrollTop > 0) {
+        position = scrollRef.current.scrollTop;
+        scrollSource = 'container';
+      } else if (window.scrollY > 0) {
+        position = window.scrollY;
+        scrollSource = 'window';
+      } else if (document.documentElement.scrollTop > 0) {
+        position = document.documentElement.scrollTop;
+        scrollSource = 'documentElement';
+      } else if (document.body.scrollTop > 0) {
+        position = document.body.scrollTop;
+        scrollSource = 'body';
+      }
+    }
+
+    if (position > 0) {
+      try {
+        // Save public profile specific scroll position
+        const scrollKey = `publicProfilePageScroll_${publicId}_${activeTab}`;
+        sessionStorage.setItem(scrollKey, position.toString());
+        sessionStorage.setItem(`publicProfilePageScrollSource_${publicId}_${activeTab}`, scrollSource);
+        // Set flag that we're navigating to a detail page
+        sessionStorage.setItem('shouldRestorePublicProfileScroll', 'true');
+      } catch (error) {
+        console.error('Error saving scroll position:', error);
+      }
+    }
+
+    navigate(type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
+  };
+
   // Calculate average rating
   const averageRating = useMemo(() => {
     const allItems = [...profileSeries, ...profileMovies];
@@ -481,7 +584,7 @@ export const PublicProfilePage: React.FC = () => {
   }
 
   return (
-    <div>
+    <div ref={scrollRef}>
       {/* Header */}
       <header
         style={{
@@ -648,7 +751,7 @@ export const PublicProfilePage: React.FC = () => {
                 <motion.div
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate(isMovie ? `/movie/${item.id}` : `/series/${item.id}`)}
+                  onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
                   style={{
                     cursor: 'pointer',
                     position: 'relative',

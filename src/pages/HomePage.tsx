@@ -1176,7 +1176,7 @@ export const HomePage: React.FC = () => {
                               color: episode.watched ? '#4cd137' : '#ffd700',
                             }}
                           >
-                            S{episode.seasonNumber + 1} E{episode.episodeNumber} •{' '}
+                            S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
                             {episode.episodeName}
                           </p>
                         </div>
