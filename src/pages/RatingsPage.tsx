@@ -15,7 +15,8 @@ import { QuickFilter } from '../components/QuickFilter';
 export const RatingsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth()!;
+  const authContext = useAuth();
+  const user = authContext?.user;
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme, getMobilePageBackground, getMobileHeaderStyle } = useTheme();
@@ -102,6 +103,22 @@ export const RatingsPage: React.FC = () => {
     return null;
   });
 
+  const [searchQuery, setSearchQuery] = useState<string>(() => {
+    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
+    if (fromMobileBackButton) {
+      try {
+        const stored = sessionStorage.getItem('ratingsPageState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return parsed.searchQuery || '';
+        }
+      } catch (error) {
+        console.error('Error loading searchQuery:', error);
+      }
+    }
+    return '';
+  });
+
   // Save state to sessionStorage whenever any state changes
   useEffect(() => {
     const state = {
@@ -109,14 +126,15 @@ export const RatingsPage: React.FC = () => {
       sortOption,
       selectedGenre,
       selectedProvider,
-      quickFilter
+      quickFilter,
+      searchQuery
     };
     try {
       sessionStorage.setItem('ratingsPageState', JSON.stringify(state));
     } catch (error) {
       console.error('Error saving state:', error);
     }
-  }, [activeTab, sortOption, selectedGenre, selectedProvider, quickFilter]);
+  }, [activeTab, sortOption, selectedGenre, selectedProvider, quickFilter, searchQuery]);
 
   // Check for tab parameter in URL and navigation source
   const params = new URLSearchParams(location.search);
@@ -135,7 +153,7 @@ export const RatingsPage: React.FC = () => {
     genre: selectedGenre !== 'Alle' ? selectedGenre : undefined,
     provider: selectedProvider || undefined,
     quickFilter: quickFilter || undefined,
-    search: undefined
+    search: searchQuery || undefined
   };
 
   // Handle navigation - reset by default, restore only if coming from MobileBackButton
@@ -147,6 +165,7 @@ export const RatingsPage: React.FC = () => {
       setSelectedGenre('Alle');
       setSelectedProvider(null);
       setQuickFilter(null);
+      setSearchQuery('');
 
       // Reset scroll position
       if (scrollRef.current) {
@@ -161,42 +180,49 @@ export const RatingsPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, location.search]); // React to navigation changes
 
-  // Restore scroll position only when coming back from detail pages
-  useEffect(() => {
-    // Check if we should restore scroll position
-    const shouldRestore = sessionStorage.getItem('shouldRestoreRatingsScroll');
-
-    if (shouldRestore === 'true') {
-      // Clear the flag immediately
-      sessionStorage.removeItem('shouldRestoreRatingsScroll');
-
-      // Delay to ensure DOM is ready
-      setTimeout(() => {
-        try {
-          // Use tab-specific scroll position based on current activeTab
-          const scrollKey = `ratingsPageScroll_${activeTab}`;
-          const position = sessionStorage.getItem(scrollKey);
-          if (position && scrollRef.current) {
-            const scrollTop = parseInt(position, 10);
-            if (scrollTop > 0) {
-              scrollRef.current.scrollTop = scrollTop;
-            }
-          }
-        } catch (error) {
-          console.error('Error restoring scroll position:', error);
-        }
-      }, 300); // Increased delay to ensure DOM is fully ready
-    }
-  }, [activeTab]); // Run when activeTab changes
 
   // Save scroll position before navigating away
   const handleItemClick = (item: any, type: 'series' | 'movie') => {
-    if (scrollRef.current) {
-      const position = scrollRef.current.scrollTop;
+    // Try to get scroll position from multiple sources
+    let position = 0;
+    let scrollSource = '';
+
+    // Check all possible parents for scroll
+    let element = scrollRef.current?.parentElement;
+    let parentIndex = 0;
+    while (element && parentIndex < 5) {
+      if (element.scrollTop > 0) {
+        position = element.scrollTop;
+        scrollSource = `parent-${parentIndex}`;
+        break;
+      }
+      element = element.parentElement;
+      parentIndex++;
+    }
+
+    // If no parent scroll found, try the usual suspects
+    if (position === 0) {
+      if (scrollRef.current && scrollRef.current.scrollTop > 0) {
+        position = scrollRef.current.scrollTop;
+        scrollSource = 'container';
+      } else if (window.scrollY > 0) {
+        position = window.scrollY;
+        scrollSource = 'window';
+      } else if (document.documentElement.scrollTop > 0) {
+        position = document.documentElement.scrollTop;
+        scrollSource = 'documentElement';
+      } else if (document.body.scrollTop > 0) {
+        position = document.body.scrollTop;
+        scrollSource = 'body';
+      }
+    }
+
+    if (position > 0) {
       try {
         // Save tab-specific scroll position
         const scrollKey = `ratingsPageScroll_${activeTab}`;
         sessionStorage.setItem(scrollKey, position.toString());
+        sessionStorage.setItem(`ratingsPageScrollSource_${activeTab}`, scrollSource);
         // Set flag that we're navigating to a detail page
         sessionStorage.setItem('shouldRestoreRatingsScroll', 'true');
       } catch (error) {
@@ -367,7 +393,7 @@ export const RatingsPage: React.FC = () => {
     });
 
     return filtered;
-  }, [seriesList, filters, user]);
+  }, [seriesList, filters.sortBy, filters.genre, filters.provider, filters.quickFilter, filters.search, user]);
 
   // Get ALL movies (including unrated with rating 0)
   const ratedMovies = useMemo(() => {
@@ -461,9 +487,71 @@ export const RatingsPage: React.FC = () => {
     });
 
     return filtered;
-  }, [movieList, filters, user]);
+  }, [movieList, filters.sortBy, filters.genre, filters.provider, filters.quickFilter, filters.search, user]);
 
   const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
+
+  // Restore scroll position only when coming back from detail pages
+  useEffect(() => {
+    // Check if we should restore scroll position
+    const shouldRestore = sessionStorage.getItem('shouldRestoreRatingsScroll');
+
+    if (shouldRestore === 'true' && currentItems.length > 0) {
+      // Clear the flag immediately
+      sessionStorage.removeItem('shouldRestoreRatingsScroll');
+
+      // Get the correct tab from stored state
+      let tabForScroll = activeTab;
+      try {
+        const stored = sessionStorage.getItem('ratingsPageState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          tabForScroll = parsed.activeTab || activeTab;
+        }
+      } catch (error) {
+        console.error('Error loading tab for scroll:', error);
+      }
+
+      // Use tab-specific scroll position
+      const scrollKey = `ratingsPageScroll_${tabForScroll}`;
+      const position = sessionStorage.getItem(scrollKey);
+      const scrollSource = sessionStorage.getItem(`ratingsPageScrollSource_${tabForScroll}`);
+
+      if (position) {
+        const scrollTop = parseInt(position, 10);
+        if (scrollTop > 0) {
+          // Wait for DOM to be fully rendered
+          const restoreScroll = () => {
+            // Find the correct parent element
+            if (scrollSource && scrollSource.startsWith('parent-')) {
+              const parentIndex = parseInt(scrollSource.split('-')[1], 10);
+              let element = scrollRef.current?.parentElement;
+              for (let i = 0; i < parentIndex && element; i++) {
+                element = element.parentElement;
+              }
+              if (element) {
+                // Wait for the element to be scrollable
+                if (element.scrollHeight > element.clientHeight) {
+                  element.scrollTop = scrollTop;
+
+                  // Verify it worked and retry if needed
+                  setTimeout(() => {
+                    if (element && element.scrollTop < scrollTop * 0.8) {
+                      element.scrollTop = scrollTop;
+                    }
+                  }, 50);
+                } else {
+                  setTimeout(restoreScroll, 200);
+                }
+              }
+            }
+          };
+
+          setTimeout(restoreScroll, 500);
+        }
+      }
+    }
+  }, [activeTab, currentItems.length]); // Trigger when items are loaded
 
   // Nur Items mit Bewertungen für den Durchschnitt berücksichtigen (Rating > 0)
   const itemsWithRating = currentItems.filter((item) => {
@@ -476,6 +564,25 @@ export const RatingsPage: React.FC = () => {
       ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateOverallRating(item)), 0) /
         itemsWithRating.length
       : 0;
+
+  // Early return if user is not loaded yet
+  if (!user) {
+    return (
+      <div
+        style={{
+          minHeight: '100%',
+          background: getMobilePageBackground(),
+          color: currentTheme.text.primary,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -905,6 +1012,7 @@ export const RatingsPage: React.FC = () => {
           if (newFilters.genre !== undefined) setSelectedGenre(newFilters.genre || 'Alle');
           if (newFilters.provider !== undefined) setSelectedProvider(newFilters.provider);
           if (newFilters.quickFilter !== undefined) setQuickFilter(newFilters.quickFilter || null);
+          if (newFilters.search !== undefined) setSearchQuery(newFilters.search || '');
         }}
         isMovieMode={activeTab === 'movies'}
         isRatingsMode={true}

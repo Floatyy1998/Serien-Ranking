@@ -3,6 +3,8 @@ import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
 import { Series } from '../types/Series';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 
 interface SeriesListContextType {
   seriesList: Series[];
@@ -77,6 +79,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   const detectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const firstWatchedAtFixedRef = useRef(false);
 
   // 🚀 Enhanced Cache mit Offline-Support für Serien
   const {
@@ -94,6 +97,85 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   // Konvertiere Object zu Array
   const seriesList: Series[] = seriesData ? Object.values(seriesData) : [];
+
+  // Function to fix missing firstWatchedAt dates (run once)
+  const fixMissingFirstWatchedAt = useCallback(async (userId: string, seriesData: Record<string, Series>) => {
+    console.log('🔧 Starting firstWatchedAt fix for user:', userId);
+    console.log('📊 Series data keys:', Object.keys(seriesData));
+
+    try {
+      const todayISO = new Date().toISOString();
+      const updates: { [key: string]: any } = {};
+      let totalUpdated = 0;
+      let totalWatchedEpisodes = 0;
+      let totalEpisodesWithFirstWatched = 0;
+
+      // Iterate through all series
+      Object.keys(seriesData).forEach((seriesKey) => {
+        const series: Series = seriesData[seriesKey];
+
+        if (!series.seasons) return;
+
+        // Iterate through all seasons
+        series.seasons.forEach((season, seasonIndex) => {
+          if (!season.episodes) return;
+
+          // Iterate through all episodes
+          season.episodes.forEach((episode, episodeIndex) => {
+            if (episode.watched) {
+              totalWatchedEpisodes++;
+
+              if (episode.firstWatchedAt) {
+                totalEpisodesWithFirstWatched++;
+              } else {
+                // Check if episode is watched but doesn't have firstWatchedAt
+                const episodePath = `${userId}/serien/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
+                updates[episodePath] = todayISO;
+                totalUpdated++;
+              }
+            }
+          });
+        });
+      });
+
+      console.log('📈 Statistics:', {
+        totalWatchedEpisodes,
+        totalEpisodesWithFirstWatched,
+        episodesToFix: totalUpdated
+      });
+
+      // Apply all updates in a single batch
+      if (Object.keys(updates).length > 0) {
+        console.log('💾 Applying updates to Firebase...');
+        await firebase.database().ref().update(updates);
+        console.log(`✅ Fixed ${totalUpdated} episodes with missing firstWatchedAt`);
+      } else {
+        console.log('✅ No episodes need fixing - all watched episodes already have firstWatchedAt');
+      }
+
+      console.log('🏁 FirstWatchedAt fix completed successfully');
+
+    } catch (error) {
+      console.error('❌ Error fixing firstWatchedAt dates:', error);
+      console.log('🏁 FirstWatchedAt fix completed with errors');
+    }
+  }, []);
+
+  // Make fix function available globally for manual execution
+  useEffect(() => {
+    if (user && seriesData && !loading) {
+      // Make function available in console
+      (window as any).fixFirstWatchedAt = () => {
+        console.log('🚀 Running firstWatchedAt fix manually...');
+        fixMissingFirstWatchedAt(user.uid, seriesData);
+      };
+
+      console.log('💡 Type "fixFirstWatchedAt()" in console to fix missing firstWatchedAt dates');
+    } else {
+      // Remove function when not ready
+      delete (window as any).fixFirstWatchedAt;
+    }
+  }, [user, seriesData, loading, fixMissingFirstWatchedAt]);
 
   // Signal when initial data is loaded
   useEffect(() => {
@@ -187,6 +269,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setSeriesWithNewSeasons([]);
       setHasCheckedForNewSeasons(false);
       detectionRunRef.current = false;
+      firstWatchedAtFixedRef.current = false; // Reset fix flag on logout
 
       if (detectionTimeoutRef.current) {
         clearTimeout(detectionTimeoutRef.current);

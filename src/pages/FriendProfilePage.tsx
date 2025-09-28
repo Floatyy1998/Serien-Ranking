@@ -1,6 +1,6 @@
 import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 // import { useAuth } from '../App';
 import firebase from 'firebase/compat/app';
@@ -31,6 +31,7 @@ export const FriendProfilePage: React.FC = () => {
   const { id: friendId } = useParams();
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   // const { user } = useAuth()!;
   const [loading, setLoading] = useState(true);
   const [friendName, setFriendName] = useState('');
@@ -356,6 +357,56 @@ export const FriendProfilePage: React.FC = () => {
 
   const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
 
+  // Restore scroll position only when coming back from detail pages
+  useEffect(() => {
+    // Check if we should restore scroll position
+    const shouldRestore = sessionStorage.getItem('shouldRestoreFriendProfileScroll');
+
+    if (shouldRestore === 'true' && currentItems.length > 0) {
+      // Clear the flag immediately
+      sessionStorage.removeItem('shouldRestoreFriendProfileScroll');
+
+      // Use friend-specific scroll position
+      const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
+      const position = sessionStorage.getItem(scrollKey);
+      const scrollSource = sessionStorage.getItem(`friendProfilePageScrollSource_${friendId}_${activeTab}`);
+
+      if (position) {
+        const scrollTop = parseInt(position, 10);
+        if (scrollTop > 0) {
+          // Wait for DOM to be fully rendered
+          const restoreScroll = () => {
+            // Find the correct parent element
+            if (scrollSource && scrollSource.startsWith('parent-')) {
+              const parentIndex = parseInt(scrollSource.split('-')[1], 10);
+              let element = scrollRef.current?.parentElement;
+              for (let i = 0; i < parentIndex && element; i++) {
+                element = element.parentElement;
+              }
+              if (element) {
+                // Wait for the element to be scrollable
+                if (element.scrollHeight > element.clientHeight) {
+                  element.scrollTop = scrollTop;
+
+                  // Verify it worked and retry if needed
+                  setTimeout(() => {
+                    if (element && element.scrollTop < scrollTop * 0.8) {
+                      element.scrollTop = scrollTop;
+                    }
+                  }, 50);
+                } else {
+                  setTimeout(restoreScroll, 200);
+                }
+              }
+            }
+          };
+
+          setTimeout(restoreScroll, 500);
+        }
+      }
+    }
+  }, [friendId, activeTab, currentItems.length]); // Trigger when friend, items are loaded and tab changes
+
   // Calculate average rating
   const itemsWithRating = currentItems.filter((item) => {
     const rating = parseFloat(calculateFriendRating(item));
@@ -367,6 +418,58 @@ export const FriendProfilePage: React.FC = () => {
       ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateFriendRating(item)), 0) /
         itemsWithRating.length
       : 0;
+
+  // Save scroll position before navigating away
+  const handleItemClick = (item: any, type: 'series' | 'movie') => {
+    // Try to get scroll position from multiple sources
+    let position = 0;
+    let scrollSource = '';
+
+    // Check all possible parents for scroll
+    let element = scrollRef.current?.parentElement;
+    let parentIndex = 0;
+    while (element && parentIndex < 5) {
+      if (element.scrollTop > 0) {
+        position = element.scrollTop;
+        scrollSource = `parent-${parentIndex}`;
+        break;
+      }
+      element = element.parentElement;
+      parentIndex++;
+    }
+
+    // If no parent scroll found, try the usual suspects
+    if (position === 0) {
+      if (scrollRef.current && scrollRef.current.scrollTop > 0) {
+        position = scrollRef.current.scrollTop;
+        scrollSource = 'container';
+      } else if (window.scrollY > 0) {
+        position = window.scrollY;
+        scrollSource = 'window';
+      } else if (document.documentElement.scrollTop > 0) {
+        position = document.documentElement.scrollTop;
+        scrollSource = 'documentElement';
+      } else if (document.body.scrollTop > 0) {
+        position = document.body.scrollTop;
+        scrollSource = 'body';
+      }
+    }
+
+    if (position > 0) {
+      try {
+        // Save friend-specific scroll position
+        const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
+        sessionStorage.setItem(scrollKey, position.toString());
+        sessionStorage.setItem(`friendProfilePageScrollSource_${friendId}_${activeTab}`, scrollSource);
+        // Set flag that we're navigating to a detail page
+        sessionStorage.setItem('shouldRestoreFriendProfileScroll', 'true');
+      } catch (error) {
+        console.error('Error saving scroll position:', error);
+      }
+    }
+
+    navigate(type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
+  };
 
   if (loading) {
     return (
@@ -386,7 +489,7 @@ export const FriendProfilePage: React.FC = () => {
   }
 
   return (
-    <div>
+    <div ref={scrollRef}>
       {/* Header */}
       <header
         style={{
@@ -508,9 +611,9 @@ export const FriendProfilePage: React.FC = () => {
               display: 'grid',
               gridTemplateColumns:
                 window.innerWidth >= 1200
-                  ? 'repeat(6, 1fr)'
+                  ? 'repeat(8, 1fr)'
                   : window.innerWidth >= 768
-                    ? 'repeat(4, 1fr)'
+                    ? 'repeat(5, 1fr)'
                     : 'repeat(auto-fill, minmax(120px, 1fr))',
               gap: window.innerWidth >= 768 ? '20px' : '16px',
             }}
@@ -551,7 +654,7 @@ export const FriendProfilePage: React.FC = () => {
                 <motion.div
                   key={item.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate(isMovie ? `/movie/${item.id}` : `/series/${item.id}`)}
+                  onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
                   style={{
                     cursor: 'pointer',
                     position: 'relative',
