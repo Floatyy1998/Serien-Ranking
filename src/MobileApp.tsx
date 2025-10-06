@@ -78,7 +78,7 @@ export const MobileApp = () => {
           <Route
             path="/recently-watched"
             element={
-              <Layout>
+              <Layout hideNav>
                 <RecentlyWatchedPage />
               </Layout>
             }
