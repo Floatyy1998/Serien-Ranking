@@ -4,8 +4,8 @@ import {
   Check,
   CheckCircle,
   ChevronRight,
-  EmojiEvents,
   Group,
+  History,
   LocalFireDepartment,
   Movie as MovieIcon,
   NewReleases,
@@ -643,7 +643,7 @@ export const HomePage: React.FC = () => {
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '10px',
           padding: '0 20px',
-          marginBottom: '32px',
+          marginBottom: '16px',
         }}
       >
         {[
@@ -660,9 +660,9 @@ export const HomePage: React.FC = () => {
             color: currentTheme.status.success,
           },
           {
-            icon: <EmojiEvents />,
-            label: 'Badges',
-            path: '/badges',
+            icon: <History />,
+            label: 'Verlauf',
+            path: '/recently-watched',
             color: currentTheme.status.error,
           },
           {
@@ -701,6 +701,57 @@ export const HomePage: React.FC = () => {
             </span>
           </motion.button>
         ))}
+      </div>
+
+      {/* Secondary Actions Grid */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '10px',
+          padding: '0 20px',
+          marginBottom: '32px',
+        }}
+      >
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/badges')}
+          style={{
+            padding: isDesktop ? '12px' : '14px',
+            background: `linear-gradient(135deg, ${currentTheme.primary}1A 0%, ${currentTheme.accent}1A 100%)`,
+            border: `1px solid ${currentTheme.primary}33`,
+            borderRadius: isDesktop ? '12px' : '12px',
+            color: currentTheme.primary,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+        >
+          <AutoAwesome style={{ fontSize: '20px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 600 }}>Badges</span>
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/pets')}
+          style={{
+            padding: isDesktop ? '12px' : '14px',
+            background: `linear-gradient(135deg, ${currentTheme.status.success}1A 0%, ${currentTheme.status.info.main}1A 100%)`,
+            border: `1px solid ${currentTheme.status.success}33`,
+            borderRadius: isDesktop ? '12px' : '12px',
+            color: currentTheme.status.success,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+        >
+          <LocalFireDepartment style={{ fontSize: '20px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 600 }}>Pets</span>
+        </motion.button>
       </div>
 
       {/* Continue Watching Section - Like Today New */}
