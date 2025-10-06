@@ -14,6 +14,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { ProfileSettingsPage } from './pages/ProfileSettingsPage';
 import { RatingPage } from './pages/RatingPage';
 import { RatingsPage } from './pages/RatingsPage';
+import { RecentlyWatchedPage } from './pages/RecentlyWatchedPage';
 import { SearchPage } from './pages/SearchPage';
 import { SeriesDetailPage } from './pages/SeriesDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -71,6 +72,14 @@ export const MobileApp = () => {
             element={
               <Layout>
                 <NewEpisodesPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/recently-watched"
+            element={
+              <Layout>
+                <RecentlyWatchedPage />
               </Layout>
             }
           />
