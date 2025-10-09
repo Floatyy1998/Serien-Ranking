@@ -209,14 +209,14 @@ class PetService {
     } else {
       const hoursSinceLastUpdate = minutesSinceLastUpdate / 60;
 
-      // Hunger steigt um 4 pro Stunde seit letztem Update (noch schneller)
-      // Bei Start-Hunger von 50: Nach 12.5h erreicht Hunger 100
-      // Wenn Pet mit Hunger 30 gefüttert wird: Nach 17.5h erreicht Hunger 100
-      const hungerIncrease = Math.floor(hoursSinceLastUpdate * 4);
+      // Hunger steigt um 1.5 pro Stunde seit letztem Update (langsamer)
+      // Bei Start-Hunger von 50: Nach ~33h erreicht Hunger 100
+      // Wenn Pet mit Hunger 30 gefüttert wird: Nach ~47h erreicht Hunger 100
+      const hungerIncrease = Math.floor(hoursSinceLastUpdate * 1.5);
       pet.hunger = Math.min(100, pet.hunger + hungerIncrease);
 
-      // Happiness sinkt schneller über Zeit (3 pro Stunde seit letztem Update)
-      const happinessDecrease = Math.floor(hoursSinceLastUpdate * 3);
+      // Happiness sinkt langsamer über Zeit (1 pro Stunde seit letztem Update)
+      const happinessDecrease = Math.floor(hoursSinceLastUpdate * 1);
       pet.happiness = Math.max(0, pet.happiness - happinessDecrease);
     }
 
@@ -243,10 +243,10 @@ class PetService {
       hasDied = true;
       deathCause = 'sadness';
     }
-    // Stirbt nach 7 Tagen ohne Fütterung (Vernachlässigung)
+    // Stirbt nach 14 Tagen ohne Fütterung (Vernachlässigung)
     else if (lastFedTime && !isNaN(lastFedTime.getTime())) {
       const daysSinceLastFed = (now.getTime() - lastFedTime.getTime()) / (1000 * 60 * 60 * 24);
-      if (daysSinceLastFed >= 7) {
+      if (daysSinceLastFed >= 14) {
         hasDied = true;
         deathCause = 'neglect';
       }

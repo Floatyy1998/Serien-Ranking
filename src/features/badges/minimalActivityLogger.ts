@@ -281,9 +281,10 @@ export const logWatchlistAdded = async (
   try {
     // Friend-Activity
     await logFriendActivity(userId, {
-      type: 'series_watchlisted',
+      type: 'series_added_to_watchlist',
       itemTitle: seriesTitle,
       tmdbId,
+      itemType: 'series',
     });
 
     // Badge-Check (falls Watchlist-Badges existieren)

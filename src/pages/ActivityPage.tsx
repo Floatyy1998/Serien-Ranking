@@ -100,6 +100,7 @@ export const ActivityPage = () => {
       activity.type === 'series_added' ||
       activity.type === 'series_rated' ||
       activity.type === 'rating_updated' ||
+      activity.type === 'series_added_to_watchlist' ||
       (activity as any).itemType === 'series'
     ) {
       const series = seriesList.find((s) => s.id === tmdbId || s.id === Number(tmdbId));
@@ -179,6 +180,7 @@ export const ActivityPage = () => {
         activity.type === 'series_added' ||
         activity.type === 'series_rated' ||
         activity.type === 'rating_updated' ||
+        activity.type === 'series_added_to_watchlist' ||
         ((activity as any).itemType === 'series' || (!(activity as any).itemType && activity.type !== 'movie_added' && activity.type !== 'movie_rated' && activity.type !== 'rating_updated_movie'))
       );
     }
@@ -643,6 +645,7 @@ export const ActivityPage = () => {
                               const isAdded = activity.type === 'movie_added' || activity.type === 'series_added';
                               const isRated = activity.type === 'movie_rated' || activity.type === 'series_rated' ||
                                             activity.type === 'rating_updated_movie' || activity.type === 'rating_updated';
+                              const isWatchlisted = activity.type === 'series_added_to_watchlist' || activity.type === 'movie_added_to_watchlist';
 
                               const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
                               const itemType = (activity as any).itemType;
@@ -752,7 +755,7 @@ export const ActivityPage = () => {
                                         fontSize: '13px',
                                         color: currentTheme.text.secondary,
                                       }}>
-                                        {isAdded ? 'Hinzugefügt' : (isRated || hasRating) ? 'Bewertet' : 'Aktivität'}
+                                        {isAdded ? 'Hinzugefügt' : isWatchlisted ? 'Auf Watchlist' : (isRated || hasRating) ? 'Bewertet' : 'Aktivität'}
                                       </span>
                                       {hasRating && (
                                         <div style={{
