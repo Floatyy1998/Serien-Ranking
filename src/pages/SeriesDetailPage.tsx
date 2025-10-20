@@ -30,6 +30,7 @@ import { BackButton } from '../components/BackButton';
 import { CastCrew } from '../components/CastCrew';
 import { Dialog } from '../components/Dialog';
 import { ProviderBadges } from '../components/ProviderBadges';
+import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
 
 export const SeriesDetailPage = memo(() => {
   const { id } = useParams();
@@ -619,6 +620,13 @@ export const SeriesDetailPage = memo(() => {
                 • ⭐ {overallRating}
               </span>
             )}
+            {/* Friends Who Have This */}
+            {!isReadOnlyTmdbSeries && parseFloat(overallRating) > 0 && series && (
+              <>
+                <span style={{ opacity: 0.5 }}>•</span>
+                <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
+              </>
+            )}
           </div>
 
           {/* Status Badge & Genres */}
@@ -912,6 +920,7 @@ export const SeriesDetailPage = memo(() => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
+              position: 'relative',
             }}
           >
             <Star
