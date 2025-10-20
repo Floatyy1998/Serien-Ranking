@@ -1,25 +1,19 @@
-import { BackButton } from '../components/BackButton';
-import { Dialog } from '../components/Dialog';
-import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
-import {
-  Delete,
-  Info,
-  People,
-  Star,
-  Visibility,
-} from '@mui/icons-material';
+import { Delete, Info, People, Star } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useCallback, useEffect, useMemo, memo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../App';
-import { useMovieList } from '../contexts/MovieListProvider';
-import { Movie } from '../types/Movie';
-import { logMovieAdded } from '../features/badges/minimalActivityLogger';
-import { useTheme } from '../contexts/ThemeContext';
+import { BackButton } from '../components/BackButton';
 import { CastCrew } from '../components/CastCrew';
+import { Dialog } from '../components/Dialog';
+import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
 import { ProviderBadges } from '../components/ProviderBadges';
-import { motion } from 'framer-motion';
+import { useMovieList } from '../contexts/MovieListProvider';
+import { useTheme } from '../contexts/ThemeContext';
+import { logMovieAdded } from '../features/badges/minimalActivityLogger';
+import { Movie } from '../types/Movie';
 
 export const MovieDetailPage = memo(() => {
   const { id } = useParams();
@@ -31,8 +25,16 @@ export const MovieDetailPage = memo(() => {
   const [loading, setLoading] = useState(false);
   const [tmdbMovie, setTmdbMovie] = useState<Movie | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
-  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning'; onConfirm?: () => void }>({ open: false, message: '', type: 'info' });
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    onConfirm?: () => void;
+  }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
 
   // Find the movie locally first
   const localMovie = useMemo(() => {
@@ -44,20 +46,22 @@ export const MovieDetailPage = memo(() => {
   // State for providers
   const [providers, setProviders] = useState<any>(null);
   // State for TMDB rating data
-  const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(null);
+  const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(
+    null
+  );
   // State for IMDB rating from OMDb
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
-    
+
     // ALWAYS fetch backdrop and providers from TMDB
     if (id && apiKey) {
       // Fetch backdrop and TMDB rating
       fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.backdrop_path) {
             setTmdbBackdrop(data.backdrop_path);
           }
@@ -65,23 +69,23 @@ export const MovieDetailPage = memo(() => {
           if (data.vote_average && data.vote_count) {
             setTmdbRating({
               vote_average: data.vote_average,
-              vote_count: data.vote_count
+              vote_count: data.vote_count,
             });
           }
         })
         .catch(() => {});
-      
+
       // Fetch providers
       fetch(`https://api.themoviedb.org/3/movie/${id}/watch/providers?api_key=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.results?.DE?.flatrate) {
             setProviders(data.results.DE.flatrate);
           }
         })
         .catch(() => {});
     }
-    
+
     // Full fetch if not found locally
     if (!localMovie && id && apiKey && !tmdbMovie) {
       setLoading(true);
@@ -108,7 +112,7 @@ export const MovieDetailPage = memo(() => {
               begründung: '',
               imdb: { imdb_id: '' },
               rating: {},
-              wo: { wo: '' }
+              wo: { wo: '' },
             };
             setTmdbMovie(movie);
           }
@@ -128,12 +132,12 @@ export const MovieDetailPage = memo(() => {
 
     if (imdbId && omdbKey) {
       fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${omdbKey}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.imdbRating && data.imdbRating !== 'N/A') {
             setImdbRating({
               rating: parseFloat(data.imdbRating),
-              votes: data.imdbVotes || '0'
+              votes: data.imdbVotes || '0',
             });
           }
         })
@@ -152,7 +156,6 @@ export const MovieDetailPage = memo(() => {
     if (!movie?.rating || !user?.uid) return 0;
     return movie.rating[user.uid] || 0;
   }, [movie, user]);
-
 
   // Get backdrop URL - use actual backdrop field or TMDB backdrop
   const getBackdropUrl = (backdropPath: string | undefined): string => {
@@ -180,25 +183,21 @@ export const MovieDetailPage = memo(() => {
     return `${hours}h ${mins}m`;
   };
 
-
   const handleAddMovie = useCallback(async () => {
     if (!movie || !user) return;
 
     setIsAdding(true);
     try {
-      const response = await fetch(
-        'https://serienapi.konrad-dinges.de/addMovie',
-        {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user: import.meta.env.VITE_USER,
-            id: movie.id,
-            uuid: user.uid,
-          }),
-        }
-      );
+      const response = await fetch('https://serienapi.konrad-dinges.de/addMovie', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: import.meta.env.VITE_USER,
+          id: movie.id,
+          uuid: user.uid,
+        }),
+      });
 
       if (response.ok) {
         // Activity-Logging für Friend + Badge-System (wie Desktop)
@@ -209,17 +208,12 @@ export const MovieDetailPage = memo(() => {
         } else if (tmdbMovie && 'poster_path' in tmdbMovie) {
           posterPath = (tmdbMovie as any).poster_path;
         }
-        await logMovieAdded(
-          user.uid,
-          movie.title || 'Unbekannter Film',
-          movie.id,
-          posterPath
-        );
-        
+        await logMovieAdded(user.uid, movie.title || 'Unbekannter Film', movie.id, posterPath);
+
         // Show success snackbar
         setSnackbar({ open: true, message: 'Film erfolgreich hinzugefügt!' });
         setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
-        
+
         // Navigate to the movie detail page with the movie data
         navigate(`/movie/${movie.id}`);
       } else {
@@ -244,16 +238,14 @@ export const MovieDetailPage = memo(() => {
       setLoading(true);
 
       // Delete movie from Firebase
-      const movieRef = firebase
-        .database()
-        .ref(`${user.uid}/filme/${movie.nmr}`);
+      const movieRef = firebase.database().ref(`${user.uid}/filme/${movie.nmr}`);
 
       await movieRef.remove();
 
       // Show success message
       setSnackbar({ open: true, message: 'Film erfolgreich gelöscht!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
-      
+
       // Movie will be removed from list automatically via Firebase listener
       // No navigation needed - stay on current page
       setShowDeleteConfirm(false);
@@ -264,7 +256,6 @@ export const MovieDetailPage = memo(() => {
       setShowDeleteConfirm(false);
     }
   }, [movie, user, navigate]);
-
 
   if (!movie && !loading) {
     const apiKey = import.meta.env.VITE_API_TMDB;
@@ -279,13 +270,11 @@ export const MovieDetailPage = memo(() => {
           textAlign: 'center',
         }}
       >
-        <h2 style={{ fontSize: '24px', marginBottom: '16px' }}>
-          Film nicht gefunden
-        </h2>
+        <h2 style={{ fontSize: '24px', marginBottom: '16px' }}>Film nicht gefunden</h2>
         {!apiKey && (
           <p style={{ color: currentTheme.text.secondary, maxWidth: '400px' }}>
-            Dieser Film ist nicht in deiner Liste. Um Filme von Freunden
-            anzuzeigen, wird ein TMDB API-Schlüssel benötigt.
+            Dieser Film ist nicht in deiner Liste. Um Filme von Freunden anzuzeigen, wird ein TMDB
+            API-Schlüssel benötigt.
           </p>
         )}
         <button
@@ -324,8 +313,7 @@ export const MovieDetailPage = memo(() => {
   const isWatched = currentRating > 0;
 
   return (
-    <div
-    >
+    <div>
       {/* Hero Section with Backdrop */}
       <div
         style={{
@@ -352,8 +340,7 @@ export const MovieDetailPage = memo(() => {
             style={{
               width: '100%',
               height: '100%',
-              background:
-                `linear-gradient(135deg, ${currentTheme.status.error}33 0%, ${currentTheme.status.warning}33 100%)`,
+              background: `linear-gradient(135deg, ${currentTheme.status.error}33 0%, ${currentTheme.status.warning}33 100%)`,
             }}
           />
         )}
@@ -381,7 +368,7 @@ export const MovieDetailPage = memo(() => {
             justifyContent: 'space-between',
           }}
         >
-          <BackButton 
+          <BackButton
             style={{
               backdropFilter: 'blur(10px)',
             }}
@@ -466,15 +453,9 @@ export const MovieDetailPage = memo(() => {
               marginBottom: '8px',
             }}
           >
-            {movie.release_date && (
-              <span>{new Date(movie.release_date).getFullYear()}</span>
-            )}
+            {movie.release_date && <span>{new Date(movie.release_date).getFullYear()}</span>}
             {movie.runtime && <span>• {formatRuntime(movie.runtime)}</span>}
-            {averageRating > 0 && (
-              <span style={{ color: '#ffd700' }}>
-                • ⭐ {averageRating}
-              </span>
-            )}
+            {averageRating > 0 && <span style={{ color: '#ffd700' }}>• ⭐ {averageRating}</span>}
             {/* Friends Who Have This */}
             {!isReadOnlyTmdbMovie && averageRating > 0 && movie && (
               <>
@@ -485,12 +466,14 @@ export const MovieDetailPage = memo(() => {
           </div>
 
           {/* Ratings from TMDB and IMDB */}
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            marginBottom: '16px',
-            flexWrap: 'wrap'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              marginBottom: '16px',
+              flexWrap: 'wrap',
+            }}
+          >
             {/* TMDB Rating */}
             {tmdbRating && (
               <a
@@ -507,20 +490,22 @@ export const MovieDetailPage = memo(() => {
                   borderRadius: '16px',
                   fontSize: '13px',
                   textDecoration: 'none',
-                  color: 'white'
+                  color: 'white',
                 }}
               >
-                <span style={{
-                  fontWeight: 900,
-                  fontSize: '11px',
-                  background: '#01b4e4',
-                  color: '#0d253f',
-                  padding: '2px 4px',
-                  borderRadius: '4px'
-                }}>TMDB</span>
-                <span style={{ fontWeight: 600 }}>
-                  {tmdbRating.vote_average.toFixed(1)}/10
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: '11px',
+                    background: '#01b4e4',
+                    color: '#0d253f',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  TMDB
                 </span>
+                <span style={{ fontWeight: 600 }}>{tmdbRating.vote_average.toFixed(1)}/10</span>
                 <span style={{ fontSize: '11px', opacity: 0.7 }}>
                   ({(tmdbRating.vote_count / 1000).toFixed(1)}k)
                 </span>
@@ -543,20 +528,22 @@ export const MovieDetailPage = memo(() => {
                   borderRadius: '16px',
                   fontSize: '13px',
                   textDecoration: 'none',
-                  color: 'white'
+                  color: 'white',
                 }}
               >
-                <span style={{
-                  fontWeight: 900,
-                  fontSize: '11px',
-                  background: '#F5C518',
-                  color: '#000',
-                  padding: '2px 4px',
-                  borderRadius: '4px'
-                }}>IMDb</span>
-                <span style={{ fontWeight: 600 }}>
-                  {imdbRating.rating.toFixed(1)}/10
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: '11px',
+                    background: '#F5C518',
+                    color: '#000',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  IMDb
                 </span>
+                <span style={{ fontWeight: 600 }}>{imdbRating.rating.toFixed(1)}/10</span>
                 <span style={{ fontSize: '11px', opacity: 0.7 }}>
                   ({(parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)}k)
                 </span>
@@ -568,14 +555,17 @@ export const MovieDetailPage = memo(() => {
           {((movie.provider?.provider && movie.provider.provider.length > 0) || providers) && (
             <div style={{ marginBottom: '16px' }}>
               <ProviderBadges
-                providers={(movie.provider?.provider && movie.provider.provider.length > 0) ? movie.provider.provider : providers}
+                providers={
+                  movie.provider?.provider && movie.provider.provider.length > 0
+                    ? movie.provider.provider
+                    : providers
+                }
                 size="large"
                 maxDisplay={6}
                 showNames={false}
               />
             </div>
           )}
-
         </div>
       </div>
 
@@ -706,211 +696,207 @@ export const MovieDetailPage = memo(() => {
 
       {/* Content based on active tab */}
       {activeTab === 'cast' ? (
-        <CastCrew
-          tmdbId={movie.id}
-          mediaType="movie"
-          seriesData={movie}
-        />
+        <CastCrew tmdbId={movie.id} mediaType="movie" seriesData={movie} />
       ) : (
-      <div style={{ padding: '20px' }}>
-        {/* Overview */}
-        {(movie.beschreibung || movie.overview) && (
-          <div style={{ marginBottom: '24px' }}>
-            <h3
-              style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                marginBottom: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <Info style={{ fontSize: '18px' }} />
-              Handlung
-            </h3>
-            <p
-              style={{
-                fontSize: '14px',
-                lineHeight: 1.6,
-                color: 'rgba(255, 255, 255, 0.8)',
-              }}
-            >
-              {movie.beschreibung}
-            </p>
-          </div>
-        )}
+        <div style={{ padding: '20px' }}>
+          {/* Overview */}
+          {(movie.beschreibung || movie.overview) && (
+            <div style={{ marginBottom: '24px' }}>
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Info style={{ fontSize: '18px' }} />
+                Handlung
+              </h3>
+              <p
+                style={{
+                  fontSize: '14px',
+                  lineHeight: 1.6,
+                  color: 'rgba(255, 255, 255, 0.8)',
+                }}
+              >
+                {movie.beschreibung}
+              </p>
+            </div>
+          )}
 
-        {/* Genres */}
-        {movie.genre?.genres && movie.genre.genres.length > 0 && (
-          <div style={{ marginBottom: '24px' }}>
-            <h3
-              style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                marginBottom: '12px',
-              }}
-            >
-              Genres
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '8px',
-              }}
-            >
-              {movie.genre.genres.map((genre: string) => (
-                <span
-                  key={genre}
+          {/* Genres */}
+          {movie.genre?.genres && movie.genre.genres.length > 0 && (
+            <div style={{ marginBottom: '24px' }}>
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  marginBottom: '12px',
+                }}
+              >
+                Genres
+              </h3>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                }}
+              >
+                {movie.genre.genres.map((genre: string) => (
+                  <span
+                    key={genre}
+                    style={{
+                      padding: '6px 12px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                    }}
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Additional Info */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '16px',
+              marginBottom: '24px',
+            }}
+          >
+            {/* Budget not available in current data structure */}
+            {false && (
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  padding: '12px',
+                }}
+              >
+                <p
                   style={{
-                    padding: '6px 12px',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '20px',
                     fontSize: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    margin: '0 0 4px 0',
                   }}
                 >
-                  {genre}
-                </span>
-              ))}
-            </div>
+                  Budget
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    margin: 0,
+                  }}
+                >
+                  Budget N/A
+                </p>
+              </div>
+            )}
+
+            {/* Revenue not available in current data structure */}
+            {false && (
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  padding: '12px',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '12px',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    margin: '0 0 4px 0',
+                  }}
+                >
+                  Einspielergebnis
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    margin: 0,
+                  }}
+                >
+                  Revenue N/A
+                </p>
+              </div>
+            )}
+
+            {/* Original language not available in current data structure */}
+            {false && (
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  padding: '12px',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '12px',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    margin: '0 0 4px 0',
+                  }}
+                >
+                  Originalsprache
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    margin: 0,
+                  }}
+                >
+                  Language N/A
+                </p>
+              </div>
+            )}
+
+            {movie.status && (
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  padding: '12px',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '12px',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    margin: '0 0 4px 0',
+                  }}
+                >
+                  Status
+                </p>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    margin: 0,
+                  }}
+                >
+                  {movie.status === 'Released' ? 'Veröffentlicht' : movie.status}
+                </p>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Additional Info */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '16px',
-            marginBottom: '24px',
-          }}
-        >
-          {/* Budget not available in current data structure */}
-          {false && (
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                padding: '12px',
-              }}
-            >
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  margin: '0 0 4px 0',
-                }}
-              >
-                Budget
-              </p>
-              <p
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  margin: 0,
-                }}
-              >
-                Budget N/A
-              </p>
-            </div>
-          )}
-
-          {/* Revenue not available in current data structure */}
-          {false && (
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                padding: '12px',
-              }}
-            >
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  margin: '0 0 4px 0',
-                }}
-              >
-                Einspielergebnis
-              </p>
-              <p
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  margin: 0,
-                }}
-              >
-                Revenue N/A
-              </p>
-            </div>
-          )}
-
-          {/* Original language not available in current data structure */}
-          {false && (
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                padding: '12px',
-              }}
-            >
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  margin: '0 0 4px 0',
-                }}
-              >
-                Originalsprache
-              </p>
-              <p
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  margin: 0,
-                }}
-              >
-                Language N/A
-              </p>
-            </div>
-          )}
-
-          {movie.status && (
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                padding: '12px',
-              }}
-            >
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  margin: '0 0 4px 0',
-                }}
-              >
-                Status
-              </p>
-              <p
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  margin: 0,
-                }}
-              >
-                {movie.status === 'Released' ? 'Veröffentlicht' : movie.status}
-              </p>
-            </div>
-          )}
         </div>
-      </div>
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -922,7 +908,7 @@ export const MovieDetailPage = memo(() => {
         type="warning"
         actions={[
           { label: 'Abbrechen', onClick: () => setShowDeleteConfirm(false), variant: 'secondary' },
-          { label: 'Löschen', onClick: handleDeleteMovie, variant: 'primary' }
+          { label: 'Löschen', onClick: handleDeleteMovie, variant: 'primary' },
         ]}
       />
 
