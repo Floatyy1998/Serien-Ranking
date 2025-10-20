@@ -1,5 +1,6 @@
 import { BackButton } from '../components/BackButton';
 import { Dialog } from '../components/Dialog';
+import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
 import {
   Delete,
   Info,
@@ -474,6 +475,13 @@ export const MovieDetailPage = memo(() => {
                 • ⭐ {averageRating}
               </span>
             )}
+            {/* Friends Who Have This */}
+            {!isReadOnlyTmdbMovie && averageRating > 0 && movie && (
+              <>
+                <span style={{ opacity: 0.5 }}>•</span>
+                <FriendsWhoHaveThis itemId={movie.id} mediaType="movie" />
+              </>
+            )}
           </div>
 
           {/* Ratings from TMDB and IMDB */}
@@ -556,7 +564,7 @@ export const MovieDetailPage = memo(() => {
             )}
           </div>
 
-          {/* Provider Badges unter der Info-Zeile */}
+          {/* Provider Badges */}
           {((movie.provider?.provider && movie.provider.provider.length > 0) || providers) && (
             <div style={{ marginBottom: '16px' }}>
               <ProviderBadges
@@ -565,25 +573,6 @@ export const MovieDetailPage = memo(() => {
                 maxDisplay={6}
                 showNames={false}
               />
-            </div>
-          )}
-
-          {/* User Rating */}
-          {isWatched && (
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 12px',
-                background: 'rgba(76, 209, 55, 0.2)',
-                border: '1px solid rgba(76, 209, 55, 0.4)',
-                borderRadius: '20px',
-                fontSize: '13px',
-              }}
-            >
-              <Visibility style={{ fontSize: '16px' }} />
-              Gesehen • {currentRating}/10
             </div>
           )}
 
@@ -601,13 +590,13 @@ export const MovieDetailPage = memo(() => {
               flex: 1,
               padding: '12px',
               background: isWatched
-                ? 'rgba(255, 215, 0, 0.2)'
-                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
               border: isWatched
-                ? '1px solid rgba(255, 215, 0, 0.4)'
-                : 'none',
+                ? '1px solid rgba(255, 215, 0, 0.3)'
+                : '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '12px',
-              color: currentTheme.text.primary,
+              color: 'white',
               fontSize: '16px',
               fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -616,10 +605,11 @@ export const MovieDetailPage = memo(() => {
               justifyContent: 'center',
               gap: '8px',
               opacity: loading ? 0.7 : 1,
+              position: 'relative',
             }}
           >
-            <Star />
-            {isWatched ? `Bewertung ändern (${currentRating})` : 'Bewerten'}
+            <Star style={{ fontSize: '18px', color: isWatched ? '#ffd700' : 'white' }} />
+            Bewerten
           </motion.button>
         </div>
       )}
