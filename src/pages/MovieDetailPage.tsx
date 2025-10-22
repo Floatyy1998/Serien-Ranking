@@ -90,7 +90,7 @@ export const MovieDetailPage = memo(() => {
     if (!localMovie && id && apiKey && !tmdbMovie) {
       setLoading(true);
       fetch(
-        `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits`
+        `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
       )
         .then((res) => res.json())
         .then((data) => {
@@ -110,7 +110,7 @@ export const MovieDetailPage = memo(() => {
               backdrop: data.backdrop_path,
               // Required fields with defaults
               begründung: '',
-              imdb: { imdb_id: '' },
+              imdb: { imdb_id: data.external_ids?.imdb_id || '' },
               rating: {},
               wo: { wo: '' },
             };
@@ -457,7 +457,7 @@ export const MovieDetailPage = memo(() => {
             {movie.runtime && <span>• {formatRuntime(movie.runtime)}</span>}
             {averageRating > 0 && <span style={{ color: '#ffd700' }}>• ⭐ {averageRating}</span>}
             {/* Friends Who Have This */}
-            {!isReadOnlyTmdbMovie && averageRating > 0 && movie && (
+            {movie && (
               <>
                 <span style={{ opacity: 0.5 }}>•</span>
                 <FriendsWhoHaveThis itemId={movie.id} mediaType="movie" />
@@ -474,81 +474,79 @@ export const MovieDetailPage = memo(() => {
               flexWrap: 'wrap',
             }}
           >
-            {/* TMDB Rating */}
-            {tmdbRating && (
-              <a
-                href={`https://www.themoviedb.org/movie/${id}`}
-                target="_blank"
-                rel="noopener noreferrer"
+            {/* TMDB Rating - Always show */}
+            <a
+              href={`https://www.themoviedb.org/movie/${id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 10px',
+                background: 'rgba(0, 188, 212, 0.15)',
+                border: '1px solid rgba(0, 188, 212, 0.3)',
+                borderRadius: '16px',
+                fontSize: '13px',
+                textDecoration: 'none',
+                color: 'white',
+              }}
+            >
+              <span
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 10px',
-                  background: 'rgba(0, 188, 212, 0.15)',
-                  border: '1px solid rgba(0, 188, 212, 0.3)',
-                  borderRadius: '16px',
-                  fontSize: '13px',
-                  textDecoration: 'none',
-                  color: 'white',
+                  fontWeight: 900,
+                  fontSize: '11px',
+                  background: '#01b4e4',
+                  color: '#0d253f',
+                  padding: '2px 4px',
+                  borderRadius: '4px',
                 }}
               >
-                <span
-                  style={{
-                    fontWeight: 900,
-                    fontSize: '11px',
-                    background: '#01b4e4',
-                    color: '#0d253f',
-                    padding: '2px 4px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  TMDB
-                </span>
-                <span style={{ fontWeight: 600 }}>{tmdbRating.vote_average.toFixed(1)}/10</span>
-                <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                  ({(tmdbRating.vote_count / 1000).toFixed(1)}k)
-                </span>
-              </a>
-            )}
+                TMDB
+              </span>
+              <span style={{ fontWeight: 600 }}>{tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10</span>
+              <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                ({tmdbRating ? (tmdbRating.vote_count / 1000).toFixed(1) : '0.0'}k)
+              </span>
+            </a>
 
-            {/* IMDB Rating from OMDb */}
-            {imdbRating && (
-              <a
-                href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
+            {/* IMDB Rating - Always show */}
+            <a
+              href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id || ''}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 10px',
+                background: 'rgba(245, 197, 24, 0.15)',
+                border: '1px solid rgba(245, 197, 24, 0.3)',
+                borderRadius: '16px',
+                fontSize: '13px',
+                textDecoration: 'none',
+                color: 'white',
+                opacity: (movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id) ? 1 : 0.5,
+                pointerEvents: (movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id) ? 'auto' : 'none'
+              }}
+            >
+              <span
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 10px',
-                  background: 'rgba(245, 197, 24, 0.15)',
-                  border: '1px solid rgba(245, 197, 24, 0.3)',
-                  borderRadius: '16px',
-                  fontSize: '13px',
-                  textDecoration: 'none',
-                  color: 'white',
+                  fontWeight: 900,
+                  fontSize: '11px',
+                  background: '#F5C518',
+                  color: '#000',
+                  padding: '2px 4px',
+                  borderRadius: '4px',
                 }}
               >
-                <span
-                  style={{
-                    fontWeight: 900,
-                    fontSize: '11px',
-                    background: '#F5C518',
-                    color: '#000',
-                    padding: '2px 4px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  IMDb
-                </span>
-                <span style={{ fontWeight: 600 }}>{imdbRating.rating.toFixed(1)}/10</span>
-                <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                  ({(parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)}k)
-                </span>
-              </a>
-            )}
+                IMDb
+              </span>
+              <span style={{ fontWeight: 600 }}>{imdbRating?.rating?.toFixed(1) || '0.0'}/10</span>
+              <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                ({imdbRating ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1) : '0.0'}k)
+              </span>
+            </a>
           </div>
 
           {/* Provider Badges */}
