@@ -191,6 +191,17 @@
 .dots {
   display: flex;
   gap: 8px;
+  max-width: 280px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+  /* Verstecke Scrollbar aber erlaube Scrollen */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.dots::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .dot {

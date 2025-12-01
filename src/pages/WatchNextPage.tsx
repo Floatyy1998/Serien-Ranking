@@ -747,6 +747,14 @@ export const WatchNextPage = () => {
           const newCount = (episode.currentWatchCount || 0) + 1;
           await watchCountRef.set(newCount);
 
+          // Update lastWatchedAt for rewatches
+          const lastWatchedRef = firebase
+            .database()
+            .ref(
+              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
+            );
+          await lastWatchedRef.set(new Date().toISOString());
+
           // Badge-System für Rewatch
           const { updateEpisodeCounters } = await import(
             '../features/badges/minimalActivityLogger'
@@ -763,6 +771,14 @@ export const WatchNextPage = () => {
           if (!snapshot.val()) {
             await firstWatchedRef.set(new Date().toISOString());
           }
+
+          // Always update lastWatchedAt
+          const lastWatchedRef = firebase
+            .database()
+            .ref(
+              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
+            );
+          await lastWatchedRef.set(new Date().toISOString());
 
           // Pet XP geben mit Genre-Bonus
           const { petService } = await import('../services/petService');

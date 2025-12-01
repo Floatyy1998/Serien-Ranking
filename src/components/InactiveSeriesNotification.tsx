@@ -1,22 +1,21 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { NewReleases, Close, ChevronRight, Tv, PlaylistAdd, Check } from '@mui/icons-material';
+import { AccessTime, Close, ChevronRight, PlaylistRemove } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
 import { Series } from '../types/Series';
-import { markMultipleSeasonsAsNotified } from '../lib/validation/newSeasonDetection';
 import { useAuth } from '../App';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import './NewSeasonNotification.css';
 
-interface NewSeasonNotificationProps {
+interface InactiveSeriesNotificationProps {
   series: Series[];
   onDismiss: () => void;
 }
 
-export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
+export const InactiveSeriesNotification: React.FC<InactiveSeriesNotificationProps> = ({
   series,
   onDismiss,
 }) => {
@@ -26,7 +25,7 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
   const { refetchSeries } = useSeriesList();
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [addedToWatchlist, setAddedToWatchlist] = useState<Set<number>>(new Set());
+  const [removedFromWatchlist, setRemovedFromWatchlist] = useState<Set<number>>(new Set());
   const dotsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,21 +50,40 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
   }, [currentIndex, series.length]);
 
   const handleNavigate = (seriesItem: Series) => {
-    // Mark this series as notified
+    // Mark this notification as dismissed for this series
     if (user) {
-      markMultipleSeasonsAsNotified([seriesItem.id], user.uid);
+      markSeriesAsNotified(seriesItem.id);
     }
     navigate(`/series/${seriesItem.id}`);
     onDismiss();
   };
 
+  const markSeriesAsNotified = async (seriesId: number) => {
+    if (!user) return;
+    try {
+      const notificationRef = firebase.database().ref(
+        `users/${user.uid}/inactiveSeriesNotifications/${seriesId}`
+      );
+      await notificationRef.set({
+        dismissed: true,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error marking series as notified:', error);
+    }
+  };
+
   const handleDismissAll = async () => {
     if (user && series.length > 0) {
       // Mark all series as notified
-      await markMultipleSeasonsAsNotified(
-        series.map(s => s.id),
-        user.uid
-      );
+      const updates: any = {};
+      series.forEach(s => {
+        updates[`users/${user.uid}/inactiveSeriesNotifications/${s.id}`] = {
+          dismissed: true,
+          timestamp: Date.now(),
+        };
+      });
+      await firebase.database().ref().update(updates);
     }
     setIsVisible(false);
     setTimeout(onDismiss, 300);
@@ -83,40 +101,41 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
     }
   };
 
-  const handleAddToWatchlist = async (seriesItem: Series) => {
+  const handleRemoveFromWatchlist = async (seriesItem: Series) => {
     if (!user) return;
-    
+
     try {
-      // Update watchlist status in Firebase - use direct set like in SeriesDetailPage
+      // Remove from watchlist in Firebase
       const watchlistRef = firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/watchlist`);
-      await watchlistRef.set(true);
-      
-      // Mark as added in local state
-      setAddedToWatchlist(prev => new Set(prev).add(seriesItem.id));
-      
+      await watchlistRef.set(false);
+
+      // Mark as removed in local state
+      setRemovedFromWatchlist(prev => new Set(prev).add(seriesItem.id));
+
       // Update the series in the current list
       const updatedIndex = series.findIndex(s => s.id === seriesItem.id);
       if (updatedIndex !== -1) {
-        series[updatedIndex].watchlist = true;
+        series[updatedIndex].watchlist = false;
       }
-      
+
       // Trigger refetch to ensure UI updates across the app
       setTimeout(() => {
         refetchSeries();
       }, 100);
-      
+
       // Mark as notified since user interacted with it
-      await markMultipleSeasonsAsNotified([seriesItem.id], user.uid);
-      
-      console.log(`✅ Added ${seriesItem.title || seriesItem.original_name} to watchlist`);
+      await markSeriesAsNotified(seriesItem.id);
+
+      console.log(`✅ Removed ${seriesItem.title || seriesItem.original_name} from watchlist`);
     } catch (error) {
-      console.error('Error adding to watchlist:', error);
+      console.error('Error removing from watchlist:', error);
     }
   };
 
   if (series.length === 0) return null;
 
   const currentSeries = series[currentIndex];
+  const isRemoved = removedFromWatchlist.has(currentSeries.id) || !currentSeries.watchlist;
 
   return (
     <AnimatePresence>
@@ -128,8 +147,8 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.background.default})`,
-            borderColor: currentTheme.primary + '40',
+            background: `linear-gradient(135deg, ${currentTheme.status.warning}20, ${currentTheme.background.default})`,
+            borderColor: currentTheme.status.warning + '40',
             color: currentTheme.text.primary,
           }}
         >
@@ -143,11 +162,11 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
 
           <div className="notification-content">
             <div className="notification-header">
-              <NewReleases 
-                className="new-icon pulse" 
-                style={{ color: currentTheme.primary }}
+              <AccessTime
+                className="new-icon pulse"
+                style={{ color: currentTheme.status.warning }}
               />
-              <h3>Neue Staffel{series.length > 1 ? 'n' : ''} verfügbar!</h3>
+              <h3>Inaktive Serie{series.length > 1 ? 'n' : ''} auf der Watchlist</h3>
             </div>
 
             <div className="series-info">
@@ -158,30 +177,30 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
                   className="series-poster"
                 />
               )}
-              
+
               <div className="series-details">
                 <h4>{currentSeries.title || currentSeries.original_name || 'Serie'}</h4>
                 <p className="season-info">
-                  <Tv fontSize="small" />
+                  <AccessTime fontSize="small" />
                   <span>
-                    Staffel {currentSeries.seasonCount} ist jetzt verfügbar
+                    Seit über einem Monat nicht geschaut
                   </span>
                 </p>
               </div>
 
               <div className="action-buttons">
-                {!addedToWatchlist.has(currentSeries.id) && !currentSeries.watchlist ? (
+                {!isRemoved ? (
                   <button
                     className="watchlist-button"
-                    onClick={() => handleAddToWatchlist(currentSeries)}
+                    onClick={() => handleRemoveFromWatchlist(currentSeries)}
                     style={{
                       backgroundColor: currentTheme.background.paper,
-                      color: currentTheme.text.primary,
-                      border: `1px solid ${currentTheme.primary}40`,
+                      color: currentTheme.status.warning,
+                      border: `1px solid ${currentTheme.status.warning}40`,
                     }}
                   >
-                    <PlaylistAdd />
-                    <span>Watchlist</span>
+                    <PlaylistRemove />
+                    <span>Entfernen</span>
                   </button>
                 ) : (
                   <button
@@ -193,8 +212,7 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
                       border: `1px solid ${currentTheme.status.success}40`,
                     }}
                   >
-                    <Check />
-                    <span>Hinzugefügt</span>
+                    <span>Entfernt</span>
                   </button>
                 )}
 
@@ -222,7 +240,7 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
                 >
                   ‹
                 </button>
-                
+
                 <div className="dots" ref={dotsContainerRef}>
                   {series.map((_, index) => (
                     <span
@@ -231,13 +249,13 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
                       onClick={() => setCurrentIndex(index)}
                       style={{
                         backgroundColor: index === currentIndex
-                          ? currentTheme.primary
+                          ? currentTheme.status.warning
                           : currentTheme.text.primary + '30',
                       }}
                     />
                   ))}
                 </div>
-                
+
                 <button
                   onClick={handleNext}
                   disabled={currentIndex === series.length - 1}
@@ -251,7 +269,7 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
 
             {series.length > 1 && (
               <p className="counter">
-                {currentIndex + 1} von {series.length} neuen Staffeln
+                {currentIndex + 1} von {series.length} inaktiven Serien
               </p>
             )}
           </div>
