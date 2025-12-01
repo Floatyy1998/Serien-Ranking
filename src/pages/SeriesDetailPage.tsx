@@ -130,8 +130,42 @@ export const SeriesDetailPage = memo(() => {
         `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
       )
         .then((res) => res.json())
-        .then((data) => {
+        .then(async (data) => {
           if (data.id) {
+            // Fetch detailed episode data for each season
+            const seasonsWithEpisodes = await Promise.all(
+              (data.seasons || []).map(async (season: any) => {
+                try {
+                  const seasonResponse = await fetch(
+                    `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
+                  );
+                  const seasonData = await seasonResponse.json();
+
+                  return {
+                    ...season,
+                    seasonNumber: season.season_number - 1, // Adjust to 0-based index
+                    episodes: seasonData.episodes?.map((ep: any) => ({
+                      id: ep.id,
+                      name: ep.name,
+                      episode_number: ep.episode_number,
+                      air_date: ep.air_date,
+                      overview: ep.overview,
+                      still_path: ep.still_path,
+                      watched: false,
+                      watchCount: 0
+                    })) || []
+                  };
+                } catch (error) {
+                  // Return season without detailed episodes if fetch fails
+                  return {
+                    ...season,
+                    seasonNumber: season.season_number - 1,
+                    episodes: []
+                  };
+                }
+              })
+            );
+
             // Transform TMDB data to match our Series type
             const series: Series = {
               id: data.id,
@@ -141,7 +175,7 @@ export const SeriesDetailPage = memo(() => {
               poster: { poster: data.poster_path },
               genre: { genres: data.genres?.map((g: any) => g.name) || [] },
               provider: { provider: [] },
-              seasons: data.seasons || [],
+              seasons: seasonsWithEpisodes,
               first_air_date: data.first_air_date,
               status: data.status,
               rating: {},
@@ -166,7 +200,7 @@ export const SeriesDetailPage = memo(() => {
               popularity: data.popularity || 0,
               vote_average: data.vote_average || 0,
               vote_count: data.vote_count || 0,
-              seasonCount: data.seasons?.length || 0,
+              seasonCount: seasonsWithEpisodes.length || 0,
               tvMaze: { tvMazeID: 0 },
               watchtime: 0,
               wo: { wo: '' },
@@ -1055,8 +1089,8 @@ export const SeriesDetailPage = memo(() => {
             </div>
           )}
 
-          {/* Seasons Overview - only for user's series */}
-          {!isReadOnlyTmdbSeries && series.seasons && series.seasons.length > 0 && (
+          {/* Seasons Overview */}
+          {series.seasons && series.seasons.length > 0 && (
             <div style={{ padding: '0 20px 20px' }}>
               <h3
                 style={{
