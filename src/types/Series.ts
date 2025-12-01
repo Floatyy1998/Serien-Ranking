@@ -82,6 +82,7 @@ export interface Series {
       watched: boolean;
       watchCount?: number;
       firstWatchedAt?: string;
+      lastWatchedAt?: string;
       episode_number?: number; // TMDB format
       airDate?: string; // Alternative date format
       firstAired?: string; // Another alternative date format

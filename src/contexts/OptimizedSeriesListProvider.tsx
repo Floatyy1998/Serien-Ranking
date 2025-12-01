@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
+import { detectInactiveSeries } from '../lib/validation/inactiveSeriesDetection';
+import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
 import { Series } from '../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -10,7 +12,11 @@ interface SeriesListContextType {
   seriesList: Series[];
   loading: boolean;
   seriesWithNewSeasons: Series[];
+  inactiveSeries: Series[];
+  completedSeries: Series[];
   clearNewSeasons: () => void;
+  clearInactiveSeries: () => void;
+  clearCompletedSeries: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
   isOffline: boolean;
@@ -24,7 +30,11 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   seriesList: [],
   loading: true,
   seriesWithNewSeasons: [],
+  inactiveSeries: [],
+  completedSeries: [],
   clearNewSeasons: () => {},
+  clearInactiveSeries: () => {},
+  clearCompletedSeries: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
   isOffline: false,
@@ -77,8 +87,56 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     return false;
   });
 
+  // State für inaktive Serien
+  const [inactiveSeries, setInactiveSeries] = useState<Series[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('inactiveSeries');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error('❌ Error parsing inactiveSeries from sessionStorage:', e);
+        }
+      }
+    }
+    return [];
+  });
+
+  const [hasCheckedForInactive, setHasCheckedForInactive] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasCheckedForInactive') === 'true';
+    }
+    return false;
+  });
+
+  // State für komplett geschaute Serien
+  const [completedSeries, setCompletedSeries] = useState<Series[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('completedSeries');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error('❌ Error parsing completedSeries from sessionStorage:', e);
+        }
+      }
+    }
+    return [];
+  });
+
+  const [hasCheckedForCompleted, setHasCheckedForCompleted] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasCheckedForCompleted') === 'true';
+    }
+    return false;
+  });
+
   const detectionRunRef = useRef(false);
+  const inactiveDetectionRunRef = useRef(false);
+  const completedDetectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inactiveDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const completedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstWatchedAtFixedRef = useRef(false);
 
   // 🚀 Enhanced Cache mit Offline-Support für Serien
@@ -242,6 +300,96 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }, 500); // Erhöht auf 500ms für besseres Debouncing
   }, []);
 
+  // Debounced detection function for inactive series
+  const runInactiveSeriesDetection = useCallback((seriesList: Series[], userId: string) => {
+    if (inactiveDetectionTimeoutRef.current) {
+      clearTimeout(inactiveDetectionTimeoutRef.current);
+      inactiveDetectionTimeoutRef.current = null;
+    }
+
+    if (inactiveDetectionRunRef.current) {
+      return;
+    }
+
+    inactiveDetectionTimeoutRef.current = setTimeout(async () => {
+      if (inactiveDetectionRunRef.current || seriesList.length === 0) {
+        return;
+      }
+
+      inactiveDetectionRunRef.current = true;
+
+      try {
+        const inactive = await detectInactiveSeries(seriesList, userId);
+
+        if (inactive.length > 0) {
+          console.log('⏰ Inactive series detected:', inactive);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('inactiveSeries', JSON.stringify(inactive));
+          }
+          setInactiveSeries(inactive);
+          setTimeout(() => {
+            setInactiveSeries([...inactive]);
+          }, 100);
+        } else {
+          setHasCheckedForInactive(true);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('hasCheckedForInactive', 'true');
+          }
+        }
+      } catch (error) {
+        console.error('Error detecting inactive series:', error);
+        setHasCheckedForInactive(true);
+      } finally {
+        inactiveDetectionRunRef.current = false;
+      }
+    }, 500);
+  }, []);
+
+  // Debounced detection function for completed series
+  const runCompletedSeriesDetection = useCallback((seriesList: Series[], userId: string) => {
+    if (completedDetectionTimeoutRef.current) {
+      clearTimeout(completedDetectionTimeoutRef.current);
+      completedDetectionTimeoutRef.current = null;
+    }
+
+    if (completedDetectionRunRef.current) {
+      return;
+    }
+
+    completedDetectionTimeoutRef.current = setTimeout(async () => {
+      if (completedDetectionRunRef.current || seriesList.length === 0) {
+        return;
+      }
+
+      completedDetectionRunRef.current = true;
+
+      try {
+        const completed = await detectCompletedSeries(seriesList, userId);
+
+        if (completed.length > 0) {
+          console.log('✅ Completed series detected:', completed);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('completedSeries', JSON.stringify(completed));
+          }
+          setCompletedSeries(completed);
+          setTimeout(() => {
+            setCompletedSeries([...completed]);
+          }, 100);
+        } else {
+          setHasCheckedForCompleted(true);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('hasCheckedForCompleted', 'true');
+          }
+        }
+      } catch (error) {
+        console.error('Error detecting completed series:', error);
+        setHasCheckedForCompleted(true);
+      } finally {
+        completedDetectionRunRef.current = false;
+      }
+    }, 500);
+  }, []);
+
   // New season detection nur beim ersten Load und wenn online
   useEffect(() => {
     // Prüfe ob bereits neue Staffeln im State sind
@@ -263,23 +411,81 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runNewSeasonDetection,
   ]);
 
+  // Inactive series detection
+  useEffect(() => {
+    if (inactiveSeries.length > 0) {
+      return;
+    }
+
+    if (!user || !seriesList.length || hasCheckedForInactive || isOffline) {
+      return;
+    }
+
+    runInactiveSeriesDetection(seriesList, user.uid);
+  }, [
+    user,
+    seriesList.length,
+    hasCheckedForInactive,
+    isOffline,
+    inactiveSeries.length,
+    runInactiveSeriesDetection,
+  ]);
+
+  // Completed series detection
+  useEffect(() => {
+    if (completedSeries.length > 0) {
+      return;
+    }
+
+    if (!user || !seriesList.length || hasCheckedForCompleted || isOffline) {
+      return;
+    }
+
+    runCompletedSeriesDetection(seriesList, user.uid);
+  }, [
+    user,
+    seriesList.length,
+    hasCheckedForCompleted,
+    isOffline,
+    completedSeries.length,
+    runCompletedSeriesDetection,
+  ]);
+
   // Reset bei User-Wechsel
   useEffect(() => {
     if (!user) {
       setSeriesWithNewSeasons([]);
       setHasCheckedForNewSeasons(false);
+      setInactiveSeries([]);
+      setHasCheckedForInactive(false);
+      setCompletedSeries([]);
+      setHasCheckedForCompleted(false);
       detectionRunRef.current = false;
+      inactiveDetectionRunRef.current = false;
+      completedDetectionRunRef.current = false;
       firstWatchedAtFixedRef.current = false; // Reset fix flag on logout
 
       if (detectionTimeoutRef.current) {
         clearTimeout(detectionTimeoutRef.current);
         detectionTimeoutRef.current = null;
       }
+      if (inactiveDetectionTimeoutRef.current) {
+        clearTimeout(inactiveDetectionTimeoutRef.current);
+        inactiveDetectionTimeoutRef.current = null;
+      }
+      if (completedDetectionTimeoutRef.current) {
+        clearTimeout(completedDetectionTimeoutRef.current);
+        completedDetectionTimeoutRef.current = null;
+      }
 
       // Clear sessionStorage on logout
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('seriesWithNewSeasons');
         sessionStorage.removeItem('hasCheckedForNewSeasons');
+        sessionStorage.removeItem('inactiveSeries');
+        sessionStorage.removeItem('hasCheckedForInactive');
+        sessionStorage.removeItem('completedSeries');
+        sessionStorage.removeItem('hasCheckedForCompleted');
       }
     }
   }, [user]);
@@ -293,6 +499,28 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('seriesWithNewSeasons');
       sessionStorage.setItem('hasCheckedForNewSeasons', 'true');
+    }
+  }, []);
+
+  const clearInactiveSeries = useCallback(() => {
+    setInactiveSeries([]);
+    setHasCheckedForInactive(true);
+    inactiveDetectionRunRef.current = false;
+
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('inactiveSeries');
+      sessionStorage.setItem('hasCheckedForInactive', 'true');
+    }
+  }, []);
+
+  const clearCompletedSeries = useCallback(() => {
+    setCompletedSeries([]);
+    setHasCheckedForCompleted(true);
+    completedDetectionRunRef.current = false;
+
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('completedSeries');
+      sessionStorage.setItem('hasCheckedForCompleted', 'true');
     }
   }, []);
 
@@ -367,7 +595,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         seriesList,
         loading,
         seriesWithNewSeasons,
+        inactiveSeries,
+        completedSeries,
         clearNewSeasons,
+        clearInactiveSeries,
+        clearCompletedSeries,
         recheckForNewSeasons,
         refetchSeries,
         isOffline,

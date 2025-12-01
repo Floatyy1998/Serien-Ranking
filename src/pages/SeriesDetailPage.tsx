@@ -392,6 +392,7 @@ export const SeriesDetailPage = memo(() => {
       const newWatchCount = (episode.watchCount || 1) + 1;
 
       await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
+      await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
 
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
     } catch (error) {
@@ -427,6 +428,7 @@ export const SeriesDetailPage = memo(() => {
         await firebase.database().ref(`${episodePath}/watched`).remove();
         await firebase.database().ref(`${episodePath}/watchCount`).remove();
         await firebase.database().ref(`${episodePath}/firstWatchedAt`).remove();
+        await firebase.database().ref(`${episodePath}/lastWatchedAt`).remove();
       }
 
       setShowRewatchDialog({ show: false, type: 'episode', item: null });

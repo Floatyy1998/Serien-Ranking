@@ -36,6 +36,8 @@ import { useWebWorkerTodayEpisodes } from '../hooks/useWebWorkerTodayEpisodes';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { StatsGrid } from '../components/StatsGrid';
 import { NewSeasonNotification } from '../components/NewSeasonNotification';
+import { InactiveSeriesNotification } from '../components/InactiveSeriesNotification';
+import { CompletedSeriesNotification } from '../components/CompletedSeriesNotification';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -59,7 +61,14 @@ export const HomePage: React.FC = () => {
     return <div>Redirecting to login...</div>;
   }
   const { unreadActivitiesCount } = useOptimizedFriends();
-  const { seriesWithNewSeasons, clearNewSeasons } = useSeriesList();
+  const {
+    seriesWithNewSeasons,
+    inactiveSeries,
+    completedSeries,
+    clearNewSeasons,
+    clearInactiveSeries,
+    clearCompletedSeries
+  } = useSeriesList();
   const { currentTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   // const [selectedCategory, setSelectedCategory] = useState<
@@ -310,6 +319,26 @@ export const HomePage: React.FC = () => {
           onDismiss={clearNewSeasons}
         />
       )}
+
+      {/* Inactive Series Notification - nur anzeigen wenn keine neue Staffel-Benachrichtigung */}
+      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
+       inactiveSeries && inactiveSeries.length > 0 && (
+        <InactiveSeriesNotification
+          series={inactiveSeries}
+          onDismiss={clearInactiveSeries}
+        />
+      )}
+
+      {/* Completed Series Notification - nur anzeigen wenn keine anderen Benachrichtigungen */}
+      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
+       (!inactiveSeries || inactiveSeries.length === 0) &&
+       completedSeries && completedSeries.length > 0 && (
+        <CompletedSeriesNotification
+          series={completedSeries}
+          onDismiss={clearCompletedSeries}
+        />
+      )}
+
       {/* Tooltip - shows language info and is clickable */}
       {greetingInfo && (
         <div

@@ -148,9 +148,10 @@ export const EpisodeManagementPage = () => {
               watched: true,
               watchCount: newWatchCount,
               firstWatchedAt: e.firstWatchedAt || new Date().toISOString(),
+              lastWatchedAt: new Date().toISOString(),
             };
           } else {
-            const { watchCount, firstWatchedAt, ...episodeWithoutFields } = e;
+            const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = e;
             return {
               ...episodeWithoutFields,
               watched: false,
@@ -218,10 +219,11 @@ export const EpisodeManagementPage = () => {
             watched: true,
             watchCount: 1,
             firstWatchedAt: ep.firstWatchedAt || new Date().toISOString(),
+            lastWatchedAt: new Date().toISOString(),
           };
         } else {
           // Mark all as unwatched
-          const { watchCount, firstWatchedAt, ...episodeWithoutFields } = ep;
+          const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
           return {
             ...episodeWithoutFields,
             watched: false,
