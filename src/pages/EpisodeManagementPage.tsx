@@ -1,9 +1,9 @@
-import { Check, DateRange, ExpandLess, ExpandMore, Refresh, Visibility } from '@mui/icons-material';
+import { ChatBubbleOutline, Check, DateRange, ExpandLess, ExpandMore, Refresh, Visibility } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
@@ -15,6 +15,7 @@ import './EpisodeManagementPage.css';
 
 export const EpisodeManagementPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
@@ -422,6 +423,29 @@ export const EpisodeManagementPage = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Discussion Button */}
+                <button
+                  className="episode-discussion-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/episode/${id}/s/${currentSeason?.seasonNumber + 1}/e/${index + 1}`);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '8px',
+                    cursor: 'pointer',
+                    color: currentTheme.text.muted,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <ChatBubbleOutline style={{ fontSize: '18px' }} />
+                </button>
 
                 <div className="episode-status">
                   {episode.watched ? (

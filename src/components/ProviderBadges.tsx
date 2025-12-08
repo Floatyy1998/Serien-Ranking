@@ -14,13 +14,98 @@ interface ProviderBadgesProps {
   size?: 'small' | 'medium' | 'large';
   maxDisplay?: number;
   showNames?: boolean;
+  /** Titel für Deep Link Suche (Serie/Film Name) */
+  searchTitle?: string;
+  /** TMDB ID für direktere Links (falls verfügbar) */
+  tmdbId?: number;
+  /** Media Type für spezifischere Links */
+  mediaType?: 'tv' | 'movie';
 }
+
+// Deep Link Mapping für deutsche Streaming-Anbieter
+// Provider IDs von TMDB: https://developer.themoviedb.org/reference/watch-provider-tv-list
+const PROVIDER_LINKS: Record<number, {
+  web: (title: string, tmdbId?: number) => string;
+  name: string;
+}> = {
+  // Netflix (ID: 8)
+  8: {
+    web: (title) => `https://www.netflix.com/search?q=${encodeURIComponent(title)}`,
+    name: 'Netflix'
+  },
+  // Amazon Prime Video (ID: 9, 119)
+  9: {
+    web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
+    name: 'Amazon Prime Video'
+  },
+  119: {
+    web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
+    name: 'Amazon Prime Video'
+  },
+  // Disney+ (ID: 337)
+  337: {
+    web: (title) => `https://www.disneyplus.com/de-de/search?q=${encodeURIComponent(title)}`,
+    name: 'Disney Plus'
+  },
+  // Apple TV+ (ID: 350)
+  350: {
+    web: (title) => `https://tv.apple.com/de/search?term=${encodeURIComponent(title)}`,
+    name: 'Apple TV Plus'
+  },
+  // Paramount+ (ID: 531)
+  531: {
+    web: (title) => `https://www.paramountplus.com/de/search/?q=${encodeURIComponent(title)}`,
+    name: 'Paramount Plus'
+  },
+  // WOW / Sky (ID: 30)
+  30: {
+    web: (title) => `https://www.wowtv.de/suche?search=${encodeURIComponent(title)}`,
+    name: 'WOW'
+  },
+  // Crunchyroll (ID: 283)
+  283: {
+    web: (title) => `https://www.crunchyroll.com/de/search?q=${encodeURIComponent(title)}`,
+    name: 'Crunchyroll'
+  },
+  // RTL+ (ID: 298)
+  298: {
+    web: (title) => `https://plus.rtl.de/suche?term=${encodeURIComponent(title)}`,
+    name: 'RTL+'
+  },
+  // Joyn / Joyn Plus (ID: 421, 304)
+  421: {
+    web: (title) => `https://www.joyn.de/search?q=${encodeURIComponent(title)}`,
+    name: 'Joyn Plus'
+  },
+  304: {
+    web: (title) => `https://www.joyn.de/search?q=${encodeURIComponent(title)}`,
+    name: 'Joyn'
+  },
+  // MagentaTV (ID: 178)
+  178: {
+    web: (title) => `https://web.magentatv.de/search?q=${encodeURIComponent(title)}`,
+    name: 'MagentaTV'
+  },
+  // Freevee (ID: 613)
+  613: {
+    web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
+    name: 'Freevee'
+  },
+  // ADN - Animation Digital Network (ID: 415)
+  415: {
+    web: (title) => `https://animationdigitalnetwork.de/search/${encodeURIComponent(title)}`,
+    name: 'Animation Digital Network'
+  },
+};
 
 export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   providers,
   size = 'small',
   maxDisplay = 3,
-  showNames = false
+  showNames = false,
+  searchTitle,
+  tmdbId,
+  mediaType: _mediaType // Reserved for future JustWatch integration
 }) => {
   if (!providers || providers.length === 0) return null;
 
@@ -112,25 +197,15 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
         const logoPath = provider.logo_path || provider.logo;
         const providerName = provider.provider_name || provider.name || 'Unknown';
         const providerId = provider.provider_id || provider.id || index;
-        
-        return (
-          <div
-            key={providerId}
-            style={{
-              width: style.width,
-              height: style.height,
-              borderRadius: '6px',
-              overflow: 'hidden',
-              background: 'rgba(0, 0, 0, 0.5)',
-              backdropFilter: 'blur(4px)',
-              padding: '2px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative'
-            }}
-            title={providerName}
-          >
+
+        // Deep Link ermitteln
+        const providerConfig = PROVIDER_LINKS[providerId as number];
+        const deepLink = searchTitle && providerConfig
+          ? providerConfig.web(searchTitle, tmdbId)
+          : null;
+
+        const badgeContent = (
+          <>
             {logoPath ? (
               <img
                 src={`https://image.tmdb.org/t/p/w500${logoPath}`}
@@ -148,7 +223,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
                 }}
               />
             ) : null}
-            
+
             <div style={{
               display: logoPath ? 'none' : 'flex',
               alignItems: 'center',
@@ -162,6 +237,59 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
             }}>
               {providerName.substring(0, 2).toUpperCase()}
             </div>
+          </>
+        );
+
+        const badgeStyle: React.CSSProperties = {
+          width: style.width,
+          height: style.height,
+          borderRadius: '6px',
+          overflow: 'hidden',
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(4px)',
+          padding: '2px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          cursor: deepLink ? 'pointer' : 'default',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        };
+
+        // Wenn Deep Link vorhanden, als klickbares Element rendern
+        if (deepLink) {
+          return (
+            <a
+              key={providerId}
+              href={deepLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`${providerName} öffnen`}
+              style={{
+                ...badgeStyle,
+                textDecoration: 'none',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              {badgeContent}
+            </a>
+          );
+        }
+
+        return (
+          <div
+            key={providerId}
+            style={badgeStyle}
+            title={providerName}
+          >
+            {badgeContent}
           </div>
         );
       })}

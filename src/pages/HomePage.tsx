@@ -956,7 +956,7 @@ export const HomePage: React.FC = () => {
                         <img
                           src={item.poster}
                           alt={item.title}
-                          onClick={() => navigate(`/series/${item.id}`)}
+                          onClick={() => navigate(`/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`)}
                           style={{
                             width: '50px',
                             height: '75px',
@@ -1228,7 +1228,7 @@ export const HomePage: React.FC = () => {
                         <img
                           src={episode.poster}
                           alt={episode.seriesTitle}
-                          onClick={() => navigate(`/series/${episode.seriesId}`)}
+                          onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`)}
                           style={{
                             width: '50px',
                             height: '75px',

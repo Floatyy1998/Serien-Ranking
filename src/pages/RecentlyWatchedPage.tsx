@@ -803,7 +803,7 @@ export const RecentlyWatchedPage = memo(() => {
                               src={episode.seriesPoster}
                               alt={episode.seriesName}
                               onClick={() => {
-                                navigate(`/series/${episode.seriesId}`);
+                                navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
                               }}
                               style={{
                                 width: '48px',

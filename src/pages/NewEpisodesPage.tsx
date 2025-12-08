@@ -1104,7 +1104,7 @@ export const NewEpisodesPage = () => {
                                       scrollY.toString()
                                     );
                                     sessionStorage.setItem('comingFromDetail', 'false'); // Will be set to true by BackButton
-                                    navigate(`/series/${episode.seriesId}`);
+                                    navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
                                   }}
                                   style={{
                                     width: '48px',
