@@ -24,6 +24,8 @@ import { WatchNextPage } from './pages/WatchNextPage';
 import { ImpressumPage } from './pages/ImpressumPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { PetsPage } from './pages/PetsPage';
+import { ActorUniversePage } from './pages/ActorUniversePage';
+import { EpisodeDiscussionPage } from './pages/EpisodeDiscussionPage';
 import './styles/App.css';
 
 export const MobileApp = () => {
@@ -140,6 +142,14 @@ export const MobileApp = () => {
             }
           />
           <Route
+            path="/actor-universe"
+            element={
+              <Layout hideNav>
+                <ActorUniversePage />
+              </Layout>
+            }
+          />
+          <Route
             path="/settings"
             element={
               <Layout hideNav>
@@ -170,6 +180,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <EpisodeManagementPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/episode/:seriesId/s/:seasonNumber/e/:episodeNumber"
+            element={
+              <Layout hideNav>
+                <EpisodeDiscussionPage />
               </Layout>
             }
           />

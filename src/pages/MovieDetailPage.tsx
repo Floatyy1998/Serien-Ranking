@@ -8,6 +8,7 @@ import { useAuth } from '../App';
 import { BackButton } from '../components/BackButton';
 import { CastCrew } from '../components/CastCrew';
 import { Dialog } from '../components/Dialog';
+import { DiscussionThread } from '../components/DiscussionThread';
 import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
 import { ProviderBadges } from '../components/ProviderBadges';
 import { useMovieList } from '../contexts/MovieListProvider';
@@ -561,6 +562,9 @@ export const MovieDetailPage = memo(() => {
                 size="large"
                 maxDisplay={6}
                 showNames={false}
+                searchTitle={movie.title}
+                tmdbId={movie.id}
+                mediaType="movie"
               />
             </div>
           )}
@@ -896,6 +900,15 @@ export const MovieDetailPage = memo(() => {
           </div>
         </div>
       )}
+
+      {/* Discussions Section */}
+      <div style={{ padding: '0 20px 20px 20px' }}>
+        <DiscussionThread
+          itemId={movie.id}
+          itemType="movie"
+          title="Diskussionen"
+        />
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog

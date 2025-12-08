@@ -2,33 +2,28 @@ import {
   BookmarkAdd,
   BookmarkRemove,
   Check,
-  DateRange,
   Delete,
-  ExpandLess,
-  ExpandMore,
   Info,
   List,
   People,
   PlayCircle,
-  Repeat,
   Star,
-  Visibility,
 } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { logSeriesAdded } from '../features/badges/minimalActivityLogger';
-import { getUnifiedEpisodeDate } from '../lib/date/episodeDate.utils';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { Series } from '../types/Series';
 import { BackButton } from '../components/BackButton';
 import { CastCrew } from '../components/CastCrew';
 import { Dialog } from '../components/Dialog';
+import { DiscussionThread } from '../components/DiscussionThread';
 import { ProviderBadges } from '../components/ProviderBadges';
 import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
 
@@ -38,7 +33,7 @@ export const SeriesDetailPage = memo(() => {
   const { user } = useAuth()!;
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
-  const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
+  const [selectedSeasonIndex, setSelectedSeasonIndex] = useState<number>(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showRewatchDialog, setShowRewatchDialog] = useState<{
     show: boolean;
@@ -285,20 +280,6 @@ export const SeriesDetailPage = memo(() => {
       percentage: airedCount > 0 ? Math.round((watchedCount / airedCount) * 100) : 0,
     };
   }, [series]);
-
-  // Handle season expand/collapse - memoized
-  const toggleSeasonExpand = useCallback(
-    (seasonIndex: number) => {
-      const newExpanded = new Set(expandedSeasons);
-      if (newExpanded.has(seasonIndex)) {
-        newExpanded.delete(seasonIndex);
-      } else {
-        newExpanded.add(seasonIndex);
-      }
-      setExpandedSeasons(newExpanded);
-    },
-    [expandedSeasons]
-  );
 
   // Handle adding series - memoized
   const handleAddSeries = useCallback(async () => {
@@ -893,6 +874,9 @@ export const SeriesDetailPage = memo(() => {
                 size={isMobile ? "medium" : "large"}
                 maxDisplay={isMobile ? 4 : 6}
                 showNames={false}
+                searchTitle={series.title || series.name}
+                tmdbId={series.tmdb_id || series.id}
+                mediaType="tv"
               />
             </div>
           )}
@@ -1089,308 +1073,198 @@ export const SeriesDetailPage = memo(() => {
             </div>
           )}
 
-          {/* Seasons Overview */}
-          {series.seasons && series.seasons.length > 0 && (
-            <div style={{ padding: '0 20px 20px' }}>
-              <h3
-                style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  margin: '0 0 16px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <List fontSize="small" />
-                Staffeln ({series.seasons.length})
-              </h3>
+          {/* Seasons Overview - Compact Design */}
+          {series.seasons && series.seasons.length > 0 && (() => {
+            const selectedSeason = series.seasons[selectedSeasonIndex];
+            const watchedEpisodes = selectedSeason?.episodes?.filter((ep) => ep.watched).length || 0;
+            const totalEpisodes = selectedSeason?.episodes?.length || 0;
+            const seasonProgress = totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
 
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}
-              >
-                {series.seasons.map((season, seasonIndex) => {
-                  const watchedEpisodes = season.episodes?.filter((ep) => ep.watched).length || 0;
-                  const totalEpisodes = season.episodes?.length || 0;
-                  const seasonProgress =
-                    totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
-                  const isExpanded = expandedSeasons.has(seasonIndex);
+            return (
+              <div style={{ padding: '0 20px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <h3
+                    style={{
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      margin: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <List fontSize="small" />
+                    Staffeln
+                  </h3>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate(`/episodes/${series.id}`)}
+                    style={{
+                      padding: '6px 12px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '8px',
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Alle verwalten
+                  </motion.button>
+                </div>
 
-                  return (
-                    <motion.div
-                      key={seasonIndex}
-                      initial={false}
-                      animate={{
-                        backgroundColor:
-                          seasonProgress === 100
-                            ? 'rgba(0, 212, 170, 0.1)'
-                            : 'rgba(255, 255, 255, 0.05)',
-                      }}
-                      style={{
-                        border: `1px solid ${
-                          seasonProgress === 100
-                            ? 'rgba(0, 212, 170, 0.3)'
-                            : 'rgba(255, 255, 255, 0.1)'
-                        }`,
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <button
-                        onClick={() => toggleSeasonExpand(seasonIndex)}
+                {/* Horizontal Season Tabs */}
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    paddingBottom: '8px',
+                    marginBottom: '12px',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}
+                >
+                  {series.seasons.map((season, index) => {
+                    const sWatched = season.episodes?.filter((ep) => ep.watched).length || 0;
+                    const sTotal = season.episodes?.length || 0;
+                    const sProgress = sTotal > 0 ? Math.round((sWatched / sTotal) * 100) : 0;
+                    const isSelected = index === selectedSeasonIndex;
+
+                    return (
+                      <motion.button
+                        key={index}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedSeasonIndex(index)}
                         style={{
-                          width: '100%',
-                          padding: '16px',
-                          background: 'transparent',
-                          border: 'none',
+                          flexShrink: 0,
+                          padding: '8px 14px',
+                          borderRadius: '10px',
+                          border: isSelected
+                            ? '2px solid #00d4aa'
+                            : sProgress === 100
+                              ? '2px solid rgba(0, 212, 170, 0.4)'
+                              : '2px solid rgba(255, 255, 255, 0.15)',
+                          background: isSelected
+                            ? 'rgba(0, 212, 170, 0.2)'
+                            : sProgress === 100
+                              ? 'rgba(0, 212, 170, 0.1)'
+                              : 'rgba(255, 255, 255, 0.05)',
                           color: 'white',
                           cursor: 'pointer',
                           display: 'flex',
+                          flexDirection: 'column',
                           alignItems: 'center',
-                          justifyContent: 'space-between',
+                          gap: '2px',
+                          minWidth: '52px',
                         }}
                       >
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                          }}
-                        >
-                          <div
+                        <span style={{ fontSize: '14px', fontWeight: '700' }}>
+                          {season.seasonNumber + 1}
+                        </span>
+                        <span style={{ fontSize: '10px', opacity: 0.7 }}>
+                          {sProgress === 100 ? <Check style={{ fontSize: '12px', color: '#00d4aa' }} /> : `${sProgress}%`}
+                        </span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Selected Season Content */}
+                <div
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    padding: '16px',
+                  }}
+                >
+                  {/* Season Info */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: '600' }}>
+                        Staffel {selectedSeason.seasonNumber + 1}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                        {watchedEpisodes}/{totalEpisodes} Episoden
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        background: seasonProgress === 100
+                          ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                          : 'rgba(255, 255, 255, 0.1)',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {seasonProgress}%
+                    </div>
+                  </div>
+
+                  {/* Episode Grid */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(32px, 1fr))',
+                      gap: '6px',
+                    }}
+                  >
+                    {selectedSeason.episodes?.map((episode, episodeIndex) => (
+                      <motion.div
+                        key={episode.id}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate(`/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '6px',
+                          background: episode.watched
+                            ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                            : 'rgba(255, 255, 255, 0.1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          color: 'white',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          border: episode.watched ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
+                        }}
+                      >
+                        {episodeIndex + 1}
+                        {(episode.watchCount || 0) > 1 && (
+                          <span
                             style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '8px',
-                              background:
-                                seasonProgress === 100
-                                  ? 'linear-gradient(135deg, rgba(0, 212, 170, 0.3) 0%, rgba(0, 180, 216, 0.3) 100%)'
-                                  : 'rgba(255, 255, 255, 0.1)',
+                              position: 'absolute',
+                              top: '-3px',
+                              right: '-3px',
+                              background: '#ff6b6b',
+                              borderRadius: '50%',
+                              width: '14px',
+                              height: '14px',
+                              fontSize: '8px',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '16px',
-                              fontWeight: '600',
+                              fontWeight: '700',
                             }}
                           >
-                            {season.seasonNumber + 1}
-                          </div>
-
-                          <div style={{ textAlign: 'left' }}>
-                            <div style={{ fontSize: '16px', fontWeight: '600' }}>
-                              Staffel {season.seasonNumber + 1}
-                            </div>
-                            <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                              {watchedEpisodes} von {totalEpisodes} Episoden ({seasonProgress}%)
-                            </div>
-                          </div>
-                        </div>
-
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                          }}
-                        >
-                          {seasonProgress === 100 && (
-                            <Check style={{ color: '#00d4aa', fontSize: '18px' }} />
-                          )}
-                          {isExpanded ? <ExpandLess /> : <ExpandMore />}
-                        </div>
-                      </button>
-
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            style={{
-                              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                              maxHeight: '200px',
-                              overflowY: 'auto',
-                              overflowX: 'hidden',
-                            }}
-                          >
-                            {season.episodes?.map((episode, episodeIndex) => (
-                              <div
-                                key={episode.id}
-                                style={{
-                                  padding: '12px 16px',
-                                  borderBottom:
-                                    episodeIndex < season.episodes!.length - 1
-                                      ? '1px solid rgba(255, 255, 255, 0.05)'
-                                      : 'none',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    flex: 1,
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      width: '24px',
-                                      height: '24px',
-                                      borderRadius: '50%',
-                                      background:
-                                        episode.watched === true
-                                          ? '#00d4aa'
-                                          : 'rgba(255, 255, 255, 0.1)',
-                                      border: 'none',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      fontSize: '10px',
-                                      fontWeight: '600',
-                                      color: 'white',
-                                      cursor: 'default',
-                                      position: 'relative',
-                                    }}
-                                  >
-                                    {episodeIndex + 1}
-                                    {(episode.watchCount || 0) > 1 && (
-                                      <span
-                                        style={{
-                                          position: 'absolute',
-                                          top: '-4px',
-                                          right: '-4px',
-                                          background: '#ff6b6b',
-                                          borderRadius: '50%',
-                                          width: '14px',
-                                          height: '14px',
-                                          fontSize: '9px',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          fontWeight: '700',
-                                        }}
-                                      >
-                                        {episode.watchCount}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div
-                                      style={{
-                                        fontSize: '14px',
-                                        fontWeight: '500',
-                                        opacity: episode.watched === true ? 0.7 : 1,
-                                        textDecoration:
-                                          episode.watched === true ? 'line-through' : 'none',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                      }}
-                                    >
-                                      {episode.name}
-                                    </div>
-                                    {episode.air_date && (
-                                      <div
-                                        style={{
-                                          fontSize: '11px',
-                                          opacity: 0.5,
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '4px',
-                                          marginTop: '2px',
-                                        }}
-                                      >
-                                        <DateRange style={{ fontSize: '10px' }} />
-                                        {getUnifiedEpisodeDate(episode.air_date)}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                  }}
-                                >
-                                  {!!episode.watched &&
-                                    episode.firstWatchedAt &&
-                                    Number(episode.firstWatchedAt) > 0 && (
-                                      <div
-                                        style={{
-                                          fontSize: '10px',
-                                          opacity: 0.5,
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '4px',
-                                        }}
-                                      >
-                                        <Visibility style={{ fontSize: '10px' }} />
-                                        {getUnifiedEpisodeDate(episode.firstWatchedAt)}
-                                      </div>
-                                    )}
-
-                                  {!!episode.watched && (episode.watchCount || 0) > 1 && (
-                                    <div
-                                      style={{
-                                        background: 'rgba(255, 165, 0, 0.2)',
-                                        border: '1px solid rgba(255, 165, 0, 0.4)',
-                                        color: '#ffa500',
-                                        borderRadius: '12px',
-                                        padding: '2px 6px',
-                                        fontSize: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '2px',
-                                      }}
-                                    >
-                                      <Repeat style={{ fontSize: '10px' }} />
-                                      {episode.watchCount}x
-                                    </div>
-                                  )}
-
-                                  {!!episode.watched && (
-                                    <div
-                                      style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        borderRadius: '50%',
-                                        background: '#00d4aa',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                      }}
-                                    >
-                                      <Check
-                                        style={{
-                                          fontSize: '12px',
-                                          color: 'white',
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </motion.div>
+                            {episode.watchCount}
+                          </span>
                         )}
-                      </AnimatePresence>
-                    </motion.div>
-                  );
-                })}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </>
       )}
 
@@ -1575,6 +1449,17 @@ export const SeriesDetailPage = memo(() => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Discussions Section */}
+      {series && (
+        <div style={{ padding: '0 20px 20px 20px' }}>
+          <DiscussionThread
+            itemId={series.id}
+            itemType="series"
+            title="Diskussionen"
+          />
         </div>
       )}
 

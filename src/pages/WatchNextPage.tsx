@@ -1297,7 +1297,7 @@ export const WatchNextPage = () => {
                                 containerScrollY > 0 ? 'true' : 'false'
                               );
                             }
-                            navigate(`/series/${episode.seriesId}`);
+                            navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
                           }}
                           style={{
                             width: '48px',
@@ -1341,7 +1341,7 @@ export const WatchNextPage = () => {
                                   containerScrollY > 0 ? 'true' : 'false'
                                 );
                               }
-                              navigate(`/series/${episode.seriesId}`);
+                              navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
                             }
                           }}
                         >
