@@ -1,6 +1,7 @@
 import {
   ArrowDownward,
   ArrowUpward,
+  ChatBubbleOutline,
   Check,
   DragHandle,
   Edit,
@@ -17,10 +18,50 @@ import { useAuth } from '../App';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
+import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { getFormattedDate } from '../lib/date/date.utils';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../lib/validation/rewatch.utils';
 import { petService } from '../services/petService';
 import { Series } from '../types/Series';
+
+// Discussion button component for episodes
+const EpisodeDiscussionButton: React.FC<{
+  seriesId: number;
+  seasonNumber: number;
+  episodeNumber: number;
+}> = ({ seriesId, seasonNumber, episodeNumber }) => {
+  const navigate = useNavigate();
+  const { currentTheme } = useTheme();
+  const count = useDiscussionCount('episode', seriesId, seasonNumber, episodeNumber);
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}`);
+      }}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        padding: '4px',
+        cursor: 'pointer',
+        color: count > 0 ? currentTheme.primary : currentTheme.text.muted,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '4px',
+        position: 'relative',
+        zIndex: 10,
+      }}
+    >
+      <ChatBubbleOutline style={{ fontSize: '20px' }} />
+      {count > 0 && (
+        <span style={{ fontSize: '12px', fontWeight: 600 }}>{count}</span>
+      )}
+    </button>
+  );
+};
 
 interface NextEpisode {
   seriesId: number;
@@ -1426,10 +1467,16 @@ export const WatchNextPage = () => {
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
+                                  gap: '8px',
                                   position: 'relative',
                                   zIndex: 2,
                                 }}
                               >
+                                <EpisodeDiscussionButton
+                                  seriesId={episode.seriesId}
+                                  seasonNumber={episode.seasonNumber}
+                                  episodeNumber={episode.episodeNumber}
+                                />
                                 <PlayCircle
                                   style={{
                                     fontSize: '24px',

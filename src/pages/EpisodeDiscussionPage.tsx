@@ -23,6 +23,7 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../lib/date/episodeDate.utils';
 import { Series } from '../types/Series';
+import { getTVDBIdFromTMDB, getTVDBSeasons, TVDBEpisode, TVDBSeason } from '../services/tvdbService';
 
 interface TMDBEpisodeDetails {
   id: number;
@@ -60,6 +61,8 @@ export const EpisodeDiscussionPage = () => {
   const [tmdbDetails, setTmdbDetails] = useState<TMDBEpisodeDetails | null>(null);
   const [seasonDetails, setSeasonDetails] = useState<TMDBSeasonDetails | null>(null);
   const [seriesInfo, setSeriesInfo] = useState<{ name: string; poster_path: string | null; backdrop_path: string | null } | null>(null);
+  const [tvdbEpisode, setTvdbEpisode] = useState<TVDBEpisode | null>(null);
+  const [tvdbSeasons, setTvdbSeasons] = useState<TVDBSeason[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Find the series locally
@@ -69,11 +72,11 @@ export const EpisodeDiscussionPage = () => {
   const localSeason = series?.seasons?.find((s) => s.seasonNumber === Number(seasonNumber) - 1);
   const localEpisode = localSeason?.episodes?.find((_, idx) => idx === Number(episodeNumber) - 1);
 
-  // Fetch episode details from TMDB
+  // Fetch episode details from TVDB and TMDB
   useEffect(() => {
     const fetchAllDetails = async () => {
       const apiKey = import.meta.env.VITE_API_TMDB;
-      if (!apiKey || !seriesId || !seasonNumber || !episodeNumber) {
+      if (!seriesId || !seasonNumber || !episodeNumber) {
         setLoading(false);
         return;
       }
@@ -81,37 +84,78 @@ export const EpisodeDiscussionPage = () => {
       try {
         setLoading(true);
 
-        // Fetch episode, season, and series info in parallel
-        const [episodeRes, seasonRes, seriesRes] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}?api_key=${apiKey}&language=de-DE&append_to_response=images`
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=${apiKey}&language=de-DE`
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${apiKey}&language=de-DE`
-          ),
-        ]);
+        // Fetch TVDB data (primary source for episode info)
+        const fetchTVDBData = async () => {
+          try {
+            const tvdbId = await getTVDBIdFromTMDB(Number(seriesId));
+            console.log('TVDB ID from TMDB:', tvdbId);
+            if (tvdbId) {
+              const seasons = await getTVDBSeasons(tvdbId);
+              console.log('TVDB Seasons loaded:', seasons.length, 'seasons');
+              setTvdbSeasons(seasons);
 
-        if (episodeRes.ok) {
-          const data = await episodeRes.json();
-          setTmdbDetails(data);
-        }
+              // Find the specific episode
+              const targetSeasonNum = Number(seasonNumber);
+              const targetEpisodeNum = Number(episodeNumber);
+              console.log('Looking for Season', targetSeasonNum, 'Episode', targetEpisodeNum);
 
-        if (seasonRes.ok) {
-          const data = await seasonRes.json();
-          setSeasonDetails(data);
-        }
+              const season = seasons.find(s => s.seasonNumber === targetSeasonNum);
+              console.log('Found season:', season ? `Season ${season.seasonNumber} with ${season.episodes.length} episodes` : 'NOT FOUND');
 
-        if (seriesRes.ok) {
-          const data = await seriesRes.json();
-          setSeriesInfo({
-            name: data.name,
-            poster_path: data.poster_path,
-            backdrop_path: data.backdrop_path,
-          });
-        }
+              const episode = season?.episodes.find(e => e.number === targetEpisodeNum);
+              console.log('Found episode:', episode ? `"${episode.name}"` : 'NOT FOUND');
+
+              if (episode) {
+                setTvdbEpisode(episode);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching TVDB data:', error);
+          }
+        };
+
+        // Fetch TMDB data (for images, ratings, crew, etc.)
+        const fetchTMDBData = async () => {
+          if (!apiKey) return;
+
+          try {
+            const [episodeRes, seasonRes, seriesRes] = await Promise.all([
+              fetch(
+                `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}?api_key=${apiKey}&language=de-DE&append_to_response=images`
+              ),
+              fetch(
+                `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=${apiKey}&language=de-DE`
+              ),
+              fetch(
+                `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${apiKey}&language=de-DE`
+              ),
+            ]);
+
+            if (episodeRes.ok) {
+              const data = await episodeRes.json();
+              setTmdbDetails(data);
+            }
+
+            if (seasonRes.ok) {
+              const data = await seasonRes.json();
+              setSeasonDetails(data);
+            }
+
+            if (seriesRes.ok) {
+              const data = await seriesRes.json();
+              setSeriesInfo({
+                name: data.name,
+                poster_path: data.poster_path,
+                backdrop_path: data.backdrop_path,
+              });
+            }
+          } catch (error) {
+            console.error('Error fetching TMDB data:', error);
+          }
+        };
+
+        // Fetch both in parallel
+        await Promise.all([fetchTVDBData(), fetchTMDBData()]);
       } catch (error) {
         console.error('Error fetching episode details:', error);
       } finally {
@@ -133,9 +177,11 @@ export const EpisodeDiscussionPage = () => {
     return `https://image.tmdb.org/t/p/w185${path}`;
   };
 
-  // Navigation
+  // Navigation - prioritize TVDB data for episode count
   const currentEpNum = Number(episodeNumber);
-  const totalEpisodes = seasonDetails?.episodes?.length || localSeason?.episodes?.length || 0;
+  const currentSeasonNum = Number(seasonNumber);
+  const tvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum);
+  const totalEpisodes = tvdbSeason?.episodes?.length || localSeason?.episodes?.length || seasonDetails?.episodes?.length || 0;
   const hasPrevEpisode = currentEpNum > 1;
   const hasNextEpisode = currentEpNum < totalEpisodes;
 
@@ -225,7 +271,8 @@ export const EpisodeDiscussionPage = () => {
     );
   }
 
-  if (!series && !tmdbDetails) {
+  // Show "not found" only if we have no local series AND no TVDB/TMDB data at all
+  if (!series && !tvdbEpisode && !tmdbDetails && !seriesInfo) {
     return (
       <div
         style={{
@@ -261,20 +308,23 @@ export const EpisodeDiscussionPage = () => {
     );
   }
 
-  const episodeName = tmdbDetails?.name || localEpisode?.name || `Episode ${episodeNumber}`;
-  const episodeOverview = tmdbDetails?.overview || '';
-  const episodeAirDate = tmdbDetails?.air_date || localEpisode?.air_date;
-  const episodeRuntime = tmdbDetails?.runtime;
-  const episodeRating = tmdbDetails?.vote_average;
-  const stillPath = tmdbDetails?.still_path;
+  // Prefer TVDB data over local/TMDB data
+  const episodeName = tvdbEpisode?.name || localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
+  const episodeOverview = tvdbEpisode?.overview || tmdbDetails?.overview || '';
+  const episodeAirDate = tvdbEpisode?.aired || localEpisode?.air_date || localEpisode?.airDate || localEpisode?.firstAired || tmdbDetails?.air_date;
+  const episodeRuntime = tvdbEpisode?.runtime || tmdbDetails?.runtime;
+  const episodeRating = tmdbDetails?.vote_average; // TMDB only
+  const stillPath = tmdbDetails?.still_path; // TMDB only (TVDB doesn't have episode images in free tier)
   const guestStars = tmdbDetails?.guest_stars || [];
   const directors = tmdbDetails?.crew?.filter((c) => c.job === 'Director') || [];
   const writers = tmdbDetails?.crew?.filter((c) => c.job === 'Writer' || c.job === 'Screenplay') || [];
-  const seriesTitle = seriesInfo?.name || series?.title || 'Serie';
+  const seriesTitle = series?.title || seriesInfo?.name || 'Serie';
 
-  // Get next/prev episode info
-  const prevEpisode = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum - 1);
-  const nextEpisode = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum + 1);
+  // Get next/prev episode info from TVDB (primary) or TMDB (fallback)
+  const prevTvdbEpisode = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum - 1);
+  const nextTvdbEpisode = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum + 1);
+  const prevEpisode = prevTvdbEpisode || seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum - 1);
+  const nextEpisode = nextTvdbEpisode || seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum + 1);
 
   return (
     <div style={{ background: currentTheme.background.default, minHeight: '100vh', paddingBottom: '40px' }}>

@@ -906,7 +906,6 @@ export const MovieDetailPage = memo(() => {
         <DiscussionThread
           itemId={movie.id}
           itemType="movie"
-          title="Diskussionen"
         />
       </div>
 

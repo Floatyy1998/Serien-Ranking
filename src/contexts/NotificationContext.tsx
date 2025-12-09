@@ -40,6 +40,43 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const { user } = useAuth()!;
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // Cleanup old notifications (older than 30 days, keep max 50)
+  const cleanupOldNotifications = async (notificationsList: Notification[]) => {
+    if (!user || notificationsList.length === 0) return;
+
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const toDelete: string[] = [];
+
+    // Find notifications older than 30 days
+    notificationsList.forEach(n => {
+      if (n.timestamp < thirtyDaysAgo) {
+        toDelete.push(n.id);
+      }
+    });
+
+    // Also delete if more than 50 notifications (keep newest 50)
+    if (notificationsList.length > 50) {
+      const sorted = [...notificationsList].sort((a, b) => b.timestamp - a.timestamp);
+      sorted.slice(50).forEach(n => {
+        if (!toDelete.includes(n.id)) {
+          toDelete.push(n.id);
+        }
+      });
+    }
+
+    // Delete old notifications from Firebase
+    if (toDelete.length > 0) {
+      const updates: Record<string, null> = {};
+      toDelete.forEach(id => {
+        updates[id] = null;
+      });
+      await firebase.database()
+        .ref(`users/${user.uid}/notifications`)
+        .update(updates);
+      console.log(`Cleaned up ${toDelete.length} old notifications`);
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       setNotifications([]);
@@ -48,7 +85,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
     // Load notifications from Firebase
     const notificationsRef = firebase.database().ref(`users/${user.uid}/notifications`);
-    
+
     const handleData = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -59,6 +96,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         // Sort by timestamp, newest first
         notificationsList.sort((a, b) => b.timestamp - a.timestamp);
         setNotifications(notificationsList);
+
+        // Cleanup old notifications in background
+        cleanupOldNotifications(notificationsList);
       } else {
         setNotifications([]);
       }

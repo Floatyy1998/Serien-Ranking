@@ -3,6 +3,7 @@ import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../contexts/NotificationContext';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useBadges } from '../features/badges/BadgeProvider';
 import { PetWidget } from './PetWidget';
@@ -21,8 +22,7 @@ export const BottomNavigation = () => {
   const location = useLocation();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
   const { unreadBadgesCount } = useBadges();
-  // const { totalUnreadActivities } = useNotifications();
-  // const { unreadCount: generalNotificationCount } = useGeneralNotifications();
+  const { unreadCount: notificationUnreadCount } = useNotifications();
 
   const navItems: NavItem[] = [
     {
@@ -55,8 +55,8 @@ export const BottomNavigation = () => {
       icon: <Person />,
       label: 'Mehr',
       badge:
-        unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0) > 0
-          ? unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0)
+        unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0) + notificationUnreadCount > 0
+          ? unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0) + notificationUnreadCount
           : undefined,
     },
   ];
