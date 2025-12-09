@@ -1,5 +1,6 @@
 import {
   CalendarToday,
+  ChatBubbleOutline,
   Check,
   CheckCircle,
   ExpandLess,
@@ -22,7 +23,47 @@ import { BackButton } from '../components/BackButton';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
+import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
+
+// Discussion button component for episodes
+const EpisodeDiscussionButton: React.FC<{
+  seriesId: number;
+  seasonNumber: number;
+  episodeNumber: number;
+}> = ({ seriesId, seasonNumber, episodeNumber }) => {
+  const navigate = useNavigate();
+  const { currentTheme } = useTheme();
+  const count = useDiscussionCount('episode', seriesId, seasonNumber, episodeNumber);
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}`);
+      }}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        padding: '4px',
+        cursor: 'pointer',
+        color: count > 0 ? currentTheme.primary : currentTheme.text.muted,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '4px',
+        position: 'relative',
+        zIndex: 10,
+      }}
+    >
+      <ChatBubbleOutline style={{ fontSize: '18px' }} />
+      {count > 0 && (
+        <span style={{ fontSize: '12px', fontWeight: 600 }}>{count}</span>
+      )}
+    </button>
+  );
+};
 
 interface UpcomingEpisode {
   seriesId: number;
@@ -1202,13 +1243,20 @@ export const NewEpisodesPage = () => {
                                       />
                                     </motion.div>
                                   ) : watched ? (
-                                    <CheckCircle
-                                      style={{
-                                        fontSize: '20px',
-                                        color: currentTheme.status.success,
-                                        opacity: isPast ? 0.7 : 1,
-                                      }}
-                                    />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <EpisodeDiscussionButton
+                                        seriesId={episode.seriesId}
+                                        seasonNumber={episode.seasonNumber}
+                                        episodeNumber={episode.episodeNumber}
+                                      />
+                                      <CheckCircle
+                                        style={{
+                                          fontSize: '20px',
+                                          color: currentTheme.status.success,
+                                          opacity: isPast ? 0.7 : 1,
+                                        }}
+                                      />
+                                    </div>
                                   ) : (
                                     <motion.div
                                       animate={{ x: isSwiping ? 10 : 0 }}
@@ -1217,8 +1265,14 @@ export const NewEpisodesPage = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
+                                        gap: '8px',
                                       }}
                                     >
+                                      <EpisodeDiscussionButton
+                                        seriesId={episode.seriesId}
+                                        seasonNumber={episode.seasonNumber}
+                                        episodeNumber={episode.episodeNumber}
+                                      />
                                       <PlayCircle
                                         style={{
                                           fontSize: '20px',
@@ -1399,51 +1453,60 @@ export const NewEpisodesPage = () => {
                                         </p>
                                       </div>
 
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (hasAired) {
-                                            handleMarkWatched(episode);
-                                          }
-                                        }}
-                                        disabled={watched || !hasAired}
-                                        style={{
-                                          background: !hasAired
-                                            ? 'transparent'
-                                            : watched
-                                              ? 'transparent'
-                                              : `${currentTheme.status.success}1A`,
-                                          border: !hasAired
-                                            ? '1px solid rgba(255, 255, 255, 0.1)'
-                                            : watched
-                                              ? 'none'
-                                              : `1px solid ${currentTheme.status.success}33`,
-                                          borderRadius: '8px',
-                                          padding: '6px',
-                                          color: !hasAired
-                                            ? isPast
-                                              ? 'rgba(255, 255, 255, 0.2)'
-                                              : 'rgba(255, 255, 255, 0.3)'
-                                            : watched
-                                              ? currentTheme.status.success
-                                              : isPast
-                                                ? `${currentTheme.status.success}99`
-                                                : currentTheme.status.success,
-                                          cursor: !hasAired || watched ? 'default' : 'pointer',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          opacity: isPast && !hasAired ? 0.5 : 1,
-                                        }}
-                                      >
-                                        {!hasAired ? (
-                                          <Timer style={{ fontSize: '18px' }} />
-                                        ) : watched ? (
-                                          <CheckCircle style={{ fontSize: '18px' }} />
-                                        ) : (
-                                          <PlayCircle style={{ fontSize: '18px' }} />
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        {hasAired && (
+                                          <EpisodeDiscussionButton
+                                            seriesId={episode.seriesId}
+                                            seasonNumber={episode.seasonNumber}
+                                            episodeNumber={episode.episodeNumber}
+                                          />
                                         )}
-                                      </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (hasAired) {
+                                              handleMarkWatched(episode);
+                                            }
+                                          }}
+                                          disabled={watched || !hasAired}
+                                          style={{
+                                            background: !hasAired
+                                              ? 'transparent'
+                                              : watched
+                                                ? 'transparent'
+                                                : `${currentTheme.status.success}1A`,
+                                            border: !hasAired
+                                              ? '1px solid rgba(255, 255, 255, 0.1)'
+                                              : watched
+                                                ? 'none'
+                                                : `1px solid ${currentTheme.status.success}33`,
+                                            borderRadius: '8px',
+                                            padding: '6px',
+                                            color: !hasAired
+                                              ? isPast
+                                                ? 'rgba(255, 255, 255, 0.2)'
+                                                : 'rgba(255, 255, 255, 0.3)'
+                                              : watched
+                                                ? currentTheme.status.success
+                                                : isPast
+                                                  ? `${currentTheme.status.success}99`
+                                                  : currentTheme.status.success,
+                                            cursor: !hasAired || watched ? 'default' : 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            opacity: isPast && !hasAired ? 0.5 : 1,
+                                          }}
+                                        >
+                                          {!hasAired ? (
+                                            <Timer style={{ fontSize: '18px' }} />
+                                          ) : watched ? (
+                                            <CheckCircle style={{ fontSize: '18px' }} />
+                                          ) : (
+                                            <PlayCircle style={{ fontSize: '18px' }} />
+                                          )}
+                                        </button>
+                                      </div>
                                     </div>
                                   );
                                 })}

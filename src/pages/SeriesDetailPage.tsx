@@ -26,6 +26,8 @@ import { Dialog } from '../components/Dialog';
 import { DiscussionThread } from '../components/DiscussionThread';
 import { ProviderBadges } from '../components/ProviderBadges';
 import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
+import { useEpisodeDiscussionCounts } from '../hooks/useDiscussionCounts';
+import { getTVDBIdFromTMDB, getTVDBSeasons } from '../services/tvdbService';
 
 export const SeriesDetailPage = memo(() => {
   const { id } = useParams();
@@ -127,39 +129,63 @@ export const SeriesDetailPage = memo(() => {
         .then((res) => res.json())
         .then(async (data) => {
           if (data.id) {
-            // Fetch detailed episode data for each season
-            const seasonsWithEpisodes = await Promise.all(
-              (data.seasons || []).map(async (season: any) => {
-                try {
-                  const seasonResponse = await fetch(
-                    `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
-                  );
-                  const seasonData = await seasonResponse.json();
+            // Get TVDB ID and fetch episodes from TVDB (TVDB already filters out Season 0)
+            let seasonsWithEpisodes: any[] = [];
+            try {
+              const tvdbId = await getTVDBIdFromTMDB(Number(id));
+              if (tvdbId) {
+                const tvdbSeasons = await getTVDBSeasons(tvdbId);
+                seasonsWithEpisodes = tvdbSeasons.map((season) => ({
+                  seasonNumber: season.seasonNumber - 1, // Convert to 0-based to match local data format
+                  episodes: season.episodes.map((ep) => ({
+                    id: ep.id,
+                    name: ep.name,
+                    episode_number: ep.number,
+                    air_date: ep.aired,
+                    overview: ep.overview,
+                    still_path: ep.image,
+                    watched: false,
+                    watchCount: 0
+                  }))
+                }));
+              }
+            } catch (error) {
+              console.error('Error fetching TVDB data:', error);
+            }
 
-                  return {
-                    ...season,
-                    seasonNumber: season.season_number - 1, // Adjust to 0-based index
-                    episodes: seasonData.episodes?.map((ep: any) => ({
-                      id: ep.id,
-                      name: ep.name,
-                      episode_number: ep.episode_number,
-                      air_date: ep.air_date,
-                      overview: ep.overview,
-                      still_path: ep.still_path,
-                      watched: false,
-                      watchCount: 0
-                    })) || []
-                  };
-                } catch (error) {
-                  // Return season without detailed episodes if fetch fails
-                  return {
-                    ...season,
-                    seasonNumber: season.season_number - 1,
-                    episodes: []
-                  };
-                }
-              })
-            );
+            // Fallback to TMDB if TVDB fails
+            if (seasonsWithEpisodes.length === 0) {
+              const regularSeasons = (data.seasons || []).filter((s: any) => s.season_number > 0);
+              seasonsWithEpisodes = await Promise.all(
+                regularSeasons.map(async (season: any) => {
+                  try {
+                    const seasonResponse = await fetch(
+                      `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
+                    );
+                    const seasonData = await seasonResponse.json();
+
+                    return {
+                      seasonNumber: season.season_number - 1,
+                      episodes: seasonData.episodes?.map((ep: any) => ({
+                        id: ep.id,
+                        name: ep.name,
+                        episode_number: ep.episode_number,
+                        air_date: ep.air_date,
+                        overview: ep.overview,
+                        still_path: ep.still_path,
+                        watched: false,
+                        watchCount: 0
+                      })) || []
+                    };
+                  } catch (error) {
+                    return {
+                      seasonNumber: season.season_number - 1,
+                      episodes: []
+                    };
+                  }
+                })
+              );
+            }
 
             // Transform TMDB data to match our Series type
             const series: Series = {
@@ -237,6 +263,15 @@ export const SeriesDetailPage = memo(() => {
   // Check if this is a TMDB-only series (not in user's list)
   const isReadOnlyTmdbSeries = !localSeries && !!tmdbSeries;
   const [isAdding, setIsAdding] = useState(false);
+
+  // Episode discussion counts for the selected season
+  const selectedSeasonData = series?.seasons?.[selectedSeasonIndex];
+  const selectedSeasonEpisodeCount = selectedSeasonData?.episodes?.length || 0;
+  const episodeDiscussionCounts = useEpisodeDiscussionCounts(
+    Number(id) || 0,
+    (selectedSeasonData?.seasonNumber || 0) + 1, // Season numbers are 1-based in the discussion path
+    selectedSeasonEpisodeCount
+  );
 
   const getBackdropUrl = (backdropPath: string | undefined): string => {
     if (!backdropPath) return '';
@@ -1213,7 +1248,9 @@ export const SeriesDetailPage = memo(() => {
                       gap: '6px',
                     }}
                   >
-                    {selectedSeason.episodes?.map((episode, episodeIndex) => (
+                    {selectedSeason.episodes?.map((episode, episodeIndex) => {
+                      const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
+                      return (
                       <motion.div
                         key={episode.id}
                         whileHover={{ scale: 1.1 }}
@@ -1258,8 +1295,28 @@ export const SeriesDetailPage = memo(() => {
                             {episode.watchCount}
                           </span>
                         )}
+                        {discussionCount > 0 && (episode.watchCount || 0) <= 1 && (
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '-3px',
+                              right: '-3px',
+                              background: currentTheme.primary,
+                              borderRadius: '50%',
+                              width: '14px',
+                              height: '14px',
+                              fontSize: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: '700',
+                            }}
+                          >
+                            {discussionCount}
+                          </span>
+                        )}
                       </motion.div>
-                    ))}
+                    )})}
                   </div>
                 </div>
               </div>
@@ -1458,7 +1515,6 @@ export const SeriesDetailPage = memo(() => {
           <DiscussionThread
             itemId={series.id}
             itemType="series"
-            title="Diskussionen"
           />
         </div>
       )}

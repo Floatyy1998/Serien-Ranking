@@ -26,7 +26,7 @@ interface DiscussionThreadProps {
   itemType: DiscussionItemType;
   seasonNumber?: number;
   episodeNumber?: number;
-  title?: string;
+  title?: React.ReactNode;
 }
 
 // Format timestamp to relative time
@@ -321,9 +321,11 @@ const RepliesSection: React.FC<{
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Always pass discussionId so createReply works, only load replies when expanded
   const { replies, loading, createReply, deleteReply, toggleReplyLike } = useDiscussionReplies(
-    isExpanded ? discussionId : null,
-    discussionPath
+    discussionId,
+    discussionPath,
+    isExpanded // Only fetch replies when expanded
   );
 
   const handleImageUpload = async (file: File) => {
@@ -528,6 +530,7 @@ const RepliesSection: React.FC<{
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={handleSubmitReply}
                     disabled={(!newReply.trim() && replyImages.length === 0) || submitting || uploadingImage}
                     style={{
@@ -1112,7 +1115,6 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
             gap: '10px',
           }}
         >
-          <ChatBubbleOutline style={{ fontSize: '24px', color: currentTheme.primary }} />
           {title || 'Diskussionen'}
           {discussions.length > 0 && (
             <span

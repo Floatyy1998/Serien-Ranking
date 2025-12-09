@@ -8,6 +8,7 @@ import { useAuth } from '../App';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../lib/date/episodeDate.utils';
+import { useEpisodeDiscussionCounts } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
 import { Series } from '../types/Series';
 import { BackButton } from '../components/BackButton';
@@ -31,6 +32,14 @@ export const EpisodeManagementPage = () => {
   } | null>(null);
 
   const series = seriesList.find((s: Series) => s.id === Number(id));
+
+  // Get episode discussion counts for the selected season
+  const currentSeasonEpisodeCount = series?.seasons?.[selectedSeason]?.episodes?.length || 0;
+  const episodeDiscussionCounts = useEpisodeDiscussionCounts(
+    Number(id) || 0,
+    (series?.seasons?.[selectedSeason]?.seasonNumber || 0) + 1, // Season numbers are 1-based in the discussion path
+    currentSeasonEpisodeCount
+  );
 
   useEffect(() => {
     if (series) {
@@ -436,15 +445,21 @@ export const EpisodeManagementPage = () => {
                     border: 'none',
                     padding: '8px',
                     cursor: 'pointer',
-                    color: currentTheme.text.muted,
+                    color: episodeDiscussionCounts[index + 1] ? currentTheme.primary : currentTheme.text.muted,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '4px',
                     borderRadius: '8px',
                     transition: 'all 0.2s',
                   }}
                 >
                   <ChatBubbleOutline style={{ fontSize: '18px' }} />
+                  {episodeDiscussionCounts[index + 1] > 0 && (
+                    <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                      {episodeDiscussionCounts[index + 1]}
+                    </span>
+                  )}
                 </button>
 
                 <div className="episode-status">

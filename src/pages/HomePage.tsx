@@ -1,6 +1,7 @@
 import {
   AutoAwesome,
   CalendarToday,
+  ChatBubbleOutline,
   Check,
   CheckCircle,
   ChevronRight,
@@ -24,11 +25,13 @@ import { cloneElement, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getGreeting } from '../utils/greetings';
 import { useAuth } from '../App';
+import { useNotifications } from '../contexts/NotificationContext';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { petService } from '../services/petService';
 import { useContinueWatching } from '../hooks/useContinueWatching';
+import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { useTMDBTrending } from '../hooks/useTMDBTrending';
 import { useTopRated } from '../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../hooks/useWebWorkerStatsOptimized';
@@ -38,6 +41,45 @@ import { StatsGrid } from '../components/StatsGrid';
 import { NewSeasonNotification } from '../components/NewSeasonNotification';
 import { InactiveSeriesNotification } from '../components/InactiveSeriesNotification';
 import { CompletedSeriesNotification } from '../components/CompletedSeriesNotification';
+
+// Episode Discussion Button with count
+const EpisodeDiscussionButton: React.FC<{
+  seriesId: number;
+  seasonNumber: number;
+  episodeNumber: number;
+}> = ({ seriesId, seasonNumber, episodeNumber }) => {
+  const navigate = useNavigate();
+  const { currentTheme } = useTheme();
+  const count = useDiscussionCount('episode', seriesId, seasonNumber, episodeNumber);
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}`);
+      }}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        padding: '4px',
+        cursor: 'pointer',
+        color: count > 0 ? currentTheme.primary : currentTheme.text.muted,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '4px',
+        position: 'relative',
+        zIndex: 10,
+      }}
+    >
+      <ChatBubbleOutline style={{ fontSize: '18px' }} />
+      {count > 0 && (
+        <span style={{ fontSize: '12px', fontWeight: 600 }}>{count}</span>
+      )}
+    </button>
+  );
+};
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -61,6 +103,7 @@ export const HomePage: React.FC = () => {
     return <div>Redirecting to login...</div>;
   }
   const { unreadActivitiesCount } = useOptimizedFriends();
+  const { unreadCount: notificationUnreadCount } = useNotifications();
   const {
     seriesWithNewSeasons,
     inactiveSeries,
@@ -450,7 +493,7 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
-            <Badge badgeContent={unreadActivitiesCount} color="error">
+            <Badge badgeContent={unreadActivitiesCount + notificationUnreadCount} color="error">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => navigate('/activity')}
@@ -1033,7 +1076,12 @@ export const HomePage: React.FC = () => {
                               />
                             </motion.div>
                           ) : (
-                            <motion.div animate={{ x: isSwiping ? 10 : 0 }}>
+                            <motion.div animate={{ x: isSwiping ? 10 : 0 }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <EpisodeDiscussionButton
+                                seriesId={item.id}
+                                seasonNumber={item.nextEpisode.seasonNumber}
+                                episodeNumber={item.nextEpisode.episodeNumber}
+                              />
                               <PlayCircle
                                 style={{
                                   fontSize: '20px',
@@ -1276,14 +1324,26 @@ export const HomePage: React.FC = () => {
                               />
                             </motion.div>
                           ) : episode.watched ? (
-                            <CheckCircle
-                              style={{
-                                fontSize: '20px',
-                                color: currentTheme.status.success,
-                              }}
-                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <EpisodeDiscussionButton
+                                seriesId={Number(episode.seriesId)}
+                                seasonNumber={episode.seasonNumber}
+                                episodeNumber={episode.episodeNumber}
+                              />
+                              <CheckCircle
+                                style={{
+                                  fontSize: '20px',
+                                  color: currentTheme.status.success,
+                                }}
+                              />
+                            </div>
                           ) : (
-                            <motion.div animate={{ x: isSwiping ? 10 : 0 }}>
+                            <motion.div animate={{ x: isSwiping ? 10 : 0 }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <EpisodeDiscussionButton
+                                seriesId={Number(episode.seriesId)}
+                                seasonNumber={episode.seasonNumber}
+                                episodeNumber={episode.episodeNumber}
+                              />
                               <PlayCircle
                                 style={{
                                   fontSize: '20px',

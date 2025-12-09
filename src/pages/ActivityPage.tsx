@@ -1,9 +1,10 @@
-import { Cancel, CheckCircle, Person, PersonAdd, Movie as MovieIcon, Tv as TvIcon, Star, ExpandMore } from '@mui/icons-material';
+import { Cancel, CheckCircle, Person, PersonAdd, Movie as MovieIcon, Tv as TvIcon, Star, ExpandMore, ChatBubbleOutline, Favorite, Timeline, Group, MailOutline } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMovieList } from '../contexts/MovieListProvider';
+import { useNotifications } from '../contexts/NotificationContext';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
@@ -30,8 +31,14 @@ export const ActivityPage = () => {
 
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { notifications, unreadCount: unreadDiscussionCount, markAsRead, markAllAsRead } = useNotifications();
 
-  const [activeTab, setActiveTab] = useState<'activity' | 'friends' | 'requests'>('activity');
+  // Filter discussion notifications
+  const discussionNotifications = useMemo(() => {
+    return notifications.filter(n => n.type === 'discussion_reply' || n.type === 'discussion_like');
+  }, [notifications]);
+
+  const [activeTab, setActiveTab] = useState<'activity' | 'friends' | 'requests' | 'discussions'>('activity');
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [tmdbPosters, setTmdbPosters] = useState<Record<string, string>>({});
   const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
@@ -45,8 +52,10 @@ export const ActivityPage = () => {
       markActivitiesAsRead();
     } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
       markRequestsAsRead();
+    } else if (activeTab === 'discussions' && unreadDiscussionCount > 0) {
+      markAllAsRead();
     }
-  }, [activeTab, unreadActivitiesCount, unreadRequestsCount]);
+  }, [activeTab, unreadActivitiesCount, unreadRequestsCount, unreadDiscussionCount]);
 
   // Load profiles
   useEffect(() => {
@@ -340,115 +349,86 @@ export const ActivityPage = () => {
 
       </header>
 
-      {/* Tabs */}
+      {/* Tabs - Clean separated style */}
       <div
         style={{
           display: 'flex',
-          padding: '0 20px',
-          marginTop: '20px',
+          margin: '16px',
           gap: '8px',
         }}
       >
-        <button
-          onClick={() => setActiveTab('activity')}
-          style={{
-            flex: 1,
-            padding: '10px',
-            background:
-              activeTab === 'activity'
-                ? `${currentTheme.primary}33`
+        {[
+          { id: 'activity' as const, icon: <Timeline />, label: 'Feed', badge: unreadActivitiesCount > 0 && activeTab !== 'activity' },
+          { id: 'friends' as const, icon: <Group />, label: 'Freunde' },
+          { id: 'requests' as const, icon: <MailOutline />, label: 'Anfragen', badgeCount: friendRequests.length },
+          { id: 'discussions' as const, icon: <ChatBubbleOutline />, label: 'Chat', badgeCount: discussionNotifications.filter(n => !n.read).length },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              padding: '12px 8px',
+              background: activeTab === tab.id
+                ? currentTheme.primary
                 : currentTheme.background.surface,
-            border:
-              activeTab === 'activity'
-                ? `1px solid ${currentTheme.primary}66`
+              border: activeTab === tab.id
+                ? 'none'
                 : `1px solid ${currentTheme.border.default}`,
-            borderRadius: '8px',
-            color: currentTheme.text.primary,
-            fontSize: '14px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            position: 'relative',
-          }}
-        >
-          Aktivität
-          {unreadActivitiesCount > 0 && activeTab !== 'activity' && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '6px',
-                right: '6px',
-                width: '8px',
-                height: '8px',
-                background: currentTheme.status.error,
-                borderRadius: '50%',
-              }}
-            />
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('friends')}
-          style={{
-            flex: 1,
-            padding: '10px',
-            background:
-              activeTab === 'friends'
-                ? `${currentTheme.primary}33`
-                : currentTheme.background.surface,
-            border:
-              activeTab === 'friends'
-                ? `1px solid ${currentTheme.primary}66`
-                : `1px solid ${currentTheme.border.default}`,
-            borderRadius: '8px',
-            color: currentTheme.text.primary,
-            fontSize: '14px',
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
-        >
-          Freunde ({friends.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('requests')}
-          style={{
-            flex: 1,
-            padding: '10px',
-            background:
-              activeTab === 'requests'
-                ? `${currentTheme.primary}33`
-                : currentTheme.background.surface,
-            border:
-              activeTab === 'requests'
-                ? `1px solid ${currentTheme.primary}66`
-                : `1px solid ${currentTheme.border.default}`,
-            borderRadius: '8px',
-            color: currentTheme.text.primary,
-            fontSize: '14px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            position: 'relative',
-          }}
-        >
-          Anfragen
-          {friendRequests.length > 0 && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '-4px',
-                right: '-4px',
-                padding: '2px 6px',
-                background: currentTheme.status.error,
-                borderRadius: '10px',
-                fontSize: '11px',
-                fontWeight: 600,
-                color: 'white',
-              }}
-            >
-              {friendRequests.length}
-            </span>
-          )}
-        </button>
+              borderRadius: '12px',
+              color: activeTab === tab.id ? 'white' : currentTheme.text.secondary,
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'all 0.2s ease',
+              boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+            }}
+          >
+            <div style={{ position: 'relative', display: 'flex' }}>
+              {tab.icon}
+              {tab.badge && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-6px',
+                    width: '8px',
+                    height: '8px',
+                    background: activeTab === tab.id ? 'white' : currentTheme.status.error,
+                    borderRadius: '50%',
+                  }}
+                />
+              )}
+              {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-10px',
+                    minWidth: '16px',
+                    height: '16px',
+                    padding: '0 4px',
+                    background: activeTab === tab.id ? 'white' : currentTheme.status.error,
+                    color: activeTab === tab.id ? currentTheme.primary : 'white',
+                    borderRadius: '8px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {tab.badgeCount}
+                </span>
+              )}
+            </div>
+            <span style={{ fontSize: '11px', fontWeight: 600 }}>{tab.label}</span>
+          </button>
+        ))}
       </div>
 
       {/* Content */}
@@ -1083,6 +1063,122 @@ export const ActivityPage = () => {
               >
                 <PersonAdd style={{ fontSize: '60px', opacity: 0.2, marginBottom: '16px' }} />
                 <p>Keine offenen Anfragen</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Discussions Tab */}
+        {activeTab === 'discussions' && (
+          <div>
+            {discussionNotifications.length === 0 ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                  color: currentTheme.text.secondary,
+                }}
+              >
+                <ChatBubbleOutline style={{ fontSize: '60px', opacity: 0.2, marginBottom: '16px' }} />
+                <p>Keine Diskussions-Benachrichtigungen</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {discussionNotifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    onClick={() => {
+                      markAsRead(notification.id);
+                      // Navigate to the discussion if data is available
+                      if (notification.data?.discussionPath && notification.data?.discussionId) {
+                        // Build episode URL from discussionPath if it's an episode discussion
+                        const path = notification.data.discussionPath as string;
+                        if (path.includes('episode/')) {
+                          const match = path.match(/episode\/(\d+)_s(\d+)_e(\d+)/);
+                          if (match) {
+                            navigate(`/episode/${match[1]}/s/${match[2]}/e/${match[3]}`);
+                            return;
+                          }
+                        }
+                        // For series/movie discussions, navigate to the item page
+                        if (notification.data.itemType && notification.data.itemId) {
+                          navigate(`/${notification.data.itemType}/${notification.data.itemId}`);
+                        }
+                      }
+                    }}
+                    style={{
+                      padding: '16px',
+                      background: notification.read
+                        ? currentTheme.background.surface
+                        : `${currentTheme.primary}15`,
+                      border: `1px solid ${notification.read ? currentTheme.border.default : currentTheme.primary}44`,
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: notification.type === 'discussion_reply'
+                            ? `${currentTheme.primary}22`
+                            : 'rgba(255, 107, 107, 0.15)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {notification.type === 'discussion_reply' ? (
+                          <ChatBubbleOutline style={{ color: currentTheme.primary, fontSize: '20px' }} />
+                        ) : (
+                          <Favorite style={{ color: '#ff6b6b', fontSize: '20px' }} />
+                        )}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h4
+                          style={{
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            margin: '0 0 4px 0',
+                            color: currentTheme.text.primary,
+                          }}
+                        >
+                          {notification.title}
+                        </h4>
+                        <p
+                          style={{
+                            fontSize: '13px',
+                            margin: 0,
+                            color: currentTheme.text.secondary,
+                          }}
+                        >
+                          {notification.message}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: '11px',
+                            margin: '8px 0 0 0',
+                            color: currentTheme.text.muted,
+                          }}
+                        >
+                          {formatTimeAgo(notification.timestamp)}
+                        </p>
+                      </div>
+                      {!notification.read && (
+                        <div
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: currentTheme.primary,
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

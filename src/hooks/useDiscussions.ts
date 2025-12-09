@@ -244,7 +244,7 @@ interface UseDiscussionRepliesResult {
   toggleReplyLike: (replyId: string) => Promise<void>;
 }
 
-export const useDiscussionReplies = (discussionId: string | null, discussionPath: string): UseDiscussionRepliesResult => {
+export const useDiscussionReplies = (discussionId: string | null, discussionPath: string, shouldFetch: boolean = true): UseDiscussionRepliesResult => {
   const { user } = useAuth() || {};
 
   const [replies, setReplies] = useState<DiscussionReply[]>([]);
@@ -255,7 +255,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
 
   // Fetch replies with realtime listener
   useEffect(() => {
-    if (!discussionId) {
+    if (!discussionId || !shouldFetch) {
       setLoading(false);
       setReplies([]);
       return;
@@ -292,7 +292,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
     return () => {
       ref.off('value', listener);
     };
-  }, [discussionId, repliesPath]);
+  }, [discussionId, repliesPath, shouldFetch]);
 
   // Create a reply
   const createReply = useCallback(async (content: string): Promise<boolean> => {
@@ -307,11 +307,15 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
       const newReply: Omit<DiscussionReply, 'id'> = {
         userId: user.uid,
         username,
-        userPhotoURL: userData.photoURL || user.photoURL || undefined,
         content,
         createdAt: Date.now(),
         likes: [],
       };
+      // Only add userPhotoURL if it exists (Firebase doesn't accept undefined)
+      const photoURL = userData.photoURL || user.photoURL;
+      if (photoURL) {
+        (newReply as any).userPhotoURL = photoURL;
+      }
 
       // Add reply
       await firebase.database().ref(repliesPath).push(newReply);
@@ -401,7 +405,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
           await sendNotificationToUser(reply.userId, {
             type: 'discussion_like',
             title: 'Neue Reaktion',
-            message: `${username} gefällt deine Antwort`,
+            message: `${username} gefällt deine Antwort: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
             data: {
               discussionId,
               discussionPath,
