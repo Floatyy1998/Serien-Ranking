@@ -182,18 +182,42 @@ export const EpisodeDiscussionPage = () => {
   const currentSeasonNum = Number(seasonNumber);
   const tvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum);
   const totalEpisodes = tvdbSeason?.episodes?.length || localSeason?.episodes?.length || seasonDetails?.episodes?.length || 0;
-  const hasPrevEpisode = currentEpNum > 1;
-  const hasNextEpisode = currentEpNum < totalEpisodes;
+
+  // Check for previous/next seasons for cross-season navigation
+  const prevTvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum - 1);
+  const nextTvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum + 1);
+  const prevLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum - 2); // -2 because seasonNumber is 0-indexed in local data
+  const nextLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum); // current seasonNumber in local data is next season
+
+  // Previous episode: either previous in current season or last of previous season
+  const hasPrevInSeason = currentEpNum > 1;
+  const prevSeasonEpisodeCount = prevTvdbSeason?.episodes?.length || prevLocalSeason?.episodes?.length || 0;
+  const hasPrevSeason = currentSeasonNum > 1 && prevSeasonEpisodeCount > 0;
+  const hasPrevEpisode = hasPrevInSeason || hasPrevSeason;
+
+  // Next episode: either next in current season or first of next season
+  const hasNextInSeason = currentEpNum < totalEpisodes;
+  const nextSeasonExists = nextTvdbSeason?.episodes?.length || nextLocalSeason?.episodes?.length || 0;
+  const hasNextSeason = nextSeasonExists > 0;
+  const hasNextEpisode = hasNextInSeason || hasNextSeason;
 
   const goToPrevEpisode = () => {
-    if (hasPrevEpisode) {
+    if (hasPrevInSeason) {
+      // Previous episode in same season
       navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${currentEpNum - 1}`, { replace: true });
+    } else if (hasPrevSeason) {
+      // Last episode of previous season
+      navigate(`/episode/${seriesId}/s/${currentSeasonNum - 1}/e/${prevSeasonEpisodeCount}`, { replace: true });
     }
   };
 
   const goToNextEpisode = () => {
-    if (hasNextEpisode) {
+    if (hasNextInSeason) {
+      // Next episode in same season
       navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${currentEpNum + 1}`, { replace: true });
+    } else if (hasNextSeason) {
+      // First episode of next season
+      navigate(`/episode/${seriesId}/s/${currentSeasonNum + 1}/e/1`, { replace: true });
     }
   };
 
@@ -321,10 +345,29 @@ export const EpisodeDiscussionPage = () => {
   const seriesTitle = series?.title || seriesInfo?.name || 'Serie';
 
   // Get next/prev episode info from TVDB (primary) or TMDB (fallback)
-  const prevTvdbEpisode = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum - 1);
-  const nextTvdbEpisode = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum + 1);
-  const prevEpisode = prevTvdbEpisode || seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum - 1);
-  const nextEpisode = nextTvdbEpisode || seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum + 1);
+  // For previous episode: check current season first, then previous season's last episode
+  const prevTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum - 1);
+  const prevTmdbEpisodeInSeason = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum - 1);
+  const lastEpisodeOfPrevSeason = prevTvdbSeason?.episodes?.[prevTvdbSeason.episodes.length - 1];
+
+  const prevEpisode = hasPrevInSeason
+    ? (prevTvdbEpisodeInSeason || prevTmdbEpisodeInSeason)
+    : lastEpisodeOfPrevSeason;
+  const prevEpisodeLabel = hasPrevInSeason
+    ? (prevEpisode?.name || `Episode ${currentEpNum - 1}`)
+    : (lastEpisodeOfPrevSeason ? `S${currentSeasonNum - 1} E${prevSeasonEpisodeCount}` : '');
+
+  // For next episode: check current season first, then next season's first episode
+  const nextTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum + 1);
+  const nextTmdbEpisodeInSeason = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum + 1);
+  const firstEpisodeOfNextSeason = nextTvdbSeason?.episodes?.find((e) => e.number === 1);
+
+  const nextEpisode = hasNextInSeason
+    ? (nextTvdbEpisodeInSeason || nextTmdbEpisodeInSeason)
+    : firstEpisodeOfNextSeason;
+  const nextEpisodeLabel = hasNextInSeason
+    ? (nextEpisode?.name || `Episode ${currentEpNum + 1}`)
+    : (firstEpisodeOfNextSeason ? `S${currentSeasonNum + 1} E1` : '');
 
   return (
     <div style={{ background: currentTheme.background.default, minHeight: '100vh', paddingBottom: '40px' }}>
@@ -472,7 +515,7 @@ export const EpisodeDiscussionPage = () => {
             >
               S{seasonNumber} E{episodeNumber}
             </span>
-            {episodeRating && episodeRating > 0 && (
+            {episodeRating !== undefined && episodeRating > 0 ? (
               <span
                 style={{
                   display: 'flex',
@@ -489,7 +532,7 @@ export const EpisodeDiscussionPage = () => {
                 <Star style={{ fontSize: '14px' }} />
                 {episodeRating.toFixed(1)}
               </span>
-            )}
+            ) : null}
             {localEpisode?.watched && (
               <span
                 style={{
@@ -669,7 +712,7 @@ export const EpisodeDiscussionPage = () => {
                 textOverflow: 'ellipsis',
               }}
             >
-              {prevEpisode?.name || `Episode ${currentEpNum - 1}`}
+              {prevEpisodeLabel}
             </p>
           </div>
         </motion.button>
@@ -708,7 +751,7 @@ export const EpisodeDiscussionPage = () => {
                 textOverflow: 'ellipsis',
               }}
             >
-              {nextEpisode?.name || `Episode ${currentEpNum + 1}`}
+              {nextEpisodeLabel}
             </p>
           </div>
           <NavigateNext style={{ fontSize: '24px', color: currentTheme.primary }} />

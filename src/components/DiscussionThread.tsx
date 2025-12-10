@@ -76,10 +76,12 @@ const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({ src, o
           alt="Bild"
           style={{
             width: '100%',
-            maxHeight: '300px',
-            objectFit: 'cover',
+            height: 'auto',
+            maxHeight: '400px',
+            objectFit: 'contain',
             borderRadius: '12px',
             border: `1px solid ${currentTheme.border.default}`,
+            background: currentTheme.background.surface,
           }}
         />
         {onRemove && (
