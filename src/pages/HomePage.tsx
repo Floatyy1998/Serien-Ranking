@@ -74,9 +74,9 @@ const EpisodeDiscussionButton: React.FC<{
       }}
     >
       <ChatBubbleOutline style={{ fontSize: '18px' }} />
-      {count > 0 && (
+      {count > 0 ? (
         <span style={{ fontSize: '12px', fontWeight: 600 }}>{count}</span>
-      )}
+      ) : null}
     </button>
   );
 };
