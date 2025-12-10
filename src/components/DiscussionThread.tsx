@@ -9,6 +9,8 @@ import {
   FavoriteBorder,
   Person,
   Send,
+  Visibility,
+  VisibilityOff,
   Warning,
 } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
@@ -27,6 +29,7 @@ interface DiscussionThreadProps {
   seasonNumber?: number;
   episodeNumber?: number;
   title?: React.ReactNode;
+  isWatched?: boolean; // For spoiler protection on episodes
 }
 
 // Format timestamp to relative time
@@ -1071,10 +1074,33 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   seasonNumber,
   episodeNumber,
   title,
+  isWatched,
 }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const [showNewForm, setShowNewForm] = useState(false);
+
+  // Spoiler protection for unwatched episodes
+  const spoilerKey = itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
+    ? `spoiler_revealed_${itemId}_s${seasonNumber}_e${episodeNumber}`
+    : null;
+
+  const [spoilerRevealed, setSpoilerRevealed] = useState(() => {
+    if (spoilerKey) {
+      return localStorage.getItem(spoilerKey) === 'true';
+    }
+    return true;
+  });
+
+  const handleRevealSpoiler = () => {
+    setSpoilerRevealed(true);
+    if (spoilerKey) {
+      localStorage.setItem(spoilerKey, 'true');
+    }
+  };
+
+  // Show spoiler protection if episode is not watched and user hasn't revealed
+  const showSpoilerProtection = itemType === 'episode' && isWatched === false && !spoilerRevealed;
 
   const { discussions, loading, error, createDiscussion, deleteDiscussion, toggleLike } = useDiscussions({
     itemId,
@@ -1093,6 +1119,115 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     const id = await createDiscussion(data);
     return !!id;
   };
+
+  // Spoiler Protection Overlay
+  if (showSpoilerProtection) {
+    return (
+      <div
+        style={{
+          marginTop: '24px',
+          padding: '20px',
+          background: currentTheme.background.card,
+          borderRadius: '20px',
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px 20px',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${currentTheme.status.warning}30, ${currentTheme.status.error}30)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <VisibilityOff style={{ fontSize: '40px', color: currentTheme.status.warning }} />
+          </div>
+
+          <h3
+            style={{
+              fontSize: '20px',
+              fontWeight: 800,
+              color: currentTheme.text.primary,
+              margin: '0 0 12px 0',
+            }}
+          >
+            Spoiler-Warnung
+          </h3>
+
+          <p
+            style={{
+              fontSize: '14px',
+              color: currentTheme.text.secondary,
+              margin: '0 0 8px 0',
+              maxWidth: '300px',
+              lineHeight: 1.6,
+            }}
+          >
+            Du hast diese Episode noch nicht gesehen.
+          </p>
+          <p
+            style={{
+              fontSize: '13px',
+              color: currentTheme.text.muted,
+              margin: '0 0 24px 0',
+              maxWidth: '300px',
+            }}
+          >
+            Die Diskussionen könnten Spoiler enthalten.
+          </p>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleRevealSpoiler}
+              style={{
+                padding: '12px 24px',
+                borderRadius: '12px',
+                border: `1px solid ${currentTheme.border.default}`,
+                background: currentTheme.background.surface,
+                color: currentTheme.text.primary,
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <Visibility style={{ fontSize: '18px' }} />
+              Trotzdem anzeigen
+            </motion.button>
+          </div>
+
+          {discussions.length > 0 && (
+            <p
+              style={{
+                fontSize: '12px',
+                color: currentTheme.text.muted,
+                marginTop: '20px',
+              }}
+            >
+              {discussions.length} {discussions.length === 1 ? 'Diskussion' : 'Diskussionen'} versteckt
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -994,6 +994,7 @@ export const EpisodeDiscussionPage = () => {
             seasonNumber={Number(seasonNumber)}
             episodeNumber={Number(episodeNumber)}
             title="Episoden-Diskussion"
+            isWatched={localEpisode?.watched}
           />
         </motion.div>
       </div>
