@@ -3,10 +3,12 @@ import {
   ChatBubbleOutline,
   Close,
   Delete,
+  Edit,
   ExpandLess,
   ExpandMore,
   Favorite,
   FavoriteBorder,
+  Flag,
   Person,
   Send,
   Visibility,
@@ -177,14 +179,44 @@ const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({ src, o
 const ReplyItem: React.FC<{
   reply: DiscussionReply;
   onDelete: () => void;
+  onEdit: (input: { content?: string; isSpoiler?: boolean }) => Promise<boolean>;
   onToggleLike: () => void;
   isOwner: boolean;
   currentUserId?: string;
-}> = ({ reply, onDelete, onToggleLike, isOwner, currentUserId }) => {
+}> = ({ reply, onDelete, onEdit, onToggleLike, isOwner, currentUserId }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const isLiked = currentUserId ? reply.likes.includes(currentUserId) : false;
   const { text, images } = extractImageUrls(reply.content);
+  const [showSpoiler, setShowSpoiler] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(reply.content);
+  const [editIsSpoiler, setEditIsSpoiler] = useState(reply.isSpoiler || false);
+  const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSpoilerConfirm, setShowSpoilerConfirm] = useState(false);
+
+  const handleSaveEdit = async () => {
+    setSaving(true);
+    const success = await onEdit({
+      content: editContent.trim(),
+      isSpoiler: editIsSpoiler,
+    });
+    if (success) {
+      setIsEditing(false);
+    }
+    setSaving(false);
+  };
+
+  const handleFlagAsSpoiler = async () => {
+    await onEdit({ isSpoiler: true });
+    setShowSpoilerConfirm(false);
+  };
+
+  const handleDelete = () => {
+    onDelete();
+    setShowDeleteConfirm(false);
+  };
 
   return (
     <motion.div
@@ -193,20 +225,20 @@ const ReplyItem: React.FC<{
       exit={{ opacity: 0, y: -10 }}
       style={{
         display: 'flex',
-        gap: '12px',
+        gap: '10px',
         padding: '12px',
         background: `linear-gradient(135deg, ${currentTheme.background.surface}80, ${currentTheme.background.card}60)`,
         borderRadius: '12px',
-        marginLeft: '16px',
-        borderLeft: `3px solid ${currentTheme.primary}60`,
+        marginLeft: '12px',
+        borderLeft: `3px solid ${reply.isSpoiler ? currentTheme.status.warning : currentTheme.primary}60`,
       }}
     >
       {/* Avatar */}
       <div
         onClick={() => navigate(`/friend/${reply.userId}`)}
         style={{
-          width: '32px',
-          height: '32px',
+          width: '30px',
+          height: '30px',
           borderRadius: '50%',
           flexShrink: 0,
           cursor: 'pointer',
@@ -225,12 +257,12 @@ const ReplyItem: React.FC<{
               }),
         }}
       >
-        {!reply.userPhotoURL && <Person style={{ fontSize: '16px', color: 'white' }} />}
+        {!reply.userPhotoURL && <Person style={{ fontSize: '15px', color: 'white' }} />}
       </div>
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
           <span
             onClick={() => navigate(`/friend/${reply.userId}`)}
             style={{
@@ -242,70 +274,315 @@ const ReplyItem: React.FC<{
           >
             {reply.username}
           </span>
-          <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
+          <span style={{ fontSize: '10px', color: currentTheme.text.muted }}>
             {formatRelativeTime(reply.createdAt)}
+            {reply.updatedAt && ' (bearb.)'}
           </span>
+          {reply.isSpoiler && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                padding: '2px 6px',
+                background: `${currentTheme.status.warning}25`,
+                color: currentTheme.status.warning,
+                borderRadius: '8px',
+                fontSize: '10px',
+                fontWeight: 700,
+              }}
+            >
+              <Warning style={{ fontSize: '12px' }} />
+              SPOILER
+            </span>
+          )}
         </div>
 
-        {text && (
-          <p style={{ fontSize: '14px', color: currentTheme.text.secondary, margin: '0 0 8px 0', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-            {text}
-          </p>
-        )}
-
-        {/* Images */}
-        {images.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
-            {images.map((img, i) => (
-              <ImagePreview key={i} src={img} />
-            ))}
+        {/* Edit Form */}
+        {isEditing ? (
+          <div style={{ marginBottom: '8px' }}>
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              rows={3}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: `1px solid ${currentTheme.border.default}`,
+                background: currentTheme.background.card,
+                color: currentTheme.text.primary,
+                fontSize: '13px',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+                marginBottom: '8px',
+              }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  padding: '6px 10px',
+                  borderRadius: '8px',
+                  border: `1px solid ${editIsSpoiler ? currentTheme.status.warning + '60' : currentTheme.border.default}`,
+                  background: editIsSpoiler ? `${currentTheme.status.warning}15` : 'transparent',
+                  color: editIsSpoiler ? currentTheme.status.warning : currentTheme.text.secondary,
+                  fontSize: '12px',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={editIsSpoiler}
+                  onChange={(e) => setEditIsSpoiler(e.target.checked)}
+                  style={{ display: 'none' }}
+                />
+                <Warning style={{ fontSize: '14px' }} />
+                Spoiler
+              </label>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditContent(reply.content);
+                    setEditIsSpoiler(reply.isSpoiler || false);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: `1px solid ${currentTheme.border.default}`,
+                    background: 'transparent',
+                    color: currentTheme.text.secondary,
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                  }}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={saving}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: currentTheme.primary,
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                  }}
+                >
+                  {saving ? '...' : 'Speichern'}
+                </button>
+              </div>
+            </div>
           </div>
-        )}
-
-        {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        ) : reply.isSpoiler && !showSpoiler ? (
           <button
-            onClick={onToggleLike}
+            onClick={() => setShowSpoiler(true)}
             style={{
+              padding: '10px 14px',
+              background: `${currentTheme.status.warning}15`,
+              border: `1px dashed ${currentTheme.status.warning}40`,
+              borderRadius: '8px',
+              color: currentTheme.status.warning,
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              background: isLiked ? `${currentTheme.status.error}15` : 'transparent',
-              border: 'none',
-              padding: '6px 10px',
-              borderRadius: '16px',
-              cursor: 'pointer',
-              color: isLiked ? '#e91e63' : currentTheme.text.muted,
-              fontSize: '12px',
-              fontWeight: 600,
-              transition: 'all 0.2s',
+              marginBottom: '8px',
             }}
           >
-            {isLiked ? <Favorite style={{ fontSize: '16px' }} /> : <FavoriteBorder style={{ fontSize: '16px' }} />}
-            {reply.likes.length > 0 && reply.likes.length}
+            <Warning style={{ fontSize: '16px' }} />
+            Spoiler anzeigen
           </button>
+        ) : (
+          <>
+            {text && (
+              <p style={{ fontSize: '14px', color: currentTheme.text.secondary, margin: '0 0 8px 0', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                {text}
+              </p>
+            )}
 
-          {isOwner && (
+            {/* Images */}
+            {images.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+                {images.map((img, i) => (
+                  <ImagePreview key={i} src={img} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Actions */}
+        {!isEditing && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <button
-              onClick={onDelete}
+              onClick={onToggleLike}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                background: 'transparent',
+                gap: '6px',
+                background: isLiked ? `${currentTheme.status.error}15` : 'transparent',
                 border: 'none',
                 padding: '6px 10px',
                 borderRadius: '16px',
                 cursor: 'pointer',
-                color: currentTheme.text.muted,
+                color: isLiked ? '#e91e63' : currentTheme.text.muted,
                 fontSize: '12px',
+                fontWeight: 600,
                 transition: 'all 0.2s',
               }}
             >
-              <Delete style={{ fontSize: '16px' }} />
+              {isLiked ? <Favorite style={{ fontSize: '16px' }} /> : <FavoriteBorder style={{ fontSize: '16px' }} />}
+              {reply.likes.length > 0 && reply.likes.length}
             </button>
-          )}
-        </div>
+
+            {/* Flag as Spoiler (non-owners only, if not already spoiler) */}
+            {!isOwner && !reply.isSpoiler && currentUserId && !showSpoilerConfirm && (
+              <button
+                onClick={() => setShowSpoilerConfirm(true)}
+                title="Als Spoiler melden"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '6px 10px',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  color: currentTheme.status.warning,
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Flag style={{ fontSize: '16px' }} />
+              </button>
+            )}
+
+            {/* Spoiler Confirm - inline */}
+            {showSpoilerConfirm && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: currentTheme.status.warning }}>Als Spoiler?</span>
+                <button
+                  onClick={handleFlagAsSpoiler}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: currentTheme.status.warning,
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Ja
+                </button>
+                <button
+                  onClick={() => setShowSpoilerConfirm(false)}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: `1px solid ${currentTheme.border.default}`,
+                    background: 'transparent',
+                    color: currentTheme.text.secondary,
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                  }}
+                >
+                  Nein
+                </button>
+              </div>
+            )}
+
+            {/* Edit Button (owner only) */}
+            {isOwner && !showDeleteConfirm && (
+              <button
+                onClick={() => setIsEditing(true)}
+                title="Bearbeiten"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '6px 10px',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  color: currentTheme.text.muted,
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Edit style={{ fontSize: '16px' }} />
+              </button>
+            )}
+
+            {/* Delete Button (owner only) */}
+            {isOwner && !showDeleteConfirm && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                title="Löschen"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '6px 10px',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  color: currentTheme.text.muted,
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Delete style={{ fontSize: '16px' }} />
+              </button>
+            )}
+
+            {/* Delete Confirm - inline */}
+            {showDeleteConfirm && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: currentTheme.status.error }}>Löschen?</span>
+                <button
+                  onClick={handleDelete}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: currentTheme.status.error,
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Ja
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: `1px solid ${currentTheme.border.default}`,
+                    background: 'transparent',
+                    color: currentTheme.text.secondary,
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                  }}
+                >
+                  Nein
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -316,7 +593,8 @@ const RepliesSection: React.FC<{
   discussionId: string;
   discussionPath: string;
   replyCount: number;
-}> = ({ discussionId, discussionPath, replyCount }) => {
+  isSpoilerHidden?: boolean;
+}> = ({ discussionId, discussionPath, replyCount, isSpoilerHidden = false }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const [isExpanded, setIsExpanded] = useState(false);
@@ -327,11 +605,12 @@ const RepliesSection: React.FC<{
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Always pass discussionId so createReply works, only load replies when expanded
-  const { replies, loading, createReply, deleteReply, toggleReplyLike } = useDiscussionReplies(
+  const { replies, loading, createReply, editReply, deleteReply, toggleReplyLike } = useDiscussionReplies(
     discussionId,
     discussionPath,
     isExpanded // Only fetch replies when expanded
   );
+  const [newReplyIsSpoiler, setNewReplyIsSpoiler] = useState(false);
 
   const handleImageUpload = async (file: File) => {
     if (!user?.uid || uploadingImage) return;
@@ -367,10 +646,11 @@ const RepliesSection: React.FC<{
     setSubmitting(true);
     // Combine text and images when submitting
     const fullContent = [newReply.trim(), ...replyImages].filter(Boolean).join('\n');
-    const success = await createReply(fullContent);
+    const success = await createReply(fullContent, newReplyIsSpoiler);
     if (success) {
       setNewReply('');
       setReplyImages([]);
+      setNewReplyIsSpoiler(false);
     }
     setSubmitting(false);
   };
@@ -379,25 +659,27 @@ const RepliesSection: React.FC<{
     <div style={{ marginTop: '12px' }}>
       {/* Toggle Button */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => !isSpoilerHidden && setIsExpanded(!isExpanded)}
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          background: isExpanded ? `${currentTheme.primary}15` : 'transparent',
-          border: `1px solid ${isExpanded ? currentTheme.primary + '40' : 'transparent'}`,
+          background: isExpanded ? `${currentTheme.primary}15` : isSpoilerHidden ? `${currentTheme.status.warning}10` : 'transparent',
+          border: `1px solid ${isExpanded ? currentTheme.primary + '40' : isSpoilerHidden ? currentTheme.status.warning + '30' : 'transparent'}`,
           padding: '8px 14px',
-          cursor: 'pointer',
-          color: currentTheme.primary,
+          cursor: isSpoilerHidden ? 'not-allowed' : 'pointer',
+          color: isSpoilerHidden ? currentTheme.status.warning : currentTheme.primary,
           fontSize: '13px',
           fontWeight: 600,
           borderRadius: '20px',
           transition: 'all 0.2s',
+          opacity: isSpoilerHidden ? 0.7 : 1,
         }}
+        title={isSpoilerHidden ? 'Zeige zuerst den Spoiler an, um Antworten zu sehen' : undefined}
       >
-        <ChatBubbleOutline style={{ fontSize: '18px' }} />
+        {isSpoilerHidden ? <VisibilityOff style={{ fontSize: '18px' }} /> : <ChatBubbleOutline style={{ fontSize: '18px' }} />}
         {replyCount > 0 ? `${replyCount} Antworten` : 'Antworten'}
-        {isExpanded ? <ExpandLess style={{ fontSize: '20px' }} /> : <ExpandMore style={{ fontSize: '20px' }} />}
+        {!isSpoilerHidden && (isExpanded ? <ExpandLess style={{ fontSize: '20px' }} /> : <ExpandMore style={{ fontSize: '20px' }} />)}
       </button>
 
       {/* Replies List */}
@@ -420,6 +702,7 @@ const RepliesSection: React.FC<{
                     key={reply.id}
                     reply={reply}
                     onDelete={() => deleteReply(reply.id)}
+                    onEdit={(input) => editReply(reply.id, input)}
                     onToggleLike={() => toggleReplyLike(reply.id)}
                     isOwner={reply.userId === user?.uid}
                     currentUserId={user?.uid}
@@ -433,7 +716,7 @@ const RepliesSection: React.FC<{
                   style={{
                     display: 'flex',
                     gap: '10px',
-                    marginLeft: '16px',
+                    marginLeft: '12px',
                     marginTop: '8px',
                     alignItems: 'flex-end',
                   }}
@@ -443,9 +726,9 @@ const RepliesSection: React.FC<{
                       flex: 1,
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '8px',
+                      gap: '6px',
                       padding: '10px 14px',
-                      borderRadius: '16px',
+                      borderRadius: '14px',
                       border: `2px solid ${currentTheme.border.default}`,
                       background: currentTheme.background.card,
                       transition: 'border-color 0.2s',
@@ -492,7 +775,7 @@ const RepliesSection: React.FC<{
                       </div>
                     )}
                     <textarea
-                      placeholder={replyImages.length > 0 ? "Beschreibung hinzufügen (optional)..." : "Schreibe eine Antwort..."}
+                      placeholder={replyImages.length > 0 ? "Beschreibung (optional)..." : "Antwort schreiben..."}
                       value={newReply}
                       onChange={(e) => setNewReply(e.target.value)}
                       rows={1}
@@ -522,15 +805,32 @@ const RepliesSection: React.FC<{
                         style={{
                           background: 'transparent',
                           border: 'none',
-                          padding: '4px',
+                          padding: '2px',
                           cursor: 'pointer',
                           color: uploadingImage ? currentTheme.primary : currentTheme.text.muted,
                           display: 'flex',
                           alignItems: 'center',
                         }}
                       >
-                        <AddPhotoAlternate style={{ fontSize: '20px' }} />
-                        {uploadingImage && <span style={{ fontSize: '12px', marginLeft: '4px' }}>...</span>}
+                        <AddPhotoAlternate style={{ fontSize: '18px' }} />
+                        {uploadingImage && <span style={{ fontSize: '11px', marginLeft: '3px' }}>...</span>}
+                      </button>
+                      {/* Spoiler Toggle */}
+                      <button
+                        onClick={() => setNewReplyIsSpoiler(!newReplyIsSpoiler)}
+                        title={newReplyIsSpoiler ? 'Spoiler-Markierung entfernen' : 'Als Spoiler markieren'}
+                        style={{
+                          background: newReplyIsSpoiler ? `${currentTheme.status.warning}20` : 'transparent',
+                          border: 'none',
+                          padding: '2px',
+                          cursor: 'pointer',
+                          color: newReplyIsSpoiler ? currentTheme.status.warning : currentTheme.text.muted,
+                          display: 'flex',
+                          alignItems: 'center',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        <Warning style={{ fontSize: '18px' }} />
                       </button>
                     </div>
                   </div>
@@ -539,10 +839,11 @@ const RepliesSection: React.FC<{
                     onClick={handleSubmitReply}
                     disabled={(!newReply.trim() && replyImages.length === 0) || submitting || uploadingImage}
                     style={{
-                      width: '44px',
-                      height: '44px',
+                      width: '40px',
+                      height: '40px',
                       borderRadius: '50%',
                       border: 'none',
+                      flexShrink: 0,
                       background: (newReply.trim() || replyImages.length > 0) ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})` : currentTheme.background.surface,
                       color: (newReply.trim() || replyImages.length > 0) ? '#fff' : currentTheme.text.muted,
                       cursor: (newReply.trim() || replyImages.length > 0) ? 'pointer' : 'default',
@@ -553,7 +854,7 @@ const RepliesSection: React.FC<{
                       transition: 'all 0.2s',
                     }}
                   >
-                    <Send style={{ fontSize: '20px' }} />
+                    <Send style={{ fontSize: '18px' }} />
                   </button>
                 </div>
               )}
@@ -570,15 +871,47 @@ const DiscussionItem: React.FC<{
   discussion: Discussion;
   discussionPath: string;
   onDelete: () => void;
+  onEdit: (input: { title?: string; content?: string; isSpoiler?: boolean }) => Promise<boolean>;
   onToggleLike: () => void;
   isOwner: boolean;
   currentUserId?: string;
-}> = ({ discussion, discussionPath, onDelete, onToggleLike, isOwner, currentUserId }) => {
+}> = ({ discussion, discussionPath, onDelete, onEdit, onToggleLike, isOwner, currentUserId }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const isLiked = currentUserId ? discussion.likes.includes(currentUserId) : false;
   const [showSpoiler, setShowSpoiler] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(discussion.title);
+  const [editContent, setEditContent] = useState(discussion.content);
+  const [editIsSpoiler, setEditIsSpoiler] = useState(discussion.isSpoiler || false);
+  const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSpoilerConfirm, setShowSpoilerConfirm] = useState(false);
   const { text, images } = extractImageUrls(discussion.content);
+
+  const handleSaveEdit = async () => {
+    if (!editTitle.trim()) return;
+    setSaving(true);
+    const success = await onEdit({
+      title: editTitle.trim(),
+      content: editContent.trim(),
+      isSpoiler: editIsSpoiler,
+    });
+    if (success) {
+      setIsEditing(false);
+    }
+    setSaving(false);
+  };
+
+  const handleFlagAsSpoiler = async () => {
+    await onEdit({ isSpoiler: true });
+    setShowSpoilerConfirm(false);
+  };
+
+  const handleDelete = () => {
+    onDelete();
+    setShowDeleteConfirm(false);
+  };
 
   return (
     <motion.div
@@ -587,24 +920,24 @@ const DiscussionItem: React.FC<{
       style={{
         background: `linear-gradient(145deg, ${currentTheme.background.card}, ${currentTheme.background.surface}80)`,
         borderRadius: '16px',
-        padding: '20px',
+        padding: '14px',
         border: `1px solid ${currentTheme.border.default}`,
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', gap: '14px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
         {/* Avatar */}
         <div
           onClick={() => navigate(`/friend/${discussion.userId}`)}
           style={{
-            width: '48px',
-            height: '48px',
+            width: '40px',
+            height: '40px',
             borderRadius: '50%',
             flexShrink: 0,
             cursor: 'pointer',
-            border: `3px solid ${currentTheme.primary}40`,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            border: `2px solid ${currentTheme.primary}40`,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             ...(discussion.userPhotoURL
               ? {
                   backgroundImage: `url("${discussion.userPhotoURL}")`,
@@ -619,16 +952,16 @@ const DiscussionItem: React.FC<{
                 }),
           }}
         >
-          {!discussion.userPhotoURL && <Person style={{ fontSize: '24px', color: 'white' }} />}
+          {!discussion.userPhotoURL && <Person style={{ fontSize: '20px', color: 'white' }} />}
         </div>
 
         {/* Title & Meta */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
             <span
               onClick={() => navigate(`/friend/${discussion.userId}`)}
               style={{
-                fontSize: '15px',
+                fontSize: '14px',
                 fontWeight: 700,
                 color: currentTheme.text.primary,
                 cursor: 'pointer',
@@ -636,38 +969,39 @@ const DiscussionItem: React.FC<{
             >
               {discussion.username}
             </span>
-            <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>
+            <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
               {formatRelativeTime(discussion.createdAt)}
+              {discussion.updatedAt && ' (bearb.)'}
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {discussion.isSpoiler && (
               <span
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 10px',
-                  background: `linear-gradient(135deg, ${currentTheme.status.warning}30, ${currentTheme.status.warning}20)`,
+                  gap: '3px',
+                  padding: '2px 6px',
+                  background: `${currentTheme.status.warning}25`,
                   color: currentTheme.status.warning,
-                  borderRadius: '12px',
-                  fontSize: '11px',
+                  borderRadius: '8px',
+                  fontSize: '10px',
                   fontWeight: 700,
                 }}
               >
-                <Warning style={{ fontSize: '14px' }} />
+                <Warning style={{ fontSize: '12px' }} />
                 SPOILER
               </span>
             )}
             {discussion.isPinned && (
               <span
                 style={{
-                  padding: '4px 10px',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.primary}20)`,
+                  padding: '2px 6px',
+                  background: `${currentTheme.primary}25`,
                   color: currentTheme.primary,
-                  borderRadius: '12px',
-                  fontSize: '11px',
+                  borderRadius: '8px',
+                  fontSize: '10px',
                   fontWeight: 700,
                 }}
               >
@@ -675,91 +1009,327 @@ const DiscussionItem: React.FC<{
               </span>
             )}
           </div>
-
-          <h4
-            style={{
-              fontSize: '17px',
-              fontWeight: 800,
-              color: currentTheme.text.primary,
-              margin: '8px 0 0 0',
-              lineHeight: 1.3,
-            }}
-          >
-            {discussion.title}
-          </h4>
         </div>
 
-        {/* Delete Button */}
-        {isOwner && (
-          <button
-            onClick={onDelete}
+        {/* Action Buttons - inline mit Bestätigungen */}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+          {/* Spoiler Flag Button */}
+          {!isOwner && !discussion.isSpoiler && currentUserId && !showSpoilerConfirm && (
+            <button
+              onClick={() => setShowSpoilerConfirm(true)}
+              title="Als Spoiler melden"
+              style={{
+                background: `${currentTheme.status.warning}15`,
+                border: 'none',
+                padding: '6px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                color: currentTheme.status.warning,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Flag style={{ fontSize: '18px' }} />
+            </button>
+          )}
+
+          {/* Spoiler Confirm - inline */}
+          {showSpoilerConfirm && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '12px', color: currentTheme.status.warning, fontWeight: 500 }}>Spoiler?</span>
+              <button
+                onClick={handleFlagAsSpoiler}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: currentTheme.status.warning,
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                }}
+              >
+                Ja
+              </button>
+              <button
+                onClick={() => setShowSpoilerConfirm(false)}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: `1px solid ${currentTheme.border.default}`,
+                  background: 'transparent',
+                  color: currentTheme.text.secondary,
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                }}
+              >
+                Nein
+              </button>
+            </div>
+          )}
+
+          {/* Edit/Delete Buttons */}
+          {isOwner && !showDeleteConfirm && !showSpoilerConfirm && (
+            <>
+              <button
+                onClick={() => setIsEditing(true)}
+                title="Bearbeiten"
+                style={{
+                  background: `${currentTheme.primary}15`,
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: currentTheme.primary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Edit style={{ fontSize: '18px' }} />
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                title="Löschen"
+                style={{
+                  background: `${currentTheme.status.error}15`,
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: currentTheme.status.error,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Delete style={{ fontSize: '18px' }} />
+              </button>
+            </>
+          )}
+
+          {/* Delete Confirm - inline */}
+          {showDeleteConfirm && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '12px', color: currentTheme.status.error, fontWeight: 500 }}>Löschen?</span>
+              <button
+                onClick={handleDelete}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: currentTheme.status.error,
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                }}
+              >
+                Ja
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: `1px solid ${currentTheme.border.default}`,
+                  background: 'transparent',
+                  color: currentTheme.text.secondary,
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                }}
+              >
+                Nein
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Title */}
+      <h4
+        style={{
+          fontSize: '15px',
+          fontWeight: 700,
+          color: currentTheme.text.primary,
+          margin: '0 0 10px 0',
+          lineHeight: 1.3,
+        }}
+      >
+        {discussion.title}
+      </h4>
+
+      {/* Edit Form */}
+      {isEditing && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          style={{
+            marginBottom: '16px',
+            padding: '16px',
+            background: currentTheme.background.surface,
+            borderRadius: '12px',
+            border: `2px solid ${currentTheme.primary}40`,
+          }}
+        >
+          <input
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Titel"
             style={{
-              background: `${currentTheme.status.error}15`,
-              border: 'none',
-              padding: '8px',
-              borderRadius: '10px',
+              width: '100%',
+              padding: '12px',
+              marginBottom: '10px',
+              borderRadius: '8px',
+              border: `1px solid ${currentTheme.border.default}`,
+              background: currentTheme.background.card,
+              color: currentTheme.text.primary,
+              fontSize: '15px',
+              fontWeight: 600,
+              boxSizing: 'border-box',
+            }}
+          />
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            placeholder="Inhalt"
+            rows={4}
+            style={{
+              width: '100%',
+              padding: '12px',
+              marginBottom: '10px',
+              borderRadius: '8px',
+              border: `1px solid ${currentTheme.border.default}`,
+              background: currentTheme.background.card,
+              color: currentTheme.text.primary,
+              fontSize: '14px',
+              resize: 'vertical',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box',
+            }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: `1px solid ${editIsSpoiler ? currentTheme.status.warning + '60' : currentTheme.border.default}`,
+                background: editIsSpoiler ? `${currentTheme.status.warning}15` : 'transparent',
+                color: editIsSpoiler ? currentTheme.status.warning : currentTheme.text.secondary,
+                fontSize: '13px',
+                fontWeight: 500,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={editIsSpoiler}
+                onChange={(e) => setEditIsSpoiler(e.target.checked)}
+                style={{ display: 'none' }}
+              />
+              <Warning style={{ fontSize: '18px' }} />
+              Spoiler
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditTitle(discussion.title);
+                  setEditContent(discussion.content);
+                  setEditIsSpoiler(discussion.isSpoiler || false);
+                }}
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  border: `1px solid ${currentTheme.border.default}`,
+                  background: 'transparent',
+                  color: currentTheme.text.secondary,
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                }}
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={!editTitle.trim() || saving}
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: editTitle.trim() ? currentTheme.primary : currentTheme.background.surface,
+                  color: editTitle.trim() ? '#fff' : currentTheme.text.muted,
+                  cursor: editTitle.trim() ? 'pointer' : 'default',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                }}
+              >
+                {saving ? 'Speichern...' : 'Speichern'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Content */}
+      {!isEditing && (
+        discussion.isSpoiler && !showSpoiler ? (
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowSpoiler(true)}
+            style={{
+              width: '100%',
+              padding: '20px',
+              background: `linear-gradient(135deg, ${currentTheme.status.warning}15, ${currentTheme.status.warning}08)`,
+              border: `2px dashed ${currentTheme.status.warning}40`,
+              borderRadius: '12px',
+              color: currentTheme.status.warning,
               cursor: 'pointer',
-              color: currentTheme.status.error,
+              fontSize: '14px',
+              fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 0.2s',
+              gap: '8px',
             }}
           >
-            <Delete style={{ fontSize: '20px' }} />
-          </button>
-        )}
-      </div>
+            <Warning style={{ fontSize: '20px' }} />
+            Spoiler anzeigen
+          </motion.button>
+        ) : (
+          <>
+            {text && (
+              <p
+                style={{
+                  fontSize: '15px',
+                  color: currentTheme.text.secondary,
+                  margin: 0,
+                  whiteSpace: 'pre-wrap',
+                  lineHeight: 1.6,
+                }}
+              >
+                {text}
+              </p>
+            )}
 
-      {/* Content */}
-      {discussion.isSpoiler && !showSpoiler ? (
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setShowSpoiler(true)}
-          style={{
-            width: '100%',
-            padding: '20px',
-            background: `linear-gradient(135deg, ${currentTheme.status.warning}15, ${currentTheme.status.warning}08)`,
-            border: `2px dashed ${currentTheme.status.warning}40`,
-            borderRadius: '12px',
-            color: currentTheme.status.warning,
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
-        >
-          <Warning style={{ fontSize: '20px' }} />
-          Spoiler anzeigen
-        </motion.button>
-      ) : (
-        <>
-          {text && (
-            <p
-              style={{
-                fontSize: '15px',
-                color: currentTheme.text.secondary,
-                margin: 0,
-                whiteSpace: 'pre-wrap',
-                lineHeight: 1.6,
-              }}
-            >
-              {text}
-            </p>
-          )}
-
-          {/* Images */}
-          {images.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: text ? '16px' : 0 }}>
-              {images.map((img, i) => (
-                <ImagePreview key={i} src={img} />
-              ))}
-            </div>
-          )}
-        </>
+            {/* Images */}
+            {images.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: text ? '16px' : 0 }}>
+                {images.map((img, i) => (
+                  <ImagePreview key={i} src={img} />
+                ))}
+              </div>
+            )}
+          </>
+        )
       )}
 
       {/* Actions */}
@@ -792,6 +1362,7 @@ const DiscussionItem: React.FC<{
         discussionId={discussion.id}
         discussionPath={discussionPath}
         replyCount={discussion.replyCount}
+        isSpoilerHidden={discussion.isSpoiler && !showSpoiler}
       />
     </motion.div>
   );
@@ -1102,7 +1673,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   // Show spoiler protection if episode is not watched and user hasn't revealed
   const showSpoilerProtection = itemType === 'episode' && isWatched === false && !spoilerRevealed;
 
-  const { discussions, loading, error, createDiscussion, deleteDiscussion, toggleLike } = useDiscussions({
+  const { discussions, loading, error, createDiscussion, editDiscussion, deleteDiscussion, toggleLike } = useDiscussions({
     itemId,
     itemType,
     seasonNumber,
@@ -1366,6 +1937,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               discussion={discussion}
               discussionPath={discussionPath}
               onDelete={() => deleteDiscussion(discussion.id)}
+              onEdit={(input) => editDiscussion(discussion.id, input)}
               onToggleLike={() => toggleLike(discussion.id)}
               isOwner={discussion.userId === user?.uid}
               currentUserId={user?.uid}

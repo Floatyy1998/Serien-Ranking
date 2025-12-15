@@ -5,7 +5,7 @@ import 'firebase/compat/database';
 
 interface Notification {
   id: string;
-  type: 'new_season' | 'new_episode' | 'friend_activity' | 'achievement' | 'recommendation' | 'discussion_reply' | 'discussion_like';
+  type: 'new_season' | 'new_episode' | 'friend_activity' | 'achievement' | 'recommendation' | 'discussion_reply' | 'discussion_like' | 'spoiler_flag';
   title: string;
   message: string;
   timestamp: number;
