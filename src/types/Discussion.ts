@@ -7,8 +7,9 @@ export interface DiscussionReply {
   userPhotoURL?: string;
   content: string;
   createdAt: number; // Timestamp
-  updatedAt?: number;
+  updatedAt?: number; // Set when edited
   likes: string[]; // Array of userIds who liked
+  isSpoiler?: boolean;
 }
 
 export interface Discussion {

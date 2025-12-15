@@ -1,4 +1,4 @@
-import { Cancel, CheckCircle, Person, PersonAdd, Movie as MovieIcon, Tv as TvIcon, Star, ExpandMore, ChatBubbleOutline, Favorite, Timeline, Group, MailOutline } from '@mui/icons-material';
+import { Cancel, CheckCircle, Person, PersonAdd, Movie as MovieIcon, Tv as TvIcon, Star, ExpandMore, ChatBubbleOutline, Favorite, Timeline, Group, MailOutline, Flag } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useMemo, useState } from 'react';
@@ -35,7 +35,7 @@ export const ActivityPage = () => {
 
   // Filter discussion notifications
   const discussionNotifications = useMemo(() => {
-    return notifications.filter(n => n.type === 'discussion_reply' || n.type === 'discussion_like');
+    return notifications.filter(n => n.type === 'discussion_reply' || n.type === 'discussion_like' || n.type === 'spoiler_flag');
   }, [notifications]);
 
   const [activeTab, setActiveTab] = useState<'activity' | 'friends' | 'requests' | 'discussions'>('activity');
@@ -1124,6 +1124,8 @@ export const ActivityPage = () => {
                           borderRadius: '50%',
                           background: notification.type === 'discussion_reply'
                             ? `${currentTheme.primary}22`
+                            : notification.type === 'spoiler_flag'
+                            ? `${currentTheme.status.warning}22`
                             : 'rgba(255, 107, 107, 0.15)',
                           display: 'flex',
                           alignItems: 'center',
@@ -1132,6 +1134,8 @@ export const ActivityPage = () => {
                       >
                         {notification.type === 'discussion_reply' ? (
                           <ChatBubbleOutline style={{ color: currentTheme.primary, fontSize: '20px' }} />
+                        ) : notification.type === 'spoiler_flag' ? (
+                          <Flag style={{ color: currentTheme.status.warning, fontSize: '20px' }} />
                         ) : (
                           <Favorite style={{ color: '#ff6b6b', fontSize: '20px' }} />
                         )}

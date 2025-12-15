@@ -16,11 +16,18 @@ interface UseDiscussionsOptions {
   episodeNumber?: number;
 }
 
+interface EditDiscussionInput {
+  title?: string;
+  content?: string;
+  isSpoiler?: boolean;
+}
+
 interface UseDiscussionsResult {
   discussions: Discussion[];
   loading: boolean;
   error: string | null;
   createDiscussion: (input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>) => Promise<string | null>;
+  editDiscussion: (discussionId: string, input: EditDiscussionInput) => Promise<boolean>;
   deleteDiscussion: (discussionId: string) => Promise<boolean>;
   toggleLike: (discussionId: string) => Promise<void>;
   refetch: () => void;
@@ -38,7 +45,7 @@ const getDiscussionPath = (itemType: DiscussionItemType, itemId: number, seasonN
 const sendNotificationToUser = async (
   targetUserId: string,
   notification: {
-    type: 'discussion_reply' | 'discussion_like';
+    type: 'discussion_reply' | 'discussion_like' | 'spoiler_flag';
     title: string;
     message: string;
     data?: any;
@@ -153,6 +160,71 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
     }
   }, [user, path, itemId, itemType, seasonNumber, episodeNumber]);
 
+  // Edit a discussion (owner can edit all, others can only mark as spoiler)
+  const editDiscussion = useCallback(async (discussionId: string, input: EditDiscussionInput): Promise<boolean> => {
+    if (!user?.uid) return false;
+
+    try {
+      const discussionRef = firebase.database().ref(`${path}/${discussionId}`);
+      const snapshot = await discussionRef.once('value');
+      const discussion = snapshot.val();
+
+      const isOwner = discussion?.userId === user.uid;
+
+      // Non-owners can only set isSpoiler to true (flag as spoiler)
+      if (!isOwner) {
+        if (input.title !== undefined || input.content !== undefined) {
+          setError('Du kannst nur eigene Diskussionen bearbeiten');
+          return false;
+        }
+        // Non-owners can only add spoiler flag, not remove it
+        if (input.isSpoiler === false) {
+          setError('Nur der Autor kann die Spoiler-Markierung entfernen');
+          return false;
+        }
+      }
+
+      const updates: Record<string, any> = {};
+
+      // Only set updatedAt if content/title changed (not just spoiler flag by others)
+      if (isOwner && (input.title !== undefined || input.content !== undefined)) {
+        updates.updatedAt = Date.now();
+      }
+
+      if (input.title !== undefined) updates.title = input.title;
+      if (input.content !== undefined) updates.content = input.content;
+      if (input.isSpoiler !== undefined) updates.isSpoiler = input.isSpoiler;
+
+      await discussionRef.update(updates);
+
+      // Send notification to discussion owner if non-owner flagged as spoiler
+      if (!isOwner && input.isSpoiler === true && discussion?.userId) {
+        const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
+        const userData = userSnapshot.val() || {};
+        const username = userData.displayName || user.displayName || 'Jemand';
+
+        await sendNotificationToUser(discussion.userId, {
+          type: 'spoiler_flag',
+          title: 'Spoiler-Markierung',
+          message: `${username} hat deine Diskussion "${discussion.title}" als Spoiler markiert`,
+          data: {
+            discussionId,
+            itemId,
+            itemType,
+            seasonNumber,
+            episodeNumber,
+          },
+        });
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Error editing discussion:', err);
+      setError('Fehler beim Bearbeiten der Diskussion');
+      return false;
+    }
+  }, [user, path]);
+
   // Delete a discussion (only owner)
   const deleteDiscussion = useCallback(async (discussionId: string): Promise<boolean> => {
     if (!user?.uid) return false;
@@ -228,6 +300,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
     loading,
     error,
     createDiscussion,
+    editDiscussion,
     deleteDiscussion,
     toggleLike,
     refetch,
@@ -235,11 +308,17 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 };
 
 // Hook for managing replies to a discussion
+interface EditReplyInput {
+  content?: string;
+  isSpoiler?: boolean;
+}
+
 interface UseDiscussionRepliesResult {
   replies: DiscussionReply[];
   loading: boolean;
   error: string | null;
-  createReply: (content: string) => Promise<boolean>;
+  createReply: (content: string, isSpoiler?: boolean) => Promise<boolean>;
+  editReply: (replyId: string, input: EditReplyInput) => Promise<boolean>;
   deleteReply: (replyId: string) => Promise<boolean>;
   toggleReplyLike: (replyId: string) => Promise<void>;
 }
@@ -295,7 +374,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
   }, [discussionId, repliesPath, shouldFetch]);
 
   // Create a reply
-  const createReply = useCallback(async (content: string): Promise<boolean> => {
+  const createReply = useCallback(async (content: string, isSpoiler?: boolean): Promise<boolean> => {
     if (!user?.uid || !discussionId) return false;
 
     try {
@@ -310,6 +389,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
         content,
         createdAt: Date.now(),
         likes: [],
+        ...(isSpoiler && { isSpoiler: true }),
       };
       // Only add userPhotoURL if it exists (Firebase doesn't accept undefined)
       const photoURL = userData.photoURL || user.photoURL;
@@ -330,12 +410,37 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
         lastReplyAt: Date.now(),
       });
 
-      // Send notification to discussion author (if not self)
-      if (discussion && discussion.userId !== user.uid) {
-        await sendNotificationToUser(discussion.userId, {
+      // Get all participants (discussion author + all reply authors)
+      const participantIds = new Set<string>();
+
+      // Add discussion author
+      if (discussion?.userId) {
+        participantIds.add(discussion.userId);
+      }
+
+      // Add all reply authors
+      const existingRepliesSnapshot = await firebase.database().ref(repliesPath).once('value');
+      if (existingRepliesSnapshot.exists()) {
+        const existingReplies = existingRepliesSnapshot.val();
+        Object.values(existingReplies).forEach((reply: any) => {
+          if (reply?.userId) {
+            participantIds.add(reply.userId);
+          }
+        });
+      }
+
+      // Remove current user from notification list
+      participantIds.delete(user.uid);
+
+      // Send notification to all participants
+      for (const participantId of participantIds) {
+        const isAuthor = participantId === discussion?.userId;
+        await sendNotificationToUser(participantId, {
           type: 'discussion_reply',
           title: 'Neue Antwort',
-          message: `${username} hat auf deine Diskussion "${discussion.title}" geantwortet`,
+          message: isAuthor
+            ? `${username} hat auf deine Diskussion "${discussion.title}" geantwortet`
+            : `${username} hat auch auf "${discussion?.title}" geantwortet`,
           data: {
             discussionId,
             discussionPath,
@@ -347,6 +452,68 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
     } catch (err) {
       console.error('Error creating reply:', err);
       setError('Fehler beim Erstellen der Antwort');
+      return false;
+    }
+  }, [user, discussionId, repliesPath, discussionPath]);
+
+  // Edit a reply (owner can edit all, others can only mark as spoiler)
+  const editReply = useCallback(async (replyId: string, input: EditReplyInput): Promise<boolean> => {
+    if (!user?.uid || !discussionId) return false;
+
+    try {
+      const replyRef = firebase.database().ref(`${repliesPath}/${replyId}`);
+      const snapshot = await replyRef.once('value');
+      const reply = snapshot.val();
+
+      const isOwner = reply?.userId === user.uid;
+
+      // Non-owners can only set isSpoiler to true (flag as spoiler)
+      if (!isOwner) {
+        if (input.content !== undefined) {
+          setError('Du kannst nur eigene Antworten bearbeiten');
+          return false;
+        }
+        // Non-owners can only add spoiler flag, not remove it
+        if (input.isSpoiler === false) {
+          setError('Nur der Autor kann die Spoiler-Markierung entfernen');
+          return false;
+        }
+      }
+
+      const updates: Record<string, any> = {};
+
+      // Only set updatedAt if content changed (not just spoiler flag by others)
+      if (isOwner && input.content !== undefined) {
+        updates.updatedAt = Date.now();
+      }
+
+      if (input.content !== undefined) updates.content = input.content;
+      if (input.isSpoiler !== undefined) updates.isSpoiler = input.isSpoiler;
+
+      await replyRef.update(updates);
+
+      // Send notification to reply owner if non-owner flagged as spoiler
+      if (!isOwner && input.isSpoiler === true && reply?.userId) {
+        const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
+        const userData = userSnapshot.val() || {};
+        const username = userData.displayName || user.displayName || 'Jemand';
+
+        await sendNotificationToUser(reply.userId, {
+          type: 'spoiler_flag',
+          title: 'Spoiler-Markierung',
+          message: `${username} hat deinen Kommentar als Spoiler markiert: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
+          data: {
+            discussionId,
+            discussionPath,
+            replyId,
+          },
+        });
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Error editing reply:', err);
+      setError('Fehler beim Bearbeiten der Antwort');
       return false;
     }
   }, [user, discussionId, repliesPath, discussionPath]);
@@ -424,6 +591,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
     loading,
     error,
     createReply,
+    editReply,
     deleteReply,
     toggleReplyLike,
   };
