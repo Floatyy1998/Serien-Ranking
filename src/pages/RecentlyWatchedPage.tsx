@@ -1,6 +1,7 @@
 import {
   AccessTime,
   CalendarToday,
+  ChatBubbleOutline,
   Check,
   CheckCircle,
   ExpandLess,
@@ -19,7 +20,46 @@ import { BackButton } from '../components/BackButton';
 import { HorizontalScrollContainer } from '../components/HorizontalScrollContainer';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
+import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
+
+// Component to show discussion indicator for an episode
+const EpisodeDiscussionIndicator: React.FC<{
+  seriesId: number;
+  seasonNumber: number;
+  episodeNumber: number;
+  onClick?: () => void;
+}> = memo(({ seriesId, seasonNumber, episodeNumber, onClick }) => {
+  const { currentTheme } = useTheme();
+  const count = useDiscussionCount('episode', seriesId, seasonNumber, episodeNumber);
+
+  if (count === 0) return null;
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      title={`${count} Diskussion${count !== 1 ? 'en' : ''}`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '4px 8px',
+        background: 'transparent',
+        border: 'none',
+        color: currentTheme.primary,
+        cursor: 'pointer',
+        fontSize: '12px',
+        fontWeight: 600,
+      }}
+    >
+      <ChatBubbleOutline style={{ fontSize: '14px' }} />
+      {count}
+    </button>
+  );
+});
 
 interface WatchedEpisode {
   seriesId: number;
@@ -879,25 +919,34 @@ export const RecentlyWatchedPage = memo(() => {
                               </div>
                             </div>
 
-                            <button
-                              onClick={() => handleRewatchEpisode(episode)}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: currentTheme.status.success,
-                                cursor: 'pointer',
-                                padding: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              {isCompleting ? (
-                                <Check style={{ fontSize: '20px' }} />
-                              ) : (
-                                <CheckCircle style={{ fontSize: '20px' }} />
-                              )}
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <EpisodeDiscussionIndicator
+                                seriesId={episode.seriesId}
+                                seasonNumber={episode.seasonNumber}
+                                episodeNumber={episode.episodeNumber}
+                                onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}?tab=discussions`)}
+                              />
+
+                              <button
+                                onClick={() => handleRewatchEpisode(episode)}
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: currentTheme.status.success,
+                                  cursor: 'pointer',
+                                  padding: '8px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                {isCompleting ? (
+                                  <Check style={{ fontSize: '20px' }} />
+                                ) : (
+                                  <CheckCircle style={{ fontSize: '20px' }} />
+                                )}
+                              </button>
+                            </div>
                           </motion.div>
                         );
                       }
@@ -1029,25 +1078,34 @@ export const RecentlyWatchedPage = memo(() => {
                                     </p>
                                   </div>
 
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRewatchEpisode(episode);
-                                    }}
-                                    style={{
-                                      background: `${currentTheme.status.success}1A`,
-                                      border: `1px solid ${currentTheme.status.success}33`,
-                                      borderRadius: '8px',
-                                      padding: '6px',
-                                      color: currentTheme.status.success,
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                    }}
-                                  >
-                                    <PlayCircle style={{ fontSize: '18px' }} />
-                                  </button>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <EpisodeDiscussionIndicator
+                                      seriesId={episode.seriesId}
+                                      seasonNumber={episode.seasonNumber}
+                                      episodeNumber={episode.episodeNumber}
+                                      onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}?tab=discussions`)}
+                                    />
+
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRewatchEpisode(episode);
+                                      }}
+                                      style={{
+                                        background: `${currentTheme.status.success}1A`,
+                                        border: `1px solid ${currentTheme.status.success}33`,
+                                        borderRadius: '8px',
+                                        padding: '6px',
+                                        color: currentTheme.status.success,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                      }}
+                                    >
+                                      <PlayCircle style={{ fontSize: '18px' }} />
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
