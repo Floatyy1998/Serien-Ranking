@@ -22,6 +22,7 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { logRatingAdded } from '../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../lib/rating/rating';
+import { WatchActivityService } from '../services/watchActivityService';
 import { Movie as MovieType } from '../types/Movie';
 import { Series } from '../types/Series';
 import { BackButton } from '../components/BackButton';
@@ -176,6 +177,52 @@ export const RatingPage = () => {
 
         await ratingRef.set(ratingsToSave);
 
+        // 🎁 Wrapped 2026: Für Filme auch ratedAt und watchedAt speichern
+        if (type === 'movie') {
+          const movieItem = item as MovieType;
+          const now = new Date().toISOString();
+          const movieRef = firebase.database().ref(`${user.uid}/filme/${item.nmr}`);
+
+          // Setze ratedAt immer wenn bewertet wird
+          await movieRef.child('ratedAt').set(now);
+
+          // Setze watchedAt nur beim ersten Mal (Film gilt als geschaut wenn bewertet)
+          if (!movieItem.watchedAt) {
+            await movieRef.child('watchedAt').set(now);
+          }
+
+          // 🎁 Wrapped 2026: Movie-Watch/Rating loggen
+          WatchActivityService.logMovieWatch(
+            user.uid,
+            movieItem.id,
+            movieItem.title,
+            movieItem.nmr,
+            movieItem.runtime,
+            overallRating,
+            movieItem.genre?.genres,
+            movieItem.provider?.provider?.map(p => p.name)
+          );
+
+          // Rating-Change auch separat loggen
+          WatchActivityService.logRatingChange(
+            user.uid,
+            'movie',
+            movieItem.id,
+            movieItem.title,
+            overallRating
+          );
+        } else {
+          // 🎁 Wrapped 2026: Series-Rating loggen
+          const seriesItem = item as Series;
+          WatchActivityService.logRatingChange(
+            user.uid,
+            'series',
+            seriesItem.id,
+            seriesItem.title,
+            overallRating
+          );
+        }
+
         // Activity-Logging für Friend + Badge-System (wie Desktop)
         if (user?.uid && overallRating > 0) {
           await logRatingAdded(
@@ -186,13 +233,13 @@ export const RatingPage = () => {
             item.id
           );
         }
-        
+
         // Show success snackbar
-        setSnackbar({ 
-          open: true, 
-          message: `Bewertung für "${item.title}" wurde gespeichert!` 
+        setSnackbar({
+          open: true,
+          message: `Bewertung für "${item.title}" wurde gespeichert!`
         });
-        
+
         // Hide snackbar after 3 seconds
         setTimeout(() => {
           setSnackbar({ open: false, message: '' });

@@ -26,6 +26,7 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { PetsPage } from './pages/PetsPage';
 import { ActorUniversePage } from './pages/ActorUniversePage';
 import { EpisodeDiscussionPage } from './pages/EpisodeDiscussionPage';
+import { WrappedPage } from './pages/WrappedPage';
 import './styles/App.css';
 
 export const MobileApp = () => {
@@ -140,6 +141,15 @@ export const MobileApp = () => {
                 <StatsPage />
               </Layout>
             }
+          />
+          {/* Wrapped routes - config wird in WrappedPage aus Firebase geprüft */}
+          <Route
+            path="/wrapped"
+            element={<WrappedPage />}
+          />
+          <Route
+            path="/wrapped/:year"
+            element={<WrappedPage />}
           />
           <Route
             path="/actor-universe"

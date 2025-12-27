@@ -22,6 +22,7 @@ import { DiscussionThread } from '../components/DiscussionThread';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../lib/date/episodeDate.utils';
+import { WatchActivityService } from '../services/watchActivityService';
 import { Series } from '../types/Series';
 import { getTVDBIdFromTMDB, getTVDBSeasons, TVDBEpisode, TVDBSeason } from '../services/tvdbService';
 
@@ -261,6 +262,24 @@ export const EpisodeDiscussionPage = () => {
       });
 
       await firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`).set(updatedSeasons);
+
+      // 🎁 Wrapped 2026: Episode-Watch loggen (nur wenn als gesehen markiert)
+      if (!isCurrentlyWatched) {
+        WatchActivityService.logEpisodeWatch(
+          user.uid,
+          series.id,
+          series.title || series.name || 'Unbekannte Serie',
+          series.nmr,
+          Number(seasonNumber),
+          Number(episodeNumber),
+          localEpisode.name,
+          series.episodeRuntime || 45,
+          false, // isRewatch
+          1, // watchCount
+          series.genre?.genres,
+          series.provider?.provider?.map(p => p.name)
+        );
+      }
     } catch (error) {
       console.error('Error toggling watched status:', error);
     }

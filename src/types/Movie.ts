@@ -34,10 +34,24 @@ export interface Movie {
   media_type?: string;
   // Note: userRating is stored in rating[userId], not as separate field
   // watched status is derived from rating[userId] > 0
-  
+
   // Additional optional fields from TMDB API
   overview?: string;
   backdrop?: string;
   watched?: boolean;
   genres?: { id: number; name: string }[]; // TMDB genre format
+
+  // ========================================
+  // Wrapped 2026 - Zeitliche Metadaten
+  // ========================================
+  addedAt?: string;      // Wann zur Sammlung hinzugefügt (ISO-Datum)
+  watchedAt?: string;    // Wann angeschaut (ISO-Datum)
+  ratedAt?: string;      // Wann bewertet (ISO-Datum)
+
+  // Watch-Historie für Rewatches (optional, für detaillierte Wrapped-Analyse)
+  watchHistory?: {
+    timestamp: string;
+    rating?: number;
+    deviceType?: 'mobile' | 'desktop' | 'tablet';
+  }[];
 }

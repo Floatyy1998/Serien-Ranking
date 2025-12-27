@@ -10,6 +10,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../lib/date/episodeDate.utils';
 import { useEpisodeDiscussionCounts } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
+import { WatchActivityService } from '../services/watchActivityService';
 import { Series } from '../types/Series';
 import { BackButton } from '../components/BackButton';
 import './EpisodeManagementPage.css';
@@ -200,6 +201,22 @@ export const EpisodeManagementPage = () => {
         const genres = series?.genre || series?.genres || [];
         const genre = Array.isArray(genres) ? genres[0] : 'Drama';
         await petService.watchedSeriesWithGenre(user.uid, genre);
+
+        // 🎁 Wrapped 2026: Episode-Watch loggen
+        WatchActivityService.logEpisodeWatch(
+          user.uid,
+          series.id,
+          series.title,
+          series.nmr,
+          season.seasonNumber + 1,
+          episodeIndex + 1,
+          episode.name,
+          series.episodeRuntime || 45,
+          false, // isRewatch
+          newWatchCount,
+          series.genre?.genres,
+          series.provider?.provider?.map(p => p.name)
+        );
       } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
         // Rewatch case
         const { updateEpisodeCounters } = await import(
@@ -209,6 +226,22 @@ export const EpisodeManagementPage = () => {
           user.uid,
           true, // rewatch
           episode.air_date
+        );
+
+        // 🎁 Wrapped 2026: Rewatch loggen
+        WatchActivityService.logEpisodeWatch(
+          user.uid,
+          series.id,
+          series.title,
+          series.nmr,
+          season.seasonNumber + 1,
+          episodeIndex + 1,
+          episode.name,
+          series.episodeRuntime || 45,
+          true, // isRewatch
+          newWatchCount,
+          series.genre?.genres,
+          series.provider?.provider?.map(p => p.name)
         );
       }
     } catch (error) {}
@@ -281,9 +314,29 @@ export const EpisodeManagementPage = () => {
         const { petService } = await import('../services/petService');
         for (let i = 0; i < previouslyUnwatched.length; i++) {
           // Genre-basierter Pet-Boost
-        const genres = series?.genre || series?.genres || [];
-        const genre = Array.isArray(genres) ? genres[0] : 'Drama';
-        await petService.watchedSeriesWithGenre(user.uid, genre);
+          const genres = series?.genre || series?.genres || [];
+          const genre = Array.isArray(genres) ? genres[0] : 'Drama';
+          await petService.watchedSeriesWithGenre(user.uid, genre);
+        }
+
+        // 🎁 Wrapped 2026: Alle neu gesehenen Episoden loggen
+        for (let i = 0; i < previouslyUnwatched.length; i++) {
+          const ep = previouslyUnwatched[i];
+          const epIndex = season.episodes?.findIndex((e) => e.id === ep.id) || i;
+          WatchActivityService.logEpisodeWatch(
+            user.uid,
+            series.id,
+            series.title,
+            series.nmr,
+            season.seasonNumber + 1,
+            epIndex + 1,
+            ep.name,
+            series.episodeRuntime || 45,
+            false,
+            1,
+            series.genre?.genres,
+            series.provider?.provider?.map(p => p.name)
+          );
         }
       }
     } catch (error) {}

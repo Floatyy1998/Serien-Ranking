@@ -19,6 +19,7 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../lib/rating/rating';
+import { WatchActivityService } from '../services/watchActivityService';
 import { Series } from '../types/Series';
 import { BackButton } from '../components/BackButton';
 import { CastCrew } from '../components/CastCrew';
@@ -27,6 +28,7 @@ import { DiscussionThread } from '../components/DiscussionThread';
 import { ProviderBadges } from '../components/ProviderBadges';
 import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
 import { useEpisodeDiscussionCounts } from '../hooks/useDiscussionCounts';
+import { useTrailers } from '../hooks/useTrailers';
 import { getTVDBIdFromTMDB, getTVDBSeasons } from '../services/tvdbService';
 
 export const SeriesDetailPage = memo(() => {
@@ -81,6 +83,9 @@ export const SeriesDetailPage = memo(() => {
   const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(null);
   // State for IMDB rating from OMDb
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
+
+  // Trailer from TMDB
+  const { mainTrailer, hasTrailers } = useTrailers('tv', id ? Number(id) : undefined);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
@@ -444,6 +449,23 @@ export const SeriesDetailPage = memo(() => {
       await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
       await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
 
+      // 🎁 Wrapped 2026: Rewatch loggen
+      const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
+      WatchActivityService.logEpisodeWatch(
+        user.uid,
+        series.id,
+        series.title || series.name || 'Unbekannte Serie',
+        series.nmr,
+        seasonNumber,
+        episodeIndex + 1,
+        episode.name,
+        series.episodeRuntime || 45,
+        true, // isRewatch
+        newWatchCount,
+        series.genre?.genres,
+        series.provider?.provider?.map(p => p.name)
+      );
+
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
     } catch (error) {
       setDialog({ open: true, message: 'Fehler beim Rewatch der Episode.', type: 'error' });
@@ -547,7 +569,7 @@ export const SeriesDetailPage = memo(() => {
         style={{
           position: 'relative',
           width: '100%',
-          height: isMobile ? '250px' : '400px',
+          height: isMobile ? '250px' : '420px',
           overflow: 'hidden',
           background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))',
         }}
@@ -915,8 +937,62 @@ export const SeriesDetailPage = memo(() => {
               />
             </div>
           )}
+
+          {/* Trailer Button - nur auf Desktop im Hero, auf Mobile in den Action Buttons */}
+          {!isMobile && hasTrailers && mainTrailer && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => window.open(`https://www.youtube.com/watch?v=${mainTrailer.key}`, '_blank')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)',
+                border: '1px solid rgba(255, 0, 0, 0.3)',
+                borderRadius: '12px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginTop: '12px',
+              }}
+            >
+              <PlayCircle style={{ color: '#ff0000' }} />
+              {mainTrailer.type === 'Trailer' ? 'Trailer ansehen' : `${mainTrailer.type} ansehen`}
+            </motion.button>
+          )}
         </div>
       </div>
+
+      {/* Mobile Trailer Button */}
+      {isMobile && hasTrailers && mainTrailer && (
+        <div style={{ padding: '12px 20px 0' }}>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => window.open(`https://www.youtube.com/watch?v=${mainTrailer.key}`, '_blank')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              background: 'linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)',
+              border: '1px solid rgba(255, 0, 0, 0.3)',
+              borderRadius: '10px',
+              color: 'white',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              width: '100%',
+            }}
+          >
+            <PlayCircle style={{ color: '#ff0000', fontSize: '20px' }} />
+            {mainTrailer.type === 'Trailer' ? 'Trailer ansehen' : `${mainTrailer.type} ansehen`}
+          </motion.button>
+        </div>
+      )}
 
       {/* Action Buttons - only for user's series */}
       {!isReadOnlyTmdbSeries && (

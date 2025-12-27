@@ -1,0 +1,688 @@
+/**
+ * Watch Activity Service - Zentrale Datensammlung für Wrapped
+ *
+ * Alle Daten werden unter wrapped/{year}/ gespeichert:
+ * - wrapped/{year}/events/{eventId} - Alle Watch-Events
+ * - wrapped/{year}/bingeSessions/{sessionId} - Binge-Sessions
+ * - wrapped/{year}/streak - Streak für das Jahr
+ *
+ * Am Jahresanfang wird wrapped/{previousYear} automatisch gelöscht.
+ */
+
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import {
+  ActivityEvent,
+  BingeSession,
+  EpisodeWatchEvent,
+  MovieWatchEvent,
+  RatingEvent,
+  SeriesAddedEvent,
+  MovieAddedEvent,
+  WatchStreak,
+} from '../types/WatchActivity';
+
+// ============================================================================
+// KONSTANTEN
+// ============================================================================
+
+const WRAPPED_BASE = 'wrapped';
+const BINGE_BUFFER_MINUTES = 15;
+const LAST_CLEANUP_KEY = 'wrapped_last_cleanup_year';
+
+// ============================================================================
+// PFAD-FUNKTIONEN
+// ============================================================================
+
+function getEventsPath(userId: string, year: number): string {
+  return `${userId}/${WRAPPED_BASE}/${year}/events`;
+}
+
+function getBingeSessionsPath(userId: string, year: number): string {
+  return `${userId}/${WRAPPED_BASE}/${year}/bingeSessions`;
+}
+
+function getStreakPath(userId: string, year: number): string {
+  return `${userId}/${WRAPPED_BASE}/${year}/streak`;
+}
+
+function getWrappedBasePath(userId: string): string {
+  return `${userId}/${WRAPPED_BASE}`;
+}
+
+// ============================================================================
+// HILFSFUNKTIONEN
+// ============================================================================
+
+function detectDeviceType(): 'mobile' | 'desktop' | 'tablet' {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return 'tablet';
+  if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) return 'mobile';
+  return 'desktop';
+}
+
+function detectPlatform(): string {
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) return 'iOS';
+  if (/Android/.test(ua)) return 'Android';
+  if (/Windows/.test(ua)) return 'Windows';
+  if (/Mac/.test(ua)) return 'macOS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Unknown';
+}
+
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
+function generateEventId(): string {
+  return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/**
+ * Erstellt Basis-Metadaten für jedes Event
+ */
+function createBaseEventData(userId: string) {
+  const now = new Date();
+  return {
+    timestamp: now.toISOString(),
+    userId,
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+    week: getWeekNumber(now),
+    dayOfWeek: now.getDay(),
+    hour: now.getHours(),
+    deviceType: detectDeviceType(),
+    platform: detectPlatform(),
+  };
+}
+
+/**
+ * Entfernt undefined und null Werte aus einem Objekt
+ */
+function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const result: Partial<T> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined && value !== null) {
+      result[key as keyof T] = value as T[keyof T];
+    }
+  }
+  return result;
+}
+
+// ============================================================================
+// CLEANUP FUNKTION
+// ============================================================================
+
+async function cleanupOldYearData(userId: string): Promise<void> {
+  const currentYear = new Date().getFullYear();
+  const lastCleanupYear = localStorage.getItem(LAST_CLEANUP_KEY);
+
+  if (lastCleanupYear === String(currentYear)) {
+    return;
+  }
+
+  console.log('[Wrapped] Checking for old data to cleanup...');
+
+  try {
+    const wrappedRef = firebase.database().ref(getWrappedBasePath(userId));
+    const snapshot = await wrappedRef.once('value');
+    const data = snapshot.val();
+
+    if (data) {
+      for (const key of Object.keys(data)) {
+        const year = Number(key);
+        if (!isNaN(year) && year < currentYear) {
+          console.log(`[Wrapped] Deleting data from ${year}`);
+          await wrappedRef.child(String(year)).remove();
+        }
+      }
+    }
+
+    // Streak wird automatisch mit dem Jahr gelöscht - kein separates Reset nötig
+
+    localStorage.setItem(LAST_CLEANUP_KEY, String(currentYear));
+    console.log('[Wrapped] Cleanup complete');
+  } catch (error) {
+    console.error('[Wrapped] Cleanup error:', error);
+  }
+}
+
+// ============================================================================
+// EVENT SPEICHERN
+// ============================================================================
+
+async function saveEvent(userId: string, event: ActivityEvent): Promise<boolean> {
+  const eventId = generateEventId();
+  const year = event.year;
+  const eventPath = `${getEventsPath(userId, year)}/${eventId}`;
+
+  try {
+    await cleanupOldYearData(userId);
+
+    const cleanEvent = cleanObject(event as unknown as Record<string, unknown>);
+
+    console.log('[Wrapped] 💾 Saving event:', event.type, eventPath);
+
+    await firebase.database().ref(eventPath).set(cleanEvent);
+
+    console.log('[Wrapped] ✅ Event saved!', {
+      type: event.type,
+      id: eventId,
+    });
+
+    return true;
+  } catch (error) {
+    console.error('[Wrapped] ❌ Failed to save event:', error);
+    return false;
+  }
+}
+
+// ============================================================================
+// BINGE SESSION TRACKING
+// ============================================================================
+
+async function getActiveBingeSession(userId: string, seriesId: number): Promise<BingeSession | null> {
+  try {
+    const year = new Date().getFullYear();
+    const snapshot = await firebase
+      .database()
+      .ref(getBingeSessionsPath(userId, year))
+      .orderByChild('seriesId')
+      .equalTo(seriesId)
+      .once('value');
+
+    const sessions = snapshot.val();
+    if (!sessions) return null;
+
+    for (const [id, session] of Object.entries(sessions)) {
+      const s = session as BingeSession;
+      if (s.isActive) {
+        return { ...s, id };
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('[Wrapped] Error getting binge session:', error);
+    return null;
+  }
+}
+
+async function updateBingeSession(
+  userId: string,
+  seriesId: number,
+  seriesTitle: string,
+  seasonNumber: number,
+  episodeNumber: number,
+  episodeRuntime: number = 45
+): Promise<string | undefined> {
+  try {
+    const now = new Date();
+    const year = now.getFullYear();
+    const activeSession = await getActiveBingeSession(userId, seriesId);
+    const bingeSessionsPath = getBingeSessionsPath(userId, year);
+
+    if (activeSession) {
+      const lastEpisode = activeSession.episodes[activeSession.episodes.length - 1];
+      const lastWatchTime = new Date(lastEpisode.watchedAt);
+      const minutesSince = (now.getTime() - lastWatchTime.getTime()) / 60000;
+      const avgEpisodeLength = activeSession.totalMinutes / activeSession.episodes.length;
+      const bingeThreshold = avgEpisodeLength + BINGE_BUFFER_MINUTES;
+
+      if (minutesSince < bingeThreshold) {
+        // Continue session
+        activeSession.episodes.push({
+          seasonNumber,
+          episodeNumber,
+          watchedAt: now.toISOString(),
+        });
+        activeSession.totalMinutes += episodeRuntime;
+
+        await firebase
+          .database()
+          .ref(`${bingeSessionsPath}/${activeSession.id}`)
+          .update({
+            episodes: activeSession.episodes,
+            totalMinutes: activeSession.totalMinutes,
+          });
+
+        console.log('[Wrapped] 🔥 Binge session continued!', activeSession.episodes.length, 'episodes');
+        return activeSession.id;
+      } else {
+        // End session
+        await firebase
+          .database()
+          .ref(`${bingeSessionsPath}/${activeSession.id}`)
+          .update({
+            isActive: false,
+            endedAt: lastEpisode.watchedAt,
+          });
+      }
+    }
+
+    // Start new session
+    const newSessionId = generateEventId();
+    const newSession: BingeSession = {
+      id: newSessionId,
+      userId,
+      startedAt: now.toISOString(),
+      seriesId,
+      seriesTitle,
+      episodes: [{
+        seasonNumber,
+        episodeNumber,
+        watchedAt: now.toISOString(),
+      }],
+      totalMinutes: episodeRuntime,
+      isActive: true,
+    };
+
+    await firebase
+      .database()
+      .ref(`${bingeSessionsPath}/${newSessionId}`)
+      .set(newSession);
+
+    return newSessionId;
+  } catch (error) {
+    console.error('[Wrapped] Error updating binge session:', error);
+    return undefined;
+  }
+}
+
+// ============================================================================
+// STREAK TRACKING
+// ============================================================================
+
+async function updateWatchStreak(userId: string): Promise<void> {
+  try {
+    const now = new Date();
+    const year = now.getFullYear();
+    const today = now.toISOString().split('T')[0];
+    const streakRef = firebase.database().ref(getStreakPath(userId, year));
+    const snapshot = await streakRef.once('value');
+
+    const currentStreak: WatchStreak = snapshot.val() || {
+      userId,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastWatchDate: '',
+      streaks: [],
+    };
+
+    const lastDate = currentStreak.lastWatchDate;
+
+    if (lastDate === today) return;
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (lastDate === yesterdayStr) {
+      currentStreak.currentStreak += 1;
+      if (currentStreak.currentStreak > currentStreak.longestStreak) {
+        currentStreak.longestStreak = currentStreak.currentStreak;
+      }
+      console.log('[Wrapped] 🔥 Streak:', currentStreak.currentStreak, 'days!');
+    } else if (lastDate) {
+      if (currentStreak.currentStreak > 1) {
+        const streakStart = new Date();
+        streakStart.setDate(streakStart.getDate() - currentStreak.currentStreak);
+        currentStreak.streaks.push({
+          startDate: streakStart.toISOString().split('T')[0],
+          endDate: lastDate,
+          length: currentStreak.currentStreak,
+        });
+        if (currentStreak.streaks.length > 20) {
+          currentStreak.streaks = currentStreak.streaks.slice(-20);
+        }
+      }
+      currentStreak.currentStreak = 1;
+    } else {
+      currentStreak.currentStreak = 1;
+    }
+
+    currentStreak.lastWatchDate = today;
+    await streakRef.set(currentStreak);
+  } catch (error) {
+    console.error('[Wrapped] Error updating streak:', error);
+  }
+}
+
+// ============================================================================
+// PUBLIC API - EPISODE WATCH
+// ============================================================================
+
+export async function logEpisodeWatch(
+  userId: string,
+  seriesId: number,
+  seriesTitle: string,
+  seriesNmr: number,
+  seasonNumber: number,
+  episodeNumber: number,
+  episodeTitle?: string,
+  episodeRuntime?: number,
+  isRewatch: boolean = false,
+  watchCount: number = 1,
+  genres?: string[],
+  providers?: string[]  // Changed: now accepts array of provider names
+): Promise<void> {
+  console.log('[Wrapped] 📺 Logging episode watch:', seriesTitle, `S${seasonNumber}E${episodeNumber}`);
+  console.log('[Wrapped] 📺 Providers received:', providers);
+
+  const baseEvent = createBaseEventData(userId);
+  const runtime = episodeRuntime || 45;
+
+  // Binge session handling
+  const bingeSessionId = await updateBingeSession(
+    userId, seriesId, seriesTitle, seasonNumber, episodeNumber, runtime
+  );
+
+  const activeSession = await getActiveBingeSession(userId, seriesId);
+  const isBingeSession = activeSession ? activeSession.episodes.length > 1 : false;
+
+  // Build event - nur definierte Werte!
+  const event: EpisodeWatchEvent = {
+    ...baseEvent,
+    type: 'episode_watch',
+    seriesId,
+    seriesTitle,
+    seriesNmr,
+    seasonNumber,
+    episodeNumber,
+    episodeRuntime: runtime,
+    isRewatch,
+    watchCount,
+  };
+
+  // Optional fields
+  if (episodeTitle) event.episodeTitle = episodeTitle;
+  if (genres && genres.length > 0) event.genres = genres;
+  // Speichere alle Provider (für Wrapped-Statistiken)
+  if (providers && providers.length > 0) {
+    event.provider = providers[0];  // Hauptprovider für Abwärtskompatibilität
+    event.providers = providers;     // Alle Provider
+  }
+  if (isBingeSession) event.isBingeSession = true;
+  if (bingeSessionId) event.bingeSessionId = bingeSessionId;
+
+  await saveEvent(userId, event);
+  await updateWatchStreak(userId);
+}
+
+// ============================================================================
+// PUBLIC API - MOVIE WATCH
+// ============================================================================
+
+export async function logMovieWatch(
+  userId: string,
+  movieId: number,
+  movieTitle: string,
+  movieNmr: number,
+  runtime?: number,
+  rating?: number,
+  genres?: string[],
+  providers?: string[]  // Changed: now accepts array of provider names
+): Promise<void> {
+  console.log('[Wrapped] 🎬 Logging movie watch:', movieTitle);
+
+  const year = new Date().getFullYear();
+
+  try {
+    // Check for duplicate
+    const existingEventId = await findExistingMovieEvent(userId, movieId, year);
+
+    if (existingEventId) {
+      if (rating !== undefined) {
+        await firebase
+          .database()
+          .ref(`${getEventsPath(userId, year)}/${existingEventId}/rating`)
+          .set(rating);
+        console.log('[Wrapped] Updated rating for existing movie');
+      }
+      return;
+    }
+
+    const baseEvent = createBaseEventData(userId);
+
+    const event: MovieWatchEvent = {
+      ...baseEvent,
+      type: 'movie_watch',
+      movieId,
+      movieTitle,
+      movieNmr,
+      runtime: runtime || 120,
+    };
+
+    if (rating !== undefined) event.rating = rating;
+    if (genres && genres.length > 0) event.genres = genres;
+    // Speichere alle Provider (für Wrapped-Statistiken)
+    if (providers && providers.length > 0) {
+      event.provider = providers[0];  // Hauptprovider für Abwärtskompatibilität
+      event.providers = providers;     // Alle Provider
+    }
+
+    await saveEvent(userId, event);
+    await updateWatchStreak(userId);
+  } catch (error) {
+    console.error('[Wrapped] Error logging movie watch:', error);
+  }
+}
+
+async function findExistingMovieEvent(userId: string, movieId: number, year: number): Promise<string | null> {
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref(getEventsPath(userId, year))
+      .orderByChild('movieId')
+      .equalTo(movieId)
+      .once('value');
+
+    const events = snapshot.val();
+    if (!events) return null;
+
+    for (const [eventId, event] of Object.entries(events)) {
+      const e = event as ActivityEvent;
+      if (e.type === 'movie_watch' || e.type === 'movie_rating') {
+        return eventId;
+      }
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+// ============================================================================
+// PUBLIC API - SERIES/MOVIE ADDED
+// ============================================================================
+
+export async function logSeriesAdded(
+  userId: string,
+  seriesId: number,
+  seriesTitle: string,
+  genres?: string[],
+  provider?: string
+): Promise<void> {
+  console.log('[Wrapped] ➕ Logging series added:', seriesTitle);
+
+  const baseEvent = createBaseEventData(userId);
+
+  const event: SeriesAddedEvent = {
+    ...baseEvent,
+    type: 'series_added',
+    seriesId,
+    seriesTitle,
+  };
+
+  if (genres && genres.length > 0) event.genres = genres;
+  if (provider) event.provider = provider;
+
+  await saveEvent(userId, event);
+}
+
+export async function logMovieAdded(
+  userId: string,
+  movieId: number,
+  movieTitle: string,
+  genres?: string[],
+  provider?: string
+): Promise<void> {
+  console.log('[Wrapped] ➕ Logging movie added:', movieTitle);
+
+  const baseEvent = createBaseEventData(userId);
+
+  const event: MovieAddedEvent = {
+    ...baseEvent,
+    type: 'movie_added',
+    movieId,
+    movieTitle,
+  };
+
+  if (genres && genres.length > 0) event.genres = genres;
+  if (provider) event.provider = provider;
+
+  await saveEvent(userId, event);
+}
+
+// ============================================================================
+// PUBLIC API - RATING CHANGE
+// ============================================================================
+
+export async function logRatingChange(
+  userId: string,
+  itemType: 'series' | 'movie',
+  itemId: number,
+  itemTitle: string,
+  rating: number,
+  previousRating?: number
+): Promise<void> {
+  console.log('[Wrapped] ⭐ Logging rating change:', itemTitle, rating);
+
+  const baseEvent = createBaseEventData(userId);
+
+  const eventType = previousRating
+    ? rating === 0 ? 'rating_deleted' : 'rating_updated'
+    : 'rating_added';
+
+  const event: RatingEvent = {
+    ...baseEvent,
+    type: eventType,
+    itemType,
+    itemId,
+    itemTitle,
+    rating,
+  };
+
+  if (previousRating !== undefined) event.previousRating = previousRating;
+
+  await saveEvent(userId, event);
+}
+
+// ============================================================================
+// PUBLIC API - DATA RETRIEVAL
+// ============================================================================
+
+export async function getWatchStreak(userId: string, year: number): Promise<WatchStreak | null> {
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref(getStreakPath(userId, year))
+      .once('value');
+    return snapshot.val();
+  } catch (error) {
+    console.error('[Wrapped] Error getting streak:', error);
+    return null;
+  }
+}
+
+export async function getYearlyActivity(userId: string, year: number): Promise<ActivityEvent[]> {
+  const eventsPath = getEventsPath(userId, year);
+  console.log('[Wrapped] 📊 Loading events from:', eventsPath);
+
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref(eventsPath)
+      .once('value');
+
+    const data = snapshot.val();
+
+    if (data) {
+      const events = Object.values(data) as ActivityEvent[];
+      const episodes = events.filter(e => e.type === 'episode_watch').length;
+      const movies = events.filter(e => e.type === 'movie_watch' || e.type === 'movie_rating').length;
+
+      console.log(`[Wrapped] ✅ Loaded ${events.length} events (${episodes} episodes, ${movies} movies)`);
+      return events;
+    }
+
+    console.log('[Wrapped] ⚠️ No events found for', year);
+    return [];
+  } catch (error) {
+    console.error('[Wrapped] ❌ Error loading events:', error);
+    return [];
+  }
+}
+
+export async function getEventsForYear(userId: string, year: number): Promise<ActivityEvent[]> {
+  return getYearlyActivity(userId, year);
+}
+
+export async function getBingeSessionsForYear(userId: string, year: number): Promise<BingeSession[]> {
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref(getBingeSessionsPath(userId, year))
+      .once('value');
+
+    const data = snapshot.val();
+    if (!data) return [];
+
+    const sessions = Object.values(data) as BingeSession[];
+    console.log(`[Wrapped] 🔥 Loaded ${sessions.length} binge sessions`);
+    return sessions;
+  } catch (error) {
+    console.error('[Wrapped] Error getting binge sessions:', error);
+    return [];
+  }
+}
+
+// ============================================================================
+// CLEANUP/ADMIN
+// ============================================================================
+
+export async function clearAllWrappedData(userId: string): Promise<void> {
+  console.log('[Wrapped] 🗑️ Clearing all wrapped data...');
+
+  try {
+    await firebase.database().ref(getWrappedBasePath(userId)).remove();
+    localStorage.removeItem(LAST_CLEANUP_KEY);
+    console.log('[Wrapped] ✅ All data cleared');
+  } catch (error) {
+    console.error('[Wrapped] Error clearing data:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// EXPORT
+// ============================================================================
+
+export const WatchActivityService = {
+  logEpisodeWatch,
+  logMovieWatch,
+  logSeriesAdded,
+  logMovieAdded,
+  logRatingChange,
+  getWatchStreak,
+  getYearlyActivity,
+  getEventsForYear,
+  getBingeSessionsForYear,
+  clearAllWrappedData,
+};
+
+export default WatchActivityService;
