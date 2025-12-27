@@ -25,6 +25,7 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
+import { WatchActivityService } from '../services/watchActivityService';
 
 // Discussion button component for episodes
 const EpisodeDiscussionButton: React.FC<{
@@ -481,6 +482,22 @@ export const NewEpisodesPage = () => {
         const series = seriesList.find((s) => s.id === episode.seriesId);
         const seriesGenre = series?.genre?.genres?.[0] || 'Drama'; // Fallback Genre
         await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+
+        // 🎁 Wrapped 2026: Episode-Watch loggen
+        WatchActivityService.logEpisodeWatch(
+          user.uid,
+          episode.seriesId,
+          episode.seriesName,
+          episode.seriesNmr,
+          episode.seasonNumber,
+          episode.episodeNumber,
+          episode.episodeName,
+          series?.episodeRuntime || 45,
+          false,
+          1,
+          series?.genre?.genres,
+          series?.provider?.provider?.map(p => p.name)
+        );
       }
 
       setMarkedWatched((prev) => new Set([...prev, key]));
@@ -572,6 +589,22 @@ export const NewEpisodesPage = () => {
           const series = seriesList.find((s) => s.id === episode.seriesId);
           const seriesGenre = series?.genre?.genres?.[0] || 'Drama'; // Fallback Genre
           await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+
+          // 🎁 Wrapped 2026: Episode-Watch loggen
+          WatchActivityService.logEpisodeWatch(
+            user.uid,
+            episode.seriesId,
+            episode.seriesName,
+            episode.seriesNmr,
+            episode.seasonNumber,
+            episode.episodeNumber,
+            episode.episodeName,
+            series?.episodeRuntime || 45,
+            false,
+            1,
+            series?.genre?.genres,
+            series?.provider?.provider?.map(p => p.name)
+          );
         }
       } catch (error) {}
     }

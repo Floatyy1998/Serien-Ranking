@@ -170,6 +170,7 @@ function processEpisodes(data: any) {
             episodeName: episode.name,
             watched: episode.watched,
             seriesGenre: series.genre?.genres,
+            seriesProviders: series.provider?.provider?.map((p: any) => p.name),
           });
         }
       }

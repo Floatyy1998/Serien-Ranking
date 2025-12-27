@@ -22,6 +22,7 @@ import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { getFormattedDate } from '../lib/date/date.utils';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../lib/validation/rewatch.utils';
 import { petService } from '../services/petService';
+import { WatchActivityService } from '../services/watchActivityService';
 import { Series } from '../types/Series';
 
 // Discussion button component for episodes
@@ -848,6 +849,22 @@ export const WatchNextPage = () => {
           const seriesGenre = series.genre?.genres?.[0] || 'Drama'; // Fallback Genre
           await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
         }
+
+        // 🎁 Wrapped 2026: Episode-Watch loggen
+        WatchActivityService.logEpisodeWatch(
+          user.uid,
+          series.id,
+          series.title || series.name || 'Unbekannte Serie',
+          series.nmr,
+          episode.seasonIndex + 1, // seasonNumber (1-basiert)
+          episode.episodeIndex + 1, // episodeNumber (1-basiert)
+          episode.episodeName,
+          series.episodeRuntime || 45,
+          episode.isRewatch || false,
+          (episode.currentWatchCount || 0) + 1,
+          series.genre?.genres,
+          series.provider?.provider?.map(p => p.name)
+        );
       } catch (error) {}
     }
 

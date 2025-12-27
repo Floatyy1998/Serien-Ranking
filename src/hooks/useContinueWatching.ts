@@ -109,6 +109,8 @@ export const useContinueWatching = () => {
                   airDate: episode.air_date,
                   lastWatchedAt: lastWatchedAt || '1900-01-01',
                   genre: series.genre,
+                  provider: series.provider,  // Für Wrapped-Statistiken
+                  episodeRuntime: series.episodeRuntime,
                 });
                 foundNext = true;
                 break;

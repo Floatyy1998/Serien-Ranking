@@ -156,8 +156,14 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   // Konvertiere Object zu Array
   const seriesList: Series[] = seriesData ? Object.values(seriesData) : [];
 
-  // Function to fix missing firstWatchedAt dates (run once)
+  // ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
+  // Diese Funktion setzt das HEUTIGE Datum für alte Episoden - das verfälscht historische Daten!
+  // Für Wrapped 2026 werden die Daten korrekt über WatchActivityService gesammelt.
+  // Diese Funktion sollte NICHT mehr verwendet werden, außer für spezielle Migrations-Fälle.
   const fixMissingFirstWatchedAt = useCallback(async (userId: string, seriesData: Record<string, Series>) => {
+    console.warn('⚠️ WARNUNG: Diese Funktion setzt das HEUTIGE Datum für alle alten Episoden!');
+    console.warn('⚠️ Für Wrapped 2026 werden Daten automatisch korrekt gesammelt.');
+    console.warn('⚠️ Nur verwenden wenn du weißt was du tust!');
     console.log('🔧 Starting firstWatchedAt fix for user:', userId);
     console.log('📊 Series data keys:', Object.keys(seriesData));
 

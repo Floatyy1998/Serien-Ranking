@@ -30,6 +30,7 @@ import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { petService } from '../services/petService';
+import { WatchActivityService } from '../services/watchActivityService';
 import { useContinueWatching } from '../hooks/useContinueWatching';
 import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { useTMDBTrending } from '../hooks/useTMDBTrending';
@@ -41,6 +42,7 @@ import { StatsGrid } from '../components/StatsGrid';
 import { NewSeasonNotification } from '../components/NewSeasonNotification';
 import { InactiveSeriesNotification } from '../components/InactiveSeriesNotification';
 import { CompletedSeriesNotification } from '../components/CompletedSeriesNotification';
+import { WrappedNotification } from '../components/WrappedNotification';
 
 // Episode Discussion Button with count
 const EpisodeDiscussionButton: React.FC<{
@@ -265,6 +267,25 @@ export const HomePage: React.FC = () => {
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
           const seriesGenre = item.genre?.genres?.[0] || 'Drama'; // Fallback Genre
           await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+
+          // 🎁 Wrapped 2026: Episode-Watch loggen
+          const providers = item.provider?.provider?.map((p: any) => p.name);
+          console.log('[Wrapped Debug] Continue Watching - item.provider:', item.provider);
+          console.log('[Wrapped Debug] Continue Watching - providers:', providers);
+          WatchActivityService.logEpisodeWatch(
+            user.uid,
+            item.id,
+            item.title,
+            item.nmr,
+            item.nextEpisode.seasonIndex + 1,
+            item.nextEpisode.episodeIndex + 1,
+            item.nextEpisode.name,
+            item.episodeRuntime || 45,
+            false,
+            1,
+            item.genre?.genres,
+            providers
+          );
         }
       } catch (error) {
         console.error('Error marking episode as watched:', error);
@@ -331,6 +352,22 @@ export const HomePage: React.FC = () => {
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
           const seriesGenre = episode.seriesGenre?.[0] || 'Drama'; // Fallback Genre
           await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+
+          // 🎁 Wrapped 2026: Episode-Watch loggen
+          WatchActivityService.logEpisodeWatch(
+            user.uid,
+            episode.seriesId,
+            episode.seriesTitle,
+            episode.seriesNmr,
+            episode.seasonNumber,
+            episode.episodeNumber,
+            episode.episodeName,
+            episode.runtime || 45,
+            false,
+            1,
+            episode.seriesGenre,
+            episode.seriesProviders
+          );
         }
       } catch (error) {
         console.error('Error marking episode as watched:', error);
@@ -355,6 +392,9 @@ export const HomePage: React.FC = () => {
         position: 'relative',
       }}
     >
+      {/* Wrapped Notification - prominently at the top */}
+      <WrappedNotification />
+
       {/* New Season Notification */}
       {seriesWithNewSeasons && seriesWithNewSeasons.length > 0 && (
         <NewSeasonNotification
