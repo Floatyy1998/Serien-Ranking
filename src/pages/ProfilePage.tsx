@@ -1,12 +1,30 @@
+/**
+ * ProfilePage - Premium User Profile
+ * Modern profile view with stats and navigation
+ */
+
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import { motion } from 'framer-motion';
 import {
-  Person, Settings, Logout, Star, PlayCircle,
-  CalendarToday, Movie, TrendingUp, EmojiEvents,
-  ChevronRight, Palette, Search, Group
+  Person,
+  Settings,
+  Logout,
+  Star,
+  PlayCircle,
+  CalendarToday,
+  Movie,
+  TrendingUp,
+  EmojiEvents,
+  ChevronRight,
+  Palette,
+  Search,
+  Group,
+  Pets,
+  History,
 } from '@mui/icons-material';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../contexts/MovieListProvider';
@@ -22,7 +40,7 @@ export const ProfilePage = () => {
   const { currentTheme } = useTheme();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
   const { unreadBadgesCount } = useBadges();
-  
+
   // Load user data from Firebase Database
   const { data: userData } = useEnhancedFirebaseCache<any>(
     user ? `users/${user.uid}` : '',
@@ -32,35 +50,26 @@ export const ProfilePage = () => {
       enableOfflineSupport: true,
     }
   );
-  
-  
+
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  
-  // const getUserRating = (rating: any): number => {
-  //   if (!rating || !user?.uid) return 0;
-  //   return rating[user.uid] || 0;
-  // };
-  
+
   const stats = useMemo(() => {
     const totalSeries = seriesList.length;
     const totalMovies = movieList.length;
     const today = new Date();
-    
+
     let watchedEpisodes = 0;
     let totalMinutesWatched = 0;
-    
-    // Series watch time - same calculation as MobileStatsGrid
-    seriesList.forEach(series => {
-      // Allow nmr: 0 as valid
+
+    seriesList.forEach((series) => {
       if (!series || series.nmr === undefined || series.nmr === null) return;
       const runtime = series.episodeRuntime || 45;
-      
+
       if (series.seasons) {
-        series.seasons.forEach(season => {
+        series.seasons.forEach((season) => {
           if (season.episodes) {
-            season.episodes.forEach(episode => {
-              // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
+            season.episodes.forEach((episode) => {
               const isWatched = !!(
                 episode.firstWatchedAt ||
                 episode.watched === true ||
@@ -68,22 +77,20 @@ export const ProfilePage = () => {
                 (episode.watched as any) === 'true' ||
                 (episode.watchCount && episode.watchCount > 0)
               );
-              
+
               if (isWatched) {
-                // Check if episode has aired
                 if (episode.air_date) {
                   const airDate = new Date(episode.air_date);
                   if (airDate <= today) {
-                    // For episode count: count once
                     watchedEpisodes++;
-                    // For time: count rewatches
-                    const watchCount = episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
+                    const watchCount =
+                      episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
                     totalMinutesWatched += runtime * watchCount;
                   }
                 } else {
-                  // No air_date means it's probably an old episode that's already aired
                   watchedEpisodes++;
-                  const watchCount = episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
+                  const watchCount =
+                    episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
                   totalMinutesWatched += runtime * watchCount;
                 }
               }
@@ -92,20 +99,17 @@ export const ProfilePage = () => {
         });
       }
     });
-    
-    // Movie watch time - use rating > 0 to determine if watched (same as MobileStatsGrid)
+
     movieList.forEach((movie: any) => {
-      // Allow nmr: 0 as valid
       if (movie && movie.nmr !== undefined && movie.nmr !== null) {
         const rating = parseFloat(calculateOverallRating(movie));
         const isWatched = !isNaN(rating) && rating > 0;
         if (isWatched) {
-          totalMinutesWatched += (movie.runtime || 120);
+          totalMinutesWatched += movie.runtime || 120;
         }
       }
     });
-    
-    // Calculate time display string like MobileStatsGrid
+
     const years = Math.floor(totalMinutesWatched / (365 * 24 * 60));
     const remainingAfterYears = totalMinutesWatched % (365 * 24 * 60);
     const months = Math.floor(remainingAfterYears / (30 * 24 * 60));
@@ -121,347 +125,577 @@ export const ProfilePage = () => {
     if (hours > 0) timeString += `${hours}S `;
     if (minutes > 0) timeString += `${Math.floor(minutes)}Min`;
     if (!timeString) timeString = '0Min';
-    
+
     return {
       totalSeries,
       totalMovies,
       watchedEpisodes,
-      timeString: timeString.trim()
+      totalMinutes: totalMinutesWatched,
+      timeString: timeString.trim(),
     };
   }, [seriesList, movieList]);
-  
+
   const handleLogout = async () => {
     try {
       await firebase.auth().signOut();
       navigate('/');
     } catch (error) {
+      // Silent fail
     }
   };
-  
+
+  const menuItems = [
+    {
+      label: 'Meine Bewertungen',
+      icon: Star,
+      color: currentTheme.status.warning,
+      path: '/ratings',
+      featured: true,
+    },
+    {
+      label: 'Aktivität & Freunde',
+      icon: Group,
+      color: currentTheme.primary,
+      path: '/activity',
+      badge: unreadActivitiesCount + unreadRequestsCount,
+      featured: true,
+    },
+    {
+      label: 'Hinzufügen & Suchen',
+      icon: Search,
+      color: currentTheme.status.error,
+      path: '/discover',
+      featured: true,
+    },
+  ];
+
+  const secondaryMenuItems = [
+    { label: 'Statistiken', icon: TrendingUp, color: currentTheme.primary, path: '/stats' },
+    { label: 'Verlauf', icon: History, color: currentTheme.status.success, path: '/recently-watched' },
+    {
+      label: 'Erfolge',
+      icon: EmojiEvents,
+      color: currentTheme.status.warning,
+      path: '/badges',
+      badge: unreadBadgesCount || 0,
+    },
+    { label: 'Haustiere', icon: Pets, color: '#ec4899', path: '/pets' },
+  ];
+
+  const settingsItems = [
+    { label: 'Design', icon: Palette, color: currentTheme.primary, path: '/theme' },
+    { label: 'Einstellungen', icon: Settings, color: currentTheme.text.secondary, path: '/settings' },
+  ];
+
   return (
-    <div>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+        position: 'relative',
+        paddingBottom: '100px',
+      }}
+    >
+      {/* Decorative Background */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '350px',
+          background: `
+            radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.primary}40, transparent),
+            radial-gradient(ellipse 60% 40% at 20% 30%, ${currentTheme.status.warning}20, transparent),
+            radial-gradient(ellipse 50% 30% at 80% 20%, ${currentTheme.status.success}15, transparent)
+          `,
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Profile Header */}
-      <div style={{
-        background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-        padding: '20px',
-        paddingTop: 'calc(40px + env(safe-area-inset-top))',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          ...((userData?.photoURL || user?.photoURL) ? {
-            backgroundImage: `url("${userData?.photoURL || user?.photoURL}")`,
-            backgroundPosition: 'center',
-            backgroundSize: 'cover'
-          } : {
-            background: currentTheme.primary
-          }),
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 16px',
-          boxShadow: `0 4px 12px ${currentTheme.primary}4D`
-        }}>
-          {!(userData?.photoURL || user?.photoURL) && <Person style={{ fontSize: '40px' }} />}
-        </div>
-        
-        <h2 style={{ 
-          fontSize: '24px', 
-          fontWeight: 700,
-          margin: '0 0 4px 0'
-        }}>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          position: 'relative',
+          padding: '20px',
+          paddingTop: 'calc(50px + env(safe-area-inset-top))',
+          textAlign: 'center',
+        }}
+      >
+        {/* Avatar Container */}
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          style={{
+            width: '110px',
+            height: '110px',
+            margin: '0 auto 20px',
+            position: 'relative',
+          }}
+        >
+          {/* Glow Effect */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: '-4px',
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.warning}, ${currentTheme.status.success})`,
+              opacity: 0.6,
+              filter: 'blur(8px)',
+            }}
+          />
+          {/* Avatar Ring */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: '-3px',
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.warning})`,
+              padding: '3px',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                background: currentTheme.background.default,
+              }}
+            />
+          </div>
+          {/* Avatar Image */}
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              ...(userData?.photoURL || user?.photoURL
+                ? {
+                    backgroundImage: `url("${userData?.photoURL || user?.photoURL}")`,
+                    backgroundPosition: 'center',
+                    backgroundSize: 'cover',
+                  }
+                : {
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`,
+                  }),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {!(userData?.photoURL || user?.photoURL) && (
+              <Person style={{ fontSize: '50px', color: 'white' }} />
+            )}
+          </div>
+        </motion.div>
+
+        {/* Name & Email */}
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          style={{
+            fontSize: '26px',
+            fontWeight: 800,
+            margin: '0 0 6px 0',
+            background: `linear-gradient(135deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
           {userData?.displayName || user?.displayName || 'User'}
-        </h2>
-        <p style={{ 
-          fontSize: '14px',
-          color: currentTheme.text.muted,
-          margin: 0
-        }}>
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          style={{
+            fontSize: '14px',
+            color: currentTheme.text.muted,
+            margin: 0,
+          }}
+        >
           {user?.email}
-        </p>
-      </div>
-      
-      {/* Stats Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: '12px',
-        padding: '20px',
-        marginBottom: '20px'
-      }}>
-        <div style={{
-          background: currentTheme.background.surface,
+        </motion.p>
+      </motion.div>
+
+      {/* Stats Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: `${currentTheme.background.surface}cc`,
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           border: `1px solid ${currentTheme.border.default}`,
-          borderRadius: '12px',
-          padding: '16px',
-          textAlign: 'center'
-        }}>
-          <CalendarToday style={{ fontSize: '24px', color: currentTheme.primary, marginBottom: '8px' }} />
-          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.totalSeries}</div>
-          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Serien</div>
+        }}
+      >
+        {/* Time Hero */}
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div
+            style={{
+              fontSize: '32px',
+              fontWeight: 800,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.warning})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              marginBottom: '4px',
+            }}
+          >
+            {stats.timeString}
+          </div>
+          <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>
+            Gesamte Watchtime
+          </div>
         </div>
-        
-        <div style={{
-          background: currentTheme.background.surface,
-          border: `1px solid ${currentTheme.border.default}`,
-          borderRadius: '12px',
-          padding: '16px',
-          textAlign: 'center'
-        }}>
-          <Movie style={{ fontSize: '24px', color: currentTheme.status.error, marginBottom: '8px' }} />
-          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.totalMovies}</div>
-          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Filme</div>
-        </div>
-        
-        <div style={{
-          background: currentTheme.background.surface,
-          border: `1px solid ${currentTheme.border.default}`,
-          borderRadius: '12px',
-          padding: '16px',
-          textAlign: 'center'
-        }}>
-          <PlayCircle style={{ fontSize: '24px', color: currentTheme.status.success, marginBottom: '8px' }} />
-          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.watchedEpisodes}</div>
-          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Episoden</div>
-        </div>
-        
-        <div style={{
-          background: currentTheme.background.surface,
-          border: `1px solid ${currentTheme.border.default}`,
-          borderRadius: '12px',
-          padding: '16px',
-          textAlign: 'center'
-        }}>
-          <TrendingUp style={{ fontSize: '24px', color: currentTheme.status.warning, marginBottom: '8px' }} />
-          <div style={{ fontSize: '24px', fontWeight: 700 }}>{stats.timeString}</div>
-          <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Gesamt-Watchzeit</div>
-          <div style={{ fontSize: '10px', color: currentTheme.text.muted, opacity: 0.7 }}>Serien + Filme</div>
-        </div>
-      </div>
-      
-      {/* Feature Navigation */}
-      <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-        <button 
-          onClick={() => navigate('/ratings')}
+
+        {/* Stats Grid */}
+        <div
           style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: `${currentTheme.status.warning}1A`,
-            border: `1px solid ${currentTheme.status.warning}33`,
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '12px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Star style={{ fontSize: '20px', color: currentTheme.status.warning }} />
-            <span style={{ fontSize: '16px' }}>Meine Bewertungen</span>
-          </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-        </button>
-        
-        <button 
-          onClick={() => navigate('/activity')}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            style={{
+              padding: '14px 12px',
+              borderRadius: '14px',
+              background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}08)`,
+              border: `1px solid ${currentTheme.primary}25`,
+              textAlign: 'center',
+            }}
+          >
+            <CalendarToday
+              style={{ fontSize: '22px', color: currentTheme.primary, marginBottom: '6px' }}
+            />
+            <div style={{ fontSize: '22px', fontWeight: 700, color: currentTheme.text.primary }}>
+              {stats.totalSeries}
+            </div>
+            <div style={{ fontSize: '11px', color: currentTheme.text.muted }}>Serien</div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            style={{
+              padding: '14px 12px',
+              borderRadius: '14px',
+              background: `linear-gradient(135deg, ${currentTheme.status.error}15, ${currentTheme.status.error}08)`,
+              border: `1px solid ${currentTheme.status.error}25`,
+              textAlign: 'center',
+            }}
+          >
+            <Movie
+              style={{ fontSize: '22px', color: currentTheme.status.error, marginBottom: '6px' }}
+            />
+            <div style={{ fontSize: '22px', fontWeight: 700, color: currentTheme.text.primary }}>
+              {stats.totalMovies}
+            </div>
+            <div style={{ fontSize: '11px', color: currentTheme.text.muted }}>Filme</div>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            style={{
+              padding: '14px 12px',
+              borderRadius: '14px',
+              background: `linear-gradient(135deg, ${currentTheme.status.success}15, ${currentTheme.status.success}08)`,
+              border: `1px solid ${currentTheme.status.success}25`,
+              textAlign: 'center',
+            }}
+          >
+            <PlayCircle
+              style={{ fontSize: '22px', color: currentTheme.status.success, marginBottom: '6px' }}
+            />
+            <div style={{ fontSize: '22px', fontWeight: 700, color: currentTheme.text.primary }}>
+              {stats.watchedEpisodes}
+            </div>
+            <div style={{ fontSize: '11px', color: currentTheme.text.muted }}>Episoden</div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Featured Navigation */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        style={{ padding: '0 20px', marginBottom: '20px' }}
+      >
+        <h3
           style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: `${currentTheme.primary}1A`,
-            border: `1px solid ${currentTheme.primary}33`,
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
+            fontSize: '13px',
+            fontWeight: 600,
+            color: currentTheme.text.muted,
+            margin: '0 0 12px 4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Group style={{ fontSize: '20px', color: currentTheme.primary }} />
-            <span style={{ fontSize: '16px' }}>Aktivität & Freunde</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {(unreadActivitiesCount + unreadRequestsCount) > 0 && (
-              <div style={{
-                background: currentTheme.status.error,
-                color: 'white',
-                borderRadius: '12px',
-                padding: '2px 8px',
-                fontSize: '12px',
-                fontWeight: 600,
-                minWidth: '20px',
-                textAlign: 'center'
-              }}>
-                {unreadActivitiesCount + unreadRequestsCount}
+          Schnellzugriff
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {menuItems.map((item, index) => (
+            <motion.button
+              key={item.path}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35 + index * 0.05 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate(item.path)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px',
+                background: `linear-gradient(135deg, ${item.color}18, ${item.color}08)`,
+                border: `1px solid ${item.color}30`,
+                borderRadius: '16px',
+                color: currentTheme.text.primary,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '12px',
+                    background: `linear-gradient(135deg, ${item.color}, ${item.color}cc)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <item.icon style={{ fontSize: '22px', color: 'white' }} />
+                </div>
+                <span style={{ fontSize: '16px', fontWeight: 600 }}>{item.label}</span>
               </div>
-            )}
-            <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-          </div>
-        </button>
-        
-        <button 
-          onClick={() => navigate('/discover')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: `${currentTheme.status.error}1A`,
-            border: `1px solid ${currentTheme.status.error}33`,
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Search style={{ fontSize: '20px', color: currentTheme.status.error }} />
-            <span style={{ fontSize: '16px' }}>Hinzufügen & Suchen</span>
-          </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-        </button>
-      </div>
-      
-      {/* Settings & Profile Items */}
-      <div style={{ padding: '0 20px' }}>
-        <button 
-          onClick={() => navigate('/stats')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <TrendingUp style={{ fontSize: '20px', color: currentTheme.primary }} />
-            <span style={{ fontSize: '16px' }}>Statistiken</span>
-          </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-        </button>
-        
-        <button 
-          onClick={() => navigate('/badges')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <EmojiEvents style={{ fontSize: '20px', color: currentTheme.status.warning }} />
-            <span style={{ fontSize: '16px' }}>Erfolge</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {(unreadBadgesCount || 0) > 0 && (
-              <div style={{
-                background: currentTheme.status.error,
-                color: 'white',
-                borderRadius: '12px',
-                padding: '2px 8px',
-                fontSize: '12px',
-                fontWeight: 600,
-                minWidth: '20px',
-                textAlign: 'center'
-              }}>
-                {unreadBadgesCount}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <div
+                    style={{
+                      background: currentTheme.status.error,
+                      color: 'white',
+                      borderRadius: '10px',
+                      padding: '4px 10px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      minWidth: '24px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.badge}
+                  </div>
+                )}
+                <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
               </div>
-            )}
-            <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-          </div>
-        </button>
-        
-        <button 
-          onClick={() => navigate('/theme')}
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Secondary Menu */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        style={{ padding: '0 20px', marginBottom: '20px' }}
+      >
+        <h3
           style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
+            fontSize: '13px',
+            fontWeight: 600,
+            color: currentTheme.text.muted,
+            margin: '0 0 12px 4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Palette style={{ fontSize: '20px', color: currentTheme.primary }} />
-            <span style={{ fontSize: '16px' }}>Design</span>
-          </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-        </button>
-        
-        <button
-          onClick={() => navigate('/settings')}
+          Deine Aktivitäten
+        </h3>
+        <div
           style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '12px',
-            color: 'white',
-            marginBottom: '8px',
-            cursor: 'pointer'
+            background: currentTheme.background.surface,
+            borderRadius: '16px',
+            border: `1px solid ${currentTheme.border.default}`,
+            overflow: 'hidden',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Settings style={{ fontSize: '20px', color: currentTheme.text.secondary }} />
-            <span style={{ fontSize: '16px' }}>Einstellungen</span>
-          </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-        </button>
-        
-        <button 
+          {secondaryMenuItems.map((item, index) => (
+            <motion.button
+              key={item.path}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45 + index * 0.03 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => navigate(item.path)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 16px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom:
+                  index < secondaryMenuItems.length - 1
+                    ? `1px solid ${currentTheme.border.default}`
+                    : 'none',
+                color: currentTheme.text.primary,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: `${item.color}15`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <item.icon style={{ fontSize: '20px', color: item.color }} />
+                </div>
+                <span style={{ fontSize: '15px', fontWeight: 500 }}>{item.label}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <div
+                    style={{
+                      background: currentTheme.status.error,
+                      color: 'white',
+                      borderRadius: '10px',
+                      padding: '3px 8px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      minWidth: '22px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.badge}
+                  </div>
+                )}
+                <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Settings Menu */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        style={{ padding: '0 20px', marginBottom: '20px' }}
+      >
+        <h3
+          style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: currentTheme.text.muted,
+            margin: '0 0 12px 4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
+          Einstellungen
+        </h3>
+        <div
+          style={{
+            background: currentTheme.background.surface,
+            borderRadius: '16px',
+            border: `1px solid ${currentTheme.border.default}`,
+            overflow: 'hidden',
+          }}
+        >
+          {settingsItems.map((item, index) => (
+            <motion.button
+              key={item.path}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => navigate(item.path)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 16px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom:
+                  index < settingsItems.length - 1
+                    ? `1px solid ${currentTheme.border.default}`
+                    : 'none',
+                color: currentTheme.text.primary,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: `${item.color}15`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <item.icon style={{ fontSize: '20px', color: item.color }} />
+                </div>
+                <span style={{ fontSize: '15px', fontWeight: 500 }}>{item.label}</span>
+              </div>
+              <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Logout Button */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55 }}
+        style={{ padding: '0 20px' }}
+      >
+        <motion.button
+          whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
           style={{
             width: '100%',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
+            gap: '10px',
             padding: '16px',
-            background: `${currentTheme.status.error}1A`,
-            border: `1px solid ${currentTheme.status.error}33`,
-            borderRadius: '12px',
+            background: `linear-gradient(135deg, ${currentTheme.status.error}15, ${currentTheme.status.error}08)`,
+            border: `1px solid ${currentTheme.status.error}30`,
+            borderRadius: '16px',
             color: currentTheme.status.error,
-            marginTop: '20px',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: 600,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Logout style={{ fontSize: '20px' }} />
-            <span style={{ fontSize: '16px' }}>Abmelden</span>
-          </div>
-          <ChevronRight style={{ fontSize: '20px', opacity: 0.5 }} />
-        </button>
-      </div>
+          <Logout style={{ fontSize: '20px' }} />
+          Abmelden
+        </motion.button>
+      </motion.div>
     </div>
   );
 };

@@ -27,7 +27,6 @@ import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
 
-// Discussion button component for episodes
 const EpisodeDiscussionButton: React.FC<{
   seriesId: number;
   seasonNumber: number;
@@ -45,9 +44,9 @@ const EpisodeDiscussionButton: React.FC<{
         navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}`);
       }}
       style={{
-        background: 'transparent',
+        background: count > 0 ? `${currentTheme.primary}20` : 'transparent',
         border: 'none',
-        padding: '4px',
+        padding: '6px',
         cursor: 'pointer',
         color: count > 0 ? currentTheme.primary : currentTheme.text.muted,
         display: 'flex',
@@ -56,12 +55,11 @@ const EpisodeDiscussionButton: React.FC<{
         gap: '4px',
         position: 'relative',
         zIndex: 10,
+        borderRadius: '8px',
       }}
     >
       <ChatBubbleOutline style={{ fontSize: '18px' }} />
-      {count > 0 ? (
-        <span style={{ fontSize: '12px', fontWeight: 600 }}>{count}</span>
-      ) : null}
+      {count > 0 && <span style={{ fontSize: '12px', fontWeight: 600 }}>{count}</span>}
     </button>
   );
 };
@@ -90,13 +88,13 @@ export const NewEpisodesPage = () => {
   const [markedWatched, setMarkedWatched] = useState<Set<string>>(new Set());
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
-  const [dragOffsets, setDragOffsets] = useState<{ [key: string]: number }>({});
+  const [, setDragOffsets] = useState<{ [key: string]: number }>({});
   const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
   const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
   const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [daysPast, setDaysPast] = useState<number>(0); // Days in the past to load
-  const [daysFuture, setDaysFuture] = useState<number>(30); // Days in the future to load
+  const [daysPast, setDaysPast] = useState<number>(0);
+  const [daysFuture, setDaysFuture] = useState<number>(30);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -106,10 +104,9 @@ export const NewEpisodesPage = () => {
   const [headerHeight, setHeaderHeight] = useState<number>(220);
   const [showScrollButton, setShowScrollButton] = useState<boolean>(false);
   const startY = useRef<number>(0);
-  const PULL_THRESHOLD = 80; // Pixels to pull before refresh triggers
-  const MAX_PULL = 120; // Maximum pull distance
+  const PULL_THRESHOLD = 80;
+  const MAX_PULL = 120;
 
-  // Save scroll position when navigating away to SeriesDetailPage
   useEffect(() => {
     const handleBeforeUnload = () => {
       const scrollY = window.scrollY || window.pageYOffset;
@@ -117,65 +114,40 @@ export const NewEpisodesPage = () => {
         sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
       }
     };
-
-    // Save scroll position before navigation
-    return () => {
-      handleBeforeUnload();
-    };
+    return () => handleBeforeUnload();
   }, []);
 
-  // Restore scroll position when coming back from SeriesDetailPage with back button
   useEffect(() => {
-    // Check if we're coming from a detail page via back navigation
     const comingFromDetail = sessionStorage.getItem('comingFromDetail') === 'true';
     const savedPosition = sessionStorage.getItem('newEpisodesScrollPosition');
 
     if (comingFromDetail && savedPosition !== null) {
       const scrollY = parseInt(savedPosition, 10) || 0;
-
-      // The app uses a scrollable container (.mobile-content) not window scroll
       const scrollContainer = document.querySelector('.mobile-content');
 
-      // Try multiple timeouts to ensure scroll works
       requestAnimationFrame(() => {
-        if (scrollContainer) {
-          scrollContainer.scrollTop = scrollY;
-        }
-        // Also try after a delay
-        setTimeout(() => {
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollY;
-          }
-        }, 100);
-        setTimeout(() => {
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollY;
-          }
-        }, 300);
+        if (scrollContainer) scrollContainer.scrollTop = scrollY;
+        setTimeout(() => { if (scrollContainer) scrollContainer.scrollTop = scrollY; }, 100);
+        setTimeout(() => { if (scrollContainer) scrollContainer.scrollTop = scrollY; }, 300);
       });
 
-      // Clear the flags after restoring
       sessionStorage.removeItem('comingFromDetail');
       sessionStorage.removeItem('newEpisodesScrollPosition');
     }
   }, []);
 
-  // Measure header height dynamically
   useEffect(() => {
     if (headerRef.current) {
       const updateHeaderHeight = () => {
         const height = headerRef.current?.offsetHeight || 220;
         setHeaderHeight(height);
       };
-
       updateHeaderHeight();
       window.addEventListener('resize', updateHeaderHeight);
-
       return () => window.removeEventListener('resize', updateHeaderHeight);
     }
   }, []);
 
-  // Get TMDB image URL
   const getImageUrl = (posterObj: any): string => {
     if (!posterObj) return '/placeholder.jpg';
     const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
@@ -184,12 +156,10 @@ export const NewEpisodesPage = () => {
     return `https://image.tmdb.org/t/p/w342${path}`;
   };
 
-  // Get all episodes within date range
   const allEpisodes = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Calculate date range - only load past days if scrolled up
     const startDate = new Date(today);
     startDate.setDate(startDate.getDate() - daysPast);
 
@@ -199,16 +169,10 @@ export const NewEpisodesPage = () => {
     const episodes: UpcomingEpisode[] = [];
 
     seriesList.forEach((series) => {
-      // Filter by watchlist unless showAllSeries is true
       if (!showAllSeries && !series.watchlist) return;
-
-      // Filter by search query
       if (searchQuery && !series.title?.toLowerCase().includes(searchQuery.toLowerCase())) return;
-
-      // Only check episodes in seasons, not API data (to avoid duplicates)
       if (!series.seasons) return;
 
-      // Check all episodes
       series.seasons.forEach((season, seasonIndex) => {
         if (!season.episodes) return;
 
@@ -217,11 +181,9 @@ export const NewEpisodesPage = () => {
           if (!airDate) return;
 
           const episodeDate = new Date(airDate);
-          if (isNaN(episodeDate.getTime())) return; // Invalid date
-
+          if (isNaN(episodeDate.getTime())) return;
           episodeDate.setHours(0, 0, 0, 0);
 
-          // Check if episode is within our date range
           if (episodeDate >= startDate && episodeDate <= endDate) {
             const daysUntil = Math.floor(
               (episodeDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
@@ -230,10 +192,7 @@ export const NewEpisodesPage = () => {
             episodes.push({
               seriesId: series.id,
               seriesName: series.title || '',
-              seriesPoster:
-                typeof series.poster === 'string'
-                  ? series.poster
-                  : (series.poster as any)?.poster || '',
+              seriesPoster: typeof series.poster === 'string' ? series.poster : (series.poster as any)?.poster || '',
               seriesNmr: series.nmr,
               seasonIndex,
               episodeIndex,
@@ -249,13 +208,10 @@ export const NewEpisodesPage = () => {
       });
     });
 
-    // Sort by air date
     episodes.sort((a, b) => a.airDate.getTime() - b.airDate.getTime());
-
     return episodes;
   }, [seriesList, searchQuery, showAllSeries, daysPast, daysFuture]);
 
-  // Group episodes by date and then by series
   const groupedEpisodes = useMemo(() => {
     const groups: { [key: string]: { [seriesId: number]: UpcomingEpisode[] } } = {};
 
@@ -267,93 +223,69 @@ export const NewEpisodesPage = () => {
         year: 'numeric',
       });
 
-      if (!groups[dateKey]) {
-        groups[dateKey] = {};
-      }
-
-      if (!groups[dateKey][episode.seriesId]) {
-        groups[dateKey][episode.seriesId] = [];
-      }
-
+      if (!groups[dateKey]) groups[dateKey] = {};
+      if (!groups[dateKey][episode.seriesId]) groups[dateKey][episode.seriesId] = [];
       groups[dateKey][episode.seriesId].push(episode);
     });
 
     return groups;
   }, [allEpisodes]);
 
-  // Track if we're loading future
   const [loadingFuture, setLoadingFuture] = useState<boolean>(false);
 
-  // Handle pull to refresh for past episodes
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
     if (!scrollableDiv) return;
-
-    // Only start pull if exactly at top of scroll
     if (scrollableDiv.scrollTop === 0) {
       startY.current = e.touches[0].clientY;
       setIsPulling(true);
     }
   }, []);
 
-  const handleTouchMove = useCallback(
-    (e: TouchEvent) => {
-      if (!isPulling || isRefreshing) return;
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isPulling || isRefreshing) return;
 
-      const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
-      if (!scrollableDiv || scrollableDiv.scrollTop > 0) {
-        setIsPulling(false);
-        setPullDistance(0);
-        return;
-      }
+    const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
+    if (!scrollableDiv || scrollableDiv.scrollTop > 0) {
+      setIsPulling(false);
+      setPullDistance(0);
+      return;
+    }
 
-      const currentY = e.touches[0].clientY;
-      const rawDistance = currentY - startY.current;
+    const currentY = e.touches[0].clientY;
+    const rawDistance = currentY - startY.current;
 
-      // Only allow downward pull (positive distance) and minimum pull distance
-      if (rawDistance <= 5) {
-        setPullDistance(0);
-        return;
-      }
+    if (rawDistance <= 5) {
+      setPullDistance(0);
+      return;
+    }
 
-      // Apply resistance for more natural feel
-      let distance = rawDistance - 5; // Subtract minimum threshold
-      if (distance > PULL_THRESHOLD) {
-        // Apply smoother resistance after threshold
-        const overPull = distance - PULL_THRESHOLD;
-        distance = PULL_THRESHOLD + Math.pow(overPull, 0.6) * 0.4;
-      } else {
-        // Linear scaling before threshold for better responsiveness
-        distance = distance * 0.8;
-      }
+    let distance = rawDistance - 5;
+    if (distance > PULL_THRESHOLD) {
+      const overPull = distance - PULL_THRESHOLD;
+      distance = PULL_THRESHOLD + Math.pow(overPull, 0.6) * 0.4;
+    } else {
+      distance = distance * 0.8;
+    }
 
-      distance = Math.max(0, Math.min(MAX_PULL, distance));
+    distance = Math.max(0, Math.min(MAX_PULL, distance));
 
-      if (distance > 0) {
-        e.preventDefault(); // Prevent scroll while pulling
-        setPullDistance(distance);
-      }
-    },
-    [isPulling, isRefreshing]
-  );
+    if (distance > 0) {
+      e.preventDefault();
+      setPullDistance(distance);
+    }
+  }, [isPulling, isRefreshing]);
 
   const handleTouchEnd = useCallback(() => {
     if (!isPulling || isRefreshing) return;
-
     setIsPulling(false);
 
     if (pullDistance >= PULL_THRESHOLD && daysPast < 365) {
-      // Trigger refresh
       setIsRefreshing(true);
-
-      // Animate to loading position
       setPullDistance(60);
 
-      // Load more past episodes
       setTimeout(() => {
         const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
-
-        // Store first visible element
         const beforeElements = Array.from(document.querySelectorAll('[data-date]'));
         const firstVisibleElement = beforeElements.find((el) => {
           const rect = el.getBoundingClientRect();
@@ -362,9 +294,8 @@ export const NewEpisodesPage = () => {
         const firstVisibleTop = firstVisibleElement?.getBoundingClientRect().top || headerHeight;
 
         setDaysPast((prev) => {
-          const newDays = Math.min(prev + 7, 365); // Load 1 week at a time
+          const newDays = Math.min(prev + 7, 365);
 
-          // After state update, restore scroll position
           requestAnimationFrame(() => {
             if (firstVisibleElement && scrollableDiv) {
               const newTop = firstVisibleElement.getBoundingClientRect().top;
@@ -372,14 +303,8 @@ export const NewEpisodesPage = () => {
               scrollableDiv.scrollTop += diff;
             }
 
-            // Auto-scroll to the top to show the newly loaded past episodes
             setTimeout(() => {
-              if (scrollableDiv) {
-                scrollableDiv.scrollTo({
-                  top: 0,
-                  behavior: 'smooth',
-                });
-              }
+              if (scrollableDiv) scrollableDiv.scrollTo({ top: 0, behavior: 'smooth' });
             }, 100);
 
             setTimeout(() => {
@@ -392,12 +317,10 @@ export const NewEpisodesPage = () => {
         });
       }, 600);
     } else {
-      // Not enough pull, animate back
       setPullDistance(0);
     }
-  }, [isPulling, isRefreshing, pullDistance, daysPast]);
+  }, [isPulling, isRefreshing, pullDistance, daysPast, headerHeight]);
 
-  // Handle scroll for future episodes only
   const handleScroll = useCallback(() => {
     if (loadingFuture) return;
 
@@ -408,16 +331,13 @@ export const NewEpisodesPage = () => {
     const scrollHeight = scrollableDiv.scrollHeight;
     const clientHeight = scrollableDiv.clientHeight;
 
-    // Show/hide scroll to today button
     setShowScrollButton(scrollTop > 200);
 
-    // Reset pull state if scrolled away from top
     if (scrollTop > 10 && isPulling) {
       setIsPulling(false);
       setPullDistance(0);
     }
 
-    // Load more future episodes when near bottom
     if (scrollHeight - scrollTop - clientHeight < 500 && daysFuture < 365 && !loadingFuture) {
       setLoadingFuture(true);
       setTimeout(() => {
@@ -427,7 +347,6 @@ export const NewEpisodesPage = () => {
     }
   }, [loadingFuture, daysFuture, isPulling]);
 
-  // Attach scroll and touch listeners
   useEffect(() => {
     const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
     if (scrollableDiv) {
@@ -445,45 +364,34 @@ export const NewEpisodesPage = () => {
     }
   }, [handleScroll, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
-  // Mark episode as watched
   const handleMarkWatched = async (episode: UpcomingEpisode) => {
     if (!user) return;
 
     const key = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
 
     try {
-      const ref = firebase
-        .database()
-        .ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-        );
+      const ref = firebase.database().ref(
+        `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
+      );
       await ref.set(true);
 
-      // Update watchCount
-      const watchCountRef = firebase
-        .database()
-        .ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-        );
+      const watchCountRef = firebase.database().ref(
+        `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
+      );
       const snapshot = await watchCountRef.once('value');
       const currentCount = snapshot.val() || 0;
       await watchCountRef.set(currentCount + 1);
 
-      // Update firstWatchedAt if this is the first time
       if (currentCount === 0) {
-        const firstWatchedRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
-          );
+        const firstWatchedRef = firebase.database().ref(
+          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
+        );
         await firstWatchedRef.set(new Date().toISOString());
 
-        // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
         const series = seriesList.find((s) => s.id === episode.seriesId);
-        const seriesGenre = series?.genre?.genres?.[0] || 'Drama'; // Fallback Genre
+        const seriesGenre = series?.genre?.genres?.[0] || 'Drama';
         await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
 
-        // 🎁 Wrapped 2026: Episode-Watch loggen
         WatchActivityService.logEpisodeWatch(
           user.uid,
           episode.seriesId,
@@ -501,17 +409,17 @@ export const NewEpisodesPage = () => {
       }
 
       setMarkedWatched((prev) => new Set([...prev, key]));
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error marking episode watched:', error);
+    }
   };
 
-  // Check if episode has aired
   const hasEpisodeAired = (episode: UpcomingEpisode) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return episode.airDate <= today;
   };
 
-  // Check if date is today
   const isToday = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -519,78 +427,51 @@ export const NewEpisodesPage = () => {
     return date.getTime() === today.getTime();
   };
 
-  // Scroll to today
   const scrollToToday = () => {
     const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
     if (!scrollableDiv) return;
 
-    // If we haven't loaded past episodes yet, we're already at today (top)
     if (daysPast === 0) {
       scrollableDiv.scrollTop = 0;
     } else if (todayRef.current) {
-      // Calculate the position relative to the scrollable container
       const containerRect = scrollableDiv.getBoundingClientRect();
       const todayRect = todayRef.current.getBoundingClientRect();
       const scrollPosition = scrollableDiv.scrollTop + todayRect.top - containerRect.top;
-
-      scrollableDiv.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth',
-      });
+      scrollableDiv.scrollTo({ top: scrollPosition, behavior: 'smooth' });
     }
   };
 
-  // Handle episode swipe to complete
-  const handleEpisodeComplete = async (
-    episode: UpcomingEpisode,
-    swipeDirection: 'left' | 'right' = 'right'
-  ) => {
-    // Don't allow marking future episodes as watched
+  const handleEpisodeComplete = async (episode: UpcomingEpisode, swipeDirection: 'left' | 'right' = 'right') => {
     if (!hasEpisodeAired(episode)) return;
 
     const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
-
-    // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
-
-    // Add to completing set for animation
     setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
 
-    // Mark episode as watched in Firebase
     if (user) {
       try {
-        const ref = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-          );
+        const ref = firebase.database().ref(
+          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
+        );
         await ref.set(true);
 
-        // Also update watchCount if needed
-        const watchCountRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-          );
+        const watchCountRef = firebase.database().ref(
+          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
+        );
         const snapshot = await watchCountRef.once('value');
         const currentCount = snapshot.val() || 0;
         await watchCountRef.set(currentCount + 1);
 
-        // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
-            );
+          const firstWatchedRef = firebase.database().ref(
+            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
+          );
           await firstWatchedRef.set(new Date().toISOString());
 
-          // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
           const series = seriesList.find((s) => s.id === episode.seriesId);
-          const seriesGenre = series?.genre?.genres?.[0] || 'Drama'; // Fallback Genre
+          const seriesGenre = series?.genre?.genres?.[0] || 'Drama';
           await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
 
-          // 🎁 Wrapped 2026: Episode-Watch loggen
           WatchActivityService.logEpisodeWatch(
             user.uid,
             episode.seriesId,
@@ -606,10 +487,11 @@ export const NewEpisodesPage = () => {
             series?.provider?.provider?.map(p => p.name)
           );
         }
-      } catch (error) {}
+      } catch (error) {
+        console.error('Error completing episode:', error);
+      }
     }
 
-    // After animation, hide the episode
     setTimeout(() => {
       setHiddenEpisodes((prev) => new Set(prev).add(episodeKey));
       setCompletingEpisodes((prev) => {
@@ -629,11 +511,8 @@ export const NewEpisodesPage = () => {
     const key = `${date}-${seriesId}`;
     setExpandedSeries((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
+      if (newSet.has(key)) newSet.delete(key);
+      else newSet.add(key);
       return newSet;
     });
   };
@@ -642,7 +521,6 @@ export const NewEpisodesPage = () => {
     return expandedSeries.has(`${date}-${seriesId}`);
   };
 
-  // Get relative date label
   const getRelativeDateLabel = (episode: UpcomingEpisode) => {
     if (episode.daysUntil === 0) return 'Heute';
     if (episode.daysUntil === 1) return 'Morgen';
@@ -655,48 +533,64 @@ export const NewEpisodesPage = () => {
   return (
     <div
       ref={scrollContainerRef}
-      style={{ position: 'relative', height: '100vh', display: 'flex', flexDirection: 'column' }}
+      style={{
+        position: 'relative',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: currentTheme.background.default,
+      }}
     >
-      {/* Smooth Pull to refresh indicator */}
-      {pullDistance > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{
-            opacity: pullDistance > 10 ? 1 : 0,
-            scale: pullDistance > 10 ? 1 : 0.8,
-          }}
-          transition={{ duration: 0 }}
-          style={{
-            position: 'fixed',
-            top: headerHeight + 20,
-            left: '50vw',
-            transform: 'translateX(-50%)',
-            background: `${currentTheme.background}F0`,
-            border: `1px solid ${currentTheme.primary}4D`,
-            borderRadius: '12px',
-            padding: '8px 16px',
-            color: currentTheme.primary,
-            fontSize: '13px',
-            fontWeight: 600,
-            zIndex: 25,
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-          }}
-        >
-          {isRefreshing
-            ? '⟳ Lade 7 weitere Tage...'
-            : pullDistance >= PULL_THRESHOLD
-              ? '↓ Loslassen für alte Episoden'
-              : `↓ ${Math.round((pullDistance / PULL_THRESHOLD) * 100)}%`}
-        </motion.div>
-      )}
+      {/* Decorative background */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 50%),
+                     radial-gradient(ellipse at 80% 90%, #8b5cf612 0%, transparent 50%)`,
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
 
-      {/* Fixed Header */}
+      {/* Premium Pull to refresh indicator */}
+      <AnimatePresence>
+        {pullDistance > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            style={{
+              position: 'fixed',
+              top: headerHeight + 20,
+              left: '50vw',
+              transform: 'translateX(-50%)',
+              background: `linear-gradient(135deg, ${currentTheme.background.card}f5, ${currentTheme.background.surface}f5)`,
+              border: `1px solid ${currentTheme.primary}40`,
+              borderRadius: '16px',
+              padding: '12px 20px',
+              color: currentTheme.primary,
+              fontSize: '13px',
+              fontWeight: 600,
+              zIndex: 25,
+              backdropFilter: 'blur(20px)',
+              boxShadow: `0 4px 15px ${currentTheme.primary}30`,
+            }}
+          >
+            {isRefreshing
+              ? 'Lade 7 weitere Tage...'
+              : pullDistance >= PULL_THRESHOLD
+                ? 'Loslassen für alte Episoden'
+                : `${Math.round((pullDistance / PULL_THRESHOLD) * 100)}%`}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Premium Fixed Header */}
       <header
         ref={headerRef}
         style={{
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-
           padding: '20px',
           paddingTop: 'calc(30px + env(safe-area-inset-top))',
           position: 'fixed',
@@ -704,76 +598,76 @@ export const NewEpisodesPage = () => {
           left: 0,
           right: 0,
           zIndex: 20,
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          background: `${currentTheme.background.default}f0`,
+          backdropFilter: 'blur(20px)',
         }}
       >
-        {/* Subtle gradient overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `linear-gradient(90deg, ${currentTheme.primary}05 0%, ${currentTheme.primary}0D 50%, ${currentTheme.primary}05 100%)`,
-            pointerEvents: 'none',
-          }}
-        />
+        {/* Premium gradient overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(180deg, ${currentTheme.primary}15 0%, transparent 100%)`,
+          pointerEvents: 'none',
+        }} />
 
-        <div
-          style={{
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            marginBottom: '16px',
-          }}
-        >
-          <BackButton />
+        <div style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          marginBottom: '16px',
+        }}>
+          <BackButton
+            style={{
+              background: `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.surfaceHover})`,
+              border: `1px solid ${currentTheme.border.default}`,
+              boxShadow: `0 2px 8px ${currentTheme.background.default}80`,
+            }}
+          />
 
           <div style={{ flex: 1 }}>
-            <h1
-              style={{
-                fontSize: '20px',
-                fontWeight: 700,
-                margin: 0,
-                background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.primary}CC 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
+            <h1 style={{
+              fontSize: '22px',
+              fontWeight: 800,
+              margin: 0,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}>
+              <CalendarToday style={{
+                fontSize: '24px',
+                color: currentTheme.primary,
+                WebkitTextFillColor: currentTheme.primary,
+              }} />
               Episoden Kalender
             </h1>
-            <p
-              style={{
-                color: currentTheme.text.secondary,
-                fontSize: '14px',
-                margin: '4px 0 0 0',
-              }}
-            >
+            <p style={{
+              color: currentTheme.text.secondary,
+              fontSize: '13px',
+              margin: '4px 0 0 0',
+              fontWeight: 500,
+            }}>
               {allEpisodes.length} Episoden
             </p>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div
-          style={{
-            marginBottom: '16px',
-            position: 'relative',
-          }}
-        >
-          <Search
-            style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              fontSize: '20px',
-              color: currentTheme.text.secondary,
-            }}
-          />
+        {/* Premium Search Bar */}
+        <div style={{ marginBottom: '16px', position: 'relative' }}>
+          <Search style={{
+            position: 'absolute',
+            left: '14px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: '20px',
+            color: currentTheme.text.muted,
+          }} />
           <input
             type="text"
             placeholder="Nach Serie suchen..."
@@ -781,15 +675,13 @@ export const NewEpisodesPage = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '10px 12px 10px 40px',
-              background: `${currentTheme.background}99`,
-              border: `1px solid ${currentTheme.primary}33`,
-              borderRadius: '12px',
+              padding: '12px 14px 12px 44px',
+              background: currentTheme.background.surface,
+              border: `1px solid ${currentTheme.border.default}`,
+              borderRadius: '14px',
               color: currentTheme.text.primary,
               fontSize: '14px',
               outline: 'none',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
             }}
           />
           {searchQuery && (
@@ -797,90 +689,77 @@ export const NewEpisodesPage = () => {
               onClick={() => setSearchQuery('')}
               style={{
                 position: 'absolute',
-                right: '12px',
+                right: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'transparent',
+                background: currentTheme.background.surfaceHover,
                 border: 'none',
-                color: currentTheme.text.secondary,
+                color: currentTheme.text.muted,
                 cursor: 'pointer',
-                padding: '4px',
-                fontSize: '14px',
+                padding: '4px 8px',
+                fontSize: '12px',
+                borderRadius: '8px',
+                fontWeight: 600,
               }}
             >
-              ✕
+              Löschen
             </button>
           )}
         </div>
 
-        {/* Filter Toggle */}
-        <HorizontalScrollContainer
-          gap={12}
-          style={{
-            paddingBottom: '8px',
-            position: 'relative',
-          }}
-        >
-          <motion.div
+        {/* Premium Filter Pills */}
+        <HorizontalScrollContainer gap={10} style={{ paddingBottom: '8px' }}>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={() => setShowAllSeries(!showAllSeries)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             style={{
               background: showAllSeries
-                ? `linear-gradient(135deg, ${currentTheme.primary}2D 0%, ${currentTheme.primary}1A 100%)`
-                : `linear-gradient(135deg, ${currentTheme.status.success}2D 0%, ${currentTheme.status.success}1A 100%)`,
+                ? `linear-gradient(135deg, ${currentTheme.primary}25, ${currentTheme.primary}10)`
+                : `linear-gradient(135deg, ${currentTheme.status.success}25, ${currentTheme.status.success}10)`,
               border: showAllSeries
-                ? `1px solid ${currentTheme.primary}4D`
-                : `1px solid ${currentTheme.status.success}4D`,
+                ? `1px solid ${currentTheme.primary}40`
+                : `1px solid ${currentTheme.status.success}40`,
               borderRadius: '12px',
-              padding: '8px 12px',
+              padding: '10px 14px',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
               fontSize: '13px',
               whiteSpace: 'nowrap',
               fontWeight: 600,
               cursor: 'pointer',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+              color: showAllSeries ? currentTheme.primary : currentTheme.status.success,
             }}
           >
             {showAllSeries ? (
-              <>
-                <Visibility style={{ fontSize: '16px' }} /> Alle Serien
-              </>
+              <><Visibility style={{ fontSize: '18px' }} /> Alle Serien</>
             ) : (
-              <>
-                <VisibilityOff style={{ fontSize: '16px' }} /> Nur Watchlist
-              </>
+              <><VisibilityOff style={{ fontSize: '18px' }} /> Nur Watchlist</>
             )}
-          </motion.div>
+          </motion.button>
 
-          {/* Scroll to Today Button */}
-          <motion.div
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={scrollToToday}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}2D 0%, ${currentTheme.primary}1A 100%)`,
-              border: `1px solid ${currentTheme.primary}4D`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              border: 'none',
               borderRadius: '12px',
-              color: currentTheme.primary,
+              color: '#fff',
               cursor: 'pointer',
-              padding: '8px 12px',
+              padding: '10px 14px',
               fontSize: '13px',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              fontWeight: 600,
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+              gap: '8px',
+              fontWeight: 700,
               whiteSpace: 'nowrap',
+              boxShadow: `0 4px 12px ${currentTheme.primary}40`,
             }}
           >
-            <Today style={{ fontSize: '16px' }} />
+            <Today style={{ fontSize: '18px' }} />
             Heute
-          </motion.div>
+          </motion.button>
         </HorizontalScrollContainer>
       </header>
 
@@ -896,32 +775,31 @@ export const NewEpisodesPage = () => {
           overflow: 'auto',
         }}
       >
-        {/* Episodes List with pull effect */}
         <motion.div
-          style={{
-            padding: '20px',
-            position: 'relative',
-            zIndex: 1,
-          }}
-          animate={{
-            y: isPulling || isRefreshing ? pullDistance * 0.9 : 0,
-          }}
-          transition={{
-            y: isPulling ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 40 },
-          }}
+          style={{ padding: '20px', position: 'relative', zIndex: 1 }}
+          animate={{ y: isPulling || isRefreshing ? pullDistance * 0.9 : 0 }}
+          transition={{ y: isPulling ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 40 } }}
         >
           {Object.keys(groupedEpisodes).length === 0 ? (
-            <div
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               style={{
                 textAlign: 'center',
-                padding: '40px 20px',
-                color: 'rgba(255, 255, 255, 0.5)',
+                padding: '60px 20px',
+                background: currentTheme.background.card,
+                borderRadius: '20px',
+                border: `1px solid ${currentTheme.border.default}`,
               }}
             >
-              <NewReleases style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
-              <h3>Keine Episoden</h3>
-              <p>Es gibt aktuell keine Episoden {showAllSeries ? '' : 'in deiner Watchlist'}</p>
-            </div>
+              <NewReleases style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }} />
+              <h3 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
+                Keine Episoden
+              </h3>
+              <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
+                Es gibt aktuell keine Episoden {showAllSeries ? '' : 'in deiner Watchlist'}
+              </p>
+            </motion.div>
           ) : (
             Object.entries(groupedEpisodes).map(([date, seriesGroups]) => {
               const dateObj = new Date(
@@ -946,84 +824,70 @@ export const NewEpisodesPage = () => {
                   data-date={date}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: isPast ? 0.7 : 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  style={{
-                    marginBottom: '28px',
-                  }}
+                  style={{ marginBottom: '28px' }}
                 >
-                  <div
-                    style={{
+                  {/* Premium Date Header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '14px',
+                    padding: '12px 16px',
+                    background: isTodayDate
+                      ? `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`
+                      : isPast
+                        ? currentTheme.background.surface
+                        : currentTheme.background.card,
+                    borderRadius: '16px',
+                    border: isTodayDate
+                      ? `2px solid ${currentTheme.primary}50`
+                      : `1px solid ${currentTheme.border.default}`,
+                    boxShadow: isTodayDate ? `0 4px 15px ${currentTheme.primary}25` : 'none',
+                  }}>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: isTodayDate
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                        : currentTheme.background.surfaceHover,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '12px',
-                      marginBottom: '12px',
-                      padding: '8px 12px',
-                      background: isTodayDate
-                        ? `linear-gradient(135deg, ${currentTheme.primary}2D 0%, ${currentTheme.primary}1A 100%)`
-                        : isPast
-                          ? 'rgba(255, 255, 255, 0.01)'
-                          : 'rgba(255, 255, 255, 0.02)',
-                      borderRadius: '12px',
-                      border: isTodayDate
-                        ? `2px solid ${currentTheme.primary}4D`
-                        : '1px solid rgba(255, 255, 255, 0.05)',
-                      backdropFilter: isTodayDate ? 'blur(10px)' : 'none',
-                      WebkitBackdropFilter: isTodayDate ? 'blur(10px)' : 'none',
-                    }}
-                  >
-                    <CalendarToday
-                      style={{
+                      justifyContent: 'center',
+                    }}>
+                      <CalendarToday style={{
                         fontSize: '18px',
-                        color: isTodayDate
-                          ? currentTheme.primary
-                          : isPast
-                            ? 'rgba(255, 255, 255, 0.4)'
-                            : currentTheme.primary,
-                      }}
-                    />
-                    <h3
-                      style={{
-                        fontSize: '15px',
-                        fontWeight: 600,
-                        margin: 0,
-                        color: isTodayDate
-                          ? currentTheme.primary
-                          : isPast
-                            ? 'rgba(255, 255, 255, 0.6)'
-                            : 'rgba(255, 255, 255, 0.9)',
-                      }}
-                    >
+                        color: isTodayDate ? '#fff' : currentTheme.text.muted,
+                      }} />
+                    </div>
+                    <h3 style={{
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      margin: 0,
+                      color: isTodayDate ? currentTheme.primary : currentTheme.text.primary,
+                    }}>
                       {isTodayDate ? 'Heute' : date}
                     </h3>
-                    <span
-                      style={{
-                        marginLeft: 'auto',
-                        fontSize: '13px',
-                        color: isPast ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.5)',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                      }}
-                    >
-                      {Object.values(seriesGroups).flat().length} Episode
-                      {Object.values(seriesGroups).flat().length !== 1 ? 'n' : ''}
+                    <span style={{
+                      marginLeft: 'auto',
+                      fontSize: '12px',
+                      color: currentTheme.text.muted,
+                      background: currentTheme.background.surface,
+                      padding: '4px 10px',
+                      borderRadius: '10px',
+                      fontWeight: 600,
+                    }}>
+                      {Object.values(seriesGroups).flat().length} Episode{Object.values(seriesGroups).flat().length !== 1 ? 'n' : ''}
                     </span>
                   </div>
 
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
-                    }}
-                  >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <AnimatePresence mode="popLayout">
                       {Object.entries(seriesGroups).map(([seriesId, episodes]) => {
                         const firstEpisode = episodes[0];
                         const isExpanded = isSeriesExpanded(date, Number(seriesId));
                         const allWatched = episodes.every((ep) => isEpisodeWatched(ep));
 
-                        // If only one episode, show it directly without accordion
                         if (episodes.length === 1) {
                           const episode = episodes[0];
                           const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
@@ -1051,11 +915,8 @@ export const NewEpisodesPage = () => {
                                 x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
                                 transition: { duration: 0.3 },
                               }}
-                              style={{
-                                position: 'relative',
-                              }}
+                              style={{ position: 'relative' }}
                             >
-                              {/* Swipe overlay for episode - only enabled for aired episodes */}
                               <motion.div
                                 drag={hasAired && !watched ? 'x' : false}
                                 dragConstraints={{ left: 0, right: 0 }}
@@ -1068,10 +929,7 @@ export const NewEpisodesPage = () => {
                                 }}
                                 onDrag={(_event, info: PanInfo) => {
                                   if (hasAired && !watched) {
-                                    setDragOffsets((prev) => ({
-                                      ...prev,
-                                      [episodeKey]: info.offset.x,
-                                    }));
+                                    setDragOffsets((prev) => ({ ...prev, [episodeKey]: info.offset.x }));
                                   }
                                 }}
                                 onDragEnd={(event, info: PanInfo) => {
@@ -1087,12 +945,7 @@ export const NewEpisodesPage = () => {
                                     return newOffsets;
                                   });
 
-                                  if (
-                                    hasAired &&
-                                    Math.abs(info.offset.x) > 100 &&
-                                    Math.abs(info.velocity.x) > 50 &&
-                                    !watched
-                                  ) {
+                                  if (hasAired && Math.abs(info.offset.x) > 100 && Math.abs(info.velocity.x) > 50 && !watched) {
                                     const direction = info.offset.x > 0 ? 'right' : 'left';
                                     handleEpisodeComplete(episode, direction);
                                   }
@@ -1101,54 +954,35 @@ export const NewEpisodesPage = () => {
                                 style={{
                                   position: 'absolute',
                                   top: 0,
-                                  left: '72px', // Start after the poster
+                                  left: '72px',
                                   right: 0,
                                   bottom: 0,
                                   zIndex: 1,
                                 }}
                               />
 
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  gap: '10px',
-                                  padding: '10px',
-                                  background: !hasAired
-                                    ? isPast
-                                      ? 'rgba(255, 255, 255, 0.01)'
-                                      : 'rgba(255, 255, 255, 0.02)'
-                                    : isCompleting
-                                      ? `linear-gradient(90deg, ${currentTheme.status.success}33 0%, ${currentTheme.status.success}0D 100%)`
-                                      : watched
-                                        ? `${currentTheme.status.success}1A`
-                                        : `rgba(76, 209, 55, ${Math.min(
-                                            (Math.abs(dragOffsets[episodeKey] || 0) / 100) * 0.15,
-                                            0.15
-                                          )})`,
-                                  borderRadius: '12px',
-                                  border: `1px solid ${
-                                    !hasAired
-                                      ? 'rgba(255, 255, 255, 0.05)'
-                                      : isCompleting
-                                        ? `${currentTheme.status.success}66`
-                                        : watched
-                                          ? `${currentTheme.status.success}33`
-                                          : `rgba(76, 209, 55, ${
-                                              0.05 +
-                                              Math.min(
-                                                (Math.abs(dragOffsets[episodeKey] || 0) / 100) *
-                                                  0.25,
-                                                0.25
-                                              )
-                                            })`
-                                  }`,
-                                  transition: 'all 0.3s ease',
-                                  position: 'relative',
-                                  overflow: 'hidden',
-                                  opacity: isPast && !hasAired ? 0.5 : 1,
-                                }}
-                              >
-                                {/* Swipe Indicator Background */}
+                              <div style={{
+                                display: 'flex',
+                                gap: '12px',
+                                padding: '14px',
+                                background: isCompleting
+                                  ? `linear-gradient(90deg, ${currentTheme.status.success}30, ${currentTheme.status.success}10)`
+                                  : watched
+                                    ? `${currentTheme.status.success}15`
+                                    : currentTheme.background.card,
+                                borderRadius: '16px',
+                                border: `1px solid ${
+                                  isCompleting
+                                    ? currentTheme.status.success
+                                    : watched
+                                      ? `${currentTheme.status.success}40`
+                                      : currentTheme.border.default
+                                }`,
+                                transition: 'all 0.3s ease',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                opacity: isPast && !hasAired ? 0.5 : 1,
+                              }}>
                                 <motion.div
                                   style={{
                                     position: 'absolute',
@@ -1156,124 +990,85 @@ export const NewEpisodesPage = () => {
                                     left: 0,
                                     right: 0,
                                     bottom: 0,
-                                    background: `linear-gradient(90deg, transparent, ${currentTheme.status.success}33)`,
+                                    background: `linear-gradient(90deg, transparent, ${currentTheme.status.success}30)`,
                                     opacity: 0,
                                   }}
-                                  animate={{
-                                    opacity: isSwiping ? 1 : 0,
-                                  }}
+                                  animate={{ opacity: isSwiping ? 1 : 0 }}
                                 />
+
                                 <img
                                   src={getImageUrl(episode.seriesPoster)}
                                   alt={episode.seriesName}
                                   onClick={() => {
-                                    // Save current scroll position before navigating
-                                    // The app uses a scrollable container (.mobile-content) not window scroll
-                                    const scrollContainer =
-                                      document.querySelector('.mobile-content');
+                                    const scrollContainer = document.querySelector('.mobile-content');
                                     const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
-                                    // Always save position, even if it's 0
-                                    sessionStorage.setItem(
-                                      'newEpisodesScrollPosition',
-                                      scrollY.toString()
-                                    );
-                                    sessionStorage.setItem('comingFromDetail', 'false'); // Will be set to true by BackButton
+                                    sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
+                                    sessionStorage.setItem('comingFromDetail', 'false');
                                     navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
                                   }}
                                   style={{
-                                    width: '48px',
-                                    height: '72px',
+                                    width: '52px',
+                                    height: '78px',
                                     objectFit: 'cover',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     cursor: 'pointer',
                                     position: 'relative',
                                     zIndex: 2,
-                                    opacity: isPast ? 0.8 : 1,
+                                    boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
                                   }}
                                 />
 
-                                <div
-                                  style={{
-                                    flex: 1,
-                                    pointerEvents: 'none',
-                                    position: 'relative',
-                                    zIndex: 2,
-                                  }}
-                                >
-                                  <h4
-                                    style={{
-                                      fontSize: '14px',
-                                      fontWeight: 600,
-                                      margin: '0 0 4px 0',
-                                      color: !hasAired
-                                        ? isPast
-                                          ? 'rgba(255, 255, 255, 0.4)'
-                                          : 'rgba(255, 255, 255, 0.5)'
-                                        : watched
-                                          ? currentTheme.status.success
-                                          : isPast
-                                            ? 'rgba(255, 255, 255, 0.8)'
-                                            : 'white',
-                                    }}
-                                  >
+                                <div style={{ flex: 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}>
+                                  <h4 style={{
+                                    fontSize: '15px',
+                                    fontWeight: 700,
+                                    margin: '0 0 6px 0',
+                                    color: watched ? currentTheme.status.success : currentTheme.text.primary,
+                                  }}>
                                     {episode.seriesName}
                                   </h4>
-
-                                  <p
-                                    style={{
-                                      fontSize: '13px',
-                                      margin: '0 0 4px 0',
-                                      color:
-                                        !hasAired || isPast
-                                          ? 'rgba(255, 255, 255, 0.4)'
-                                          : 'rgba(255, 255, 255, 0.6)',
-                                    }}
-                                  >
-                                    S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
-                                    {episode.episodeName}
+                                  <p style={{
+                                    fontSize: '13px',
+                                    margin: '0 0 4px 0',
+                                    color: currentTheme.text.secondary,
+                                  }}>
+                                    S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
                                   </p>
-
-                                  <p
-                                    style={{
-                                      fontSize: '12px',
-                                      margin: 0,
-                                      color: isPast
-                                        ? 'rgba(255, 255, 255, 0.3)'
-                                        : 'rgba(255, 255, 255, 0.4)',
-                                    }}
-                                  >
+                                  <p style={{
+                                    fontSize: '12px',
+                                    margin: 0,
+                                    color: currentTheme.text.muted,
+                                    fontWeight: 500,
+                                  }}>
                                     {getRelativeDateLabel(episode)}
                                   </p>
                                 </div>
 
                                 <AnimatePresence mode="wait">
                                   {!hasAired ? (
-                                    <Timer
-                                      style={{
-                                        fontSize: '20px',
-                                        color: isPast
-                                          ? 'rgba(255, 255, 255, 0.2)'
-                                          : 'rgba(255, 255, 255, 0.3)',
-                                      }}
-                                    />
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      padding: '8px',
+                                      background: currentTheme.background.surfaceHover,
+                                      borderRadius: '10px',
+                                    }}>
+                                      <Timer style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+                                    </div>
                                   ) : isCompleting ? (
                                     <motion.div
                                       initial={{ scale: 0, rotate: -180 }}
                                       animate={{ scale: 1, rotate: 0 }}
-                                      exit={{ scale: 0, rotate: 180 }}
                                       style={{
                                         padding: '8px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
+                                        background: `${currentTheme.status.success}20`,
+                                        borderRadius: '10px',
                                       }}
                                     >
-                                      <Check
-                                        style={{
-                                          fontSize: '24px',
-                                          color: currentTheme.status.success,
-                                        }}
-                                      />
+                                      <Check style={{ fontSize: '24px', color: currentTheme.status.success }} />
                                     </motion.div>
                                   ) : watched ? (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1282,38 +1077,31 @@ export const NewEpisodesPage = () => {
                                         seasonNumber={episode.seasonNumber}
                                         episodeNumber={episode.episodeNumber}
                                       />
-                                      <CheckCircle
-                                        style={{
-                                          fontSize: '20px',
-                                          color: currentTheme.status.success,
-                                          opacity: isPast ? 0.7 : 1,
-                                        }}
-                                      />
+                                      <div style={{
+                                        padding: '8px',
+                                        background: `${currentTheme.status.success}20`,
+                                        borderRadius: '10px',
+                                      }}>
+                                        <CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
+                                      </div>
                                     </div>
                                   ) : (
                                     <motion.div
                                       animate={{ x: isSwiping ? 10 : 0 }}
-                                      style={{
-                                        padding: '8px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '8px',
-                                      }}
+                                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                                     >
                                       <EpisodeDiscussionButton
                                         seriesId={episode.seriesId}
                                         seasonNumber={episode.seasonNumber}
                                         episodeNumber={episode.episodeNumber}
                                       />
-                                      <PlayCircle
-                                        style={{
-                                          fontSize: '20px',
-                                          color: isPast
-                                            ? 'rgba(255, 255, 255, 0.4)'
-                                            : currentTheme.status.success,
-                                        }}
-                                      />
+                                      <div style={{
+                                        padding: '8px',
+                                        background: `${currentTheme.status.success}20`,
+                                        borderRadius: '10px',
+                                      }}>
+                                        <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
+                                      </div>
                                     </motion.div>
                                   )}
                                 </AnimatePresence>
@@ -1322,7 +1110,6 @@ export const NewEpisodesPage = () => {
                           );
                         }
 
-                        // Multiple episodes - show accordion
                         return (
                           <motion.div
                             key={seriesId}
@@ -1330,30 +1117,24 @@ export const NewEpisodesPage = () => {
                             animate={{ opacity: 1, y: 0 }}
                             style={{
                               background: allWatched
-                                ? `${currentTheme.status.success}0D`
-                                : isPast
-                                  ? 'rgba(255, 255, 255, 0.01)'
-                                  : 'rgba(255, 255, 255, 0.02)',
-                              borderRadius: '12px',
+                                ? `${currentTheme.status.success}10`
+                                : currentTheme.background.card,
+                              borderRadius: '16px',
                               border: allWatched
-                                ? `1px solid ${currentTheme.status.success}33`
-                                : '1px solid rgba(255, 255, 255, 0.05)',
+                                ? `1px solid ${currentTheme.status.success}40`
+                                : `1px solid ${currentTheme.border.default}`,
                               overflow: 'hidden',
-                              transition: 'all 0.3s ease',
                               opacity: isPast ? 0.8 : 1,
                             }}
                           >
-                            {/* Accordion Header */}
                             <div
                               onClick={() => toggleSeriesExpanded(date, Number(seriesId))}
                               style={{
                                 display: 'flex',
                                 gap: '12px',
-                                padding: '12px',
+                                padding: '14px',
                                 cursor: 'pointer',
-                                background: isPast
-                                  ? 'rgba(255, 255, 255, 0.01)'
-                                  : 'rgba(255, 255, 255, 0.02)',
+                                background: currentTheme.background.surface,
                               }}
                             >
                               <img
@@ -1361,190 +1142,152 @@ export const NewEpisodesPage = () => {
                                 alt={firstEpisode.seriesName}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // Save current scroll position before navigating
-                                  // The app uses a scrollable container (.mobile-content) not window scroll
                                   const scrollContainer = document.querySelector('.mobile-content');
                                   const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
-                                  // Always save position, even if it's 0
-                                  sessionStorage.setItem(
-                                    'newEpisodesScrollPosition',
-                                    scrollY.toString()
-                                  );
-                                  sessionStorage.setItem('comingFromDetail', 'false'); // Will be set to true by BackButton
+                                  sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
+                                  sessionStorage.setItem('comingFromDetail', 'false');
                                   navigate(`/series/${firstEpisode.seriesId}`);
                                 }}
                                 style={{
                                   width: '60px',
                                   height: '90px',
                                   objectFit: 'cover',
-                                  borderRadius: '8px',
+                                  borderRadius: '10px',
                                   cursor: 'pointer',
-                                  opacity: isPast ? 0.8 : 1,
+                                  boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
                                 }}
                               />
 
                               <div style={{ flex: 1 }}>
-                                <h4
-                                  style={{
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    margin: '0 0 4px 0',
-                                    color: allWatched
-                                      ? currentTheme.status.success
-                                      : isPast
-                                        ? 'rgba(255, 255, 255, 0.7)'
-                                        : 'white',
-                                  }}
-                                >
+                                <h4 style={{
+                                  fontSize: '15px',
+                                  fontWeight: 700,
+                                  margin: '0 0 6px 0',
+                                  color: allWatched ? currentTheme.status.success : currentTheme.text.primary,
+                                }}>
                                   {firstEpisode.seriesName}
                                 </h4>
-
-                                <p
-                                  style={{
-                                    fontSize: '13px',
-                                    margin: '0 0 4px 0',
-                                    color: isPast
-                                      ? 'rgba(255, 255, 255, 0.5)'
-                                      : 'rgba(255, 255, 255, 0.6)',
-                                  }}
-                                >
+                                <p style={{
+                                  fontSize: '13px',
+                                  margin: '0 0 4px 0',
+                                  color: currentTheme.text.secondary,
+                                  fontWeight: 500,
+                                }}>
                                   {episodes.length} Episoden
                                 </p>
-
-                                <p
-                                  style={{
-                                    fontSize: '12px',
-                                    margin: 0,
-                                    color: isPast
-                                      ? 'rgba(255, 255, 255, 0.3)'
-                                      : 'rgba(255, 255, 255, 0.4)',
-                                  }}
-                                >
-                                  {episodes.filter((ep) => isEpisodeWatched(ep)).length} von{' '}
-                                  {episodes.length} gesehen
+                                <p style={{
+                                  fontSize: '12px',
+                                  margin: 0,
+                                  color: currentTheme.text.muted,
+                                }}>
+                                  {episodes.filter((ep) => isEpisodeWatched(ep)).length} von {episodes.length} gesehen
                                 </p>
                               </div>
 
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  color: isPast
-                                    ? 'rgba(255, 255, 255, 0.4)'
-                                    : 'rgba(255, 255, 255, 0.6)',
-                                }}
-                              >
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                color: currentTheme.text.muted,
+                              }}>
                                 {isExpanded ? <ExpandLess /> : <ExpandMore />}
                               </div>
                             </div>
 
-                            {/* Expanded Episodes */}
-                            {isExpanded && (
-                              <div
-                                style={{
-                                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                                  padding: '8px',
-                                }}
-                              >
-                                {episodes.map((episode, idx) => {
-                                  const watched = isEpisodeWatched(episode);
-                                  const hasAired = hasEpisodeAired(episode);
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  style={{
+                                    borderTop: `1px solid ${currentTheme.border.default}`,
+                                    padding: '10px',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  {episodes.map((episode, idx) => {
+                                    const watched = isEpisodeWatched(episode);
+                                    const hasAired = hasEpisodeAired(episode);
 
-                                  return (
-                                    <div
-                                      key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
-                                      style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '12px',
-                                        padding: '8px',
-                                        borderRadius: '8px',
-                                        background:
-                                          idx % 2 === 0
-                                            ? 'transparent'
-                                            : 'rgba(255, 255, 255, 0.01)',
-                                      }}
-                                    >
-                                      <div style={{ flex: 1 }}>
-                                        <p
-                                          style={{
+                                    return (
+                                      <div
+                                        key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '12px',
+                                          padding: '10px',
+                                          borderRadius: '10px',
+                                          background: idx % 2 === 0 ? 'transparent' : currentTheme.background.surfaceHover,
+                                        }}
+                                      >
+                                        <div style={{ flex: 1 }}>
+                                          <p style={{
                                             fontSize: '13px',
                                             margin: 0,
-                                            color: !hasAired
-                                              ? isPast
-                                                ? 'rgba(255, 255, 255, 0.3)'
-                                                : 'rgba(255, 255, 255, 0.5)'
-                                              : watched
-                                                ? currentTheme.status.success
-                                                : isPast
-                                                  ? 'rgba(255, 255, 255, 0.6)'
-                                                  : 'rgba(255, 255, 255, 0.8)',
-                                          }}
-                                        >
-                                          S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
-                                          {episode.episodeName}
-                                        </p>
-                                      </div>
+                                            color: watched ? currentTheme.status.success : currentTheme.text.primary,
+                                            fontWeight: 500,
+                                          }}>
+                                            S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
+                                          </p>
+                                        </div>
 
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        {hasAired && (
-                                          <EpisodeDiscussionButton
-                                            seriesId={episode.seriesId}
-                                            seasonNumber={episode.seasonNumber}
-                                            episodeNumber={episode.episodeNumber}
-                                          />
-                                        )}
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (hasAired) {
-                                              handleMarkWatched(episode);
-                                            }
-                                          }}
-                                          disabled={watched || !hasAired}
-                                          style={{
-                                            background: !hasAired
-                                              ? 'transparent'
-                                              : watched
-                                                ? 'transparent'
-                                                : `${currentTheme.status.success}1A`,
-                                            border: !hasAired
-                                              ? '1px solid rgba(255, 255, 255, 0.1)'
-                                              : watched
-                                                ? 'none'
-                                                : `1px solid ${currentTheme.status.success}33`,
-                                            borderRadius: '8px',
-                                            padding: '6px',
-                                            color: !hasAired
-                                              ? isPast
-                                                ? 'rgba(255, 255, 255, 0.2)'
-                                                : 'rgba(255, 255, 255, 0.3)'
-                                              : watched
-                                                ? currentTheme.status.success
-                                                : isPast
-                                                  ? `${currentTheme.status.success}99`
-                                                  : currentTheme.status.success,
-                                            cursor: !hasAired || watched ? 'default' : 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            opacity: isPast && !hasAired ? 0.5 : 1,
-                                          }}
-                                        >
-                                          {!hasAired ? (
-                                            <Timer style={{ fontSize: '18px' }} />
-                                          ) : watched ? (
-                                            <CheckCircle style={{ fontSize: '18px' }} />
-                                          ) : (
-                                            <PlayCircle style={{ fontSize: '18px' }} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                          {hasAired && (
+                                            <EpisodeDiscussionButton
+                                              seriesId={episode.seriesId}
+                                              seasonNumber={episode.seasonNumber}
+                                              episodeNumber={episode.episodeNumber}
+                                            />
                                           )}
-                                        </button>
+                                          <motion.button
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (hasAired) handleMarkWatched(episode);
+                                            }}
+                                            disabled={watched || !hasAired}
+                                            style={{
+                                              background: !hasAired
+                                                ? currentTheme.background.surfaceHover
+                                                : watched
+                                                  ? `${currentTheme.status.success}20`
+                                                  : `${currentTheme.status.success}15`,
+                                              border: `1px solid ${
+                                                !hasAired
+                                                  ? currentTheme.border.default
+                                                  : watched
+                                                    ? currentTheme.status.success
+                                                    : `${currentTheme.status.success}40`
+                                              }`,
+                                              borderRadius: '10px',
+                                              padding: '8px',
+                                              color: !hasAired
+                                                ? currentTheme.text.muted
+                                                : watched
+                                                  ? currentTheme.status.success
+                                                  : currentTheme.status.success,
+                                              cursor: !hasAired || watched ? 'default' : 'pointer',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                            }}
+                                          >
+                                            {!hasAired ? (
+                                              <Timer style={{ fontSize: '18px' }} />
+                                            ) : watched ? (
+                                              <CheckCircle style={{ fontSize: '18px' }} />
+                                            ) : (
+                                              <PlayCircle style={{ fontSize: '18px' }} />
+                                            )}
+                                          </motion.button>
+                                        </div>
                                       </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
+                                    );
+                                  })}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </motion.div>
                         );
                       })}
@@ -1555,57 +1298,68 @@ export const NewEpisodesPage = () => {
             })
           )}
 
-          {/* Loading indicator at bottom */}
           {loadingFuture && (
-            <div
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               style={{
-                textAlign: 'center',
-                padding: '20px',
-                color: currentTheme.text.secondary,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '24px',
+                color: currentTheme.text.muted,
               }}
             >
-              ⏳ Lade zukünftige Episoden...
-            </div>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  border: `2px solid ${currentTheme.border.default}`,
+                  borderTopColor: currentTheme.primary,
+                }}
+              />
+              <span style={{ fontSize: '14px', fontWeight: 500 }}>Lade zukünftige Episoden...</span>
+            </motion.div>
           )}
+
+          <div style={{ height: '100px' }} />
         </motion.div>
       </div>
 
-      {/* Scroll to Today Button - only visible when scrolled */}
-      {showScrollButton && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          onClick={scrollToToday}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            background: `${currentTheme.background}E6`,
-            border: `1px solid ${currentTheme.primary}33`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
-            zIndex: 30,
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-          }}
-        >
-          <Today
+      {/* Premium Scroll to Today Button */}
+      <AnimatePresence>
+        {showScrollButton && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={scrollToToday}
             style={{
-              fontSize: '20px',
-              color: currentTheme.primary,
+              position: 'fixed',
+              bottom: '24px',
+              right: '24px',
+              width: '52px',
+              height: '52px',
+              borderRadius: '16px',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: `0 6px 20px ${currentTheme.primary}50`,
+              zIndex: 30,
             }}
-          />
-        </motion.div>
-      )}
+          >
+            <Today style={{ fontSize: '24px', color: '#fff' }} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

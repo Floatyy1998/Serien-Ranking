@@ -536,7 +536,36 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
-            <Badge badgeContent={unreadActivitiesCount + notificationUnreadCount} color="error">
+            {(unreadActivitiesCount + notificationUnreadCount) > 0 ? (
+              <Badge
+                badgeContent={unreadActivitiesCount + notificationUnreadCount}
+                color="error"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
+                  },
+                }}
+              >
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => navigate('/activity')}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: `${currentTheme.primary}1A`,
+                    border: `1px solid ${currentTheme.primary}33`,
+                    color: currentTheme.text.primary,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Notifications style={{ fontSize: '20px' }} />
+                </motion.button>
+              </Badge>
+            ) : (
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => navigate('/activity')}
@@ -555,7 +584,7 @@ export const HomePage: React.FC = () => {
               >
                 <Notifications style={{ fontSize: '20px' }} />
               </motion.button>
-            </Badge>
+            )}
 
             <motion.button
               whileTap={{ scale: 0.9 }}

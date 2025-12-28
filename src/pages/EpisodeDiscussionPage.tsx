@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -66,14 +66,10 @@ export const EpisodeDiscussionPage = () => {
   const [tvdbSeasons, setTvdbSeasons] = useState<TVDBSeason[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Find the series locally
   const series = seriesList.find((s: Series) => s.id === Number(seriesId));
-
-  // Find the episode in local data
   const localSeason = series?.seasons?.find((s) => s.seasonNumber === Number(seasonNumber) - 1);
   const localEpisode = localSeason?.episodes?.find((_, idx) => idx === Number(episodeNumber) - 1);
 
-  // Fetch episode details from TVDB and TMDB
   useEffect(() => {
     const fetchAllDetails = async () => {
       const apiKey = import.meta.env.VITE_API_TMDB;
@@ -85,26 +81,17 @@ export const EpisodeDiscussionPage = () => {
       try {
         setLoading(true);
 
-        // Fetch TVDB data (primary source for episode info)
         const fetchTVDBData = async () => {
           try {
             const tvdbId = await getTVDBIdFromTMDB(Number(seriesId));
-            console.log('TVDB ID from TMDB:', tvdbId);
             if (tvdbId) {
               const seasons = await getTVDBSeasons(tvdbId);
-              console.log('TVDB Seasons loaded:', seasons.length, 'seasons');
               setTvdbSeasons(seasons);
 
-              // Find the specific episode
               const targetSeasonNum = Number(seasonNumber);
               const targetEpisodeNum = Number(episodeNumber);
-              console.log('Looking for Season', targetSeasonNum, 'Episode', targetEpisodeNum);
-
               const season = seasons.find(s => s.seasonNumber === targetSeasonNum);
-              console.log('Found season:', season ? `Season ${season.seasonNumber} with ${season.episodes.length} episodes` : 'NOT FOUND');
-
               const episode = season?.episodes.find(e => e.number === targetEpisodeNum);
-              console.log('Found episode:', episode ? `"${episode.name}"` : 'NOT FOUND');
 
               if (episode) {
                 setTvdbEpisode(episode);
@@ -115,7 +102,6 @@ export const EpisodeDiscussionPage = () => {
           }
         };
 
-        // Fetch TMDB data (for images, ratings, crew, etc.)
         const fetchTMDBData = async () => {
           if (!apiKey) return;
 
@@ -155,7 +141,6 @@ export const EpisodeDiscussionPage = () => {
           }
         };
 
-        // Fetch both in parallel
         await Promise.all([fetchTVDBData(), fetchTMDBData()]);
       } catch (error) {
         console.error('Error fetching episode details:', error);
@@ -167,7 +152,6 @@ export const EpisodeDiscussionPage = () => {
     fetchAllDetails();
   }, [seriesId, seasonNumber, episodeNumber]);
 
-  // Image URLs
   const getStillUrl = (path: string | null, size: string = 'w780'): string => {
     if (!path) return '';
     return `https://image.tmdb.org/t/p/${size}${path}`;
@@ -178,25 +162,21 @@ export const EpisodeDiscussionPage = () => {
     return `https://image.tmdb.org/t/p/w185${path}`;
   };
 
-  // Navigation - prioritize TVDB data for episode count
   const currentEpNum = Number(episodeNumber);
   const currentSeasonNum = Number(seasonNumber);
   const tvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum);
   const totalEpisodes = tvdbSeason?.episodes?.length || localSeason?.episodes?.length || seasonDetails?.episodes?.length || 0;
 
-  // Check for previous/next seasons for cross-season navigation
   const prevTvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum - 1);
   const nextTvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum + 1);
-  const prevLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum - 2); // -2 because seasonNumber is 0-indexed in local data
-  const nextLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum); // current seasonNumber in local data is next season
+  const prevLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum - 2);
+  const nextLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum);
 
-  // Previous episode: either previous in current season or last of previous season
   const hasPrevInSeason = currentEpNum > 1;
   const prevSeasonEpisodeCount = prevTvdbSeason?.episodes?.length || prevLocalSeason?.episodes?.length || 0;
   const hasPrevSeason = currentSeasonNum > 1 && prevSeasonEpisodeCount > 0;
   const hasPrevEpisode = hasPrevInSeason || hasPrevSeason;
 
-  // Next episode: either next in current season or first of next season
   const hasNextInSeason = currentEpNum < totalEpisodes;
   const nextSeasonExists = nextTvdbSeason?.episodes?.length || nextLocalSeason?.episodes?.length || 0;
   const hasNextSeason = nextSeasonExists > 0;
@@ -204,25 +184,20 @@ export const EpisodeDiscussionPage = () => {
 
   const goToPrevEpisode = () => {
     if (hasPrevInSeason) {
-      // Previous episode in same season
       navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${currentEpNum - 1}`, { replace: true });
     } else if (hasPrevSeason) {
-      // Last episode of previous season
       navigate(`/episode/${seriesId}/s/${currentSeasonNum - 1}/e/${prevSeasonEpisodeCount}`, { replace: true });
     }
   };
 
   const goToNextEpisode = () => {
     if (hasNextInSeason) {
-      // Next episode in same season
       navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${currentEpNum + 1}`, { replace: true });
     } else if (hasNextSeason) {
-      // First episode of next season
       navigate(`/episode/${seriesId}/s/${currentSeasonNum + 1}/e/1`, { replace: true });
     }
   };
 
-  // Toggle watched status
   const handleToggleWatched = async () => {
     if (!user?.uid || !series || !localSeason || !localEpisode) return;
 
@@ -237,11 +212,9 @@ export const EpisodeDiscussionPage = () => {
       const updatedEpisodes = localSeason.episodes!.map((ep, idx) => {
         if (idx === episodeIndex) {
           if (isCurrentlyWatched) {
-            // Unwatch
             const { watchCount, firstWatchedAt, lastWatchedAt, ...rest } = ep as any;
             return { ...rest, watched: false };
           } else {
-            // Watch
             return {
               ...ep,
               watched: true,
@@ -263,7 +236,6 @@ export const EpisodeDiscussionPage = () => {
 
       await firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`).set(updatedSeasons);
 
-      // 🎁 Wrapped 2026: Episode-Watch loggen (nur wenn als gesehen markiert)
       if (!isCurrentlyWatched) {
         WatchActivityService.logEpisodeWatch(
           user.uid,
@@ -274,8 +246,8 @@ export const EpisodeDiscussionPage = () => {
           Number(episodeNumber),
           localEpisode.name,
           series.episodeRuntime || 45,
-          false, // isRewatch
-          1, // watchCount
+          false,
+          1,
           series.genre?.genres,
           series.provider?.provider?.map(p => p.name)
         );
@@ -295,26 +267,41 @@ export const EpisodeDiscussionPage = () => {
           alignItems: 'center',
           minHeight: '100vh',
           background: currentTheme.background.default,
-          gap: '16px',
+          gap: '20px',
+          position: 'relative',
         }}
       >
+        {/* Decorative background */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, #8b5cf615 0%, transparent 50%)`,
+          pointerEvents: 'none',
+        }} />
+
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
           style={{
-            width: '40px',
-            height: '40px',
+            width: '50px',
+            height: '50px',
             border: `3px solid ${currentTheme.border.default}`,
             borderTopColor: currentTheme.primary,
+            borderRightColor: '#8b5cf6',
             borderRadius: '50%',
           }}
         />
-        <p style={{ color: currentTheme.text.muted }}>Lade Episodendetails...</p>
+        <p style={{ color: currentTheme.text.muted, fontSize: '15px', fontWeight: 500 }}>
+          Lade Episodendetails...
+        </p>
       </div>
     );
   }
 
-  // Show "not found" only if we have no local series AND no TVDB/TMDB data at all
   if (!series && !tvdbEpisode && !tmdbDetails && !seriesInfo) {
     return (
       <div
@@ -326,45 +313,76 @@ export const EpisodeDiscussionPage = () => {
           minHeight: '100vh',
           padding: '20px',
           background: currentTheme.background.default,
+          position: 'relative',
         }}
       >
-        <Movie style={{ fontSize: '64px', color: currentTheme.text.muted, marginBottom: '16px' }} />
-        <h2 style={{ color: currentTheme.text.primary, marginBottom: '8px' }}>Episode nicht gefunden</h2>
-        <p style={{ color: currentTheme.text.muted, marginBottom: '24px' }}>
-          Diese Episode konnte nicht geladen werden.
-        </p>
-        <button
-          onClick={() => navigate(-1)}
+        {/* Decorative background */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(ellipse at 50% 30%, ${currentTheme.primary}10 0%, transparent 50%)`,
+          pointerEvents: 'none',
+        }} />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           style={{
-            padding: '12px 24px',
-            background: currentTheme.primary,
-            border: 'none',
-            borderRadius: '12px',
-            color: '#fff',
-            cursor: 'pointer',
-            fontWeight: 600,
+            textAlign: 'center',
+            padding: '40px',
+            background: currentTheme.background.card,
+            borderRadius: '24px',
+            border: `1px solid ${currentTheme.border.default}`,
           }}
         >
-          Zurück
-        </button>
+          <Movie style={{ fontSize: '72px', color: currentTheme.text.muted, marginBottom: '20px' }} />
+          <h2 style={{
+            color: currentTheme.text.primary,
+            marginBottom: '12px',
+            fontSize: '22px',
+            fontWeight: 800,
+          }}>
+            Episode nicht gefunden
+          </h2>
+          <p style={{ color: currentTheme.text.muted, marginBottom: '28px', fontSize: '15px' }}>
+            Diese Episode konnte nicht geladen werden.
+          </p>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(-1)}
+            style={{
+              padding: '14px 32px',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              border: 'none',
+              borderRadius: '14px',
+              color: '#fff',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: '15px',
+              boxShadow: `0 4px 15px ${currentTheme.primary}40`,
+            }}
+          >
+            Zurück
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
-  // Prefer TVDB data over local/TMDB data
   const episodeName = tvdbEpisode?.name || localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
   const episodeOverview = tvdbEpisode?.overview || tmdbDetails?.overview || '';
   const episodeAirDate = tvdbEpisode?.aired || localEpisode?.air_date || localEpisode?.airDate || localEpisode?.firstAired || tmdbDetails?.air_date;
   const episodeRuntime = tvdbEpisode?.runtime || tmdbDetails?.runtime;
-  const episodeRating = tmdbDetails?.vote_average; // TMDB only
-  const stillPath = tmdbDetails?.still_path; // TMDB only (TVDB doesn't have episode images in free tier)
+  const episodeRating = tmdbDetails?.vote_average;
+  const stillPath = tmdbDetails?.still_path;
   const guestStars = tmdbDetails?.guest_stars || [];
   const directors = tmdbDetails?.crew?.filter((c) => c.job === 'Director') || [];
   const writers = tmdbDetails?.crew?.filter((c) => c.job === 'Writer' || c.job === 'Screenplay') || [];
   const seriesTitle = series?.title || seriesInfo?.name || 'Serie';
 
-  // Get next/prev episode info from TVDB (primary) or TMDB (fallback)
-  // For previous episode: check current season first, then previous season's last episode
   const prevTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum - 1);
   const prevTmdbEpisodeInSeason = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum - 1);
   const lastEpisodeOfPrevSeason = prevTvdbSeason?.episodes?.[prevTvdbSeason.episodes.length - 1];
@@ -376,7 +394,6 @@ export const EpisodeDiscussionPage = () => {
     ? (prevEpisode?.name || `Episode ${currentEpNum - 1}`)
     : (lastEpisodeOfPrevSeason ? `S${currentSeasonNum - 1} E${prevSeasonEpisodeCount}` : '');
 
-  // For next episode: check current season first, then next season's first episode
   const nextTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum + 1);
   const nextTmdbEpisodeInSeason = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum + 1);
   const firstEpisodeOfNextSeason = nextTvdbSeason?.episodes?.find((e) => e.number === 1);
@@ -389,13 +406,18 @@ export const EpisodeDiscussionPage = () => {
     : (firstEpisodeOfNextSeason ? `S${currentSeasonNum + 1} E1` : '');
 
   return (
-    <div style={{ background: currentTheme.background.default, minHeight: '100vh', paddingBottom: '40px' }}>
+    <div style={{
+      background: currentTheme.background.default,
+      minHeight: '100vh',
+      paddingBottom: '40px',
+      position: 'relative',
+    }}>
       {/* Hero Section */}
       <div
         style={{
           position: 'relative',
           width: '100%',
-          height: '320px',
+          height: '340px',
           overflow: 'hidden',
         }}
       >
@@ -427,17 +449,22 @@ export const EpisodeDiscussionPage = () => {
             style={{
               width: '100%',
               height: '100%',
-              background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.status.info} 100%)`,
+              background: `linear-gradient(135deg, ${currentTheme.primary} 0%, #8b5cf6 100%)`,
             }}
           />
         )}
 
-        {/* Gradient Overlays */}
+        {/* Premium Gradient Overlays */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.8) 100%)',
+            background: `linear-gradient(to bottom,
+              rgba(0,0,0,0.4) 0%,
+              transparent 25%,
+              transparent 45%,
+              ${currentTheme.background.default}dd 85%,
+              ${currentTheme.background.default} 100%)`,
           }}
         />
 
@@ -453,9 +480,14 @@ export const EpisodeDiscussionPage = () => {
             alignItems: 'center',
           }}
         >
-          <BackButton style={{ backdropFilter: 'blur(10px)', background: 'rgba(0,0,0,0.4)' }} />
+          <BackButton
+            style={{
+              backdropFilter: 'blur(20px)',
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(20,20,40,0.5))',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          />
 
-          {/* Series Link Button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate(`/series/${seriesId}`)}
@@ -463,11 +495,11 @@ export const EpisodeDiscussionPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '8px 16px',
-              background: 'rgba(0,0,0,0.4)',
-              backdropFilter: 'blur(10px)',
-              border: 'none',
-              borderRadius: '20px',
+              padding: '10px 18px',
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(20,20,40,0.5))',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '14px',
               color: '#fff',
               cursor: 'pointer',
               fontSize: '13px',
@@ -486,10 +518,10 @@ export const EpisodeDiscussionPage = () => {
             bottom: 0,
             left: 0,
             right: 0,
-            padding: '20px',
+            padding: '24px 20px',
           }}
         >
-          {/* Series Title */}
+          {/* Series Title Badge */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -498,19 +530,20 @@ export const EpisodeDiscussionPage = () => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '6px 12px',
-              background: 'rgba(255,255,255,0.15)',
+              padding: '8px 14px',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))',
               backdropFilter: 'blur(10px)',
-              borderRadius: '20px',
-              marginBottom: '12px',
+              borderRadius: '12px',
+              marginBottom: '14px',
               cursor: 'pointer',
+              border: '1px solid rgba(255,255,255,0.1)',
             }}
           >
-            <Tv style={{ fontSize: '14px', color: '#fff' }} />
-            <span style={{ fontSize: '13px', color: '#fff', fontWeight: 500 }}>{seriesTitle}</span>
+            <Tv style={{ fontSize: '15px', color: '#fff' }} />
+            <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>{seriesTitle}</span>
           </motion.div>
 
-          {/* Season & Episode */}
+          {/* Season & Episode Badges */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -518,55 +551,57 @@ export const EpisodeDiscussionPage = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              marginBottom: '8px',
+              gap: '10px',
+              marginBottom: '12px',
+              flexWrap: 'wrap',
             }}
           >
             <span
               style={{
-                padding: '4px 10px',
-                background: currentTheme.primary,
-                borderRadius: '6px',
-                fontSize: '12px',
+                padding: '6px 14px',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                borderRadius: '10px',
+                fontSize: '13px',
                 fontWeight: 700,
                 color: '#fff',
+                boxShadow: `0 4px 12px ${currentTheme.primary}50`,
               }}
             >
               S{seasonNumber} E{episodeNumber}
             </span>
-            {episodeRating !== undefined && episodeRating > 0 ? (
+            {episodeRating !== undefined && episodeRating > 0 && (
               <span
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                  padding: '4px 10px',
-                  background: 'rgba(255,215,0,0.2)',
-                  borderRadius: '6px',
-                  fontSize: '12px',
+                  padding: '6px 12px',
+                  background: 'linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,193,7,0.15))',
+                  borderRadius: '10px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   color: '#ffd700',
                 }}
               >
-                <Star style={{ fontSize: '14px' }} />
+                <Star style={{ fontSize: '15px' }} />
                 {episodeRating.toFixed(1)}
               </span>
-            ) : null}
+            )}
             {localEpisode?.watched && (
               <span
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                  padding: '4px 10px',
-                  background: 'rgba(76,175,80,0.2)',
-                  borderRadius: '6px',
-                  fontSize: '12px',
+                  padding: '6px 12px',
+                  background: `linear-gradient(135deg, ${currentTheme.status.success}30, ${currentTheme.status.success}15)`,
+                  borderRadius: '10px',
+                  fontSize: '13px',
                   fontWeight: 600,
-                  color: '#4caf50',
+                  color: currentTheme.status.success,
                 }}
               >
-                <Check style={{ fontSize: '14px' }} />
+                <Check style={{ fontSize: '15px' }} />
                 Gesehen
               </span>
             )}
@@ -578,11 +613,10 @@ export const EpisodeDiscussionPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             style={{
-              fontSize: '26px',
+              fontSize: '28px',
               fontWeight: 800,
-              color: '#fff',
-              margin: '0 0 8px 0',
-              textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+              color: currentTheme.text.primary,
+              margin: '0 0 10px 0',
               lineHeight: 1.2,
             }}
           >
@@ -597,21 +631,21 @@ export const EpisodeDiscussionPage = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '16px',
+              gap: '18px',
               flexWrap: 'wrap',
-              fontSize: '13px',
-              color: 'rgba(255,255,255,0.8)',
+              fontSize: '14px',
+              color: currentTheme.text.secondary,
             }}
           >
             {episodeAirDate && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <DateRange style={{ fontSize: '16px' }} />
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <DateRange style={{ fontSize: '18px', color: currentTheme.primary }} />
                 {getUnifiedEpisodeDate(episodeAirDate)}
               </span>
             )}
             {episodeRuntime && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <PlayCircle style={{ fontSize: '16px' }} />
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <PlayCircle style={{ fontSize: '18px', color: '#8b5cf6' }} />
                 {episodeRuntime} Min.
               </span>
             )}
@@ -619,16 +653,15 @@ export const EpisodeDiscussionPage = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Premium Quick Actions */}
       <div
         style={{
           display: 'flex',
           gap: '12px',
-          padding: '16px 20px',
+          padding: '20px',
           borderBottom: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        {/* Watch/Unwatch Button */}
         {series && user && (
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -638,34 +671,36 @@ export const EpisodeDiscussionPage = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              padding: '12px',
+              gap: '10px',
+              padding: '14px',
               background: localEpisode?.watched
-                ? `${currentTheme.status.success}20`
+                ? `linear-gradient(135deg, ${currentTheme.status.success}25, ${currentTheme.status.success}10)`
                 : currentTheme.background.card,
-              border: `1px solid ${localEpisode?.watched ? currentTheme.status.success : currentTheme.border.default}`,
-              borderRadius: '12px',
+              border: localEpisode?.watched
+                ? `1px solid ${currentTheme.status.success}50`
+                : `1px solid ${currentTheme.border.default}`,
+              borderRadius: '16px',
               color: localEpisode?.watched ? currentTheme.status.success : currentTheme.text.primary,
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: 600,
+              fontWeight: 700,
+              boxShadow: localEpisode?.watched ? `0 4px 15px ${currentTheme.status.success}20` : 'none',
             }}
           >
             {localEpisode?.watched ? (
               <>
-                <Visibility style={{ fontSize: '20px' }} />
+                <Visibility style={{ fontSize: '22px' }} />
                 Gesehen
               </>
             ) : (
               <>
-                <VisibilityOff style={{ fontSize: '20px' }} />
+                <VisibilityOff style={{ fontSize: '22px' }} />
                 Als gesehen markieren
               </>
             )}
           </motion.button>
         )}
 
-        {/* Episodes Button */}
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate(`/episodes/${seriesId}`)}
@@ -674,31 +709,30 @@ export const EpisodeDiscussionPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            padding: '12px 16px',
+            padding: '14px 18px',
             background: currentTheme.background.card,
             border: `1px solid ${currentTheme.border.default}`,
-            borderRadius: '12px',
+            borderRadius: '16px',
             color: currentTheme.text.primary,
             cursor: 'pointer',
             fontSize: '14px',
             fontWeight: 600,
           }}
         >
-          <Edit style={{ fontSize: '18px' }} />
+          <Edit style={{ fontSize: '20px' }} />
         </motion.button>
       </div>
 
-      {/* Episode Navigation */}
+      {/* Premium Episode Navigation */}
       <div
         style={{
           display: 'flex',
           gap: '12px',
           padding: '16px 20px',
-          background: currentTheme.background.card,
+          background: currentTheme.background.surface,
           borderBottom: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        {/* Previous Episode */}
         <motion.button
           whileTap={{ scale: hasPrevEpisode ? 0.95 : 1 }}
           onClick={goToPrevEpisode}
@@ -708,23 +742,35 @@ export const EpisodeDiscussionPage = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            padding: '12px',
-            background: currentTheme.background.surface,
+            padding: '14px',
+            background: currentTheme.background.card,
             border: `1px solid ${currentTheme.border.default}`,
-            borderRadius: '12px',
+            borderRadius: '16px',
             cursor: hasPrevEpisode ? 'pointer' : 'default',
             opacity: hasPrevEpisode ? 1 : 0.4,
             textAlign: 'left',
           }}
         >
-          <NavigateBefore style={{ fontSize: '24px', color: currentTheme.text.muted }} />
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: hasPrevEpisode ? currentTheme.background.surfaceHover : currentTheme.background.surface,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <NavigateBefore style={{ fontSize: '24px', color: currentTheme.text.muted }} />
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: 0 }}>Vorherige</p>
+            <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: 0, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Vorherige
+            </p>
             <p
               style={{
-                fontSize: '13px',
+                fontSize: '14px',
                 color: currentTheme.text.primary,
-                margin: 0,
+                margin: '3px 0 0 0',
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -736,7 +782,6 @@ export const EpisodeDiscussionPage = () => {
           </div>
         </motion.button>
 
-        {/* Next Episode */}
         <motion.button
           whileTap={{ scale: hasNextEpisode ? 0.95 : 1 }}
           onClick={goToNextEpisode}
@@ -746,24 +791,28 @@ export const EpisodeDiscussionPage = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            padding: '12px',
+            padding: '14px',
             background: hasNextEpisode
-              ? `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.status.info}15)`
-              : currentTheme.background.surface,
-            border: `1px solid ${hasNextEpisode ? currentTheme.primary + '40' : currentTheme.border.default}`,
-            borderRadius: '12px',
+              ? `linear-gradient(135deg, ${currentTheme.primary}12, #8b5cf612)`
+              : currentTheme.background.card,
+            border: hasNextEpisode
+              ? `1px solid ${currentTheme.primary}30`
+              : `1px solid ${currentTheme.border.default}`,
+            borderRadius: '16px',
             cursor: hasNextEpisode ? 'pointer' : 'default',
             opacity: hasNextEpisode ? 1 : 0.4,
             textAlign: 'right',
           }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: 0 }}>Nächste</p>
+            <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: 0, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Nächste
+            </p>
             <p
               style={{
-                fontSize: '13px',
+                fontSize: '14px',
                 color: currentTheme.text.primary,
-                margin: 0,
+                margin: '3px 0 0 0',
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -773,53 +822,90 @@ export const EpisodeDiscussionPage = () => {
               {nextEpisodeLabel}
             </p>
           </div>
-          <NavigateNext style={{ fontSize: '24px', color: currentTheme.primary }} />
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: hasNextEpisode
+              ? `linear-gradient(135deg, ${currentTheme.primary}30, #8b5cf630)`
+              : currentTheme.background.surface,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <NavigateNext style={{ fontSize: '24px', color: hasNextEpisode ? currentTheme.primary : currentTheme.text.muted }} />
+          </div>
         </motion.button>
       </div>
 
       {/* Content */}
       <div style={{ padding: '20px' }}>
-        {/* Overview */}
-        {episodeOverview && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              marginBottom: '24px',
-              padding: '16px',
-              background: currentTheme.background.card,
-              borderRadius: '16px',
-              border: `1px solid ${currentTheme.border.default}`,
-            }}
-          >
-            <h3
+        {/* Premium Overview */}
+        <AnimatePresence>
+          {episodeOverview && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               style={{
-                fontSize: '16px',
-                fontWeight: 700,
-                color: currentTheme.text.primary,
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                marginBottom: '24px',
+                padding: '20px',
+                background: currentTheme.background.card,
+                borderRadius: '20px',
+                border: `1px solid ${currentTheme.border.default}`,
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
-              <Movie style={{ fontSize: '20px', color: currentTheme.primary }} />
-              Handlung
-            </h3>
-            <p
-              style={{
-                fontSize: '14px',
-                lineHeight: 1.7,
-                color: currentTheme.text.secondary,
-                margin: 0,
-              }}
-            >
-              {episodeOverview}
-            </p>
-          </motion.div>
-        )}
+              {/* Decorative gradient */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '150px',
+                height: '150px',
+                background: `radial-gradient(circle, ${currentTheme.primary}10 0%, transparent 70%)`,
+                pointerEvents: 'none',
+              }} />
 
-        {/* Crew Info */}
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  color: currentTheme.text.primary,
+                  marginBottom: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '10px',
+                  background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Movie style={{ fontSize: '18px', color: currentTheme.primary }} />
+                </div>
+                Handlung
+              </h3>
+              <p
+                style={{
+                  fontSize: '15px',
+                  lineHeight: 1.75,
+                  color: currentTheme.text.secondary,
+                  margin: 0,
+                }}
+              >
+                {episodeOverview}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Premium Crew Info */}
         {(directors.length > 0 || writers.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -835,9 +921,9 @@ export const EpisodeDiscussionPage = () => {
             {directors.length > 0 && (
               <div
                 style={{
-                  padding: '16px',
+                  padding: '18px',
                   background: currentTheme.background.card,
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   border: `1px solid ${currentTheme.border.default}`,
                 }}
               >
@@ -846,7 +932,7 @@ export const EpisodeDiscussionPage = () => {
                     fontSize: '11px',
                     fontWeight: 700,
                     color: currentTheme.text.muted,
-                    marginBottom: '8px',
+                    marginBottom: '10px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}
@@ -854,7 +940,12 @@ export const EpisodeDiscussionPage = () => {
                   Regie
                 </h4>
                 {directors.slice(0, 2).map((d, i) => (
-                  <p key={i} style={{ fontSize: '14px', color: currentTheme.text.primary, margin: i > 0 ? '4px 0 0 0' : 0, fontWeight: 500 }}>
+                  <p key={i} style={{
+                    fontSize: '14px',
+                    color: currentTheme.text.primary,
+                    margin: i > 0 ? '6px 0 0 0' : 0,
+                    fontWeight: 600,
+                  }}>
                     {d.name}
                   </p>
                 ))}
@@ -863,9 +954,9 @@ export const EpisodeDiscussionPage = () => {
             {writers.length > 0 && (
               <div
                 style={{
-                  padding: '16px',
+                  padding: '18px',
                   background: currentTheme.background.card,
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   border: `1px solid ${currentTheme.border.default}`,
                 }}
               >
@@ -874,7 +965,7 @@ export const EpisodeDiscussionPage = () => {
                     fontSize: '11px',
                     fontWeight: 700,
                     color: currentTheme.text.muted,
-                    marginBottom: '8px',
+                    marginBottom: '10px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}
@@ -882,7 +973,12 @@ export const EpisodeDiscussionPage = () => {
                   Drehbuch
                 </h4>
                 {writers.slice(0, 2).map((w, i) => (
-                  <p key={i} style={{ fontSize: '14px', color: currentTheme.text.primary, margin: i > 0 ? '4px 0 0 0' : 0, fontWeight: 500 }}>
+                  <p key={i} style={{
+                    fontSize: '14px',
+                    color: currentTheme.text.primary,
+                    margin: i > 0 ? '6px 0 0 0' : 0,
+                    fontWeight: 600,
+                  }}>
                     {w.name}
                   </p>
                 ))}
@@ -891,7 +987,7 @@ export const EpisodeDiscussionPage = () => {
           </motion.div>
         )}
 
-        {/* Guest Stars */}
+        {/* Premium Guest Stars */}
         {guestStars.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -899,9 +995,9 @@ export const EpisodeDiscussionPage = () => {
             transition={{ delay: 0.2 }}
             style={{
               marginBottom: '24px',
-              padding: '16px',
+              padding: '20px',
               background: currentTheme.background.card,
-              borderRadius: '16px',
+              borderRadius: '20px',
               border: `1px solid ${currentTheme.border.default}`,
             }}
           >
@@ -910,41 +1006,57 @@ export const EpisodeDiscussionPage = () => {
                 fontSize: '16px',
                 fontWeight: 700,
                 color: currentTheme.text.primary,
-                marginBottom: '16px',
+                marginBottom: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
-              Gaststars ({guestStars.length})
+              Gaststars
+              <span style={{
+                fontSize: '13px',
+                fontWeight: 600,
+                color: currentTheme.primary,
+                background: `${currentTheme.primary}15`,
+                padding: '4px 10px',
+                borderRadius: '8px',
+              }}>
+                {guestStars.length}
+              </span>
             </h3>
             <div
               style={{
                 display: 'flex',
-                gap: '16px',
+                gap: '18px',
                 overflowX: 'auto',
                 paddingBottom: '8px',
                 WebkitOverflowScrolling: 'touch',
-                margin: '0 -16px',
-                padding: '0 16px 8px 16px',
+                margin: '0 -20px',
+                padding: '0 20px 8px 20px',
               }}
             >
-              {guestStars.slice(0, 15).map((star) => (
-                <div
+              {guestStars.slice(0, 15).map((star, index) => (
+                <motion.div
                   key={star.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.03 }}
                   style={{
                     flexShrink: 0,
-                    width: '90px',
+                    width: '95px',
                     textAlign: 'center',
                   }}
                 >
                   <div
                     style={{
-                      width: '70px',
-                      height: '70px',
+                      width: '75px',
+                      height: '75px',
                       borderRadius: '50%',
-                      margin: '0 auto 10px',
+                      margin: '0 auto 12px',
                       overflow: 'hidden',
                       background: currentTheme.background.surface,
                       border: `3px solid ${currentTheme.border.default}`,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      boxShadow: `0 6px 16px ${currentTheme.background.default}80`,
                     }}
                   >
                     {star.profile_path ? (
@@ -961,8 +1073,8 @@ export const EpisodeDiscussionPage = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '28px',
-                          background: `linear-gradient(135deg, ${currentTheme.primary}40, ${currentTheme.status.info}40)`,
+                          fontSize: '32px',
+                          background: `linear-gradient(135deg, ${currentTheme.primary}30, #8b5cf630)`,
                         }}
                       >
                         👤
@@ -972,9 +1084,9 @@ export const EpisodeDiscussionPage = () => {
                   <p
                     style={{
                       fontSize: '13px',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       color: currentTheme.text.primary,
-                      margin: '0 0 2px 0',
+                      margin: '0 0 4px 0',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -990,12 +1102,12 @@ export const EpisodeDiscussionPage = () => {
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      fontWeight: 500,
+                      fontWeight: 600,
                     }}
                   >
                     {star.character}
                   </p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>

@@ -342,7 +342,7 @@ export const WrappedPage: React.FC = () => {
     }
   };
 
-  // Loading State
+  // Premium Loading State
   if (loading) {
     return (
       <div
@@ -351,35 +351,127 @@ export const WrappedPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
           color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ textAlign: 'center' }}>
+        {/* Animated gradient orbs */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '20%',
+            left: '10%',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%)',
+            animation: 'float 6s ease-in-out infinite',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '20%',
+            right: '10%',
+            width: '250px',
+            height: '250px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(240,147,251,0.2), transparent 70%)',
+            animation: 'float 8s ease-in-out infinite reverse',
+          }}
+        />
+
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          {/* Animated year display */}
           <div
             style={{
-              width: '60px',
-              height: '60px',
-              border: '3px solid rgba(255,255,255,0.3)',
-              borderTop: '3px solid white',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 20px',
+              fontSize: '64px',
+              fontWeight: 900,
+              marginBottom: '20px',
+              textShadow: '0 4px 30px rgba(0,0,0,0.3)',
+              animation: 'pulse 2s ease-in-out infinite',
             }}
-          />
-          <p>Lade deinen Jahresrückblick...</p>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+          >
+            {year}
+          </div>
+
+          {/* Loading ring */}
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              position: 'relative',
+              margin: '0 auto 24px',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                border: '4px solid rgba(255,255,255,0.15)',
+                borderRadius: '50%',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                border: '4px solid transparent',
+                borderTopColor: 'white',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: '8px',
+                border: '4px solid transparent',
+                borderTopColor: 'rgba(255,255,255,0.5)',
+                borderRadius: '50%',
+                animation: 'spin 1.5s linear infinite reverse',
+              }}
+            />
+          </div>
+
+          <p style={{
+            fontSize: '18px',
+            fontWeight: 600,
+            opacity: 0.9,
+            margin: 0,
+          }}>
+            Lade deinen Jahresrückblick...
+          </p>
+          <p style={{
+            fontSize: '14px',
+            opacity: 0.6,
+            marginTop: '8px',
+          }}>
+            Wir analysieren deine Statistiken
+          </p>
         </div>
+
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.1); }
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.98); }
+          }
+        `}</style>
       </div>
     );
   }
 
-  // Error State
+  // Premium Error State
   if (error) {
     return (
       <div
@@ -388,42 +480,77 @@ export const WrappedPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
           color: 'white',
           padding: '20px',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+        {/* Background decoration */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '10%',
+            right: '5%',
+            width: '200px',
+            height: '200px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%)',
+          }}
+        />
+
+        <div style={{ textAlign: 'center', maxWidth: '400px', position: 'relative', zIndex: 1 }}>
           <div
             style={{
-              width: '80px',
-              height: '80px',
+              width: '100px',
+              height: '100px',
               borderRadius: '50%',
               background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(10px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 20px',
+              margin: '0 auto 24px',
+              border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
-          <h2 style={{ marginBottom: '20px' }}>{error}</h2>
+          <h2 style={{
+            marginBottom: '12px',
+            fontSize: '20px',
+            fontWeight: 700,
+          }}>
+            {error}
+          </h2>
+          <p style={{
+            opacity: 0.7,
+            fontSize: '14px',
+            marginBottom: '28px',
+          }}>
+            Versuche es später noch einmal
+          </p>
           <button
             onClick={() => navigate('/')}
             style={{
-              padding: '12px 30px',
-              fontSize: '1rem',
+              padding: '14px 36px',
+              fontSize: '15px',
+              fontWeight: 600,
               color: '#667eea',
               background: 'white',
               border: 'none',
-              borderRadius: '25px',
+              borderRadius: '30px',
               cursor: 'pointer',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+              transition: 'transform 0.2s ease',
             }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             Zurück zur Startseite
           </button>
@@ -458,27 +585,37 @@ export const WrappedPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Progress Bar - Bottom on mobile */}
+      {/* Premium Progress Indicator - Bottom */}
       <div
         style={{
           position: 'fixed',
-          bottom: '20px',
+          bottom: '24px',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 100,
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '12px',
+          padding: '10px 18px',
+          background: 'rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '30px',
+          border: '1px solid rgba(255,255,255,0.1)',
         }}
       >
-        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem' }}>
-          {currentSlide + 1}/{enabledSlides.length}
+        <span style={{
+          color: 'white',
+          fontSize: '13px',
+          fontWeight: 600,
+        }}>
+          {currentSlide + 1}
+          <span style={{ opacity: 0.5 }}> / {enabledSlides.length}</span>
         </span>
         <div
           style={{
-            width: '80px',
-            height: '3px',
-            background: 'rgba(255,255,255,0.2)',
+            width: '100px',
+            height: '4px',
+            background: 'rgba(255,255,255,0.15)',
             borderRadius: '2px',
             overflow: 'hidden',
           }}
@@ -487,56 +624,90 @@ export const WrappedPage: React.FC = () => {
             style={{
               width: `${((currentSlide + 1) / enabledSlides.length) * 100}%`,
               height: '100%',
-              background: 'white',
+              background: 'linear-gradient(90deg, #667eea, #f093fb)',
               borderRadius: '2px',
-              transition: 'width 0.3s ease-out',
+              transition: 'width 0.4s ease-out',
+              boxShadow: '0 0 10px rgba(102, 126, 234, 0.5)',
             }}
           />
         </div>
       </div>
 
-      {/* Close Button */}
+      {/* Premium Close Button */}
       <button
         onClick={() => navigate(-1)}
         style={{
           position: 'fixed',
-          top: '20px',
-          right: '20px',
-          width: '40px',
-          height: '40px',
+          top: 'calc(16px + env(safe-area-inset-top))',
+          right: '16px',
+          width: '44px',
+          height: '44px',
           borderRadius: '50%',
-          border: 'none',
-          background: 'rgba(0,0,0,0.3)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          background: 'rgba(0,0,0,0.25)',
+          backdropFilter: 'blur(10px)',
           color: 'white',
-          fontSize: '1.5rem',
+          fontSize: '22px',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 100,
+          transition: 'all 0.2s ease',
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = 'rgba(0,0,0,0.25)';
+          e.currentTarget.style.transform = 'scale(1)';
         }}
         aria-label="Schließen"
       >
         ×
       </button>
 
-      {/* Navigation Hints (nur auf erstem Slide) */}
+      {/* Premium Navigation Hints (nur auf erstem Slide) */}
       {currentSlide === 0 && (
         <div
           style={{
             position: 'fixed',
-            bottom: '50px',
+            bottom: '90px',
             left: '50%',
             transform: 'translateX(-50%)',
             color: 'white',
             textAlign: 'center',
-            opacity: 0.6,
             zIndex: 100,
+            animation: 'bounce 2s ease-in-out infinite',
           }}
         >
-          <p style={{ fontSize: '0.75rem', margin: 0 }}>
-            Wischen zum Navigieren
-          </p>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{ opacity: 0.7 }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            <p style={{
+              fontSize: '12px',
+              margin: 0,
+              opacity: 0.7,
+              fontWeight: 500,
+            }}>
+              Wischen zum Navigieren
+            </p>
+          </div>
         </div>
       )}
 

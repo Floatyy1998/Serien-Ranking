@@ -138,628 +138,1031 @@ export const ActorUniversePage = () => {
     }));
   }, []);
 
+  // Tab configuration
+  const tabs = [
+    { id: 'recommendations' as const, label: 'Empfehlungen', icon: TrendingUp },
+    { id: 'top' as const, label: 'Top Actors', icon: Star },
+    { id: 'map' as const, label: 'Galaxy Map', icon: AutoAwesome },
+  ];
+
   if (loading && actors.length === 0) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: currentTheme.background.default }}>
-        {/* Header auch beim Laden */}
-        <header
-          style={{
-            padding: '16px',
-            paddingTop: 'calc(16px + env(safe-area-inset-top))',
-            background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: currentTheme.background.default,
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative background */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, #8b5cf615 0%, transparent 50%)`,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Premium Header */}
+        <header style={{
+          padding: '16px 20px',
+          paddingTop: 'calc(16px + env(safe-area-inset-top))',
+          background: `linear-gradient(180deg, ${currentTheme.background.card}ee 0%, ${currentTheme.background.card}00 100%)`,
+          backdropFilter: 'blur(20px)',
+          position: 'relative',
+          zIndex: 10,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <BackButton
               style={{
-                background: `${currentTheme.background.card}80`,
+                background: `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.surfaceHover})`,
                 border: `1px solid ${currentTheme.border.default}`,
                 color: currentTheme.text.primary,
+                boxShadow: `0 2px 8px ${currentTheme.background.default}80`,
               }}
             />
             <div style={{ flex: 1 }}>
-              <h1
-                style={{
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  margin: 0,
-                  color: currentTheme.text.primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <AutoAwesome style={{ fontSize: '18px', color: currentTheme.primary }} />
+              <h1 style={{
+                fontSize: '22px',
+                fontWeight: 800,
+                margin: 0,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}>
+                <AutoAwesome style={{
+                  fontSize: '24px',
+                  color: currentTheme.primary,
+                  WebkitTextFillColor: currentTheme.primary,
+                }} />
                 Actor Universe
               </h1>
-              <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: '2px 0 0 0' }}>
+              <p style={{
+                fontSize: '12px',
+                color: currentTheme.text.muted,
+                margin: '4px 0 0 0',
+                letterSpacing: '0.3px',
+              }}>
                 Analysiere deine Serien...
               </p>
             </div>
           </div>
         </header>
 
-        {/* Loading Content */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '60px 20px',
-        }}>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+        {/* Premium Loading Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '80px 20px',
+            position: 'relative',
+            zIndex: 5,
+          }}
+        >
+          {/* Animated cosmic ring */}
+          <div style={{ position: 'relative', marginBottom: '32px' }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                border: `3px solid ${currentTheme.border.default}`,
+                borderTopColor: currentTheme.primary,
+                borderRightColor: '#8b5cf6',
+              }}
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              style={{
+                position: 'absolute',
+                top: '15px',
+                left: '15px',
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                border: `2px solid ${currentTheme.border.default}`,
+                borderBottomColor: currentTheme.primary,
+              }}
+            />
+            <AutoAwesome style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: '28px',
+              color: currentTheme.primary,
+            }} />
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
             style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              border: `3px solid ${currentTheme.border.default}`,
-              borderTopColor: currentTheme.primary,
-              marginBottom: '20px',
+              margin: 0,
+              color: currentTheme.text.secondary,
+              fontSize: '16px',
+              fontWeight: 500,
             }}
-          />
-          <p style={{ margin: 0, color: currentTheme.text.secondary, fontSize: '14px' }}>
+          >
             {Math.round(progress)}% - Sammle Schauspieler-Daten
-          </p>
+          </motion.p>
+
+          {/* Premium progress bar */}
           <div style={{
-            width: '200px',
-            height: '4px',
-            background: currentTheme.border.default,
-            borderRadius: '2px',
-            marginTop: '16px',
+            width: '260px',
+            height: '8px',
+            background: currentTheme.background.surface,
+            borderRadius: '10px',
+            marginTop: '20px',
             overflow: 'hidden',
+            boxShadow: `inset 0 2px 4px ${currentTheme.background.default}`,
           }}>
             <motion.div
               style={{
                 height: '100%',
-                background: currentTheme.primary,
-                borderRadius: '2px',
+                background: `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6, ${currentTheme.primary})`,
+                backgroundSize: '200% 100%',
+                borderRadius: '10px',
               }}
-              animate={{ width: `${progress}%` }}
+              animate={{
+                width: `${progress}%`,
+                backgroundPosition: ['0% 0%', '100% 0%'],
+              }}
+              transition={{
+                width: { duration: 0.3 },
+                backgroundPosition: { duration: 2, repeat: Infinity, ease: 'linear' },
+              }}
             />
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: currentTheme.background.default }}>
-      {/* Header */}
-      <header
-        style={{
-          padding: '16px',
-          paddingTop: 'calc(16px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          backdropFilter: 'blur(10px)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: currentTheme.background.default,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Decorative background */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 40%),
+                     radial-gradient(ellipse at 80% 90%, #8b5cf612 0%, transparent 40%)`,
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      {/* Premium Header */}
+      <header style={{
+        padding: '16px 20px',
+        paddingTop: 'calc(16px + env(safe-area-inset-top))',
+        background: `linear-gradient(180deg, ${currentTheme.background.card}f5 0%, ${currentTheme.background.card}00 100%)`,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        backdropFilter: 'blur(20px)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
           <BackButton
             style={{
-              background: `${currentTheme.background.card}80`,
+              background: `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.surfaceHover})`,
               border: `1px solid ${currentTheme.border.default}`,
               color: currentTheme.text.primary,
+              boxShadow: `0 2px 8px ${currentTheme.background.default}80`,
             }}
           />
           <div style={{ flex: 1 }}>
-            <h1
-              style={{
-                fontSize: '18px',
-                fontWeight: 'bold',
-                margin: 0,
-                color: currentTheme.text.primary,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <AutoAwesome style={{ fontSize: '18px', color: currentTheme.primary }} />
+            <h1 style={{
+              fontSize: '22px',
+              fontWeight: 800,
+              margin: 0,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <AutoAwesome style={{
+                fontSize: '24px',
+                color: currentTheme.primary,
+                WebkitTextFillColor: currentTheme.primary,
+              }} />
               Actor Universe
             </h1>
-            <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: '2px 0 0 0' }}>
+            <p style={{
+              fontSize: '12px',
+              color: currentTheme.text.muted,
+              margin: '4px 0 0 0',
+              letterSpacing: '0.3px',
+            }}>
               {stats.totalActors} Schauspieler • {stats.actorsInMultipleSeries} in mehreren Serien
             </p>
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Premium Tabs */}
         <div style={{ display: 'flex', gap: '8px' }}>
-          {(['recommendations', 'top', 'map'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                flex: 1,
-                padding: '10px',
-                background: activeTab === tab
-                  ? currentTheme.primary
-                  : `${currentTheme.background.card}80`,
-                border: `1px solid ${activeTab === tab ? currentTheme.primary : currentTheme.border.default}`,
-                borderRadius: '10px',
-                color: activeTab === tab ? '#fff' : currentTheme.text.primary,
-                fontSize: '13px',
-                fontWeight: activeTab === tab ? 600 : 400,
-                cursor: 'pointer',
-              }}
-            >
-              {tab === 'recommendations' && 'Empfehlungen'}
-              {tab === 'top' && 'Top Actors'}
-              {tab === 'map' && 'Galaxy Map'}
-            </button>
-          ))}
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <motion.button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  flex: 1,
+                  padding: '12px 10px',
+                  background: isActive
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                    : `${currentTheme.background.surface}`,
+                  border: isActive
+                    ? 'none'
+                    : `1px solid ${currentTheme.border.default}`,
+                  borderRadius: '14px',
+                  color: isActive ? '#fff' : currentTheme.text.secondary,
+                  fontSize: '12px',
+                  fontWeight: isActive ? 700 : 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <Icon style={{ fontSize: '16px' }} />
+                {tab.label}
+              </motion.button>
+            );
+          })}
 
           {/* Voice Actor Toggle */}
-          <button
+          <motion.button
             onClick={toggleVoiceActors}
+            whileTap={{ scale: 0.95 }}
             title={hideVoiceActors ? 'Voice Actors anzeigen' : 'Voice Actors ausblenden'}
             style={{
-              padding: '10px',
+              padding: '12px',
               background: hideVoiceActors
-                ? `${currentTheme.background.card}80`
-                : currentTheme.primary,
-              border: `1px solid ${hideVoiceActors ? currentTheme.border.default : currentTheme.primary}`,
-              borderRadius: '10px',
+                ? currentTheme.background.surface
+                : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              border: hideVoiceActors ? `1px solid ${currentTheme.border.default}` : 'none',
+              borderRadius: '14px',
               color: hideVoiceActors ? currentTheme.text.muted : '#fff',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: !hideVoiceActors ? `0 4px 15px ${currentTheme.primary}40` : 'none',
             }}
           >
             <RecordVoiceOver style={{ fontSize: '18px' }} />
-          </button>
+          </motion.button>
         </div>
       </header>
 
-      {/* Stats Banner */}
+      {/* Premium Stats Banner */}
       {stats.mostConnectedPair && (
-        <div style={{
-          margin: '16px 20px',
-          padding: '16px',
-          background: `${currentTheme.primary}22`,
-          borderRadius: '12px',
-          border: `1px solid ${currentTheme.primary}44`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <People style={{ color: currentTheme.primary }} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            margin: '16px 20px',
+            padding: '18px',
+            background: `linear-gradient(135deg, ${currentTheme.primary}18, #8b5cf618)`,
+            borderRadius: '16px',
+            border: `1px solid ${currentTheme.primary}30`,
+            position: 'relative',
+            overflow: 'hidden',
+            zIndex: 5,
+          }}
+        >
+          {/* Decorative gradient */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '150px',
+            height: '150px',
+            background: `radial-gradient(circle, ${currentTheme.primary}20 0%, transparent 70%)`,
+            pointerEvents: 'none',
+          }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: `0 4px 12px ${currentTheme.primary}40`,
+            }}>
+              <People style={{ color: '#fff', fontSize: '24px' }} />
+            </div>
             <div>
-              <p style={{ margin: 0, fontSize: '13px', color: currentTheme.text.secondary }}>Stärkstes Duo</p>
-              <p style={{ margin: '4px 0 0 0', fontSize: '15px', fontWeight: 600 }}>
+              <p style={{
+                margin: 0,
+                fontSize: '12px',
+                color: currentTheme.text.muted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontWeight: 600,
+              }}>Stärkstes Duo</p>
+              <p style={{
+                margin: '4px 0 0 0',
+                fontSize: '17px',
+                fontWeight: 700,
+                color: currentTheme.text.primary,
+              }}>
                 {stats.mostConnectedPair.actor1} & {stats.mostConnectedPair.actor2}
               </p>
-              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: currentTheme.text.muted }}>
+              <p style={{
+                margin: '4px 0 0 0',
+                fontSize: '13px',
+                color: currentTheme.primary,
+                fontWeight: 500,
+              }}>
                 {stats.mostConnectedPair.count} gemeinsame Serien
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Recommendations Tab */}
-      {activeTab === 'recommendations' && (
-        <div style={{ padding: '0 20px 100px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <TrendingUp style={{ color: currentTheme.primary }} />
-            <h2 style={{ margin: 0, fontSize: '18px' }}>Basierend auf deinen Lieblings-Schauspielern</h2>
-          </div>
-
-          {loadingRecommendations ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: currentTheme.text.muted }}>
-              Lade Empfehlungen...
-            </div>
-          ) : recommendations.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: currentTheme.text.muted }}>
-              Keine Empfehlungen gefunden
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {recommendations.map(rec => (
-                <motion.div
-                  key={rec.series.id}
-                  whileHover={{ scale: 1.01 }}
-                  onClick={() => navigate(`/series/${rec.series.id}`)}
-                  style={{
-                    display: 'flex',
-                    gap: '12px',
-                    padding: '12px',
-                    background: currentTheme.background.card,
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    border: `1px solid ${currentTheme.border.default}`,
-                  }}
-                >
-                  <div style={{
-                    width: '60px',
-                    height: '90px',
-                    borderRadius: '8px',
-                    background: rec.series.poster
-                      ? `url(${TMDB_IMAGE_BASE}${rec.series.poster})`
-                      : 'linear-gradient(135deg, #333, #555)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    flexShrink: 0,
-                  }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <h3 style={{
-                        margin: 0,
-                        fontSize: '15px',
-                        fontWeight: 600,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {rec.series.title}
-                      </h3>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        background: 'rgba(255, 193, 7, 0.2)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        flexShrink: 0,
-                      }}>
-                        <Star style={{ fontSize: '12px', color: '#ffc107' }} />
-                        <span style={{ fontSize: '11px', color: '#ffc107' }}>
-                          {rec.series.voteAverage.toFixed(1)}
-                        </span>
-                      </div>
-                    </div>
-                    <p style={{
-                      margin: '0 0 8px 0',
-                      fontSize: '12px',
-                      color: currentTheme.primary,
-                    }}>
-                      {rec.actors.length} deiner Schauspieler
-                    </p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {rec.actors.slice(0, 3).map(actor => (
-                        <span
-                          key={actor.id}
-                          style={{
-                            fontSize: '11px',
-                            background: currentTheme.background.surfaceHover,
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                          }}
-                        >
-                          {actor.name}
-                        </span>
-                      ))}
-                      {rec.actors.length > 3 && (
-                        <span style={{
-                          fontSize: '11px',
-                          background: currentTheme.background.surfaceHover,
-                          padding: '3px 8px',
-                          borderRadius: '12px',
-                        }}>
-                          +{rec.actors.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <OpenInNew style={{ fontSize: '18px', opacity: 0.3, alignSelf: 'center' }} />
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Top Actors Tab */}
-      {activeTab === 'top' && (
-        <div style={{ padding: '0 20px 100px' }}>
-          <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Deine meistgesehenen Schauspieler</h2>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {topActors.map((actor, index) => (
-              <motion.div
-                key={actor.id}
-                whileHover={{ scale: 1.01 }}
-                onClick={() => setSelectedActor(actor)}
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                  padding: '12px',
-                  background: index < 3
-                    ? `${currentTheme.primary}22`
-                    : currentTheme.background.card,
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  border: index < 3
-                    ? `1px solid ${currentTheme.primary}44`
-                    : `1px solid ${currentTheme.border.default}`,
-                }}
-              >
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: index < 3
-                    ? currentTheme.primary
-                    : currentTheme.background.surfaceHover,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  flexShrink: 0,
-                  color: index < 3 ? '#fff' : currentTheme.text.primary,
-                }}>
-                  {index + 1}
-                </div>
-
-                <div style={{
-                  width: '50px',
-                  height: '50px',
-                  borderRadius: '50%',
-                  background: actor.profilePath
-                    ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                    : currentTheme.primary,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  flexShrink: 0,
-                }} />
-
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>{actor.name}</h3>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: currentTheme.primary }}>
-                    {actor.seriesCount} Serien
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* All actors who appear in multiple series */}
-          <h3 style={{ margin: '32px 0 16px 0', fontSize: '16px', color: currentTheme.text.secondary }}>
-            Weitere Schauspieler in mehreren deiner Serien
-          </h3>
-          <HorizontalScrollContainer gap={12}>
-            {actors.slice(10, 50).map(actor => (
-              <motion.div
-                key={actor.id}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedActor(actor)}
-                style={{
-                  minWidth: '80px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  margin: '0 auto 8px',
-                  background: actor.profilePath
-                    ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                    : currentTheme.primary,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  border: `2px solid ${currentTheme.border.default}`,
-                }} />
-                <p style={{
-                  margin: 0,
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {actor.name.split(' ')[0]}
-                </p>
-                <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: currentTheme.text.muted }}>
-                  {actor.seriesCount} Serien
-                </p>
-              </motion.div>
-            ))}
-          </HorizontalScrollContainer>
-        </div>
-      )}
-
-      {/* Galaxy Map Tab */}
-      {activeTab === 'map' && (
-        <div style={{ position: 'relative', height: 'calc(100vh - 180px)' }}>
-          {/* Zoom Controls */}
-          <div style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            zIndex: 50,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-          }}>
-            <button onClick={zoomIn} style={zoomButtonStyle}><ZoomIn /></button>
-            <button onClick={zoomOut} style={zoomButtonStyle}><ZoomOut /></button>
-            <button onClick={resetView} style={{ ...zoomButtonStyle, fontSize: '12px' }}>Reset</button>
-          </div>
-
-          {/* Canvas */}
-          <div
-            ref={canvasRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onWheel={handleWheel}
-            style={{
-              width: '100%',
-              height: '100%',
-              overflow: 'hidden',
-              cursor: isDragging ? 'grabbing' : 'grab',
-              position: 'relative',
-              background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a1a 100%)',
-            }}
+      <AnimatePresence mode="wait">
+        {activeTab === 'recommendations' && (
+          <motion.div
+            key="recommendations"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            style={{ padding: '0 20px 100px', position: 'relative', zIndex: 5 }}
           >
-            {/* Background stars */}
-            {backgroundStars.map(star => (
-              <div
-                key={star.id}
-                style={{
-                  position: 'absolute',
-                  left: `${star.x}%`,
-                  top: `${star.y}%`,
-                  width: star.size,
-                  height: star.size,
-                  borderRadius: '50%',
-                  background: 'white',
-                  opacity: star.opacity,
-                }}
-              />
-            ))}
-
-            {/* Transformed content */}
             <div style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
-              transformOrigin: 'center center',
-              transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginBottom: '20px',
             }}>
-              {/* Connection lines */}
-              <svg style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                pointerEvents: 'none',
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}>
-                {connections.slice(0, 200).map((conn, idx) => {
-                  const actor1 = actors.find(a => a.id === conn.actor1Id);
-                  const actor2 = actors.find(a => a.id === conn.actor2Id);
-                  if (!actor1 || !actor2) return null;
+                <TrendingUp style={{ color: currentTheme.primary, fontSize: '22px' }} />
+              </div>
+              <h2 style={{
+                margin: 0,
+                fontSize: '18px',
+                fontWeight: 700,
+                color: currentTheme.text.primary,
+              }}>
+                Basierend auf deinen Lieblings-Schauspielern
+              </h2>
+            </div>
 
-                  const isHighlighted = hoveredActor &&
-                    (conn.actor1Id === hoveredActor.id || conn.actor2Id === hoveredActor.id);
-
-                  return (
-                    <line
-                      key={idx}
-                      x1={`${(actor1.x || 0.5) * 100}%`}
-                      y1={`${(actor1.y || 0.5) * 100}%`}
-                      x2={`${(actor2.x || 0.5) * 100}%`}
-                      y2={`${(actor2.y || 0.5) * 100}%`}
-                      stroke={isHighlighted ? 'rgba(102, 126, 234, 0.7)' : 'rgba(255, 255, 255, 0.05)'}
-                      strokeWidth={isHighlighted ? 2 : 1}
-                    />
-                  );
-                })}
-              </svg>
-
-              {/* Actor nodes */}
-              {actors.map((actor, index) => {
-                const isHovered = hoveredActor?.id === actor.id;
-                const isConnected = hoveredActor && getActorConnections(hoveredActor.id)
-                  .some(c => c.actor1Id === actor.id || c.actor2Id === actor.id);
-
-                return (
-                  <div
-                    key={actor.id}
-                    onClick={(e) => { e.stopPropagation(); setSelectedActor(actor); }}
-                    onMouseEnter={() => setHoveredActor(actor)}
-                    onMouseLeave={() => setHoveredActor(null)}
+            {loadingRecommendations ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    border: `3px solid ${currentTheme.border.default}`,
+                    borderTopColor: currentTheme.primary,
+                    margin: '0 auto 16px',
+                  }}
+                />
+                <p style={{ color: currentTheme.text.muted, fontSize: '14px' }}>
+                  Lade Empfehlungen...
+                </p>
+              </motion.div>
+            ) : recommendations.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                  background: currentTheme.background.surface,
+                  borderRadius: '20px',
+                  border: `1px solid ${currentTheme.border.default}`,
+                }}
+              >
+                <AutoAwesome style={{ fontSize: '48px', color: currentTheme.text.muted, marginBottom: '16px' }} />
+                <p style={{ color: currentTheme.text.muted, fontSize: '15px', margin: 0 }}>
+                  Keine Empfehlungen gefunden
+                </p>
+              </motion.div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {recommendations.map((rec, index) => (
+                  <motion.div
+                    key={rec.series.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate(`/series/${rec.series.id}`)}
                     style={{
-                      position: 'absolute',
-                      left: `${(actor.x || 0.5) * 100}%`,
-                      top: `${(actor.y || 0.5) * 100}%`,
-                      transform: 'translate(-50%, -50%)',
+                      display: 'flex',
+                      gap: '14px',
+                      padding: '14px',
+                      background: currentTheme.background.card,
+                      borderRadius: '16px',
                       cursor: 'pointer',
-                      opacity: hoveredActor ? (isHovered || isConnected ? 1 : 0.3) : 1,
-                      transition: 'opacity 0.2s',
-                      zIndex: isHovered ? 100 : index < 10 ? 50 : 10,
+                      border: `1px solid ${currentTheme.border.default}`,
+                      boxShadow: `0 4px 12px ${currentTheme.background.default}40`,
+                      position: 'relative',
+                      overflow: 'hidden',
                     }}
                   >
-                    {/* Glow */}
+                    {/* Subtle gradient overlay */}
                     <div style={{
                       position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: (actor.size || 10) * 2.5,
-                      height: (actor.size || 10) * 2.5,
-                      borderRadius: '50%',
-                      background: `radial-gradient(circle, ${actor.color}55 0%, transparent 70%)`,
+                      top: 0,
+                      right: 0,
+                      width: '100px',
+                      height: '100%',
+                      background: `linear-gradient(90deg, transparent, ${currentTheme.primary}05)`,
                       pointerEvents: 'none',
                     }} />
 
-                    {/* Node */}
                     <div style={{
-                      width: actor.size || 10,
-                      height: actor.size || 10,
+                      width: '65px',
+                      height: '95px',
+                      borderRadius: '10px',
+                      background: rec.series.poster
+                        ? `url(${TMDB_IMAGE_BASE}${rec.series.poster})`
+                        : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      flexShrink: 0,
+                      boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
+                    }} />
+
+                    <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                        <h3 style={{
+                          margin: 0,
+                          fontSize: '15px',
+                          fontWeight: 700,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          color: currentTheme.text.primary,
+                        }}>
+                          {rec.series.title}
+                        </h3>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2))',
+                          padding: '3px 8px',
+                          borderRadius: '8px',
+                          flexShrink: 0,
+                        }}>
+                          <Star style={{ fontSize: '12px', color: '#ffc107' }} />
+                          <span style={{ fontSize: '12px', color: '#ffc107', fontWeight: 600 }}>
+                            {rec.series.voteAverage.toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p style={{
+                        margin: '0 0 10px 0',
+                        fontSize: '13px',
+                        color: currentTheme.primary,
+                        fontWeight: 600,
+                      }}>
+                        {rec.actors.length} deiner Schauspieler
+                      </p>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {rec.actors.slice(0, 3).map(actor => (
+                          <span
+                            key={actor.id}
+                            style={{
+                              fontSize: '11px',
+                              background: `linear-gradient(135deg, ${currentTheme.background.surfaceHover}, ${currentTheme.background.surface})`,
+                              padding: '4px 10px',
+                              borderRadius: '10px',
+                              color: currentTheme.text.secondary,
+                              fontWeight: 500,
+                            }}
+                          >
+                            {actor.name}
+                          </span>
+                        ))}
+                        {rec.actors.length > 3 && (
+                          <span style={{
+                            fontSize: '11px',
+                            background: `${currentTheme.primary}20`,
+                            padding: '4px 10px',
+                            borderRadius: '10px',
+                            color: currentTheme.primary,
+                            fontWeight: 600,
+                          }}>
+                            +{rec.actors.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <OpenInNew style={{
+                      fontSize: '18px',
+                      opacity: 0.3,
+                      alignSelf: 'center',
+                      color: currentTheme.text.muted,
+                    }} />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Top Actors Tab */}
+        {activeTab === 'top' && (
+          <motion.div
+            key="top"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            style={{ padding: '0 20px 100px', position: 'relative', zIndex: 5 }}
+          >
+            <h2 style={{
+              margin: '0 0 20px 0',
+              fontSize: '18px',
+              fontWeight: 700,
+              color: currentTheme.text.primary,
+            }}>
+              Deine meistgesehenen Schauspieler
+            </h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {topActors.map((actor, index) => {
+                const isTop3 = index < 3;
+                const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+
+                return (
+                  <motion.div
+                    key={actor.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedActor(actor)}
+                    style={{
+                      display: 'flex',
+                      gap: '14px',
+                      padding: '14px',
+                      background: isTop3
+                        ? `linear-gradient(135deg, ${currentTheme.primary}15, #8b5cf615)`
+                        : currentTheme.background.card,
+                      borderRadius: '16px',
+                      cursor: 'pointer',
+                      border: isTop3
+                        ? `1px solid ${currentTheme.primary}30`
+                        : `1px solid ${currentTheme.border.default}`,
+                      boxShadow: isTop3
+                        ? `0 4px 15px ${currentTheme.primary}20`
+                        : `0 2px 8px ${currentTheme.background.default}40`,
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {/* Rank badge */}
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '12px',
+                      background: isTop3
+                        ? `linear-gradient(135deg, ${rankColors[index]}, ${rankColors[index]}99)`
+                        : currentTheme.background.surfaceHover,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px',
+                      fontWeight: 800,
+                      flexShrink: 0,
+                      color: isTop3 ? '#000' : currentTheme.text.primary,
+                      boxShadow: isTop3 ? `0 2px 8px ${rankColors[index]}40` : 'none',
+                    }}>
+                      {index + 1}
+                    </div>
+
+                    {/* Actor image */}
+                    <div style={{
+                      width: '54px',
+                      height: '54px',
                       borderRadius: '50%',
                       background: actor.profilePath
                         ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                        : actor.color,
+                        : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      border: `2px solid ${actor.color}`,
-                      boxShadow: `0 0 ${(actor.size || 10) / 2}px ${actor.color}`,
-                      transition: 'transform 0.2s',
-                      transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+                      flexShrink: 0,
+                      border: isTop3
+                        ? `3px solid ${rankColors[index]}`
+                        : `2px solid ${currentTheme.border.default}`,
+                      boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
                     }} />
 
-                    {/* Label on hover */}
-                    {isHovered && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        marginTop: '8px',
-                        background: 'rgba(0, 0, 0, 0.9)',
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        whiteSpace: 'nowrap',
-                        fontSize: `${12 / transform.scale}px`,
-                        fontWeight: 600,
-                        pointerEvents: 'none',
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        color: currentTheme.text.primary,
                       }}>
                         {actor.name}
-                        <div style={{ fontSize: `${10 / transform.scale}px`, opacity: 0.7, marginTop: '2px' }}>
-                          {actor.seriesCount} Serien
-                        </div>
-                      </div>
+                      </h3>
+                      <p style={{
+                        margin: '4px 0 0 0',
+                        fontSize: '14px',
+                        color: currentTheme.primary,
+                        fontWeight: 600,
+                      }}>
+                        {actor.seriesCount} Serien
+                      </p>
+                    </div>
+
+                    {/* Decorative shine for top 3 */}
+                    {isTop3 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '120px',
+                        height: '100%',
+                        background: `linear-gradient(90deg, transparent, ${rankColors[index]}10)`,
+                        pointerEvents: 'none',
+                      }} />
                     )}
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
-          </div>
 
-          {/* Legend */}
-          <div style={{
-            position: 'absolute',
-            bottom: '16px',
-            left: '16px',
-            background: 'rgba(0, 0, 0, 0.8)',
-            borderRadius: '12px',
-            padding: '12px',
-            fontSize: '11px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'hsl(45, 80%, 60%)' }} />
-              <span>Top 10 Schauspieler</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '16px', height: '2px', background: 'rgba(102, 126, 234, 0.5)' }} />
-              <span>Gemeinsame Serie</span>
-            </div>
-          </div>
-        </div>
-      )}
+            {/* All actors who appear in multiple series */}
+            <h3 style={{
+              margin: '36px 0 18px 0',
+              fontSize: '16px',
+              color: currentTheme.text.secondary,
+              fontWeight: 600,
+            }}>
+              Weitere Schauspieler in mehreren deiner Serien
+            </h3>
+            <HorizontalScrollContainer gap={14}>
+              {actors.slice(10, 50).map((actor, index) => (
+                <motion.div
+                  key={actor.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.02 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedActor(actor)}
+                  style={{
+                    minWidth: '85px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    margin: '0 auto 10px',
+                    background: actor.profilePath
+                      ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
+                      : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    border: `2px solid ${currentTheme.border.default}`,
+                    boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
+                  }} />
+                  <p style={{
+                    margin: 0,
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    color: currentTheme.text.primary,
+                  }}>
+                    {actor.name.split(' ')[0]}
+                  </p>
+                  <p style={{
+                    margin: '3px 0 0 0',
+                    fontSize: '11px',
+                    color: currentTheme.primary,
+                    fontWeight: 500,
+                  }}>
+                    {actor.seriesCount} Serien
+                  </p>
+                </motion.div>
+              ))}
+            </HorizontalScrollContainer>
+          </motion.div>
+        )}
 
-      {/* Actor Detail Modal */}
+        {/* Galaxy Map Tab */}
+        {activeTab === 'map' && (
+          <motion.div
+            key="map"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ position: 'relative', height: 'calc(100vh - 180px)' }}
+          >
+            {/* Premium Zoom Controls */}
+            <div style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              zIndex: 50,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}>
+              {[
+                { action: zoomIn, icon: <ZoomIn /> },
+                { action: zoomOut, icon: <ZoomOut /> },
+                { action: resetView, icon: 'Reset', isText: true },
+              ].map((btn, idx) => (
+                <motion.button
+                  key={idx}
+                  onClick={btn.action}
+                  whileTap={{ scale: 0.9 }}
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '12px',
+                    background: `linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 40, 0.9))`,
+                    border: `1px solid rgba(255, 255, 255, 0.15)`,
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: btn.isText ? '11px' : 'inherit',
+                    fontWeight: btn.isText ? 600 : 'normal',
+                    boxShadow: `0 4px 12px rgba(0, 0, 0, 0.4)`,
+                  }}
+                >
+                  {btn.isText ? btn.icon : btn.icon}
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Canvas */}
+            <div
+              ref={canvasRef}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onWheel={handleWheel}
+              style={{
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                cursor: isDragging ? 'grabbing' : 'grab',
+                position: 'relative',
+                background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a1a 100%)',
+              }}
+            >
+              {/* Background stars */}
+              {backgroundStars.map(star => (
+                <div
+                  key={star.id}
+                  style={{
+                    position: 'absolute',
+                    left: `${star.x}%`,
+                    top: `${star.y}%`,
+                    width: star.size,
+                    height: star.size,
+                    borderRadius: '50%',
+                    background: 'white',
+                    opacity: star.opacity,
+                  }}
+                />
+              ))}
+
+              {/* Transformed content */}
+              <div style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+                transformOrigin: 'center center',
+                transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+              }}>
+                {/* Connection lines */}
+                <svg style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  pointerEvents: 'none',
+                }}>
+                  <defs>
+                    <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor={currentTheme.primary} stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.5" />
+                    </linearGradient>
+                  </defs>
+                  {connections.slice(0, 200).map((conn, idx) => {
+                    const actor1 = actors.find(a => a.id === conn.actor1Id);
+                    const actor2 = actors.find(a => a.id === conn.actor2Id);
+                    if (!actor1 || !actor2) return null;
+
+                    const isHighlighted = hoveredActor &&
+                      (conn.actor1Id === hoveredActor.id || conn.actor2Id === hoveredActor.id);
+
+                    return (
+                      <line
+                        key={idx}
+                        x1={`${(actor1.x || 0.5) * 100}%`}
+                        y1={`${(actor1.y || 0.5) * 100}%`}
+                        x2={`${(actor2.x || 0.5) * 100}%`}
+                        y2={`${(actor2.y || 0.5) * 100}%`}
+                        stroke={isHighlighted ? 'url(#connectionGradient)' : 'rgba(255, 255, 255, 0.05)'}
+                        strokeWidth={isHighlighted ? 2 : 1}
+                      />
+                    );
+                  })}
+                </svg>
+
+                {/* Actor nodes */}
+                {actors.map((actor, index) => {
+                  const isHovered = hoveredActor?.id === actor.id;
+                  const isConnected = hoveredActor && getActorConnections(hoveredActor.id)
+                    .some(c => c.actor1Id === actor.id || c.actor2Id === actor.id);
+
+                  return (
+                    <div
+                      key={actor.id}
+                      onClick={(e) => { e.stopPropagation(); setSelectedActor(actor); }}
+                      onMouseEnter={() => setHoveredActor(actor)}
+                      onMouseLeave={() => setHoveredActor(null)}
+                      style={{
+                        position: 'absolute',
+                        left: `${(actor.x || 0.5) * 100}%`,
+                        top: `${(actor.y || 0.5) * 100}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'pointer',
+                        opacity: hoveredActor ? (isHovered || isConnected ? 1 : 0.3) : 1,
+                        transition: 'opacity 0.2s',
+                        zIndex: isHovered ? 100 : index < 10 ? 50 : 10,
+                      }}
+                    >
+                      {/* Glow */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: (actor.size || 10) * 2.5,
+                        height: (actor.size || 10) * 2.5,
+                        borderRadius: '50%',
+                        background: `radial-gradient(circle, ${actor.color}55 0%, transparent 70%)`,
+                        pointerEvents: 'none',
+                      }} />
+
+                      {/* Node */}
+                      <div style={{
+                        width: actor.size || 10,
+                        height: actor.size || 10,
+                        borderRadius: '50%',
+                        background: actor.profilePath
+                          ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
+                          : actor.color,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        border: `2px solid ${actor.color}`,
+                        boxShadow: `0 0 ${(actor.size || 10) / 2}px ${actor.color}`,
+                        transition: 'transform 0.2s',
+                        transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+                      }} />
+
+                      {/* Label on hover */}
+                      {isHovered && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          marginTop: '8px',
+                          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 40, 0.95))',
+                          padding: '8px 14px',
+                          borderRadius: '10px',
+                          whiteSpace: 'nowrap',
+                          fontSize: `${12 / transform.scale}px`,
+                          fontWeight: 600,
+                          pointerEvents: 'none',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                        }}>
+                          {actor.name}
+                          <div style={{
+                            fontSize: `${10 / transform.scale}px`,
+                            opacity: 0.7,
+                            marginTop: '3px',
+                            color: currentTheme.primary,
+                          }}>
+                            {actor.seriesCount} Serien
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Premium Legend */}
+            <div style={{
+              position: 'absolute',
+              bottom: '16px',
+              left: '16px',
+              background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 40, 0.9))',
+              borderRadius: '14px',
+              padding: '14px 16px',
+              fontSize: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <div style={{
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, hsl(45, 80%, 60%), hsl(35, 80%, 50%))',
+                  boxShadow: '0 0 8px hsl(45, 80%, 60%)',
+                }} />
+                <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Top 10 Schauspieler</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '18px',
+                  height: '3px',
+                  background: `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
+                  borderRadius: '2px',
+                }} />
+                <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Gemeinsame Serie</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Premium Actor Detail Modal */}
       <AnimatePresence>
         {selectedActor && (
           <motion.div
@@ -771,7 +1174,7 @@ export const ActorUniversePage = () => {
               position: 'fixed',
               inset: 0,
               background: 'rgba(0, 0, 0, 0.85)',
-              backdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(20px)',
               zIndex: 200,
               display: 'flex',
               alignItems: 'flex-end',
@@ -785,152 +1188,223 @@ export const ActorUniversePage = () => {
               transition={{ type: 'spring', damping: 25 }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                background: currentTheme.background.dialog || currentTheme.background.card,
-                borderRadius: '24px 24px 0 0',
+                background: `linear-gradient(180deg, ${currentTheme.background.card}, ${currentTheme.background.default})`,
+                borderRadius: '28px 28px 0 0',
                 padding: '24px',
                 width: '100%',
                 maxWidth: '500px',
-                maxHeight: '80vh',
+                maxHeight: '85vh',
                 overflow: 'auto',
                 color: currentTheme.text.primary,
+                position: 'relative',
               }}
             >
+              {/* Decorative gradient */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '150px',
+                background: `linear-gradient(180deg, ${currentTheme.primary}15, transparent)`,
+                borderRadius: '28px 28px 0 0',
+                pointerEvents: 'none',
+              }} />
+
               {/* Handle bar */}
               <div style={{
-                width: '40px',
-                height: '4px',
+                width: '44px',
+                height: '5px',
                 background: currentTheme.border.default,
-                borderRadius: '2px',
-                margin: '0 auto 20px',
+                borderRadius: '3px',
+                margin: '0 auto 24px',
               }} />
 
               {/* Actor header */}
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '18px', marginBottom: '28px', position: 'relative' }}>
                 <div style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '90px',
+                  height: '90px',
                   borderRadius: '50%',
                   background: selectedActor.profilePath
                     ? `url(${TMDB_IMAGE_BASE}${selectedActor.profilePath})`
-                    : currentTheme.primary,
+                    : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  border: `3px solid ${currentTheme.primary}`,
+                  border: `4px solid ${currentTheme.primary}`,
                   flexShrink: 0,
+                  boxShadow: `0 8px 24px ${currentTheme.primary}40`,
                 }} />
                 <div>
-                  <h2 style={{ margin: '0 0 8px 0', fontSize: '22px' }}>{selectedActor.name}</h2>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 style={{
+                    margin: '0 0 10px 0',
+                    fontSize: '24px',
+                    fontWeight: 800,
+                    background: `linear-gradient(135deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}>
+                    {selectedActor.name}
+                  </h2>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    width: 'fit-content',
+                  }}>
                     <Star style={{ fontSize: '18px', color: '#ffc107' }} />
-                    <span style={{ fontSize: '15px' }}>{selectedActor.seriesCount} Serien</span>
+                    <span style={{ fontSize: '15px', fontWeight: 600 }}>
+                      {selectedActor.seriesCount} Serien
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Series list */}
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: currentTheme.text.muted, textTransform: 'uppercase' }}>
+              <h3 style={{
+                margin: '0 0 14px 0',
+                fontSize: '13px',
+                color: currentTheme.text.muted,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontWeight: 700,
+              }}>
                 In deiner Sammlung
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
                 {selectedActor.series.map(series => (
-                  <div
+                  <motion.div
                     key={series.id}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => { setSelectedActor(null); navigate(`/series/${series.id}`); }}
                     style={{
                       display: 'flex',
-                      gap: '12px',
-                      padding: '10px',
-                      background: currentTheme.background.surfaceHover,
-                      borderRadius: '10px',
+                      gap: '14px',
+                      padding: '12px',
+                      background: currentTheme.background.surface,
+                      borderRadius: '14px',
                       cursor: 'pointer',
+                      border: `1px solid ${currentTheme.border.default}`,
                     }}
                   >
                     <div style={{
-                      width: '40px',
-                      height: '60px',
-                      borderRadius: '6px',
+                      width: '44px',
+                      height: '66px',
+                      borderRadius: '8px',
                       background: series.poster
                         ? `url(https://image.tmdb.org/t/p/w92${series.poster})`
-                        : currentTheme.background.card,
+                        : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
                       backgroundSize: 'cover',
                       flexShrink: 0,
+                      boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
                     }} />
                     <div>
-                      <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>{series.title}</p>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: currentTheme.text.muted }}>
+                      <p style={{
+                        margin: 0,
+                        fontSize: '15px',
+                        fontWeight: 700,
+                        color: currentTheme.text.primary,
+                      }}>
+                        {series.title}
+                      </p>
+                      <p style={{
+                        margin: '5px 0 0 0',
+                        fontSize: '13px',
+                        color: currentTheme.primary,
+                        fontWeight: 500,
+                      }}>
                         als {series.character}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
               {/* Recommendations */}
               {selectedActor.recommendations && selectedActor.recommendations.length > 0 && (
                 <>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: currentTheme.text.muted, textTransform: 'uppercase' }}>
+                  <h3 style={{
+                    margin: '0 0 14px 0',
+                    fontSize: '13px',
+                    color: currentTheme.text.muted,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontWeight: 700,
+                  }}>
                     Weitere Serien mit {selectedActor.name.split(' ')[0]}
                   </h3>
-                  <HorizontalScrollContainer gap={12}>
+                  <HorizontalScrollContainer gap={14}>
                     {selectedActor.recommendations.map(rec => (
-                      <div
+                      <motion.div
                         key={rec.id}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => { setSelectedActor(null); navigate(`/series/${rec.id}`); }}
-                        style={{ minWidth: '100px', cursor: 'pointer' }}
+                        style={{ minWidth: '110px', cursor: 'pointer' }}
                       >
                         <div style={{
-                          width: '100px',
-                          height: '150px',
-                          borderRadius: '8px',
-                          marginBottom: '8px',
+                          width: '110px',
+                          height: '160px',
+                          borderRadius: '12px',
+                          marginBottom: '10px',
                           background: rec.poster
                             ? `url(${TMDB_IMAGE_BASE}${rec.poster})`
-                            : currentTheme.background.card,
+                            : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
                           position: 'relative',
+                          boxShadow: `0 6px 16px ${currentTheme.background.default}60`,
                         }}>
                           <div style={{
                             position: 'absolute',
-                            top: '6px',
-                            right: '6px',
-                            background: 'rgba(0, 0, 0, 0.8)',
-                            borderRadius: '4px',
-                            padding: '2px 6px',
+                            top: '8px',
+                            right: '8px',
+                            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 40, 0.9))',
+                            borderRadius: '8px',
+                            padding: '4px 8px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '2px',
+                            gap: '3px',
                           }}>
-                            <Star style={{ fontSize: '10px', color: '#ffc107' }} />
-                            <span style={{ fontSize: '10px', color: 'white' }}>{rec.voteAverage.toFixed(1)}</span>
+                            <Star style={{ fontSize: '11px', color: '#ffc107' }} />
+                            <span style={{ fontSize: '11px', color: 'white', fontWeight: 600 }}>
+                              {rec.voteAverage.toFixed(1)}
+                            </span>
                           </div>
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '6px',
-                            right: '6px',
-                            background: currentTheme.primary,
-                            borderRadius: '50%',
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#fff',
-                          }}>
-                            <Add style={{ fontSize: '16px' }} />
-                          </div>
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            style={{
+                              position: 'absolute',
+                              bottom: '8px',
+                              right: '8px',
+                              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                              borderRadius: '50%',
+                              width: '28px',
+                              height: '28px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              boxShadow: `0 4px 12px ${currentTheme.primary}50`,
+                            }}
+                          >
+                            <Add style={{ fontSize: '18px' }} />
+                          </motion.div>
                         </div>
                         <p style={{
                           margin: 0,
-                          fontSize: '12px',
-                          fontWeight: 500,
+                          fontSize: '13px',
+                          fontWeight: 600,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
+                          color: currentTheme.text.primary,
                         }}>
                           {rec.title}
                         </p>
-                      </div>
+                      </motion.div>
                     ))}
                   </HorizontalScrollContainer>
                 </>
@@ -939,41 +1413,57 @@ export const ActorUniversePage = () => {
               {/* Connected actors */}
               {getActorConnections(selectedActor.id).length > 0 && (
                 <>
-                  <h3 style={{ margin: '24px 0 12px 0', fontSize: '14px', color: currentTheme.text.muted, textTransform: 'uppercase' }}>
+                  <h3 style={{
+                    margin: '28px 0 14px 0',
+                    fontSize: '13px',
+                    color: currentTheme.text.muted,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontWeight: 700,
+                  }}>
                     Spielt zusammen mit
                   </h3>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                     {getActorConnections(selectedActor.id).slice(0, 8).map(conn => {
                       const otherId = conn.actor1Id === selectedActor.id ? conn.actor2Id : conn.actor1Id;
                       const other = actors.find(a => a.id === otherId);
                       if (!other) return null;
 
                       return (
-                        <div
+                        <motion.div
                           key={otherId}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => setSelectedActor(other)}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
-                            padding: '8px 12px',
-                            background: `${currentTheme.primary}33`,
-                            borderRadius: '20px',
+                            gap: '10px',
+                            padding: '10px 14px',
+                            background: `linear-gradient(135deg, ${currentTheme.primary}25, #8b5cf625)`,
+                            borderRadius: '16px',
                             cursor: 'pointer',
+                            border: `1px solid ${currentTheme.primary}30`,
                           }}
                         >
                           <div style={{
-                            width: '24px',
-                            height: '24px',
+                            width: '28px',
+                            height: '28px',
                             borderRadius: '50%',
                             background: other.profilePath
                               ? `url(${TMDB_IMAGE_BASE}${other.profilePath})`
-                              : currentTheme.primary,
+                              : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
                             backgroundSize: 'cover',
+                            border: `2px solid ${currentTheme.primary}50`,
                           }} />
-                          <span style={{ fontSize: '12px' }}>{other.name}</span>
-                          <span style={{ fontSize: '10px', color: currentTheme.text.muted }}>({conn.strength})</span>
-                        </div>
+                          <span style={{ fontSize: '13px', fontWeight: 600 }}>{other.name}</span>
+                          <span style={{
+                            fontSize: '11px',
+                            color: currentTheme.primary,
+                            fontWeight: 600,
+                          }}>
+                            ({conn.strength})
+                          </span>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -985,17 +1475,4 @@ export const ActorUniversePage = () => {
       </AnimatePresence>
     </div>
   );
-};
-
-const zoomButtonStyle: React.CSSProperties = {
-  width: '40px',
-  height: '40px',
-  borderRadius: '10px',
-  background: 'rgba(0, 0, 0, 0.7)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  color: 'white',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
 };

@@ -68,23 +68,23 @@ export const TasteMatchCard: React.FC = () => {
         whileTap={{ scale: 0.98 }}
         onClick={() => setShowSelector(true)}
         style={{
-          margin: '0 20px 16px',
-          padding: '16px',
-          borderRadius: '16px',
+          margin: '0 20px',
+          padding: '12px 14px',
+          borderRadius: '14px',
           background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}05)`,
           border: `1px solid ${currentTheme.primary}30`,
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          gap: '12px',
         }}
       >
         {/* Icon */}
         <div
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: '12px',
+            width: 40,
+            height: 40,
+            borderRadius: '10px',
             background: `linear-gradient(135deg, ${currentTheme.primary}, #764ba2)`,
             display: 'flex',
             alignItems: 'center',
@@ -92,29 +92,33 @@ export const TasteMatchCard: React.FC = () => {
             flexShrink: 0,
           }}
         >
-          <CompareArrows style={{ fontSize: 24, color: 'white' }} />
+          <CompareArrows style={{ fontSize: 20, color: 'white' }} />
         </div>
 
         {/* Text */}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <h3
             style={{
               margin: 0,
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: 600,
               color: currentTheme.text.primary,
+              whiteSpace: 'nowrap',
             }}
           >
             Taste Match
           </h3>
           <p
             style={{
-              margin: '2px 0 0',
-              fontSize: 13,
+              margin: '1px 0 0',
+              fontSize: 12,
               color: currentTheme.text.secondary,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
-            Vergleiche deinen Geschmack mit Freunden
+            Geschmack vergleichen
           </p>
         </div>
 

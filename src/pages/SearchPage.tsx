@@ -1,13 +1,20 @@
+/**
+ * SearchPage - Premium Search Experience
+ * Modern search interface with animated results
+ */
+
 import {
   Add,
   CalendarToday,
   Check,
   Close,
+  History,
   Movie,
   Search,
   Star,
   TrendingUp,
 } from '@mui/icons-material';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -17,10 +24,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { Movie as MovieType } from '../types/Movie';
 import { Series } from '../types/Series';
-// Removed VirtualizedSearchResults import - using custom grid layout
 import { BackButton } from '../components/BackButton';
 import { Dialog } from '../components/Dialog';
-// import { genreIdMapForSeries, genreIdMapForMovies } from '../config/menuItems';
 
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -29,15 +34,12 @@ export const SearchPage: React.FC = () => {
   const { movieList } = useMovieList();
   const { currentTheme } = useTheme();
 
-  // Check if we came back via navigation (back button)
   const isReturning = window.history.state?.usr?.returning === true;
 
-  // Restore search state from sessionStorage only if returning
   const [searchQuery, setSearchQuery] = useState(() => {
     if (isReturning) {
       return sessionStorage.getItem('searchQuery') || '';
     }
-    // Clear session storage if not returning
     sessionStorage.removeItem('searchQuery');
     sessionStorage.removeItem('searchType');
     sessionStorage.removeItem('searchResults');
@@ -78,7 +80,6 @@ export const SearchPage: React.FC = () => {
     'Wednesday',
   ]);
 
-  // Load recent searches from localStorage
   useEffect(() => {
     const recent = localStorage.getItem('recentSearches');
     if (recent) {
@@ -86,7 +87,6 @@ export const SearchPage: React.FC = () => {
     }
   }, []);
 
-  // Save search state to sessionStorage
   useEffect(() => {
     sessionStorage.setItem('searchQuery', searchQuery);
   }, [searchQuery]);
@@ -99,14 +99,12 @@ export const SearchPage: React.FC = () => {
     sessionStorage.setItem('searchResults', JSON.stringify(searchResults));
   }, [searchResults]);
 
-  // Save search to recent
   const saveToRecent = (query: string) => {
     const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
   };
 
-  // Check if item is already in list
   const isInList = (id: string | number, type: 'series' | 'movie') => {
     const numId = typeof id === 'string' ? parseInt(id) : id;
     if (type === 'series') {
@@ -116,7 +114,6 @@ export const SearchPage: React.FC = () => {
     }
   };
 
-  // Search TMDB
   const searchTMDB = useCallback(
     async (query: string) => {
       if (!query || query.length < 2) {
@@ -130,7 +127,6 @@ export const SearchPage: React.FC = () => {
       try {
         const results = [];
 
-        // Search series if needed
         if (searchType === 'all' || searchType === 'series') {
           const seriesResponse = await fetch(
             `https://api.themoviedb.org/3/search/tv?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
@@ -148,7 +144,6 @@ export const SearchPage: React.FC = () => {
           }
         }
 
-        // Search movies if needed
         if (searchType === 'all' || searchType === 'movies') {
           const movieResponse = await fetch(
             `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
@@ -166,7 +161,6 @@ export const SearchPage: React.FC = () => {
           }
         }
 
-        // Sort by popularity
         results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
         setSearchResults(results);
       } catch (error) {
@@ -179,7 +173,6 @@ export const SearchPage: React.FC = () => {
     [searchType, seriesList, movieList]
   );
 
-  // Debounced search - Skip initial search if we have saved results and are returning
   const [skipInitialSearch, setSkipInitialSearch] = useState(() => {
     return isReturning && searchResults.length > 0;
   });
@@ -197,12 +190,9 @@ export const SearchPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, searchTMDB]);
 
-  // Handle item click - always navigate to detail page
   const handleItemClick = (item: any) => {
-    // Set flag for returning navigation
     window.history.replaceState({ ...window.history.state, usr: { returning: true } }, '');
 
-    // Always navigate to detail page
     if (item.type === 'series') {
       navigate(`/series/${item.id}`);
     } else {
@@ -210,7 +200,6 @@ export const SearchPage: React.FC = () => {
     }
   };
 
-  // Add to list
   const addToList = async (item: any) => {
     if (!user) {
       setDialog({
@@ -238,25 +227,26 @@ export const SearchPage: React.FC = () => {
       });
 
       if (response.ok) {
-        // Remove item from search results (like in MobileDiscoverPage)
         setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
 
-        // Show success snackbar
         const title = item.title || item.name;
         setSnackbar({
           open: true,
           message: `"${title}" wurde erfolgreich hinzugefügt!`,
         });
 
-        // Activity-Logging für Friend + Badge-System (wie Desktop)
         const posterPath = item.poster_path;
         if (item.media_type === 'tv' || endpoint.includes('/add')) {
-          await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id, posterPath);
+          await logSeriesAdded(
+            user.uid,
+            item.name || item.title || 'Unbekannte Serie',
+            item.id,
+            posterPath
+          );
         } else {
           await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
         }
 
-        // Hide snackbar after 3 seconds
         setTimeout(() => {
           setSnackbar({ open: false, message: '' });
         }, 3000);
@@ -267,70 +257,102 @@ export const SearchPage: React.FC = () => {
     }
   };
 
-  // Remove search term
   const removeRecentSearch = (term: string) => {
     const updated = recentSearches.filter((s) => s !== term);
     setRecentSearches(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
   };
 
+  const filterTabs = [
+    { key: 'all', label: 'Alle', icon: null, gradient: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)` },
+    { key: 'series', label: 'Serien', icon: CalendarToday, gradient: `linear-gradient(135deg, ${currentTheme.primary}, #667eea)` },
+    { key: 'movies', label: 'Filme', icon: Movie, gradient: `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)` },
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', background: currentTheme.background.default }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+        position: 'relative',
+      }}
+    >
+      {/* Decorative Background */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '400px',
+          background: `
+            radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.primary}35, transparent),
+            radial-gradient(ellipse 60% 40% at 80% 10%, ${currentTheme.status.error}20, transparent)
+          `,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
       {/* Search Header */}
       <div
         style={{
           position: 'sticky',
           top: 0,
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          background: `${currentTheme.background.default}ee`,
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           zIndex: 100,
         }}
       >
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: `calc(env(safe-area-inset-top) + 20px) 20px 20px`,
+            gap: '16px',
+            padding: `calc(env(safe-area-inset-top) + 20px) 20px 16px`,
           }}
         >
           <BackButton />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Search style={{ fontSize: '24px', color: currentTheme.primary }} />
-            <h1
-              style={{
-                fontSize: '24px',
-                fontWeight: 800,
-                margin: 0,
-                background: currentTheme.primary,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              Suche
-            </h1>
-          </div>
-          <div style={{ width: '40px' }}></div> {/* Spacer for alignment */}
-        </div>
+          <h1
+            style={{
+              fontSize: '26px',
+              fontWeight: 800,
+              margin: 0,
+              flex: 1,
+              background: `linear-gradient(135deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Suche
+          </h1>
+        </motion.div>
 
-        <div
+        {/* Search Input */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
           style={{
-            padding: '0 20px 20px',
+            padding: '0 20px 16px',
           }}
         >
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
-              padding: '12px',
+              gap: '14px',
+              background: currentTheme.background.surface,
+              border: `1px solid ${currentTheme.border.default}`,
+              borderRadius: '16px',
+              padding: '14px 18px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
             }}
           >
+            <Search style={{ fontSize: '22px', color: currentTheme.text.muted }} />
             <input
               type="text"
               value={searchQuery}
@@ -342,440 +364,513 @@ export const SearchPage: React.FC = () => {
                 background: 'none',
                 border: 'none',
                 outline: 'none',
-                color: 'white',
+                color: currentTheme.text.primary,
                 fontSize: '16px',
               }}
             />
             {searchQuery && (
-              <button
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => setSearchQuery('')}
                 style={{
-                  background: 'none',
+                  background: `${currentTheme.text.muted}20`,
                   border: 'none',
-                  color: 'rgba(255, 255, 255, 0.5)',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  color: currentTheme.text.muted,
                   cursor: 'pointer',
-                  padding: 0,
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <Close style={{ fontSize: '20px' }} />
-              </button>
+                <Close style={{ fontSize: '16px' }} />
+              </motion.button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Filter Tabs */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
           style={{
             display: 'flex',
-            padding: '0 20px 12px',
-            gap: '8px',
+            padding: '0 20px 16px',
+            gap: '10px',
           }}
         >
-          <button
-            onClick={() => setSearchType('all')}
-            style={{
-              padding: '8px 16px',
-              background:
-                searchType === 'all'
-                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-              border: searchType === 'all' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
-          >
-            Alle
-          </button>
-          <button
-            onClick={() => setSearchType('series')}
-            style={{
-              padding: '8px 16px',
-              background:
-                searchType === 'series'
-                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-              border: searchType === 'series' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
-            <CalendarToday style={{ fontSize: '14px' }} />
-            Serien
-          </button>
-          <button
-            onClick={() => setSearchType('movies')}
-            style={{
-              padding: '8px 16px',
-              background:
-                searchType === 'movies'
-                  ? 'linear-gradient(135deg, #ff6b6b 0%, #ff9a00 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-              border: searchType === 'movies' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
-            <Movie style={{ fontSize: '14px' }} />
-            Filme
-          </button>
-        </div>
+          {filterTabs.map((tab) => (
+            <motion.button
+              key={tab.key}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSearchType(tab.key as any)}
+              style={{
+                padding: '10px 18px',
+                background: searchType === tab.key ? tab.gradient : currentTheme.background.surface,
+                border: searchType === tab.key ? 'none' : `1px solid ${currentTheme.border.default}`,
+                borderRadius: '14px',
+                color: searchType === tab.key ? 'white' : currentTheme.text.secondary,
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: searchType === tab.key ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {tab.icon && <tab.icon style={{ fontSize: '16px' }} />}
+              {tab.label}
+            </motion.button>
+          ))}
+        </motion.div>
       </div>
 
       {/* Content */}
-      <div style={{ padding: '16px' }}>
-        {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              padding: '40px',
-            }}
-          >
-            <div style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Suche läuft...</div>
-          </div>
-        ) : searchQuery && searchResults.length > 0 ? (
-          <>
-            {/* Search Results */}
-            <p
+      <div style={{ padding: '20px', position: 'relative', zIndex: 1 }}>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               style={{
-                fontSize: '14px',
-                color: 'rgba(255, 255, 255, 0.5)',
-                marginBottom: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '60px 20px',
               }}
             >
-              {searchResults.length} Ergebnisse für "{searchQuery}"
-            </p>
-
-            {/* Search Results Grid */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isDesktop
-                  ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                  : 'repeat(2, 1fr)',
-                gap: isDesktop ? '24px' : '16px',
-                maxWidth: '100%',
-                margin: '0',
-              }}
-            >
-              {searchResults.map((item) => (
-                <div
-                  key={`${item.type}-${item.id}`}
-                  style={{
-                    position: 'relative',
-                  }}
-                >
-                  <div
-                    onClick={() => handleItemClick(item)}
-                    style={{
-                      width: '100%',
-                      aspectRatio: '2/3',
-                      position: 'relative',
-                      borderRadius: '6px',
-                      overflow: 'hidden',
-                      marginBottom: '6px',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                    }}
-                  >
-                    <img
-                      src={
-                        item.poster_path
-                          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                          : '/placeholder.jpg'
-                      }
-                      alt={item.title || item.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-
-                    {/* Rating Badge */}
-                    {item.vote_average && item.vote_average > 0 && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '4px',
-                          right: '4px',
-                          padding: '2px 5px',
-                          background: 'rgba(0, 0, 0, 0.8)',
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                        }}
-                      >
-                        <Star
-                          style={{
-                            fontSize: '10px',
-                            color: currentTheme.status.warning,
-                          }}
-                        />
-                        {item.vote_average.toFixed(1)}
-                      </div>
-                    )}
-
-                    {/* Type Badge */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '4px',
-                        left: '4px',
-                        padding: '2px 5px',
-                        background:
-                          item.type === 'series'
-                            ? 'rgba(102, 126, 234, 0.9)'
-                            : 'rgba(255, 107, 107, 0.9)',
-                        borderRadius: '4px',
-                        fontSize: '10px',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        color: 'white',
-                      }}
-                    >
-                      {item.type === 'series' ? 'Serie' : 'Film'}
-                    </div>
-
-                    {/* Add/Check Button */}
-                    {!item.inList ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToList(item);
-                        }}
-                        style={{
-                          position: 'absolute',
-                          bottom: '4px',
-                          right: '4px',
-                          width: '24px',
-                          height: '24px',
-                          background: 'rgba(255, 255, 255, 0.2)',
-                          backdropFilter: 'blur(10px)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '1px solid rgba(255, 255, 255, 0.3)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          padding: 0,
-                        }}
-                      >
-                        <Add
-                          style={{
-                            fontSize: '14px',
-                            color: 'white',
-                          }}
-                        />
-                      </button>
-                    ) : (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: '4px',
-                          right: '4px',
-                          width: '24px',
-                          height: '24px',
-                          background: 'rgba(76, 209, 55, 0.9)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Check
-                          style={{
-                            fontSize: '14px',
-                            color: 'white',
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Title and Year */}
-                  <h4
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      margin: 0,
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {item.title || item.name}
-                  </h4>
-
-                  <p
-                    style={{
-                      fontSize: '11px',
-                      color: 'rgba(255, 255, 255, 0.4)',
-                      margin: '2px 0 0 0',
-                    }}
-                  >
-                    {item.release_date || item.first_air_date
-                      ? new Date(item.release_date || item.first_air_date).getFullYear()
-                      : 'TBA'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : searchQuery && !loading ? (
-          <p
-            style={{
-              textAlign: 'center',
-              color: 'rgba(255, 255, 255, 0.5)',
-              padding: '40px',
-            }}
-          >
-            Keine Ergebnisse für "{searchQuery}"
-          </p>
-        ) : (
-          <>
-            {/* Trending Searches */}
-            <section style={{ marginBottom: '32px' }}>
-              <h3
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  marginBottom: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: 'rgba(255, 255, 255, 0.9)',
+                  width: '48px',
+                  height: '48px',
+                  border: `3px solid ${currentTheme.primary}20`,
+                  borderTop: `3px solid ${currentTheme.primary}`,
+                  borderRadius: '50%',
+                  marginBottom: '20px',
+                }}
+              />
+              <p style={{ color: currentTheme.text.muted, fontSize: '15px' }}>Suche läuft...</p>
+            </motion.div>
+          ) : searchQuery && searchResults.length > 0 ? (
+            <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {/* Results Count */}
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: currentTheme.text.muted,
+                  marginBottom: '20px',
                 }}
               >
-                <TrendingUp style={{ fontSize: '18px' }} />
-                Beliebte Suchen
-              </h3>
+                <span style={{ fontWeight: 700, color: currentTheme.primary }}>
+                  {searchResults.length}
+                </span>{' '}
+                Ergebnisse für "{searchQuery}"
+              </p>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {popularSearches.map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => setSearchQuery(term)}
-                    style={{
-                      padding: '8px 16px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '20px',
-                      color: 'rgba(255, 255, 255, 0.8)',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                    }}
+              {/* Results Grid */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isDesktop
+                    ? 'repeat(auto-fill, minmax(180px, 1fr))'
+                    : 'repeat(2, 1fr)',
+                  gap: isDesktop ? '24px' : '16px',
+                }}
+              >
+                {searchResults.map((item, index) => (
+                  <motion.div
+                    key={`${item.type}-${item.id}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    style={{ position: 'relative' }}
                   >
-                    {term}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Recent Searches */}
-            {recentSearches.length > 0 && (
-              <section>
-                <h3
-                  style={{
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    marginBottom: '16px',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                  }}
-                >
-                  Zuletzt gesucht
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {recentSearches.map((term) => (
-                    <button
-                      key={term}
-                      onClick={() => setSearchQuery(term)}
+                    <motion.div
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleItemClick(item)}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '12px',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        borderRadius: '8px',
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        fontSize: '14px',
+                        width: '100%',
+                        aspectRatio: '2/3',
+                        position: 'relative',
+                        borderRadius: '14px',
+                        overflow: 'hidden',
+                        marginBottom: '10px',
                         cursor: 'pointer',
-                        textAlign: 'left',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
                       }}
                     >
-                      <span>{term}</span>
-                      <Close
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeRecentSearch(term);
+                      <img
+                        src={
+                          item.poster_path
+                            ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                            : '/placeholder.jpg'
+                        }
+                        alt={item.title || item.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
                         }}
-                        style={{ fontSize: '16px', opacity: 0.5 }}
                       />
-                    </button>
+
+                      {/* Gradient Overlay */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '50%',
+                          background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+                          pointerEvents: 'none',
+                        }}
+                      />
+
+                      {/* Rating Badge */}
+                      {item.vote_average && item.vote_average > 0 && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            padding: '4px 8px',
+                            background: 'rgba(0, 0, 0, 0.85)',
+                            backdropFilter: 'blur(10px)',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            color: 'white',
+                          }}
+                        >
+                          <Star style={{ fontSize: '12px', color: currentTheme.status.warning }} />
+                          {item.vote_average.toFixed(1)}
+                        </div>
+                      )}
+
+                      {/* Type Badge */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          left: '8px',
+                          padding: '4px 10px',
+                          background:
+                            item.type === 'series'
+                              ? `linear-gradient(135deg, ${currentTheme.primary}, #667eea)`
+                              : `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)`,
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          color: 'white',
+                        }}
+                      >
+                        {item.type === 'series' ? 'Serie' : 'Film'}
+                      </div>
+
+                      {/* Add/Check Button */}
+                      {!item.inList ? (
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToList(item);
+                          }}
+                          style={{
+                            position: 'absolute',
+                            bottom: '10px',
+                            right: '10px',
+                            width: '36px',
+                            height: '36px',
+                            background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: 'none',
+                            cursor: 'pointer',
+                            boxShadow: `0 4px 12px ${currentTheme.primary}50`,
+                          }}
+                        >
+                          <Add style={{ fontSize: '20px', color: 'white' }} />
+                        </motion.button>
+                      ) : (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '10px',
+                            right: '10px',
+                            width: '36px',
+                            height: '36px',
+                            background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: `0 4px 12px ${currentTheme.status.success}50`,
+                          }}
+                        >
+                          <Check style={{ fontSize: '20px', color: 'white' }} />
+                        </div>
+                      )}
+                    </motion.div>
+
+                    {/* Title */}
+                    <h4
+                      style={{
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        margin: 0,
+                        color: currentTheme.text.primary,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {item.title || item.name}
+                    </h4>
+
+                    {/* Year */}
+                    <p
+                      style={{
+                        fontSize: '12px',
+                        color: currentTheme.text.muted,
+                        margin: '4px 0 0 0',
+                      }}
+                    >
+                      {item.release_date || item.first_air_date
+                        ? new Date(item.release_date || item.first_air_date).getFullYear()
+                        : 'TBA'}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          ) : searchQuery && !loading ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+              }}
+            >
+              <div
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  margin: '0 auto 24px',
+                  borderRadius: '50%',
+                  background: `${currentTheme.text.muted}10`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Search style={{ fontSize: '48px', color: currentTheme.text.muted }} />
+              </div>
+              <h3
+                style={{
+                  margin: '0 0 8px',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  color: currentTheme.text.primary,
+                }}
+              >
+                Keine Ergebnisse
+              </h3>
+              <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: '15px' }}>
+                Keine Ergebnisse für "{searchQuery}"
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="suggestions"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              {/* Trending Searches */}
+              <section style={{ marginBottom: '32px' }}>
+                <h3
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: currentTheme.text.primary,
+                  }}
+                >
+                  <TrendingUp style={{ fontSize: '20px', color: currentTheme.primary }} />
+                  Beliebte Suchen
+                </h3>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {popularSearches.map((term, index) => (
+                    <motion.button
+                      key={term}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.25 + index * 0.03 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSearchQuery(term)}
+                      style={{
+                        padding: '10px 18px',
+                        background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}08)`,
+                        border: `1px solid ${currentTheme.primary}30`,
+                        borderRadius: '20px',
+                        color: currentTheme.text.primary,
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {term}
+                    </motion.button>
                   ))}
                 </div>
               </section>
-            )}
-          </>
-        )}
+
+              {/* Recent Searches */}
+              {recentSearches.length > 0 && (
+                <section>
+                  <h3
+                    style={{
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: currentTheme.text.primary,
+                    }}
+                  >
+                    <History style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+                    Zuletzt gesucht
+                  </h3>
+
+                  <div
+                    style={{
+                      background: currentTheme.background.surface,
+                      borderRadius: '16px',
+                      border: `1px solid ${currentTheme.border.default}`,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {recentSearches.map((term, index) => (
+                      <motion.button
+                        key={term}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 + index * 0.03 }}
+                        onClick={() => setSearchQuery(term)}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '14px 16px',
+                          background: 'transparent',
+                          border: 'none',
+                          borderBottom:
+                            index < recentSearches.length - 1
+                              ? `1px solid ${currentTheme.border.default}`
+                              : 'none',
+                          color: currentTheme.text.primary,
+                          fontSize: '15px',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <Search style={{ fontSize: '18px', color: currentTheme.text.muted }} />
+                          <span>{term}</span>
+                        </div>
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeRecentSearch(term);
+                          }}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: `${currentTheme.text.muted}15`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Close style={{ fontSize: '16px', color: currentTheme.text.muted }} />
+                        </motion.div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Success Snackbar */}
-      {snackbar.open && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: currentTheme.status.success,
-            color: 'white',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            maxWidth: 'calc(100% - 40px)',
-            transition: 'all 0.3s ease-out',
-          }}
-        >
-          <Check style={{ fontSize: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {snackbar.open && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              bottom: '100px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+              color: 'white',
+              padding: '14px 24px',
+              borderRadius: '14px',
+              boxShadow: `0 8px 24px ${currentTheme.status.success}40`,
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              maxWidth: 'calc(100% - 40px)',
+            }}
+          >
+            <Check style={{ fontSize: '22px' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>{snackbar.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Dialog for alerts */}
       <Dialog
         open={dialog.open}
         onClose={() => setDialog({ ...dialog, open: false })}

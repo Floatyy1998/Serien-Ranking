@@ -1,10 +1,17 @@
+/**
+ * SettingsPage - Premium Settings Experience
+ * Beautiful settings interface with modern styling
+ */
+
 import {
   Check,
+  ChevronRight,
   ContentCopy,
   Edit,
   Link,
   Logout,
   Palette,
+  Person,
   PhotoCamera,
   Public,
   Refresh,
@@ -14,6 +21,7 @@ import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../App';
 import { useTheme } from '../contexts/ThemeContext';
 import { BackButton } from '../components/BackButton';
@@ -22,7 +30,7 @@ import { Dialog } from '../components/Dialog';
 export const SettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { getMobileHeaderStyle, currentTheme } = useTheme();
+  const { currentTheme } = useTheme();
 
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -34,8 +42,15 @@ export const SettingsPage = () => {
   const [isPublicProfile, setIsPublicProfile] = useState<boolean>(false);
   const [publicProfileId, setPublicProfileId] = useState<string>('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -60,7 +75,9 @@ export const SettingsPage = () => {
           setIsPublicProfile(false);
           setPublicProfileId('');
         }
-      } catch (error) {}
+      } catch (error) {
+        // Silent fail
+      }
     };
 
     loadUserData();
@@ -71,7 +88,9 @@ export const SettingsPage = () => {
       try {
         await firebase.auth().signOut();
         navigate('/');
-      } catch (error) {}
+      } catch (error) {
+        // Silent fail
+      }
     }
   };
 
@@ -86,7 +105,6 @@ export const SettingsPage = () => {
 
     try {
       setUploading(true);
-
       const storageRef = firebase.storage().ref();
       const imageRef = storageRef.child(`profile-images/${user.uid}`);
 
@@ -117,7 +135,11 @@ export const SettingsPage = () => {
       setSnackbar({ open: true, message: 'Benutzername gespeichert!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
     } catch (error) {
-      setDialog({ open: true, message: 'Fehler beim Speichern des Benutzernamens', type: 'error' });
+      setDialog({
+        open: true,
+        message: 'Fehler beim Speichern des Benutzernamens',
+        type: 'error',
+      });
     } finally {
       setSaving(false);
     }
@@ -135,7 +157,11 @@ export const SettingsPage = () => {
       setSnackbar({ open: true, message: 'Anzeigename gespeichert!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
     } catch (error) {
-      setDialog({ open: true, message: 'Fehler beim Speichern des Anzeigenamens', type: 'error' });
+      setDialog({
+        open: true,
+        message: 'Fehler beim Speichern des Anzeigenamens',
+        type: 'error',
+      });
     } finally {
       setSaving(false);
     }
@@ -169,6 +195,7 @@ export const SettingsPage = () => {
 
       if (navigator.vibrate) navigator.vibrate(50);
     } catch (error) {
+      // Silent fail
     } finally {
       setIsLoadingProfile(false);
     }
@@ -200,479 +227,462 @@ export const SettingsPage = () => {
 
       if (navigator.vibrate) navigator.vibrate(100);
     } catch (error) {
+      // Silent fail
     } finally {
       setIsLoadingProfile(false);
     }
   };
 
   return (
-    <div>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+        position: 'relative',
+        paddingBottom: '100px',
+      }}
+    >
+      {/* Decorative Background */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '400px',
+          background: `
+            radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.primary}35, transparent),
+            radial-gradient(ellipse 60% 40% at 80% 10%, #8b5cf620, transparent)
+          `,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
       {/* Header */}
       <header
         style={{
-          ...getMobileHeaderStyle('transparent'),
           padding: '20px',
           paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          background: `${currentTheme.background.default}ee`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <BackButton />
-
-          <div>
-            <h1
-              style={{
-                fontSize: '24px',
-                fontWeight: 800,
-                margin: 0,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Einstellungen
-            </h1>
-            <p
-              style={{
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: '14px',
-                margin: '4px 0 0 0',
-              }}
-            >
-              {user?.displayName || user?.email}
-            </p>
-          </div>
-        </div>
-      </header>
-
-      {/* Profile Section */}
-      <div
-        style={{
-          padding: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        {/* Profile Picture */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           style={{
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
             gap: '16px',
           }}
         >
-          <div style={{ position: 'relative' }}>
-            {photoURL ? (
-              <img
-                src={photoURL}
-                alt="Profile"
+          <BackButton />
+          <h1
+            style={{
+              fontSize: '26px',
+              fontWeight: 800,
+              margin: 0,
+              flex: 1,
+              background: `linear-gradient(135deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Einstellungen
+          </h1>
+        </motion.div>
+      </header>
+
+      {/* Content */}
+      <div style={{ padding: '0 20px', position: 'relative', zIndex: 1 }}>
+        {/* Profile Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          style={{
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
+            borderRadius: '20px',
+            padding: '24px',
+            marginBottom: '16px',
+          }}
+        >
+          {/* Avatar */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginBottom: '24px',
+            }}
+          >
+            <div style={{ position: 'relative', marginBottom: '12px' }}>
+              {photoURL ? (
+                <img
+                  src={photoURL}
+                  alt="Profile"
+                  style={{
+                    width: '90px',
+                    height: '90px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: `3px solid ${currentTheme.primary}`,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '90px',
+                    height: '90px',
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Person style={{ fontSize: '40px', color: 'white' }} />
+                </div>
+              )}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
                 style={{
-                  width: '80px',
-                  height: '80px',
+                  position: 'absolute',
+                  bottom: '0',
+                  right: '0',
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '50%',
-                  objectFit: 'cover',
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                  border: `2px solid ${currentTheme.background.surface}`,
+                  color: 'white',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  color: 'white',
+                  cursor: 'pointer',
                 }}
               >
-                {user?.displayName?.[0] || user?.email?.[0] || 'U'}
-              </div>
-            )}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              style={{
-                position: 'absolute',
-                bottom: '0',
-                right: '0',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                border: '2px solid #000',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              {uploading ? '⏳' : <PhotoCamera style={{ fontSize: '16px' }} />}
-            </button>
-          </div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            style={{ display: 'none' }}
-          />
-          <p
-            style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '14px',
-              margin: 0,
-              textAlign: 'center',
-            }}
-          >
-            Tippe auf die Kamera um ein neues Profilbild hochzuladen
-          </p>
-        </div>
-
-        {/* Username */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <h3
-              style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                margin: '0 0 8px 0',
-                color: 'white',
-              }}
-            >
-              Benutzername
-            </h3>
-            {usernameEditable ? (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  style={{
-                    flex: 1,
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    color: 'white',
-                    fontSize: '14px',
-                  }}
-                  placeholder="Benutzername eingeben"
-                />
-                <button
-                  onClick={saveUsername}
-                  disabled={saving}
-                  style={{
-                    background: '#4CAF50',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: 'white',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {saving ? '...' : '✓'}
-                </button>
-                <button
-                  onClick={() => setUsernameEditable(false)}
-                  style={{
-                    background: '#f44336',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: 'white',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <p
-                style={{
-                  fontSize: '14px',
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  margin: 0,
-                }}
-              >
-                {username || 'Kein Benutzername festgelegt'}
-              </p>
-            )}
-          </div>
-          {!usernameEditable && (
-            <button
-              onClick={() => setUsernameEditable(true)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'rgba(255, 255, 255, 0.6)',
-                cursor: 'pointer',
-                padding: '8px',
-              }}
-            >
-              <Edit style={{ fontSize: '20px' }} />
-            </button>
-          )}
-        </div>
-
-        {/* Display Name */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <h3
-              style={{
-                fontSize: '16px',
-                fontWeight: 600,
-                margin: '0 0 8px 0',
-                color: 'white',
-              }}
-            >
-              Anzeigename
-            </h3>
-            {displayNameEditable ? (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  style={{
-                    flex: 1,
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    color: 'white',
-                    fontSize: '14px',
-                  }}
-                  placeholder="Anzeigename eingeben"
-                />
-                <button
-                  onClick={saveDisplayName}
-                  disabled={saving}
-                  style={{
-                    background: '#4CAF50',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: 'white',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {saving ? '...' : '✓'}
-                </button>
-                <button
-                  onClick={() => setDisplayNameEditable(false)}
-                  style={{
-                    background: '#f44336',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: 'white',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <p
-                style={{
-                  fontSize: '14px',
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  margin: 0,
-                }}
-              >
-                {displayName || 'Kein Anzeigename festgelegt'}
-              </p>
-            )}
-          </div>
-          {!displayNameEditable && (
-            <button
-              onClick={() => setDisplayNameEditable(true)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'rgba(255, 255, 255, 0.6)',
-                cursor: 'pointer',
-                padding: '8px',
-              }}
-            >
-              <Edit style={{ fontSize: '20px' }} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Settings Items */}
-      <div
-        style={{
-          padding: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-        }}
-      >
-        {/* Theme Settings */}
-        <button
-          onClick={() => navigate('/theme')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            color: 'white',
-            fontSize: '16px',
-            cursor: 'pointer',
-            textAlign: 'left',
-          }}
-        >
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Palette style={{ fontSize: '24px' }} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Design & Themes</h3>
+                {uploading ? '...' : <PhotoCamera style={{ fontSize: '16px' }} />}
+              </motion.button>
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
             <p
               style={{
-                fontSize: '14px',
-                color: 'rgba(255, 255, 255, 0.6)',
-                margin: '2px 0 0 0',
+                color: currentTheme.text.muted,
+                fontSize: '12px',
+                margin: 0,
+                textAlign: 'center',
               }}
             >
-              Farben und Aussehen anpassen
+              Tippe auf die Kamera um ein neues Profilbild hochzuladen
             </p>
           </div>
-        </button>
 
-        {/* Public Profile Settings */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-          }}
-        >
-          <h3
-            style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              margin: 0,
-              color: 'white',
-            }}
-          >
-            Öffentliches Profil
-          </h3>
-
-          {/* Public Profile Toggle */}
+          {/* Username Field */}
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '16px',
-              padding: '16px',
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: currentTheme.background.default,
+              border: `1px solid ${currentTheme.border.default}`,
+              borderRadius: '14px',
+              padding: '14px 16px',
+              marginBottom: '12px',
             }}
           >
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                flex: 1,
+                justifyContent: 'space-between',
               }}
             >
-              <Public style={{ fontSize: '24px', color: '#667eea' }} />
+              <div style={{ flex: 1 }}>
+                <label
+                  style={{
+                    fontSize: '12px',
+                    color: currentTheme.text.muted,
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Benutzername
+                </label>
+                {usernameEditable ? (
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      style={{
+                        flex: 1,
+                        background: currentTheme.background.surface,
+                        border: `1px solid ${currentTheme.primary}`,
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        color: currentTheme.text.primary,
+                        fontSize: '14px',
+                        outline: 'none',
+                      }}
+                      placeholder="Benutzername eingeben"
+                      autoFocus
+                    />
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={saveUsername}
+                      disabled={saving}
+                      style={{
+                        background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: 'white',
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {saving ? '...' : <Check style={{ fontSize: '16px' }} />}
+                    </motion.button>
+                  </div>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: '15px',
+                      color: currentTheme.text.primary,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {username || 'Nicht festgelegt'}
+                  </span>
+                )}
+              </div>
+              {!usernameEditable && (
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setUsernameEditable(true)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: currentTheme.text.muted,
+                    cursor: 'pointer',
+                    padding: '8px',
+                  }}
+                >
+                  <Edit style={{ fontSize: '18px' }} />
+                </motion.button>
+              )}
+            </div>
+          </div>
+
+          {/* Display Name Field */}
+          <div
+            style={{
+              background: currentTheme.background.default,
+              border: `1px solid ${currentTheme.border.default}`,
+              borderRadius: '14px',
+              padding: '14px 16px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <label
+                  style={{
+                    fontSize: '12px',
+                    color: currentTheme.text.muted,
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Anzeigename
+                </label>
+                {displayNameEditable ? (
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      style={{
+                        flex: 1,
+                        background: currentTheme.background.surface,
+                        border: `1px solid ${currentTheme.primary}`,
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        color: currentTheme.text.primary,
+                        fontSize: '14px',
+                        outline: 'none',
+                      }}
+                      placeholder="Anzeigename eingeben"
+                      autoFocus
+                    />
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={saveDisplayName}
+                      disabled={saving}
+                      style={{
+                        background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: 'white',
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {saving ? '...' : <Check style={{ fontSize: '16px' }} />}
+                    </motion.button>
+                  </div>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: '15px',
+                      color: currentTheme.text.primary,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {displayName || 'Nicht festgelegt'}
+                  </span>
+                )}
+              </div>
+              {!displayNameEditable && (
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setDisplayNameEditable(true)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: currentTheme.text.muted,
+                    cursor: 'pointer',
+                    padding: '8px',
+                  }}
+                >
+                  <Edit style={{ fontSize: '18px' }} />
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Theme Settings */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/theme')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '18px',
+            background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}08)`,
+            border: `1px solid ${currentTheme.primary}30`,
+            borderRadius: '16px',
+            color: currentTheme.text.primary,
+            cursor: 'pointer',
+            marginBottom: '16px',
+          }}
+        >
+          <div
+            style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Palette style={{ fontSize: '24px', color: 'white' }} />
+          </div>
+          <div style={{ flex: 1, textAlign: 'left' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Design & Themes</h3>
+            <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: '2px 0 0 0' }}>
+              Farben und Aussehen anpassen
+            </p>
+          </div>
+          <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
+        </motion.button>
+
+        {/* Public Profile Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          style={{
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
+            borderRadius: '20px',
+            padding: '20px',
+            marginBottom: '16px',
+          }}
+        >
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: 700,
+              margin: '0 0 16px 0',
+              color: currentTheme.text.primary,
+            }}
+          >
+            Öffentliches Profil
+          </h3>
+
+          {/* Toggle */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '14px',
+              background: currentTheme.background.default,
+              borderRadius: '12px',
+              border: `1px solid ${currentTheme.border.default}`,
+              marginBottom: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              <Public style={{ fontSize: '22px', color: currentTheme.primary }} />
               <div>
                 <h4
                   style={{
-                    margin: '0 0 4px',
+                    margin: 0,
                     fontSize: '14px',
                     fontWeight: 500,
-                    color: 'white',
+                    color: currentTheme.text.primary,
                   }}
                 >
                   Profil öffentlich teilen
                 </h4>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: '12px',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                  }}
-                >
-                  Andere können deine Serien und Filme ohne Anmeldung sehen
+                <p style={{ margin: 0, fontSize: '11px', color: currentTheme.text.muted }}>
+                  Andere können deine Serien und Filme sehen
                 </p>
               </div>
             </div>
-            <label
-              style={{
-                position: 'relative',
-                display: 'inline-block',
-                width: '50px',
-                height: '28px',
-              }}
-            >
+            <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '28px' }}>
               <input
                 type="checkbox"
                 checked={isPublicProfile}
                 onChange={(e) => handlePublicProfileToggle(e.target.checked)}
                 disabled={isLoadingProfile}
-                style={{
-                  opacity: 0,
-                  width: 0,
-                  height: 0,
-                }}
+                style={{ opacity: 0, width: 0, height: 0 }}
               />
               <span
                 style={{
@@ -682,9 +692,7 @@ export const SettingsPage = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: isPublicProfile
-                    ? 'var(--color-primary, #667eea)'
-                    : 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: isPublicProfile ? currentTheme.primary : `${currentTheme.text.muted}30`,
                   transition: '0.3s',
                   borderRadius: '28px',
                   opacity: isLoadingProfile ? 0.5 : 1,
@@ -693,7 +701,6 @@ export const SettingsPage = () => {
                 <span
                   style={{
                     position: 'absolute',
-                    content: '',
                     height: '20px',
                     width: '20px',
                     left: isPublicProfile ? '26px' : '4px',
@@ -707,45 +714,44 @@ export const SettingsPage = () => {
             </label>
           </div>
 
-          {/* Public Link Section */}
+          {/* Public Link */}
           {isPublicProfile && publicProfileId && (
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                padding: '16px',
+                background: currentTheme.background.default,
                 borderRadius: '12px',
+                padding: '14px',
+                marginBottom: '16px',
               }}
             >
               <h4
                 style={{
-                  margin: 0,
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  color: 'white',
+                  margin: '0 0 10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: currentTheme.text.primary,
                 }}
               >
-                Öffentlicher Link
+                Dein öffentlicher Link
               </h4>
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px',
-                  background: 'rgba(255, 255, 255, 0.05)',
+                  gap: '10px',
+                  padding: '10px',
+                  background: currentTheme.background.surface,
                   borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: `1px solid ${currentTheme.border.default}`,
+                  marginBottom: '12px',
                 }}
               >
-                <Link style={{ fontSize: '18px', opacity: 0.7, color: 'white' }} />
+                <Link style={{ fontSize: '16px', color: currentTheme.text.muted }} />
                 <span
                   style={{
-                    fontSize: '12px',
+                    fontSize: '11px',
                     fontFamily: 'monospace',
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: currentTheme.text.secondary,
                     wordBreak: 'break-all',
                     flex: 1,
                   }}
@@ -753,13 +759,9 @@ export const SettingsPage = () => {
                   {`${window.location.origin}/public/${publicProfileId}`}
                 </span>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                }}
-              >
-                <button
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
                   onClick={copyPublicLink}
                   disabled={isLoadingProfile}
                   style={{
@@ -767,23 +769,22 @@ export const SettingsPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    padding: '12px 16px',
+                    gap: '6px',
+                    padding: '10px',
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
                     border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    transition: 'all 0.2s',
-                    background: 'var(--color-primary, #667eea)',
+                    borderRadius: '10px',
                     color: 'white',
-                    opacity: isLoadingProfile ? 0.5 : 1,
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
                   }}
                 >
-                  <ContentCopy style={{ fontSize: '18px' }} />
-                  Link kopieren
-                </button>
-                <button
+                  <ContentCopy style={{ fontSize: '16px' }} />
+                  Kopieren
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
                   onClick={regeneratePublicId}
                   disabled={isLoadingProfile}
                   style={{
@@ -791,219 +792,123 @@ export const SettingsPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    padding: '12px 16px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
+                    gap: '6px',
+                    padding: '10px',
+                    background: currentTheme.background.surface,
+                    border: `1px solid ${currentTheme.border.default}`,
+                    borderRadius: '10px',
+                    color: currentTheme.text.secondary,
+                    fontSize: '13px',
+                    fontWeight: 600,
                     cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    transition: 'all 0.2s',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    opacity: isLoadingProfile ? 0.5 : 1,
                   }}
                 >
-                  <Refresh style={{ fontSize: '18px' }} />
-                  Neuen Link generieren
-                </button>
+                  <Refresh style={{ fontSize: '16px' }} />
+                  Neu
+                </motion.button>
               </div>
             </div>
           )}
 
-          {/* Info Section */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-            }}
-          >
+          {/* Info */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div
               style={{
                 display: 'flex',
-                gap: '12px',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '8px',
+                gap: '10px',
+                padding: '10px',
+                background: currentTheme.background.default,
+                borderRadius: '10px',
               }}
             >
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: '32px',
-                  height: '32px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '8px',
-                }}
-              >
-                <Public
-                  style={{
-                    fontSize: '18px',
-                    color: 'var(--color-primary, #667eea)',
-                  }}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <strong
-                  style={{
-                    display: 'block',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Sichtbar für alle
-                </strong>
-                <p
-                  style={{
-                    fontSize: '12px',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    margin: 0,
-                    lineHeight: 1.4,
-                  }}
-                >
-                  Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne
-                  Anmeldung sehen
-                </p>
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '8px',
-              }}
-            >
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: '32px',
-                  height: '32px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '8px',
-                }}
-              >
-                <Link
-                  style={{
-                    fontSize: '18px',
-                    color: 'var(--color-primary, #667eea)',
-                  }}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <strong
-                  style={{
-                    display: 'block',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    marginBottom: '4px',
-                  }}
-                >
-                  Einzigartiger Link
-                </strong>
-                <p
-                  style={{
-                    fontSize: '12px',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    margin: 0,
-                    lineHeight: 1.4,
-                  }}
-                >
-                  Jedes öffentliche Profil hat eine eindeutige URL die du teilen kannst
-                </p>
-              </div>
+              <Public style={{ fontSize: '18px', color: currentTheme.primary, flexShrink: 0 }} />
+              <p style={{ margin: 0, fontSize: '12px', color: currentTheme.text.muted, lineHeight: 1.4 }}>
+                Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen
+              </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Legal & Data Sources */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
           style={{
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
+            borderRadius: '20px',
             padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            marginTop: '20px',
+            marginBottom: '16px',
           }}
         >
           <h3
             style={{
               fontSize: '16px',
-              fontWeight: 600,
-              margin: '0 0 16px 0',
-              color: 'white',
+              fontWeight: 700,
+              margin: '0 0 14px 0',
+              color: currentTheme.text.primary,
             }}
           >
             Rechtliches & Datenquellen
           </h3>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/privacy')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                color: 'white',
+                padding: '14px',
+                background: currentTheme.background.default,
+                border: `1px solid ${currentTheme.border.default}`,
+                borderRadius: '12px',
+                color: currentTheme.text.primary,
                 fontSize: '14px',
                 cursor: 'pointer',
                 textAlign: 'left',
               }}
             >
               <span>Datenschutzerklärung</span>
-              <span style={{ opacity: 0.5 }}>→</span>
-            </button>
-
-            <button
+              <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/impressum')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '12px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                color: 'white',
+                padding: '14px',
+                background: currentTheme.background.default,
+                border: `1px solid ${currentTheme.border.default}`,
+                borderRadius: '12px',
+                color: currentTheme.text.primary,
                 fontSize: '14px',
                 cursor: 'pointer',
                 textAlign: 'left',
               }}
             >
               <span>Impressum</span>
-              <span style={{ opacity: 0.5 }}>→</span>
-            </button>
+              <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+            </motion.button>
           </div>
 
           <div
             style={{
-              marginTop: '20px',
-              padding: '16px',
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '8px',
+              padding: '14px',
+              background: currentTheme.background.default,
+              borderRadius: '12px',
             }}
           >
             <h4
               style={{
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: 600,
-                margin: '0 0 12px 0',
-                color: 'rgba(255, 255, 255, 0.9)',
+                margin: '0 0 10px 0',
+                color: currentTheme.text.primary,
               }}
             >
               Datenquellen
@@ -1012,155 +917,91 @@ export const SettingsPage = () => {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
+                gap: '6px',
                 fontSize: '12px',
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.muted,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Streaming-Anbieter:</span>
-                <a
-                  href="https://www.justwatch.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: currentTheme.primary, textDecoration: 'none' }}
-                >
-                  JustWatch
-                </a>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Episoden-Informationen:</span>
-                <a
-                  href="https://thetvdb.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: currentTheme.primary, textDecoration: 'none' }}
-                >
-                  TheTVDB
-                </a>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Film- & Seriendaten:</span>
-                <a
-                  href="https://www.themoviedb.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: currentTheme.primary, textDecoration: 'none' }}
-                >
-                  TMDB
-                </a>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Bewertungen:</span>
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              {[
+                { label: 'Streaming-Anbieter', link: 'https://www.justwatch.com', name: 'JustWatch' },
+                { label: 'Episoden-Informationen', link: 'https://thetvdb.com', name: 'TheTVDB' },
+                { label: 'Film- & Seriendaten', link: 'https://www.themoviedb.org', name: 'TMDB' },
+                { label: 'Bewertungen', link: 'https://www.imdb.com', name: 'IMDb' },
+              ].map((item) => (
+                <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{item.label}:</span>
                   <a
-                    href="https://www.imdb.com"
+                    href={item.link}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ color: currentTheme.primary, textDecoration: 'none' }}
                   >
-                    IMDb
+                    {item.name}
                   </a>
-                  <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px' }}>(via</span>
-                  <a
-                    href="https://www.omdbapi.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: currentTheme.primary, textDecoration: 'none' }}
-                  >
-                    OMDb
-                  </a>
-                  <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '11px' }}>)</span>
                 </div>
-              </div>
+              ))}
             </div>
-            <p
-              style={{
-                fontSize: '10px',
-                color: 'rgba(255, 255, 255, 0.5)',
-                marginTop: '12px',
-                marginBottom: 0,
-                textAlign: 'center',
-              }}
-            >
-              Alle Logos und Marken sind Eigentum ihrer jeweiligen Inhaber
-            </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Logout */}
-        <button
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
           style={{
+            width: '100%',
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
-            padding: '20px',
-            background: 'rgba(255, 107, 107, 0.1)',
-            border: '1px solid rgba(255, 107, 107, 0.3)',
+            justifyContent: 'center',
+            gap: '10px',
+            padding: '16px',
+            background: `linear-gradient(135deg, ${currentTheme.status.error}15, ${currentTheme.status.error}08)`,
+            border: `1px solid ${currentTheme.status.error}30`,
             borderRadius: '16px',
-            color: '#ff6b6b',
-            fontSize: '16px',
+            color: currentTheme.status.error,
+            fontSize: '15px',
+            fontWeight: 600,
             cursor: 'pointer',
-            textAlign: 'left',
-            marginTop: '20px',
           }}
         >
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'rgba(255, 107, 107, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Logout style={{ fontSize: '24px' }} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Abmelden</h3>
-            <p
-              style={{
-                fontSize: '14px',
-                color: 'rgba(255, 107, 107, 0.8)',
-                margin: '2px 0 0 0',
-              }}
-            >
-              Von diesem Gerät abmelden
-            </p>
-          </div>
-        </button>
+          <Logout style={{ fontSize: '20px' }} />
+          Abmelden
+        </motion.button>
       </div>
 
       {/* Success Snackbar */}
-      {snackbar.open && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: currentTheme.status.success,
-            color: 'white',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            maxWidth: 'calc(100% - 40px)',
-            transition: 'all 0.3s ease-out',
-          }}
-        >
-          <Check style={{ fontSize: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {snackbar.open && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              bottom: '100px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+              color: 'white',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              boxShadow: `0 8px 24px ${currentTheme.status.success}40`,
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              maxWidth: 'calc(100% - 40px)',
+            }}
+          >
+            <Check style={{ fontSize: '20px' }} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>{snackbar.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Dialog for alerts */}
       <Dialog
         open={dialog.open}
         onClose={() => setDialog({ ...dialog, open: false })}

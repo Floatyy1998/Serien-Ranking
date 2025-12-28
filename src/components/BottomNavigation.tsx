@@ -1,11 +1,9 @@
 import { BarChart, Home, Person, PlayCircle, Star } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
-import { useBadges } from '../features/badges/BadgeProvider';
 import { PetWidget } from './PetWidget';
 import './BottomNavigation.css';
 
@@ -21,8 +19,12 @@ export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
-  const { unreadBadgesCount } = useBadges();
   const { unreadCount: notificationUnreadCount } = useNotifications();
+
+  // Calculate total badge count - only show if greater than 0
+  // Achievement badges are kept private and not shown in navigation
+  const totalBadgeCount =
+    (unreadActivitiesCount || 0) + (unreadRequestsCount || 0) + (notificationUnreadCount || 0);
 
   const navItems: NavItem[] = [
     {
@@ -54,10 +56,7 @@ export const BottomNavigation = () => {
       path: '/profile',
       icon: <Person />,
       label: 'Mehr',
-      badge:
-        unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0) + notificationUnreadCount > 0
-          ? unreadActivitiesCount + unreadRequestsCount + (unreadBadgesCount || 0) + notificationUnreadCount
-          : undefined,
+      badge: totalBadgeCount > 0 ? totalBadgeCount : undefined,
     },
   ];
 
@@ -110,23 +109,27 @@ export const BottomNavigation = () => {
                 whileTap={{ scale: 0.9 }}
               >
                 <div className="nav-icon-container">
-                  <Badge
-                    badgeContent={item.badge}
-                    color="error"
-                    variant={typeof item.badge === 'boolean' ? 'dot' : 'standard'}
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        fontSize: '10px',
-                        height: '16px',
-                        minWidth: '16px',
-                        padding: '0 4px',
-                        background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
-                        boxShadow: '0 2px 4px rgba(255, 107, 107, 0.3)',
-                      },
-                    }}
-                  >
+                  {item.badge && (typeof item.badge === 'boolean' || item.badge > 0) ? (
+                    <Badge
+                      badgeContent={item.badge}
+                      color="error"
+                      variant={typeof item.badge === 'boolean' ? 'dot' : 'standard'}
+                      sx={{
+                        '& .MuiBadge-badge': {
+                          fontSize: '10px',
+                          height: '16px',
+                          minWidth: '16px',
+                          padding: '0 4px',
+                          background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
+                          boxShadow: '0 2px 4px rgba(255, 107, 107, 0.3)',
+                        },
+                      }}
+                    >
+                      <div className="nav-icon">{item.icon}</div>
+                    </Badge>
+                  ) : (
                     <div className="nav-icon">{item.icon}</div>
-                  </Badge>
+                  )}
 
                   {/* Active Indicator */}
                   <AnimatePresence>

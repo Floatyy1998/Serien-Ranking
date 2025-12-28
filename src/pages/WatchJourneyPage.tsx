@@ -1752,22 +1752,83 @@ export const WatchJourneyPage: React.FC = () => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '24px',
+          gap: '28px',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <motion.div
-          animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-          transition={{ rotate: { duration: 2, repeat: Infinity, ease: 'linear' }, scale: { duration: 1, repeat: Infinity } }}
-        >
-          <TrendingUp style={{ fontSize: 64, color: primaryColor }} />
-        </motion.div>
-        <motion.p
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          style={{ color: textPrimary, fontSize: 18, fontWeight: 600 }}
-        >
-          Analysiere deine Watch-History...
-        </motion.p>
+        {/* Decorative background for loading */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '20%',
+            left: '10%',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${primaryColor}20, transparent 70%)`,
+            filter: 'blur(60px)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '20%',
+            right: '10%',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${ACCENT_COLORS.movies}15, transparent 70%)`,
+            filter: 'blur(60px)',
+          }}
+        />
+
+        {/* Animated loading icon */}
+        <div style={{ position: 'relative' }}>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              border: `3px solid ${primaryColor}20`,
+              borderTopColor: primaryColor,
+              position: 'absolute',
+              top: -10,
+              left: -10,
+            }}
+          />
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${primaryColor}30, ${ACCENT_COLORS.movies}20)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <TrendingUp style={{ fontSize: 36, color: primaryColor }} />
+          </motion.div>
+        </div>
+
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          <motion.p
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            style={{ color: textPrimary, fontSize: 20, fontWeight: 700, margin: 0, marginBottom: '8px' }}
+          >
+            Analysiere Watch-History...
+          </motion.p>
+          <p style={{ color: textSecondary, fontSize: 14, margin: 0 }}>
+            Berechne deine persönlichen Trends
+          </p>
+        </div>
       </div>
     );
   }
@@ -1907,24 +1968,95 @@ export const WatchJourneyPage: React.FC = () => {
         WebkitOverflowScrolling: 'touch',
       }}
     >
-      <div style={{ paddingBottom: '120px' }}>
-        {/* Header */}
+      {/* Decorative Background Gradients */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
+        }}
+      >
         <div
           style={{
-            padding: '20px',
-            paddingTop: 'calc(20px + env(safe-area-inset-top))',
+            position: 'absolute',
+            top: '-5%',
+            left: '-20%',
+            width: '60%',
+            height: '40%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${primaryColor}12 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: '30%',
+            right: '-15%',
+            width: '50%',
+            height: '40%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${ACCENT_COLORS.movies}10 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '10%',
+            left: '20%',
+            width: '50%',
+            height: '35%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${ACCENT_COLORS.time}08 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+      </div>
+
+      <div style={{ paddingBottom: '120px', position: 'relative', zIndex: 1 }}>
+        {/* Premium Glassmorphism Header */}
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            padding: '16px 20px',
+            paddingTop: 'calc(16px + env(safe-area-inset-top))',
             display: 'flex',
             alignItems: 'center',
             gap: '16px',
+            background: `${bgDefault}90`,
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
           }}
         >
           <BackButton />
           <div style={{ flex: 1 }}>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: textPrimary }}>Watch Journey</h1>
-            <p style={{ margin: 0, fontSize: 13, color: textSecondary }}>Deine Trends & Insights</p>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 22,
+                fontWeight: 800,
+                background: `linear-gradient(135deg, ${primaryColor}, ${ACCENT_COLORS.movies})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Watch Journey
+            </h1>
+            <p style={{ margin: 0, fontSize: 12, color: textSecondary, marginTop: '2px' }}>Deine Trends & Insights</p>
           </div>
 
-          {/* Year Picker Button */}
+          {/* Premium Year Picker Button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowYearPicker(!showYearPicker)}
@@ -1932,14 +2064,15 @@ export const WatchJourneyPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              border: `1px solid ${primaryColor}40`,
-              background: `${primaryColor}15`,
-              color: textPrimary,
+              padding: '10px 18px',
+              borderRadius: '14px',
+              border: 'none',
+              background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
+              color: 'white',
               fontSize: 15,
               fontWeight: 700,
               cursor: 'pointer',
+              boxShadow: `0 4px 15px ${primaryColor}40`,
             }}
           >
             {selectedYear}
@@ -1947,7 +2080,7 @@ export const WatchJourneyPage: React.FC = () => {
               <ExpandMore style={{ fontSize: 20 }} />
             </motion.div>
           </motion.button>
-        </div>
+        </motion.div>
 
         {/* Year Picker Dropdown */}
         <AnimatePresence>
@@ -2001,42 +2134,54 @@ export const WatchJourneyPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Tabs */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '10px',
-            padding: '0 20px 24px',
-            overflowX: 'auto',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-          {tabs.map((tab) => (
-            <motion.button
-              key={tab.id}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                borderRadius: '16px',
-                border: activeTab === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
-                background: activeTab === tab.id ? primaryColor : bgSurface,
-                color: activeTab === tab.id ? 'white' : textPrimary,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                boxShadow: activeTab === tab.id ? `0 4px 20px ${primaryColor}40` : 'none',
-              }}
-            >
-              {tab.icon}
-              {tab.label}
-            </motion.button>
-          ))}
+        {/* Premium Tabs - Mobile Optimized */}
+        <div style={{ padding: '0 16px 24px', overflow: 'visible' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '4px',
+              padding: '4px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              overflow: 'visible',
+            }}
+          >
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <motion.button
+                  key={tab.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    flex: isActive ? 'none' : 1,
+                    minWidth: isActive ? 'auto' : '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    padding: isActive ? '10px 16px' : '10px 8px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    background: isActive
+                      ? `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`
+                      : 'transparent',
+                    color: isActive ? 'white' : 'rgba(255,255,255,0.5)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    boxShadow: isActive ? `0 4px 12px ${primaryColor}35` : 'none',
+                    transition: 'all 0.25s ease',
+                  }}
+                >
+                  {tab.icon}
+                  {isActive && <span>{tab.label}</span>}
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Content */}
