@@ -1684,11 +1684,11 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
 
 type TabType = 'genre' | 'provider' | 'heatmap' | 'activity' | 'trends';
 
-// Available years (from 2024 to current year)
+// Available years (from 2025 to current year)
 const getAvailableYears = () => {
   const currentYear = new Date().getFullYear();
   const years: number[] = [];
-  for (let y = currentYear; y >= 2024; y--) {
+  for (let y = currentYear; y >= 2025; y--) {
     years.push(y);
   }
   return years;
