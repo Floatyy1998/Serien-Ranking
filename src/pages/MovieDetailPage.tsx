@@ -1,4 +1,4 @@
-import { Delete, Info, People, PlayCircle, Star } from '@mui/icons-material';
+import { Delete, Info, People, Star } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { motion } from 'framer-motion';
@@ -11,10 +11,10 @@ import { Dialog } from '../components/Dialog';
 import { DiscussionThread } from '../components/DiscussionThread';
 import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
 import { ProviderBadges } from '../components/ProviderBadges';
+import { VideoGallery } from '../components/VideoGallery';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded } from '../features/badges/minimalActivityLogger';
-import { useTrailers } from '../hooks/useTrailers';
 import { Movie } from '../types/Movie';
 
 export const MovieDetailPage = memo(() => {
@@ -66,9 +66,6 @@ export const MovieDetailPage = memo(() => {
   );
   // State for IMDB rating from OMDb
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
-
-  // Trailer from TMDB
-  const { mainTrailer, hasTrailers } = useTrailers('movie', id ? Number(id) : undefined);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
@@ -588,58 +585,25 @@ export const MovieDetailPage = memo(() => {
             </div>
           )}
 
-          {/* Trailer Button - nur auf Desktop im Hero */}
-          {!isMobile && hasTrailers && mainTrailer && (
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => window.open(`https://www.youtube.com/watch?v=${mainTrailer.key}`, '_blank')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                background: 'linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)',
-                border: '1px solid rgba(255, 0, 0, 0.3)',
-                borderRadius: '12px',
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <PlayCircle style={{ color: '#ff0000' }} />
-              {mainTrailer.type === 'Trailer' ? 'Trailer ansehen' : `${mainTrailer.type} ansehen`}
-            </motion.button>
+          {/* Video Gallery Button - Desktop */}
+          {!isMobile && (
+            <VideoGallery
+              tmdbId={movie.id}
+              mediaType="movie"
+              buttonStyle="desktop"
+            />
           )}
         </div>
       </div>
 
-      {/* Mobile Trailer Button */}
-      {isMobile && hasTrailers && mainTrailer && (
+      {/* Mobile Video Gallery Button */}
+      {isMobile && (
         <div style={{ padding: '12px 20px 0' }}>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.open(`https://www.youtube.com/watch?v=${mainTrailer.key}`, '_blank')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              background: 'linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)',
-              border: '1px solid rgba(255, 0, 0, 0.3)',
-              borderRadius: '10px',
-              color: 'white',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              width: '100%',
-            }}
-          >
-            <PlayCircle style={{ color: '#ff0000', fontSize: '20px' }} />
-            {mainTrailer.type === 'Trailer' ? 'Trailer ansehen' : `${mainTrailer.type} ansehen`}
-          </motion.button>
+          <VideoGallery
+            tmdbId={movie.id}
+            mediaType="movie"
+            buttonStyle="mobile"
+          />
         </div>
       )}
 
