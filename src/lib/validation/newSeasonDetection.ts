@@ -6,9 +6,11 @@ export interface NewSeasonData {
   previousSeasonCount: number;
   currentSeasonCount: number;
   lastChecked: number;
+  notified?: boolean; // Track if user has been notified
+  detectedAt?: number; // When the new season was first detected
 }
 
-const CHECK_COOLDOWN = process.env.NODE_ENV === 'development' ? 0 : 24 * 60 * 60 * 1000; // Kein Cooldown in Development
+const CHECK_COOLDOWN = process.env.NODE_ENV === 'development' ? 0 : 24 * 60 * 60 * 1000;
 
 export const getStoredSeasonData = async (
   userId: string
@@ -45,8 +47,8 @@ export const detectNewSeasons = async (
     // Nur gültige Serien prüfen
     if (!series || !series.id || typeof series.seasonCount !== 'number') continue;
     
-    // Nur Serien prüfen die nicht in der Watchlist sind
-    if (series.watchlist) continue;
+    // Prüfe alle Serien, auch die in der Watchlist (User will über neue Staffeln informiert werden!)
+    // if (series.watchlist) continue; // REMOVED - we want to track all series
 
     const seriesKey = series.id.toString();
     const stored = storedData[seriesKey];
@@ -58,33 +60,41 @@ export const detectNewSeasons = async (
         previousSeasonCount: series.seasonCount,
         currentSeasonCount: series.seasonCount,
         lastChecked: currentTime,
+        notified: false,
       };
     } else {
-      // Prüfen ob genug Zeit vergangen ist (Cooldown)
+      // Prüfen ob genug Zeit vergangen ist (Cooldown) - aber nur für erneute Checks, nicht für Benachrichtigungen
       const timeSinceLastCheck = currentTime - stored.lastChecked;
-      if (timeSinceLastCheck < CHECK_COOLDOWN) {
-        continue;
-      }
+      const shouldCheckAgain = timeSinceLastCheck >= CHECK_COOLDOWN || process.env.NODE_ENV === 'development';
 
-      // Prüfen ob neue Staffel hinzugekommen ist
-      if (
-        series.seasonCount > stored.previousSeasonCount &&
-        series.seasonCount > 0
-      ) {
-        seriesWithNewSeasons.push(series);
+      // Prüfen ob neue Staffel hinzugekommen ist ODER ob User noch nicht benachrichtigt wurde
+      if (series.seasonCount > stored.previousSeasonCount && series.seasonCount > 0) {
+        // Neue Staffel erkannt!
+        if (!stored.notified) {
+          // User wurde noch nicht benachrichtigt - zur Liste hinzufügen
+          seriesWithNewSeasons.push(series);
+        }
 
-        // Daten aktualisieren - neue Staffelanzahl als "previous" speichern
+        // Daten aktualisieren, aber previousSeasonCount NICHT ändern bis User benachrichtigt wurde
         updatedStoredData[seriesKey] = {
           ...stored,
-          previousSeasonCount: series.seasonCount,
           currentSeasonCount: series.seasonCount,
-          lastChecked: currentTime,
+          lastChecked: shouldCheckAgain ? currentTime : stored.lastChecked,
+          detectedAt: stored.detectedAt || currentTime, // Zeitpunkt der ersten Erkennung speichern
+          // previousSeasonCount bleibt unverändert bis User benachrichtigt wurde!
         };
-      } else {
-        // Keine neue Staffel, aber lastChecked aktualisieren
+      } else if (stored.currentSeasonCount !== series.seasonCount) {
+        // Staffelanzahl hat sich geändert (könnte auch weniger sein bei Korrekturen)
         updatedStoredData[seriesKey] = {
           ...stored,
+          previousSeasonCount: Math.min(stored.previousSeasonCount, series.seasonCount),
           currentSeasonCount: series.seasonCount,
+          lastChecked: shouldCheckAgain ? currentTime : stored.lastChecked,
+        };
+      } else if (shouldCheckAgain) {
+        // Keine Änderung, aber lastChecked aktualisieren
+        updatedStoredData[seriesKey] = {
+          ...stored,
           lastChecked: currentTime,
         };
       }
@@ -107,13 +117,54 @@ export const detectNewSeasons = async (
 
 export const markSeasonAsNotified = async (
   seriesId: number,
-  userId: string
+  userId: string,
+  updatePreviousCount: boolean = true
 ) => {
   const storedData = await getStoredSeasonData(userId);
   const seriesKey = seriesId.toString();
 
   if (storedData[seriesKey]) {
-    storedData[seriesKey].lastChecked = Date.now();
+    const currentData = storedData[seriesKey];
+    storedData[seriesKey] = {
+      ...currentData,
+      notified: true,
+      lastChecked: Date.now(),
+      // Nur wenn User die Benachrichtigung gesehen hat, aktualisieren wir previousSeasonCount
+      previousSeasonCount: updatePreviousCount 
+        ? currentData.currentSeasonCount 
+        : currentData.previousSeasonCount,
+    };
     await storeSeasonData(userId, storedData);
   }
 };
+
+// Markiere mehrere Serien als benachrichtigt
+export const markMultipleSeasonsAsNotified = async (
+  seriesIds: number[],
+  userId: string,
+  updatePreviousCount: boolean = true
+) => {
+  const storedData = await getStoredSeasonData(userId);
+  let hasChanges = false;
+
+  for (const seriesId of seriesIds) {
+    const seriesKey = seriesId.toString();
+    if (storedData[seriesKey]) {
+      const currentData = storedData[seriesKey];
+      storedData[seriesKey] = {
+        ...currentData,
+        notified: true,
+        lastChecked: Date.now(),
+        previousSeasonCount: updatePreviousCount 
+          ? currentData.currentSeasonCount 
+          : currentData.previousSeasonCount,
+      };
+      hasChanges = true;
+    }
+  }
+
+  if (hasChanges) {
+    await storeSeasonData(userId, storedData);
+  }
+};
+

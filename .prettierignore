@@ -1,0 +1,13 @@
+dist
+build
+node_modules
+public
+*.min.js
+*.min.css
+coverage
+.firebase
+firebase.json
+database.rules.json
+storage.rules
+package-lock.json
+*.md

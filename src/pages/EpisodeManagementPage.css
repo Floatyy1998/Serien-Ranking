@@ -1,0 +1,462 @@
+.mobile-episode-page {
+  min-height: 100vh;
+  background: var(--color-background-default);
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Native Header */
+.episode-header {
+  position: relative;
+  z-index: 100;
+  /* background wird inline in der Komponente gesetzt */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: calc(env(safe-area-inset-top) + 20px) 20px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* .back-button styles entfernt - MobileBackButton verwendet eigene Styles */
+
+.header-content {
+  flex: 1;
+}
+
+.header-content h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-content p {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 2px 0 0 0;
+}
+
+/* Pull to Refresh */
+.refresh-indicator {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 70px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-background-surface);
+  border-radius: 50%;
+  padding: 12px;
+  z-index: 99;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Season Tabs */
+.season-tabs {
+  display: flex;
+  align-items: center;
+  background: var(--color-background-default, #000000) 4D; /* More transparent - 30% opacity */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 8px;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.tab-nav-button {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.tabs-container {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.season-tab {
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  padding: 8px 16px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 70px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.season-tab.active {
+  background: var(--color-primary);
+  border-color: transparent;
+  transform: scale(1.05);
+  color: white;
+}
+
+.season-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.season-count {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Season Progress */
+.season-progress {
+  padding: 20px;
+  background: var(--color-background-default, #000000) 4D; /* More transparent - 30% opacity */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progress-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.progress-text {
+  font-size: 14px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--color-background-surface);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.mark-all-button {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mark-all-button:active {
+  transform: scale(0.98);
+  background: var(--color-background-surface);
+}
+
+/* Episodes List */
+.episodes-container {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.episodes-list {
+  padding: 8px;
+}
+
+.episode-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 8px;
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.episode-item.watched {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.episode-item:active {
+  transform: scale(0.98);
+}
+
+.episode-number {
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  color: white;
+}
+
+.episode-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.episode-details h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.episode-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.meta-item svg {
+  font-size: 14px !important;
+}
+
+.watched-date {
+  color: var(--color-primary);
+}
+
+.episode-status {
+  flex-shrink: 0;
+}
+
+.status-watched {
+  width: 32px;
+  height: 32px;
+  background: var(--color-success);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.watch-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--color-error);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 8px;
+}
+
+.status-unwatched {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-border-default);
+  border-radius: 8px;
+  background: var(--color-background-surface);
+}
+
+/* Bottom Action Bar */
+.bottom-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-background-default, #000000) CC; /* Semi-transparent with glass effect */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+}
+
+.action-button {
+  flex: 1;
+  padding: 12px;
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-button:active {
+  transform: scale(0.98);
+  background: var(--color-background-surface);
+}
+
+.action-button svg {
+  font-size: 20px !important;
+}
+
+/* Watch Count Dialog */
+.watch-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.watch-dialog {
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.dialog-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.dialog-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--color-text-primary);
+}
+
+.dialog-header p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.dialog-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialog-button {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dialog-button.increase {
+  background: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+.dialog-button.increase:active {
+  transform: scale(0.98);
+  background: var(--color-success);
+}
+
+.dialog-button.decrease {
+  background: var(--color-warning);
+  color: white;
+  border-color: var(--color-warning);
+}
+
+.dialog-button.decrease:active {
+  transform: scale(0.98);
+  background: var(--color-warning);
+}
+
+.dialog-button.cancel {
+  background: var(--color-background-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-default);
+}
+
+.dialog-button.cancel:active {
+  transform: scale(0.98);
+  background: var(--color-background-surface);
+}

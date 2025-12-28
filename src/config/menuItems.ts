@@ -1,5 +1,5 @@
 export const genreMenuItems = [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'Alle' },
   { value: 'Action & Adventure', label: 'Action & Adventure' },
   { value: 'Animation', label: 'Animation' },
   { value: 'Comedy', label: 'Comedy' },
@@ -14,13 +14,29 @@ export const genreMenuItems = [
   { value: 'Talk', label: 'Talk' },
   { value: 'War & Politics', label: 'War & Politics' },
   { value: 'Western', label: 'Western' },
-  { value: 'Ohne Bewertung', label: 'Ohne Bewertung' },
-  { value: 'Neue Episoden', label: 'Neue Episoden' },
-  { value: 'Zuletzt Hinzugefügt', label: 'Zuletzt Hinzugefügt' },
+];
+
+// Subtile Quick-Filter als kleine Chips
+export const quickFilterChips = [
+  {
+    value: 'Ohne Bewertung',
+    label: 'Ohne Bewertung',
+    iconName: 'StarBorder',
+  },
+  {
+    value: 'Neue Episoden',
+    label: 'Neue Episoden',
+    iconName: 'Fiber New',
+  },
+  {
+    value: 'Zuletzt Hinzugefügt',
+    label: 'Zuletzt Hinzugefügt',
+    iconName: 'Schedule',
+  },
 ];
 
 export const genreMenuItemsForMovies = [
-  { value: 'All', label: 'All' },
+  { value: 'All', label: 'Alle' },
   { value: 'Action', label: 'Action' },
   { value: 'Adventure', label: 'Adventure' },
   { value: 'Animation', label: 'Animation' },
@@ -38,9 +54,25 @@ export const genreMenuItemsForMovies = [
   { value: 'Thriller', label: 'Thriller' },
   { value: 'War', label: 'War' },
   { value: 'Western', label: 'Western' },
-  { value: 'Ohne Bewertung', label: 'Ohne Bewertung' },
-  { value: 'Noch nicht Veröffentlicht', label: 'Noch nicht Veröffentlicht' },
-  { value: 'Zuletzt Hinzugefügt', label: 'Zuletzt Hinzugefügt' },
+];
+
+// Subtile Quick-Filter für Filme
+export const quickFilterChipsForMovies = [
+  {
+    value: 'Ohne Bewertung',
+    label: 'Ohne Bewertung',
+    iconName: 'StarBorder',
+  },
+  {
+    value: 'Noch nicht Veröffentlicht',
+    label: 'Unveröffentlicht',
+    iconName: 'Upcoming',
+  },
+  {
+    value: 'Zuletzt Hinzugefügt',
+    label: 'Zuletzt Hinzugefügt',
+    iconName: 'Schedule',
+  },
 ];
 
 export const genreIdMap = [
@@ -64,6 +96,8 @@ export const genreIdMap = [
   { id: 10752, name: 'War' },
   { id: 37, name: 'Western' },
 ];
+
+export const genreIdMapForMovies = genreIdMap;
 
 export const genreIdMapForSeries = [
   { id: 10759, name: 'Action & Adventure' },

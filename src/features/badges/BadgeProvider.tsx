@@ -1,20 +1,15 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { EarnedBadge } from './badgeDefinitions';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
 import BadgeNotification from './BadgeNotification';
-import BadgeOverviewDialog from './BadgeOverviewDialog';
 
 interface BadgeContextType {
   showBadgeOverview: () => void;
   newBadges: EarnedBadge[];
   clearNewBadges: () => void;
+  unreadBadgesCount: number;
 }
 
 const BadgeContext = createContext<BadgeContextType | null>(null);
@@ -23,14 +18,14 @@ interface BadgeProviderProps {
   children: ReactNode;
 }
 
-export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
+export const BadgeProvider = ({ children }: BadgeProviderProps) => {
   const auth = useAuth();
   const user = auth?.user;
+  const navigate = useNavigate();
 
   const [newBadges, setNewBadges] = useState<EarnedBadge[]>([]);
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState(0);
   const [showNotification, setShowNotification] = useState(false);
-  const [showOverviewDialog, setShowOverviewDialog] = useState(false);
 
   // Registriere Badge-Callback beim minimalActivityLogger
   useEffect(() => {
@@ -39,9 +34,7 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         // Zusätzliche Duplikat-Filterung auf UI-Ebene
         setNewBadges((prev) => {
           const existingBadgeIds = new Set(prev.map((b) => b.id));
-          const newUniqueBadges = badges.filter(
-            (badge) => !existingBadgeIds.has(badge.id)
-          );
+          const newUniqueBadges = badges.filter((badge) => !existingBadgeIds.has(badge.id));
 
           if (newUniqueBadges.length > 0) {
             return [...prev, ...newUniqueBadges];
@@ -63,28 +56,20 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
       let cleanup: (() => void) | null = null;
 
       // Dynamischer Import um zirkuläre Abhängigkeiten zu vermeiden
-      import('./minimalActivityLogger').then(
-        ({ registerBadgeCallback, removeBadgeCallback }) => {
-          registerBadgeCallback(user.uid, handleNewBadges);
+      import('./minimalActivityLogger').then(({ registerBadgeCallback, removeBadgeCallback }) => {
+        registerBadgeCallback(user.uid, handleNewBadges);
 
-          cleanup = () => {
-            removeBadgeCallback(user.uid);
-          };
-        }
-      );
+        cleanup = () => {
+          removeBadgeCallback(user.uid);
+        };
+      });
 
       // Event-Listener für Badge-Dialog-Events
-      window.addEventListener(
-        'badgeDialogOpened',
-        handleBadgeDialogOpened as EventListener
-      );
+      window.addEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
 
       // Korrekte Cleanup-Funktion
       return () => {
-        window.removeEventListener(
-          'badgeDialogOpened',
-          handleBadgeDialogOpened as EventListener
-        );
+        window.removeEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
         if (cleanup) {
           cleanup();
         }
@@ -129,10 +114,10 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         const { badgeCounterService } = await import('./badgeCounterService');
         await badgeCounterService.ensureCurrentMarathonWeek(user.uid);
       } catch (error) {
-        console.warn(
-          'Marathon-Wochen-Überprüfung beim Dialog-Öffnen fehlgeschlagen:',
-          error
-        );
+        // console.warn(
+        //   'Marathon-Wochen-Überprüfung beim Dialog-Öffnen fehlgeschlagen:',
+        //   error
+        // );
       }
     }
 
@@ -143,14 +128,15 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         const badgeSystem = getOfflineBadgeSystem(user.uid);
         badgeSystem.invalidateCache();
       } catch (error) {
-        console.warn(
-          'Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:',
-          error
-        );
+        // console.warn(
+        //   'Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:',
+        //   error
+        // );
       }
     }
 
-    setShowOverviewDialog(true);
+    // Always navigate to badges page
+    navigate('/badges');
   };
 
   const clearNewBadges = () => {
@@ -165,6 +151,7 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
     showBadgeOverview,
     newBadges,
     clearNewBadges,
+    unreadBadgesCount: newBadges.length,
   };
 
   return (
@@ -177,12 +164,6 @@ export const BadgeProvider: React.FC<BadgeProviderProps> = ({ children }) => {
         open={showNotification}
         onClose={handleCloseNotification}
         onViewAllBadges={showBadgeOverview}
-      />
-
-      {/* Badge Overview Dialog */}
-      <BadgeOverviewDialog
-        open={showOverviewDialog}
-        onClose={() => setShowOverviewDialog(false)}
       />
     </BadgeContext.Provider>
   );

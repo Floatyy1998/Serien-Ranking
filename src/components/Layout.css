@@ -1,0 +1,65 @@
+.mobile-layout {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* Transparent background to show background image */
+  background: transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.mobile-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent overscroll bounce on iOS */
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+  /* Prevent pull-to-refresh */
+  touch-action: pan-y;
+  /* Hide scrollbars on mobile */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  background: var(--color-background-default);
+  position: relative;
+  /* Ensure minimum fill */
+  min-height: 0;
+}
+
+/* Pages with nav - normal behavior */
+.mobile-content.with-nav > * {
+  min-height: 100%;
+  background: var(--color-background-default);
+  box-sizing: border-box;
+}
+
+/* Pages without nav - fill viewport exactly */
+.mobile-content.no-nav > * {
+  background: var(--color-background-default);
+  box-sizing: border-box;
+  /* Use calc to fill exact viewport without overflow */
+  min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+
+/* Padding for pages with bottom navigation */
+.mobile-content.with-nav {
+  padding-bottom: 120px; /* 83px navbar + 37px extra space */
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+}
+
+/* No padding for pages without bottom navigation */
+.mobile-content.no-nav {
+  padding-bottom: 0;
+}
+
+/* Hide scrollbar for WebKit browsers (Safari, Chrome) */
+.mobile-content::-webkit-scrollbar {
+  display: none;
+}

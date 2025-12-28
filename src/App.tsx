@@ -1,52 +1,66 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
-import Firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
-import {
-  createContext,
-  lazy,
-  Suspense,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
-import { Helmet } from 'react-helmet';
-import {
-  Navigate,
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from 'react-router-dom';
+import firebase from 'firebase/compat/app';
+import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
-import { UsernameRequiredDialog } from './components/domain/dialogs/UsernameRequiredDialog';
 // Badge Migration Tools für Development
-import { GlobalLoadingProvider } from './contexts/GlobalLoadingContext';
 import { MovieListProvider } from './contexts/MovieListProvider';
-import { NotificationProvider } from './contexts/NotificationProvider';
+import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
+import { RatingsStateProvider } from './contexts/RatingsStateContext';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
-import { FriendsPage } from './pages/FriendsPage';
-import MainPage from './pages/MainPage';
-import { PublicListPage } from './pages/PublicListPage';
-import StartPage from './pages/StartPage'; // Eager loading für bessere Offline-Performance
-import { UserProfilePage } from './pages/UserProfilePage';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
-import { theme } from './theme';
+import './styles/performance.css';
+import { updateTheme } from './theme';
 
-// Nur diese bleiben lazy
-const LoginPage = lazy(() => import('./features/auth/LoginPage'));
-const RegisterPage = lazy(() => import('./features/auth/RegisterPage'));
-const DuckFacts = lazy(() => import('./features/DuckFacts'));
+// Lazy load mobile app for all platforms
+const MobileApp = lazy(() => import('./MobileApp').then((m) => ({ default: m.MobileApp })));
+const StartPage = lazy(() =>
+  import('./pages/StartPage').then((m) => ({
+    default: m.StartPage,
+  }))
+);
+const LoginPage = lazy(() =>
+  import('./features/auth/LoginPage').then((m) => ({
+    default: m.LoginPage,
+  }))
+);
+const RegisterPage = lazy(() =>
+  import('./features/auth/RegisterPage').then((m) => ({
+    default: m.RegisterPage,
+  }))
+);
+const PublicProfilePage = lazy(() =>
+  import('./pages/PublicProfilePage').then((m) => ({
+    default: m.PublicProfilePage,
+  }))
+);
+
+// Loading component
+const PageLoader = () => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      background: 'var(--theme-background, #000)',
+    }}
+  >
+    <div style={{ color: 'var(--theme-primary, #fff)' }}>Loading...</div>
+  </div>
+);
 export const AuthContext = createContext<{
-  user: Firebase.User | null;
-  setUser: React.Dispatch<React.SetStateAction<Firebase.User | null>>;
+  user: firebase.User | null;
+  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   authStateResolved: boolean;
 } | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<Firebase.User | null>(null);
-  const [firebaseInitialized, setFirebaseInitialized] = useState(false);
+  const [user, setUser] = useState<firebase.User | null>(null);
+  const [, setFirebaseInitialized] = useState(false);
   const [authStateResolved, setAuthStateResolved] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
@@ -70,6 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           module.initFirebase();
           setFirebaseInitialized(true);
+          window.setAppReady?.('firebase', true);
 
           // Service Worker initialisieren
           if ('serviceWorker' in navigator) {
@@ -79,6 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const authTimeout = setTimeout(
             () => {
               setAuthStateResolved(true);
+              window.setAppReady?.('emailVerification', true); // No verification check on timeout
 
               // Wenn offline, versuche gespeicherten User zu laden
               if (isOffline) {
@@ -88,10 +104,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     const parsedUser = JSON.parse(savedUser);
                     setUser(parsedUser);
                   } catch (error) {
-                    console.error(
-                      'Fehler beim Laden des gespeicherten Users:',
-                      error
-                    );
+                    // console.error(
+                    //   'Fehler beim Laden des gespeicherten Users:',
+                    //   error
+                    // );
                   }
                 }
               }
@@ -99,10 +115,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             isOffline ? 2000 : 5000
           ); // Kürzerer Timeout wenn offline
 
-          Firebase.auth().onAuthStateChanged(async (user) => {
+          firebase.auth().onAuthStateChanged(async (user) => {
             clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
             setUser(user);
             setAuthStateResolved(true);
+            window.setAppReady?.('auth', true);
+            window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
 
             // User für Offline-Zugriff speichern
             if (user) {
@@ -115,13 +133,100 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   photoURL: user.photoURL,
                 })
               );
+
+              // Automatischer Badge-Check beim App-Start
+              // Verzögerung damit alle Daten geladen sind
+              setTimeout(async () => {
+                try {
+                  const { getOfflineBadgeSystem } = await import('./features/badges/offlineBadgeSystem');
+                  const badgeSystem = getOfflineBadgeSystem(user.uid);
+
+                  // Prüfe ob wir kürzlich schon gecheckt haben (innerhalb der letzten 5 Minuten)
+                  const lastCheckKey = `lastBadgeCheck_${user.uid}`;
+                  const lastCheck = localStorage.getItem(lastCheckKey);
+                  const now = Date.now();
+                  const fiveMinutes = 5 * 60 * 1000;
+
+                  if (!lastCheck || (now - parseInt(lastCheck)) > fiveMinutes) {
+                    console.log('Performing automatic badge check on app start...');
+                    const newBadges = await badgeSystem.checkForNewBadges();
+
+                    if (newBadges.length > 0) {
+                      console.log('New badges earned on app start:', newBadges);
+                      // Event für neue Badges auslösen
+                      window.dispatchEvent(
+                        new CustomEvent('badgeProgressUpdate', {
+                          detail: { newBadges },
+                        })
+                      );
+                    }
+
+                    // Zeitstempel für letzten Check speichern
+                    localStorage.setItem(lastCheckKey, now.toString());
+                  }
+                } catch (error) {
+                  console.error('Error during automatic badge check:', error);
+                }
+              }, 3000); // 3 Sekunden Verzögerung für App-Initialisierung
             } else {
               localStorage.removeItem('cachedUser');
             }
 
             // User Profile in Firebase initialisieren falls noch nicht vorhanden
             if (user) {
-              const userRef = Firebase.database().ref(`users/${user.uid}`);
+              // WICHTIG: Lokales Theme hat Vorrang - Cloud-Theme nur als Fallback
+              const localTheme = localStorage.getItem('customTheme');
+
+              if (!localTheme) {
+                // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
+                // console.log(
+                //   'No local theme found, checking for cloud theme as fallback...'
+                // );
+                const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
+                try {
+                  const themeSnapshot = await themeRef.once('value');
+                  const cloudTheme = themeSnapshot.val();
+
+                  if (cloudTheme) {
+                    // console.log('Cloud theme found as fallback, applying...');
+                    // Cloud-Theme als Fallback verwenden
+                    const root = document.documentElement;
+                    root.style.setProperty('--theme-primary', cloudTheme.primaryColor || '#00fed7');
+                    const primaryHover = adjustBrightness(cloudTheme.primaryColor || '#00fed7', 10);
+                    root.style.setProperty('--theme-primary-hover', primaryHover);
+                    root.style.setProperty('--theme-accent', cloudTheme.accentColor || '#ff6b6b');
+                    root.style.setProperty(
+                      '--theme-background',
+                      cloudTheme.backgroundColor || '#000000'
+                    );
+                    root.style.setProperty('--theme-surface', cloudTheme.surfaceColor || '#2d2d30');
+                    root.style.setProperty(
+                      '--theme-text-primary',
+                      cloudTheme.primaryColor || '#00fed7'
+                    );
+                    root.style.setProperty('--theme-text-secondary', '#ffffff');
+
+                    // Update theme-color Meta-Tag für PWA Status Bar
+                    updateThemeColorMeta(cloudTheme.backgroundColor || '#000000');
+
+                    // WICHTIG: Cloud-Theme temporär im localStorage speichern,
+                    // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
+                    // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
+                    localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
+                    // console.log('Cloud-Theme temporär im localStorage gespeichert für BackgroundMedia');
+
+                    window.dispatchEvent(new CustomEvent('themeChanged'));
+                  }
+                } catch (error) {
+                  // console.error('Error loading cloud theme:', error);
+                }
+              } else {
+                // console.log(
+                //   'Local theme exists, keeping it (has priority over cloud theme - cloud updates are ignored)'
+                // );
+              }
+
+              const userRef = firebase.database().ref(`users/${user.uid}`);
               const snapshot = await userRef.once('value');
 
               if (!snapshot.exists()) {
@@ -129,13 +234,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const userData = {
                   uid: user.uid,
                   email: user.email,
-                  displayName:
-                    user.displayName ||
-                    user.email?.split('@')[0] ||
-                    'Unbekannt',
+                  displayName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
                   photoURL: user.photoURL || null,
-                  createdAt: Firebase.database.ServerValue.TIMESTAMP,
-                  lastActive: Firebase.database.ServerValue.TIMESTAMP,
+                  createdAt: firebase.database.ServerValue.TIMESTAMP,
+                  lastActive: firebase.database.ServerValue.TIMESTAMP,
                   isOnline: true,
                   // username wird beim ersten Profil-Setup gesetzt
                 };
@@ -151,7 +253,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               } else {
                 // Bestehender Benutzer - Online-Status aktualisieren
                 const updateData = {
-                  lastActive: Firebase.database.ServerValue.TIMESTAMP,
+                  lastActive: firebase.database.ServerValue.TIMESTAMP,
                   isOnline: true,
                 };
 
@@ -171,68 +273,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               userRef
                 .child('lastActive')
                 .onDisconnect()
-                .set(Firebase.database.ServerValue.TIMESTAMP);
+                .set(firebase.database.ServerValue.TIMESTAMP);
             }
           });
         } catch (error) {
-          console.error('Fehler bei Firebase-Initialisierung:', error);
+          // console.error('Fehler bei Firebase-Initialisierung:', error);
           setAuthStateResolved(true); // Auch bei Fehler Auth-State als resolved setzen
+          window.setAppReady?.('emailVerification', true); // No verification needed when auth fails
         }
       })
-      .catch((error) => {
-        console.error('Fehler beim Laden des Firebase-Moduls:', error);
+      .catch((_error) => {
+        // console.error('Fehler beim Laden des Firebase-Moduls:', error);
         setAuthStateResolved(true);
+        window.setAppReady?.('emailVerification', true); // No verification when Firebase fails to load
       });
   }, []);
 
-  if (!firebaseInitialized || !authStateResolved) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          backgroundColor: '#0a0a0a',
-          color: '#00fed7',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        <div
-          style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid #00fed7',
-            borderTop: '4px solid transparent',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
-        <div>Initialisierung...</div>
-        {isOffline && (
-          <div
-            style={{
-              color: '#ff9800',
-              fontSize: '0.9rem',
-              textAlign: 'center',
-              marginTop: '10px',
-            }}
-          >
-            Offline-Modus aktiv
-            <br />
-            Gespeicherte Daten werden geladen...
-          </div>
-        )}
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
+  // Kein LoadingSpinner mehr - SplashScreen handled das
+  // Provider trotzdem rendern damit initialData gesetzt werden kann
 
   return (
     <AuthContext.Provider value={{ user, setUser, authStateResolved }}>
@@ -241,156 +299,230 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 export const useAuth = () => useContext(AuthContext);
+// Theme beim App-Start laden
+// Funktion um eine Farbe heller oder dunkler zu machen
+const adjustBrightness = (color: string, percent: number) => {
+  const num = parseInt(color.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = ((num >> 8) & 0x00ff) + amt;
+  const B = (num & 0x0000ff) + amt;
+  return (
+    '#' +
+    (
+      0x1000000 +
+      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+      (B < 255 ? (B < 1 ? 0 : B) : 255)
+    )
+      .toString(16)
+      .slice(1)
+  );
+};
+
+// Funktion zum Updaten des theme-color Meta-Tags
+const updateThemeColorMeta = (backgroundColor: string) => {
+  const metaThemeColor = document.getElementById('theme-color-meta') as HTMLMetaElement;
+  if (metaThemeColor) {
+    metaThemeColor.content = backgroundColor;
+  }
+};
+
+const loadSavedTheme = async (userId?: string) => {
+  let theme = null;
+
+  // WICHTIG: Lokales Theme hat Vorrang vor Cloud-Theme
+  // Erst lokales Theme versuchen
+  const savedTheme = localStorage.getItem('customTheme');
+  if (savedTheme) {
+    try {
+      theme = JSON.parse(savedTheme);
+      // console.log('Lokales Theme geladen (hat Vorrang):', theme);
+    } catch (error) {
+      // console.error('Fehler beim Laden des lokalen Themes:', error);
+    }
+  }
+
+  // Falls kein lokales Theme, Cloud-Theme als Fallback laden
+  if (!theme && userId) {
+    try {
+      const themeRef = firebase.database().ref(`users/${userId}/theme`);
+      const snapshot = await themeRef.once('value');
+      theme = snapshot.val();
+      if (theme) {
+        // console.log('Cloud-Theme als Fallback geladen:', theme);
+        // WICHTIG: Speichere Cloud-Theme temporär im localStorage,
+        // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
+        localStorage.setItem('customTheme', JSON.stringify(theme));
+        // console.log('Cloud-Theme im localStorage gespeichert für BackgroundMedia');
+      }
+    } catch (error) {
+      // console.error('Fehler beim Laden des Cloud-Themes:', error);
+    }
+  }
+
+  // Theme anwenden oder Defaults verwenden
+  const root = document.documentElement;
+
+  if (theme) {
+    root.style.setProperty('--theme-primary', theme.primaryColor || '#00fed7');
+    // Hover-Farbe automatisch berechnen (etwas heller/dunkler)
+    const primaryHover = adjustBrightness(theme.primaryColor || '#00fed7', 10);
+    root.style.setProperty('--theme-primary-hover', primaryHover);
+    root.style.setProperty('--theme-accent', theme.accentColor || '#ff6b6b');
+    root.style.setProperty('--theme-background', theme.backgroundColor || '#000000');
+    root.style.setProperty('--theme-surface', theme.surfaceColor || '#2d2d30');
+    root.style.setProperty('--theme-text-primary', theme.primaryColor || '#00fed7');
+    root.style.setProperty('--theme-text-secondary', '#ffffff');
+
+    // Mobile-first app - no background images needed
+
+    // Update theme-color Meta-Tag für PWA Status Bar
+    updateThemeColorMeta(theme.backgroundColor || '#000000');
+  } else {
+    // Stelle sicher, dass Default-Werte gesetzt sind
+    root.style.setProperty('--theme-primary', '#00fed7');
+    root.style.setProperty('--theme-primary-hover', adjustBrightness('#00fed7', 10));
+    root.style.setProperty('--theme-accent', '#ff6b6b');
+    root.style.setProperty('--theme-background', '#000000');
+    root.style.setProperty('--theme-surface', '#2d2d30');
+    root.style.setProperty('--theme-text-primary', '#00fed7');
+    root.style.setProperty('--theme-text-secondary', '#ffffff');
+
+    // Update theme-color Meta-Tag für PWA Status Bar
+    updateThemeColorMeta('#000000');
+  }
+};
+
 export function App() {
+  const [isThemeLoaded, setIsThemeLoaded] = useState(false);
+
+  // Theme beim App-Start laden - aber NACH Firebase Initialisierung
+  useEffect(() => {
+    // Sofort lokales Theme laden für schnellen Start (braucht kein Firebase)
+    const initializeTheme = async () => {
+      // Erst mal lokales Theme laden (sofort verfügbar, braucht kein Firebase)
+      await loadSavedTheme();
+
+      // Theme wurde geladen - State setzen
+      setIsThemeLoaded(true);
+      window.setAppReady?.('theme', true);
+      // console.log('[App] Theme loaded, app ready for display');
+
+      // Wichtig: Theme-Change Event nach kurzer Verzögerung auslösen
+      // damit Material-UI Zeit hat sich zu initialisieren
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('themeChanged'));
+      }, 100);
+    };
+
+    initializeTheme();
+  }, []);
+
+  // Kein SplashScreen mehr hier - wird in AppWithSplash gehandelt
+  // Warte nur noch auf Theme
+  if (!isThemeLoaded) {
+    // Zeige nichts - App lädt im Hintergrund während SplashScreen läuft
+    return null;
+  }
+
   return (
     <Router>
-      <GlobalLoadingProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </GlobalLoadingProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }
 
 function AppContent() {
+  // Theme initial mit updateTheme erstellen um CSS-Variablen zu lesen
+  const [currentTheme, setCurrentTheme] = useState(() => updateTheme());
+
+  // Theme bei Änderungen aktualisieren
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const newTheme = updateTheme();
+      setCurrentTheme(newTheme);
+    };
+
+    // Event Listener für Theme-Änderungen
+    window.addEventListener('themeChanged', handleThemeChange);
+
+    // Initiales Theme nochmal updaten falls CSS-Variablen sich geändert haben
+    handleThemeChange();
+
+    return () => {
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
+  }, []);
+
   return (
     <OptimizedFriendsProvider>
-      <NotificationProvider>
+      <GeneralNotificationProvider>
         <SeriesListProvider>
           <MovieListProvider>
             <StatsProvider>
               <BadgeProvider>
-                <Helmet>
-                  <title>
-                    TV-RANK - Entdecke, bewerte und verwalte deine
-                    Lieblingsserien
-                  </title>
-                  <meta
-                    name='description'
-                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-                  />
-                  <meta
-                    name='keywords'
-                    content='Serien, TV, Bewertung, Watchlist, TV-RANK'
-                  />
-                  <meta
-                    property='og:title'
-                    content='TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien'
-                  />
-                  <meta
-                    property='og:description'
-                    content='Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr.'
-                  />
-                  <meta property='og:image' content='/favicon.ico' />
-                  <meta property='og:url' content='https://tv-rank.de' />
-                  <meta name='twitter:card' content='summary_large_image' />
-                </Helmet>
-                <ThemeProvider theme={theme}>
-                  <CssBaseline />
-                  <div className='w-full'>
-                    <UsernameRequiredDialog />
-                    <main className='w-full'>
-                      <Suspense
-                        fallback={
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              minHeight: '50vh',
-                              color: '#00fed7',
-                            }}
-                          >
-                            ⏳ Lade Komponente...
-                          </div>
-                        }
-                      >
-                        <Routes>
-                          <Route path='/login' element={<LoginPage />} />
-                          <Route path='/register' element={<RegisterPage />} />
+                <RatingsStateProvider>
+                  <ThemeProvider theme={currentTheme}>
+                    <CssBaseline />
+                    <div className="w-full">
+                      <main className="w-full">
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
                           <Route
-                            path='/'
+                            path="/login"
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route
+                            path="/register"
+                            element={
+                              <AuthContext.Consumer>
+                                {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
+                              </AuthContext.Consumer>
+                            }
+                          />
+                          <Route path="/public/:publicId" element={<PublicProfilePage />} />
+                          <Route
+                            path="/*"
                             element={
                               <AuthContext.Consumer>
                                 {(auth) => {
-                                  if (!auth?.authStateResolved) {
-                                    return (
-                                      <div
-                                        style={{
-                                          display: 'flex',
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          minHeight: '50vh',
-                                          color: '#00fed7',
-                                        }}
-                                      >
-                                        ⏳ Wird geladen...
-                                      </div>
-                                    );
-                                  }
-
+                                  // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
                                   if (auth?.user) {
                                     return (
                                       <EmailVerificationBanner>
-                                        <MainPage />
+                                        <MobileApp />
                                       </EmailVerificationBanner>
                                     );
-                                  } else {
+                                  } else if (auth?.authStateResolved) {
+                                    // Wenn kein User da ist, zeige StartPage
                                     return <StartPage />;
+                                  } else {
+                                    // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
+                                    return null;
                                   }
                                 }}
                               </AuthContext.Consumer>
                             }
                           />
-                          <Route
-                            path='/friends'
-                            element={
-                              <AuthContext.Consumer>
-                                {(auth) =>
-                                  auth?.user ? (
-                                    <EmailVerificationBanner>
-                                      <FriendsPage />
-                                    </EmailVerificationBanner>
-                                  ) : (
-                                    <Navigate to='/login' />
-                                  )
-                                }
-                              </AuthContext.Consumer>
-                            }
-                          />
-                          <Route
-                            path='/public/:friendId'
-                            element={<PublicListPage />}
-                          />
-                          <Route
-                            path='/profile/:userId'
-                            element={
-                              <AuthContext.Consumer>
-                                {(auth) =>
-                                  auth?.user ? (
-                                    <EmailVerificationBanner>
-                                      <UserProfilePage />
-                                    </EmailVerificationBanner>
-                                  ) : (
-                                    <Navigate to='/login' />
-                                  )
-                                }
-                              </AuthContext.Consumer>
-                            }
-                          />
-                          <Route path='/duckfacts' element={<DuckFacts />} />
-                          <Route path='*' element={<Navigate to='/' />} />
+                          <Route path="*" element={<Navigate to="/" />} />
                         </Routes>
                       </Suspense>
                     </main>
                   </div>
                 </ThemeProvider>
+                </RatingsStateProvider>
               </BadgeProvider>
             </StatsProvider>
           </MovieListProvider>
         </SeriesListProvider>
-      </NotificationProvider>
+      </GeneralNotificationProvider>
     </OptimizedFriendsProvider>
   );
 }

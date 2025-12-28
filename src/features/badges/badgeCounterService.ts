@@ -16,7 +16,7 @@ class BadgeCounterService {
       const counterRef = firebase.database().ref(`badgeCounters/${userId}/quickwatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
     } catch (error) {
-      console.error('Fehler beim Quickwatch-Counter:', error);
+      // console.error('Fehler beim Quickwatch-Counter:', error);
     }
   }
 
@@ -28,7 +28,7 @@ class BadgeCounterService {
       const counterRef = firebase.database().ref(`badgeCounters/${userId}/rewatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
     } catch (error) {
-      console.error('Fehler beim Rewatch-Counter:', error);
+      // console.error('Fehler beim Rewatch-Counter:', error);
     }
   }
 
@@ -76,7 +76,7 @@ class BadgeCounterService {
       ]);
       
     } catch (error) {
-      console.error('Fehler beim Streak-Counter:', error);
+      // console.error('Fehler beim Streak-Counter:', error);
     }
   }
 
@@ -92,7 +92,7 @@ class BadgeCounterService {
       const typeCounterRef = firebase.database().ref(`badgeCounters/${userId}/${type}Added`);
       await typeCounterRef.transaction((current) => (current || 0) + 1);
     } catch (error) {
-      console.error('Fehler beim Social-Counter:', error);
+      // console.error('Fehler beim Social-Counter:', error);
     }
   }
 
@@ -146,7 +146,7 @@ class BadgeCounterService {
         });
       }
     } catch (error) {
-      console.error('❌ Fehler beim Multi-Timeframe-Binge-Counter:', error);
+      // console.error('❌ Fehler beim Multi-Timeframe-Binge-Counter:', error);
     }
   }
 
@@ -169,7 +169,7 @@ class BadgeCounterService {
         }
       }
     } catch (error) {
-      console.error('❌ Fehler beim Multi-Timeframe-Binge-Cleanup:', error);
+      // console.error('❌ Fehler beim Multi-Timeframe-Binge-Cleanup:', error);
     }
   }
 
@@ -181,16 +181,16 @@ class BadgeCounterService {
   async recordMarathonEpisode(userId: string): Promise<void> {
     try {
       const weekKey = this.getWeekKey();
-      console.log('🏃 recordMarathonEpisode:', { userId, weekKey });
+      // console.log('🏃 recordMarathonEpisode:', { userId, weekKey });
       const marathonRef = firebase.database().ref(`badgeCounters/${userId}/marathonWeeks/${weekKey}`);
       
       await marathonRef.transaction((current) => {
         const newValue = (current || 0) + 1;
-        console.log('🏃 Marathon transaction:', { current, newValue, weekKey });
+        // console.log('🏃 Marathon transaction:', { current, newValue, weekKey });
         return newValue;
       });
     } catch (error) {
-      console.error('Fehler beim Marathon-Counter:', error);
+      // console.error('Fehler beim Marathon-Counter:', error);
     }
   }
 
@@ -204,7 +204,7 @@ class BadgeCounterService {
       
       await marathonRef.transaction((current) => (current || 0) + episodeCount);
     } catch (error) {
-      console.error('Fehler beim Marathon-Counter:', error);
+      // console.error('Fehler beim Marathon-Counter:', error);
     }
   }
 
@@ -234,7 +234,7 @@ class BadgeCounterService {
         currentWeekKey: weekKey
       };
     } catch (error) {
-      console.error('Fehler beim Lesen der Marathon-Stats:', error);
+      // console.error('Fehler beim Lesen der Marathon-Stats:', error);
       return {
         currentWeekEpisodes: 0,
         bestWeekEpisodes: 0,
@@ -274,7 +274,7 @@ class BadgeCounterService {
     const firstThursday = new Date(year, 0, 4); // January 4th is always in week 1
     const weekNumber = Math.ceil(((target.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1);
     
-    console.log('📅 Week calculation:', { now: now.toDateString(), year, weekNumber, target: target.toDateString() });
+    // console.log('📅 Week calculation:', { now: now.toDateString(), year, weekNumber, target: target.toDateString() });
     return `${year}-W${weekNumber}`;
   }
 
@@ -286,7 +286,7 @@ class BadgeCounterService {
       const counterRef = firebase.database().ref(`badgeCounters/${userId}/${counterName}`);
       await counterRef.transaction((current) => (current || 0) + amount);
     } catch (error) {
-      console.error(`Fehler beim ${counterName}-Counter:`, error);
+      // console.error(`Fehler beim ${counterName}-Counter:`, error);
     }
   }
 
@@ -298,7 +298,7 @@ class BadgeCounterService {
       const snapshot = await firebase.database().ref(`badgeCounters/${userId}/${counterName}`).once('value');
       return snapshot.val() || 0;
     } catch (error) {
-      console.error(`Fehler beim Lesen des ${counterName}-Counters:`, error);
+      // console.error(`Fehler beim Lesen des ${counterName}-Counters:`, error);
       return 0;
     }
   }
@@ -311,7 +311,7 @@ class BadgeCounterService {
       const snapshot = await firebase.database().ref(`badgeCounters/${userId}`).once('value');
       return snapshot.val() || {};
     } catch (error) {
-      console.error('Fehler beim Lesen aller Counter:', error);
+      // console.error('Fehler beim Lesen aller Counter:', error);
       return {};
     }
   }
@@ -323,7 +323,7 @@ class BadgeCounterService {
     try {
       await firebase.database().ref(`badgeCounters/${userId}/${counterName}`).set(0);
     } catch (error) {
-      console.error(`Fehler beim Zurücksetzen des ${counterName}-Counters:`, error);
+      // console.error(`Fehler beim Zurücksetzen des ${counterName}-Counters:`, error);
     }
   }
 
@@ -334,7 +334,7 @@ class BadgeCounterService {
     try {
       await firebase.database().ref(`badgeCounters/${userId}`).remove();
     } catch (error) {
-      console.error('Fehler beim Löschen aller Counter:', error);
+      // console.error('Fehler beim Löschen aller Counter:', error);
     }
   }
 
@@ -352,10 +352,10 @@ class BadgeCounterService {
       if (!marathonWeeks[currentWeekKey]) {
         // Neue Woche mit 0 Episoden erstellen
         await marathonWeeksRef.child(currentWeekKey).set(0);
-        console.log(`🏃 Neue Marathon-Woche erstellt: ${currentWeekKey}`);
+        // console.log(`🏃 Neue Marathon-Woche erstellt: ${currentWeekKey}`);
       }
     } catch (error) {
-      console.error('Fehler beim Erstellen der Marathon-Woche:', error);
+      // console.error('Fehler beim Erstellen der Marathon-Woche:', error);
     }
   }
 }

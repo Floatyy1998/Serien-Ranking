@@ -37,7 +37,7 @@ export function useEnhancedFirebaseCache<T = any>(
     cacheInServiceWorker = true,
   } = options;
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!path); // Nur loading wenn es einen path gibt
   const [error, setError] = useState<string | null>(null);
   const [isStale, setIsStale] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -59,7 +59,7 @@ export function useEnhancedFirebaseCache<T = any>(
       // Hier könnte ein Memory-Cache implementiert werden
       return null;
     } catch (error) {
-      console.error('❌ Cache loading failed:', error);
+      // console.error('❌ Cache loading failed:', error);
       return null;
     }
   }, [path, enableOfflineSupport]);
@@ -82,7 +82,7 @@ export function useEnhancedFirebaseCache<T = any>(
           }
         }
       } catch (error) {
-        console.error('❌ Cache saving failed:', error);
+        // console.error('❌ Cache saving failed:', error);
       }
     },
     [path, ttl, enableOfflineSupport, cacheInServiceWorker]
@@ -103,7 +103,7 @@ export function useEnhancedFirebaseCache<T = any>(
       }
       return null;
     } catch (error) {
-      console.error(`❌ Firebase fetch failed for ${path}:`, error);
+      // console.error(`❌ Firebase fetch failed for ${path}:`, error);
       throw error;
     }
   }, [path, saveToCache]);
@@ -132,7 +132,7 @@ export function useEnhancedFirebaseCache<T = any>(
           setLoading(false);
         },
         (error) => {
-          console.warn(`⚠️ Realtime listener error for ${path}:`, error);
+          // console.warn(`⚠️ Realtime listener error for ${path}:`, error);
           // Bei Netzwerkfehlern auf Cache zurückfallen
           const errorMessage = error?.message || error?.toString() || '';
           const isNetworkError =
@@ -159,7 +159,7 @@ export function useEnhancedFirebaseCache<T = any>(
       );
       listenerRef.current = () => ref.off('value', listener);
     } catch (error) {
-      console.error('❌ Realtime listener setup failed:', error);
+      // console.error('❌ Realtime listener setup failed:', error);
       setError(
         error instanceof Error ? error.message : 'Realtime setup failed'
       );
@@ -191,7 +191,7 @@ export function useEnhancedFirebaseCache<T = any>(
         }
       }
     } catch (error) {
-      console.error('❌ Refetch failed:', error);
+      // console.error('❌ Refetch failed:', error);
       // Fallback auf Cache bei Netzwerkfehler
       const cachedData = await loadFromCache();
       if (cachedData) {
@@ -215,7 +215,7 @@ export function useEnhancedFirebaseCache<T = any>(
         await offlineFirebaseService.removeCachedData(path);
       }
     } catch (error) {
-      console.error('❌ Cache clearing failed:', error);
+      // console.error('❌ Cache clearing failed:', error);
     }
   }, [path, enableOfflineSupport]);
   /**
@@ -283,9 +283,7 @@ export function useEnhancedFirebaseCache<T = any>(
                 setLastUpdated(Date.now());
               }
             } catch (firebaseError) {
-              console.warn(
-                `⚠️ Firebase fetch failed, using cache: ${firebaseError}`
-              );
+              // console.warn(`⚠️ Firebase fetch failed, using cache: ${firebaseError}`);
               // Cache-Daten bleiben bestehen
             }
             setLoading(false);
@@ -299,7 +297,7 @@ export function useEnhancedFirebaseCache<T = any>(
           }
         }
       } catch (error) {
-        console.error(`❌ Initial load failed for ${path}:`, error);
+        // console.error(`❌ Initial load failed for ${path}:`, error);
         // Letzter Versuch: Cache laden
         const fallbackCache = await loadFromCache();
         if (fallbackCache) {
