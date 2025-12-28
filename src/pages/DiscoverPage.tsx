@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Whatshot,
 } from '@mui/icons-material';
+import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -21,14 +22,15 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { Dialog } from '../components/Dialog';
 
-// Memoized components for better performance
+// Premium memoized item card
 const ItemCard = memo(({
   item,
   onItemClick,
   onAddToList,
   addingItem,
   currentTheme,
-  isDesktop
+  isDesktop,
+  index
 }: any) => {
   const handleImageError = useCallback((e: any) => {
     const target = e.target as HTMLImageElement;
@@ -50,17 +52,24 @@ const ItemCard = memo(({
   }, [item.poster_path]);
 
   return (
-    <div style={{ position: 'relative' }}>
-      <div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * 0.03, 0.3) }}
+      style={{ position: 'relative' }}
+    >
+      <motion.div
+        whileTap={{ scale: 0.97 }}
         onClick={() => onItemClick(item)}
         style={{
           width: '100%',
           aspectRatio: '2/3',
           position: 'relative',
-          borderRadius: '8px',
+          borderRadius: '14px',
           overflow: 'hidden',
-          marginBottom: '8px',
+          marginBottom: '10px',
           cursor: 'pointer',
+          boxShadow: `0 6px 20px ${currentTheme.background.default}80`,
         }}
       >
         <img
@@ -75,27 +84,39 @@ const ItemCard = memo(({
           }}
         />
 
+        {/* Premium gradient overlay */}
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '60%',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+          pointerEvents: 'none',
+        }} />
+
         {item.vote_average > 0 && (
           <div
             style={{
               position: 'absolute',
-              top: '8px',
-              right: '8px',
-              padding: '4px 8px',
-              background: 'rgba(0, 0, 0, 0.8)',
+              top: '10px',
+              right: '10px',
+              padding: '5px 10px',
+              background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 40, 0.9))',
               backdropFilter: 'blur(10px)',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: 600,
+              borderRadius: '10px',
+              fontSize: '12px',
+              fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
-              gap: '2px',
+              gap: '4px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
           >
             <Star
               style={{
-                fontSize: '12px',
-                color: currentTheme.status.warning,
+                fontSize: '13px',
+                color: '#ffc107',
               }}
             />
             {item.vote_average.toFixed(1)}
@@ -103,46 +124,47 @@ const ItemCard = memo(({
         )}
 
         {!item.inList && (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.85 }}
             onClick={(e) => onAddToList(item, e)}
             disabled={addingItem === `${item.type}-${item.id}`}
             style={{
               position: 'absolute',
-              bottom: '8px',
-              right: '8px',
-              width: '28px',
-              height: '28px',
+              bottom: '10px',
+              right: '10px',
+              width: '34px',
+              height: '34px',
               background: addingItem === `${item.type}-${item.id}`
                 ? 'rgba(255, 255, 255, 0.1)'
-                : 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(10px)',
+                : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
+              border: 'none',
               cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
               transition: 'all 0.2s ease',
               padding: 0,
+              boxShadow: `0 4px 12px ${currentTheme.primary}50`,
             }}
           >
             <Add
               style={{
-                fontSize: '18px',
+                fontSize: '20px',
                 color: 'white',
                 opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
               }}
             />
-          </button>
+          </motion.button>
         )}
-      </div>
+      </motion.div>
 
       <h4
         style={{
-          fontSize: isDesktop ? '14px' : '12px',
-          fontWeight: isDesktop ? 600 : 500,
+          fontSize: isDesktop ? '14px' : '13px',
+          fontWeight: 700,
           margin: 0,
-          color: 'rgba(255, 255, 255, 0.9)',
+          color: currentTheme.text.primary,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           display: '-webkit-box',
@@ -156,16 +178,17 @@ const ItemCard = memo(({
 
       <p
         style={{
-          fontSize: '11px',
-          color: 'rgba(255, 255, 255, 0.4)',
-          margin: '2px 0 0 0',
+          fontSize: '12px',
+          color: currentTheme.text.muted,
+          margin: '4px 0 0 0',
+          fontWeight: 500,
         }}
       >
         {item.release_date || item.first_air_date
           ? new Date(item.release_date || item.first_air_date).getFullYear()
           : 'TBA'}
       </p>
-    </div>
+    </motion.div>
   );
 });
 
@@ -202,9 +225,8 @@ export const DiscoverPage = memo(() => {
   const [usedRecommendationSources, setUsedRecommendationSources] = useState<Set<string>>(new Set());
 
   const [isRestoring, setIsRestoring] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(220); // Default height
+  const [headerHeight, setHeaderHeight] = useState(220);
 
-  // Use refs to access current values in scroll handler
   const pageRef = useRef(page);
   const hasMoreRef = useRef(hasMore);
   const loadingRef = useRef(loading);
@@ -213,46 +235,23 @@ export const DiscoverPage = memo(() => {
   const recommendationsHasMoreRef = useRef(recommendationsHasMore);
   const activeCategoryRef = useRef(activeCategory);
 
-  // Update refs when state changes
-  useEffect(() => {
-    pageRef.current = page;
-  }, [page]);
+  useEffect(() => { pageRef.current = page; }, [page]);
+  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+  useEffect(() => { showSearchRef.current = showSearch; }, [showSearch]);
+  useEffect(() => { recommendationsLoadingRef.current = recommendationsLoading; }, [recommendationsLoading]);
+  useEffect(() => { recommendationsHasMoreRef.current = recommendationsHasMore; }, [recommendationsHasMore]);
+  useEffect(() => { activeCategoryRef.current = activeCategory; }, [activeCategory]);
 
-  useEffect(() => {
-    hasMoreRef.current = hasMore;
-  }, [hasMore]);
-
-  useEffect(() => {
-    loadingRef.current = loading;
-  }, [loading]);
-
-  useEffect(() => {
-    showSearchRef.current = showSearch;
-  }, [showSearch]);
-
-  useEffect(() => {
-    recommendationsLoadingRef.current = recommendationsLoading;
-  }, [recommendationsLoading]);
-
-  useEffect(() => {
-    recommendationsHasMoreRef.current = recommendationsHasMore;
-  }, [recommendationsHasMore]);
-
-  useEffect(() => {
-    activeCategoryRef.current = activeCategory;
-  }, [activeCategory]);
-
-  // Calculate header height dynamically
   useEffect(() => {
     const updateHeaderHeight = () => {
       const headerElement = document.querySelector('[data-header="discover-header"]');
       if (headerElement) {
         const height = headerElement.getBoundingClientRect().height;
-        setHeaderHeight(height + 10); // Add small buffer
+        setHeaderHeight(height + 10);
       }
     };
 
-    // Update on mount and resize
     updateHeaderHeight();
     const handleResize = () => {
       updateHeaderHeight();
@@ -260,8 +259,6 @@ export const DiscoverPage = memo(() => {
     };
 
     window.addEventListener('resize', handleResize);
-
-    // Also update when content changes (filters, search, etc.)
     const timeoutId = setTimeout(updateHeaderHeight, 100);
 
     return () => {
@@ -270,7 +267,6 @@ export const DiscoverPage = memo(() => {
     };
   }, [showSearch, showFilters, activeTab, activeCategory]);
 
-  // Reset or restore filters when component mounts
   useEffect(() => {
     const isComingFromDetail = sessionStorage.getItem('comingFromDetail') === 'true';
 
@@ -311,8 +307,6 @@ export const DiscoverPage = memo(() => {
     }
   }, []);
 
-
-  // Check if item is in list
   const isInList = useCallback(
     (id: string | number, type: 'series' | 'movie') => {
       if (type === 'series') {
@@ -324,7 +318,6 @@ export const DiscoverPage = memo(() => {
     [seriesList, movieList]
   );
 
-  // Fetch recommendations based on user's list
   const fetchRecommendations = useCallback(async (reset = false) => {
     if (recommendationsLoading) return;
 
@@ -340,7 +333,6 @@ export const DiscoverPage = memo(() => {
         return;
       }
 
-      // Reset state if this is a fresh fetch
       if (reset) {
         setUsedRecommendationSources(new Set());
         setRecommendations([]);
@@ -350,14 +342,12 @@ export const DiscoverPage = memo(() => {
       const currentUsedSources = reset ? new Set<string>() : new Set(usedRecommendationSources);
       const availableItems = userItems.filter(item => !currentUsedSources.has(item.id.toString()));
 
-      // If we've used all items, we can't get more recommendations
       if (availableItems.length === 0) {
         setRecommendationsHasMore(false);
         setRecommendationsLoading(false);
         return;
       }
 
-      // Get random items from user's list for recommendations (3 items per batch)
       const shuffled = [...availableItems].sort(() => 0.5 - Math.random());
       const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
 
@@ -393,16 +383,13 @@ export const DiscoverPage = memo(() => {
           });
         }
 
-        // Mark this item as used
         currentUsedSources.add(item.id.toString());
       }
 
-      // Shuffle new recommendations
       const shuffledRecommendations = allRecommendations
         .sort(() => 0.5 - Math.random())
-        .slice(0, 20); // 20 per batch
+        .slice(0, 20);
 
-      // Update state
       setUsedRecommendationSources(currentUsedSources);
 
       if (reset) {
@@ -411,7 +398,6 @@ export const DiscoverPage = memo(() => {
         setRecommendations(prev => [...prev, ...shuffledRecommendations]);
       }
 
-      // Check if we have more sources available
       const remainingItems = userItems.filter(item => !currentUsedSources.has(item.id.toString()));
       setRecommendationsHasMore(remainingItems.length > 0);
 
@@ -425,7 +411,6 @@ export const DiscoverPage = memo(() => {
     }
   }, [activeTab, seriesList, movieList, isInList, recommendationsLoading, recommendations, usedRecommendationSources]);
 
-  // Fetch from TMDB
   const fetchFromTMDB = useCallback(
     async (reset = false) => {
       if (loading) return;
@@ -513,7 +498,6 @@ export const DiscoverPage = memo(() => {
     [activeTab, activeCategory, selectedGenre, page, loading, isInList]
   );
 
-  // Load initial data when filters change
   useEffect(() => {
     if (isRestoring) return;
 
@@ -527,10 +511,8 @@ export const DiscoverPage = memo(() => {
     }
   }, [activeTab, activeCategory, selectedGenre, showSearch, isRestoring]);
 
-  // Auto-load more content if there's not enough to scroll
   useEffect(() => {
     if (activeCategory === 'recommendations') {
-      // Auto-load for recommendations
       if (recommendations.length > 0 && recommendationsHasMore && !recommendationsLoading && !showSearch) {
         const checkNeedMoreContent = () => {
           const scrollContainer = document.querySelector('.mobile-discover-container');
@@ -544,7 +526,6 @@ export const DiscoverPage = memo(() => {
         setTimeout(checkNeedMoreContent, 100);
       }
     } else {
-      // Auto-load for normal TMDB results
       if (results.length > 0 && hasMore && !loading && !showSearch) {
         const checkNeedMoreContent = () => {
           const scrollContainer = document.querySelector('.mobile-discover-container');
@@ -560,7 +541,6 @@ export const DiscoverPage = memo(() => {
     }
   }, [results.length, hasMore, loading, showSearch, activeCategory, fetchFromTMDB, recommendations.length, recommendationsHasMore, recommendationsLoading, fetchRecommendations]);
 
-  // Attach scroll listener
   useEffect(() => {
     const scrollContainer = document.querySelector('.mobile-discover-container');
     if (scrollContainer) {
@@ -572,15 +552,12 @@ export const DiscoverPage = memo(() => {
         const clientHeight = scrollContainer.clientHeight;
         const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
-        // Check if we're near the bottom (500px threshold)
         if (distanceFromBottom < 500) {
           if (activeCategoryRef.current === 'recommendations') {
-            // Handle recommendations infinite scroll
             if (recommendationsHasMoreRef.current && !recommendationsLoadingRef.current) {
               fetchRecommendations(false);
             }
           } else if (hasMoreRef.current && !loadingRef.current && !showSearchRef.current) {
-            // Handle normal TMDB infinite scroll
             fetchFromTMDB(false);
           }
         }
@@ -593,7 +570,6 @@ export const DiscoverPage = memo(() => {
     }
   }, [fetchFromTMDB, fetchRecommendations, activeCategory]);
 
-  // Search function
   const searchItems = useCallback(
     async (query: string) => {
       if (!query.trim()) {
@@ -638,7 +614,6 @@ export const DiscoverPage = memo(() => {
     [activeTab, isInList]
   );
 
-  // Debounced search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (showSearch) {
@@ -649,7 +624,6 @@ export const DiscoverPage = memo(() => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, showSearch, searchItems]);
 
-  // Add to list
   const addToList = useCallback(
     async (item: any, event?: React.MouseEvent) => {
       if (event) {
@@ -711,7 +685,6 @@ export const DiscoverPage = memo(() => {
     [user]
   );
 
-  // Handle item click
   const handleItemClick = useCallback(
     (item: any) => {
       const filterState = {
@@ -729,12 +702,19 @@ export const DiscoverPage = memo(() => {
     [navigate, activeTab, activeCategory, selectedGenre, showFilters, searchQuery, showSearch]
   );
 
-  // Memoize genres
   const genres = useMemo(
     () => (activeTab === 'series' ? genreIdMapForSeries : genreIdMapForMovies),
     [activeTab]
   );
 
+  // Category configuration for premium styling
+  const categories = [
+    { id: 'trending', label: 'Trend', icon: TrendingUp, color: currentTheme.primary },
+    { id: 'popular', label: 'Beliebt', icon: Whatshot, color: currentTheme.status.error },
+    { id: 'top_rated', label: 'Top', icon: Star, color: currentTheme.status.warning },
+    { id: 'upcoming', label: activeTab === 'movies' ? 'Neu' : 'Läuft', icon: NewReleases, color: currentTheme.status.success },
+    { id: 'recommendations', label: 'Für dich', icon: Recommend, color: '#8b5cf6' },
+  ] as const;
 
   return (
     <div
@@ -745,6 +725,19 @@ export const DiscoverPage = memo(() => {
         position: 'relative',
       }}
     >
+      {/* Decorative background */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: `radial-gradient(ellipse at 20% 0%, ${currentTheme.primary}12 0%, transparent 50%),
+                     radial-gradient(ellipse at 80% 100%, #8b5cf612 0%, transparent 50%)`,
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
       {/* Fixed Header and Controls */}
       <div
         data-header="discover-header"
@@ -754,65 +747,70 @@ export const DiscoverPage = memo(() => {
           left: 0,
           right: 0,
           zIndex: 100,
-          background: currentTheme.background.default,
+          background: `${currentTheme.background.default}f0`,
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
         }}
       >
         <div
           style={{
-            background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+            background: `linear-gradient(180deg, ${currentTheme.primary}20 0%, transparent 100%)`,
           }}
         >
-        {/* Header */}
-        <header
-          style={{
-            padding: '12px 16px',
-            paddingTop: 'calc(12px + env(safe-area-inset-top))',
-          }}
-        >
-          <div
+          {/* Premium Header */}
+          <header
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              padding: '14px 20px',
+              paddingTop: 'calc(14px + env(safe-area-inset-top))',
             }}
           >
-            <h1
+            <div
               style={{
-                fontSize: '20px',
-                fontWeight: 700,
-                margin: 0,
-                background: currentTheme.primary,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}
             >
-              Entdecken
-            </h1>
+              <h1
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 800,
+                  margin: 0,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                Entdecken
+              </h1>
 
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {!showSearch && activeCategory !== 'recommendations' && (
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  style={{
-                    padding: '8px',
-                    background: selectedGenre ? `${currentTheme.primary}33` : `${currentTheme.text.primary}0D`,
-                    border: `1px solid ${selectedGenre ? currentTheme.primary : currentTheme.border.default}`,
-                    borderRadius: '8px',
-                    color: selectedGenre ? currentTheme.primary : currentTheme.text.primary,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  title={selectedGenre ? genres.find((g) => g.id === selectedGenre)?.name : 'Genre Filter'}
-                >
-                  <FilterList style={{ fontSize: '18px' }} />
-                </button>
-              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {!showSearch && activeCategory !== 'recommendations' && (
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowFilters(!showFilters)}
+                    style={{
+                      padding: '10px',
+                      background: selectedGenre
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                        : currentTheme.background.surface,
+                      border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
+                      borderRadius: '12px',
+                      color: selectedGenre ? '#fff' : currentTheme.text.primary,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: selectedGenre ? `0 4px 12px ${currentTheme.primary}40` : 'none',
+                    }}
+                    title={selectedGenre ? genres.find((g) => g.id === selectedGenre)?.name : 'Genre Filter'}
+                  >
+                    <FilterList style={{ fontSize: '20px' }} />
+                  </motion.button>
+                )}
 
-              <button
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     setShowSearch(!showSearch);
                     if (!showSearch) {
@@ -820,321 +818,229 @@ export const DiscoverPage = memo(() => {
                     }
                   }}
                   style={{
-                    padding: '8px',
+                    padding: '10px',
                     background: showSearch
-                      ? `${currentTheme.primary}33`
-                      : `${currentTheme.text.primary}0D`,
-                    border: `1px solid ${showSearch ? currentTheme.primary : currentTheme.border.default}`,
-                    borderRadius: '8px',
-                    color: showSearch ? currentTheme.primary : currentTheme.text.primary,
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                      : currentTheme.background.surface,
+                    border: showSearch ? 'none' : `1px solid ${currentTheme.border.default}`,
+                    borderRadius: '12px',
+                    color: showSearch ? '#fff' : currentTheme.text.primary,
                     cursor: 'pointer',
+                    boxShadow: showSearch ? `0 4px 12px ${currentTheme.primary}40` : 'none',
                   }}
                 >
-                  <Search style={{ fontSize: '18px' }} />
-                </button>
+                  <Search style={{ fontSize: '20px' }} />
+                </motion.button>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Search Input */}
-        {showSearch && (
+          {/* Premium Search Input */}
+          <AnimatePresence>
+            {showSearch && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{ padding: '0 20px 12px 20px', overflow: 'hidden' }}
+              >
+                <input
+                  type="text"
+                  placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    background: currentTheme.background.surface,
+                    border: `1px solid ${currentTheme.border.default}`,
+                    borderRadius: '14px',
+                    color: currentTheme.text.primary,
+                    fontSize: '15px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease',
+                  }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Premium Tab Switcher */}
           <div
             style={{
-              padding: '0 16px 8px 16px',
-            }}
-          >
-            <input
-              type="text"
-              placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                background: `${currentTheme.text.primary}0D`,
-                border: `1px solid ${currentTheme.border.default}`,
-                borderRadius: '8px',
-                color: currentTheme.text.primary,
-                fontSize: '14px',
-              }}
-            />
-          </div>
-        )}
-
-        {/* Tab Switcher */}
-        <div
-          style={{
-            display: 'flex',
-            padding: '8px 16px',
-            gap: '8px',
-          }}
-        >
-          <button
-            onClick={() => {
-              setActiveTab('series');
-              setShowSearch(false);
-            }}
-            style={{
-              flex: 1,
-              padding: '8px',
-              background:
-                activeTab === 'series' ? currentTheme.primary : `${currentTheme.text.primary}0D`,
-              border: activeTab === 'series' ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '8px',
-              color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
+              padding: '8px 20px',
+              gap: '10px',
             }}
           >
-            <CalendarToday style={{ fontSize: '16px' }} />
-            Serien
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('movies');
-              setShowSearch(false);
-            }}
-            style={{
-              flex: 1,
-              padding: '8px',
-              background:
-                activeTab === 'movies'
-                  ? `${currentTheme.primary}CC`
-                  : `${currentTheme.text.primary}0D`,
-              border: activeTab === 'movies' ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '8px',
-              color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-            }}
-          >
-            <MovieIcon style={{ fontSize: '16px' }} />
-            Filme
-          </button>
-
-        </div>
-
-        {/* Categories */}
-        {!showSearch && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
-              gap: '8px',
-              padding: '0 16px 12px 16px',
-            }}
-          >
-            <button
-              onClick={() => setActiveCategory('trending')}
-              style={{
-                padding: '8px 4px',
-                background:
-                  activeCategory === 'trending'
-                    ? `${currentTheme.primary}33`
-                    : `${currentTheme.text.primary}08`,
-                border:
-                  activeCategory === 'trending'
-                    ? `1px solid ${currentTheme.primary}66`
-                    : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '8px',
-                color: activeCategory === 'trending' ? currentTheme.primary : currentTheme.text.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2px',
-              }}
-            >
-              <TrendingUp style={{ fontSize: '18px' }} />
-              <span style={{ fontSize: '10px', fontWeight: 600 }}>Trend</span>
-            </button>
-
-            <button
-              onClick={() => setActiveCategory('popular')}
-              style={{
-                padding: '8px 4px',
-                background:
-                  activeCategory === 'popular'
-                    ? `${currentTheme.status.error}33`
-                    : `${currentTheme.text.primary}08`,
-                border:
-                  activeCategory === 'popular'
-                    ? `1px solid ${currentTheme.status.error}66`
-                    : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '8px',
-                color: activeCategory === 'popular' ? currentTheme.status.error : currentTheme.text.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2px',
-              }}
-            >
-              <Whatshot style={{ fontSize: '18px' }} />
-              <span style={{ fontSize: '10px', fontWeight: 600 }}>Beliebt</span>
-            </button>
-
-            <button
-              onClick={() => setActiveCategory('top_rated')}
-              style={{
-                padding: '8px 4px',
-                background:
-                  activeCategory === 'top_rated'
-                    ? `${currentTheme.status.warning}33`
-                    : `${currentTheme.text.primary}08`,
-                border:
-                  activeCategory === 'top_rated'
-                    ? `1px solid ${currentTheme.status.warning}66`
-                    : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '8px',
-                color: activeCategory === 'top_rated' ? currentTheme.status.warning : currentTheme.text.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2px',
-              }}
-            >
-              <Star style={{ fontSize: '18px' }} />
-              <span style={{ fontSize: '10px', fontWeight: 600 }}>Top</span>
-            </button>
-
-            <button
-              onClick={() => setActiveCategory('upcoming')}
-              style={{
-                padding: '8px 4px',
-                background:
-                  activeCategory === 'upcoming'
-                    ? `${currentTheme.status.success}33`
-                    : `${currentTheme.text.primary}08`,
-                border:
-                  activeCategory === 'upcoming'
-                    ? `1px solid ${currentTheme.status.success}66`
-                    : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '8px',
-                color: activeCategory === 'upcoming' ? currentTheme.status.success : currentTheme.text.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2px',
-              }}
-            >
-              <NewReleases style={{ fontSize: '18px' }} />
-              <span style={{ fontSize: '10px', fontWeight: 600 }}>
-                {activeTab === 'movies' ? 'Neu' : 'Läuft'}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveCategory('recommendations')}
-              style={{
-                padding: '8px 4px',
-                background:
-                  activeCategory === 'recommendations'
-                    ? `${currentTheme.status.success}33`
-                    : `${currentTheme.text.primary}08`,
-                border:
-                  activeCategory === 'recommendations'
-                    ? `1px solid ${currentTheme.status.success}66`
-                    : `1px solid ${currentTheme.border.default}`,
-                borderRadius: '8px',
-                color: activeCategory === 'recommendations' ? currentTheme.status.success : currentTheme.text.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2px',
-              }}
-            >
-              <Recommend style={{ fontSize: '18px' }} />
-              <span style={{ fontSize: '10px', fontWeight: 600 }}>Für dich</span>
-            </button>
+            {[
+              { id: 'series', label: 'Serien', icon: CalendarToday },
+              { id: 'movies', label: 'Filme', icon: MovieIcon },
+            ].map(tab => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <motion.button
+                  key={tab.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setActiveTab(tab.id as 'series' | 'movies');
+                    setShowSearch(false);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: isActive
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                      : currentTheme.background.surface,
+                    border: isActive ? 'none' : `1px solid ${currentTheme.border.default}`,
+                    borderRadius: '14px',
+                    color: isActive ? '#fff' : currentTheme.text.primary,
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <Icon style={{ fontSize: '18px' }} />
+                  {tab.label}
+                </motion.button>
+              );
+            })}
           </div>
-        )}
 
-        {/* Genre Filter Dropdown */}
-        {showFilters && !showSearch && activeCategory !== 'recommendations' && (
-          <div
-            style={{
-              padding: '0 16px 12px 16px',
-            }}
-          >
+          {/* Premium Categories */}
+          {!showSearch && (
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '6px',
-                maxHeight: '150px',
-                overflowY: 'auto',
-                padding: '8px',
-                background: `${currentTheme.text.primary}08`,
-                borderRadius: '8px',
-                border: `1px solid ${currentTheme.border.default}`,
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: '8px',
+                padding: '8px 20px 14px 20px',
               }}
             >
-              <button
-                onClick={() => {
-                  setSelectedGenre(null);
-                  setShowFilters(false);
-                }}
-                style={{
-                  padding: '6px 8px',
-                  background: !selectedGenre ? `${currentTheme.primary}33` : 'transparent',
-                  border: !selectedGenre
-                    ? `1px solid ${currentTheme.primary}66`
-                    : `1px solid ${currentTheme.border.default}`,
-                  borderRadius: '6px',
-                  color: !selectedGenre ? currentTheme.primary : currentTheme.text.primary,
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                }}
-              >
-                Alle
-              </button>
-              {genres.map((genre) => (
-                <button
-                  key={genre.id}
-                  onClick={() => {
-                    setSelectedGenre(genre.id);
-                    setShowFilters(false);
-                  }}
-                  style={{
-                    padding: '6px 8px',
-                    background:
-                      selectedGenre === genre.id ? `${currentTheme.primary}33` : 'transparent',
-                    border:
-                      selectedGenre === genre.id
-                        ? `1px solid ${currentTheme.primary}66`
+              {categories.map(cat => {
+                const isActive = activeCategory === cat.id;
+                const Icon = cat.icon;
+                return (
+                  <motion.button
+                    key={cat.id}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setActiveCategory(cat.id)}
+                    style={{
+                      padding: '10px 4px',
+                      background: isActive
+                        ? `linear-gradient(135deg, ${cat.color}30, ${cat.color}10)`
+                        : currentTheme.background.surface,
+                      border: isActive
+                        ? `1px solid ${cat.color}50`
                         : `1px solid ${currentTheme.border.default}`,
-                    borderRadius: '6px',
-                    color: selectedGenre === genre.id ? currentTheme.primary : currentTheme.text.primary,
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                      borderRadius: '12px',
+                      color: isActive ? cat.color : currentTheme.text.secondary,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <Icon style={{ fontSize: '20px' }} />
+                    <span style={{ fontSize: '10px', fontWeight: 700 }}>{cat.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Premium Genre Filter Dropdown */}
+          <AnimatePresence>
+            {showFilters && !showSearch && activeCategory !== 'recommendations' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{ padding: '0 20px 14px 20px', overflow: 'hidden' }}
+              >
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '8px',
+                    maxHeight: '160px',
+                    overflowY: 'auto',
+                    padding: '12px',
+                    background: currentTheme.background.surface,
+                    borderRadius: '14px',
+                    border: `1px solid ${currentTheme.border.default}`,
                   }}
                 >
-                  {genre.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setSelectedGenre(null);
+                      setShowFilters(false);
+                    }}
+                    style={{
+                      padding: '8px 10px',
+                      background: !selectedGenre
+                        ? `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.primary}10)`
+                        : 'transparent',
+                      border: !selectedGenre
+                        ? `1px solid ${currentTheme.primary}50`
+                        : `1px solid ${currentTheme.border.default}`,
+                      borderRadius: '10px',
+                      color: !selectedGenre ? currentTheme.primary : currentTheme.text.primary,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Alle
+                  </motion.button>
+                  {genres.map((genre) => (
+                    <motion.button
+                      key={genre.id}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setSelectedGenre(genre.id);
+                        setShowFilters(false);
+                      }}
+                      style={{
+                        padding: '8px 10px',
+                        background:
+                          selectedGenre === genre.id
+                            ? `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.primary}10)`
+                            : 'transparent',
+                        border:
+                          selectedGenre === genre.id
+                            ? `1px solid ${currentTheme.primary}50`
+                            : `1px solid ${currentTheme.border.default}`,
+                        borderRadius: '10px',
+                        color: selectedGenre === genre.id ? currentTheme.primary : currentTheme.text.primary,
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {genre.name}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -1154,223 +1060,301 @@ export const DiscoverPage = memo(() => {
         {/* Spacer for fixed header */}
         <div style={{ height: `${headerHeight}px` }} />
 
-        <div style={{ padding: '16px' }}>
-        {activeCategory === 'recommendations' ? (
-          recommendationsLoading && recommendations.length === 0 ? (
+        <div style={{ padding: '16px 20px' }}>
+          {activeCategory === 'recommendations' ? (
+            recommendationsLoading && recommendations.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  padding: '60px 20px',
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    border: `3px solid ${currentTheme.border.default}`,
+                    borderTopColor: currentTheme.primary,
+                    marginBottom: '16px',
+                  }}
+                />
+                <p style={{ color: currentTheme.text.muted, fontSize: '14px' }}>
+                  Lade Empfehlungen...
+                </p>
+              </motion.div>
+            ) : !recommendationsLoading && recommendations.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                  background: currentTheme.background.surface,
+                  borderRadius: '20px',
+                  border: `1px solid ${currentTheme.border.default}`,
+                }}
+              >
+                <Recommend
+                  style={{
+                    fontSize: '56px',
+                    marginBottom: '16px',
+                    color: currentTheme.text.muted,
+                  }}
+                />
+                <p style={{ fontSize: '16px', color: currentTheme.text.secondary, marginBottom: '8px', fontWeight: 600 }}>
+                  Keine Empfehlungen verfügbar
+                </p>
+                <p style={{ fontSize: '13px', color: currentTheme.text.muted }}>
+                  {seriesList.length === 0 && movieList.length === 0
+                    ? 'Füge erst Serien oder Filme zu deiner Liste hinzu'
+                    : ''}
+                </p>
+              </motion.div>
+            ) : (
+              <div>
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: currentTheme.text.muted,
+                    marginBottom: '20px',
+                    textAlign: 'center',
+                    fontWeight: 500,
+                  }}
+                >
+                  Basierend auf deiner Liste
+                </p>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isDesktop
+                      ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                      : 'repeat(2, 1fr)',
+                    gap: isDesktop ? '24px' : '16px',
+                    maxWidth: '100%',
+                    margin: '0',
+                  }}
+                >
+                  {recommendations.map((item, index) => (
+                    <ItemCard
+                      key={`rec-${item.type}-${item.id}`}
+                      item={item}
+                      onItemClick={handleItemClick}
+                      onAddToList={addToList}
+                      addingItem={addingItem}
+                      currentTheme={currentTheme}
+                      isDesktop={isDesktop}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          ) : showSearch ? (
+            <div>
+              {searchLoading ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '60px 20px',
+                  }}
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                    style={{
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      border: `3px solid ${currentTheme.border.default}`,
+                      borderTopColor: currentTheme.primary,
+                      marginBottom: '16px',
+                    }}
+                  />
+                  <p style={{ color: currentTheme.text.muted, fontSize: '14px' }}>
+                    Suche läuft...
+                  </p>
+                </motion.div>
+              ) : searchResults.length === 0 && searchQuery.trim() ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  style={{
+                    textAlign: 'center',
+                    padding: '60px 20px',
+                    background: currentTheme.background.surface,
+                    borderRadius: '20px',
+                    border: `1px solid ${currentTheme.border.default}`,
+                  }}
+                >
+                  <Search
+                    style={{
+                      fontSize: '56px',
+                      marginBottom: '16px',
+                      color: currentTheme.text.muted,
+                    }}
+                  />
+                  <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
+                    Keine Ergebnisse für "{searchQuery}"
+                  </p>
+                </motion.div>
+              ) : searchResults.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  style={{
+                    textAlign: 'center',
+                    padding: '60px 20px',
+                    background: currentTheme.background.surface,
+                    borderRadius: '20px',
+                    border: `1px solid ${currentTheme.border.default}`,
+                  }}
+                >
+                  <Search
+                    style={{
+                      fontSize: '56px',
+                      marginBottom: '16px',
+                      color: currentTheme.text.muted,
+                    }}
+                  />
+                  <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
+                    Gib einen Suchbegriff ein...
+                  </p>
+                </motion.div>
+              ) : (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isDesktop
+                      ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                      : 'repeat(2, 1fr)',
+                    gap: isDesktop ? '24px' : '16px',
+                    maxWidth: '100%',
+                    margin: '0',
+                  }}
+                >
+                  {searchResults.map((item, index) => (
+                    <ItemCard
+                      key={`search-${item.type}-${item.id}`}
+                      item={item}
+                      onItemClick={handleItemClick}
+                      onAddToList={addToList}
+                      addingItem={addingItem}
+                      currentTheme={currentTheme}
+                      isDesktop={isDesktop}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
             <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isDesktop
+                  ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                  : 'repeat(2, 1fr)',
+                gap: isDesktop ? '24px' : '16px',
+                maxWidth: '100%',
+                margin: '0',
+              }}
+            >
+              {results.map((item, index) => (
+                <ItemCard
+                  key={`${item.type}-${item.id}`}
+                  item={item}
+                  onItemClick={handleItemClick}
+                  onAddToList={addToList}
+                  addingItem={addingItem}
+                  currentTheme={currentTheme}
+                  isDesktop={isDesktop}
+                  index={index}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Premium Loading indicator */}
+          {((loading && !showSearch && activeCategory !== 'recommendations') ||
+            (recommendationsLoading && activeCategory === 'recommendations' && recommendations.length > 0)) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               style={{
                 display: 'flex',
                 justifyContent: 'center',
-                padding: '40px',
+                padding: '30px',
               }}
             >
-              <div style={{ color: currentTheme.text.muted }}>Lade Empfehlungen...</div>
-            </div>
-          ) : !recommendationsLoading && recommendations.length === 0 ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: 'rgba(255, 255, 255, 0.4)',
-              }}
-            >
-              <Recommend
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
                 style={{
-                  fontSize: '48px',
-                  marginBottom: '16px',
-                  opacity: 0.3,
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  border: `3px solid ${currentTheme.border.default}`,
+                  borderTopColor: currentTheme.primary,
                 }}
               />
-              <p style={{ fontSize: '16px', marginBottom: '8px' }}>
-                {seriesList.length === 0 && movieList.length === 0
-                  ? 'Keine Empfehlungen verfügbar'
-                  : 'Keine Empfehlungen verfügbar'}
-              </p>
-              <p style={{ fontSize: '13px' }}>
-                {seriesList.length === 0 && movieList.length === 0
-                  ? 'Füge erst Serien oder Filme zu deiner Liste hinzu'
-                  : ''}
-              </p>
-            </div>
-          ) : (
-            <div>
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: currentTheme.text.muted,
-                  marginBottom: '16px',
-                  textAlign: 'center',
-                }}
-              >
-                Basierend auf deiner Liste
-              </p>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: isDesktop
-                    ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                    : 'repeat(2, 1fr)',
-                  gap: isDesktop ? '24px' : '16px',
-                  maxWidth: '100%',
-                  margin: '0',
-                }}
-              >
-                {recommendations.map((item) => (
-                  <ItemCard
-                    key={`rec-${item.type}-${item.id}`}
-                    item={item}
-                    onItemClick={handleItemClick}
-                    onAddToList={addToList}
-                    addingItem={addingItem}
-                    currentTheme={currentTheme}
-                    isDesktop={isDesktop}
-                  />
-                ))}
-              </div>
-            </div>
-          )
-        ) : showSearch ? (
-          <div>
-            {searchLoading ? (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  padding: '40px',
-                }}
-              >
-                <div style={{ color: currentTheme.text.muted }}>Suche läuft...</div>
-              </div>
-            ) : searchResults.length === 0 && searchQuery.trim() ? (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '40px 20px',
-                  color: 'rgba(255, 255, 255, 0.4)',
-                }}
-              >
-                <Search
-                  style={{
-                    fontSize: '48px',
-                    marginBottom: '16px',
-                    opacity: 0.3,
-                  }}
-                />
-                <p>Keine Ergebnisse für "{searchQuery}"</p>
-              </div>
-            ) : searchResults.length === 0 ? (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '40px 20px',
-                  color: 'rgba(255, 255, 255, 0.4)',
-                }}
-              >
-                <Search
-                  style={{
-                    fontSize: '48px',
-                    marginBottom: '16px',
-                    opacity: 0.3,
-                  }}
-                />
-                <p>Gib einen Suchbegriff ein...</p>
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: isDesktop
-                    ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                    : 'repeat(2, 1fr)',
-                  gap: isDesktop ? '24px' : '16px',
-                  maxWidth: '100%',
-                  margin: '0',
-                }}
-              >
-                {searchResults.map((item) => (
-                  <ItemCard
-                    key={`search-${item.type}-${item.id}`}
-                    item={item}
-                    onItemClick={handleItemClick}
-                    onAddToList={addToList}
-                    addingItem={addingItem}
-                    currentTheme={currentTheme}
-                    isDesktop={isDesktop}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isDesktop
-                ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                : 'repeat(2, 1fr)',
-              gap: isDesktop ? '24px' : '16px',
-              maxWidth: '100%',
-              margin: '0',
-            }}
-          >
-            {results.map((item) => (
-              <ItemCard
-                key={`${item.type}-${item.id}`}
-                item={item}
-                onItemClick={handleItemClick}
-                onAddToList={addToList}
-                addingItem={addingItem}
-                currentTheme={currentTheme}
-                isDesktop={isDesktop}
-              />
-            ))}
-          </div>
-        )}
+            </motion.div>
+          )}
 
-        {/* Loading indicator */}
-        {((loading && !showSearch && activeCategory !== 'recommendations') ||
-          (recommendationsLoading && activeCategory === 'recommendations' && recommendations.length > 0)) && (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              padding: '20px',
-            }}
-          >
-            <div style={{ color: currentTheme.text.muted }}>Lade mehr...</div>
-          </div>
-        )}
-
-        {/* Bottom padding */}
-        <div style={{ height: '80px' }} />
+          {/* Bottom padding */}
+          <div style={{ height: '80px' }} />
         </div>
       </div>
 
-      {/* Snackbar for success feedback */}
-      {snackbar.open && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: currentTheme.status.success,
-            color: 'white',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            maxWidth: 'calc(100% - 40px)',
-            transition: 'all 0.3s ease-out',
-          }}
-        >
-          <Check style={{ fontSize: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>{snackbar.message}</span>
-        </div>
-      )}
+      {/* Premium Snackbar for success feedback */}
+      <AnimatePresence>
+        {snackbar.open && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              bottom: '100px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: `linear-gradient(135deg, ${currentTheme.status.success}, #10b981)`,
+              color: 'white',
+              padding: '14px 24px',
+              borderRadius: '16px',
+              boxShadow: `0 8px 24px ${currentTheme.status.success}50`,
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              maxWidth: 'calc(100% - 40px)',
+            }}
+          >
+            <div style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Check style={{ fontSize: '18px' }} />
+            </div>
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>{snackbar.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Dialog for alerts */}
       <Dialog

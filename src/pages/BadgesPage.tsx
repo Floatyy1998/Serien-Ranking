@@ -1,3 +1,8 @@
+/**
+ * BadgesPage - Premium Achievement Gallery
+ * Beautiful badge showcase with animated progress
+ */
+
 import {
   EmojiEvents,
   Explore,
@@ -27,14 +32,14 @@ import './BadgesPage.css';
 
 const categories: { key: BadgeCategory | 'all'; label: string; icon: React.ReactNode }[] = [
   { key: 'all', label: 'Alle', icon: <EmojiEvents /> },
-  { key: 'binge', label: 'Binge Watcher', icon: <Movie /> },
-  { key: 'quickwatch', label: 'Quick Watcher', icon: <Speed /> },
+  { key: 'binge', label: 'Binge', icon: <Movie /> },
+  { key: 'quickwatch', label: 'Quick', icon: <Speed /> },
   { key: 'marathon', label: 'Marathon', icon: <LocalFireDepartment /> },
-  { key: 'streak', label: 'Streak Hunter', icon: <TrendingUp /> },
-  { key: 'rewatch', label: 'Rewatcher', icon: <Refresh /> },
-  { key: 'series_explorer', label: 'Series Explorer', icon: <Explore /> },
+  { key: 'streak', label: 'Streak', icon: <TrendingUp /> },
+  { key: 'rewatch', label: 'Rewatch', icon: <Refresh /> },
+  { key: 'series_explorer', label: 'Explorer', icon: <Explore /> },
   { key: 'collector', label: 'Collector', icon: <Star /> },
-  { key: 'social', label: 'Social Viewer', icon: <Groups /> },
+  { key: 'social', label: 'Social', icon: <Groups /> },
 ];
 
 export const BadgesPage = () => {
@@ -56,7 +61,6 @@ export const BadgesPage = () => {
     }
   }, [user]);
 
-  // Badge Progress Update Event Listener
   useEffect(() => {
     const handleBadgeUpdate = async (event: CustomEvent) => {
       const { newBadges } = event.detail;
@@ -94,7 +98,6 @@ export const BadgesPage = () => {
     };
   }, [user]);
 
-  // Auto-refresh für laufende Sessions (jede Sekunde)
   useEffect(() => {
     const hasActiveSessions = Object.values(badgeProgress).some((p) => p.sessionActive);
     if (!hasActiveSessions) return;
@@ -114,16 +117,10 @@ export const BadgesPage = () => {
     try {
       const { getOfflineBadgeSystem } = await import('../features/badges/offlineBadgeSystem');
       const badgeSystem = getOfflineBadgeSystem(user.uid);
-
-      // Cache invalidieren für frische Daten
       badgeSystem.invalidateCache();
-
-      // Nach neuen Badges suchen
       const newBadges = await badgeSystem.checkForNewBadges();
 
       if (newBadges.length > 0) {
-        console.log('Neue Badges gefunden:', newBadges);
-        // Event für neue Badges auslösen
         window.dispatchEvent(
           new CustomEvent('badgeProgressUpdate', {
             detail: { newBadges },
@@ -131,7 +128,6 @@ export const BadgesPage = () => {
         );
       }
 
-      // Daten neu laden
       await loadBadgeData();
     } catch (error) {
       console.error('Fehler beim Badge-Check:', error);
@@ -145,17 +141,14 @@ export const BadgesPage = () => {
 
     const { getOfflineBadgeSystem } = await import('../features/badges/offlineBadgeSystem');
     const badgeSystem = getOfflineBadgeSystem(user.uid);
-
     const isCached = badgeSystem.isCacheValid();
 
     if (!isCached) {
       setLoading(true);
       setLoadingProgress({ current: 0, total: 4 });
-
       setLoadingProgress({ current: 1, total: 4 });
       const { badgeCounterService } = await import('../features/badges/badgeCounterService');
       await badgeCounterService.finalizeBingeSession(user.uid);
-
       setLoadingProgress({ current: 2, total: 4 });
     } else {
       const { badgeCounterService } = await import('../features/badges/badgeCounterService');
@@ -187,7 +180,7 @@ export const BadgesPage = () => {
       case 'rare':
         return currentTheme.primary;
       case 'epic':
-        return currentTheme.primary;
+        return '#8b5cf6';
       case 'legendary':
         return currentTheme.status.warning;
       default:
@@ -195,11 +188,19 @@ export const BadgesPage = () => {
     }
   };
 
-  const getRarityStars = (rarity: string) => {
-    const count = rarity === 'legendary' ? 4 : rarity === 'epic' ? 3 : rarity === 'rare' ? 2 : 1;
-    return [...Array(count)].map((_, i) => (
-      <Star key={i} style={{ fontSize: 10, color: getRarityColor(rarity) }} />
-    ));
+  const getRarityLabel = (rarity: string) => {
+    switch (rarity) {
+      case 'common':
+        return 'Gewöhnlich';
+      case 'rare':
+        return 'Selten';
+      case 'epic':
+        return 'Episch';
+      case 'legendary':
+        return 'Legendär';
+      default:
+        return rarity;
+    }
   };
 
   const isBadgeEarned = (badgeId: string) => {
@@ -220,133 +221,160 @@ export const BadgesPage = () => {
     return `${secs}s`;
   };
 
-  const renderBadgeCard = (badge: Badge, index: number) => {
-    const earned = isBadgeEarned(badge.id);
-    const progress = getBadgeProgress(badge.id);
-    const earnedBadge = earnedBadges.find((b) => b.id === badge.id);
+  const getNextTierInfo = (badge: Badge, earned: boolean) => {
+    if (earned) return null;
 
-    const getNextTierInfo = () => {
-      if (earned) return null;
+    const sameCategoryBadges = BADGE_DEFINITIONS.filter((b) => b.category === badge.category);
+    const badgeGroups: Record<string, typeof sameCategoryBadges> = {};
 
-      // Get all badges in the same category
-      const sameCategoryBadges = BADGE_DEFINITIONS.filter((b) => b.category === badge.category);
-
-      // Group badges by their base type (same requirements type)
-      const badgeGroups: Record<string, typeof sameCategoryBadges> = {};
-
-      sameCategoryBadges.forEach((b) => {
-        // Create a key based on the requirement type (episodes, seasons, series, etc.)
-        const reqKey = Object.keys(b.requirements)
-          .filter((k) => k !== 'timeframe')
-          .sort()
-          .join('_');
-
-        if (!badgeGroups[reqKey]) {
-          badgeGroups[reqKey] = [];
-        }
-        badgeGroups[reqKey].push(b);
-      });
-
-      // Find the group this badge belongs to
-      const myReqKey = Object.keys(badge.requirements)
+    sameCategoryBadges.forEach((b) => {
+      const reqKey = Object.keys(b.requirements)
         .filter((k) => k !== 'timeframe')
         .sort()
         .join('_');
 
-      const myGroup = badgeGroups[myReqKey];
-      if (!myGroup || myGroup.length <= 1) return null;
-
-      // Sort the group by tier and requirement value
-      const tierOrder: Record<string, number> = {
-        bronze: 1,
-        silver: 2,
-        gold: 3,
-        platinum: 4,
-        diamond: 5,
-      };
-
-      myGroup.sort((a, b) => {
-        // First sort by requirement value (episodes, series, etc.)
-        const aValue =
-          a.requirements.episodes || a.requirements.series || a.requirements.seasons || 0;
-        const bValue =
-          b.requirements.episodes || b.requirements.series || b.requirements.seasons || 0;
-        if (aValue !== bValue) return aValue - bValue;
-
-        // Then by tier if values are the same
-        return (tierOrder[a.tier] || 0) - (tierOrder[b.tier] || 0);
-      });
-
-      // Find current badge position
-      const currentIndex = myGroup.findIndex((b) => b.id === badge.id);
-      if (currentIndex === -1 || currentIndex === 0) return null;
-
-      // Check if all previous badges in the progression are earned
-      const previousBadges = myGroup.slice(0, currentIndex);
-      const earnedPreviousBadges = previousBadges.filter((b) => isBadgeEarned(b.id));
-
-      // This is the next badge to earn if all previous ones are earned
-      if (earnedPreviousBadges.length === previousBadges.length) {
-        return { isNextTier: true };
+      if (!badgeGroups[reqKey]) {
+        badgeGroups[reqKey] = [];
       }
+      badgeGroups[reqKey].push(b);
+    });
 
-      return null;
+    const myReqKey = Object.keys(badge.requirements)
+      .filter((k) => k !== 'timeframe')
+      .sort()
+      .join('_');
+
+    const myGroup = badgeGroups[myReqKey];
+    if (!myGroup || myGroup.length <= 1) return null;
+
+    const tierOrder: Record<string, number> = {
+      bronze: 1,
+      silver: 2,
+      gold: 3,
+      platinum: 4,
+      diamond: 5,
     };
 
-    const nextTierInfo = getNextTierInfo();
+    myGroup.sort((a, b) => {
+      const aValue =
+        a.requirements.episodes || a.requirements.series || a.requirements.seasons || 0;
+      const bValue =
+        b.requirements.episodes || b.requirements.series || b.requirements.seasons || 0;
+      if (aValue !== bValue) return aValue - bValue;
+      return (tierOrder[a.tier] || 0) - (tierOrder[b.tier] || 0);
+    });
+
+    const currentIndex = myGroup.findIndex((b) => b.id === badge.id);
+    if (currentIndex === -1 || currentIndex === 0) return null;
+
+    const previousBadges = myGroup.slice(0, currentIndex);
+    const earnedPreviousBadges = previousBadges.filter((b) => isBadgeEarned(b.id));
+
+    if (earnedPreviousBadges.length === previousBadges.length) {
+      return { isNextTier: true };
+    }
+
+    return null;
+  };
+
+  const renderBadgeCard = (badge: Badge, index: number) => {
+    const earned = isBadgeEarned(badge.id);
+    const progress = getBadgeProgress(badge.id);
+    const nextTierInfo = getNextTierInfo(badge, earned);
 
     return (
       <motion.div
         key={badge.id}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.2, delay: index * 0.03 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.03 }}
+        whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         style={{
           background: earned
-            ? `linear-gradient(135deg, ${badge.color}20 0%, ${currentTheme.background.card} 100%)`
-            : currentTheme.background.card,
+            ? `linear-gradient(145deg, ${badge.color}25, ${currentTheme.background.surface})`
+            : currentTheme.background.surface,
           border: earned
-            ? `1px solid ${badge.color}60`
+            ? `2px solid ${badge.color}60`
             : nextTierInfo?.isNextTier
-              ? `1px solid ${badge.color}30`
+              ? `2px solid ${badge.color}40`
               : `1px solid ${currentTheme.border.default}`,
-          borderRadius: '16px',
+          borderRadius: '20px',
           padding: '20px',
           position: 'relative',
           overflow: 'hidden',
+          boxShadow: earned ? `0 8px 32px ${badge.color}20` : '0 4px 16px rgba(0,0,0,0.1)',
         }}
       >
-        {/* Top Row: Stars and Date/Status */}
+        {/* Decorative Glow */}
+        {earned && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '-50%',
+              right: '-30%',
+              width: '150px',
+              height: '150px',
+              background: `radial-gradient(circle, ${badge.color}30, transparent)`,
+              filter: 'blur(30px)',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Rarity Badge */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '8px',
+            marginBottom: '12px',
+            position: 'relative',
+            zIndex: 1,
           }}
         >
-          <div style={{ display: 'flex', gap: '2px' }}>{getRarityStars(badge.rarity)}</div>
-          {earned && earnedBadge && (
-            <div
+          <div
+            style={{
+              padding: '4px 10px',
+              borderRadius: '12px',
+              background: `${getRarityColor(badge.rarity)}15`,
+              border: `1px solid ${getRarityColor(badge.rarity)}30`,
+              fontSize: '10px',
+              fontWeight: 700,
+              color: getRarityColor(badge.rarity),
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            {getRarityLabel(badge.rarity)}
+          </div>
+          {earned && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
               style={{
-                backgroundColor: `${badge.color}20`,
-                color: badge.color,
-                padding: '2px 4px',
-                borderRadius: '4px',
-                fontSize: '9px',
-                fontWeight: 600,
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 2px 8px ${currentTheme.status.success}50`,
               }}
             >
-              ✓
-            </div>
+              <span style={{ fontSize: '12px' }}>✓</span>
+            </motion.div>
           )}
-          {nextTierInfo?.isNextTier && (
+          {nextTierInfo?.isNextTier && !earned && (
             <div
               style={{
-                color: badge.color,
+                padding: '4px 8px',
+                borderRadius: '8px',
+                background: `linear-gradient(135deg, ${badge.color}, ${badge.color}cc)`,
                 fontSize: '9px',
-                fontWeight: 'bold',
+                fontWeight: 700,
+                color: 'white',
               }}
             >
               NEXT
@@ -355,40 +383,40 @@ export const BadgesPage = () => {
         </div>
 
         {/* Badge Icon */}
-        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-          <div
+        <div style={{ textAlign: 'center', marginBottom: '14px', position: 'relative', zIndex: 1 }}>
+          <motion.div
+            whileHover={{ rotate: earned ? [0, -5, 5, 0] : 0 }}
+            transition={{ duration: 0.4 }}
             style={{
-              width: '80px',
-              height: '80px',
+              width: '90px',
+              height: '90px',
               borderRadius: '50%',
-              backgroundColor: earned
-                ? badge.color
+              background: earned
+                ? `linear-gradient(145deg, ${badge.color}, ${badge.color}cc)`
                 : nextTierInfo?.isNextTier
-                  ? `${badge.color}30`
-                  : currentTheme.background.paper,
+                  ? `linear-gradient(145deg, ${badge.color}40, ${badge.color}20)`
+                  : `${currentTheme.background.paper}`,
               margin: '0 auto',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
-              opacity: earned ? 1 : 0.6,
+              boxShadow: earned ? `0 8px 24px ${badge.color}40` : 'none',
             }}
           >
             <BadgeIcon
               badgeId={badge.id}
               sx={{
-                fontSize: '2.5rem',
+                fontSize: '2.8rem',
                 color: earned ? 'white' : currentTheme.text.muted,
+                opacity: earned ? 1 : 0.5,
               }}
             />
             {!earned && (
               <div
                 style={{
                   position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
+                  inset: 0,
                   backgroundColor: 'rgba(0, 0, 0, 0.5)',
                   borderRadius: '50%',
                   display: 'flex',
@@ -396,33 +424,36 @@ export const BadgesPage = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Lock style={{ color: currentTheme.text.secondary, fontSize: '1.5rem' }} />
+                <Lock style={{ color: currentTheme.text.secondary, fontSize: '1.8rem' }} />
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Badge Name */}
+        {/* Badge Info */}
         <h4
           style={{
-            fontSize: '15px',
-            fontWeight: 600,
-            margin: '0 0 2px 0',
+            fontSize: '16px',
+            fontWeight: 700,
+            margin: '0 0 6px 0',
             textAlign: 'center',
             color: earned ? badge.color : currentTheme.text.primary,
+            position: 'relative',
+            zIndex: 1,
           }}
         >
           {badge.name}
         </h4>
 
-        {/* Badge Description */}
         <p
           style={{
-            fontSize: '13px',
+            fontSize: '12px',
             color: currentTheme.text.muted,
             margin: 0,
             textAlign: 'center',
-            lineHeight: 1.2,
+            lineHeight: 1.4,
+            position: 'relative',
+            zIndex: 1,
           }}
         >
           {badge.description}
@@ -430,45 +461,60 @@ export const BadgesPage = () => {
 
         {/* Progress Bar */}
         {progress && !earned && (
-          <div style={{ marginTop: '8px' }}>
+          <div style={{ marginTop: '14px', position: 'relative', zIndex: 1 }}>
             <div
               style={{
-                height: '4px',
-                borderRadius: '2px',
-                backgroundColor: currentTheme.background.paper,
+                height: '6px',
+                borderRadius: '3px',
+                backgroundColor: `${badge.color}20`,
                 overflow: 'hidden',
               }}
             >
-              <div
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min((progress.current / progress.total) * 100, 100)}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
                 style={{
                   height: '100%',
-                  width: `${Math.min((progress.current / progress.total) * 100, 100)}%`,
-                  backgroundColor: progress.sessionActive
-                    ? badge.color
-                    : nextTierInfo?.isNextTier
-                      ? badge.color
-                      : `${badge.color}60`,
-                  borderRadius: '2px',
-                  transition: 'width 0.3s ease',
+                  background: progress.sessionActive
+                    ? `linear-gradient(90deg, ${badge.color}, ${badge.color}cc)`
+                    : `linear-gradient(90deg, ${badge.color}80, ${badge.color}60)`,
+                  borderRadius: '3px',
                 }}
               />
             </div>
-            <p
+            <div
               style={{
-                fontSize: '9px',
-                color: progress.sessionActive ? badge.color : currentTheme.text.muted,
-                marginTop: '2px',
-                textAlign: 'center',
-                fontWeight: progress.sessionActive ? 600 : 400,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: '6px',
               }}
             >
-              {progress.current}/{progress.total}
+              <span
+                style={{
+                  fontSize: '11px',
+                  color: progress.sessionActive ? badge.color : currentTheme.text.muted,
+                  fontWeight: progress.sessionActive ? 600 : 400,
+                }}
+              >
+                {progress.current} / {progress.total}
+              </span>
               {progress.sessionActive && progress.timeRemaining && (
-                <span style={{ marginLeft: '4px' }}>
-                  · {formatTimeRemaining(progress.timeRemaining)}
+                <span
+                  style={{
+                    fontSize: '10px',
+                    color: badge.color,
+                    fontWeight: 600,
+                    padding: '2px 6px',
+                    borderRadius: '6px',
+                    background: `${badge.color}15`,
+                  }}
+                >
+                  {formatTimeRemaining(progress.timeRemaining)}
                 </span>
               )}
-            </p>
+            </div>
           </div>
         )}
       </motion.div>
@@ -487,12 +533,12 @@ export const BadgesPage = () => {
           display: 'grid',
           gridTemplateColumns:
             window.innerWidth >= 1200
-              ? 'repeat(auto-fill, minmax(280px, 1fr))'
+              ? 'repeat(auto-fill, minmax(260px, 1fr))'
               : window.innerWidth >= 768
-                ? 'repeat(auto-fill, minmax(240px, 1fr))'
-                : 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: window.innerWidth >= 1200 ? '24px' : window.innerWidth >= 768 ? '20px' : '12px',
-          padding: window.innerWidth >= 1200 ? '32px' : window.innerWidth >= 768 ? '24px' : '16px',
+                ? 'repeat(auto-fill, minmax(220px, 1fr))'
+                : 'repeat(2, 1fr)',
+          gap: window.innerWidth >= 768 ? '20px' : '12px',
+          padding: '20px',
         }}
       >
         {categoryBadges.map((badge, index) => renderBadgeCard(badge, index))}
@@ -505,118 +551,203 @@ export const BadgesPage = () => {
       category === 'all'
         ? BADGE_DEFINITIONS
         : BADGE_DEFINITIONS.filter((b) => b.category === category);
-    const earnedCount = categoryBadges.filter((b) => isBadgeEarned(b.id)).length;
-    return `${earnedCount}/${categoryBadges.length}`;
+    return categoryBadges.filter((b) => isBadgeEarned(b.id)).length;
   };
 
+  const getTotalCount = (category: BadgeCategory | 'all') => {
+    return category === 'all'
+      ? BADGE_DEFINITIONS.length
+      : BADGE_DEFINITIONS.filter((b) => b.category === category).length;
+  };
+
+  const progressPercent = Math.round((earnedBadges.length / BADGE_DEFINITIONS.length) * 100);
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: currentTheme.background.default }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+        position: 'relative',
+      }}
+    >
+      {/* Decorative Background */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '400px',
+          background: `
+            radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.status.warning}35, transparent),
+            radial-gradient(ellipse 60% 40% at 80% 10%, ${currentTheme.primary}20, transparent)
+          `,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
       {/* Header */}
       <header
         style={{
-          padding: '16px',
-          paddingTop: 'calc(16px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          padding: '20px',
+          paddingTop: 'calc(20px + env(safe-area-inset-top))',
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          backdropFilter: 'blur(10px)',
+          background: `${currentTheme.background.default}ee`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <BackButton
-            style={{
-              background: `${currentTheme.background.card}80`,
-              border: `1px solid ${currentTheme.border.default}`,
-              color: currentTheme.text.primary,
-            }}
-          />
+        {/* Title Row */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            marginBottom: '20px',
+          }}
+        >
+          <BackButton />
           <div style={{ flex: 1 }}>
             <h1
               style={{
-                fontSize: '18px',
-                fontWeight: 'bold',
+                fontSize: '26px',
+                fontWeight: 800,
                 margin: 0,
-                color: currentTheme.text.primary,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
+                background: `linear-gradient(135deg, ${currentTheme.text.primary}, ${currentTheme.status.warning})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
               }}
             >
-              <EmojiEvents style={{ fontSize: '18px', color: currentTheme.primary }} />
-              Badges
+              Erfolge
             </h1>
-            <p
-              style={{
-                fontSize: '11px',
-                color: currentTheme.text.muted,
-                margin: '2px 0 0 0',
-              }}
-            >
-              {earnedBadges.length} / {BADGE_DEFINITIONS.length} verdient
-            </p>
           </div>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             onClick={checkForNewBadges}
             disabled={loading}
             style={{
-              background: currentTheme.primary,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
               color: '#fff',
               border: 'none',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              fontSize: '12px',
+              borderRadius: '12px',
+              padding: '10px 16px',
+              fontSize: '13px',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '6px',
               cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.5 : 1,
-              transition: 'all 0.2s ease',
+              opacity: loading ? 0.6 : 1,
+              boxShadow: `0 4px 15px ${currentTheme.primary}40`,
             }}
           >
-            <Refresh style={{ fontSize: '14px' }} />
-            Check
-          </button>
-        </div>
+            <Refresh style={{ fontSize: '18px' }} />
+            Prüfen
+          </motion.button>
+        </motion.div>
+
+        {/* Progress Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          style={{
+            padding: '16px',
+            borderRadius: '16px',
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
+            marginBottom: '16px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '12px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <EmojiEvents style={{ fontSize: '24px', color: currentTheme.status.warning }} />
+              <span style={{ fontSize: '15px', fontWeight: 600, color: currentTheme.text.primary }}>
+                Gesamtfortschritt
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: '20px',
+                fontWeight: 800,
+                color: currentTheme.status.warning,
+              }}
+            >
+              {progressPercent}%
+            </span>
+          </div>
+          <div
+            style={{
+              height: '8px',
+              borderRadius: '4px',
+              background: `${currentTheme.status.warning}20`,
+              overflow: 'hidden',
+            }}
+          >
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              style={{
+                height: '100%',
+                background: `linear-gradient(90deg, ${currentTheme.status.warning}, #fbbf24)`,
+                borderRadius: '4px',
+              }}
+            />
+          </div>
+          <p style={{ fontSize: '12px', color: currentTheme.text.muted, marginTop: '8px' }}>
+            {earnedBadges.length} von {BADGE_DEFINITIONS.length} Badges freigeschaltet
+          </p>
+        </motion.div>
 
         {/* Category Tabs */}
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
           className="mobile-badges-tabs-container"
           style={{
-            margin: '0 -16px',
-            padding: '8px 16px',
+            margin: '0 -20px',
+            padding: '0 20px 8px',
           }}
         >
           {categories.map((category, index) => {
-            const count = getEarnedCount(category.key);
-            const [earned] = count.split('/').map(Number);
-            const hasEarned = earned > 0;
+            const earnedCount = getEarnedCount(category.key);
+            const totalCount = getTotalCount(category.key);
+            const isActive = tabValue === index;
+            const hasEarned = earnedCount > 0;
 
             return (
-              <button
+              <motion.button
                 key={category.key}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setTabValue(index)}
-                className={`mobile-badges-tab ${tabValue === index ? 'active' : ''} ${hasEarned ? 'has-earned' : ''}`}
+                className={`mobile-badges-tab ${isActive ? 'active' : ''}`}
                 style={{
-                  background:
-                    tabValue === index
-                      ? `linear-gradient(135deg, ${currentTheme.primary}33 0%, ${currentTheme.primary}11 100%)`
-                      : hasEarned
-                        ? `${currentTheme.primary}0D`
-                        : currentTheme.background.card,
-                  border:
-                    tabValue === index
-                      ? `2px solid ${currentTheme.primary}`
-                      : hasEarned
-                        ? `1px solid ${currentTheme.primary}33`
-                        : `1px solid ${currentTheme.border.default}`,
-                  color:
-                    tabValue === index
-                      ? currentTheme.primary
-                      : hasEarned
-                        ? currentTheme.primary
-                        : currentTheme.text.muted,
+                  background: isActive
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                    : hasEarned
+                      ? `${currentTheme.primary}10`
+                      : currentTheme.background.surface,
+                  border: isActive
+                    ? 'none'
+                    : hasEarned
+                      ? `1px solid ${currentTheme.primary}30`
+                      : `1px solid ${currentTheme.border.default}`,
+                  color: isActive ? 'white' : hasEarned ? currentTheme.primary : currentTheme.text.muted,
+                  boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
                 }}
               >
                 <div className="mobile-badges-tab-icon">{category.icon}</div>
@@ -625,88 +756,108 @@ export const BadgesPage = () => {
                   <span
                     className="mobile-badges-tab-count"
                     style={{
-                      color: hasEarned ? currentTheme.primary : currentTheme.text.muted,
+                      color: isActive
+                        ? 'rgba(255,255,255,0.8)'
+                        : hasEarned
+                          ? currentTheme.primary
+                          : currentTheme.text.muted,
                     }}
                   >
-                    {count}
+                    {earnedCount}/{totalCount}
                   </span>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       </header>
 
       {/* Content */}
-      {loading ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '300px',
-            gap: '16px',
-            padding: '20px',
-          }}
-        >
-          <EmojiEvents
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             style={{
-              fontSize: '2rem',
-              color: currentTheme.primary,
-              animation: 'pulse 2s infinite',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '300px',
+              gap: '20px',
+              padding: '40px',
             }}
-          />
-          <p style={{ color: currentTheme.text.secondary, fontSize: '14px' }}>
-            Badges werden geladen...
-          </p>
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              style={{
+                width: '56px',
+                height: '56px',
+                border: `3px solid ${currentTheme.status.warning}20`,
+                borderTop: `3px solid ${currentTheme.status.warning}`,
+                borderRadius: '50%',
+              }}
+            />
+            <p style={{ color: currentTheme.text.muted, fontSize: '15px' }}>
+              Badges werden geladen...
+            </p>
 
-          {loadingProgress && (
-            <>
+            {loadingProgress && (
               <div style={{ width: '200px' }}>
                 <div
                   style={{
                     height: '6px',
                     borderRadius: '3px',
-                    backgroundColor: currentTheme.background.card,
+                    background: `${currentTheme.status.warning}20`,
                     overflow: 'hidden',
                   }}
                 >
-                  <div
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(loadingProgress.current / loadingProgress.total) * 100}%` }}
                     style={{
                       height: '100%',
-                      width: `${(loadingProgress.current / loadingProgress.total) * 100}%`,
-                      backgroundColor: currentTheme.primary,
+                      background: `linear-gradient(90deg, ${currentTheme.status.warning}, #fbbf24)`,
                       borderRadius: '3px',
-                      transition: 'width 0.3s ease',
                     }}
                   />
                 </div>
-              </div>
-              <p style={{ color: currentTheme.text.muted, fontSize: '11px' }}>
-                Schritt {loadingProgress.current} von {loadingProgress.total}
-              </p>
-            </>
-          )}
-        </div>
-      ) : (
-        <AnimatePresence mode="wait">
-          {categories.map(
-            (category, index) =>
-              tabValue === index && (
-                <motion.div
-                  key={category.key}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                <p
+                  style={{
+                    color: currentTheme.text.muted,
+                    fontSize: '11px',
+                    textAlign: 'center',
+                    marginTop: '8px',
+                  }}
                 >
-                  {renderCategoryBadges(category.key)}
-                </motion.div>
-              )
-          )}
-        </AnimatePresence>
-      )}
+                  Schritt {loadingProgress.current} von {loadingProgress.total}
+                </p>
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {categories.map(
+              (category, index) =>
+                tabValue === index && (
+                  <motion.div
+                    key={category.key}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {renderCategoryBadges(category.key)}
+                  </motion.div>
+                )
+            )}
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* Bottom Spacer */}
+      <div style={{ height: '100px' }} />
     </div>
   );
 };

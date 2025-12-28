@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { BackButton } from '../components/BackButton';
+import { Shield } from '@mui/icons-material';
 
 interface PrivacyData {
   title: string;
@@ -90,7 +92,7 @@ interface PrivacyData {
 }
 
 export const PrivacyPage = () => {
-  const { getMobileHeaderStyle, currentTheme } = useTheme();
+  const { currentTheme } = useTheme();
   const [data, setData] = useState<PrivacyData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -105,49 +107,139 @@ export const PrivacyPage = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  // Premium loading state
   if (loading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        Lädt...
+      <div
+        style={{
+          minHeight: '100vh',
+          background: currentTheme.background.default,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: '50%',
+            border: `3px solid ${currentTheme.primary}30`,
+            borderTopColor: currentTheme.primary,
+          }}
+        />
       </div>
     );
   }
 
+  // Premium error state
   if (!data) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center', color: currentTheme.text.secondary }}>
-        Datenschutzinformationen konnten nicht geladen werden.
+      <div
+        style={{
+          minHeight: '100vh',
+          background: currentTheme.background.default,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
+          }}
+        >
+          <Shield style={{ fontSize: 36, opacity: 0.4, color: currentTheme.text.secondary }} />
+        </div>
+        <p style={{ color: currentTheme.text.secondary, fontSize: 15 }}>
+          Datenschutzinformationen konnten nicht geladen werden.
+        </p>
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Header */}
-      <header
+    <div
+      style={{
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+        position: 'relative',
+      }}
+    >
+      {/* Decorative Background */}
+      <div
         style={{
-          ...getMobileHeaderStyle('transparent'),
-          padding: '20px',
-          paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: '-10%',
+            right: '-20%',
+            width: '60%',
+            height: '50%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${currentTheme.primary}10 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+      </div>
+
+      {/* Premium Glassmorphism Header */}
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          padding: '16px 20px',
+          paddingTop: 'calc(16px + env(safe-area-inset-top))',
+          background: `${currentTheme.background.default}90`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <BackButton />
-          <h1
-            style={{
-              fontSize: '24px',
-              fontWeight: 800,
-              margin: 0,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            {data.title}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Shield style={{ fontSize: 22, color: currentTheme.primary }} />
+            <h1
+              style={{
+                fontSize: '22px',
+                fontWeight: 800,
+                margin: 0,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              {data.title}
+            </h1>
+          </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Content */}
       <div
@@ -155,17 +247,25 @@ export const PrivacyPage = () => {
           padding: '20px',
           maxWidth: '800px',
           margin: '0 auto',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        <p
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           style={{
             fontSize: '12px',
             color: currentTheme.text.secondary,
             marginBottom: '20px',
+            padding: '8px 14px',
+            background: 'rgba(255, 255, 255, 0.04)',
+            borderRadius: '8px',
+            display: 'inline-block',
           }}
         >
           {data.lastUpdated}
-        </p>
+        </motion.p>
 
         {/* Verantwortlicher */}
         <div

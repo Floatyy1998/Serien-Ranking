@@ -73,23 +73,23 @@ export const CatchUpCard: React.FC = () => {
       whileTap={{ scale: 0.98 }}
       onClick={() => navigate('/catch-up')}
       style={{
-        margin: '0 20px 16px',
-        padding: '16px',
-        borderRadius: '16px',
+        margin: '0 20px',
+        padding: '12px 14px',
+        borderRadius: '14px',
         background: `linear-gradient(135deg, ${accentColor}15, ${accentColor}05)`,
         border: `1px solid ${accentColor}30`,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
-        gap: '14px',
+        gap: '12px',
       }}
     >
       {/* Icon */}
       <div
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: '12px',
+          width: 40,
+          height: 40,
+          borderRadius: '10px',
           background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
           display: 'flex',
           alignItems: 'center',
@@ -97,29 +97,31 @@ export const CatchUpCard: React.FC = () => {
           flexShrink: 0,
         }}
       >
-        <Schedule style={{ fontSize: 24, color: 'white' }} />
+        <Schedule style={{ fontSize: 20, color: 'white' }} />
       </div>
 
       {/* Text */}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <h3
           style={{
             margin: 0,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: 600,
             color: currentTheme.text.primary,
+            whiteSpace: 'nowrap',
           }}
         >
           Backlog
         </h3>
         <p
           style={{
-            margin: '2px 0 0',
-            fontSize: 13,
+            margin: '1px 0 0',
+            fontSize: 12,
             color: currentTheme.text.secondary,
+            whiteSpace: 'nowrap',
           }}
         >
-          {stats.seriesCount} Serien · {stats.totalEpisodes} Episoden
+          {stats.seriesCount} Serien · {stats.totalEpisodes} Ep.
         </p>
       </div>
 

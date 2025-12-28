@@ -892,231 +892,304 @@ export const WatchNextPage = () => {
         left: 0,
         right: 0,
         bottom: 0,
+        background: currentTheme.background.default,
       }}
     >
-      {/* Header */}
-      <header
+      {/* Decorative Background Gradients */}
+      <div
         style={{
-          padding: '20px',
-          paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-          flexShrink: 0,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ marginBottom: '16px' }}>
-          <h1
-            style={{
-              fontSize: '20px',
-              fontWeight: 700,
-              margin: 0,
-              background: currentTheme.primary,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Als Nächstes
-          </h1>
-          <p
-            style={{
-              color: currentTheme.text.secondary,
-              fontSize: '14px',
-              margin: '4px 0 0 0',
-            }}
-          >
-            {nextEpisodes.length} nächste Episoden
-          </p>
-        </div>
+        <div
+          style={{
+            position: 'absolute',
+            top: '-10%',
+            left: '-20%',
+            width: '60%',
+            height: '50%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${currentTheme.primary}12 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: '40%',
+            right: '-15%',
+            width: '50%',
+            height: '40%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${currentTheme.status.success}08 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+      </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {customOrderActive && (
-            <button
-              onClick={() => setEditModeActive(!editModeActive)}
+      {/* Premium Glassmorphism Header */}
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        style={{
+          padding: '16px 20px',
+          paddingTop: 'calc(16px + env(safe-area-inset-top))',
+          background: `${currentTheme.background.default}90`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+          flexShrink: 0,
+          position: 'relative',
+          zIndex: 100,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div>
+            <h1
+              style={{
+                fontSize: '22px',
+                fontWeight: 800,
+                margin: 0,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.success})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Als Nächstes
+            </h1>
+            <p
+              style={{
+                color: currentTheme.text.secondary,
+                fontSize: '13px',
+                margin: '4px 0 0 0',
+              }}
+            >
+              {nextEpisodes.length} nächste Episoden
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {customOrderActive && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setEditModeActive(!editModeActive)}
+                style={{
+                  padding: '10px',
+                  background: editModeActive
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                    : 'rgba(255, 255, 255, 0.05)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  color: editModeActive ? 'white' : currentTheme.text.primary,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: editModeActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                }}
+              >
+                <Edit />
+              </motion.button>
+            )}
+
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowFilter(!showFilter)}
               style={{
                 padding: '10px',
-                background: editModeActive
-                  ? `${currentTheme.primary}33`
-                  : `${currentTheme.text.primary}0D`,
-                border: `1px solid ${editModeActive ? currentTheme.primary : currentTheme.border.default}`,
+                background: showFilter
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                  : 'rgba(255, 255, 255, 0.05)',
+                border: 'none',
                 borderRadius: '12px',
-                color: editModeActive ? currentTheme.primary : currentTheme.text.primary,
+                color: showFilter ? 'white' : currentTheme.text.primary,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                boxShadow: showFilter ? `0 4px 15px ${currentTheme.primary}40` : 'none',
               }}
             >
-              <Edit />
-            </button>
-          )}
-
-          <button
-            onClick={() => setShowFilter(!showFilter)}
-            style={{
-              padding: '10px',
-              background: showFilter
-                ? `${currentTheme.primary}33`
-                : `${currentTheme.text.primary}0D`,
-              border: `1px solid ${currentTheme.border.default}`,
-              borderRadius: '12px',
-              color: currentTheme.text.primary,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <FilterList />
-          </button>
+              <FilterList />
+            </motion.button>
+          </div>
         </div>
 
-        {/* Filter Section */}
-        {showFilter && (
-          <div
-            style={{
-              marginTop: '16px',
-              padding: '12px',
-              background: `${currentTheme.text.primary}0D`,
-              borderRadius: '8px',
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Serie suchen..."
-              value={filterInput}
-              onChange={(e) => setFilterInput(e.target.value)}
+        {/* Premium Filter Section */}
+        <AnimatePresence>
+          {showFilter && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
               style={{
-                width: '100%',
-                padding: '10px',
-                background: `${currentTheme.text.primary}0D`,
-                border: `1px solid ${currentTheme.border.default}`,
-                borderRadius: '8px',
-                color: currentTheme.text.primary,
-                fontSize: '14px',
-                marginBottom: '12px',
+                marginTop: '8px',
+                padding: '14px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                borderRadius: '14px',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                overflow: 'hidden',
               }}
-            />
-
-            <HorizontalScrollContainer gap={8} style={{}}>
-              <button
-                onClick={() => setShowRewatches(!showRewatches)}
+            >
+              <input
+                type="text"
+                placeholder="Serie suchen..."
+                value={filterInput}
+                onChange={(e) => setFilterInput(e.target.value)}
                 style={{
-                  padding: '8px 12px',
-                  background: showRewatches
-                    ? `${currentTheme.status.warning}33`
-                    : `${currentTheme.text.primary}0D`,
-                  border: `1px solid ${showRewatches ? `${currentTheme.status.warning}4D` : currentTheme.border.default}`,
-                  borderRadius: '8px',
-                  color: showRewatches ? currentTheme.status.warning : currentTheme.text.primary,
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '10px',
+                  color: currentTheme.text.primary,
+                  fontSize: '14px',
+                  marginBottom: '12px',
+                  outline: 'none',
                 }}
-              >
-                <Repeat style={{ fontSize: '16px' }} />
-                Rewatches
-              </button>
+              />
 
-              <button
-                onClick={() => {
-                  setCustomOrderActive(!customOrderActive);
-                  if (customOrderActive) {
-                    setEditModeActive(false);
-                  }
-                }}
-                style={{
-                  padding: '8px 12px',
-                  background: customOrderActive
-                    ? `${currentTheme.primary}33`
-                    : `${currentTheme.text.primary}0D`,
-                  border: `1px solid ${customOrderActive ? `${currentTheme.primary}4D` : currentTheme.border.default}`,
-                  borderRadius: '8px',
-                  color: customOrderActive ? currentTheme.primary : currentTheme.text.primary,
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                }}
-              >
-                <DragHandle style={{ fontSize: '16px' }} />
-                Benutzerdefiniert
-              </button>
+              <HorizontalScrollContainer gap={8} style={{}}>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowRewatches(!showRewatches)}
+                  style={{
+                    padding: '8px 14px',
+                    background: showRewatches
+                      ? `linear-gradient(135deg, ${currentTheme.status.warning}, ${currentTheme.status.warning}cc)`
+                      : 'rgba(255, 255, 255, 0.05)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: showRewatches ? 'white' : currentTheme.text.primary,
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    boxShadow: showRewatches ? `0 4px 12px ${currentTheme.status.warning}40` : 'none',
+                  }}
+                >
+                  <Repeat style={{ fontSize: '16px' }} />
+                  Rewatches
+                </motion.button>
 
-              <button
-                onClick={() => toggleSort('name')}
-                style={{
-                  padding: '8px 12px',
-                  background:
-                    !customOrderActive && sortOption.startsWith('name')
-                      ? `${currentTheme.primary}33`
-                      : `${currentTheme.text.primary}0D`,
-                  border: `1px solid ${!customOrderActive && sortOption.startsWith('name') ? `${currentTheme.primary}4D` : currentTheme.border.default}`,
-                  borderRadius: '8px',
-                  color:
-                    !customOrderActive && sortOption.startsWith('name')
-                      ? currentTheme.primary
-                      : currentTheme.text.primary,
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                }}
-              >
-                Name
-                {!customOrderActive &&
-                  sortOption.startsWith('name') &&
-                  (sortOption.endsWith('asc') ? (
-                    <ArrowUpward style={{ fontSize: '14px' }} />
-                  ) : (
-                    <ArrowDownward style={{ fontSize: '14px' }} />
-                  ))}
-              </button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setCustomOrderActive(!customOrderActive);
+                    if (customOrderActive) {
+                      setEditModeActive(false);
+                    }
+                  }}
+                  style={{
+                    padding: '8px 14px',
+                    background: customOrderActive
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                      : 'rgba(255, 255, 255, 0.05)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: customOrderActive ? 'white' : currentTheme.text.primary,
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    boxShadow: customOrderActive ? `0 4px 12px ${currentTheme.primary}40` : 'none',
+                  }}
+                >
+                  <DragHandle style={{ fontSize: '16px' }} />
+                  Benutzerdefiniert
+                </motion.button>
 
-              <button
-                onClick={() => toggleSort('date')}
-                style={{
-                  padding: '8px 12px',
-                  background:
-                    !customOrderActive && sortOption.startsWith('date')
-                      ? `${currentTheme.primary}33`
-                      : `${currentTheme.text.primary}0D`,
-                  border: `1px solid ${!customOrderActive && sortOption.startsWith('date') ? `${currentTheme.primary}4D` : currentTheme.border.default}`,
-                  borderRadius: '8px',
-                  color:
-                    !customOrderActive && sortOption.startsWith('date')
-                      ? currentTheme.primary
-                      : currentTheme.text.primary,
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                }}
-              >
-                Datum
-                {!customOrderActive &&
-                  sortOption.startsWith('date') &&
-                  (sortOption.endsWith('asc') ? (
-                    <ArrowUpward style={{ fontSize: '14px' }} />
-                  ) : (
-                    <ArrowDownward style={{ fontSize: '14px' }} />
-                  ))}
-              </button>
-            </HorizontalScrollContainer>
-          </div>
-        )}
-      </header>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => toggleSort('name')}
+                  style={{
+                    padding: '8px 14px',
+                    background:
+                      !customOrderActive && sortOption.startsWith('name')
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                        : 'rgba(255, 255, 255, 0.05)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color:
+                      !customOrderActive && sortOption.startsWith('name')
+                        ? 'white'
+                        : currentTheme.text.primary,
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    boxShadow: !customOrderActive && sortOption.startsWith('name') ? `0 4px 12px ${currentTheme.primary}40` : 'none',
+                  }}
+                >
+                  Name
+                  {!customOrderActive &&
+                    sortOption.startsWith('name') &&
+                    (sortOption.endsWith('asc') ? (
+                      <ArrowUpward style={{ fontSize: '14px' }} />
+                    ) : (
+                      <ArrowDownward style={{ fontSize: '14px' }} />
+                    ))}
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => toggleSort('date')}
+                  style={{
+                    padding: '8px 14px',
+                    background:
+                      !customOrderActive && sortOption.startsWith('date')
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                        : 'rgba(255, 255, 255, 0.05)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color:
+                      !customOrderActive && sortOption.startsWith('date')
+                        ? 'white'
+                        : currentTheme.text.primary,
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    boxShadow: !customOrderActive && sortOption.startsWith('date') ? `0 4px 12px ${currentTheme.primary}40` : 'none',
+                  }}
+                >
+                  Datum
+                  {!customOrderActive &&
+                    sortOption.startsWith('date') &&
+                    (sortOption.endsWith('asc') ? (
+                      <ArrowUpward style={{ fontSize: '14px' }} />
+                    ) : (
+                      <ArrowDownward style={{ fontSize: '14px' }} />
+                    ))}
+                </motion.button>
+              </HorizontalScrollContainer>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
 
       {/* Scrollable Content Container */}
       <div
@@ -1136,17 +1209,49 @@ export const WatchNextPage = () => {
         }}
       >
         {nextEpisodes.length === 0 ? (
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             style={{
               textAlign: 'center',
-              padding: '40px 20px',
-              color: currentTheme.text.muted,
+              padding: '60px 30px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              margin: '20px 0',
             }}
           >
-            <PlayCircle style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
-            <h3>Keine neuen Episoden</h3>
-            <p>Schaue eine Serie an um hier die nächsten Episoden zu sehen!</p>
-          </div>
+            <div
+              style={{
+                width: 90,
+                height: 90,
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.status.success}15)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+              }}
+            >
+              <PlayCircle style={{ fontSize: '44px', color: currentTheme.primary, opacity: 0.7 }} />
+            </div>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: 700,
+              color: currentTheme.text.primary,
+              margin: '0 0 8px 0',
+            }}>
+              Keine neuen Episoden
+            </h3>
+            <p style={{
+              fontSize: '14px',
+              color: currentTheme.text.muted,
+              margin: 0,
+              lineHeight: 1.5,
+            }}>
+              Schaue eine Serie an um hier<br />die nächsten Episoden zu sehen!
+            </p>
+          </motion.div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <AnimatePresence mode="popLayout">

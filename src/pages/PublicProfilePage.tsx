@@ -529,6 +529,7 @@ export const PublicProfilePage: React.FC = () => {
     return `https://image.tmdb.org/t/p/w500${path}`;
   };
 
+  // Premium loading state
   if (loading) {
     return (
       <div
@@ -539,13 +540,45 @@ export const PublicProfilePage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           padding: '20px',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <div>Loading...</div>
+        {/* Decorative background */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '20%',
+            left: '10%',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${currentTheme.primary}20, transparent 70%)`,
+            filter: 'blur(60px)',
+          }}
+        />
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              border: `3px solid ${currentTheme.primary}30`,
+              borderTopColor: currentTheme.primary,
+              margin: '0 auto 20px',
+            }}
+          />
+          <p style={{ color: currentTheme.text.secondary, fontSize: 16, fontWeight: 500 }}>
+            Lade Profil...
+          </p>
+        </div>
       </div>
     );
   }
 
+  // Premium not found state
   if (!profileExists) {
     return (
       <div
@@ -559,72 +592,185 @@ export const PublicProfilePage: React.FC = () => {
           color: currentTheme.text.primary,
           padding: '20px',
           textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <Public style={{ fontSize: '64px', marginBottom: '24px', opacity: 0.3 }} />
-        <h2 style={{ marginBottom: '16px' }}>Profil nicht gefunden</h2>
-        <p style={{ color: currentTheme.text.secondary, marginBottom: '32px' }}>
-          Dieses öffentliche Profil existiert nicht oder ist nicht mehr öffentlich zugänglich.
+        {/* Decorative background */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '30%',
+            right: '10%',
+            width: '250px',
+            height: '250px',
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${currentTheme.primary}15, transparent 70%)`,
+            filter: 'blur(50px)',
+          }}
+        />
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          style={{
+            width: 100,
+            height: 100,
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <Public style={{ fontSize: '48px', opacity: 0.4 }} />
+        </motion.div>
+        <h2 style={{ marginBottom: '12px', fontSize: '22px', fontWeight: 700 }}>
+          Profil nicht gefunden
+        </h2>
+        <p style={{ color: currentTheme.text.secondary, marginBottom: '32px', fontSize: '14px', lineHeight: 1.5 }}>
+          Dieses öffentliche Profil existiert nicht<br />oder ist nicht mehr öffentlich zugänglich.
         </p>
-        <button
+        <motion.button
+          whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/')}
           style={{
-            padding: '12px 24px',
-            background: currentTheme.primary,
+            padding: '14px 32px',
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`,
             color: 'white',
             border: 'none',
-            borderRadius: '8px',
+            borderRadius: '14px',
             cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: 600,
+            boxShadow: `0 4px 20px ${currentTheme.primary}40`,
           }}
         >
           Zur Startseite
-        </button>
+        </motion.button>
       </div>
     );
   }
 
   return (
-    <div ref={scrollRef}>
-      {/* Header */}
-      <header
+    <div
+      ref={scrollRef}
+      style={{
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+        position: 'relative',
+      }}
+    >
+      {/* Decorative Background Gradients */}
+      <div
         style={{
-          padding: '20px',
-          paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '-10%',
+            left: '-20%',
+            width: '60%',
+            height: '50%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${currentTheme.primary}12 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: '30%',
+            right: '-15%',
+            width: '50%',
+            height: '40%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, #8b5cf608 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }}
+        />
+      </div>
+
+      {/* Premium Glassmorphism Header */}
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          padding: '16px 20px',
+          paddingTop: 'calc(16px + env(safe-area-inset-top))',
+          background: `${currentTheme.background.default}90`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <BackButton />
 
-          <div>
+          <div style={{ flex: 1 }}>
             <h1
               style={{
-                fontSize: '24px',
+                fontSize: '22px',
                 fontWeight: 800,
                 margin: 0,
-                background: currentTheme.primary,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
               }}
             >
               {profileName}
             </h1>
-            <p
+            <div
               style={{
                 color: currentTheme.text.secondary,
-                fontSize: '14px',
+                fontSize: '12px',
                 margin: '4px 0 0 0',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '8px',
               }}
             >
-              <Public style={{ fontSize: '14px' }} />
-              Öffentliches Profil • Ø {averageRating.toFixed(1)} ⭐ • {itemsWithRating.length} bewertet
-            </p>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Public style={{ fontSize: '13px', color: currentTheme.primary }} />
+                Öffentlich
+              </span>
+              <span style={{ opacity: 0.4 }}>•</span>
+              <span>{itemsWithRating.length} bewertet</span>
+            </div>
+          </div>
+
+          {/* Rating Badge */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              background: 'rgba(255, 215, 0, 0.15)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 215, 0, 0.25)',
+            }}
+          >
+            <Star style={{ fontSize: 16, color: '#FFD700' }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#FFD700' }}>
+              Ø {averageRating.toFixed(1)}
+            </span>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Quick Filter */}
       <QuickFilter
@@ -634,78 +780,110 @@ export const PublicProfilePage: React.FC = () => {
         hasBottomNav={false}
       />
 
-      {/* Tab Switcher */}
+      {/* Premium Tab Switcher */}
       <div
         style={{
+          margin: '0 16px 20px 16px',
+          padding: '5px',
+          background: 'rgba(255, 255, 255, 0.04)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
           display: 'flex',
-          margin: '0 20px 20px 20px',
-          background: currentTheme.background.surface,
-          borderRadius: '12px',
+          gap: '6px',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        <button
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           onClick={() => setActiveTab('series')}
           style={{
             flex: 1,
             padding: '12px',
-            background: activeTab === 'series' ? currentTheme.primary : 'transparent',
+            background: activeTab === 'series'
+              ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+              : 'transparent',
             border: 'none',
-            borderRadius: '12px 0 0 12px',
-            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
-            fontSize: '16px',
+            borderRadius: '12px',
+            color: activeTab === 'series' ? 'white' : 'rgba(255,255,255,0.6)',
+            fontSize: '14px',
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
+            boxShadow: activeTab === 'series' ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+            transition: 'all 0.2s ease',
           }}
         >
-          <TvIcon style={{ fontSize: '20px' }} />
+          <TvIcon style={{ fontSize: '18px' }} />
           Serien ({ratedSeries.length})
-        </button>
+        </motion.button>
 
-        <button
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           onClick={() => setActiveTab('movies')}
           style={{
             flex: 1,
             padding: '12px',
-            background: activeTab === 'movies' ? `${currentTheme.primary}CC` : 'transparent',
+            background: activeTab === 'movies'
+              ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+              : 'transparent',
             border: 'none',
-            borderRadius: '0 12px 12px 0',
-            color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
-            fontSize: '16px',
+            borderRadius: '12px',
+            color: activeTab === 'movies' ? 'white' : 'rgba(255,255,255,0.6)',
+            fontSize: '14px',
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
+            boxShadow: activeTab === 'movies' ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+            transition: 'all 0.2s ease',
           }}
         >
-          <MovieIcon style={{ fontSize: '20px' }} />
+          <MovieIcon style={{ fontSize: '18px' }} />
           Filme ({ratedMovies.length})
-        </button>
+        </motion.button>
       </div>
 
       {/* Items Grid */}
-      <div style={{ padding: '0 20px 100px 20px' }}>
+      <div style={{ padding: '0 16px 100px 16px', position: 'relative', zIndex: 1 }}>
         {currentItems.length === 0 ? (
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             style={{
               textAlign: 'center',
-              padding: '60px 20px',
-              color: currentTheme.text.secondary,
+              padding: '60px 30px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
             }}
           >
-            <Star style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
-            <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>
+            <div
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: `${currentTheme.primary}15`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <Star style={{ fontSize: '36px', color: currentTheme.primary, opacity: 0.5 }} />
+            </div>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px', color: currentTheme.text.primary, fontWeight: 700 }}>
               Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden
             </h3>
-            <p style={{ fontSize: '14px', opacity: 0.7 }}>
+            <p style={{ fontSize: '14px', color: currentTheme.text.secondary, margin: 0 }}>
               Versuche andere Filter oder entferne sie.
             </p>
-          </div>
+          </motion.div>
         ) : (
           <div
             style={{

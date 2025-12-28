@@ -1,14 +1,13 @@
-import { Movie as MovieIcon, Star, Tv as TvIcon, CompareArrows } from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-// import { useAuth } from '../App';
+import { CompareArrows, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BackButton } from '../components/BackButton';
+import { QuickFilter } from '../components/QuickFilter';
 import { useTheme } from '../contexts/ThemeContext';
 import { calculateOverallRating } from '../lib/rating/rating';
-import { QuickFilter } from '../components/QuickFilter';
-import { BackButton } from '../components/BackButton';
 
 interface FriendItem {
   id: number;
@@ -22,9 +21,7 @@ interface FriendItem {
   seasons?: any[];
   release_date?: string;
   status?: string;
-  production?: {
-    production: boolean;
-  };
+  production?: { production: boolean };
 }
 
 export const FriendProfilePage: React.FC = () => {
@@ -32,7 +29,6 @@ export const FriendProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  // const { user } = useAuth()!;
   const [loading, setLoading] = useState(true);
   const [friendName, setFriendName] = useState('');
   const [friendSeries, setFriendSeries] = useState<FriendItem[]>([]);
@@ -46,19 +42,6 @@ export const FriendProfilePage: React.FC = () => {
     sortBy?: string;
   }>({});
 
-  // Debug Filter Changes
-  useEffect(() => {
-    console.log('Friend Profile - Filter Changed:', filters);
-  }, [filters]);
-
-  // Debug: Komplette Serie-Struktur ausgeben
-  useEffect(() => {
-    if (friendSeries.length > 0) {
-      console.log('Friend Profile - Complete series structure:', friendSeries[0]);
-    }
-  }, [friendSeries]);
-
-  // Load friend's data
   useEffect(() => {
     const loadFriendData = async () => {
       if (!friendId) return;
@@ -66,13 +49,11 @@ export const FriendProfilePage: React.FC = () => {
       try {
         setLoading(true);
 
-        // Load friend's name
         const userRef = firebase.database().ref(`users/${friendId}`);
         const userSnapshot = await userRef.once('value');
         const userData = userSnapshot.val();
         setFriendName(userData?.displayName || 'User');
 
-        // Load friend's series
         const seriesRef = firebase.database().ref(`${friendId}/serien`);
         const seriesSnapshot = await seriesRef.once('value');
         const seriesData = seriesSnapshot.val() || {};
@@ -96,7 +77,6 @@ export const FriendProfilePage: React.FC = () => {
         }
         setFriendSeries(seriesList);
 
-        // Load friend's movies
         const moviesRef = firebase.database().ref(`${friendId}/filme`);
         const moviesSnapshot = await moviesRef.once('value');
         const moviesData = moviesSnapshot.val() || {};
@@ -129,13 +109,11 @@ export const FriendProfilePage: React.FC = () => {
     loadFriendData();
   }, [friendId]);
 
-  // Helper to calculate rating for friend
   const calculateFriendRating = (item: any): string => {
     if (!item.rating) return '0.00';
     return calculateOverallRating(item);
   };
 
-  // Get TMDB image URL
   const getImageUrl = (posterObj: any): string => {
     if (!posterObj) return '/placeholder.jpg';
     const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
@@ -144,11 +122,9 @@ export const FriendProfilePage: React.FC = () => {
     return `https://image.tmdb.org/t/p/w342${path}`;
   };
 
-  // Filter and sort series
   const ratedSeries = useMemo(() => {
     let filtered = friendSeries;
 
-    // Apply filters
     if (filters.genre && filters.genre !== 'All') {
       filtered = filtered.filter((series) => {
         const genres = series.genres || series.genre?.genres || [];
@@ -173,17 +149,14 @@ export const FriendProfilePage: React.FC = () => {
       filtered = filtered.filter((series) => series.title?.toLowerCase().includes(searchLower));
     }
 
-    // Apply quick filters
     if (filters.quickFilter === 'unrated') {
       filtered = filtered.filter((s) => {
         const rating = parseFloat(calculateFriendRating(s));
         return isNaN(rating) || rating === 0;
       });
     } else if (filters.quickFilter === 'started') {
-      // For series: started but not finished (has progress but not 100%)
       filtered = filtered.filter((s) => {
         if (!s.seasons) return false;
-
         let watchedEpisodes = 0;
         let totalAiredEpisodes = 0;
         const today = new Date();
@@ -205,10 +178,8 @@ export const FriendProfilePage: React.FC = () => {
         return watchedEpisodes > 0 && watchedEpisodes < totalAiredEpisodes;
       });
     } else if (filters.quickFilter === 'not-started') {
-      // For series: items that haven't been started (no episodes watched)
       filtered = filtered.filter((s) => {
-        if (!s.seasons) return true; // If no seasons data, consider as not started
-
+        if (!s.seasons) return true;
         let watchedEpisodes = 0;
         const today = new Date();
 
@@ -217,9 +188,7 @@ export const FriendProfilePage: React.FC = () => {
             season.episodes.forEach((ep: any) => {
               if (ep.air_date) {
                 const airDate = new Date(ep.air_date);
-                if (airDate <= today && ep.watched) {
-                  watchedEpisodes++;
-                }
+                if (airDate <= today && ep.watched) watchedEpisodes++;
               }
             });
           }
@@ -230,57 +199,37 @@ export const FriendProfilePage: React.FC = () => {
     } else if (filters.quickFilter === 'ongoing') {
       filtered = filtered.filter((s) => {
         const status = s.status?.toLowerCase();
-        const isOngoing = status === 'returning series' || status === 'ongoing' || (!status && s.production?.production === true);
-
-        console.log('Friend Profile ongoing check:', {
-          title: s.title,
-          status: s.status,
-          production: s.production,
-          isOngoing
-        });
-
-        return isOngoing;
+        return status === 'returning series' || status === 'ongoing' || (!status && s.production?.production === true);
       });
-    } else if (filters.quickFilter === 'recently-added') {
-      // Show all items, sorting will handle the "recently added" part
     }
 
-    // Apply sorting - special handling for certain quickfilters
     const sortBy =
       filters.quickFilter === 'ongoing'
         ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';
+
     filtered.sort((a, b) => {
       const ratingA = parseFloat(calculateFriendRating(a));
       const ratingB = parseFloat(calculateFriendRating(b));
 
       switch (sortBy) {
-        case 'rating-desc':
-          return ratingB - ratingA;
-        case 'rating-asc':
-          return ratingA - ratingB;
-        case 'name-asc':
-          return (a.title || '').localeCompare(b.title || '');
-        case 'name-desc':
-          return (b.title || '').localeCompare(a.title || '');
-        case 'date-desc':
-          // Use nmr as proxy for when it was added (higher nmr = newer)
-          return Number(b.nmr) - Number(a.nmr);
-        default:
-          return ratingB - ratingA;
+        case 'rating-desc': return ratingB - ratingA;
+        case 'rating-asc': return ratingA - ratingB;
+        case 'name-asc': return (a.title || '').localeCompare(b.title || '');
+        case 'name-desc': return (b.title || '').localeCompare(a.title || '');
+        case 'date-desc': return Number(b.nmr) - Number(a.nmr);
+        default: return ratingB - ratingA;
       }
     });
 
     return filtered;
-  }, [friendSeries, filters, friendId]);
+  }, [friendSeries, filters]);
 
-  // Filter and sort movies
   const ratedMovies = useMemo(() => {
     let filtered = friendMovies;
 
-    // Apply filters (same logic as series)
     if (filters.genre && filters.genre !== 'All') {
       filtered = filtered.filter((movie) => {
         const genres = movie.genres || movie.genre?.genres || [];
@@ -305,68 +254,50 @@ export const FriendProfilePage: React.FC = () => {
       filtered = filtered.filter((movie) => movie.title?.toLowerCase().includes(searchLower));
     }
 
-    // Apply quick filters for movies
     if (filters.quickFilter === 'unrated') {
       filtered = filtered.filter((m) => {
         const rating = parseFloat(calculateFriendRating(m));
         return isNaN(rating) || rating === 0;
       });
     } else if (filters.quickFilter === 'not-started') {
-      // For movies: items that haven't been watched (no rating or rating is 0)
       filtered = filtered.filter((m) => {
         const rating = parseFloat(calculateFriendRating(m));
         return isNaN(rating) || rating === 0;
       });
-    } else if (filters.quickFilter === 'ongoing') {
-      // Für Filme ist "ongoing" nicht relevant, also alle anzeigen
-      // Keine Filterung
-    } else if (filters.quickFilter === 'recently-added') {
-      // Show all items, sorting will handle the "recently added" part
     }
 
-    // Apply sorting - special handling for certain quickfilters
     const sortBy =
       filters.quickFilter === 'ongoing'
         ? 'rating-desc'
         : filters.quickFilter === 'recently-added'
           ? 'date-desc'
           : filters.sortBy || 'rating-desc';
+
     filtered.sort((a, b) => {
       const ratingA = parseFloat(calculateFriendRating(a));
       const ratingB = parseFloat(calculateFriendRating(b));
 
       switch (sortBy) {
-        case 'rating-desc':
-          return ratingB - ratingA;
-        case 'rating-asc':
-          return ratingA - ratingB;
-        case 'name-asc':
-          return (a.title || '').localeCompare(b.title || '');
-        case 'name-desc':
-          return (b.title || '').localeCompare(a.title || '');
-        case 'date-desc':
-          // Use nmr as proxy for when it was added (higher nmr = newer)
-          return Number(b.nmr) - Number(a.nmr);
-        default:
-          return ratingB - ratingA;
+        case 'rating-desc': return ratingB - ratingA;
+        case 'rating-asc': return ratingA - ratingB;
+        case 'name-asc': return (a.title || '').localeCompare(b.title || '');
+        case 'name-desc': return (b.title || '').localeCompare(a.title || '');
+        case 'date-desc': return Number(b.nmr) - Number(a.nmr);
+        default: return ratingB - ratingA;
       }
     });
 
     return filtered;
-  }, [friendMovies, filters, friendId]);
+  }, [friendMovies, filters]);
 
   const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
 
-  // Restore scroll position only when coming back from detail pages
   useEffect(() => {
-    // Check if we should restore scroll position
     const shouldRestore = sessionStorage.getItem('shouldRestoreFriendProfileScroll');
 
     if (shouldRestore === 'true' && currentItems.length > 0) {
-      // Clear the flag immediately
       sessionStorage.removeItem('shouldRestoreFriendProfileScroll');
 
-      // Use friend-specific scroll position
       const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
       const position = sessionStorage.getItem(scrollKey);
       const scrollSource = sessionStorage.getItem(`friendProfilePageScrollSource_${friendId}_${activeTab}`);
@@ -374,9 +305,7 @@ export const FriendProfilePage: React.FC = () => {
       if (position) {
         const scrollTop = parseInt(position, 10);
         if (scrollTop > 0) {
-          // Wait for DOM to be fully rendered
           const restoreScroll = () => {
-            // Find the correct parent element
             if (scrollSource && scrollSource.startsWith('parent-')) {
               const parentIndex = parseInt(scrollSource.split('-')[1], 10);
               let element = scrollRef.current?.parentElement;
@@ -384,11 +313,8 @@ export const FriendProfilePage: React.FC = () => {
                 element = element.parentElement;
               }
               if (element) {
-                // Wait for the element to be scrollable
                 if (element.scrollHeight > element.clientHeight) {
                   element.scrollTop = scrollTop;
-
-                  // Verify it worked and retry if needed
                   setTimeout(() => {
                     if (element && element.scrollTop < scrollTop * 0.8) {
                       element.scrollTop = scrollTop;
@@ -400,14 +326,12 @@ export const FriendProfilePage: React.FC = () => {
               }
             }
           };
-
           setTimeout(restoreScroll, 500);
         }
       }
     }
-  }, [friendId, activeTab, currentItems.length]); // Trigger when friend, items are loaded and tab changes
+  }, [friendId, activeTab, currentItems.length]);
 
-  // Calculate average rating
   const itemsWithRating = currentItems.filter((item) => {
     const rating = parseFloat(calculateFriendRating(item));
     return !isNaN(rating) && rating > 0;
@@ -415,17 +339,13 @@ export const FriendProfilePage: React.FC = () => {
 
   const averageRating =
     itemsWithRating.length > 0
-      ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateFriendRating(item)), 0) /
-        itemsWithRating.length
+      ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateFriendRating(item)), 0) / itemsWithRating.length
       : 0;
 
-  // Save scroll position before navigating away
   const handleItemClick = (item: any, type: 'series' | 'movie') => {
-    // Try to get scroll position from multiple sources
     let position = 0;
     let scrollSource = '';
 
-    // Check all possible parents for scroll
     let element = scrollRef.current?.parentElement;
     let parentIndex = 0;
     while (element && parentIndex < 5) {
@@ -438,7 +358,6 @@ export const FriendProfilePage: React.FC = () => {
       parentIndex++;
     }
 
-    // If no parent scroll found, try the usual suspects
     if (position === 0) {
       if (scrollRef.current && scrollRef.current.scrollTop > 0) {
         position = scrollRef.current.scrollTop;
@@ -446,22 +365,14 @@ export const FriendProfilePage: React.FC = () => {
       } else if (window.scrollY > 0) {
         position = window.scrollY;
         scrollSource = 'window';
-      } else if (document.documentElement.scrollTop > 0) {
-        position = document.documentElement.scrollTop;
-        scrollSource = 'documentElement';
-      } else if (document.body.scrollTop > 0) {
-        position = document.body.scrollTop;
-        scrollSource = 'body';
       }
     }
 
     if (position > 0) {
       try {
-        // Save friend-specific scroll position
         const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
         sessionStorage.setItem(scrollKey, position.toString());
         sessionStorage.setItem(`friendProfilePageScrollSource_${friendId}_${activeTab}`, scrollSource);
-        // Set flag that we're navigating to a detail page
         sessionStorage.setItem('shouldRestoreFriendProfileScroll', 'true');
       } catch (error) {
         console.error('Error saving scroll position:', error);
@@ -473,79 +384,144 @@ export const FriendProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div
-        style={{
-          background: currentTheme.background.default,
-          color: currentTheme.text.primary,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px',
-        }}
-      >
-        <div>Loading...</div>
+      <div style={{
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
+                       radial-gradient(ellipse at 70% 80%, #8b5cf615 0%, transparent 50%)`,
+          pointerEvents: 'none',
+        }} />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+          style={{
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            border: `3px solid ${currentTheme.border.default}`,
+            borderTopColor: currentTheme.primary,
+            marginBottom: '16px',
+          }}
+        />
+        <p style={{ color: currentTheme.text.muted, fontSize: '15px' }}>Lade Profil...</p>
       </div>
     );
   }
 
   return (
-    <div ref={scrollRef}>
-      {/* Header */}
-      <header
-        style={{
-          padding: '20px',
-          paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-          <BackButton />
+    <div ref={scrollRef} style={{
+      minHeight: '100vh',
+      background: currentTheme.background.default,
+      position: 'relative',
+    }}>
+      {/* Decorative background */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 50%),
+                     radial-gradient(ellipse at 80% 90%, #8b5cf612 0%, transparent 50%)`,
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
 
-          <div>
-            <h1
-              style={{
-                fontSize: '24px',
-                fontWeight: 800,
-                margin: 0,
-                background: currentTheme.primary,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
+      {/* Premium Header */}
+      <header style={{
+        padding: '20px',
+        paddingTop: 'calc(20px + env(safe-area-inset-top))',
+        position: 'relative',
+        zIndex: 10,
+      }}>
+        {/* Gradient overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(180deg, ${currentTheme.primary}20 0%, transparent 100%)`,
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', position: 'relative' }}>
+          <BackButton
+            style={{
+              background: `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.surfaceHover})`,
+              border: `1px solid ${currentTheme.border.default}`,
+              boxShadow: `0 2px 8px ${currentTheme.background.default}80`,
+            }}
+          />
+
+          <div style={{ flex: 1 }}>
+            <h1 style={{
+              fontSize: '24px',
+              fontWeight: 800,
+              margin: 0,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>
               {friendName}
             </h1>
-            <p
-              style={{
-                color: currentTheme.text.secondary,
-                fontSize: '14px',
-                margin: '4px 0 0 0',
-              }}
-            >
-              Ø {averageRating.toFixed(1)} ⭐ • {itemsWithRating.length} bewertet
-            </p>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginTop: '6px',
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: `linear-gradient(135deg, ${currentTheme.status.warning}20, ${currentTheme.status.warning}10)`,
+                padding: '4px 10px',
+                borderRadius: '10px',
+              }}>
+                <Star style={{ fontSize: '16px', color: currentTheme.status.warning }} />
+                <span style={{ fontSize: '14px', fontWeight: 600, color: currentTheme.status.warning }}>
+                  Ø {averageRating.toFixed(1)}
+                </span>
+              </div>
+              <span style={{ fontSize: '13px', color: currentTheme.text.muted, fontWeight: 500 }}>
+                {itemsWithRating.length} bewertet
+              </span>
+            </div>
           </div>
 
-          {/* Taste Match Button */}
+          {/* Premium Taste Match Button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate(`/taste-match/${friendId}`)}
             style={{
-              marginLeft: 'auto',
-              padding: '10px 16px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, #764ba2)`,
+              padding: '12px 18px',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '14px',
               color: 'white',
               fontSize: '14px',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              boxShadow: `0 4px 12px ${currentTheme.primary}40`,
+              gap: '8px',
+              boxShadow: `0 4px 15px ${currentTheme.primary}40`,
             }}
           >
-            <CompareArrows style={{ fontSize: 18 }} />
+            <CompareArrows style={{ fontSize: 20 }} />
             Match
           </motion.button>
         </div>
@@ -556,275 +532,267 @@ export const FriendProfilePage: React.FC = () => {
         onFilterChange={setFilters}
         isMovieMode={activeTab === 'movies'}
         isRatingsMode={true}
-        hasBottomNav={false} // No bottom navigation on friend profile page
+        hasBottomNav={false}
       />
 
-      {/* Tab Switcher */}
-      <div
-        style={{
-          display: 'flex',
-          margin: '0 20px 20px 20px',
-          background: currentTheme.background.surface,
-          borderRadius: '12px',
-        }}
-      >
-        <button
-          onClick={() => setActiveTab('series')}
-          style={{
-            flex: 1,
-            padding: '12px',
-            background: activeTab === 'series' ? currentTheme.primary : 'transparent',
-            border: 'none',
-            borderRadius: '12px 0 0 12px',
-            color: activeTab === 'series' ? 'white' : currentTheme.text.primary,
-            fontSize: '16px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
-        >
-          <TvIcon style={{ fontSize: '20px' }} />
-          Serien ({ratedSeries.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('movies')}
-          style={{
-            flex: 1,
-            padding: '12px',
-            background: activeTab === 'movies' ? `${currentTheme.primary}CC` : 'transparent',
-            border: 'none',
-            borderRadius: '0 12px 12px 0',
-            color: activeTab === 'movies' ? 'white' : currentTheme.text.primary,
-            fontSize: '16px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
-        >
-          <MovieIcon style={{ fontSize: '20px' }} />
-          Filme ({ratedMovies.length})
-        </button>
+      {/* Premium Tab Switcher */}
+      <div style={{
+        display: 'flex',
+        margin: '0 20px 20px 20px',
+        gap: '10px',
+        position: 'relative',
+        zIndex: 5,
+      }}>
+        {[
+          { id: 'series' as const, label: 'Serien', icon: TvIcon, count: ratedSeries.length },
+          { id: 'movies' as const, label: 'Filme', icon: MovieIcon, count: ratedMovies.length },
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <motion.button
+              key={tab.id}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: isActive
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                  : currentTheme.background.card,
+                border: isActive ? 'none' : `1px solid ${currentTheme.border.default}`,
+                borderRadius: '14px',
+                color: isActive ? 'white' : currentTheme.text.primary,
+                fontSize: '15px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+              }}
+            >
+              <Icon style={{ fontSize: '20px' }} />
+              {tab.label} ({tab.count})
+            </motion.button>
+          );
+        })}
       </div>
 
       {/* Items Grid */}
-      <div style={{ padding: window.innerWidth >= 768 ? '0 40px' : '0 20px' }}>
-        {currentItems.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '40px 20px',
-              color: currentTheme.text.muted,
-            }}
-          >
-            <Star style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
-            <h3>Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden</h3>
-            <p>
-              {friendName} hat noch keine {activeTab === 'series' ? 'Serien' : 'Filme'} bewertet
-            </p>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                window.innerWidth >= 1200
-                  ? 'repeat(8, 1fr)'
-                  : window.innerWidth >= 768
-                    ? 'repeat(5, 1fr)'
-                    : 'repeat(auto-fill, minmax(120px, 1fr))',
-              gap: window.innerWidth >= 768 ? '20px' : '16px',
-            }}
-          >
-            {currentItems.map((item) => {
-              const rating = parseFloat(calculateFriendRating(item));
-              const isMovie = 'release_date' in item;
+      <div style={{ padding: window.innerWidth >= 768 ? '0 40px 40px' : '0 20px 100px', position: 'relative', zIndex: 5 }}>
+        <AnimatePresence mode="wait">
+          {currentItems.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                background: currentTheme.background.card,
+                borderRadius: '20px',
+                border: `1px solid ${currentTheme.border.default}`,
+              }}
+            >
+              <Star style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }} />
+              <h3 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
+                Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden
+              </h3>
+              <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
+                {friendName} hat noch keine {activeTab === 'series' ? 'Serien' : 'Filme'} bewertet
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  window.innerWidth >= 1200
+                    ? 'repeat(8, 1fr)'
+                    : window.innerWidth >= 768
+                      ? 'repeat(5, 1fr)'
+                      : 'repeat(auto-fill, minmax(120px, 1fr))',
+                gap: window.innerWidth >= 768 ? '20px' : '16px',
+              }}
+            >
+              {currentItems.map((item, index) => {
+                const rating = parseFloat(calculateFriendRating(item));
+                const isMovie = 'release_date' in item;
 
-              // Calculate progress for series
-              let progress = 0;
-              if (!isMovie && item.seasons) {
-                const today = new Date();
-                let totalAiredEpisodes = 0;
-                let watchedEpisodes = 0;
+                let progress = 0;
+                if (!isMovie && item.seasons) {
+                  const today = new Date();
+                  let totalAiredEpisodes = 0;
+                  let watchedEpisodes = 0;
 
-                item.seasons.forEach((season) => {
-                  if (season.episodes) {
-                    const episodes = Array.isArray(season.episodes)
-                      ? season.episodes
-                      : Object.values(season.episodes || {});
-                    episodes.forEach((ep: any) => {
-                      if (ep.air_date) {
-                        const airDate = new Date(ep.air_date);
-                        if (airDate <= today) {
-                          totalAiredEpisodes++;
-                          if (ep.watched) watchedEpisodes++;
+                  item.seasons.forEach((season) => {
+                    if (season.episodes) {
+                      const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {});
+                      episodes.forEach((ep: any) => {
+                        if (ep.air_date) {
+                          const airDate = new Date(ep.air_date);
+                          if (airDate <= today) {
+                            totalAiredEpisodes++;
+                            if (ep.watched) watchedEpisodes++;
+                          }
                         }
-                      }
-                    });
-                  }
-                });
+                      });
+                    }
+                  });
 
-                progress =
-                  totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
-              }
+                  progress = totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
+                }
 
-              return (
-                <motion.div
-                  key={item.id}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
-                  style={{
-                    cursor: 'pointer',
-                    position: 'relative',
-                  }}
-                >
-                  <div style={{ position: 'relative' }}>
-                    <img
-                      src={getImageUrl(item.poster)}
-                      alt={item.title}
-                      style={{
-                        width: '100%',
-                        aspectRatio: '2/3',
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        background: currentTheme.background.surface,
-                      }}
-                    />
-
-                    {/* Provider Badges */}
-                    {item.provider?.provider && item.provider.provider.length > 0 && (
-                      <div
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(index * 0.03, 0.3) }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
+                    style={{ cursor: 'pointer', position: 'relative' }}
+                  >
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src={getImageUrl(item.poster)}
+                        alt={item.title}
                         style={{
+                          width: '100%',
+                          aspectRatio: '2/3',
+                          objectFit: 'cover',
+                          borderRadius: '12px',
+                          background: currentTheme.background.surface,
+                          boxShadow: `0 6px 16px ${currentTheme.background.default}60`,
+                        }}
+                      />
+
+                      {/* Provider Badges */}
+                      {item.provider?.provider && item.provider.provider.length > 0 && (
+                        <div style={{
                           position: 'absolute',
                           top: '8px',
                           left: '8px',
                           display: 'flex',
                           gap: '4px',
-                        }}
-                      >
-                        {Array.from(new Set(item.provider.provider.map((p: any) => p.name)))
-                          .slice(0, 2)
-                          .map((name) => {
-                            const provider = item.provider?.provider.find(
-                              (p: any) => p.name === name
-                            );
-                            return provider ? (
-                              <div
-                                key={provider.id}
-                                style={{
-                                  background: `${currentTheme.background.default}99`,
-                                  backdropFilter: 'blur(8px)',
-                                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                                  borderRadius: '8px',
-                                  padding: '2px',
-                                  width: '28px',
-                                  height: '28px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <img
-                                  src={provider.logo}
-                                  alt={provider.name}
+                        }}>
+                          {Array.from(new Set(item.provider.provider.map((p: any) => p.name)))
+                            .slice(0, 2)
+                            .map((name) => {
+                              const provider = item.provider?.provider.find((p: any) => p.name === name);
+                              return provider ? (
+                                <div
+                                  key={provider.id}
                                   style={{
-                                    width: '24px',
-                                    height: '24px',
-                                    borderRadius: '4px',
-                                    objectFit: 'cover',
+                                    background: 'linear-gradient(135deg, rgba(0,0,0,0.7), rgba(20,20,40,0.8))',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '8px',
+                                    padding: '3px',
+                                    width: '28px',
+                                    height: '28px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                   }}
-                                />
-                              </div>
-                            ) : null;
-                          })}
-                      </div>
-                    )}
+                                >
+                                  <img
+                                    src={provider.logo}
+                                    alt={provider.name}
+                                    style={{
+                                      width: '22px',
+                                      height: '22px',
+                                      borderRadius: '4px',
+                                      objectFit: 'cover',
+                                    }}
+                                  />
+                                </div>
+                              ) : null;
+                            })}
+                        </div>
+                      )}
 
-                    {/* Rating Badge */}
-                    {rating > 0 && (
-                      <div
-                        style={{
+                      {/* Premium Rating Badge */}
+                      {rating > 0 && (
+                        <div style={{
                           position: 'absolute',
                           top: '8px',
                           right: '8px',
-                          background: `${currentTheme.background.default}CC`,
+                          background: 'linear-gradient(135deg, rgba(0,0,0,0.8), rgba(20,20,40,0.9))',
                           backdropFilter: 'blur(10px)',
-                          borderRadius: '8px',
-                          padding: '6px 8px',
+                          borderRadius: '10px',
+                          padding: '6px 10px',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
-                        }}
-                      >
-                        <Star style={{ fontSize: '16px', color: currentTheme.status.warning }} />
-                        <span
-                          style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: currentTheme.text.primary,
-                          }}
-                        >
-                          {rating.toFixed(1)}
-                        </span>
-                      </div>
-                    )}
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                        }}>
+                          <Star style={{ fontSize: '14px', color: '#ffc107' }} />
+                          <span style={{
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            color: '#fff',
+                          }}>
+                            {rating.toFixed(1)}
+                          </span>
+                        </div>
+                      )}
 
-                    {/* Progress Bar for Series */}
-                    {!isMovie && progress > 0 && (
-                      <div
-                        style={{
+                      {/* Premium Progress Bar */}
+                      {!isMovie && progress > 0 && (
+                        <div style={{
                           position: 'absolute',
                           bottom: '0',
                           left: '0',
                           right: '0',
-                          height: '4px',
-                          background: `${currentTheme.background.default}80`,
-                          borderRadius: '0 0 8px 8px',
+                          height: '5px',
+                          background: 'rgba(0, 0, 0, 0.5)',
+                          borderRadius: '0 0 12px 12px',
                           overflow: 'hidden',
-                        }}
-                      >
-                        <div
-                          style={{
-                            height: '100%',
-                            width: `${progress}%`,
-                            background:
-                              progress === 100
-                                ? 'linear-gradient(90deg, #00d4aa, #00b4d8)'
-                                : 'linear-gradient(90deg, #667eea, #764ba2)',
-                            transition: 'width 0.3s ease',
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                        }}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 0.5, delay: index * 0.02 }}
+                            style={{
+                              height: '100%',
+                              background: progress === 100
+                                ? `linear-gradient(90deg, ${currentTheme.status.success}, #10b981)`
+                                : `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
 
-                  <h3
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: '500',
-                      margin: '8px 0 0 0',
+                    <h3 style={{
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      margin: '10px 0 0 0',
+                      color: currentTheme.text.primary,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       lineHeight: '1.3',
-                      minHeight: '32px',
-                    }}
-                  >
-                    {item.title}
-                  </h3>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+                      minHeight: '34px',
+                    }}>
+                      {item.title}
+                    </h3>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
