@@ -27,6 +27,8 @@ import { PetsPage } from './pages/PetsPage';
 import { ActorUniversePage } from './pages/ActorUniversePage';
 import { EpisodeDiscussionPage } from './pages/EpisodeDiscussionPage';
 import { WrappedPage } from './pages/WrappedPage';
+import { TasteMatchPage } from './pages/TasteMatchPage';
+import { WatchJourneyPage } from './pages/WatchJourneyPage';
 import './styles/App.css';
 
 export const MobileApp = () => {
@@ -224,6 +226,14 @@ export const MobileApp = () => {
                 <FriendProfilePage />
               </Layout>
             }
+          />
+          <Route
+            path="/taste-match/:friendId"
+            element={<TasteMatchPage />}
+          />
+          <Route
+            path="/watch-journey"
+            element={<WatchJourneyPage />}
           />
 
           {/* Legal Pages */}

@@ -77,3 +77,33 @@ html {
 .hide-scrollbar::-webkit-scrollbar {
   display: none !important;
 }
+
+/* Remove focus outlines from Recharts elements */
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-surface,
+.recharts-surface *,
+.recharts-bar-rectangle,
+.recharts-bar-rectangle *,
+.recharts-rectangle,
+.recharts-pie,
+.recharts-pie-sector,
+.recharts-sector,
+.recharts-area,
+.recharts-area-area,
+.recharts-area-curve,
+.recharts-curve,
+svg path,
+svg rect {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Remove focus styles from all SVG elements in charts */
+.recharts-wrapper svg *:focus,
+.recharts-wrapper svg *:active,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
