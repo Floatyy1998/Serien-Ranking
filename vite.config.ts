@@ -129,117 +129,12 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // Your app code - split by feature/domain
-          if (!id.includes('node_modules')) {
-            // Mobile code
-            if (id.includes('/mobile/')) {
-              if (id.includes('/mobile/pages/')) {
-                // Split mobile pages into separate chunks
-                if (id.includes('MobileHomePage')) return 'mobile-home';
-                if (id.includes('MobileSeriesDetailPage')) return 'mobile-series-detail';
-                if (id.includes('MobileMovieDetailPage')) return 'mobile-movie-detail';
-                if (id.includes('MobileWatchNextPage')) return 'mobile-watchnext';
-                if (id.includes('MobileDiscoverPage')) return 'mobile-discover';
-                if (id.includes('MobileSearchPage')) return 'mobile-search';
-                if (id.includes('MobileRatingPage')) return 'mobile-rating';
-                if (id.includes('MobileProfilePage')) return 'mobile-profile';
-                if (id.includes('MobileBadgesPage')) return 'mobile-badges';
-                if (id.includes('MobileStatsPage')) return 'mobile-stats';
-                return 'mobile-pages';
-              }
-              if (id.includes('/mobile/components/')) return 'mobile-components';
-              return 'mobile-core';
-            }
-
-            // Desktop components
-            if (id.includes('/components/')) {
-              if (id.includes('/components/domain/series/')) return 'comp-series';
-              if (id.includes('/components/domain/movies/')) return 'comp-movies';
-              if (id.includes('/components/domain/dialogs/')) return 'comp-dialogs';
-              if (id.includes('/components/ui/')) return 'comp-ui';
-              return 'comp-core';
-            }
-
-            // Features
-            if (id.includes('/features/')) {
-              if (id.includes('/features/badges/')) return 'feat-badges';
-              if (id.includes('/features/auth/')) return 'feat-auth';
-              if (id.includes('/features/friends/')) return 'feat-friends';
-              if (id.includes('/features/notifications/')) return 'feat-notifications';
-              return 'feat-core';
-            }
-
-            // Contexts
-            if (id.includes('/contexts/')) return 'contexts';
-
-            // Utils
-            if (id.includes('/utils/') || id.includes('/lib/')) return 'app-utils';
-
-            // Types
-            if (id.includes('/types/')) return 'types';
-
-            return;
-          }
-
-          // Bundle React ecosystem together
-          if (
-            id.includes('react') ||
-            id.includes('scheduler') ||
-            id.includes('@emotion') ||
-            id.includes('emotion') ||
-            id.includes('stylis') ||
-            id.includes('prop-types')
-          ) {
-            return 'react-vendor';
-          }
-
-          // Firebase - all in one chunk
-          if (id.includes('firebase')) {
-            return 'firebase-all';
-          }
-
-          // Emotion and MUI System are now bundled with react-vendor
-
-          // MUI - simpler chunking
-          if (id.includes('@mui')) {
-            return 'mui-all';
-          }
-
-          // Framer Motion - all in one chunk to avoid circular deps
-          if (id.includes('framer-motion')) {
-            return 'framer-all';
-          }
-          // Other motion libraries
-          if (id.includes('motion') && !id.includes('framer-motion')) {
-            return 'motion-core';
-          }
-
-          // Other libraries
-          if (id.includes('dayjs')) return 'dayjs';
-          if (id.includes('lucide')) return 'lucide';
-          if (id.includes('react-dnd')) return 'dnd-react';
-          if (id.includes('dnd-core')) return 'dnd-core';
-          if (id.includes('redux')) return 'redux';
-          if (id.includes('react-helmet')) return 'helmet';
-          if (id.includes('react-colorful')) return 'colorful';
-          if (id.includes('react-confetti')) return 'confetti';
-          if (id.includes('react-transition-group')) return 'transition';
-          if (id.includes('@popperjs')) return 'popper';
-          if (id.includes('idb')) return 'idb';
-
-          // react-window is now handled by the general react check above
-
-          // Small utilities
-          if (id.includes('tslib')) return 'util-tslib';
-          // prop-types is now in react-vendor
-          if (id.includes('object-assign')) return 'util-assign';
-          if (id.includes('cookie')) return 'util-cookie';
-          if (id.includes('fast-deep-equal')) return 'util-equal';
-          if (id.includes('clsx')) return 'util-clsx';
-
-          // Everything else
-          return 'vendor';
+        // Simplified chunking - let Vite handle most of it automatically
+        manualChunks: {
+          // Only split the biggest dependencies to avoid loading order issues
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/database', 'firebase/storage', 'firebase/analytics'],
+          'recharts': ['recharts'],
+          'framer': ['framer-motion'],
         },
       },
     },

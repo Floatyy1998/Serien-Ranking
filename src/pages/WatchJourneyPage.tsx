@@ -1375,7 +1375,7 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 16 }}>
-            GESAMT UEBER {data.years.length} JAHR{data.years.length > 1 ? 'E' : ''}
+            GESAMT ÜBER {data.years.length} JAHR{data.years.length > 1 ? 'E' : ''}
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>

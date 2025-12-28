@@ -11,6 +11,8 @@ export const WatchJourneyCard: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
 
+  const primaryColor = currentTheme.primary;
+
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
@@ -19,8 +21,8 @@ export const WatchJourneyCard: React.FC = () => {
         margin: '0 20px 16px',
         padding: '16px',
         borderRadius: '16px',
-        background: `linear-gradient(135deg, #00cec915, #00cec905)`,
-        border: `1px solid #00cec930`,
+        background: `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}05)`,
+        border: `1px solid ${primaryColor}30`,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
@@ -33,7 +35,7 @@ export const WatchJourneyCard: React.FC = () => {
           width: 48,
           height: 48,
           borderRadius: '12px',
-          background: 'linear-gradient(135deg, #00cec9, #00b894)',
+          background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -78,7 +80,7 @@ export const WatchJourneyCard: React.FC = () => {
               width: 4,
               maxHeight: 24,
               borderRadius: 2,
-              background: `linear-gradient(180deg, #00cec9, #00b894)`,
+              background: `linear-gradient(180deg, ${primaryColor}, ${primaryColor}cc)`,
               opacity: 0.3 + (i * 0.1),
             }}
           />
