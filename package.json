@@ -37,7 +37,8 @@
     "react-router-dom": "^7.10.1",
     "react-spinners": "^0.17.0",
     "react-swipeable": "^7.0.2",
-    "react-window": "^2.2.3"
+    "react-window": "^1.8.11",
+    "recharts": "^3.6.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.27.1",

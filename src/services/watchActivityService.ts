@@ -115,41 +115,13 @@ function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
 }
 
 // ============================================================================
-// CLEANUP FUNKTION
+// CLEANUP FUNKTION (DEAKTIVIERT - Daten werden für Journey behalten)
 // ============================================================================
 
-async function cleanupOldYearData(userId: string): Promise<void> {
-  const currentYear = new Date().getFullYear();
-  const lastCleanupYear = localStorage.getItem(LAST_CLEANUP_KEY);
-
-  if (lastCleanupYear === String(currentYear)) {
-    return;
-  }
-
-  console.log('[Wrapped] Checking for old data to cleanup...');
-
-  try {
-    const wrappedRef = firebase.database().ref(getWrappedBasePath(userId));
-    const snapshot = await wrappedRef.once('value');
-    const data = snapshot.val();
-
-    if (data) {
-      for (const key of Object.keys(data)) {
-        const year = Number(key);
-        if (!isNaN(year) && year < currentYear) {
-          console.log(`[Wrapped] Deleting data from ${year}`);
-          await wrappedRef.child(String(year)).remove();
-        }
-      }
-    }
-
-    // Streak wird automatisch mit dem Jahr gelöscht - kein separates Reset nötig
-
-    localStorage.setItem(LAST_CLEANUP_KEY, String(currentYear));
-    console.log('[Wrapped] Cleanup complete');
-  } catch (error) {
-    console.error('[Wrapped] Cleanup error:', error);
-  }
+async function cleanupOldYearData(_userId: string): Promise<void> {
+  // DEAKTIVIERT: Wir behalten alle historischen Daten für die Watch Journey
+  // Die Daten werden jetzt jahresübergreifend für Trend-Analysen genutzt
+  return;
 }
 
 // ============================================================================

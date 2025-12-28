@@ -43,6 +43,8 @@ import { NewSeasonNotification } from '../components/NewSeasonNotification';
 import { InactiveSeriesNotification } from '../components/InactiveSeriesNotification';
 import { CompletedSeriesNotification } from '../components/CompletedSeriesNotification';
 import { WrappedNotification } from '../components/WrappedNotification';
+import { TasteMatchCard } from '../components/TasteMatchCard';
+import { WatchJourneyCard } from '../components/WatchJourneyCard';
 
 // Episode Discussion Button with count
 const EpisodeDiscussionButton: React.FC<{
@@ -1749,6 +1751,12 @@ export const HomePage: React.FC = () => {
           </HorizontalScrollContainer>
         </section>
       )}
+
+      {/* Taste Match Card */}
+      <TasteMatchCard />
+
+      {/* Watch Journey Card */}
+      <WatchJourneyCard />
 
       {/* Quick Stats Component */}
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>

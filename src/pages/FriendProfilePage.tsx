@@ -1,4 +1,4 @@
-import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
+import { Movie as MovieIcon, Star, Tv as TvIcon, CompareArrows } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -524,6 +524,30 @@ export const FriendProfilePage: React.FC = () => {
               Ø {averageRating.toFixed(1)} ⭐ • {itemsWithRating.length} bewertet
             </p>
           </div>
+
+          {/* Taste Match Button */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(`/taste-match/${friendId}`)}
+            style={{
+              marginLeft: 'auto',
+              padding: '10px 16px',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, #764ba2)`,
+              border: 'none',
+              borderRadius: '12px',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: `0 4px 12px ${currentTheme.primary}40`,
+            }}
+          >
+            <CompareArrows style={{ fontSize: 18 }} />
+            Match
+          </motion.button>
         </div>
       </header>
 
