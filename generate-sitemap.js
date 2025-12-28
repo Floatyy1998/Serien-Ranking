@@ -8,7 +8,7 @@ const generator = SitemapGenerator('https://tv-rank.de', {
 
 // Registrieren Sie Ereignisse
 generator.on('done', () => {
-  console.log('Sitemap wurde erfolgreich erstellt!');
+  // console.log('Sitemap wurde erfolgreich erstellt!');
 });
 
 // Starten Sie den Generator

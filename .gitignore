@@ -31,3 +31,8 @@ database.rules.json
 src/workers/advanced-service-worker.ts
 public/service-worker.js
 
+storage.rules
+.claude/settings.local.json
+
+# Legal content (keep out of repository)
+public/legal/

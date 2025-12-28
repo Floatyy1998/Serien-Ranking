@@ -46,12 +46,12 @@ export function cleanOverlappingEpisodes(series: Series) {
     if (cleanedEpisodes.length === 0) {
       // Logging für Debugging: Staffel nach Filterung leer
       // eslint-disable-next-line no-console
-      console.warn('[cleanOverlappingEpisodes] Staffel nach Filterung leer:', {
-        seriesTitle: series.title,
-        seasonNumber: season.seasonNumber,
-        originalEpisodes: season.episodes.length,
-        filteredEpisodes: cleanedEpisodes.length,
-      });
+      // console.warn('[cleanOverlappingEpisodes] Staffel nach Filterung leer:', {
+      //   seriesTitle: series.title,
+      //   seasonNumber: season.seasonNumber,
+      //   originalEpisodes: season.episodes.length,
+      //   filteredEpisodes: cleanedEpisodes.length,
+      // });
     }
     return {
       ...season,

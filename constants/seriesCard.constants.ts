@@ -36,3 +36,22 @@ export const allGenresForMovies = [
   'War',
   'Western',
 ];
+
+// Mapping für die Anzeige
+export const genreDisplayNames: Record<string, string> = {
+  All: 'Overall',
+  'Action & Adventure': 'Action & Adventure',
+  Animation: 'Animation',
+  Comedy: 'Comedy',
+  Crime: 'Crime',
+  Drama: 'Drama',
+  Documentary: 'Documentary',
+  Family: 'Family',
+  Kids: 'Kids',
+  Mystery: 'Mystery',
+  Reality: 'Reality',
+  'Sci-Fi & Fantasy': 'Sci-Fi & Fantasy',
+  Talk: 'Talk',
+  'War & Politics': 'War & Politics',
+  Western: 'Western',
+};

@@ -157,7 +157,7 @@ class OfflineFirebaseService {
         serviceWorkerManager.cacheFirebaseData(path, data);
       }
     } catch (error) {
-      console.error('Cache Speicherung fehlgeschlagen:', error);
+      // console.error('Cache Speicherung fehlgeschlagen:', error);
     }
   }
 
@@ -195,7 +195,7 @@ class OfflineFirebaseService {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error('Cache Abruf fehlgeschlagen:', error);
+      // console.error('Cache Abruf fehlgeschlagen:', error);
       return null;
     }
   }
@@ -217,7 +217,7 @@ class OfflineFirebaseService {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error('Cache Löschung fehlgeschlagen:', error);
+      // console.error('Cache Löschung fehlgeschlagen:', error);
     }
   }
 
@@ -269,10 +269,7 @@ class OfflineFirebaseService {
         await this.executeQueuedOperation(item);
         processedItems.push(item.id);
       } catch (error) {
-        console.error(
-          `Operation fehlgeschlagen: ${item.operation} ${item.path}`,
-          error
-        );
+        // console.error(`Operation fehlgeschlagen: ${item.operation} ${item.path}`, error);
 
         // Erhöhe Retry Count
         item.retryCount += 1;
@@ -350,10 +347,7 @@ class OfflineFirebaseService {
         return Date.now() - item.timestamp < this.config.maxOfflineTime;
       });
     } catch (error) {
-      console.error(
-        '❌ Offline Queue Wiederherstellung fehlgeschlagen:',
-        error
-      );
+      // console.error('❌ Offline Queue Wiederherstellung fehlgeschlagen:', error);
     }
   }
 
@@ -379,10 +373,7 @@ class OfflineFirebaseService {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error(
-        `❌ IndexedDB Speicherung fehlgeschlagen (${storeName}):`,
-        error
-      );
+      // console.error(`❌ IndexedDB Speicherung fehlgeschlagen (${storeName}):`, error);
     }
   }
 
@@ -401,10 +392,7 @@ class OfflineFirebaseService {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error(
-        `❌ IndexedDB Löschung fehlgeschlagen (${storeName}):`,
-        error
-      );
+      // console.error(`❌ IndexedDB Löschung fehlgeschlagen (${storeName}):`, error);
     }
   }
 
@@ -428,7 +416,7 @@ class OfflineFirebaseService {
         await serviceWorkerManager.clearCache();
       }
     } catch (error) {
-      console.error('❌ Cache-Löschung fehlgeschlagen:', error);
+      // console.error('❌ Cache-Löschung fehlgeschlagen:', error);
     }
   }
 
@@ -465,7 +453,7 @@ class OfflineFirebaseService {
         stats.serviceWorkerSize = swStats.totalSize;
       }
     } catch (error) {
-      console.error('❌ Statistik-Abruf fehlgeschlagen:', error);
+      // console.error('❌ Statistik-Abruf fehlgeschlagen:', error);
     }
 
     return stats;
@@ -480,6 +468,87 @@ class OfflineFirebaseService {
 
   public get queueSize(): number {
     return this.offlineQueue.length;
+  }
+
+  /**
+   * 👤 User Cache Management
+   */
+  public async cacheUser(user: any): Promise<void> {
+    if (!user) return;
+    
+    try {
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        emailVerified: user.emailVerified,
+        metadata: user.metadata,
+        cachedAt: Date.now(),
+      };
+      
+      // Store in localStorage for quick access
+      localStorage.setItem('cachedUser', JSON.stringify(userData));
+      
+      // Also store in IndexedDB for persistence
+      if (this.config.enableIndexedDB) {
+        await this.cacheData(`user_${user.uid}`, userData);
+      }
+    } catch (error) {
+      console.error('Failed to cache user:', error);
+    }
+  }
+
+  public async getCachedUser(): Promise<any | null> {
+    try {
+      // Try localStorage first
+      const cached = localStorage.getItem('cachedUser');
+      if (cached) {
+        const userData = JSON.parse(cached);
+        // Check if cache is not too old (24 hours)
+        if (Date.now() - userData.cachedAt < 24 * 60 * 60 * 1000) {
+          return userData;
+        }
+      }
+      
+      // Fallback to IndexedDB
+      if (this.config.enableIndexedDB) {
+        const db = await this.initIndexedDB();
+        const transaction = db.transaction(['firebaseCache'], 'readonly');
+        const store = transaction.objectStore('firebaseCache');
+        
+        return new Promise((resolve, reject) => {
+          const request = store.get('user_*');
+          request.onsuccess = () => resolve(request.result?.data || null);
+          request.onerror = () => reject(request.error);
+        });
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Failed to get cached user:', error);
+      return null;
+    }
+  }
+
+  public async clearCachedUser(): Promise<void> {
+    try {
+      localStorage.removeItem('cachedUser');
+      
+      if (this.config.enableIndexedDB) {
+        const db = await this.initIndexedDB();
+        const transaction = db.transaction(['firebaseCache'], 'readwrite');
+        const store = transaction.objectStore('firebaseCache');
+        
+        await new Promise<void>((resolve, reject) => {
+          const request = store.delete('user_*');
+          request.onsuccess = () => resolve();
+          request.onerror = () => reject(request.error);
+        });
+      }
+    } catch (error) {
+      console.error('Failed to clear cached user:', error);
+    }
   }
 }
 

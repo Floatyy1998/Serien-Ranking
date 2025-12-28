@@ -1,5 +1,5 @@
 /**
- * 🏆 Offline-First Badge System
+ * Offline-First Badge System
  *
  * Berechnet Badges direkt aus existierenden Daten ohne Firebase-Activities zu speichern.
  * Reduziert Firebase-Belastung drastisch und funktioniert offline.
@@ -174,7 +174,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * ⭐ Collector Badges - Anzahl Bewertungen
+   * Collector Badges - Anzahl Bewertungen
    */
   private checkCollectorBadge(
     badge: Badge,
@@ -261,7 +261,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 🏆 Season-Badges aus echten Serien-Completion-Daten
+   * Season-Badges aus echten Serien-Completion-Daten
    */
   private checkSeasonBadgeFromRealData(
     badge: Badge,
@@ -300,7 +300,7 @@ export class OfflineBadgeSystem {
 
       return null;
     } catch (error) {
-      console.error('Fehler bei Season-Badge-Check:', error);
+      // console.error('Fehler bei Season-Badge-Check:', error);
       return null;
     }
   }
@@ -367,7 +367,7 @@ export class OfflineBadgeSystem {
       }
     }
 
-    // 🏆 Season-Badges aus echten Serien-Completion-Daten
+    // Season-Badges aus echten Serien-Completion-Daten
     if (badge.requirements.seasons) {
       return this.checkSeasonBadgeFromRealData(badge, _series);
     }
@@ -998,7 +998,7 @@ if (typeof window !== 'undefined') {
           return user.uid;
         }
       } catch (error) {
-        console.log('Firebase auth not available, trying localStorage...');
+        // console.log('Firebase auth not available, trying localStorage...');
       }
 
       // Fallback: Suche in localStorage nach User-ähnlichen Keys

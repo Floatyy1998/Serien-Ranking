@@ -1,6 +1,5 @@
 import firebase from 'firebase/compat/app';
 import { useCallback, useRef } from 'react';
-import { performanceTracker } from '../components/ui/PerformanceMonitor';
 
 interface BatchUpdate {
   path: string;
@@ -40,21 +39,17 @@ export function useFirebaseBatch(config: BatchConfig = {}) {
       // Führe Batch-Update aus
       await firebase.database().ref().update(updates);
 
-      performanceTracker.trackBatch();
-      performanceTracker.trackFirebaseWrite();
-
       // Cleanup
       batchRef.current = [];
       firstUpdateRef.current = null;
     } catch (error) {
-      console.error('❌ Batch update failed:', error);
+      // // console.error('❌ Batch update failed:', error);
       // Bei Fehler: Versuche einzelne Updates
       for (const { path, value } of batchRef.current) {
         try {
           await firebase.database().ref(path).set(value);
-          performanceTracker.trackFirebaseWrite();
         } catch (singleError) {
-          console.error(`❌ Single update failed for ${path}:`, singleError);
+          // // console.error(`❌ Single update failed for ${path}:`, singleError);
         }
       }
       batchRef.current = [];

@@ -1,52 +1,56 @@
+import { Email, Warning } from '@mui/icons-material';
 import { Alert, Button, Snackbar } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../App';
+import { colors, commonStyles } from '../../theme';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;
 }
 
 export const EmailVerificationBanner = ({ children }: EmailVerificationBannerProps) => {
-  const [isVerified, setIsVerified] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const auth = useAuth();
+  const user = auth?.user;
+  const [isVerified, setIsVerified] = useState<boolean | null>(user?.emailVerified ?? null);
+  const [loading] = useState(false); // Kein initiales Loading
   const [message, setMessage] = useState('');
   const [snackOpen, setSnackOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = firebase.auth().currentUser;
+    // Verwende den User aus dem Auth Context statt firebase.auth().currentUser
     if (user) {
-      if (navigator.onLine) {
+      // Setze sofort den aktuellen Status
+      setIsVerified(user.emailVerified);
+
+      // Nur wenn online, versuche zu aktualisieren (ohne Loading anzuzeigen)
+      if (navigator.onLine && !user.emailVerified) {
         user
           .reload()
           .then(() => {
             setIsVerified(user.emailVerified);
-            setLoading(false);
           })
-          .catch((error) => {
-            console.warn(
-              'User reload fehlgeschlagen (offline?), verwende cached Daten:',
-              error
-            );
-            setIsVerified(user.emailVerified);
-            setLoading(false);
+          .catch((_error) => {
+            // console.warn(
+            //   'User reload fehlgeschlagen (offline?), verwende cached Daten:',
+            //   error
+            // );
           });
-      } else {
-        setIsVerified(user.emailVerified);
-        setLoading(false);
       }
-    } else {
+    } else if (auth?.authStateResolved) {
+      // Nur navigieren wenn Auth wirklich resolved ist und kein User da ist
       navigate('/login');
     }
-  }, [navigate]);
+    // Wenn auth noch nicht resolved ist, warte einfach
+  }, [user, auth?.authStateResolved, navigate]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
-    if (!isVerified) {
+    if (!isVerified && user) {
       intervalId = setInterval(() => {
-        const user = firebase.auth().currentUser;
         if (user) {
           user.reload().then(() => {
             if (user.emailVerified) {
@@ -58,10 +62,9 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
       }, 5000);
     }
     return () => clearInterval(intervalId);
-  }, [isVerified]);
+  }, [isVerified, user]);
 
   const resendVerification = () => {
-    const user = firebase.auth().currentUser;
     if (user) {
       user
         .sendEmailVerification()
@@ -76,10 +79,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
     }
   };
 
-  const handleSnackClose = (
-    _event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
+  const handleSnackClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return;
     setSnackOpen(false);
   };
@@ -93,39 +93,9 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
       });
   };
 
+  // NIEMALS einen Loading-Screen zeigen - alles wurde im SplashScreen erledigt
   if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          backgroundColor: '#000',
-          color: '#00fed7',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        <div
-          style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid #00fed7',
-            borderTop: '4px solid transparent',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
-        <div>Verifizierung wird geprüft...</div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
+    return <>{children}</>;
   }
 
   if (!isVerified) {
@@ -139,17 +109,15 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
             left: 0,
             right: 0,
             zIndex: 9999,
-            background: 'linear-gradient(90deg, #ff4757, #ff6b7a)',
-            color: 'white',
+            background: `linear-gradient(90deg, ${colors.status.error}, #ff6b7a)`,
+            color: colors.text.secondary,
             padding: '12px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            ...commonStyles.flexBetween,
             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '20px' }}>⚠️</span>
+            <Warning style={{ fontSize: '20px' }} />
             <span style={{ fontWeight: '500' }}>
               Email nicht verifiziert - Bitte überprüfen Sie Ihr Postfach
             </span>
@@ -161,7 +129,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               onClick={resendVerification}
               sx={{
                 backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
+                color: colors.text.secondary,
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.3)',
                 },
@@ -175,7 +143,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               onClick={handleLogout}
               sx={{
                 borderColor: 'rgba(255,255,255,0.5)',
-                color: 'white',
+                color: colors.text.secondary,
                 '&:hover': {
                   borderColor: 'white',
                   backgroundColor: 'rgba(255,255,255,0.1)',
@@ -206,21 +174,21 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           >
             <div
               style={{
-                backgroundColor: '#1a1a1a',
+                backgroundColor: colors.background.dialog,
                 padding: '40px',
                 borderRadius: '12px',
-                border: '2px solid #00fed7',
-                boxShadow: '0 0 30px rgba(0, 254, 215, 0.3)',
+                border: `2px solid var(--theme-primary)`,
+                boxShadow: colors.shadow.hover,
                 textAlign: 'center',
                 maxWidth: '400px',
                 margin: '0 20px',
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '20px' }}>📧</div>
-              <h2 style={{ color: '#00fed7', marginBottom: '16px' }}>
+              <Email style={{ fontSize: '48px', marginBottom: '20px' }} />
+              <h2 style={{ color: 'var(--theme-primary)', marginBottom: '16px' }}>
                 Email-Verifizierung erforderlich
               </h2>
-              <p style={{ color: '#ccc', marginBottom: '24px', lineHeight: '1.5' }}>
+              <p style={{ color: colors.text.muted, marginBottom: '24px', lineHeight: '1.5' }}>
                 Um alle Funktionen nutzen zu können, müssen Sie Ihre Email-Adresse verifizieren.
                 Überprüfen Sie Ihr Postfach und klicken Sie auf den Verifizierungslink.
               </p>
@@ -229,10 +197,10 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                   variant="contained"
                   onClick={resendVerification}
                   sx={{
-                    backgroundColor: '#00fed7',
-                    color: 'black',
+                    backgroundColor: 'var(--theme-primary)',
+                    color: colors.background.default,
                     '&:hover': {
-                      backgroundColor: '#00d4b4',
+                      backgroundColor: 'var(--theme-accent)',
                     },
                   }}
                 >
@@ -242,11 +210,11 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                   variant="outlined"
                   onClick={handleLogout}
                   sx={{
-                    borderColor: '#00fed7',
-                    color: '#00fed7',
+                    borderColor: 'var(--theme-primary)',
+                    color: 'var(--theme-primary)',
                     '&:hover': {
-                      borderColor: '#00d4b4',
-                      backgroundColor: 'rgba(0, 254, 215, 0.1)',
+                      borderColor: 'var(--theme-accent)',
+                      backgroundColor: colors.overlay.medium,
                     },
                   }}
                 >
@@ -258,11 +226,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           {children}
         </div>
 
-        <Snackbar
-          open={snackOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackClose}
-        >
+        <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
           <Alert
             onClose={handleSnackClose}
             severity={message.includes('Fehler') ? 'error' : 'success'}
@@ -278,11 +242,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   return (
     <>
       {children}
-      <Snackbar
-        open={snackOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackClose}
-      >
+      <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
         <Alert
           onClose={handleSnackClose}
           severity={message.includes('Fehler') ? 'error' : 'success'}

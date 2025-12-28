@@ -1,0 +1,186 @@
+/* Mobile App Global Styles */
+.mobile-app {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  background: var(--color-background-default);
+  color: var(--color-text-primary);
+  /* Remove scrolling from main container - let child handle it */
+  overflow: hidden;
+  position: relative; /* Changed from fixed to relative */
+  /* Let index.css handle overscroll prevention */
+}
+
+/* Background Image Support for Mobile */
+.mobile-app::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background-image: var(--background-image, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: var(--background-image-opacity, 0.3);
+  filter: blur(var(--background-image-blur, 0px));
+  pointer-events: none;
+}
+
+/* Reset for mobile */
+.mobile-app * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+/* Allow text selection where needed */
+.mobile-app input,
+.mobile-app textarea,
+.mobile-app .selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Smooth scrolling */
+.mobile-app .scrollable {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Apply transparent backgrounds to common mobile components */
+.mobile-app .mobile-layout {
+  background: transparent !important;
+}
+
+.mobile-app .mobile-content {
+  background: transparent !important;
+}
+
+/* Native-like transitions */
+.mobile-app .page-transition-enter {
+  transform: translateX(100%);
+}
+
+.mobile-app .page-transition-enter-active {
+  transform: translateX(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-app .page-transition-exit {
+  transform: translateX(0);
+}
+
+.mobile-app .page-transition-exit-active {
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* iOS Safe Areas */
+.mobile-app {
+  padding-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top);
+}
+
+/* Bottom Navigation Space */
+.mobile-app .content-with-nav {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  padding-bottom: calc(60px + constant(safe-area-inset-bottom));
+}
+
+/* Typography */
+.mobile-app h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.mobile-app h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mobile-app h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mobile-app p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Touch targets minimum 44x44px */
+.mobile-app button,
+.mobile-app a,
+.mobile-app .touchable {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Native-like buttons */
+.mobile-app .btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.mobile-app .btn-primary:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+/* Cards */
+.mobile-app .card {
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 16px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+}
+
+/* Loading states */
+.mobile-app .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Prevent body scroll on iOS */
+body.mobile-view {
+  position: fixed;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}

@@ -36,20 +36,24 @@ class ServiceWorkerManager {
    */
   private async init(): Promise<void> {
     if (!this.isSupported) {
-      console.warn(
-        '⚠️ Service Worker wird von diesem Browser nicht unterstützt'
-      );
+      // // console.warn(
+      //   '⚠️ Service Worker wird von diesem Browser nicht unterstützt'
+      // );
       return;
     }
 
     try {
       await this.register();
       this.setupEventListeners();
+      // Prüfe auf Updates, aber nicht so aggressiv
+      // Einmal nach 30 Sekunden, dann alle 5 Minuten
+      setTimeout(() => this.checkForUpdates(), 30000);
+      setInterval(() => this.checkForUpdates(), 5 * 60 * 1000); // Alle 5 Minuten
     } catch (error) {
-      console.error(
-        '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
-        error
-      );
+      // // console.error(
+      //   '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
+      //   error
+      // );
     }
   }
 
@@ -61,13 +65,13 @@ class ServiceWorkerManager {
       return this.registrationPromise;
     }
 
-    this.registrationPromise = navigator.serviceWorker.register(
-      '/service-worker.js',
-      {
-        scope: '/',
-        updateViaCache: 'imports',
-      }
-    );
+    // Use Vite PWA's sw.js instead of legacy service-worker.js
+    const swUrl = '/sw.js';
+
+    this.registrationPromise = navigator.serviceWorker.register(swUrl, {
+      scope: '/',
+      updateViaCache: 'none', // Browser soll selbst prüfen ob Update nötig ist
+    });
 
     const registration = await this.registrationPromise;
 
@@ -75,6 +79,21 @@ class ServiceWorkerManager {
     if (registration.waiting) {
       this.showUpdateAvailable();
     }
+
+    // Update Handler einrichten
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      if (newWorker) {
+        newWorker.addEventListener('statechange', () => {
+          if (
+            newWorker.state === 'installed' &&
+            navigator.serviceWorker.controller
+          ) {
+            this.showUpdateAvailable();
+          }
+        });
+      }
+    });
 
     return registration;
   }
@@ -85,8 +104,20 @@ class ServiceWorkerManager {
   private setupEventListeners(): void {
     if (!navigator.serviceWorker) return;
 
+    // Bei Controller-Wechsel einfach neu laden (ohne Notification-Spam)
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
+      // // console.log('🔄 Neuer Service Worker aktiv - Seite wird neu geladen');
+
+      // Prüfe ob wir schon einen Reload gemacht haben (verhindert Endlosschleife)
+      const reloadFlag = sessionStorage.getItem('sw-reloaded');
+
+      if (!reloadFlag) {
+        sessionStorage.setItem('sw-reloaded', 'true');
+        window.location.reload();
+      } else {
+        // Nach erfolgreichem Reload Flag entfernen
+        sessionStorage.removeItem('sw-reloaded');
+      }
     });
 
     navigator.serviceWorker.addEventListener('message', (event) => {
@@ -100,6 +131,11 @@ class ServiceWorkerManager {
   private handleWorkerMessage(data: any): void {
     switch (data.type) {
       case 'CACHE_UPDATED':
+        // // console.log('📦 Cache aktualisiert:', data.version);
+        break;
+      case 'SW_UPDATED':
+        // // console.log('🆕 Service Worker aktualisiert:', data.version);
+        this.notifyUpdateComplete();
         break;
       case 'OFFLINE_READY':
         this.notifyOfflineReady();
@@ -118,13 +154,41 @@ class ServiceWorkerManager {
       const registration = await this.registrationPromise;
       if (!registration) return;
 
+      // Forciere ein Update
+      await registration.update();
+
       if (registration.waiting) {
-        this.postMessage({ type: 'SKIP_WAITING' });
-      } else {
-        await registration.update();
+        // Aktiviere wartenden Worker
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+        // Warte auf Aktivierung
+        await new Promise<void>((resolve) => {
+          const checkState = () => {
+            if (registration.active) {
+              resolve();
+            } else {
+              setTimeout(checkState, 100);
+            }
+          };
+          checkState();
+        });
       }
     } catch (error) {
-      console.error('❌ Service Worker Update fehlgeschlagen:', error);
+      // // console.error('❌ Service Worker Update fehlgeschlagen:', error);
+    }
+  }
+
+  /**
+   * 🔍 Prüfe auf Service Worker Updates
+   */
+  private async checkForUpdates(): Promise<void> {
+    try {
+      const registration = await this.registrationPromise;
+      if (!registration) return;
+
+      await registration.update();
+    } catch (error) {
+      // // console.log('Update-Check fehlgeschlagen:', error);
     }
   }
 
@@ -176,7 +240,7 @@ class ServiceWorkerManager {
         await (registration as any).sync.register(tag);
       }
     } catch (error) {
-      console.error('❌ Background Sync Registration fehlgeschlagen:', error);
+      // // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
     }
   }
 
@@ -196,7 +260,7 @@ class ServiceWorkerManager {
       await this.storeInIndexedDB('pendingUpdates', pendingUpdate);
       await this.registerBackgroundSync('firebase-sync');
     } catch (error) {
-      console.error('❌ Failed to queue Firebase update:', error);
+      // // console.error('❌ Failed to queue Firebase update:', error);
     }
   }
 
@@ -255,15 +319,39 @@ class ServiceWorkerManager {
    * 🔔 UI Notifications
    */
   private showUpdateAvailable(): void {
-    // Hier können Sie eine UI-Benachrichtigung anzeigen
+    // // console.log('🆕 Update verfügbar');
 
-    // Optional: Custom Event für UI Components
-    window.dispatchEvent(new CustomEvent('sw-update-available'));
+    // Zeige nur einmal pro Session eine Update-Notification
+    const shown = sessionStorage.getItem('update-shown');
+    if (shown) {
+      // // console.log('Update-Notification bereits gezeigt');
+      return;
+    }
+
+    sessionStorage.setItem('update-shown', 'true');
+
+    // Zeige Notification, aber installiere NICHT automatisch
+    window.dispatchEvent(
+      new CustomEvent('sw-update-available', {
+        detail: { autoUpdate: false },
+      })
+    );
   }
 
   private notifyOfflineReady(): void {
     // Optional: Custom Event für UI Components
     window.dispatchEvent(new CustomEvent('sw-offline-ready'));
+  }
+
+  private notifyUpdateComplete(): void {
+    // Benachrichtigung über abgeschlossenes Update
+    window.dispatchEvent(
+      new CustomEvent('sw-update-complete', {
+        detail: {
+          message: 'Update erfolgreich installiert',
+        },
+      })
+    );
   }
 
   /**
