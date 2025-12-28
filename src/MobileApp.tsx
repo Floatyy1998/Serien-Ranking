@@ -29,6 +29,7 @@ import { EpisodeDiscussionPage } from './pages/EpisodeDiscussionPage';
 import { WrappedPage } from './pages/WrappedPage';
 import { TasteMatchPage } from './pages/TasteMatchPage';
 import { WatchJourneyPage } from './pages/WatchJourneyPage';
+import { CatchUpPage } from './pages/CatchUpPage';
 import './styles/App.css';
 
 export const MobileApp = () => {
@@ -234,6 +235,10 @@ export const MobileApp = () => {
           <Route
             path="/watch-journey"
             element={<WatchJourneyPage />}
+          />
+          <Route
+            path="/catch-up"
+            element={<CatchUpPage />}
           />
 
           {/* Legal Pages */}

@@ -45,6 +45,7 @@ import { CompletedSeriesNotification } from '../components/CompletedSeriesNotifi
 import { WrappedNotification } from '../components/WrappedNotification';
 import { TasteMatchCard } from '../components/TasteMatchCard';
 import { WatchJourneyCard } from '../components/WatchJourneyCard';
+import { CatchUpCard } from '../components/CatchUpCard';
 
 // Episode Discussion Button with count
 const EpisodeDiscussionButton: React.FC<{
@@ -1752,11 +1753,39 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* Taste Match Card */}
-      <TasteMatchCard />
+      {/* Für dich Section - Feature Cards */}
+      <section style={{ marginBottom: '32px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0 20px',
+            marginBottom: '16px',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '20px',
+              fontWeight: 700,
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <AutoAwesome style={{ fontSize: '24px', color: currentTheme.primary }} />
+            Für dich
+          </h2>
+        </div>
 
-      {/* Watch Journey Card */}
-      <WatchJourneyCard />
+        {/* Feature Cards Container */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <TasteMatchCard />
+          <WatchJourneyCard />
+          <CatchUpCard />
+        </div>
+      </section>
 
       {/* Quick Stats Component */}
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
