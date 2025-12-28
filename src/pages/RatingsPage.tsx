@@ -1,7 +1,7 @@
 import { Movie as MovieIcon, Star, Tv as TvIcon, WatchLater } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
@@ -14,7 +14,7 @@ import { QuickFilter } from '../components/QuickFilter';
 
 export const RatingsPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const authContext = useAuth();
   const user = authContext?.user;
   const { seriesList } = useSeriesList();
@@ -22,124 +22,97 @@ export const RatingsPage: React.FC = () => {
   const { currentTheme, getMobilePageBackground, getMobileHeaderStyle } = useTheme();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // Simple local state management
+  // Initialize all states from URL params
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>(() => {
-    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
-    if (fromMobileBackButton) {
-      try {
-        const stored = sessionStorage.getItem('ratingsPageState');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return parsed.activeTab || 'series';
-        }
-      } catch (error) {
-        console.error('Error loading activeTab:', error);
-      }
-    }
-    return 'series';
+    return searchParams.get('tab') === 'movies' ? 'movies' : 'series';
   });
 
   const [sortOption, setSortOption] = useState(() => {
-    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
-    if (fromMobileBackButton) {
-      try {
-        const stored = sessionStorage.getItem('ratingsPageState');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return parsed.sortOption || 'rating-desc';
-        }
-      } catch (error) {
-        console.error('Error loading sortOption:', error);
-      }
-    }
-    return 'rating-desc';
+    return searchParams.get('sort') || 'rating-desc';
   });
 
   const [selectedGenre, setSelectedGenre] = useState(() => {
-    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
-    if (fromMobileBackButton) {
-      try {
-        const stored = sessionStorage.getItem('ratingsPageState');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return parsed.selectedGenre || 'Alle';
-        }
-      } catch (error) {
-        console.error('Error loading selectedGenre:', error);
-      }
-    }
-    return 'Alle';
+    return searchParams.get('genre') || 'Alle';
   });
 
   const [selectedProvider, setSelectedProvider] = useState<string | null>(() => {
-    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
-    if (fromMobileBackButton) {
-      try {
-        const stored = sessionStorage.getItem('ratingsPageState');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return parsed.selectedProvider || null;
-        }
-      } catch (error) {
-        console.error('Error loading selectedProvider:', error);
-      }
-    }
-    return null;
+    return searchParams.get('provider') || null;
   });
 
   const [quickFilter, setQuickFilter] = useState<string | null>(() => {
-    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
-    if (fromMobileBackButton) {
-      try {
-        const stored = sessionStorage.getItem('ratingsPageState');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return parsed.quickFilter || null;
-        }
-      } catch (error) {
-        console.error('Error loading quickFilter:', error);
-      }
-    }
-    return null;
+    return searchParams.get('filter') || null;
   });
 
   const [searchQuery, setSearchQuery] = useState<string>(() => {
-    const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
-    if (fromMobileBackButton) {
-      try {
-        const stored = sessionStorage.getItem('ratingsPageState');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return parsed.searchQuery || '';
-        }
-      } catch (error) {
-        console.error('Error loading searchQuery:', error);
-      }
-    }
-    return '';
+    return searchParams.get('search') || '';
   });
 
-  // Save state to sessionStorage whenever any state changes
-  useEffect(() => {
-    const state = {
-      activeTab,
-      sortOption,
-      selectedGenre,
-      selectedProvider,
-      quickFilter,
-      searchQuery
-    };
-    try {
-      sessionStorage.setItem('ratingsPageState', JSON.stringify(state));
-    } catch (error) {
-      console.error('Error saving state:', error);
-    }
-  }, [activeTab, sortOption, selectedGenre, selectedProvider, quickFilter, searchQuery]);
+  // useTransition for non-blocking updates
+  const [, startTransition] = useTransition();
 
-  // Check for tab parameter in URL and navigation source
-  const params = new URLSearchParams(location.search);
-  const tabParam = params.get('tab');
-  const fromMobileBackButton = sessionStorage.getItem('shouldRestoreRatingsScroll') === 'true';
+  // Ref to track if we're currently updating from QuickFilter to prevent loops
+  const isUpdatingFromQuickFilter = useRef(false);
+
+  // Ref to access latest searchParams without causing callback recreation
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
+
+  // Update URL when any filter changes (without triggering re-sync)
+  const updateURL = useCallback((updates: {
+    tab?: string;
+    sort?: string;
+    genre?: string;
+    provider?: string | null;
+    filter?: string | null;
+    search?: string;
+  }) => {
+    const newParams = new URLSearchParams(searchParams);
+
+    // Handle each parameter
+    if (updates.tab !== undefined) {
+      if (updates.tab === 'movies') newParams.set('tab', 'movies');
+      else newParams.delete('tab');
+    }
+    if (updates.sort !== undefined) {
+      if (updates.sort !== 'rating-desc') newParams.set('sort', updates.sort);
+      else newParams.delete('sort');
+    }
+    if (updates.genre !== undefined) {
+      if (updates.genre && updates.genre !== 'Alle') newParams.set('genre', updates.genre);
+      else newParams.delete('genre');
+    }
+    if (updates.provider !== undefined) {
+      if (updates.provider) newParams.set('provider', updates.provider);
+      else newParams.delete('provider');
+    }
+    if (updates.filter !== undefined) {
+      if (updates.filter) newParams.set('filter', updates.filter);
+      else newParams.delete('filter');
+    }
+    if (updates.search !== undefined) {
+      if (updates.search) newParams.set('search', updates.search);
+      else newParams.delete('search');
+    }
+
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  // Handle browser back/forward navigation via popstate
+  useEffect(() => {
+    const handlePopState = () => {
+      // Read directly from window.location since searchParams might be stale
+      const params = new URLSearchParams(window.location.search);
+      setActiveTab(params.get('tab') === 'movies' ? 'movies' : 'series');
+      setSortOption(params.get('sort') || 'rating-desc');
+      setSelectedGenre(params.get('genre') || 'Alle');
+      setSelectedProvider(params.get('provider') || null);
+      setQuickFilter(params.get('filter') || null);
+      setSearchQuery(params.get('search') || '');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Initialize filters from state
   const filters: {
@@ -156,30 +129,75 @@ export const RatingsPage: React.FC = () => {
     search: searchQuery || undefined
   };
 
-  // Handle navigation - reset by default, restore only if coming from MobileBackButton
-  useEffect(() => {
-    if (!fromMobileBackButton) {
-      // Reset everything by default (except when coming back from detail pages)
-      setActiveTab(tabParam === 'movies' ? 'movies' : 'series');
-      setSortOption('rating-desc');
-      setSelectedGenre('Alle');
-      setSelectedProvider(null);
-      setQuickFilter(null);
-      setSearchQuery('');
+  // Stable callback for QuickFilter to prevent infinite loops
+  // Uses refs to access current values without recreating the callback
+  const handleQuickFilterChange = useCallback((newFilters: {
+    sortBy?: string;
+    genre?: string;
+    provider?: string;
+    quickFilter?: string;
+    search?: string;
+  }) => {
+    // Prevent loop by checking if we're already updating
+    if (isUpdatingFromQuickFilter.current) return;
+    isUpdatingFromQuickFilter.current = true;
 
-      // Reset scroll position
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = 0;
+    // Build URL updates
+    const newParams = new URLSearchParams(searchParamsRef.current);
+
+    if (newFilters.sortBy !== undefined) {
+      if (newFilters.sortBy && newFilters.sortBy !== 'rating-desc') {
+        newParams.set('sort', newFilters.sortBy);
+      } else {
+        newParams.delete('sort');
       }
-    } else if (tabParam === 'movies') {
-      // Only set tab if restoring state but URL has different tab
-      setActiveTab('movies');
+    }
+    if (newFilters.genre !== undefined) {
+      if (newFilters.genre && newFilters.genre !== 'Alle') {
+        newParams.set('genre', newFilters.genre);
+      } else {
+        newParams.delete('genre');
+      }
+    }
+    if (newFilters.provider !== undefined) {
+      if (newFilters.provider) {
+        newParams.set('provider', newFilters.provider);
+      } else {
+        newParams.delete('provider');
+      }
+    }
+    if (newFilters.quickFilter !== undefined) {
+      if (newFilters.quickFilter) {
+        newParams.set('filter', newFilters.quickFilter);
+      } else {
+        newParams.delete('filter');
+      }
+    }
+    if (newFilters.search !== undefined) {
+      if (newFilters.search) {
+        newParams.set('search', newFilters.search);
+      } else {
+        newParams.delete('search');
+      }
     }
 
-    // Don't clear the flag here - it's needed for scroll restoration
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname, location.search]); // React to navigation changes
+    // Update URL
+    setSearchParams(newParams, { replace: true });
 
+    // Non-blocking state updates
+    startTransition(() => {
+      if (newFilters.sortBy !== undefined) setSortOption(newFilters.sortBy || 'rating-desc');
+      if (newFilters.genre !== undefined) setSelectedGenre(newFilters.genre || 'Alle');
+      if (newFilters.provider !== undefined) setSelectedProvider(newFilters.provider || null);
+      if (newFilters.quickFilter !== undefined) setQuickFilter(newFilters.quickFilter || null);
+      if (newFilters.search !== undefined) setSearchQuery(newFilters.search || '');
+    });
+
+    // Reset flag after a microtask to allow the update to complete
+    queueMicrotask(() => {
+      isUpdatingFromQuickFilter.current = false;
+    });
+  }, [setSearchParams, startTransition]);
 
   // Save scroll position before navigating away
   const handleItemClick = (item: any, type: 'series' | 'movie') => {
@@ -650,7 +668,12 @@ export const RatingsPage: React.FC = () => {
           }}
         >
         <button
-          onClick={() => setActiveTab('series')}
+          onClick={() => {
+            // Set state immediately for instant UI feedback
+            setActiveTab('series');
+            // Update URL
+            updateURL({ tab: 'series' });
+          }}
           style={{
             flex: 1,
             padding: '12px',
@@ -673,7 +696,12 @@ export const RatingsPage: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('movies')}
+          onClick={() => {
+            // Set state immediately for instant UI feedback
+            setActiveTab('movies');
+            // Update URL
+            updateURL({ tab: 'movies' });
+          }}
           style={{
             flex: 1,
             padding: '12px',
@@ -816,7 +844,7 @@ export const RatingsPage: React.FC = () => {
                             );
                             return provider ? (
                               <div
-                                key={provider.id}
+                                key={name}
                                 style={{
                                   background: `${currentTheme.background.default}99`,
                                   backdropFilter: 'blur(8px)',
@@ -1006,14 +1034,7 @@ export const RatingsPage: React.FC = () => {
 
       {/* QuickFilter FAB */}
       <QuickFilter
-        onFilterChange={(newFilters) => {
-          // Update state directly
-          if (newFilters.sortBy) setSortOption(newFilters.sortBy);
-          if (newFilters.genre !== undefined) setSelectedGenre(newFilters.genre || 'Alle');
-          if (newFilters.provider !== undefined) setSelectedProvider(newFilters.provider);
-          if (newFilters.quickFilter !== undefined) setQuickFilter(newFilters.quickFilter || null);
-          if (newFilters.search !== undefined) setSearchQuery(newFilters.search || '');
-        }}
+        onFilterChange={handleQuickFilterChange}
         isMovieMode={activeTab === 'movies'}
         isRatingsMode={true}
         initialFilters={filters}
