@@ -33,8 +33,8 @@ import {
   CartesianGrid,
   Cell,
   Legend,
-  PieChart,
   Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -44,11 +44,11 @@ import { useAuth } from '../App';
 import { BackButton } from '../components/BackButton';
 import { useTheme } from '../contexts/ThemeContext';
 import {
-  calculateWatchJourney,
   calculateMultiYearTrends,
+  calculateWatchJourney,
   DAY_NAMES,
-  normalizeMonthlyData,
   MultiYearTrendsData,
+  normalizeMonthlyData,
   WatchJourneyData,
 } from '../services/watchJourneyService';
 
@@ -229,7 +229,15 @@ const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 8 }}>
+          <p
+            style={{
+              color: textSecondary,
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
             DEIN TOP GENRE
           </p>
           <h2 style={{ color: textPrimary, fontSize: 32, fontWeight: 800, margin: '0 0 8px' }}>
@@ -237,12 +245,16 @@ const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           </h2>
           <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
             <div>
-              <span style={{ fontSize: 28, fontWeight: 700, color: topGenre?.color }}>{topGenre?.hours}</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: topGenre?.color }}>
+                {topGenre?.hours}
+              </span>
               <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>Stunden</span>
             </div>
             <div style={{ width: 1, background: `${textSecondary}40` }} />
             <div>
-              <span style={{ fontSize: 28, fontWeight: 700, color: topGenre?.color }}>{topGenre?.percentage}%</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: topGenre?.color }}>
+                {topGenre?.percentage}%
+              </span>
               <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>deiner Zeit</span>
             </div>
           </div>
@@ -280,7 +292,12 @@ const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 animationDuration={800}
               >
                 {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" style={{ outline: 'none' }} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    stroke="transparent"
+                    style={{ outline: 'none' }}
+                  />
                 ))}
               </Pie>
               <Tooltip
@@ -314,7 +331,15 @@ const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 12,
+            justifyContent: 'center',
+            marginTop: 8,
+          }}
+        >
           {pieData.slice(0, 6).map((item) => (
             <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color }} />
@@ -345,15 +370,30 @@ const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 {data.topGenres.map((genre) => (
-                  <linearGradient key={genre} id={`gradient-${genre.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    key={genre}
+                    id={`gradient-${genre.replace(/\s+/g, '-')}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="5%" stopColor={data.genreColors[genre]} stopOpacity={0.8} />
                     <stop offset="95%" stopColor={data.genreColors[genre]} stopOpacity={0.2} />
                   </linearGradient>
                 ))}
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-              <XAxis dataKey="name" tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} />
-              <YAxis tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} tickFormatter={(v) => `${v}%`} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
+              <YAxis
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+                tickFormatter={(v) => `${v}%`}
+              />
               <Tooltip content={<CustomTooltip />} />
               {data.topGenres.map((genre) => (
                 <Area
@@ -392,12 +432,22 @@ const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: stat.color }} />
-                <span style={{ color: 'white', fontSize: 14, fontWeight: 600, flex: 1 }}>{stat.genre}</span>
+                <div
+                  style={{ width: 10, height: 10, borderRadius: '50%', background: stat.color }}
+                />
+                <span style={{ color: 'white', fontSize: 14, fontWeight: 600, flex: 1 }}>
+                  {stat.genre}
+                </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: stat.color, fontSize: 20, fontWeight: 700 }}>{stat.hours}h</span>
-                <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, alignSelf: 'flex-end' }}>{stat.percentage}%</span>
+                <span style={{ color: stat.color, fontSize: 20, fontWeight: 700 }}>
+                  {stat.hours}h
+                </span>
+                <span
+                  style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, alignSelf: 'flex-end' }}
+                >
+                  {stat.percentage}%
+                </span>
               </div>
             </motion.div>
           ))}
@@ -502,7 +552,15 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 8 }}>
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.6)',
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
             DEIN TOP STREAMING-DIENST
           </p>
           <h2 style={{ color: 'white', fontSize: 28, fontWeight: 800, margin: '0 0 8px' }}>
@@ -510,13 +568,21 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           </h2>
           <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
             <div>
-              <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>{topProvider?.hours}</span>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginLeft: 4 }}>Stunden</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>
+                {topProvider?.hours}
+              </span>
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginLeft: 4 }}>
+                Stunden
+              </span>
             </div>
             <div style={{ width: 1, background: 'rgba(255,255,255,0.2)' }} />
             <div>
-              <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>{topProvider?.percentage}%</span>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginLeft: 4 }}>deiner Zeit</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>
+                {topProvider?.percentage}%
+              </span>
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginLeft: 4 }}>
+                deiner Zeit
+              </span>
             </div>
           </div>
         </div>
@@ -540,10 +606,28 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         </h3>
         <div style={{ width: '100%', height: barData.length * 50 + 20 }}>
           <ResponsiveContainer>
-            <BarChart data={barData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-              <YAxis dataKey="name" type="category" tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} width={100} />
+            <BarChart
+              data={barData}
+              layout="vertical"
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.05)"
+                horizontal={false}
+              />
+              <XAxis
+                type="number"
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              />
+              <YAxis
+                dataKey="name"
+                type="category"
+                tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                width={100}
+              />
               <Tooltip
                 cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                 content={({ active, payload }) => {
@@ -562,7 +646,13 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                         <p style={{ color: data.color, fontWeight: 700, margin: 0, fontSize: 15 }}>
                           {data.name}
                         </p>
-                        <p style={{ color: 'rgba(255,255,255,0.7)', margin: '4px 0 0', fontSize: 13 }}>
+                        <p
+                          style={{
+                            color: 'rgba(255,255,255,0.7)',
+                            margin: '4px 0 0',
+                            fontSize: 13,
+                          }}
+                        >
                           {data.hours} Stunden
                         </p>
                       </div>
@@ -571,7 +661,12 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                   return null;
                 }}
               />
-              <Bar dataKey="hours" radius={[0, 8, 8, 0]} animationDuration={800} style={{ outline: 'none' }}>
+              <Bar
+                dataKey="hours"
+                radius={[0, 8, 8, 0]}
+                animationDuration={800}
+                style={{ outline: 'none' }}
+              >
                 {barData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} style={{ outline: 'none' }} />
                 ))}
@@ -602,15 +697,34 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 {data.topProviders.map((provider) => (
-                  <linearGradient key={provider} id={`gradient-provider-${provider.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    key={provider}
+                    id={`gradient-provider-${provider.replace(/\s+/g, '-')}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="5%" stopColor={data.providerColors[provider]} stopOpacity={0.8} />
-                    <stop offset="95%" stopColor={data.providerColors[provider]} stopOpacity={0.2} />
+                    <stop
+                      offset="95%"
+                      stopColor={data.providerColors[provider]}
+                      stopOpacity={0.2}
+                    />
                   </linearGradient>
                 ))}
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickFormatter={(v) => `${v}%`} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              />
+              <YAxis
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tickFormatter={(v) => `${v}%`}
+              />
               <Tooltip content={<CustomTooltip />} />
               {data.topProviders.map((provider) => (
                 <Area
@@ -629,7 +743,15 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 16 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 12,
+            justifyContent: 'center',
+            marginTop: 16,
+          }}
+        >
           {providerStats.map((item) => (
             <div key={item.provider} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color }} />
@@ -666,18 +788,29 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
   const maxCount = Math.max(...data.heatmap.map((h) => h.count), 1);
 
   // Hover state für Tooltip
-  const [hoveredCell, setHoveredCell] = useState<{ hour: number; day: number; count: number; minutes: number } | null>(null);
+  const [hoveredCell, setHoveredCell] = useState<{
+    hour: number;
+    day: number;
+    count: number;
+    minutes: number;
+  } | null>(null);
 
   // Calculate insights
   const peakHourLabel = `${data.peakHour}:00`;
   const isNightOwl = data.peakHour >= 22 || data.peakHour <= 4;
   const isEarlyBird = data.peakHour >= 5 && data.peakHour <= 9;
-  const lateNightCount = data.heatmap.filter((h) => h.hour >= 23 || h.hour <= 3).reduce((a, b) => a + b.count, 0);
+  const lateNightCount = data.heatmap
+    .filter((h) => h.hour >= 23 || h.hour <= 3)
+    .reduce((a, b) => a + b.count, 0);
   const totalCount = data.heatmap.reduce((a, b) => a + b.count, 0);
   const lateNightPercent = totalCount > 0 ? Math.round((lateNightCount / totalCount) * 100) : 0;
 
-  const weekendCount = data.heatmap.filter((h) => h.dayOfWeek === 0 || h.dayOfWeek === 6).reduce((a, b) => a + b.count, 0);
-  const weekdayCount = data.heatmap.filter((h) => h.dayOfWeek >= 1 && h.dayOfWeek <= 5).reduce((a, b) => a + b.count, 0);
+  const weekendCount = data.heatmap
+    .filter((h) => h.dayOfWeek === 0 || h.dayOfWeek === 6)
+    .reduce((a, b) => a + b.count, 0);
+  const weekdayCount = data.heatmap
+    .filter((h) => h.dayOfWeek >= 1 && h.dayOfWeek <= 5)
+    .reduce((a, b) => a + b.count, 0);
 
   // Prepare bar data for hourly distribution
   const hourlyData = useMemo(() => {
@@ -719,7 +852,15 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
         />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 8 }}>
+          <p
+            style={{
+              color: textSecondary,
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
             DEINE PRIME TIME
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -743,7 +884,9 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               )}
             </div>
             <div>
-              <h2 style={{ color: textPrimary, fontSize: 32, fontWeight: 800, margin: 0 }}>{peakHourLabel}</h2>
+              <h2 style={{ color: textPrimary, fontSize: 32, fontWeight: 800, margin: 0 }}>
+                {peakHourLabel}
+              </h2>
               <p style={{ color: textSecondary, fontSize: 14, margin: 0 }}>
                 {DAY_NAMES[data.peakDay]} ist dein aktivster Tag
               </p>
@@ -766,7 +909,9 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               }}
             >
               <Nightlight style={{ fontSize: 16, color: primaryColor }} />
-              <span style={{ color: textPrimary, fontSize: 13 }}>Nachteule - {lateNightPercent}% nach 23 Uhr</span>
+              <span style={{ color: textPrimary, fontSize: 13 }}>
+                Nachteule - {lateNightPercent}% nach 23 Uhr
+              </span>
             </motion.div>
           )}
         </div>
@@ -798,7 +943,10 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                 axisLine={{ stroke: `${textSecondary}30` }}
                 interval={5}
               />
-              <YAxis tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} />
+              <YAxis
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
               <Tooltip
                 cursor={{ fill: `${primaryColor}10` }}
                 content={({ active, payload }) => {
@@ -813,7 +961,9 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                         }}
                       >
-                        <p style={{ color: primaryColor, fontWeight: 700, margin: 0, fontSize: 15 }}>
+                        <p
+                          style={{ color: primaryColor, fontWeight: 700, margin: 0, fontSize: 15 }}
+                        >
                           {payload[0].payload.hour}
                         </p>
                         <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 13 }}>
@@ -831,7 +981,13 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                   <stop offset="95%" stopColor={primaryColor} stopOpacity={0.4} />
                 </linearGradient>
               </defs>
-              <Bar dataKey="count" fill="url(#hourlyGradient)" radius={[4, 4, 0, 0]} animationDuration={800} style={{ outline: 'none' }} />
+              <Bar
+                dataKey="count"
+                fill="url(#hourlyGradient)"
+                radius={[4, 4, 0, 0]}
+                animationDuration={800}
+                style={{ outline: 'none' }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -852,7 +1008,9 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           overflowX: 'auto',
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Wochentag x Uhrzeit</h3>
+        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
+          Wochentag x Uhrzeit
+        </h3>
 
         {/* Hover Tooltip */}
         <AnimatePresence>
@@ -918,47 +1076,71 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           {/* Grid */}
           <div onMouseLeave={() => setHoveredCell(null)}>
             {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-              <div key={day} style={{ display: 'flex', alignItems: 'center', marginBottom: cellGap + 2 }}>
-                <div style={{ width: dayLabelWidth, flexShrink: 0, fontSize: 14, color: textPrimary, fontWeight: 600 }}>{DAY_NAMES[day]}</div>
+              <div
+                key={day}
+                style={{ display: 'flex', alignItems: 'center', marginBottom: cellGap + 2 }}
+              >
+                <div
+                  style={{
+                    width: dayLabelWidth,
+                    flexShrink: 0,
+                    fontSize: 14,
+                    color: textPrimary,
+                    fontWeight: 600,
+                  }}
+                >
+                  {DAY_NAMES[day]}
+                </div>
                 <div style={{ display: 'flex', gap: cellGap, flex: 1 }}>
-                {Array.from({ length: 24 }, (_, hour) => {
-                  const cell = data.heatmap.find((h) => h.hour === hour && h.dayOfWeek === day);
-                  const intensity = cell ? cell.count / maxCount : 0;
-                  const isPeak = hour === data.peakHour && day === data.peakDay;
-                  const isHovered = hoveredCell?.hour === hour && hoveredCell?.day === day;
-                  return (
-                    <div
-                      key={hour}
-                      onMouseEnter={() => setHoveredCell({
-                        hour,
-                        day,
-                        count: cell?.count || 0,
-                        minutes: cell?.minutes || 0
-                      })}
-                      style={{
-                        flex: 1,
-                        aspectRatio: '1 / 1',
-                        borderRadius: 4,
-                        background: intensity > 0
-                          ? `color-mix(in srgb, ${primaryColor} ${20 + intensity * 80}%, transparent)`
-                          : `${textSecondary}10`,
-                        border: `2px solid ${isPeak ? textPrimary : isHovered ? primaryColor : 'transparent'}`,
-                        boxSizing: 'border-box',
-                        cursor: 'pointer',
-                        boxShadow: isHovered ? `0 0 8px ${primaryColor}40` : 'none',
-                        transition: 'box-shadow 0.15s ease, border-color 0.15s ease',
-                      }}
-                    />
-                  );
-                })}
+                  {Array.from({ length: 24 }, (_, hour) => {
+                    const cell = data.heatmap.find((h) => h.hour === hour && h.dayOfWeek === day);
+                    const intensity = cell ? cell.count / maxCount : 0;
+                    const isPeak = hour === data.peakHour && day === data.peakDay;
+                    const isHovered = hoveredCell?.hour === hour && hoveredCell?.day === day;
+                    return (
+                      <div
+                        key={hour}
+                        onMouseEnter={() =>
+                          setHoveredCell({
+                            hour,
+                            day,
+                            count: cell?.count || 0,
+                            minutes: cell?.minutes || 0,
+                          })
+                        }
+                        style={{
+                          flex: 1,
+                          aspectRatio: '1 / 1',
+                          borderRadius: 4,
+                          background:
+                            intensity > 0
+                              ? `color-mix(in srgb, ${primaryColor} ${20 + intensity * 80}%, transparent)`
+                              : `${textSecondary}10`,
+                          border: `2px solid ${isPeak ? textPrimary : isHovered ? primaryColor : 'transparent'}`,
+                          boxSizing: 'border-box',
+                          cursor: 'pointer',
+                          boxShadow: isHovered ? `0 0 8px ${primaryColor}40` : 'none',
+                          transition: 'box-shadow 0.15s ease, border-color 0.15s ease',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 24 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            marginTop: 24,
+          }}
+        >
           <span style={{ fontSize: 13, color: textSecondary }}>Weniger</span>
           {[0.2, 0.4, 0.6, 0.8, 1].map((opacity, i) => (
             <div
@@ -977,7 +1159,9 @@ const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
 
       {/* Insights */}
       <div style={{ padding: '0 20px' }}>
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Insights</h3>
+        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+          Insights
+        </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1028,11 +1212,11 @@ interface ActivityTabProps {
 
 // Accent Farben für Abwechslung
 const ACCENT_COLORS = {
-  episodes: '#667eea',    // Lila für Episoden
-  movies: '#f093fb',      // Pink für Filme
-  time: '#00cec9',        // Cyan für Zeit
-  fire: '#fdcb6e',        // Gold für Highlights
-  trending: '#00b894',    // Grün für Trends
+  episodes: '#667eea', // Lila für Episoden
+  movies: '#f093fb', // Pink für Filme
+  time: '#00cec9', // Cyan für Zeit
+  fire: '#fdcb6e', // Gold für Highlights
+  trending: '#00b894', // Grün für Trends
 };
 
 const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
@@ -1090,7 +1274,15 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 16 }}>
+          <p
+            style={{
+              color: textSecondary,
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 1,
+              marginBottom: 16,
+            }}
+          >
             DEIN JAHR IN ZAHLEN
           </p>
 
@@ -1113,7 +1305,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               >
                 <Tv style={{ color: 'white', fontSize: 26 }} />
               </motion.div>
-              <div style={{ color: ACCENT_COLORS.episodes, fontSize: 28, fontWeight: 800 }}>{data.totalEpisodes}</div>
+              <div style={{ color: ACCENT_COLORS.episodes, fontSize: 28, fontWeight: 800 }}>
+                {data.totalEpisodes}
+              </div>
               <div style={{ color: textSecondary, fontSize: 12 }}>Episoden</div>
             </div>
 
@@ -1135,7 +1329,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               >
                 <LocalMovies style={{ color: 'white', fontSize: 26 }} />
               </motion.div>
-              <div style={{ color: ACCENT_COLORS.movies, fontSize: 28, fontWeight: 800 }}>{data.totalMovies}</div>
+              <div style={{ color: ACCENT_COLORS.movies, fontSize: 28, fontWeight: 800 }}>
+                {data.totalMovies}
+              </div>
               <div style={{ color: textSecondary, fontSize: 12 }}>Filme</div>
             </div>
 
@@ -1157,7 +1353,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               >
                 <Schedule style={{ color: 'white', fontSize: 26 }} />
               </motion.div>
-              <div style={{ color: ACCENT_COLORS.time, fontSize: 28, fontWeight: 800 }}>{totalHours}h</div>
+              <div style={{ color: ACCENT_COLORS.time, fontSize: 28, fontWeight: 800 }}>
+                {totalHours}h
+              </div>
               <div style={{ color: textSecondary, fontSize: 12 }}>Watch-Zeit</div>
             </div>
           </div>
@@ -1177,7 +1375,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Monatliche Aktivität</h3>
+        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
+          Monatliche Aktivität
+        </h3>
 
         <div style={{ width: '100%', height: 280 }}>
           <ResponsiveContainer>
@@ -1193,15 +1393,41 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-              <XAxis dataKey="name" tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} />
-              <YAxis tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} />
-              <Tooltip content={<ActivityTooltip />} cursor={{ fill: `${ACCENT_COLORS.episodes}10` }} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
+              <YAxis
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
+              <Tooltip
+                content={<ActivityTooltip />}
+                cursor={{ fill: `${ACCENT_COLORS.episodes}10` }}
+              />
               <Legend
                 wrapperStyle={{ paddingTop: 20 }}
-                formatter={(value) => <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>}
+                formatter={(value) => (
+                  <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>
+                )}
               />
-              <Bar dataKey="Episoden" stackId="a" fill="url(#episodenGradient)" radius={[0, 0, 0, 0]} animationDuration={800} style={{ outline: 'none' }} />
-              <Bar dataKey="Filme" stackId="a" fill="url(#filmeGradient)" radius={[4, 4, 0, 0]} animationDuration={800} style={{ outline: 'none' }} />
+              <Bar
+                dataKey="Episoden"
+                stackId="a"
+                fill="url(#episodenGradient)"
+                radius={[0, 0, 0, 0]}
+                animationDuration={800}
+                style={{ outline: 'none' }}
+              />
+              <Bar
+                dataKey="Filme"
+                stackId="a"
+                fill="url(#filmeGradient)"
+                radius={[4, 4, 0, 0]}
+                animationDuration={800}
+                style={{ outline: 'none' }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -1209,7 +1435,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
 
       {/* Insights */}
       <div style={{ padding: '0 20px' }}>
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Fun Facts</h3>
+        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+          Fun Facts
+        </h3>
 
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -1228,8 +1456,12 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         >
           <LocalFireDepartment style={{ color: ACCENT_COLORS.fire, fontSize: 32 }} />
           <div>
-            <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>Bester Monat: {bestMonth.monthName}</div>
-            <div style={{ color: textSecondary, fontSize: 13 }}>{bestMonth.episodes + bestMonth.movies} Episoden & Filme</div>
+            <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>
+              Bester Monat: {bestMonth.monthName}
+            </div>
+            <div style={{ color: textSecondary, fontSize: 13 }}>
+              {bestMonth.episodes + bestMonth.movies} Episoden & Filme
+            </div>
           </div>
         </motion.div>
 
@@ -1250,7 +1482,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         >
           <TrendingUp style={{ color: ACCENT_COLORS.trending, fontSize: 32 }} />
           <div>
-            <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>{avgPerMonth} pro Monat</div>
+            <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>
+              {avgPerMonth} pro Monat
+            </div>
             <div style={{ color: textSecondary, fontSize: 13 }}>Durchschnittliche Aktivität</div>
           </div>
         </motion.div>
@@ -1271,8 +1505,12 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         >
           <AccessTime style={{ color: ACCENT_COLORS.time, fontSize: 32 }} />
           <div>
-            <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>{daysWatched} Tage Watchtime</div>
-            <div style={{ color: textSecondary, fontSize: 13 }}>Das entspricht {totalHours} Stunden</div>
+            <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>
+              {daysWatched} Tage Watchtime
+            </div>
+            <div style={{ color: textSecondary, fontSize: 13 }}>
+              Das entspricht {totalHours} Stunden
+            </div>
           </div>
         </motion.div>
       </div>
@@ -1374,7 +1612,15 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
         />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 16 }}>
+          <p
+            style={{
+              color: textSecondary,
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 1,
+              marginBottom: 16,
+            }}
+          >
             GESAMT ÜBER {data.years.length} JAHR{data.years.length > 1 ? 'E' : ''}
           </p>
 
@@ -1432,15 +1678,39 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-              <XAxis dataKey="name" tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }} axisLine={{ stroke: `${textSecondary}30` }} />
-              <YAxis tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} />
-              <Tooltip content={<ActivityTooltip />} cursor={{ fill: `${ACCENT_COLORS.episodes}10` }} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
+              <YAxis
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
+              <Tooltip
+                content={<ActivityTooltip />}
+                cursor={{ fill: `${ACCENT_COLORS.episodes}10` }}
+              />
               <Legend
                 wrapperStyle={{ paddingTop: 20 }}
-                formatter={(value) => <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>}
+                formatter={(value) => (
+                  <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>
+                )}
               />
-              <Bar dataKey="Episoden" fill="url(#trendsEpisodenGradient)" radius={[0, 0, 0, 0]} animationDuration={800} style={{ outline: 'none' }} />
-              <Bar dataKey="Filme" fill="url(#trendsFilmeGradient)" radius={[4, 4, 0, 0]} animationDuration={800} style={{ outline: 'none' }} />
+              <Bar
+                dataKey="Episoden"
+                fill="url(#trendsEpisodenGradient)"
+                radius={[0, 0, 0, 0]}
+                animationDuration={800}
+                style={{ outline: 'none' }}
+              />
+              <Bar
+                dataKey="Filme"
+                fill="url(#trendsFilmeGradient)"
+                radius={[4, 4, 0, 0]}
+                animationDuration={800}
+                style={{ outline: 'none' }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -1459,18 +1729,36 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 20,
+          }}
+        >
           <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: 0 }}>
             Watch-Zeit Trend
           </h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <TrendIcon trend={data.hoursTrend} />
-            <span style={{
-              color: data.hoursTrend === 'up' ? '#00b894' : data.hoursTrend === 'down' ? '#e17055' : textSecondary,
-              fontSize: 13,
-              fontWeight: 600,
-            }}>
-              {data.hoursTrend === 'up' ? 'Steigend' : data.hoursTrend === 'down' ? 'Fallend' : 'Stabil'}
+            <span
+              style={{
+                color:
+                  data.hoursTrend === 'up'
+                    ? '#00b894'
+                    : data.hoursTrend === 'down'
+                      ? '#e17055'
+                      : textSecondary,
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              {data.hoursTrend === 'up'
+                ? 'Steigend'
+                : data.hoursTrend === 'down'
+                  ? 'Fallend'
+                  : 'Stabil'}
             </span>
           </div>
         </div>
@@ -1485,8 +1773,15 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-              <XAxis dataKey="name" tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }} axisLine={{ stroke: `${textSecondary}30` }} />
-              <YAxis tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
+              <YAxis
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+              />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
@@ -1500,7 +1795,14 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                         }}
                       >
-                        <p style={{ color: ACCENT_COLORS.time, fontWeight: 700, margin: 0, fontSize: 15 }}>
+                        <p
+                          style={{
+                            color: ACCENT_COLORS.time,
+                            fontWeight: 700,
+                            margin: 0,
+                            fontSize: 15,
+                          }}
+                        >
                           {payload[0].payload.name}
                         </p>
                         <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 13 }}>
@@ -1545,18 +1847,36 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
 
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer>
-              <AreaChart data={genreEvolutionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={genreEvolutionData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
                   {data.allTimeTopGenres.slice(0, 5).map((g) => (
-                    <linearGradient key={g.genre} id={`trend-gradient-${g.genre.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      key={g.genre}
+                      id={`trend-gradient-${g.genre.replace(/\s+/g, '-')}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor={g.color} stopOpacity={0.8} />
                       <stop offset="95%" stopColor={g.color} stopOpacity={0.2} />
                     </linearGradient>
                   ))}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-                <XAxis dataKey="name" tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }} axisLine={{ stroke: `${textSecondary}30` }} />
-                <YAxis tick={{ fill: textSecondary, fontSize: 11 }} axisLine={{ stroke: `${textSecondary}30` }} tickFormatter={(v) => `${v}h`} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
+                  axisLine={{ stroke: `${textSecondary}30` }}
+                />
+                <YAxis
+                  tick={{ fill: textSecondary, fontSize: 11 }}
+                  axisLine={{ stroke: `${textSecondary}30` }}
+                  tickFormatter={(v) => `${v}h`}
+                />
                 <Tooltip content={<CustomTooltip />} />
                 {data.allTimeTopGenres.slice(0, 5).map((g) => (
                   <Area
@@ -1575,7 +1895,15 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
           </div>
 
           {/* Legend */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 16 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 12,
+              justifyContent: 'center',
+              marginTop: 16,
+            }}
+          >
             {data.allTimeTopGenres.slice(0, 5).map((g) => (
               <div key={g.genre} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: g.color }} />
@@ -1592,87 +1920,125 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
           Jahr für Jahr
         </h3>
 
-        {data.yearlyData.slice().reverse().map((yd, i) => (
-          <motion.div
-            key={yd.year}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 + i * 0.1 }}
-            style={{
-              padding: '20px',
-              marginBottom: 12,
-              borderRadius: '16px',
-              background: bgSurface,
-              border: `1px solid ${currentTheme.border.default}`,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {data.yearlyData
+          .slice()
+          .reverse()
+          .map((yd, i) => (
+            <motion.div
+              key={yd.year}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 + i * 0.1 }}
+              style={{
+                padding: '20px',
+                marginBottom: 12,
+                borderRadius: '16px',
+                background: bgSurface,
+                border: `1px solid ${currentTheme.border.default}`,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '12px',
+                      background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <span style={{ color: 'white', fontSize: 16, fontWeight: 800 }}>
+                      {yd.year.toString().slice(-2)}
+                    </span>
+                  </div>
+                  <div>
+                    <div style={{ color: textPrimary, fontSize: 20, fontWeight: 700 }}>
+                      {yd.year}
+                    </div>
+                    <div style={{ color: textSecondary, fontSize: 13 }}>
+                      {yd.totalHours}h Watchtime
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
                 <div
                   style={{
-                    width: 48,
-                    height: 48,
+                    padding: '12px',
                     borderRadius: '12px',
-                    background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    background: `${ACCENT_COLORS.episodes}15`,
                   }}
                 >
-                  <span style={{ color: 'white', fontSize: 16, fontWeight: 800 }}>{yd.year.toString().slice(-2)}</span>
-                </div>
-                <div>
-                  <div style={{ color: textPrimary, fontSize: 20, fontWeight: 700 }}>{yd.year}</div>
-                  <div style={{ color: textSecondary, fontSize: 13 }}>{yd.totalHours}h Watchtime</div>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-              <div style={{ padding: '12px', borderRadius: '12px', background: `${ACCENT_COLORS.episodes}15` }}>
-                <div style={{ color: ACCENT_COLORS.episodes, fontSize: 20, fontWeight: 700 }}>{yd.episodes}</div>
-                <div style={{ color: textSecondary, fontSize: 12 }}>Episoden</div>
-              </div>
-              <div style={{ padding: '12px', borderRadius: '12px', background: `${ACCENT_COLORS.movies}15` }}>
-                <div style={{ color: ACCENT_COLORS.movies, fontSize: 20, fontWeight: 700 }}>{yd.movies}</div>
-                <div style={{ color: textSecondary, fontSize: 12 }}>Filme</div>
-              </div>
-            </div>
-
-            {(yd.topGenre !== '-' || yd.topProvider !== '-') && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-                {yd.topGenre !== '-' && (
-                  <div
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      background: `${topGenreColors[yd.topGenre] || ACCENT_COLORS.trending}20`,
-                      border: `1px solid ${topGenreColors[yd.topGenre] || ACCENT_COLORS.trending}40`,
-                    }}
-                  >
-                    <span style={{ color: topGenreColors[yd.topGenre] || ACCENT_COLORS.trending, fontSize: 12, fontWeight: 600 }}>
-                      Top: {yd.topGenre}
-                    </span>
+                  <div style={{ color: ACCENT_COLORS.episodes, fontSize: 20, fontWeight: 700 }}>
+                    {yd.episodes}
                   </div>
-                )}
-                {yd.topProvider !== '-' && (
-                  <div
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      background: `${textSecondary}15`,
-                      border: `1px solid ${textSecondary}30`,
-                    }}
-                  >
-                    <span style={{ color: textSecondary, fontSize: 12, fontWeight: 600 }}>
-                      via {yd.topProvider}
-                    </span>
+                  <div style={{ color: textSecondary, fontSize: 12 }}>Episoden</div>
+                </div>
+                <div
+                  style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    background: `${ACCENT_COLORS.movies}15`,
+                  }}
+                >
+                  <div style={{ color: ACCENT_COLORS.movies, fontSize: 20, fontWeight: 700 }}>
+                    {yd.movies}
                   </div>
-                )}
+                  <div style={{ color: textSecondary, fontSize: 12 }}>Filme</div>
+                </div>
               </div>
-            )}
-          </motion.div>
-        ))}
+
+              {(yd.topGenre !== '-' || yd.topProvider !== '-') && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+                  {yd.topGenre !== '-' && (
+                    <div
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        background: `${topGenreColors[yd.topGenre] || ACCENT_COLORS.trending}20`,
+                        border: `1px solid ${topGenreColors[yd.topGenre] || ACCENT_COLORS.trending}40`,
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: topGenreColors[yd.topGenre] || ACCENT_COLORS.trending,
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Top: {yd.topGenre}
+                      </span>
+                    </div>
+                  )}
+                  {yd.topProvider !== '-' && (
+                    <div
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        background: `${textSecondary}15`,
+                        border: `1px solid ${textSecondary}30`,
+                      }}
+                    >
+                      <span style={{ color: textSecondary, fontSize: 12, fontWeight: 600 }}>
+                        via {yd.topProvider}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          ))}
       </div>
     </div>
   );
@@ -1688,7 +2054,7 @@ type TabType = 'genre' | 'provider' | 'heatmap' | 'activity' | 'trends';
 const getAvailableYears = () => {
   const currentYear = new Date().getFullYear();
   const years: number[] = [];
-  for (let y = currentYear; y >= 2025; y--) {
+  for (let y = currentYear; y >= 2026; y--) {
     years.push(y);
   }
   return years;
@@ -1821,7 +2187,13 @@ export const WatchJourneyPage: React.FC = () => {
           <motion.p
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            style={{ color: textPrimary, fontSize: 20, fontWeight: 700, margin: 0, marginBottom: '8px' }}
+            style={{
+              color: textPrimary,
+              fontSize: 20,
+              fontWeight: 700,
+              margin: 0,
+              marginBottom: '8px',
+            }}
           >
             Analysiere Watch-History...
           </motion.p>
@@ -1856,7 +2228,9 @@ export const WatchJourneyPage: React.FC = () => {
         >
           <BackButton />
           <div style={{ flex: 1 }}>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: textPrimary }}>Watch Journey</h1>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: textPrimary }}>
+              Watch Journey
+            </h1>
           </div>
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -1876,7 +2250,10 @@ export const WatchJourneyPage: React.FC = () => {
             }}
           >
             {selectedYear}
-            <motion.div animate={{ rotate: showYearPicker ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <motion.div
+              animate={{ rotate: showYearPicker ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <ExpandMore style={{ fontSize: 20 }} />
             </motion.div>
           </motion.button>
@@ -1914,7 +2291,8 @@ export const WatchJourneyPage: React.FC = () => {
                     style={{
                       padding: '14px 28px',
                       borderRadius: '12px',
-                      border: selectedYear === year ? 'none' : `1px solid ${currentTheme.border.default}`,
+                      border:
+                        selectedYear === year ? 'none' : `1px solid ${currentTheme.border.default}`,
                       background: selectedYear === year ? primaryColor : bgSurface,
                       color: selectedYear === year ? 'white' : textPrimary,
                       fontSize: 18,
@@ -1931,7 +2309,15 @@ export const WatchJourneyPage: React.FC = () => {
         </AnimatePresence>
 
         {/* Empty State Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <TrendingUp style={{ fontSize: 80, color: `${textSecondary}30`, marginBottom: 24 }} />
           <h2 style={{ color: textPrimary, fontSize: 24, fontWeight: 700, marginBottom: 12 }}>
             Keine Daten für {selectedYear}
@@ -1948,9 +2334,17 @@ export const WatchJourneyPage: React.FC = () => {
 
   const tabs = [
     { id: 'trends' as TabType, label: 'Trends', icon: <Timeline style={{ fontSize: 18 }} /> },
-    { id: 'activity' as TabType, label: 'Aktivität', icon: <TrendingUp style={{ fontSize: 18 }} /> },
+    {
+      id: 'activity' as TabType,
+      label: 'Aktivität',
+      icon: <TrendingUp style={{ fontSize: 18 }} />,
+    },
     { id: 'genre' as TabType, label: 'Genres', icon: <Category style={{ fontSize: 18 }} /> },
-    { id: 'provider' as TabType, label: 'Streaming', icon: <Subscriptions style={{ fontSize: 18 }} /> },
+    {
+      id: 'provider' as TabType,
+      label: 'Streaming',
+      icon: <Subscriptions style={{ fontSize: 18 }} />,
+    },
     { id: 'heatmap' as TabType, label: 'Zeiten', icon: <Schedule style={{ fontSize: 18 }} /> },
   ];
 
@@ -2053,7 +2447,9 @@ export const WatchJourneyPage: React.FC = () => {
             >
               Watch Journey
             </h1>
-            <p style={{ margin: 0, fontSize: 12, color: textSecondary, marginTop: '2px' }}>Deine Trends & Insights</p>
+            <p style={{ margin: 0, fontSize: 12, color: textSecondary, marginTop: '2px' }}>
+              Deine Trends & Insights
+            </p>
           </div>
 
           {/* Premium Year Picker Button */}
@@ -2076,7 +2472,10 @@ export const WatchJourneyPage: React.FC = () => {
             }}
           >
             {selectedYear}
-            <motion.div animate={{ rotate: showYearPicker ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <motion.div
+              animate={{ rotate: showYearPicker ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <ExpandMore style={{ fontSize: 20 }} />
             </motion.div>
           </motion.button>
@@ -2117,7 +2516,8 @@ export const WatchJourneyPage: React.FC = () => {
                     style={{
                       padding: '14px 28px',
                       borderRadius: '12px',
-                      border: selectedYear === year ? 'none' : `1px solid ${currentTheme.border.default}`,
+                      border:
+                        selectedYear === year ? 'none' : `1px solid ${currentTheme.border.default}`,
                       background: selectedYear === year ? primaryColor : bgSurface,
                       color: selectedYear === year ? 'white' : textPrimary,
                       fontSize: 18,
@@ -2187,27 +2587,52 @@ export const WatchJourneyPage: React.FC = () => {
         {/* Content */}
         <AnimatePresence mode="wait">
           {activeTab === 'trends' && trendsData && (
-            <motion.div key="trends" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="trends"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
               <TrendsTab data={trendsData} />
             </motion.div>
           )}
           {activeTab === 'activity' && (
-            <motion.div key="activity" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="activity"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
               <ActivityTab data={data} />
             </motion.div>
           )}
           {activeTab === 'genre' && (
-            <motion.div key="genre" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="genre"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
               <GenreTab data={data} />
             </motion.div>
           )}
           {activeTab === 'provider' && (
-            <motion.div key="provider" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="provider"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
               <ProviderTab data={data} />
             </motion.div>
           )}
           {activeTab === 'heatmap' && (
-            <motion.div key="heatmap" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="heatmap"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
               <HeatmapTab data={data} width={chartWidth + 40} />
             </motion.div>
           )}
