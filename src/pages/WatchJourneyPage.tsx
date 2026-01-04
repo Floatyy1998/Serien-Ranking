@@ -11,8 +11,6 @@ import {
   AutoGraph,
   CalendarMonth,
   Category,
-  ChevronLeft,
-  ChevronRight,
   ExpandMore,
   LocalFireDepartment,
   LocalMovies,
@@ -30,7 +28,7 @@ import {
   WbSunny,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Area,
@@ -1550,42 +1548,17 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
   const primaryColor = currentTheme.primary;
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showAllTimeline, setShowAllTimeline] = useState(false);
+  const [monthRangeStart, setMonthRangeStart] = useState(1); // 1-12
+  const [monthRangeEnd, setMonthRangeEnd] = useState(12); // 1-12
+
+  const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Poster sizes: mobile = 70x105, desktop = 140x210
-  const posterWidth = isMobile ? 70 : 140;
-  const posterHeight = isMobile ? 105 : 210;
-
-  // Scroll refs for each month group
-  const scrollRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const [scrollState, setScrollState] = useState<Record<number, { canLeft: boolean; canRight: boolean }>>({});
-
-  const updateScrollState = useCallback((groupIndex: number) => {
-    const container = scrollRefs.current[groupIndex];
-    if (container) {
-      const canLeft = container.scrollLeft > 5;
-      const canRight = container.scrollLeft < container.scrollWidth - container.clientWidth - 5;
-      setScrollState(prev => ({
-        ...prev,
-        [groupIndex]: { canLeft, canRight }
-      }));
-    }
-  }, []);
-
-  const scrollContainer = useCallback((groupIndex: number, direction: 'left' | 'right') => {
-    const container = scrollRefs.current[groupIndex];
-    if (container) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
-      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      // Update state after scroll animation
-      setTimeout(() => updateScrollState(groupIndex), 350);
-    }
-  }, [updateScrollState]);
 
   // Use series stats from the selected year
   const seriesStats = useMemo(() => {
@@ -1626,42 +1599,56 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
     fetchPosters();
   }, [seriesStats]);
 
-  // Sort series by first watched for timeline
+  // Timeline series with calculated positions for Gantt chart (filtered by month range)
   const timelineSeries = useMemo(() => {
-    return [...seriesStats]
-      .sort((a, b) => new Date(a.firstWatched).getTime() - new Date(b.firstWatched).getTime());
-  }, [seriesStats]);
+    // Use selected month range
+    const rangeStart = new Date(data.year, monthRangeStart - 1, 1).getTime();
+    const rangeEnd = new Date(data.year, monthRangeEnd, 0, 23, 59, 59).getTime(); // Last day of end month
+    const rangeDuration = rangeEnd - rangeStart;
 
-  // Group by month for timeline - only include months from selected year
-  const monthlyGroups = useMemo(() => {
-    const groups = new Map<string, typeof seriesStats>();
+    return seriesStats
+      .filter(series => {
+        // Include series that overlap with the selected month range
+        const first = new Date(series.firstWatched).getTime();
+        const last = new Date(series.lastWatched).getTime();
+        return first <= rangeEnd && last >= rangeStart;
+      })
+      .map(series => {
+        const firstDate = new Date(series.firstWatched);
+        const lastDate = new Date(series.lastWatched);
 
-    timelineSeries.forEach(series => {
-      const date = new Date(series.firstWatched);
-      // Skip series whose firstWatched is not in the selected year
-      if (date.getFullYear() !== data.year) return;
+        // Clamp dates to the selected range
+        const effectiveStart = Math.max(firstDate.getTime(), rangeStart);
+        const effectiveEnd = Math.min(lastDate.getTime(), rangeEnd);
 
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key)!.push(series);
-    });
+        // Calculate position and width as percentages of the selected range
+        const startPercent = ((effectiveStart - rangeStart) / rangeDuration) * 100;
+        const endPercent = ((effectiveEnd - rangeStart) / rangeDuration) * 100;
+        const widthPercent = Math.max(endPercent - startPercent, 2); // Min 2% width
 
-    return Array.from(groups.entries()).map(([key, series]) => {
-      const [year, month] = key.split('-');
-      const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
-      return {
-        key,
-        label: `${monthNames[parseInt(month) - 1]} ${year}`,
-        series,
-      };
-    });
-  }, [timelineSeries, data.year]);
+        // Calculate total watch time in hours
+        const totalMinutes = series.episodes * (series.avgRuntime || 45);
+        const totalHours = Math.round(totalMinutes / 60 * 10) / 10;
+
+        return {
+          ...series,
+          effectiveStart: new Date(effectiveStart),
+          effectiveEnd: new Date(effectiveEnd),
+          startPercent,
+          widthPercent,
+          totalHours,
+        };
+      })
+      .sort((a, b) => a.effectiveStart.getTime() - b.effectiveStart.getTime());
+  }, [seriesStats, data.year, monthRangeStart, monthRangeEnd]);
+
+  const formatDateShort = (date: Date) => {
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+  };
 
   const formatDate = (isoDate: string) => {
     const date = new Date(isoDate);
-    return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: '2-digit' });
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
   };
 
   // Total stats
@@ -1738,7 +1725,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Timeline */}
+      {/* Gantt Chart Timeline */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1751,228 +1738,278 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
-          Deine Serien-Timeline
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+          <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: 0 }}>
+            Serien-Timeline {data.year}
+          </h3>
 
-        <div style={{ position: 'relative' }}>
-          {/* Timeline line */}
-          <div
-            style={{
-              position: 'absolute',
-              left: 20,
-              top: 0,
-              bottom: 0,
-              width: 2,
-              background: `linear-gradient(180deg, ${primaryColor}, ${primaryColor}30)`,
-            }}
-          />
-
-          {monthlyGroups.map((group, groupIndex) => (
-            <div key={group.key} style={{ marginBottom: 24, position: 'relative' }}>
-              {/* Month label */}
-              <div
+          {/* Month range selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ position: 'relative' }}>
+              <select
+                value={monthRangeStart}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setMonthRangeStart(val);
+                  if (val > monthRangeEnd) setMonthRangeEnd(val);
+                }}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  marginBottom: 12,
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  background: `${primaryColor}15`,
+                  border: `1px solid ${primaryColor}30`,
+                  borderRadius: 8,
+                  padding: isMobile ? '6px 28px 6px 10px' : '8px 32px 8px 12px',
+                  color: textPrimary,
+                  fontSize: isMobile ? 12 : 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  outline: 'none',
                 }}
               >
-                <div
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: '50%',
-                    background: primaryColor,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1,
-                  }}
-                >
-                  <CalendarMonth style={{ color: 'white', fontSize: 20 }} />
-                </div>
-                <span style={{ color: textPrimary, fontSize: 14, fontWeight: 600 }}>
-                  {group.label}
-                </span>
-                <span style={{ color: textSecondary, fontSize: 12 }}>
-                  {group.series.length} {group.series.length === 1 ? 'Serie' : 'Serien'}
-                </span>
-              </div>
-
-              {/* Series in this month - horizontal scroll with arrows */}
-              <div style={{ position: 'relative', marginLeft: isMobile ? 54 : 64 }}>
-                {/* Left scroll arrow - desktop only, hidden when can't scroll left */}
-                {!isMobile && scrollState[groupIndex]?.canLeft && (
-                  <div
-                    onClick={() => scrollContainer(groupIndex, 'left')}
-                    style={{
-                      position: 'absolute',
-                      left: -20,
-                      top: '50%',
-                      transform: 'translateY(-70%)',
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.5)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      zIndex: 10,
-                    }}
-                  >
-                    <ChevronLeft style={{ color: 'white', fontSize: 22 }} />
-                  </div>
-                )}
-                {/* Right scroll arrow - desktop only, hidden when can't scroll right */}
-                {!isMobile && scrollState[groupIndex]?.canRight && (
-                  <div
-                    onClick={() => scrollContainer(groupIndex, 'right')}
-                    style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '50%',
-                      transform: 'translateY(-70%)',
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.5)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      zIndex: 10,
-                    }}
-                  >
-                    <ChevronRight style={{ color: 'white', fontSize: 22 }} />
-                  </div>
-                )}
-                <div
-                  ref={el => {
-                    scrollRefs.current[groupIndex] = el;
-                    // Initialize scroll state
-                    if (el && !scrollState[groupIndex]) {
-                      setTimeout(() => updateScrollState(groupIndex), 100);
-                    }
-                  }}
-                  onScroll={() => updateScrollState(groupIndex)}
-                  style={{
-                    display: 'flex',
-                    gap: isMobile ? 10 : 20,
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none',
-                    WebkitOverflowScrolling: 'touch',
-                    paddingBottom: isMobile ? 4 : 8,
-                  }}
-                >
-                {group.series.map((series, seriesIndex) => (
-                  <motion.div
-                    key={series.seriesId}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    whileTap={{ opacity: 0.7 }}
-                    transition={{ delay: groupIndex * 0.05 + seriesIndex * 0.02 }}
-                    onClick={() => navigate(`/series/${series.seriesId}`)}
-                    style={{
-                      flexShrink: 0,
-                      width: posterWidth,
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {/* Poster */}
-                    <div
-                      style={{
-                        width: posterWidth,
-                        height: posterHeight,
-                        borderRadius: isMobile ? 8 : 10,
-                        background: posters[series.seriesId]
-                          ? `url(${TMDB_IMAGE_BASE}${posters[series.seriesId]}) center/cover`
-                          : `linear-gradient(135deg, ${primaryColor}40, ${primaryColor}20)`,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: isMobile ? 6 : 8,
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {!posters[series.seriesId] && (
-                        <Tv style={{ color: textSecondary, fontSize: isMobile ? 24 : 32 }} />
-                      )}
-
-                      {/* Episode count badge */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: isMobile ? 4 : 6,
-                          right: isMobile ? 4 : 6,
-                          background: 'rgba(0,0,0,0.85)',
-                          borderRadius: isMobile ? 6 : 8,
-                          padding: isMobile ? '2px 4px' : '3px 6px',
-                          fontSize: isMobile ? 9 : 11,
-                          fontWeight: 600,
-                          color: 'white',
-                          textAlign: 'center',
-                        }}
-                      >
-                        <div style={{ fontWeight: 700 }}>{series.episodes} {series.episodes === 1 ? 'Folge' : 'Folgen'}</div>
-                        <div style={{ fontSize: isMobile ? 7 : 9, opacity: 0.8, marginTop: 1 }}>
-                          {formatDate(series.firstWatched)}
-                        </div>
-                      </div>
-
-                      {/* Binge indicator */}
-                      {series.bingeEpisodes > 2 && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: isMobile ? 4 : 6,
-                            left: isMobile ? 4 : 6,
-                            background: '#e94560',
-                            borderRadius: isMobile ? 6 : 8,
-                            padding: isMobile ? '2px 4px' : '3px 6px',
-                            fontSize: isMobile ? 9 : 11,
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <LocalFireDepartment style={{ fontSize: isMobile ? 10 : 12 }} />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Title */}
-                    <div
-                      style={{
-                        color: textPrimary,
-                        fontSize: isMobile ? 10 : 13,
-                        fontWeight: 500,
-                        lineHeight: 1.3,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: isMobile ? 1 : 2,
-                        WebkitBoxOrient: 'vertical',
-                        wordBreak: 'break-word',
-                        minHeight: isMobile ? 'auto' : '2.6em',
-                      }}
-                    >
-                      {series.title}
-                    </div>
-                  </motion.div>
+                {monthNames.map((name, i) => (
+                  <option key={i} value={i + 1} style={{ background: bgSurface, color: textPrimary }}>
+                    {name}
+                  </option>
                 ))}
-              </div>
-              </div>
+              </select>
+              <ExpandMore style={{
+                position: 'absolute',
+                right: 6,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 18,
+                color: primaryColor,
+                pointerEvents: 'none',
+              }} />
+            </div>
+            <span style={{ color: textSecondary, fontSize: 13 }}>–</span>
+            <div style={{ position: 'relative' }}>
+              <select
+                value={monthRangeEnd}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setMonthRangeEnd(val);
+                  if (val < monthRangeStart) setMonthRangeStart(val);
+                }}
+                style={{
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  background: `${primaryColor}15`,
+                  border: `1px solid ${primaryColor}30`,
+                  borderRadius: 8,
+                  padding: isMobile ? '6px 28px 6px 10px' : '8px 32px 8px 12px',
+                  color: textPrimary,
+                  fontSize: isMobile ? 12 : 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                {monthNames.map((name, i) => (
+                  <option key={i} value={i + 1} style={{ background: bgSurface, color: textPrimary }}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <ExpandMore style={{
+                position: 'absolute',
+                right: 6,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 18,
+                color: primaryColor,
+                pointerEvents: 'none',
+              }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Month headers - only show selected range */}
+        <div style={{
+          display: 'flex',
+          marginBottom: 8,
+          paddingLeft: isMobile ? 95 : 253,
+        }}>
+          {monthNames.slice(monthRangeStart - 1, monthRangeEnd).map((month, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                fontSize: isMobile ? 9 : 12,
+                color: textSecondary,
+                textAlign: 'center',
+                fontWeight: 500,
+              }}
+            >
+              {isMobile ? month.charAt(0) : month}
             </div>
           ))}
         </div>
+
+        {/* Series rows */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 6 : 18 }}>
+          {(showAllTimeline ? timelineSeries : timelineSeries.slice(0, 10)).map((series, index) => (
+            <motion.div
+              key={series.seriesId}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileTap={{ opacity: 0.7 }}
+              transition={{ delay: Math.min(index * 0.03, 0.3) }}
+              onClick={() => navigate(`/series/${series.seriesId}`)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: isMobile ? 6 : 18,
+                cursor: 'pointer',
+                padding: isMobile ? '2px 0' : '4px 0',
+              }}
+            >
+              {/* Poster thumbnail */}
+              <div
+                style={{
+                  width: isMobile ? 32 : 65,
+                  height: isMobile ? 48 : 97,
+                  borderRadius: isMobile ? 4 : 6,
+                  background: posters[series.seriesId]
+                    ? `url(${TMDB_IMAGE_BASE}${posters[series.seriesId]}) center/cover`
+                    : `linear-gradient(135deg, ${primaryColor}40, ${primaryColor}20)`,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {!posters[series.seriesId] && (
+                  <Tv style={{ color: textSecondary, fontSize: isMobile ? 14 : 26 }} />
+                )}
+              </div>
+
+              {/* Title & Stats */}
+              <div style={{
+                width: isMobile ? 55 : 170,
+                flexShrink: 0,
+                overflow: 'hidden',
+              }}>
+                <div
+                  style={{
+                    color: textPrimary,
+                    fontSize: isMobile ? 11 : 16,
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {series.title}
+                </div>
+                <div style={{
+                  color: textSecondary,
+                  fontSize: isMobile ? 9 : 13,
+                  marginTop: isMobile ? 2 : 4,
+                }}>
+                  {series.episodes} Ep{!isMobile && ` · ${series.totalHours}h`}
+                </div>
+                <div style={{
+                  color: primaryColor,
+                  fontSize: isMobile ? 8 : 12,
+                  marginTop: isMobile ? 2 : 4,
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                }}>
+                  {isMobile
+                    ? `${series.effectiveStart.getDate()}.${series.effectiveStart.getMonth() + 1}. – ${series.effectiveEnd.getDate()}.${series.effectiveEnd.getMonth() + 1}.`
+                    : `${formatDateShort(series.effectiveStart)} – ${formatDateShort(series.effectiveEnd)}`
+                  }
+                </div>
+              </div>
+
+              {/* Gantt bar area */}
+              <div style={{
+                flex: 1,
+                height: isMobile ? 24 : 44,
+                position: 'relative',
+                background: `${textSecondary}10`,
+                borderRadius: 6,
+              }}>
+                {/* Month grid lines - based on selected range */}
+                {[...Array(Math.max(monthRangeEnd - monthRangeStart, 0))].map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      left: `${((i + 1) / (monthRangeEnd - monthRangeStart + 1)) * 100}%`,
+                      top: 0,
+                      bottom: 0,
+                      width: 1,
+                      background: `${textSecondary}20`,
+                    }}
+                  />
+                ))}
+
+                {/* The actual bar */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${series.startPercent}%`,
+                    width: `${Math.max(series.widthPercent, 1)}%`,
+                    top: 5,
+                    bottom: 5,
+                    background: `linear-gradient(90deg, ${primaryColor}, ${primaryColor}80)`,
+                    borderRadius: 4,
+                    minWidth: 10,
+                  }}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Show more / Show less button */}
+        {timelineSeries.length > 10 && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAllTimeline(!showAllTimeline);
+            }}
+            style={{
+              width: '100%',
+              marginTop: 16,
+              padding: '12px',
+              background: `${primaryColor}15`,
+              border: `1px solid ${primaryColor}30`,
+              borderRadius: 10,
+              color: primaryColor,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            <ExpandMore style={{
+              fontSize: 18,
+              transform: showAllTimeline ? 'rotate(180deg)' : 'none',
+              transition: 'transform 0.2s',
+            }} />
+            {showAllTimeline
+              ? 'Weniger anzeigen'
+              : `${timelineSeries.length - 10} weitere Serien anzeigen`
+            }
+          </motion.button>
+        )}
+
+        {timelineSeries.length === 0 && (
+          <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+            <p style={{ color: textSecondary, fontSize: 14 }}>
+              Keine Serien im ausgewählten Zeitraum geschaut
+            </p>
+          </div>
+        )}
       </motion.div>
 
       {/* Top Series Ranking */}
