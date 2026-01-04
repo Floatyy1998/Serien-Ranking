@@ -63,9 +63,41 @@ export interface WatchJourneyData {
   totalMinutes: number;
 
   // Binge Stats
-  bingeCount: number;
-  avgBingeLength: number;
-  longestBinge: number;
+  bingeSessionCount: number;    // Anzahl der Binge-Sessions
+  bingeEpisodeCount: number;    // Episoden in Binge-Sessions
+  avgBingeLength: number;       // Ø Episoden pro Binge-Session
+  longestBinge: number;         // Längste Binge-Session (Episoden)
+
+  // Rewatch Stats
+  rewatchCount: number;
+  rewatchMinutes: number;
+  rewatchPercentage: number;
+
+  // Runtime Stats
+  avgEpisodeRuntime: number;
+  shortestEpisode: number;
+  longestEpisode: number;
+
+  // Series Stats
+  seriesStats: {
+    seriesId: number;
+    title: string;
+    episodes: number;
+    minutes: number;
+    avgRuntime: number;
+    rewatchEpisodes: number;
+    bingeEpisodes: number;
+    genres: string[];
+    provider?: string;
+    firstWatched: string;  // ISO date
+    lastWatched: string;   // ISO date
+  }[];
+  uniqueSeriesCount: number;
+  avgEpisodesPerSeries: number;
+  mostBingedSeries?: {
+    title: string;
+    bingeEpisodes: number;
+  };
 }
 
 // Multi-Year Trends Data
@@ -219,9 +251,35 @@ export async function calculateWatchJourney(
   let totalEpisodes = 0;
   let totalMovies = 0;
   let totalMinutes = 0;
-  let bingeCount = 0;
-  let totalBingeEpisodes = 0;
-  let longestBinge = 0;
+
+  // Binge tracking - separate sessions and episodes
+  const bingeSessionIds = new Set<string>();
+  let bingeEpisodeCount = 0;
+  const bingeSessionEpisodes = new Map<string, number>(); // Track episodes per session
+
+  // Rewatch tracking
+  let rewatchCount = 0;
+  let rewatchMinutes = 0;
+
+  // Runtime tracking
+  const episodeRuntimes: number[] = [];
+  let shortestEpisode = Infinity;
+  let longestEpisode = 0;
+
+  // Series tracking
+  const seriesMap = new Map<number, {
+    seriesId: number;
+    title: string;
+    episodes: number;
+    minutes: number;
+    runtimes: number[];
+    rewatchEpisodes: number;
+    bingeEpisodes: number;
+    genres: Set<string>;
+    provider?: string;
+    firstWatched: string;
+    lastWatched: string;
+  }>();
 
   // Process events
   watchEvents.forEach((event) => {
@@ -271,9 +329,78 @@ export async function calculateWatchJourney(
     heatmapGrid[heatmapKey].count++;
     heatmapGrid[heatmapKey].minutes += runtime;
 
-    // Binge detection
+    // Binge detection - track sessions and episodes separately
     if (isEpisode && (event as EpisodeWatchEvent).isBingeSession) {
-      bingeCount++;
+      bingeEpisodeCount++;
+      const sessionId = (event as EpisodeWatchEvent).bingeSessionId;
+      if (sessionId) {
+        bingeSessionIds.add(sessionId);
+        bingeSessionEpisodes.set(sessionId, (bingeSessionEpisodes.get(sessionId) || 0) + 1);
+      }
+    }
+
+    // Rewatch tracking
+    if (isEpisode && (event as EpisodeWatchEvent).isRewatch) {
+      rewatchCount++;
+      rewatchMinutes += runtime;
+    }
+
+    // Episode runtime tracking
+    if (isEpisode) {
+      const epRuntime = (event as EpisodeWatchEvent).episodeRuntime || 45;
+      episodeRuntimes.push(epRuntime);
+      if (epRuntime < shortestEpisode) shortestEpisode = epRuntime;
+      if (epRuntime > longestEpisode) longestEpisode = epRuntime;
+
+      // Series tracking
+      const epEvent = event as EpisodeWatchEvent;
+      const seriesId = epEvent.seriesId;
+
+      const eventTimestamp = epEvent.timestamp;
+
+      if (!seriesMap.has(seriesId)) {
+        seriesMap.set(seriesId, {
+          seriesId,
+          title: epEvent.seriesTitle,
+          episodes: 0,
+          minutes: 0,
+          runtimes: [],
+          rewatchEpisodes: 0,
+          bingeEpisodes: 0,
+          genres: new Set<string>(),
+          provider: epEvent.provider,
+          firstWatched: eventTimestamp,
+          lastWatched: eventTimestamp,
+        });
+      }
+
+      const seriesData = seriesMap.get(seriesId)!;
+      seriesData.episodes++;
+      seriesData.minutes += epRuntime;
+      seriesData.runtimes.push(epRuntime);
+
+      // Update first/last watched dates
+      if (eventTimestamp < seriesData.firstWatched) {
+        seriesData.firstWatched = eventTimestamp;
+      }
+      if (eventTimestamp > seriesData.lastWatched) {
+        seriesData.lastWatched = eventTimestamp;
+      }
+
+      if (epEvent.isRewatch) {
+        seriesData.rewatchEpisodes++;
+      }
+      if (epEvent.isBingeSession) {
+        seriesData.bingeEpisodes++;
+      }
+
+      // Add genres
+      (epEvent.genres || []).filter(isValidGenre).forEach(g => seriesData.genres.add(g));
+
+      // Update provider if not set
+      if (!seriesData.provider && epEvent.provider) {
+        seriesData.provider = epEvent.provider;
+      }
     }
   });
 
@@ -370,9 +497,60 @@ export async function calculateWatchJourney(
     totalEpisodes,
     totalMovies,
     totalMinutes,
-    bingeCount,
-    avgBingeLength: bingeCount > 0 ? totalBingeEpisodes / bingeCount : 0,
-    longestBinge,
+
+    // Binge stats
+    bingeSessionCount: bingeSessionIds.size,
+    bingeEpisodeCount,
+    avgBingeLength: bingeSessionIds.size > 0
+      ? Math.round((bingeEpisodeCount / bingeSessionIds.size) * 10) / 10
+      : 0,
+    longestBinge: bingeSessionEpisodes.size > 0
+      ? Math.max(...Array.from(bingeSessionEpisodes.values()))
+      : 0,
+
+    // Rewatch stats
+    rewatchCount,
+    rewatchMinutes,
+    rewatchPercentage: totalMinutes > 0 ? Math.round((rewatchMinutes / totalMinutes) * 100) : 0,
+
+    // Runtime stats
+    avgEpisodeRuntime: episodeRuntimes.length > 0
+      ? Math.round(episodeRuntimes.reduce((a, b) => a + b, 0) / episodeRuntimes.length)
+      : 0,
+    shortestEpisode: shortestEpisode === Infinity ? 0 : shortestEpisode,
+    longestEpisode,
+
+    // Series stats
+    seriesStats: Array.from(seriesMap.values())
+      .map(s => ({
+        seriesId: s.seriesId,
+        title: s.title,
+        episodes: s.episodes,
+        minutes: s.minutes,
+        avgRuntime: s.runtimes.length > 0
+          ? Math.round(s.runtimes.reduce((a, b) => a + b, 0) / s.runtimes.length)
+          : 0,
+        rewatchEpisodes: s.rewatchEpisodes,
+        bingeEpisodes: s.bingeEpisodes,
+        genres: Array.from(s.genres),
+        provider: s.provider,
+        firstWatched: s.firstWatched,
+        lastWatched: s.lastWatched,
+      }))
+      .sort((a, b) => b.episodes - a.episodes),
+    uniqueSeriesCount: seriesMap.size,
+    avgEpisodesPerSeries: seriesMap.size > 0
+      ? Math.round(totalEpisodes / seriesMap.size * 10) / 10
+      : 0,
+    mostBingedSeries: (() => {
+      let maxBinge = { title: '', bingeEpisodes: 0 };
+      seriesMap.forEach(s => {
+        if (s.bingeEpisodes > maxBinge.bingeEpisodes) {
+          maxBinge = { title: s.title, bingeEpisodes: s.bingeEpisodes };
+        }
+      });
+      return maxBinge.bingeEpisodes > 0 ? maxBinge : undefined;
+    })(),
   };
 }
 

@@ -8,17 +8,21 @@ import {
   AccessTime,
   ArrowDownward,
   ArrowUpward,
+  AutoGraph,
   CalendarMonth,
   Category,
   ExpandMore,
   LocalFireDepartment,
   LocalMovies,
+  MovieFilter,
   Nightlight,
   Remove,
+  Replay,
   Schedule,
   Speed,
   Subscriptions,
   Timeline,
+  Timer,
   TrendingUp,
   Tv,
   WbSunny,
@@ -1513,7 +1517,822 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
             </div>
           </div>
         </motion.div>
+
       </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// SERIEN TAB - Visuelle Serie-Übersicht mit Timeline (Ausgewähltes Jahr)
+// ============================================================================
+
+interface SerienTabProps {
+  data: WatchJourneyData;
+}
+
+const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
+const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+
+const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
+  const { currentTheme } = useTheme();
+  const textPrimary = currentTheme.text.primary;
+  const textSecondary = currentTheme.text.secondary;
+  const bgSurface = currentTheme.background.surface;
+  const primaryColor = currentTheme.primary;
+
+  // Use series stats from the selected year
+  const seriesStats = useMemo(() => {
+    return [...data.seriesStats].sort((a, b) => b.episodes - a.episodes);
+  }, [data.seriesStats]);
+
+  const [posters, setPosters] = useState<Record<number, string>>({});
+
+  // Fetch posters for series
+  useEffect(() => {
+    const fetchPosters = async () => {
+      if (!TMDB_API_KEY || seriesStats.length === 0) return;
+
+      const newPosters: Record<number, string> = {};
+      const seriesIds = seriesStats.slice(0, 20).map(s => s.seriesId);
+
+      await Promise.all(
+        seriesIds.map(async (id) => {
+          try {
+            const response = await fetch(
+              `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=de-DE`
+            );
+            if (response.ok) {
+              const tmdbData = await response.json();
+              if (tmdbData.poster_path) {
+                newPosters[id] = tmdbData.poster_path;
+              }
+            }
+          } catch {
+            // Silent fail
+          }
+        })
+      );
+
+      setPosters(newPosters);
+    };
+
+    fetchPosters();
+  }, [seriesStats]);
+
+  // Sort series by first watched for timeline
+  const timelineSeries = useMemo(() => {
+    return [...seriesStats]
+      .sort((a, b) => new Date(a.firstWatched).getTime() - new Date(b.firstWatched).getTime());
+  }, [seriesStats]);
+
+  // Group by month for timeline - only include months from selected year
+  const monthlyGroups = useMemo(() => {
+    const groups = new Map<string, typeof seriesStats>();
+
+    timelineSeries.forEach(series => {
+      const date = new Date(series.firstWatched);
+      // Skip series whose firstWatched is not in the selected year
+      if (date.getFullYear() !== data.year) return;
+
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(series);
+    });
+
+    return Array.from(groups.entries()).map(([key, series]) => {
+      const [year, month] = key.split('-');
+      const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+      return {
+        key,
+        label: `${monthNames[parseInt(month) - 1]} ${year}`,
+        series,
+      };
+    });
+  }, [timelineSeries, data.year]);
+
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: '2-digit' });
+  };
+
+  // Total stats
+  const totalEpisodes = seriesStats.reduce((sum, s) => sum + s.episodes, 0);
+  const uniqueSeriesCount = seriesStats.length;
+  const avgEpisodesPerSeries = uniqueSeriesCount > 0
+    ? Math.round(totalEpisodes / uniqueSeriesCount * 10) / 10
+    : 0;
+
+  if (seriesStats.length === 0) {
+    return (
+      <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+        <MovieFilter style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
+        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Serien-Daten</h3>
+        <p style={{ color: textSecondary, fontSize: 14 }}>
+          Schau Serien, um deine Serie-Reise zu sehen!
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ paddingBottom: 40 }}>
+      {/* Hero Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '24px',
+          borderRadius: '24px',
+          background: `linear-gradient(135deg, ${primaryColor}30, ${primaryColor}10)`,
+          border: `1px solid ${primaryColor}50`,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: -50,
+            right: -50,
+            width: 150,
+            height: 150,
+            borderRadius: '50%',
+            background: primaryColor,
+            opacity: 0.15,
+            filter: 'blur(40px)',
+          }}
+        />
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 8 }}>
+            DEINE SERIEN-REISE
+          </p>
+          <h2 style={{ color: textPrimary, fontSize: 32, fontWeight: 800, margin: '0 0 8px' }}>
+            {uniqueSeriesCount} Serien
+          </h2>
+          <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
+            <div>
+              <span style={{ fontSize: 28, fontWeight: 700, color: primaryColor }}>
+                {totalEpisodes}
+              </span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>Episoden</span>
+            </div>
+            <div style={{ width: 1, background: `${textSecondary}40` }} />
+            <div>
+              <span style={{ fontSize: 28, fontWeight: 700, color: primaryColor }}>
+                Ø {avgEpisodesPerSeries}
+              </span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>pro Serie</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Timeline */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: bgSurface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
+          📅 Deine Serien-Timeline
+        </h3>
+
+        <div style={{ position: 'relative' }}>
+          {/* Timeline line */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 20,
+              top: 0,
+              bottom: 0,
+              width: 2,
+              background: `linear-gradient(180deg, ${primaryColor}, ${primaryColor}30)`,
+            }}
+          />
+
+          {monthlyGroups.map((group, groupIndex) => (
+            <div key={group.key} style={{ marginBottom: 24, position: 'relative' }}>
+              {/* Month label */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: '50%',
+                    background: primaryColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                  }}
+                >
+                  <CalendarMonth style={{ color: 'white', fontSize: 20 }} />
+                </div>
+                <span style={{ color: textPrimary, fontSize: 14, fontWeight: 600 }}>
+                  {group.label}
+                </span>
+                <span style={{ color: textSecondary, fontSize: 12 }}>
+                  {group.series.length} {group.series.length === 1 ? 'Serie' : 'Serien'}
+                </span>
+              </div>
+
+              {/* Series in this month - horizontal scroll */}
+              <div
+                style={{
+                  marginLeft: 54,
+                  display: 'flex',
+                  gap: 10,
+                  overflowX: 'auto',
+                  overflowY: 'hidden',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                  paddingBottom: 4,
+                }}
+              >
+                {/* Spacer for left padding */}
+                <div style={{ flexShrink: 0, width: 1 }} />
+                {group.series.map((series, seriesIndex) => (
+                  <motion.div
+                    key={series.seriesId}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: groupIndex * 0.05 + seriesIndex * 0.02 }}
+                    style={{
+                      flexShrink: 0,
+                      width: 70,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {/* Poster */}
+                    <div
+                      style={{
+                        width: 70,
+                        height: 105,
+                        borderRadius: 8,
+                        background: posters[series.seriesId]
+                          ? `url(${TMDB_IMAGE_BASE}${posters[series.seriesId]}) center/cover`
+                          : `linear-gradient(135deg, ${primaryColor}40, ${primaryColor}20)`,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 6,
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {!posters[series.seriesId] && (
+                        <Tv style={{ color: textSecondary, fontSize: 24 }} />
+                      )}
+
+                      {/* Episode count badge */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: 4,
+                          right: 4,
+                          background: 'rgba(0,0,0,0.85)',
+                          borderRadius: 6,
+                          padding: '2px 5px',
+                          fontSize: 9,
+                          fontWeight: 700,
+                          color: 'white',
+                        }}
+                      >
+                        {series.episodes}
+                      </div>
+
+                      {/* Binge indicator */}
+                      {series.bingeEpisodes > 2 && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 4,
+                            left: 4,
+                            background: '#e94560',
+                            borderRadius: 6,
+                            padding: '2px 4px',
+                            fontSize: 9,
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <LocalFireDepartment style={{ fontSize: 10 }} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <div
+                      style={{
+                        color: textPrimary,
+                        fontSize: 10,
+                        fontWeight: 500,
+                        lineHeight: 1.2,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {series.title}
+                    </div>
+                  </motion.div>
+                ))}
+                {/* Spacer for right padding */}
+                <div style={{ flexShrink: 0, width: 10 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Top Series Ranking */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{
+          margin: '0 20px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: bgSurface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+          🏆 Top 10 Serien
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {seriesStats.slice(0, 10).map((series, index) => (
+            <motion.div
+              key={series.seriesId}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 + index * 0.05 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px',
+                borderRadius: 12,
+                background: index === 0 ? `${primaryColor}15` : 'transparent',
+                border: index === 0 ? `1px solid ${primaryColor}30` : 'none',
+              }}
+            >
+              {/* Poster thumbnail */}
+              <div
+                style={{
+                  width: 50,
+                  height: 75,
+                  borderRadius: 8,
+                  background: posters[series.seriesId]
+                    ? `url(${TMDB_IMAGE_BASE}${posters[series.seriesId]}) center/cover`
+                    : `linear-gradient(135deg, ${primaryColor}40, ${primaryColor}20)`,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {!posters[series.seriesId] && (
+                  <Tv style={{ color: textSecondary, fontSize: 20 }} />
+                )}
+              </div>
+
+              {/* Rank */}
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: index < 3
+                    ? ['#ffd700', '#c0c0c0', '#cd7f32'][index]
+                    : `${textSecondary}30`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: index < 3 ? '#1a1a2e' : textSecondary,
+                  flexShrink: 0,
+                }}
+              >
+                {index + 1}
+              </div>
+
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    color: textPrimary,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {series.title}
+                </div>
+                <div style={{ color: textSecondary, fontSize: 12, marginTop: 2 }}>
+                  {formatDate(series.firstWatched)} – {formatDate(series.lastWatched)}
+                  {series.rewatchEpisodes > 0 && (
+                    <span style={{ color: '#a29bfe' }}> · {series.rewatchEpisodes}× Rewatch</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ color: primaryColor, fontSize: 16, fontWeight: 700 }}>
+                  {series.episodes}
+                </div>
+                <div style={{ color: textSecondary, fontSize: 11 }}>
+                  {Math.round(series.minutes / 60)}h
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// ============================================================================
+// INSIGHTS TAB - Binge, Rewatch, Runtime Statistiken
+// ============================================================================
+
+interface InsightsTabProps {
+  data: WatchJourneyData;
+}
+
+const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
+  const { currentTheme } = useTheme();
+  const textPrimary = currentTheme.text.primary;
+  const textSecondary = currentTheme.text.secondary;
+  const bgSurface = currentTheme.background.surface;
+
+  // Runtime distribution for histogram
+  const runtimeDistribution = useMemo(() => {
+    const buckets = [
+      { label: '< 30', min: 0, max: 30, count: 0 },
+      { label: '30-45', min: 30, max: 45, count: 0 },
+      { label: '45-60', min: 45, max: 60, count: 0 },
+      { label: '60-90', min: 60, max: 90, count: 0 },
+      { label: '> 90', min: 90, max: Infinity, count: 0 },
+    ];
+
+    data.seriesStats.forEach(series => {
+      const bucket = buckets.find(b => series.avgRuntime >= b.min && series.avgRuntime < b.max);
+      if (bucket) bucket.count += series.episodes;
+    });
+
+    const maxCount = Math.max(...buckets.map(b => b.count));
+    return buckets.map(b => ({
+      ...b,
+      percentage: maxCount > 0 ? (b.count / maxCount) * 100 : 0,
+    }));
+  }, [data.seriesStats]);
+
+  // Top rewatched series
+  const topRewatched = useMemo(() => {
+    return [...data.seriesStats]
+      .filter(s => s.rewatchEpisodes > 0)
+      .sort((a, b) => b.rewatchEpisodes - a.rewatchEpisodes)
+      .slice(0, 5);
+  }, [data.seriesStats]);
+
+  // Top binged series
+  const topBinged = useMemo(() => {
+    return [...data.seriesStats]
+      .filter(s => s.bingeEpisodes > 0)
+      .sort((a, b) => b.bingeEpisodes - a.bingeEpisodes)
+      .slice(0, 5);
+  }, [data.seriesStats]);
+
+  return (
+    <div style={{ paddingBottom: 40 }}>
+      {/* Binge Stats Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '24px',
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, #e9456030, #e9456010)',
+          border: '1px solid #e9456050',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: -30,
+            right: -30,
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            background: '#e94560',
+            opacity: 0.15,
+            filter: 'blur(30px)',
+          }}
+        />
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <LocalFireDepartment style={{ color: '#e94560', fontSize: 32 }} />
+            <div>
+              <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, margin: 0 }}>
+                BINGE-STATISTIKEN
+              </p>
+              <h2 style={{ color: textPrimary, fontSize: 24, fontWeight: 800, margin: 0 }}>
+                {data.bingeSessionCount} Sessions
+              </h2>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
+              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>{data.bingeEpisodeCount}</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>Episoden gebinged</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
+              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>{data.avgBingeLength}</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>Ø pro Session</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
+              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>{data.longestBinge}</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>Längste Session</div>
+            </div>
+          </div>
+
+          {/* Top Binged Series */}
+          {topBinged.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
+                MEIST GEBINGED
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {topBinged.map((series, index) => (
+                  <div
+                    key={series.seriesId}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '8px 12px',
+                      background: 'rgba(0,0,0,0.2)',
+                      borderRadius: 8,
+                    }}
+                  >
+                    <span style={{ color: '#e94560', fontWeight: 700, width: 20 }}>{index + 1}</span>
+                    <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>{series.title}</span>
+                    <span style={{ color: '#e94560', fontWeight: 600, fontSize: 13 }}>
+                      {series.bingeEpisodes} Ep.
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Rewatch Stats Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '24px',
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, #a29bfe30, #a29bfe10)',
+          border: '1px solid #a29bfe50',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: -30,
+            right: -30,
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            background: '#a29bfe',
+            opacity: 0.15,
+            filter: 'blur(30px)',
+          }}
+        />
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <Replay style={{ color: '#a29bfe', fontSize: 32 }} />
+            <div>
+              <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, margin: 0 }}>
+                REWATCH-STATISTIKEN
+              </p>
+              <h2 style={{ color: textPrimary, fontSize: 24, fontWeight: 800, margin: 0 }}>
+                {data.rewatchCount} Rewatches
+              </h2>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
+              <div style={{ color: '#a29bfe', fontSize: 24, fontWeight: 700 }}>
+                {Math.round(data.rewatchMinutes / 60)}h
+              </div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>Rewatch-Zeit</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
+              <div style={{ color: '#a29bfe', fontSize: 24, fontWeight: 700 }}>{data.rewatchPercentage}%</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>deiner Zeit</div>
+            </div>
+          </div>
+
+          {/* Top Rewatched Series */}
+          {topRewatched.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
+                COMFORT-SERIEN ❤️
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {topRewatched.map((series, index) => (
+                  <div
+                    key={series.seriesId}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '8px 12px',
+                      background: 'rgba(0,0,0,0.2)',
+                      borderRadius: 8,
+                    }}
+                  >
+                    <span style={{ color: '#a29bfe', fontWeight: 700, width: 20 }}>{index + 1}</span>
+                    <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>{series.title}</span>
+                    <span style={{ color: '#a29bfe', fontWeight: 600, fontSize: 13 }}>
+                      {series.rewatchEpisodes}× rewatch
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Runtime Distribution */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '24px',
+          borderRadius: '24px',
+          background: bgSurface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <Timer style={{ color: '#00cec9', fontSize: 28 }} />
+          <div>
+            <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: 0 }}>
+              Episodenlängen-Verteilung
+            </h3>
+            <p style={{ color: textSecondary, fontSize: 12, margin: 0 }}>
+              Ø {data.avgEpisodeRuntime} Min · {data.shortestEpisode}–{data.longestEpisode} Min
+            </p>
+          </div>
+        </div>
+
+        {/* Histogram */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
+          {runtimeDistribution.map((bucket, index) => (
+            <div key={bucket.label} style={{ flex: 1, textAlign: 'center' }}>
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${bucket.percentage}%` }}
+                transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+                style={{
+                  background: `linear-gradient(180deg, #00cec9, #00cec960)`,
+                  borderRadius: '8px 8px 0 0',
+                  minHeight: bucket.count > 0 ? 20 : 4,
+                  marginBottom: 8,
+                }}
+              />
+              <div style={{ color: textSecondary, fontSize: 11 }}>{bucket.label}</div>
+              <div style={{ color: '#00cec9', fontSize: 12, fontWeight: 600 }}>{bucket.count}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', color: textSecondary, fontSize: 11, marginTop: 8 }}>
+          Minuten pro Episode
+        </div>
+      </motion.div>
+
+      {/* Personal Records */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        style={{
+          margin: '0 20px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: bgSurface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+          🏅 Deine Rekorde
+        </h3>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+          <div
+            style={{
+              padding: 16,
+              borderRadius: 12,
+              background: '#fdcb6e15',
+              border: '1px solid #fdcb6e30',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ color: '#fdcb6e', fontSize: 28, fontWeight: 700 }}>{data.totalEpisodes}</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>Episoden insgesamt</div>
+          </div>
+
+          <div
+            style={{
+              padding: 16,
+              borderRadius: 12,
+              background: '#00b89415',
+              border: '1px solid #00b89430',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ color: '#00b894', fontSize: 28, fontWeight: 700 }}>
+              {Math.round(data.totalMinutes / 60)}h
+            </div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>Watchtime</div>
+          </div>
+
+          <div
+            style={{
+              padding: 16,
+              borderRadius: 12,
+              background: '#667eea15',
+              border: '1px solid #667eea30',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ color: '#667eea', fontSize: 28, fontWeight: 700 }}>{data.uniqueSeriesCount}</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>Verschiedene Serien</div>
+          </div>
+
+          <div
+            style={{
+              padding: 16,
+              borderRadius: 12,
+              background: '#e9456015',
+              border: '1px solid #e9456030',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ color: '#e94560', fontSize: 28, fontWeight: 700 }}>{data.longestBinge}</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>Längste Binge-Session</div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
@@ -2048,7 +2867,7 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
 // MAIN PAGE
 // ============================================================================
 
-type TabType = 'genre' | 'provider' | 'heatmap' | 'activity' | 'trends';
+type TabType = 'genre' | 'provider' | 'heatmap' | 'activity' | 'trends' | 'serien' | 'insights';
 
 // Available years (from 2025 to current year)
 const getAvailableYears = () => {
@@ -2339,6 +3158,8 @@ export const WatchJourneyPage: React.FC = () => {
       label: 'Aktivität',
       icon: <TrendingUp style={{ fontSize: 18 }} />,
     },
+    { id: 'serien' as TabType, label: 'Serien', icon: <MovieFilter style={{ fontSize: 18 }} /> },
+    { id: 'insights' as TabType, label: 'Insights', icon: <AutoGraph style={{ fontSize: 18 }} /> },
     { id: 'genre' as TabType, label: 'Genres', icon: <Category style={{ fontSize: 18 }} /> },
     {
       id: 'provider' as TabType,
@@ -2534,17 +3355,27 @@ export const WatchJourneyPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Premium Tabs - Mobile Optimized */}
-        <div style={{ padding: '0 16px 24px', overflow: 'visible' }}>
+        {/* Premium Tabs - Full width desktop, scrollable mobile */}
+        <div
+          style={{
+            padding: '0 16px 24px',
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
           <div
             style={{
               display: 'flex',
-              gap: '4px',
-              padding: '4px',
+              gap: 0,
+              padding: 0,
               background: 'rgba(255, 255, 255, 0.04)',
-              borderRadius: '16px',
+              borderRadius: '12px',
               border: '1px solid rgba(255, 255, 255, 0.06)',
-              overflow: 'visible',
+              width: '100%',
+              overflow: 'hidden',
             }}
           >
             {tabs.map((tab) => {
@@ -2555,33 +3386,43 @@ export const WatchJourneyPage: React.FC = () => {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveTab(tab.id)}
                   style={{
-                    flex: isActive ? 'none' : 1,
-                    minWidth: isActive ? 'auto' : '44px',
+                    flex: '1 1 0',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
-                    padding: isActive ? '10px 16px' : '10px 8px',
-                    borderRadius: '12px',
+                    gap: '5px',
+                    padding: '12px 8px',
+                    borderRadius: 0,
                     border: 'none',
                     background: isActive
                       ? `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`
                       : 'transparent',
-                    color: isActive ? 'white' : 'rgba(255,255,255,0.5)',
-                    fontSize: 12,
+                    color: isActive ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                    fontSize: 14,
                     fontWeight: 600,
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
-                    boxShadow: isActive ? `0 4px 12px ${primaryColor}35` : 'none',
-                    transition: 'all 0.25s ease',
+                    boxShadow: isActive ? `0 2px 8px ${primaryColor}40` : 'none',
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   {tab.icon}
-                  {isActive && <span>{tab.label}</span>}
                 </motion.button>
               );
             })}
           </div>
+        </div>
+
+        {/* Active Tab Title */}
+        <div style={{ padding: '0 16px 16px' }}>
+          <h2 style={{
+            margin: 0,
+            fontSize: '18px',
+            fontWeight: 700,
+            color: 'white',
+          }}>
+            {tabs.find(t => t.id === activeTab)?.label}
+          </h2>
         </div>
 
         {/* Content */}
@@ -2604,6 +3445,26 @@ export const WatchJourneyPage: React.FC = () => {
               exit={{ opacity: 0 }}
             >
               <ActivityTab data={data} />
+            </motion.div>
+          )}
+          {activeTab === 'serien' && (
+            <motion.div
+              key="serien"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <SerienTab data={data} />
+            </motion.div>
+          )}
+          {activeTab === 'insights' && (
+            <motion.div
+              key="insights"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <InsightsTab data={data} />
             </motion.div>
           )}
           {activeTab === 'genre' && (
