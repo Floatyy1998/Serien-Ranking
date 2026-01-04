@@ -11,6 +11,8 @@ import {
   AutoGraph,
   CalendarMonth,
   Category,
+  ChevronLeft,
+  ChevronRight,
   ExpandMore,
   LocalFireDepartment,
   LocalMovies,
@@ -28,7 +30,7 @@ import {
   WbSunny,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Area,
@@ -1244,7 +1246,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
     curr.episodes + curr.movies > best.episodes + best.movies ? curr : best
   );
 
-  const avgPerMonth = Math.round((data.totalEpisodes + data.totalMovies) / 12);
+  // Calculate average based on months passed in the year
+  const currentMonth = new Date().getMonth() + 1; // 1-12
+  const avgPerMonth = Math.round((data.totalEpisodes + data.totalMovies) / currentMonth);
   const totalHours = Math.round(data.totalMinutes / 60);
   const daysWatched = Math.round(data.totalMinutes / 60 / 24);
 
@@ -1490,7 +1494,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
             <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>
               {avgPerMonth} pro Monat
             </div>
-            <div style={{ color: textSecondary, fontSize: 13 }}>Durchschnittliche Aktivität</div>
+            <div style={{ color: textSecondary, fontSize: 13 }}>
+              Ø über {currentMonth} {currentMonth === 1 ? 'Monat' : 'Monate'}
+            </div>
           </div>
         </motion.div>
 
@@ -1542,6 +1548,44 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
   const textSecondary = currentTheme.text.secondary;
   const bgSurface = currentTheme.background.surface;
   const primaryColor = currentTheme.primary;
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Poster sizes: mobile = 70x105, desktop = 140x210
+  const posterWidth = isMobile ? 70 : 140;
+  const posterHeight = isMobile ? 105 : 210;
+
+  // Scroll refs for each month group
+  const scrollRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [scrollState, setScrollState] = useState<Record<number, { canLeft: boolean; canRight: boolean }>>({});
+
+  const updateScrollState = useCallback((groupIndex: number) => {
+    const container = scrollRefs.current[groupIndex];
+    if (container) {
+      const canLeft = container.scrollLeft > 5;
+      const canRight = container.scrollLeft < container.scrollWidth - container.clientWidth - 5;
+      setScrollState(prev => ({
+        ...prev,
+        [groupIndex]: { canLeft, canRight }
+      }));
+    }
+  }, []);
+
+  const scrollContainer = useCallback((groupIndex: number, direction: 'left' | 'right') => {
+    const container = scrollRefs.current[groupIndex];
+    if (container) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      // Update state after scroll animation
+      setTimeout(() => updateScrollState(groupIndex), 350);
+    }
+  }, [updateScrollState]);
 
   // Use series stats from the selected year
   const seriesStats = useMemo(() => {
@@ -1708,7 +1752,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         }}
       >
         <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
-          📅 Deine Serien-Timeline
+          Deine Serien-Timeline
         </h3>
 
         <div style={{ position: 'relative' }}>
@@ -1757,22 +1801,74 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 </span>
               </div>
 
-              {/* Series in this month - horizontal scroll */}
-              <div
-                style={{
-                  marginLeft: 54,
-                  display: 'flex',
-                  gap: 10,
-                  overflowX: 'auto',
-                  overflowY: 'hidden',
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                  WebkitOverflowScrolling: 'touch',
-                  paddingBottom: 4,
-                }}
-              >
-                {/* Spacer for left padding */}
-                <div style={{ flexShrink: 0, width: 1 }} />
+              {/* Series in this month - horizontal scroll with arrows */}
+              <div style={{ position: 'relative', marginLeft: isMobile ? 54 : 64 }}>
+                {/* Left scroll arrow - desktop only, hidden when can't scroll left */}
+                {!isMobile && scrollState[groupIndex]?.canLeft && (
+                  <div
+                    onClick={() => scrollContainer(groupIndex, 'left')}
+                    style={{
+                      position: 'absolute',
+                      left: -20,
+                      top: '50%',
+                      transform: 'translateY(-70%)',
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      zIndex: 10,
+                    }}
+                  >
+                    <ChevronLeft style={{ color: 'white', fontSize: 22 }} />
+                  </div>
+                )}
+                {/* Right scroll arrow - desktop only, hidden when can't scroll right */}
+                {!isMobile && scrollState[groupIndex]?.canRight && (
+                  <div
+                    onClick={() => scrollContainer(groupIndex, 'right')}
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '50%',
+                      transform: 'translateY(-70%)',
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      zIndex: 10,
+                    }}
+                  >
+                    <ChevronRight style={{ color: 'white', fontSize: 22 }} />
+                  </div>
+                )}
+                <div
+                  ref={el => {
+                    scrollRefs.current[groupIndex] = el;
+                    // Initialize scroll state
+                    if (el && !scrollState[groupIndex]) {
+                      setTimeout(() => updateScrollState(groupIndex), 100);
+                    }
+                  }}
+                  onScroll={() => updateScrollState(groupIndex)}
+                  style={{
+                    display: 'flex',
+                    gap: isMobile ? 10 : 20,
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch',
+                    paddingBottom: isMobile ? 4 : 8,
+                  }}
+                >
                 {group.series.map((series, seriesIndex) => (
                   <motion.div
                     key={series.seriesId}
@@ -1783,7 +1879,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                     onClick={() => navigate(`/series/${series.seriesId}`)}
                     style={{
                       flexShrink: 0,
-                      width: 70,
+                      width: posterWidth,
                       textAlign: 'center',
                       cursor: 'pointer',
                     }}
@@ -1791,9 +1887,9 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                     {/* Poster */}
                     <div
                       style={{
-                        width: 70,
-                        height: 105,
-                        borderRadius: 8,
+                        width: posterWidth,
+                        height: posterHeight,
+                        borderRadius: isMobile ? 8 : 10,
                         background: posters[series.seriesId]
                           ? `url(${TMDB_IMAGE_BASE}${posters[series.seriesId]}) center/cover`
                           : `linear-gradient(135deg, ${primaryColor}40, ${primaryColor}20)`,
@@ -1801,30 +1897,34 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginBottom: 6,
+                        marginBottom: isMobile ? 6 : 8,
                         position: 'relative',
                         overflow: 'hidden',
                       }}
                     >
                       {!posters[series.seriesId] && (
-                        <Tv style={{ color: textSecondary, fontSize: 24 }} />
+                        <Tv style={{ color: textSecondary, fontSize: isMobile ? 24 : 32 }} />
                       )}
 
                       {/* Episode count badge */}
                       <div
                         style={{
                           position: 'absolute',
-                          bottom: 4,
-                          right: 4,
+                          bottom: isMobile ? 4 : 6,
+                          right: isMobile ? 4 : 6,
                           background: 'rgba(0,0,0,0.85)',
-                          borderRadius: 6,
-                          padding: '2px 5px',
-                          fontSize: 9,
-                          fontWeight: 700,
+                          borderRadius: isMobile ? 6 : 8,
+                          padding: isMobile ? '2px 4px' : '3px 6px',
+                          fontSize: isMobile ? 9 : 11,
+                          fontWeight: 600,
                           color: 'white',
+                          textAlign: 'center',
                         }}
                       >
-                        {series.episodes}
+                        <div style={{ fontWeight: 700 }}>{series.episodes} {series.episodes === 1 ? 'Folge' : 'Folgen'}</div>
+                        <div style={{ fontSize: isMobile ? 7 : 9, opacity: 0.8, marginTop: 1 }}>
+                          {formatDate(series.firstWatched)}
+                        </div>
                       </div>
 
                       {/* Binge indicator */}
@@ -1832,18 +1932,18 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                         <div
                           style={{
                             position: 'absolute',
-                            top: 4,
-                            left: 4,
+                            top: isMobile ? 4 : 6,
+                            left: isMobile ? 4 : 6,
                             background: '#e94560',
-                            borderRadius: 6,
-                            padding: '2px 4px',
-                            fontSize: 9,
+                            borderRadius: isMobile ? 6 : 8,
+                            padding: isMobile ? '2px 4px' : '3px 6px',
+                            fontSize: isMobile ? 9 : 11,
                             color: 'white',
                             display: 'flex',
                             alignItems: 'center',
                           }}
                         >
-                          <LocalFireDepartment style={{ fontSize: 10 }} />
+                          <LocalFireDepartment style={{ fontSize: isMobile ? 10 : 12 }} />
                         </div>
                       )}
                     </div>
@@ -1852,20 +1952,23 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                     <div
                       style={{
                         color: textPrimary,
-                        fontSize: 10,
+                        fontSize: isMobile ? 10 : 13,
                         fontWeight: 500,
-                        lineHeight: 1.2,
+                        lineHeight: 1.3,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
+                        display: '-webkit-box',
+                        WebkitLineClamp: isMobile ? 1 : 2,
+                        WebkitBoxOrient: 'vertical',
+                        wordBreak: 'break-word',
+                        minHeight: isMobile ? 'auto' : '2.6em',
                       }}
                     >
                       {series.title}
                     </div>
                   </motion.div>
                 ))}
-                {/* Spacer for right padding */}
-                <div style={{ flexShrink: 0, width: 10 }} />
+              </div>
               </div>
             </div>
           ))}
@@ -1886,7 +1989,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         }}
       >
         <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-          🏆 Top 10 Serien
+          Top 10 Serien
         </h3>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -2190,7 +2293,7 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           {topRewatched.length > 0 && (
             <div style={{ marginTop: 20 }}>
               <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
-                COMFORT-SERIEN ❤️
+                COMFORT-SERIEN
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {topRewatched.map((series, index) => (
@@ -2282,7 +2385,7 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         }}
       >
         <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-          🏅 Deine Rekorde
+          Deine Rekorde
         </h3>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
