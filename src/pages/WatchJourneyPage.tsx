@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Area,
   AreaChart,
@@ -1535,6 +1536,7 @@ const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 
 const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
+  const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const textPrimary = currentTheme.text.primary;
   const textSecondary = currentTheme.text.secondary;
@@ -1774,13 +1776,16 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 {group.series.map((series, seriesIndex) => (
                   <motion.div
                     key={series.seriesId}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    whileTap={{ opacity: 0.7 }}
                     transition={{ delay: groupIndex * 0.05 + seriesIndex * 0.02 }}
+                    onClick={() => navigate(`/series/${series.seriesId}`)}
                     style={{
                       flexShrink: 0,
                       width: 70,
                       textAlign: 'center',
+                      cursor: 'pointer',
                     }}
                   >
                     {/* Poster */}
@@ -1890,7 +1895,9 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               key={series.seriesId}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
+              whileTap={{ opacity: 0.7 }}
               transition={{ delay: 0.3 + index * 0.05 }}
+              onClick={() => navigate(`/series/${series.seriesId}`)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1899,6 +1906,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 borderRadius: 12,
                 background: index === 0 ? `${primaryColor}15` : 'transparent',
                 border: index === 0 ? `1px solid ${primaryColor}30` : 'none',
+                cursor: 'pointer',
               }}
             >
               {/* Poster thumbnail */}

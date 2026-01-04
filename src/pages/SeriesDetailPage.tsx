@@ -15,21 +15,21 @@ import { motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../App';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
-import { useTheme } from '../contexts/ThemeContext';
-import { logSeriesAdded } from '../features/badges/minimalActivityLogger';
-import { calculateOverallRating } from '../lib/rating/rating';
-import { WatchActivityService } from '../services/watchActivityService';
-import { Series } from '../types/Series';
 import { BackButton } from '../components/BackButton';
 import { CastCrew } from '../components/CastCrew';
 import { Dialog } from '../components/Dialog';
 import { DiscussionThread } from '../components/DiscussionThread';
-import { ProviderBadges } from '../components/ProviderBadges';
 import { FriendsWhoHaveThis } from '../components/FriendsWhoHaveThis';
+import { ProviderBadges } from '../components/ProviderBadges';
 import { VideoGallery } from '../components/VideoGallery';
+import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useTheme } from '../contexts/ThemeContext';
+import { logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { useEpisodeDiscussionCounts } from '../hooks/useDiscussionCounts';
+import { calculateOverallRating } from '../lib/rating/rating';
 import { getTVDBIdFromTMDB, getTVDBSeasons } from '../services/tvdbService';
+import { WatchActivityService } from '../services/watchActivityService';
+import { Series } from '../types/Series';
 
 export const SeriesDetailPage = memo(() => {
   const { id } = useParams();
@@ -47,8 +47,16 @@ export const SeriesDetailPage = memo(() => {
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
   const [tmdbSeries, setTmdbSeries] = useState<Series | null>(null);
   const [loading, setLoading] = useState(false);
-  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning'; onConfirm?: () => void }>({ open: false, message: '', type: 'info' });
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    onConfirm?: () => void;
+  }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
 
   // Responsive state
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -80,7 +88,9 @@ export const SeriesDetailPage = memo(() => {
   // State for providers
   const [providers, setProviders] = useState<any>(null);
   // State for TMDB rating data
-  const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(null);
+  const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(
+    null
+  );
   // State for IMDB rating from OMDb
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
 
@@ -101,7 +111,7 @@ export const SeriesDetailPage = memo(() => {
           if (data.vote_average && data.vote_count) {
             setTmdbRating({
               vote_average: data.vote_average,
-              vote_count: data.vote_count
+              vote_count: data.vote_count,
             });
           }
         })
@@ -147,8 +157,8 @@ export const SeriesDetailPage = memo(() => {
                     overview: ep.overview,
                     still_path: ep.image,
                     watched: false,
-                    watchCount: 0
-                  }))
+                    watchCount: 0,
+                  })),
                 }));
               }
             } catch (error) {
@@ -168,21 +178,22 @@ export const SeriesDetailPage = memo(() => {
 
                     return {
                       seasonNumber: season.season_number - 1,
-                      episodes: seasonData.episodes?.map((ep: any) => ({
-                        id: ep.id,
-                        name: ep.name,
-                        episode_number: ep.episode_number,
-                        air_date: ep.air_date,
-                        overview: ep.overview,
-                        still_path: ep.still_path,
-                        watched: false,
-                        watchCount: 0
-                      })) || []
+                      episodes:
+                        seasonData.episodes?.map((ep: any) => ({
+                          id: ep.id,
+                          name: ep.name,
+                          episode_number: ep.episode_number,
+                          air_date: ep.air_date,
+                          overview: ep.overview,
+                          still_path: ep.still_path,
+                          watched: false,
+                          watchCount: 0,
+                        })) || [],
                     };
                   } catch (error) {
                     return {
                       seasonNumber: season.season_number - 1,
-                      episodes: []
+                      episodes: [],
                     };
                   }
                 })
@@ -247,12 +258,12 @@ export const SeriesDetailPage = memo(() => {
 
     if (imdbId && omdbKey) {
       fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${omdbKey}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.imdbRating && data.imdbRating !== 'N/A') {
             setImdbRating({
               rating: parseFloat(data.imdbRating),
-              votes: data.imdbVotes || '0'
+              votes: data.imdbVotes || '0',
             });
           }
         })
@@ -353,7 +364,7 @@ export const SeriesDetailPage = memo(() => {
 
         setSnackbar({ open: true, message: 'Serie erfolgreich hinzugefügt!' });
         setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
-        
+
         // Navigate to refresh the series data
         navigate(`/series/${series.id}`, { replace: true });
       } else {
@@ -375,20 +386,20 @@ export const SeriesDetailPage = memo(() => {
   const handleDeleteSeries = useCallback(() => {
     if (!series || !user) return;
 
-    setDialog({ 
-      open: true, 
-      message: 'Möchtest du diese Serie wirklich löschen?', 
+    setDialog({
+      open: true,
+      message: 'Möchtest du diese Serie wirklich löschen?',
       type: 'warning',
       onConfirm: async () => {
         setIsDeleting(true);
         try {
           // Delete directly from Firebase
           await firebase.database().ref(`${user.uid}/serien/${series.nmr}`).remove();
-          
+
           // Show success message
           setSnackbar({ open: true, message: 'Serie erfolgreich gelöscht!' });
           setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
-          
+
           // Series will be removed from list automatically via Firebase listener
           // No navigation needed - stay on current page
         } catch (error) {
@@ -396,7 +407,7 @@ export const SeriesDetailPage = memo(() => {
         } finally {
           setIsDeleting(false);
         }
-      }
+      },
     });
   }, [series, user, navigate]);
 
@@ -460,7 +471,7 @@ export const SeriesDetailPage = memo(() => {
         true, // isRewatch
         newWatchCount,
         series.genre?.genres,
-        series.provider?.provider?.map(p => p.name)
+        series.provider?.provider?.map((p) => p.name)
       );
 
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
@@ -566,7 +577,7 @@ export const SeriesDetailPage = memo(() => {
         style={{
           position: 'relative',
           width: '100%',
-          height: isMobile ? '250px' : '420px',
+          height: isMobile ? '280px' : '420px',
           overflow: 'hidden',
           background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))',
         }}
@@ -601,7 +612,9 @@ export const SeriesDetailPage = memo(() => {
         <div
           style={{
             position: 'absolute',
-            top: isMobile ? 'calc(10px + env(safe-area-inset-top))' : 'calc(20px + env(safe-area-inset-top))',
+            top: isMobile
+              ? 'calc(10px + env(safe-area-inset-top))'
+              : 'calc(20px + env(safe-area-inset-top))',
             left: isMobile ? '10px' : '20px',
             zIndex: 10,
           }}
@@ -616,10 +629,14 @@ export const SeriesDetailPage = memo(() => {
             disabled={isAdding}
             style={{
               position: 'absolute',
-              top: isMobile ? 'calc(10px + env(safe-area-inset-top))' : 'calc(20px + env(safe-area-inset-top))',
+              top: isMobile
+                ? 'calc(10px + env(safe-area-inset-top))'
+                : 'calc(20px + env(safe-area-inset-top))',
               right: isMobile ? '10px' : '20px',
               zIndex: 10,
-              background: isAdding ? `${currentTheme.status.success}88` : `${currentTheme.status.success}CC`,
+              background: isAdding
+                ? `${currentTheme.status.success}88`
+                : `${currentTheme.status.success}CC`,
               backdropFilter: 'blur(10px)',
               border: 'none',
               color: 'white',
@@ -642,22 +659,22 @@ export const SeriesDetailPage = memo(() => {
         <div
           style={{
             position: 'absolute',
-            bottom: isMobile ? '10px' : '20px',
-            left: isMobile ? '10px' : '20px',
-            right: isMobile ? '10px' : '20px',
+            bottom: '20px',
+            left: isMobile ? '16px' : '20px',
+            right: isMobile ? '16px' : '20px',
             maxWidth: '100%',
           }}
         >
           <h1
             style={{
-              fontSize: isMobile ? '22px' : '28px',
+              fontSize: isMobile ? '20px' : '28px',
               fontWeight: 'bold',
-              margin: '0 0 4px 0',
+              margin: '0 0 6px 0',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
               wordBreak: 'break-word',
-              lineHeight: isMobile ? 1.1 : 1.2,
+              lineHeight: 1.2,
               display: '-webkit-box',
-              WebkitLineClamp: isMobile ? 2 : 3,
+              WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -671,25 +688,26 @@ export const SeriesDetailPage = memo(() => {
               display: 'flex',
               alignItems: 'center',
               gap: isMobile ? '6px' : '12px',
-              fontSize: isMobile ? '13px' : '14px',
+              fontSize: isMobile ? '12px' : '14px',
               opacity: 0.9,
-              marginBottom: isMobile ? '6px' : '12px',
-              flexWrap: 'wrap'
+              marginBottom: isMobile ? '10px' : '12px',
+              flexWrap: 'wrap',
             }}
           >
             {series.release_date && <span>{new Date(series.release_date).getFullYear()}</span>}
             {series.seasons && <span>• {series.seasons.length} Staffeln</span>}
             {series.status && (
               <span>
-                • {series.status === 'Returning Series' || series.status === 'ongoing' ? 'Wird fortgesetzt' :
-                    series.status === 'Ended' || series.status === 'Canceled' ? 'Beendet' :
-                    series.status}
+                •{' '}
+                {series.status === 'Returning Series' || series.status === 'ongoing'
+                  ? 'Wird fortgesetzt'
+                  : series.status === 'Ended' || series.status === 'Canceled'
+                    ? 'Beendet'
+                    : series.status}
               </span>
             )}
             {parseFloat(overallRating) > 0 && (
-              <span style={{ color: '#ffd700' }}>
-                • ⭐ {overallRating}
-              </span>
+              <span style={{ color: '#ffd700' }}>• ⭐ {overallRating}</span>
             )}
             {/* Friends Who Have This */}
             {series && (
@@ -701,63 +719,77 @@ export const SeriesDetailPage = memo(() => {
           </div>
 
           {/* Status Badge & Genres */}
-          <div style={{
-            display: 'flex',
-            gap: isMobile ? '4px' : '8px',
-            marginBottom: isMobile ? '6px' : '12px',
-            flexWrap: 'wrap',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: isMobile ? '6px' : '8px',
+              marginBottom: isMobile ? '8px' : '12px',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
+          >
             {/* Status Badge */}
             {(() => {
-              const isOngoing = series.status === 'Returning Series' || series.status === 'ongoing' ||
-                               (!series.status && series.production?.production === true);
-              const isEnded = series.status === 'Ended' || series.status === 'Canceled' ||
-                              (!series.status && series.production?.production === false);
+              const isOngoing =
+                series.status === 'Returning Series' ||
+                series.status === 'ongoing' ||
+                (!series.status && series.production?.production === true);
+              const isEnded =
+                series.status === 'Ended' ||
+                series.status === 'Canceled' ||
+                (!series.status && series.production?.production === false);
 
               if (isOngoing) {
                 return (
-                  <span style={{
-                    background: 'rgba(76, 175, 80, 0.2)',
-                    border: '1px solid rgba(76, 175, 80, 0.4)',
-                    borderRadius: isMobile ? '8px' : '12px',
-                    padding: isMobile ? '3px 8px' : '4px 10px',
-                    fontSize: isMobile ? '11px' : '12px',
-                    fontWeight: '500',
-                    color: '#4CAF50',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    <div style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      background: '#4CAF50'
-                    }} />
+                  <span
+                    style={{
+                      background: 'rgba(76, 175, 80, 0.2)',
+                      border: '1px solid rgba(76, 175, 80, 0.4)',
+                      borderRadius: isMobile ? '8px' : '12px',
+                      padding: isMobile ? '3px 8px' : '4px 10px',
+                      fontSize: isMobile ? '10px' : '12px',
+                      fontWeight: '500',
+                      color: '#4CAF50',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '5px',
+                        height: '5px',
+                        borderRadius: '50%',
+                        background: '#4CAF50',
+                      }}
+                    />
                     Fortlaufend
                   </span>
                 );
               } else if (isEnded) {
                 return (
-                  <span style={{
-                    background: 'rgba(158, 158, 158, 0.2)',
-                    border: '1px solid rgba(158, 158, 158, 0.4)',
-                    borderRadius: isMobile ? '8px' : '12px',
-                    padding: isMobile ? '3px 8px' : '4px 10px',
-                    fontSize: isMobile ? '11px' : '12px',
-                    fontWeight: '500',
-                    color: '#9E9E9E',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    <div style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      background: '#9E9E9E'
-                    }} />
+                  <span
+                    style={{
+                      background: 'rgba(158, 158, 158, 0.2)',
+                      border: '1px solid rgba(158, 158, 158, 0.4)',
+                      borderRadius: isMobile ? '8px' : '12px',
+                      padding: isMobile ? '3px 8px' : '4px 10px',
+                      fontSize: isMobile ? '10px' : '12px',
+                      fontWeight: '500',
+                      color: '#9E9E9E',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '5px',
+                        height: '5px',
+                        borderRadius: '50%',
+                        background: '#9E9E9E',
+                      }}
+                    />
                     Beendet
                   </span>
                 );
@@ -766,41 +798,47 @@ export const SeriesDetailPage = memo(() => {
             })()}
 
             {/* Genres */}
-            {((series.genre?.genres && series.genre.genres.length > 0) || (tmdbSeries?.genre?.genres && tmdbSeries.genre.genres.length > 0)) && (
+            {((series.genre?.genres && series.genre.genres.length > 0) ||
+              (tmdbSeries?.genre?.genres && tmdbSeries.genre.genres.length > 0)) && (
               <>
                 {(series.genre?.genres || tmdbSeries?.genre?.genres || [])
-                  .filter(genre => genre && genre.trim() !== '' && genre !== 'All')
-                  .slice(0, isMobile ? 2 : 4)
+                  .filter((genre) => genre && genre.trim() !== '' && genre !== 'All')
+                  .slice(0, isMobile ? 3 : 4)
                   .map((genre, index) => (
+                    <span
+                      key={index}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: isMobile ? '8px' : '12px',
+                        padding: isMobile ? '3px 8px' : '4px 10px',
+                        fontSize: isMobile ? '10px' : '12px',
+                        fontWeight: '500',
+                        color: 'white',
+                      }}
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                {(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(
+                  (genre) => genre && genre.trim() !== '' && genre !== 'All'
+                ).length > (isMobile ? 3 : 4) && (
                   <span
-                    key={index}
                     style={{
                       background: 'rgba(255, 255, 255, 0.1)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
                       borderRadius: isMobile ? '8px' : '12px',
-                      padding: isMobile ? '2px 6px' : '4px 10px',
-                      fontSize: isMobile ? '10px' : '12px',
-                      fontWeight: '500',
-                      color: 'white'
-                    }}
-                  >
-                    {genre}
-                  </span>
-                ))}
-                {(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length > (isMobile ? 2 : 4) && (
-                  <span
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: isMobile ? '8px' : '12px',
-                      padding: isMobile ? '2px 6px' : '4px 10px',
+                      padding: isMobile ? '3px 8px' : '4px 10px',
                       fontSize: isMobile ? '10px' : '12px',
                       fontWeight: '500',
                       color: 'white',
-                      opacity: 0.7
+                      opacity: 0.7,
                     }}
                   >
-                    +{(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(genre => genre && genre.trim() !== '' && genre !== 'All').length - (isMobile ? 2 : 4)}
+                    +
+                    {(series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(
+                      (genre) => genre && genre.trim() !== '' && genre !== 'All'
+                    ).length - (isMobile ? 3 : 4)}
                   </span>
                 )}
               </>
@@ -809,7 +847,7 @@ export const SeriesDetailPage = memo(() => {
 
           {/* Progress Bar */}
           {progressStats.total > 0 && (
-            <div style={{ marginBottom: isMobile ? '6px' : '12px' }}>
+            <div style={{ marginBottom: isMobile ? '8px' : '12px' }}>
               <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.2)',
@@ -842,90 +880,120 @@ export const SeriesDetailPage = memo(() => {
 
           {/* Ratings from TMDB and IMDB */}
           {!isMobile && (
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            marginBottom: '12px',
-            flexWrap: 'wrap'
-          }}>
-            {/* TMDB Rating - Always show */}
-            <a
-              href={`https://www.themoviedb.org/tv/${id}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <div
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
-                background: 'rgba(0, 188, 212, 0.15)',
-                border: '1px solid rgba(0, 188, 212, 0.3)',
-                borderRadius: '16px',
-                fontSize: '13px',
-                textDecoration: 'none',
-                color: 'white'
+                gap: '12px',
+                marginBottom: '12px',
+                flexWrap: 'wrap',
               }}
             >
-              <span style={{
-                fontWeight: 900,
-                fontSize: '11px',
-                background: '#01b4e4',
-                color: '#0d253f',
-                padding: '2px 4px',
-                borderRadius: '4px'
-              }}>TMDB</span>
-              <span style={{ fontWeight: 600 }}>
-                {(tmdbRating?.vote_average || series?.vote_average || localSeries?.vote_average || 0).toFixed(1)}/10
-              </span>
-              <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                ({((tmdbRating?.vote_count || series?.vote_count || localSeries?.vote_count || 0) / 1000).toFixed(1)}k)
-              </span>
-            </a>
+              {/* TMDB Rating - Always show */}
+              <a
+                href={`https://www.themoviedb.org/tv/${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  background: 'rgba(0, 188, 212, 0.15)',
+                  border: '1px solid rgba(0, 188, 212, 0.3)',
+                  borderRadius: '16px',
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  color: 'white',
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: '11px',
+                    background: '#01b4e4',
+                    color: '#0d253f',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  TMDB
+                </span>
+                <span style={{ fontWeight: 600 }}>
+                  {(
+                    tmdbRating?.vote_average ||
+                    series?.vote_average ||
+                    localSeries?.vote_average ||
+                    0
+                  ).toFixed(1)}
+                  /10
+                </span>
+                <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                  (
+                  {(
+                    (tmdbRating?.vote_count || series?.vote_count || localSeries?.vote_count || 0) /
+                    1000
+                  ).toFixed(1)}
+                  k)
+                </span>
+              </a>
 
-            {/* IMDB Rating - Always show */}
-            <a
-              href={`https://www.imdb.com/title/${series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id || ''}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
-                background: 'rgba(245, 197, 24, 0.15)',
-                border: '1px solid rgba(245, 197, 24, 0.3)',
-                borderRadius: '16px',
-                fontSize: '13px',
-                textDecoration: 'none',
-                color: 'white',
-                opacity: (series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id) ? 1 : 0.5,
-                pointerEvents: (series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id) ? 'auto' : 'none'
-              }}
-            >
-              <span style={{
-                fontWeight: 900,
-                fontSize: '11px',
-                background: '#F5C518',
-                color: '#000',
-                padding: '2px 4px',
-                borderRadius: '4px'
-              }}>IMDb</span>
-              <span style={{ fontWeight: 600 }}>
-                {imdbRating?.rating?.toFixed(1) || '0.0'}/10
-              </span>
-              <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                ({imdbRating ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1) : '0.0'}k)
-              </span>
-            </a>
-          </div>
+              {/* IMDB Rating - Always show */}
+              <a
+                href={`https://www.imdb.com/title/${series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id || ''}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  background: 'rgba(245, 197, 24, 0.15)',
+                  border: '1px solid rgba(245, 197, 24, 0.3)',
+                  borderRadius: '16px',
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  color: 'white',
+                  opacity: series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 1 : 0.5,
+                  pointerEvents:
+                    series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 'auto' : 'none',
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: '11px',
+                    background: '#F5C518',
+                    color: '#000',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  IMDb
+                </span>
+                <span style={{ fontWeight: 600 }}>
+                  {imdbRating?.rating?.toFixed(1) || '0.0'}/10
+                </span>
+                <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                  (
+                  {imdbRating
+                    ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)
+                    : '0.0'}
+                  k)
+                </span>
+              </a>
+            </div>
           )}
 
           {/* Provider Badges unter dem Fortschrittsbalken */}
           {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
             <div>
               <ProviderBadges
-                providers={(series.provider?.provider && series.provider.provider.length > 0) ? series.provider.provider : providers}
-                size={isMobile ? "medium" : "large"}
+                providers={
+                  series.provider?.provider && series.provider.provider.length > 0
+                    ? series.provider.provider
+                    : providers
+                }
+                size={isMobile ? 'medium' : 'large'}
                 maxDisplay={isMobile ? 4 : 6}
                 showNames={false}
                 searchTitle={series.title || series.name}
@@ -948,12 +1016,8 @@ export const SeriesDetailPage = memo(() => {
 
       {/* Mobile Video Gallery Button */}
       {isMobile && (
-        <div style={{ padding: '12px 20px 0' }}>
-          <VideoGallery
-            tmdbId={series.tmdb_id || series.id}
-            mediaType="tv"
-            buttonStyle="mobile"
-          />
+        <div style={{ padding: '8px 12px 0' }}>
+          <VideoGallery tmdbId={series.tmdb_id || series.id} mediaType="tv" buttonStyle="mobile" />
         </div>
       )}
 
@@ -962,8 +1026,8 @@ export const SeriesDetailPage = memo(() => {
         <div
           style={{
             display: 'flex',
-            gap: '12px',
-            padding: '20px',
+            gap: isMobile ? '8px' : '12px',
+            padding: isMobile ? '10px 12px' : '20px',
             justifyContent: 'center',
           }}
         >
@@ -972,22 +1036,22 @@ export const SeriesDetailPage = memo(() => {
             onClick={() => navigate(`/episodes/${series.id}`)}
             style={{
               flex: 1,
-              padding: '12px',
+              padding: isMobile ? '10px' : '12px',
               background:
                 'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
               border: '1px solid rgba(0, 212, 170, 0.5)',
               color: 'white',
-              borderRadius: '12px',
-              fontSize: '16px',
+              borderRadius: isMobile ? '10px' : '12px',
+              fontSize: isMobile ? '13px' : '16px',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: isMobile ? '5px' : '8px',
             }}
           >
-            <PlayCircle />
+            <PlayCircle style={{ fontSize: isMobile ? '18px' : '24px' }} />
             Episoden
           </motion.button>
 
@@ -996,28 +1060,30 @@ export const SeriesDetailPage = memo(() => {
             onClick={() => navigate(`/rating/series/${series.id}`)}
             style={{
               flex: 1,
-              padding: '12px',
-              background: parseFloat(overallRating) > 0
-                ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
-                : 'rgba(255, 255, 255, 0.05)',
-              border: parseFloat(overallRating) > 0
-                ? '1px solid rgba(255, 215, 0, 0.3)'
-                : '1px solid rgba(255, 255, 255, 0.1)',
+              padding: isMobile ? '10px' : '12px',
+              background:
+                parseFloat(overallRating) > 0
+                  ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+              border:
+                parseFloat(overallRating) > 0
+                  ? '1px solid rgba(255, 215, 0, 0.3)'
+                  : '1px solid rgba(255, 255, 255, 0.1)',
               color: 'white',
-              borderRadius: '12px',
-              fontSize: '16px',
+              borderRadius: isMobile ? '10px' : '12px',
+              fontSize: isMobile ? '13px' : '16px',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: isMobile ? '5px' : '8px',
               position: 'relative',
             }}
           >
             <Star
               style={{
-                fontSize: '18px',
+                fontSize: isMobile ? '16px' : '18px',
                 color: parseFloat(overallRating) > 0 ? '#ffd700' : 'white',
               }}
             />
@@ -1028,7 +1094,7 @@ export const SeriesDetailPage = memo(() => {
             whileTap={{ scale: 0.95 }}
             onClick={handleWatchlistToggle}
             style={{
-              padding: '12px',
+              padding: isMobile ? '10px' : '12px',
               background: series.watchlist
                 ? 'linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 180, 216, 0.2) 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
@@ -1036,8 +1102,8 @@ export const SeriesDetailPage = memo(() => {
                 ? '1px solid rgba(0, 212, 170, 0.4)'
                 : '1px solid rgba(255, 255, 255, 0.1)',
               color: 'white',
-              borderRadius: '12px',
-              fontSize: '16px',
+              borderRadius: isMobile ? '10px' : '12px',
+              fontSize: isMobile ? '13px' : '16px',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
@@ -1045,7 +1111,11 @@ export const SeriesDetailPage = memo(() => {
               justifyContent: 'center',
             }}
           >
-            {series.watchlist ? <BookmarkRemove /> : <BookmarkAdd />}
+            {series.watchlist ? (
+              <BookmarkRemove style={{ fontSize: isMobile ? '18px' : '24px' }} />
+            ) : (
+              <BookmarkAdd style={{ fontSize: isMobile ? '18px' : '24px' }} />
+            )}
           </motion.button>
         </div>
       )}
@@ -1054,32 +1124,32 @@ export const SeriesDetailPage = memo(() => {
       <div
         style={{
           display: 'flex',
-          gap: '8px',
-          padding: '0 20px 20px 20px',
+          gap: isMobile ? '6px' : '8px',
+          padding: isMobile ? '0 12px 12px 12px' : '0 20px 20px 20px',
         }}
       >
         <button
           onClick={() => setActiveTab('info')}
           style={{
             flex: 1,
-            padding: '10px',
+            padding: isMobile ? '8px' : '10px',
             background:
               activeTab === 'info'
                 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: isMobile ? '10px' : '12px',
             color: 'white',
-            fontSize: '14px',
+            fontSize: isMobile ? '12px' : '14px',
             fontWeight: activeTab === 'info' ? 600 : 500,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '6px',
+            gap: isMobile ? '4px' : '6px',
           }}
         >
-          <List style={{ fontSize: '18px' }} />
+          <List style={{ fontSize: isMobile ? '16px' : '18px' }} />
           Info & Episoden
         </button>
 
@@ -1087,57 +1157,53 @@ export const SeriesDetailPage = memo(() => {
           onClick={() => setActiveTab('cast')}
           style={{
             flex: 1,
-            padding: '10px',
+            padding: isMobile ? '8px' : '10px',
             background:
               activeTab === 'cast'
                 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: isMobile ? '10px' : '12px',
             color: 'white',
-            fontSize: '14px',
+            fontSize: isMobile ? '12px' : '14px',
             fontWeight: activeTab === 'cast' ? 600 : 500,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '6px',
+            gap: isMobile ? '4px' : '6px',
           }}
         >
-          <People style={{ fontSize: '18px' }} />
+          <People style={{ fontSize: isMobile ? '16px' : '18px' }} />
           Besetzung
         </button>
       </div>
 
       {/* Content based on active tab */}
       {activeTab === 'cast' ? (
-        <CastCrew
-          tmdbId={series.tmdb_id || series.id}
-          mediaType="tv"
-          seriesData={series}
-        />
+        <CastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
       ) : (
         <>
           {/* Series Description */}
           {(series.beschreibung || series.overview) && (
-            <div style={{ padding: '0 20px 20px' }}>
+            <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
               <h3
                 style={{
-                  fontSize: '18px',
+                  fontSize: isMobile ? '14px' : '18px',
                   fontWeight: '600',
-                  margin: '0 0 12px 0',
+                  margin: isMobile ? '0 0 8px 0' : '0 0 12px 0',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: isMobile ? '6px' : '8px',
                 }}
               >
-                <Info fontSize="small" />
+                <Info style={{ fontSize: isMobile ? '16px' : '20px' }} />
                 Beschreibung
               </h3>
               <p
                 style={{
-                  fontSize: '14px',
-                  lineHeight: '1.5',
+                  fontSize: isMobile ? '12px' : '14px',
+                  lineHeight: isMobile ? '1.4' : '1.5',
                   opacity: 0.8,
                   margin: 0,
                 }}
@@ -1148,219 +1214,249 @@ export const SeriesDetailPage = memo(() => {
           )}
 
           {/* Seasons Overview - Compact Design */}
-          {series.seasons && series.seasons.length > 0 && (() => {
-            const selectedSeason = series.seasons[selectedSeasonIndex];
-            const watchedEpisodes = selectedSeason?.episodes?.filter((ep) => ep.watched).length || 0;
-            const totalEpisodes = selectedSeason?.episodes?.length || 0;
-            const seasonProgress = totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
+          {series.seasons &&
+            series.seasons.length > 0 &&
+            (() => {
+              const selectedSeason = series.seasons[selectedSeasonIndex];
+              const watchedEpisodes =
+                selectedSeason?.episodes?.filter((ep) => ep.watched).length || 0;
+              const totalEpisodes = selectedSeason?.episodes?.length || 0;
+              const seasonProgress =
+                totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
 
-            return (
-              <div style={{ padding: '0 20px 20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <h3
-                    style={{
-                      fontSize: '18px',
-                      fontWeight: '600',
-                      margin: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    <List fontSize="small" />
-                    Staffeln
-                  </h3>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate(`/episodes/${series.id}`)}
-                    style={{
-                      padding: '6px 12px',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      color: 'white',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Alle verwalten
-                  </motion.button>
-                </div>
-
-                {/* Horizontal Season Tabs */}
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '8px',
-                    overflowX: 'auto',
-                    paddingBottom: '8px',
-                    marginBottom: '12px',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none',
-                  }}
-                >
-                  {series.seasons.map((season, index) => {
-                    const sWatched = season.episodes?.filter((ep) => ep.watched).length || 0;
-                    const sTotal = season.episodes?.length || 0;
-                    const sProgress = sTotal > 0 ? Math.round((sWatched / sTotal) * 100) : 0;
-                    const isSelected = index === selectedSeasonIndex;
-
-                    return (
-                      <motion.button
-                        key={index}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedSeasonIndex(index)}
-                        style={{
-                          flexShrink: 0,
-                          padding: '8px 14px',
-                          borderRadius: '10px',
-                          border: isSelected
-                            ? '2px solid #00d4aa'
-                            : sProgress === 100
-                              ? '2px solid rgba(0, 212, 170, 0.4)'
-                              : '2px solid rgba(255, 255, 255, 0.15)',
-                          background: isSelected
-                            ? 'rgba(0, 212, 170, 0.2)'
-                            : sProgress === 100
-                              ? 'rgba(0, 212, 170, 0.1)'
-                              : 'rgba(255, 255, 255, 0.05)',
-                          color: 'white',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '2px',
-                          minWidth: '52px',
-                        }}
-                      >
-                        <span style={{ fontSize: '14px', fontWeight: '700' }}>
-                          {season.seasonNumber + 1}
-                        </span>
-                        <span style={{ fontSize: '10px', opacity: 0.7 }}>
-                          {sProgress === 100 ? <Check style={{ fontSize: '12px', color: '#00d4aa' }} /> : `${sProgress}%`}
-                        </span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                {/* Selected Season Content */}
-                <div
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
-                    padding: '16px',
-                  }}
-                >
-                  {/* Season Info */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <div>
-                      <div style={{ fontSize: '15px', fontWeight: '600' }}>
-                        Staffel {selectedSeason.seasonNumber + 1}
-                      </div>
-                      <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                        {watchedEpisodes}/{totalEpisodes} Episoden
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        background: seasonProgress === 100
-                          ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                          : 'rgba(255, 255, 255, 0.1)',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                      }}
-                    >
-                      {seasonProgress}%
-                    </div>
-                  </div>
-
-                  {/* Episode Grid */}
+              return (
+                <div style={{ padding: '0 20px 20px' }}>
                   <div
                     style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(32px, 1fr))',
-                      gap: '6px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '12px',
                     }}
                   >
-                    {selectedSeason.episodes?.map((episode, episodeIndex) => {
-                      const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
+                    <h3
+                      style={{
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        margin: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <List fontSize="small" />
+                      Staffeln
+                    </h3>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/episodes/${series.id}`)}
+                      style={{
+                        padding: '6px 12px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Alle verwalten
+                    </motion.button>
+                  </div>
+
+                  {/* Horizontal Season Tabs */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      overflowX: 'auto',
+                      paddingBottom: '8px',
+                      marginBottom: '12px',
+                      scrollbarWidth: 'none',
+                      msOverflowStyle: 'none',
+                    }}
+                  >
+                    {series.seasons.map((season, index) => {
+                      const sWatched = season.episodes?.filter((ep) => ep.watched).length || 0;
+                      const sTotal = season.episodes?.length || 0;
+                      const sProgress = sTotal > 0 ? Math.round((sWatched / sTotal) * 100) : 0;
+                      const isSelected = index === selectedSeasonIndex;
+
                       return (
-                      <motion.div
-                        key={episode.id}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => navigate(`/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`)}
+                        <motion.button
+                          key={index}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSelectedSeasonIndex(index)}
+                          style={{
+                            flexShrink: 0,
+                            padding: '8px 14px',
+                            borderRadius: '10px',
+                            border: isSelected
+                              ? '2px solid #00d4aa'
+                              : sProgress === 100
+                                ? '2px solid rgba(0, 212, 170, 0.4)'
+                                : '2px solid rgba(255, 255, 255, 0.15)',
+                            background: isSelected
+                              ? 'rgba(0, 212, 170, 0.2)'
+                              : sProgress === 100
+                                ? 'rgba(0, 212, 170, 0.1)'
+                                : 'rgba(255, 255, 255, 0.05)',
+                            color: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '2px',
+                            minWidth: '52px',
+                          }}
+                        >
+                          <span style={{ fontSize: '14px', fontWeight: '700' }}>
+                            {season.seasonNumber + 1}
+                          </span>
+                          <span style={{ fontSize: '10px', opacity: 0.7 }}>
+                            {sProgress === 100 ? (
+                              <Check style={{ fontSize: '12px', color: '#00d4aa' }} />
+                            ) : (
+                              `${sProgress}%`
+                            )}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Selected Season Content */}
+                  <div
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                    }}
+                  >
+                    {/* Season Info */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '15px', fontWeight: '600' }}>
+                          Staffel {selectedSeason.seasonNumber + 1}
+                        </div>
+                        <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                          {watchedEpisodes}/{totalEpisodes} Episoden
+                        </div>
+                      </div>
+                      <div
                         style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '6px',
-                          background: episode.watched
-                            ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                            : 'rgba(255, 255, 255, 0.1)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '11px',
+                          padding: '4px 10px',
+                          borderRadius: '12px',
+                          background:
+                            seasonProgress === 100
+                              ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                              : 'rgba(255, 255, 255, 0.1)',
+                          fontSize: '12px',
                           fontWeight: '600',
-                          color: 'white',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          border: episode.watched ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
                         }}
                       >
-                        {episodeIndex + 1}
-                        {(episode.watchCount || 0) > 1 && (
-                          <span
+                        {seasonProgress}%
+                      </div>
+                    </div>
+
+                    {/* Episode Grid */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(32px, 1fr))',
+                        gap: '6px',
+                      }}
+                    >
+                      {selectedSeason.episodes?.map((episode, episodeIndex) => {
+                        const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
+                        return (
+                          <motion.div
+                            key={episode.id}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() =>
+                              navigate(
+                                `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
+                              )
+                            }
                             style={{
-                              position: 'absolute',
-                              top: '-3px',
-                              right: '-3px',
-                              background: '#ff6b6b',
-                              borderRadius: '50%',
-                              width: '14px',
-                              height: '14px',
-                              fontSize: '8px',
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '6px',
+                              background: episode.watched
+                                ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                                : 'rgba(255, 255, 255, 0.1)',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontWeight: '700',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              color: 'white',
+                              cursor: 'pointer',
+                              position: 'relative',
+                              border: episode.watched
+                                ? 'none'
+                                : '1px solid rgba(255, 255, 255, 0.2)',
                             }}
                           >
-                            {episode.watchCount}
-                          </span>
-                        )}
-                        {discussionCount > 0 && (episode.watchCount || 0) <= 1 && (
-                          <span
-                            style={{
-                              position: 'absolute',
-                              top: '-3px',
-                              right: '-3px',
-                              background: currentTheme.primary,
-                              borderRadius: '50%',
-                              width: '14px',
-                              height: '14px',
-                              fontSize: '8px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontWeight: '700',
-                            }}
-                          >
-                            {discussionCount}
-                          </span>
-                        )}
-                      </motion.div>
-                    )})}
+                            {episodeIndex + 1}
+                            {(episode.watchCount || 0) > 1 && (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  top: '-3px',
+                                  right: '-3px',
+                                  background: '#ff6b6b',
+                                  borderRadius: '50%',
+                                  width: '14px',
+                                  height: '14px',
+                                  fontSize: '8px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: '700',
+                                }}
+                              >
+                                {episode.watchCount}
+                              </span>
+                            )}
+                            {discussionCount > 0 && (episode.watchCount || 0) <= 1 && (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  top: '-3px',
+                                  right: '-3px',
+                                  background: currentTheme.primary,
+                                  borderRadius: '50%',
+                                  width: '14px',
+                                  height: '14px',
+                                  fontSize: '8px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: '700',
+                                }}
+                              >
+                                {discussionCount}
+                              </span>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </>
       )}
 
@@ -1551,10 +1647,7 @@ export const SeriesDetailPage = memo(() => {
       {/* Discussions Section */}
       {series && (
         <div style={{ padding: '0 20px 20px 20px' }}>
-          <DiscussionThread
-            itemId={series.id}
-            itemType="series"
-          />
+          <DiscussionThread itemId={series.id} itemType="series" />
         </div>
       )}
 
@@ -1562,21 +1655,31 @@ export const SeriesDetailPage = memo(() => {
       <Dialog
         open={dialog.open}
         onClose={() => setDialog({ ...dialog, open: false })}
-        title={dialog.type === 'warning' ? 'Bestätigung' : dialog.type === 'error' ? 'Fehler' : 'Information'}
+        title={
+          dialog.type === 'warning'
+            ? 'Bestätigung'
+            : dialog.type === 'error'
+              ? 'Fehler'
+              : 'Information'
+        }
         message={dialog.message}
         type={dialog.type}
-        actions={dialog.onConfirm ? [
-          {
-            label: 'Abbrechen',
-            onClick: () => setDialog({ ...dialog, open: false }),
-            variant: 'secondary'
-          },
-          {
-            label: 'Bestätigen',
-            onClick: dialog.onConfirm,
-            variant: 'primary'
-          }
-        ] : []}
+        actions={
+          dialog.onConfirm
+            ? [
+                {
+                  label: 'Abbrechen',
+                  onClick: () => setDialog({ ...dialog, open: false }),
+                  variant: 'secondary',
+                },
+                {
+                  label: 'Bestätigen',
+                  onClick: dialog.onConfirm,
+                  variant: 'primary',
+                },
+              ]
+            : []
+        }
       />
 
       {/* Success Snackbar */}

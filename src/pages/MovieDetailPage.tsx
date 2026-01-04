@@ -376,9 +376,9 @@ export const MovieDetailPage = memo(() => {
         <div
           style={{
             position: 'absolute',
-            top: 'calc(20px + env(safe-area-inset-top))',
-            left: '20px',
-            right: '20px',
+            top: isMobile ? 'calc(10px + env(safe-area-inset-top))' : 'calc(20px + env(safe-area-inset-top))',
+            left: isMobile ? '10px' : '20px',
+            right: isMobile ? '10px' : '20px',
             display: 'flex',
             justifyContent: 'space-between',
           }}
@@ -442,17 +442,23 @@ export const MovieDetailPage = memo(() => {
         <div
           style={{
             position: 'absolute',
-            bottom: '20px',
-            left: '20px',
-            right: '20px',
+            bottom: isMobile ? '8px' : '20px',
+            left: isMobile ? '16px' : '20px',
+            right: isMobile ? '16px' : '20px',
           }}
         >
           <h1
             style={{
-              fontSize: '28px',
-              margin: '0 0 8px 0',
+              fontSize: isMobile ? '20px' : '28px',
+              margin: isMobile ? '0 0 6px 0' : '0 0 8px 0',
               fontWeight: 'bold',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
+              lineHeight: 1.2,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
             {movie.title}
@@ -462,10 +468,11 @@ export const MovieDetailPage = memo(() => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              fontSize: '14px',
+              gap: isMobile ? '6px' : '12px',
+              fontSize: isMobile ? '12px' : '14px',
               opacity: 0.9,
-              marginBottom: '8px',
+              marginBottom: isMobile ? '10px' : '8px',
+              flexWrap: 'wrap',
             }}
           >
             {movie.release_date && <span>{new Date(movie.release_date).getFullYear()}</span>}
@@ -568,15 +575,15 @@ export const MovieDetailPage = memo(() => {
 
           {/* Provider Badges */}
           {((movie.provider?.provider && movie.provider.provider.length > 0) || providers) && (
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: isMobile ? '8px' : '16px' }}>
               <ProviderBadges
                 providers={
                   movie.provider?.provider && movie.provider.provider.length > 0
                     ? movie.provider.provider
                     : providers
                 }
-                size="large"
-                maxDisplay={6}
+                size={isMobile ? 'medium' : 'large'}
+                maxDisplay={isMobile ? 4 : 6}
                 showNames={false}
                 searchTitle={movie.title}
                 tmdbId={movie.id}
@@ -598,7 +605,7 @@ export const MovieDetailPage = memo(() => {
 
       {/* Mobile Video Gallery Button */}
       {isMobile && (
-        <div style={{ padding: '12px 20px 0' }}>
+        <div style={{ padding: '8px 12px 0' }}>
           <VideoGallery
             tmdbId={movie.id}
             mediaType="movie"
@@ -609,34 +616,34 @@ export const MovieDetailPage = memo(() => {
 
       {/* Action Buttons - for user's movies */}
       {!isReadOnlyTmdbMovie && (
-        <div style={{ padding: '20px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <div style={{ padding: isMobile ? '10px 12px' : '20px', display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'center' }}>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate(`/rating/movie/${movie.id}`)}
             disabled={loading}
             style={{
               flex: 1,
-              padding: '12px',
+              padding: isMobile ? '10px' : '12px',
               background: isWatched
                 ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
               border: isWatched
                 ? '1px solid rgba(255, 215, 0, 0.3)'
                 : '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
+              borderRadius: isMobile ? '10px' : '12px',
               color: 'white',
-              fontSize: '16px',
+              fontSize: isMobile ? '13px' : '16px',
               fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: isMobile ? '5px' : '8px',
               opacity: loading ? 0.7 : 1,
               position: 'relative',
             }}
           >
-            <Star style={{ fontSize: '18px', color: isWatched ? '#ffd700' : 'white' }} />
+            <Star style={{ fontSize: isMobile ? '16px' : '18px', color: isWatched ? '#ffd700' : 'white' }} />
             Bewerten
           </motion.button>
         </div>
@@ -644,26 +651,26 @@ export const MovieDetailPage = memo(() => {
 
       {/* Add button for TMDB movies as full-width button at the bottom */}
       {isReadOnlyTmdbMovie && (
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: isMobile ? '10px 12px' : '20px' }}>
           <button
             onClick={handleAddMovie}
             disabled={isAdding}
             style={{
               width: '100%',
-              padding: '16px',
+              padding: isMobile ? '12px' : '16px',
               background: isAdding
                 ? 'rgba(0, 212, 170, 0.5)'
                 : 'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
               border: '1px solid rgba(0, 212, 170, 0.5)',
-              borderRadius: '12px',
+              borderRadius: isMobile ? '10px' : '12px',
               color: currentTheme.text.primary,
-              fontSize: '16px',
+              fontSize: isMobile ? '14px' : '16px',
               fontWeight: 600,
               cursor: isAdding ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: isMobile ? '6px' : '8px',
               opacity: isAdding ? 0.7 : 1,
             }}
           >
@@ -676,33 +683,33 @@ export const MovieDetailPage = memo(() => {
       <div
         style={{
           display: 'flex',
-          gap: '8px',
-          padding: '0 20px',
-          marginBottom: '16px',
+          gap: isMobile ? '6px' : '8px',
+          padding: isMobile ? '0 12px' : '0 20px',
+          marginBottom: isMobile ? '12px' : '16px',
         }}
       >
         <button
           onClick={() => setActiveTab('info')}
           style={{
             flex: 1,
-            padding: '10px',
+            padding: isMobile ? '8px' : '10px',
             background:
               activeTab === 'info'
                 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: isMobile ? '10px' : '12px',
             color: 'white',
-            fontSize: '14px',
+            fontSize: isMobile ? '12px' : '14px',
             fontWeight: activeTab === 'info' ? 600 : 500,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '6px',
+            gap: isMobile ? '4px' : '6px',
           }}
         >
-          <Info style={{ fontSize: '18px' }} />
+          <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />
           Info
         </button>
 
@@ -710,24 +717,24 @@ export const MovieDetailPage = memo(() => {
           onClick={() => setActiveTab('cast')}
           style={{
             flex: 1,
-            padding: '10px',
+            padding: isMobile ? '8px' : '10px',
             background:
               activeTab === 'cast'
                 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: isMobile ? '10px' : '12px',
             color: 'white',
-            fontSize: '14px',
+            fontSize: isMobile ? '12px' : '14px',
             fontWeight: activeTab === 'cast' ? 600 : 500,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '6px',
+            gap: isMobile ? '4px' : '6px',
           }}
         >
-          <People style={{ fontSize: '18px' }} />
+          <People style={{ fontSize: isMobile ? '16px' : '18px' }} />
           Besetzung
         </button>
       </div>
@@ -736,27 +743,27 @@ export const MovieDetailPage = memo(() => {
       {activeTab === 'cast' ? (
         <CastCrew tmdbId={movie.id} mediaType="movie" seriesData={movie} />
       ) : (
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: isMobile ? '12px' : '20px' }}>
           {/* Overview */}
           {(movie.beschreibung || movie.overview) && (
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: isMobile ? '16px' : '24px' }}>
               <h3
                 style={{
-                  fontSize: '16px',
+                  fontSize: isMobile ? '14px' : '16px',
                   fontWeight: 600,
-                  marginBottom: '8px',
+                  marginBottom: isMobile ? '6px' : '8px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: isMobile ? '5px' : '6px',
                 }}
               >
-                <Info style={{ fontSize: '18px' }} />
+                <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />
                 Handlung
               </h3>
               <p
                 style={{
-                  fontSize: '14px',
-                  lineHeight: 1.6,
+                  fontSize: isMobile ? '12px' : '14px',
+                  lineHeight: isMobile ? 1.4 : 1.6,
                   color: 'rgba(255, 255, 255, 0.8)',
                 }}
               >
@@ -767,12 +774,12 @@ export const MovieDetailPage = memo(() => {
 
           {/* Genres */}
           {movie.genre?.genres && movie.genre.genres.length > 0 && (
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: isMobile ? '16px' : '24px' }}>
               <h3
                 style={{
-                  fontSize: '16px',
+                  fontSize: isMobile ? '14px' : '16px',
                   fontWeight: 600,
-                  marginBottom: '12px',
+                  marginBottom: isMobile ? '8px' : '12px',
                 }}
               >
                 Genres
