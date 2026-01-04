@@ -30,6 +30,24 @@ const WRAPPED_BASE = 'wrapped';
 const BINGE_BUFFER_MINUTES = 15;
 const LAST_CLEANUP_KEY = 'wrapped_last_cleanup_year';
 
+// Bulk-Marking Detection
+const BULK_MARK_WINDOW_MS = 60000; // 60 Sekunden Zeitfenster
+const BULK_MARK_THRESHOLD = 3; // Ab 3 Episoden gilt als Bulk-Marking
+const EVENING_HOURS = [18, 19, 20, 21, 22, 23]; // Typische Abendstunden
+
+// Tracker für Bulk-Marking-Erkennung
+interface BulkMarkTracker {
+  timestamps: number[];
+  episodeCount: number;
+  lastReset: number;
+}
+
+const bulkMarkTracker: BulkMarkTracker = {
+  timestamps: [],
+  episodeCount: 0,
+  lastReset: Date.now(),
+};
+
 // ============================================================================
 // PFAD-FUNKTIONEN
 // ============================================================================
@@ -84,6 +102,47 @@ function generateEventId(): string {
 }
 
 /**
+ * Prüft ob aktuell Bulk-Marking stattfindet und gibt verteilten Timestamp zurück
+ */
+function checkBulkMarkingAndGetTimestamp(): { isBulkMarking: boolean; distributedDate?: Date } {
+  const now = Date.now();
+
+  // Reset tracker wenn letzter Eintrag zu lange her
+  if (bulkMarkTracker.timestamps.length > 0) {
+    const oldestInWindow = bulkMarkTracker.timestamps.filter(t => now - t < BULK_MARK_WINDOW_MS);
+    bulkMarkTracker.timestamps = oldestInWindow;
+  }
+
+  // Aktuellen Timestamp hinzufügen
+  bulkMarkTracker.timestamps.push(now);
+  bulkMarkTracker.episodeCount++;
+
+  // Prüfen ob Bulk-Marking erkannt wurde
+  const recentCount = bulkMarkTracker.timestamps.length;
+
+  if (recentCount >= BULK_MARK_THRESHOLD) {
+    // Bulk-Marking erkannt! Timestamp verteilen
+    const positionInBulk = recentCount - 1; // 0-indexed
+
+    // Verteile über die letzten Tage (max 7)
+    const daysBack = Math.floor(positionInBulk / EVENING_HOURS.length);
+    const hourIndex = positionInBulk % EVENING_HOURS.length;
+
+    const distributedDate = new Date();
+    distributedDate.setDate(distributedDate.getDate() - Math.min(daysBack, 7));
+    distributedDate.setHours(EVENING_HOURS[hourIndex]);
+    distributedDate.setMinutes(Math.floor(Math.random() * 45) + 5); // 5-50 Minuten
+    distributedDate.setSeconds(Math.floor(Math.random() * 60));
+
+    console.log(`[Wrapped] 📦 Bulk-marking detected (${recentCount} in ${BULK_MARK_WINDOW_MS/1000}s) - distributing timestamp to ${distributedDate.toLocaleString()}`);
+
+    return { isBulkMarking: true, distributedDate };
+  }
+
+  return { isBulkMarking: false };
+}
+
+/**
  * Erstellt Basis-Metadaten für jedes Event
  */
 function createBaseEventData(userId: string) {
@@ -98,6 +157,35 @@ function createBaseEventData(userId: string) {
     hour: now.getHours(),
     deviceType: detectDeviceType(),
     platform: detectPlatform(),
+  };
+}
+
+/**
+ * Erstellt Basis-Metadaten für Episode-Events mit Bulk-Marking-Erkennung
+ * Gibt auch zurück ob Bulk-Marking erkannt wurde (für Binge-Skipping)
+ */
+function createEpisodeEventData(userId: string): {
+  eventData: ReturnType<typeof createBaseEventData>;
+  isBulkMarking: boolean;
+} {
+  const { isBulkMarking, distributedDate } = checkBulkMarkingAndGetTimestamp();
+
+  // Bei Bulk-Marking verwende verteilten Timestamp
+  const dateToUse = isBulkMarking && distributedDate ? distributedDate : new Date();
+
+  return {
+    eventData: {
+      timestamp: dateToUse.toISOString(),
+      userId,
+      year: dateToUse.getFullYear(),
+      month: dateToUse.getMonth() + 1,
+      week: getWeekNumber(dateToUse),
+      dayOfWeek: dateToUse.getDay(),
+      hour: dateToUse.getHours(),
+      deviceType: detectDeviceType(),
+      platform: detectPlatform(),
+    },
+    isBulkMarking,
   };
 }
 
@@ -345,16 +433,22 @@ export async function logEpisodeWatch(
   console.log('[Wrapped] 📺 Logging episode watch:', seriesTitle, `S${seasonNumber}E${episodeNumber}`);
   console.log('[Wrapped] 📺 Providers received:', providers);
 
-  const baseEvent = createBaseEventData(userId);
+  // Verwende Episode-spezifische Event-Erstellung mit Bulk-Marking-Erkennung
+  const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData(userId);
   const runtime = episodeRuntime || 45;
 
-  // Binge session handling
-  const bingeSessionId = await updateBingeSession(
-    userId, seriesId, seriesTitle, seasonNumber, episodeNumber, runtime
-  );
+  // Binge session handling - SKIP für Bulk-Marking
+  let bingeSessionId: string | undefined;
+  let isBingeSession = false;
 
-  const activeSession = await getActiveBingeSession(userId, seriesId);
-  const isBingeSession = activeSession ? activeSession.episodes.length > 1 : false;
+  if (!isBulkMarking) {
+    bingeSessionId = await updateBingeSession(
+      userId, seriesId, seriesTitle, seasonNumber, episodeNumber, runtime
+    );
+
+    const activeSession = await getActiveBingeSession(userId, seriesId);
+    isBingeSession = activeSession ? activeSession.episodes.length > 1 : false;
+  }
 
   // Build event - nur definierte Werte!
   const event: EpisodeWatchEvent = {
