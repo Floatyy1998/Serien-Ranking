@@ -1460,7 +1460,7 @@ export const WatchNextPage = () => {
                                 containerScrollY > 0 ? 'true' : 'false'
                               );
                             }
-                            navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
+                            navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`);
                           }}
                           style={{
                             width: '48px',
@@ -1504,7 +1504,7 @@ export const WatchNextPage = () => {
                                   containerScrollY > 0 ? 'true' : 'false'
                                 );
                               }
-                              navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
+                              navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`);
                             }
                           }}
                         >
@@ -1596,7 +1596,7 @@ export const WatchNextPage = () => {
                               >
                                 <EpisodeDiscussionButton
                                   seriesId={episode.seriesId}
-                                  seasonNumber={episode.seasonNumber}
+                                  seasonNumber={episode.seasonNumber + 1}
                                   episodeNumber={episode.episodeNumber}
                                 />
                                 <PlayCircle
