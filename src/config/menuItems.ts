@@ -126,6 +126,7 @@ export const providerMenuItems = [
   { value: 'Crunchyroll', label: 'Crunchyroll' },
   { value: 'Disney Plus', label: 'Disney+' },
   { value: 'Freevee', label: 'Freevee' },
+  { value: 'HBO Max', label: 'Max' },
   { value: 'Joyn Plus', label: 'Joyn+' },
   { value: 'MagentaTV', label: 'MagentaTV' },
   { value: 'Netflix', label: 'Netflix' },

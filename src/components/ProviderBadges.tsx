@@ -96,6 +96,11 @@ const PROVIDER_LINKS: Record<number, {
     web: (title) => `https://animationdigitalnetwork.de/search/${encodeURIComponent(title)}`,
     name: 'Animation Digital Network'
   },
+  // HBO Max / Max (ID: 1899)
+  1899: {
+    web: (title) => `https://play.hbomax.com/search/result?q=${encodeURIComponent(title)}`,
+    name: 'HBO Max'
+  },
 };
 
 export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
@@ -117,6 +122,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     'Crunchyroll',
     'Disney Plus',
     'Freevee',
+    'HBO Max',
     'Joyn Plus',
     'MagentaTV',
     'Netflix',
@@ -137,6 +143,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     if (lowerName.includes('paramount')) return 'Paramount Plus';
     if (lowerName.includes('apple tv')) return 'Apple TV Plus';
     if (lowerName.includes('joyn')) return 'Joyn Plus';
+    if (lowerName.includes('hbo') || lowerName === 'max') return 'HBO Max';
     return name;
   };
   
