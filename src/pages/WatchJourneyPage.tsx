@@ -1573,27 +1573,32 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
       if (!TMDB_API_KEY || seriesStats.length === 0) return;
 
       const newPosters: Record<number, string> = {};
-      const seriesIds = seriesStats.slice(0, 20).map(s => s.seriesId);
+      const seriesIds = seriesStats.map(s => s.seriesId);
 
-      await Promise.all(
-        seriesIds.map(async (id) => {
-          try {
-            const response = await fetch(
-              `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=de-DE`
-            );
-            if (response.ok) {
-              const tmdbData = await response.json();
-              if (tmdbData.poster_path) {
-                newPosters[id] = tmdbData.poster_path;
+      // Fetch in batches of 10 to avoid overwhelming the API
+      const batchSize = 10;
+      for (let i = 0; i < seriesIds.length; i += batchSize) {
+        const batch = seriesIds.slice(i, i + batchSize);
+        await Promise.all(
+          batch.map(async (id) => {
+            try {
+              const response = await fetch(
+                `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=de-DE`
+              );
+              if (response.ok) {
+                const tmdbData = await response.json();
+                if (tmdbData.poster_path) {
+                  newPosters[id] = tmdbData.poster_path;
+                }
               }
+            } catch {
+              // Silent fail
             }
-          } catch {
-            // Silent fail
-          }
-        })
-      );
-
-      setPosters(newPosters);
+          })
+        );
+        // Update state after each batch so posters appear progressively
+        setPosters({ ...newPosters });
+      }
     };
 
     fetchPosters();

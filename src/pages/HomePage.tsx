@@ -119,9 +119,6 @@ export const HomePage: React.FC = () => {
   } = useSeriesList();
   const { currentTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
-  // const [selectedCategory, setSelectedCategory] = useState<
-  //   'all' | 'series' | 'movies'
-  // >('all');
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
   const [dragOffsetsEpisodes, setDragOffsetsEpisodes] = useState<{
     [key: string]: number;
@@ -170,11 +167,6 @@ export const HomePage: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // const getUserRating = (rating: any): number => {
-  //   if (!rating || !user?.uid) return 0;
-  //   return rating[user.uid] || 0;
-  // };
-
   // Use the imported greeting function
   const greeting = useMemo(() => getGreeting(currentTime.getHours()), [currentTime]);
 
@@ -184,7 +176,6 @@ export const HomePage: React.FC = () => {
   const todayEpisodes = useWebWorkerTodayEpisodes();
   const { trending } = useTMDBTrending(); // Use actual TMDB trending data
   const topRated = useTopRated();
-  const recommendations: any[] = []; // TODO: Create separate hook if needed
 
   // Get the total count of series with unwatched episodes in watchlist
   const { seriesList } = useSeriesList();
@@ -1678,100 +1669,6 @@ export const HomePage: React.FC = () => {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                  }}
-                >
-                  {item.title}
-                </h4>
-              </motion.div>
-            ))}
-          </HorizontalScrollContainer>
-        </section>
-      )}
-
-      {/* Recommendations */}
-      {recommendations.length > 0 && (
-        <section style={{ marginBottom: '32px' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '0 20px',
-              marginBottom: '16px',
-            }}
-          >
-            <h2
-              style={{
-                fontSize: '20px',
-                fontWeight: 700,
-                margin: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <AutoAwesome style={{ fontSize: '24px', color: currentTheme.primary }} />
-              Empfehlungen für dich
-            </h2>
-          </div>
-
-          <HorizontalScrollContainer
-            gap={12}
-            style={{
-              padding: '0 20px',
-            }}
-          >
-            {recommendations.map((item, index) => (
-              <motion.div
-                key={index}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(`/${item.type}/${item.id}`)}
-                style={{
-                  minWidth: '120px',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{ position: 'relative', marginBottom: '6px' }}>
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    style={{
-                      width: '100%',
-                      aspectRatio: '2/3',
-                      objectFit: 'cover',
-                      borderRadius: '10px',
-                    }}
-                  />
-
-                  {/* TMDB Rating */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: '8px',
-                      left: '8px',
-                      right: '8px',
-                      background: 'rgba(0, 0, 0, 0.8)',
-                      borderRadius: '8px',
-                      padding: '4px',
-                      fontSize: '10px',
-                      textAlign: 'center',
-                      backdropFilter: 'blur(10px)',
-                    }}
-                  >
-                    TMDB {item.tmdbRating.toFixed(1)} ⭐
-                  </div>
-                </div>
-
-                <h4
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
                   }}
                 >
                   {item.title}

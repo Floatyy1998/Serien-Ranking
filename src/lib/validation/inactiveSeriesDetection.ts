@@ -43,12 +43,24 @@ const getLastWatchedDate = (series: Series): number | null => {
       if (season.episodes) {
         for (const episode of season.episodes) {
           if (episode.watched) {
-            // Bevorzuge lastWatchedAt (für Rewatches), fallback zu firstWatchedAt
-            const watchedDateStr = episode.lastWatchedAt || episode.firstWatchedAt;
-            if (watchedDateStr) {
-              const watchedDate = new Date(watchedDateStr).getTime();
-              if (!lastWatchedAt || watchedDate > lastWatchedAt) {
-                lastWatchedAt = watchedDate;
+            // Sammle alle möglichen Watch-Daten für diese Episode
+            const dates: number[] = [];
+
+            // lastWatchedAt hat höchste Priorität (wird bei Rewatches aktualisiert)
+            if (episode.lastWatchedAt) {
+              dates.push(new Date(episode.lastWatchedAt).getTime());
+            }
+
+            // firstWatchedAt als Fallback
+            if (episode.firstWatchedAt) {
+              dates.push(new Date(episode.firstWatchedAt).getTime());
+            }
+
+            // Finde das neueste Datum dieser Episode
+            if (dates.length > 0) {
+              const episodeLatestDate = Math.max(...dates);
+              if (!lastWatchedAt || episodeLatestDate > lastWatchedAt) {
+                lastWatchedAt = episodeLatestDate;
               }
             }
           }

@@ -7,28 +7,6 @@ const round = (num: number, precision: number) => {
   return Math.round(num * factor) / factor;
 };
 
-// Vereinfachte Bewertungsberechnung nur für die Durchschnittsanzeige
-export const calculateSimpleAverageRating = (items: (Series | Movie)[]) => {
-  const allRatings: number[] = [];
-
-  items.forEach((item) => {
-    if (item.rating && typeof item.rating === 'object') {
-      const ratings = Object.values(item.rating);
-      if (ratings.length > 0) {
-        const avgRating =
-          ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
-        allRatings.push(avgRating);
-      }
-    }
-  });
-
-  if (allRatings.length === 0) return 0;
-
-  const average =
-    allRatings.reduce((sum, rating) => sum + rating, 0) / allRatings.length;
-  return Math.round(average * 100) / 100; // Auf 2 Dezimalstellen runden
-};
-
 // Korrekte Durchschnittsbewertung basierend auf calculateOverallRating
 export const calculateCorrectAverageRating = (items: (Series | Movie)[]) => {
   if (!items || items.length === 0) return 0;

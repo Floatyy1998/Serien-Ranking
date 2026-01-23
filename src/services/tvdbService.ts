@@ -177,23 +177,6 @@ export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> =>
   }
 };
 
-// Get a specific episode from TVDB
-export const getTVDBEpisode = async (
-  tvdbId: number,
-  seasonNumber: number,
-  episodeNumber: number
-): Promise<TVDBEpisode | null> => {
-  try {
-    const episodes = await getTVDBEpisodes(tvdbId);
-    return episodes.find(
-      ep => ep.seasonNumber === seasonNumber && ep.number === episodeNumber
-    ) || null;
-  } catch (error) {
-    console.error('Error fetching TVDB episode:', error);
-    return null;
-  }
-};
-
 // Get all episodes organized by seasons
 export const getTVDBSeasons = async (tvdbId: number): Promise<TVDBSeason[]> => {
   try {
@@ -221,41 +204,5 @@ export const getTVDBSeasons = async (tvdbId: number): Promise<TVDBSeason[]> => {
   } catch (error) {
     console.error('Error fetching TVDB seasons:', error);
     return [];
-  }
-};
-
-// Get series info from TVDB
-export const getTVDBSeriesInfo = async (tvdbId: number): Promise<{
-  name: string;
-  overview: string;
-  image: string | null;
-  firstAired: string | null;
-} | null> => {
-  try {
-    const token = await authenticateTVDB();
-
-    const response = await fetch(`${TVDB_API_URL}/series/${tvdbId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    const series = data.data;
-
-    return {
-      name: series.name || '',
-      overview: series.overview || '',
-      image: series.image || null,
-      firstAired: series.firstAired || null,
-    };
-  } catch (error) {
-    console.error('Error fetching TVDB series info:', error);
-    return null;
   }
 };
