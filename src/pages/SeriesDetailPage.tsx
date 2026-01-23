@@ -70,14 +70,6 @@ export const SeriesDetailPage = memo(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Firebase batch updates ready if needed
-  // Using API instead of direct Firebase updates
-  // const { flushBatch } = useFirebaseBatch({
-  //   batchSize: 3,
-  //   delayMs: 500,
-  //   maxDelayMs: 1500
-  // });
-
   // Find the series locally first
   const localSeries = useMemo(() => {
     return seriesList.find((s: Series) => s.id.toString() === id);

@@ -63,7 +63,6 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
   open,
   onClose,
   voiceActorId,
-  // voiceActorName,
 }) => {
   const { currentTheme } = useTheme();
   const [loading, setLoading] = useState(false);
@@ -197,24 +196,6 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
 
     return `${dayStr}.${monthStr}.${yearStr}`;
   };
-
-  // const calculateAge = (birthDate: any, deathDate: any) => {
-  //   if (!birthDate?.year) return null;
-  //
-  //   const endYear = deathDate?.year || new Date().getFullYear();
-  //   const endMonth = deathDate?.month || new Date().getMonth() + 1;
-  //   const endDay = deathDate?.day || new Date().getDate();
-  //
-  //   let age = endYear - birthDate.year;
-  //
-  //   if (birthDate.month && birthDate.day) {
-  //     if (endMonth < birthDate.month || (endMonth === birthDate.month && endDay < birthDate.day)) {
-  //       age--;
-  //     }
-  //   }
-  //
-  //   return age;
-  // };
 
   if (!open) return null;
 
