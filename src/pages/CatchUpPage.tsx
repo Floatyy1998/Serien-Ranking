@@ -14,8 +14,8 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { BackButton } from '../components/BackButton';
@@ -39,7 +39,20 @@ export const CatchUpPage: React.FC = () => {
   const navigate = useNavigate();
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
-  const [sortBy, setSortBy] = useState<SortOption>('episodes');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize sortBy from URL params or default to 'episodes'
+  const [sortBy, setSortBy] = useState<SortOption>(() => {
+    const sortParam = searchParams.get('sort') as SortOption;
+    return sortParam && ['episodes', 'time', 'progress', 'recent'].includes(sortParam)
+      ? sortParam
+      : 'episodes';
+  });
+
+  // Update URL params when sortBy changes
+  useEffect(() => {
+    setSearchParams({ sort: sortBy }, { replace: true });
+  }, [sortBy, setSearchParams]);
 
   // Calculate catch-up data for each series
   const catchUpData = useMemo(() => {
@@ -457,53 +470,78 @@ export const CatchUpPage: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Sort Options */}
+        {/* Sort Options - Icon Only Tabs */}
         {catchUpData.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              gap: '10px',
-              padding: '0 20px 20px',
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-              WebkitOverflowScrolling: 'touch',
-            }}
-          >
-            {sortOptions.map((option, i) => (
-              <motion.button
-                key={option.value}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSortBy(option.value)}
+          <>
+            <div
+              style={{
+                padding: '0 16px 12px',
+                position: 'sticky',
+                top: 0,
+                background: currentTheme.background.default,
+                zIndex: 10,
+              }}
+            >
+              <div
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 18px',
-                  borderRadius: '14px',
-                  border: 'none',
-                  background:
-                    sortBy === option.value
-                      ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
-                      : `${currentTheme.background.surface}`,
-                  boxShadow: sortBy === option.value
-                    ? `0 4px 16px ${currentTheme.primary}40`
-                    : `0 2px 8px rgba(0,0,0,0.1)`,
-                  color: sortBy === option.value ? '#fff' : currentTheme.text.secondary,
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.3s ease',
+                  gap: 0,
+                  background: currentTheme.background.surface,
+                  borderRadius: '16px',
+                  padding: '6px',
+                  width: '100%',
+                  overflow: 'hidden',
                 }}
               >
-                {option.icon}
-                {option.label}
-              </motion.button>
-            ))}
-          </div>
+                {sortOptions.map((option) => {
+                  const isActive = sortBy === option.value;
+                  return (
+                    <motion.button
+                      key={option.value}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSortBy(option.value)}
+                      style={{
+                        flex: '1 1 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px',
+                        padding: '12px 8px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        background: isActive
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                          : 'transparent',
+                        color: isActive ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        boxShadow: isActive ? `0 2px 8px ${currentTheme.primary}40` : 'none',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {option.icon}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Sort Title */}
+            <div style={{ padding: '0 16px 16px' }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: currentTheme.text.primary,
+                }}
+              >
+                {sortOptions.find((o) => o.value === sortBy)?.label}
+              </h2>
+            </div>
+          </>
         )}
 
         {/* Empty State */}
