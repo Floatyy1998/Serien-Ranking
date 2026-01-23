@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Area,
   AreaChart,
@@ -3035,10 +3035,17 @@ const getAvailableYears = () => {
 export const WatchJourneyPage: React.FC = () => {
   const { user } = useAuth()!;
   const { currentTheme } = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<WatchJourneyData | null>(null);
   const [trendsData, setTrendsData] = useState<MultiYearTrendsData | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('trends');
+
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const tabParam = searchParams.get('tab') as TabType;
+    const validTabs: TabType[] = ['genre', 'provider', 'heatmap', 'activity', 'trends', 'serien', 'insights'];
+    return tabParam && validTabs.includes(tabParam) ? tabParam : 'trends';
+  });
+
   const [chartWidth, setChartWidth] = useState(window.innerWidth - 40);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showYearPicker, setShowYearPicker] = useState(false);
@@ -3079,6 +3086,11 @@ export const WatchJourneyPage: React.FC = () => {
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
+
+  // Sync activeTab with URL parameters
+  useEffect(() => {
+    setSearchParams({ tab: activeTab }, { replace: true });
+  }, [activeTab, setSearchParams]);
 
   if (loading) {
     return (

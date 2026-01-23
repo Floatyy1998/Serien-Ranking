@@ -14,18 +14,18 @@ import {
   Star,
   TrendingUp,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
+import { BackButton } from '../components/BackButton';
+import { Dialog } from '../components/Dialog';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { Movie as MovieType } from '../types/Movie';
 import { Series } from '../types/Series';
-import { BackButton } from '../components/BackButton';
-import { Dialog } from '../components/Dialog';
 
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -264,9 +264,24 @@ export const SearchPage: React.FC = () => {
   };
 
   const filterTabs = [
-    { key: 'all', label: 'Alle', icon: null, gradient: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)` },
-    { key: 'series', label: 'Serien', icon: CalendarToday, gradient: `linear-gradient(135deg, ${currentTheme.primary}, #667eea)` },
-    { key: 'movies', label: 'Filme', icon: Movie, gradient: `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)` },
+    {
+      key: 'all',
+      label: 'Alle',
+      icon: null,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+    },
+    {
+      key: 'series',
+      label: 'Serien',
+      icon: CalendarToday,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, #667eea)`,
+    },
+    {
+      key: 'movies',
+      label: 'Filme',
+      icon: Movie,
+      gradient: `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)`,
+    },
   ];
 
   return (
@@ -344,11 +359,11 @@ export const SearchPage: React.FC = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '14px',
+              gap: '8px',
               background: currentTheme.background.surface,
               border: `1px solid ${currentTheme.border.default}`,
               borderRadius: '16px',
-              padding: '14px 18px',
+              padding: '14px 16px',
               boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
             }}
           >
@@ -370,21 +385,26 @@ export const SearchPage: React.FC = () => {
             />
             {searchQuery && (
               <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileTap={{ scale: 0.9 }}
+                initial={{ scale: 0, borderRadius: '50%' }}
+                animate={{ scale: 1, borderRadius: '50%' }}
+                whileTap={{ scale: 0.9, borderRadius: '50%' }}
                 onClick={() => setSearchQuery('')}
                 style={{
                   background: `${currentTheme.text.muted}20`,
                   border: 'none',
+                  padding: 0,
                   width: '28px',
                   height: '28px',
+                  minWidth: '28px',
+                  minHeight: '28px',
                   borderRadius: '50%',
                   color: currentTheme.text.muted,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  flexShrink: 0,
+                  overflow: 'hidden',
                 }}
               >
                 <Close style={{ fontSize: '16px' }} />
@@ -412,7 +432,8 @@ export const SearchPage: React.FC = () => {
               style={{
                 padding: '10px 18px',
                 background: searchType === tab.key ? tab.gradient : currentTheme.background.surface,
-                border: searchType === tab.key ? 'none' : `1px solid ${currentTheme.border.default}`,
+                border:
+                  searchType === tab.key ? 'none' : `1px solid ${currentTheme.border.default}`,
                 borderRadius: '14px',
                 color: searchType === tab.key ? 'white' : currentTheme.text.secondary,
                 fontSize: '14px',
@@ -486,7 +507,7 @@ export const SearchPage: React.FC = () => {
                   gridTemplateColumns: isDesktop
                     ? 'repeat(auto-fill, minmax(180px, 1fr))'
                     : 'repeat(2, 1fr)',
-                  gap: isDesktop ? '24px' : '16px',
+                  gap: isDesktop ? '24px' : '10px',
                 }}
               >
                 {searchResults.map((item, index) => (
@@ -544,21 +565,21 @@ export const SearchPage: React.FC = () => {
                         <div
                           style={{
                             position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            padding: '4px 8px',
+                            top: isDesktop ? '8px' : '6px',
+                            right: isDesktop ? '8px' : '6px',
+                            padding: isDesktop ? '4px 8px' : '3px 6px',
                             background: 'rgba(0, 0, 0, 0.85)',
                             backdropFilter: 'blur(10px)',
-                            borderRadius: '8px',
-                            fontSize: '12px',
+                            borderRadius: isDesktop ? '8px' : '6px',
+                            fontSize: isDesktop ? '12px' : '10px',
                             fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
+                            gap: '3px',
                             color: 'white',
                           }}
                         >
-                          <Star style={{ fontSize: '12px', color: currentTheme.status.warning }} />
+                          <Star style={{ fontSize: isDesktop ? '12px' : '10px', color: currentTheme.status.warning }} />
                           {item.vote_average.toFixed(1)}
                         </div>
                       )}
@@ -567,18 +588,18 @@ export const SearchPage: React.FC = () => {
                       <div
                         style={{
                           position: 'absolute',
-                          top: '8px',
-                          left: '8px',
-                          padding: '4px 10px',
+                          top: isDesktop ? '8px' : '6px',
+                          left: isDesktop ? '8px' : '6px',
+                          padding: isDesktop ? '4px 10px' : '3px 7px',
                           background:
                             item.type === 'series'
                               ? `linear-gradient(135deg, ${currentTheme.primary}, #667eea)`
                               : `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)`,
-                          borderRadius: '8px',
-                          fontSize: '11px',
+                          borderRadius: isDesktop ? '8px' : '6px',
+                          fontSize: isDesktop ? '11px' : '9px',
                           fontWeight: 700,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
+                          letterSpacing: '0.3px',
                           color: 'white',
                         }}
                       >
@@ -596,10 +617,10 @@ export const SearchPage: React.FC = () => {
                           }}
                           style={{
                             position: 'absolute',
-                            bottom: '10px',
-                            right: '10px',
-                            width: '36px',
-                            height: '36px',
+                            bottom: isDesktop ? '10px' : '6px',
+                            right: isDesktop ? '10px' : '6px',
+                            width: isDesktop ? '36px' : '30px',
+                            height: isDesktop ? '36px' : '30px',
                             background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
                             borderRadius: '50%',
                             display: 'flex',
@@ -610,16 +631,16 @@ export const SearchPage: React.FC = () => {
                             boxShadow: `0 4px 12px ${currentTheme.primary}50`,
                           }}
                         >
-                          <Add style={{ fontSize: '20px', color: 'white' }} />
+                          <Add style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }} />
                         </motion.button>
                       ) : (
                         <div
                           style={{
                             position: 'absolute',
-                            bottom: '10px',
-                            right: '10px',
-                            width: '36px',
-                            height: '36px',
+                            bottom: isDesktop ? '10px' : '6px',
+                            right: isDesktop ? '10px' : '6px',
+                            width: isDesktop ? '36px' : '30px',
+                            height: isDesktop ? '36px' : '30px',
                             background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
                             borderRadius: '50%',
                             display: 'flex',
@@ -628,7 +649,7 @@ export const SearchPage: React.FC = () => {
                             boxShadow: `0 4px 12px ${currentTheme.status.success}50`,
                           }}
                         >
-                          <Check style={{ fontSize: '20px', color: 'white' }} />
+                          <Check style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }} />
                         </div>
                       )}
                     </motion.div>
