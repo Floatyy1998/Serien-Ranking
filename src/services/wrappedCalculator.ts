@@ -277,7 +277,7 @@ function calculateTopProviders(
   // Unterstützt sowohl das neue providers-Array als auch das alte provider-Feld
   // Jeder Provider bekommt die volle Watchzeit (nicht aufgeteilt)
   for (const episode of episodes) {
-    const providers = (episode as any).providers || (episode.provider ? [episode.provider] : []);
+    const providers = [...new Set<string>((episode as any).providers || (episode.provider ? [episode.provider] : []))];
     const runtime = episode.episodeRuntime || 45;
 
     for (const providerName of providers) {
@@ -298,7 +298,7 @@ function calculateTopProviders(
 
   // Sammle Provider aus Movie-Events
   for (const movie of movies) {
-    const providers = (movie as any).providers || (movie.provider ? [movie.provider] : []);
+    const providers = [...new Set<string>((movie as any).providers || (movie.provider ? [movie.provider] : []))];
     const runtime = movie.runtime || 120;
 
     for (const providerName of providers) {

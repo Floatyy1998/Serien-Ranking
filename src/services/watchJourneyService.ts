@@ -313,7 +313,7 @@ export async function calculateWatchJourney(
     });
 
     // Providers
-    const providers = (event.providers || (event.provider ? [event.provider] : [])).filter(isValidProvider);
+    const providers = [...new Set(event.providers || (event.provider ? [event.provider] : []))].filter(isValidProvider);
     providers.forEach((provider) => {
       providerMonthly[monthIndex].values[provider] =
         (providerMonthly[monthIndex].values[provider] || 0) + runtime;

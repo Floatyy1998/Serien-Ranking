@@ -213,7 +213,7 @@ export const EpisodeManagementPage = () => {
           false, // isRewatch
           newWatchCount,
           series.genre?.genres,
-          series.provider?.provider?.map(p => p.name)
+          [...new Set(series.provider?.provider?.map(p => p.name))]
         );
       } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
         // Rewatch case
@@ -239,7 +239,7 @@ export const EpisodeManagementPage = () => {
           true, // isRewatch
           newWatchCount,
           series.genre?.genres,
-          series.provider?.provider?.map(p => p.name)
+          [...new Set(series.provider?.provider?.map(p => p.name))]
         );
       }
     } catch (error) {}
@@ -331,7 +331,7 @@ export const EpisodeManagementPage = () => {
             false,
             1,
             series.genre?.genres,
-            series.provider?.provider?.map(p => p.name)
+            [...new Set(series.provider?.provider?.map(p => p.name))]
           );
         }
       }

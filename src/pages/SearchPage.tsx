@@ -26,6 +26,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { Movie as MovieType } from '../types/Movie';
 import { Series } from '../types/Series';
+import './SearchPage.css';
 
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -425,9 +426,9 @@ export const SearchPage: React.FC = () => {
           }}
         >
           {filterTabs.map((tab) => (
-            <motion.button
+            <button
               key={tab.key}
-              whileTap={{ scale: 0.95 }}
+              className="search-filter-btn"
               onClick={() => setSearchType(tab.key as any)}
               style={{
                 padding: '10px 18px',
@@ -448,7 +449,7 @@ export const SearchPage: React.FC = () => {
             >
               {tab.icon && <tab.icon style={{ fontSize: '16px' }} />}
               {tab.label}
-            </motion.button>
+            </button>
           ))}
         </motion.div>
       </div>
@@ -510,17 +511,14 @@ export const SearchPage: React.FC = () => {
                   gap: isDesktop ? '24px' : '10px',
                 }}
               >
-                {searchResults.map((item, index) => (
-                  <motion.div
+                {searchResults.map((item) => (
+                  <div
                     key={`${item.type}-${item.id}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
+                    className="search-result-item"
                     style={{ position: 'relative' }}
                   >
-                    <motion.div
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
+                    <div
+                      className="search-result-poster"
                       onClick={() => handleItemClick(item)}
                       style={{
                         width: '100%',
@@ -540,6 +538,8 @@ export const SearchPage: React.FC = () => {
                             : '/placeholder.jpg'
                         }
                         alt={item.title || item.name}
+                        loading="lazy"
+                        decoding="async"
                         style={{
                           width: '100%',
                           height: '100%',
@@ -608,9 +608,8 @@ export const SearchPage: React.FC = () => {
 
                       {/* Add/Check Button */}
                       {!item.inList ? (
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                        <button
+                          className="search-add-btn"
                           onClick={(e) => {
                             e.stopPropagation();
                             addToList(item);
@@ -632,7 +631,7 @@ export const SearchPage: React.FC = () => {
                           }}
                         >
                           <Add style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }} />
-                        </motion.button>
+                        </button>
                       ) : (
                         <div
                           style={{
@@ -652,7 +651,7 @@ export const SearchPage: React.FC = () => {
                           <Check style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }} />
                         </div>
                       )}
-                    </motion.div>
+                    </div>
 
                     {/* Title */}
                     <h4
@@ -684,7 +683,7 @@ export const SearchPage: React.FC = () => {
                         ? new Date(item.release_date || item.first_air_date).getFullYear()
                         : 'TBA'}
                     </p>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </motion.div>
