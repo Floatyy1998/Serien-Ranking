@@ -173,15 +173,23 @@ export const PetWidget: React.FC = () => {
     }
   };
 
-  // Auto-update Status alle 5 Minuten
+  // Auto-update Status alle 5 Minuten für alle Pets, aktives Pet neu laden
   useEffect(() => {
     if (!user || !pet) return;
 
     const interval = setInterval(
-      () => {
-        petService.updatePetStatus(user.uid).then((updatedPet) => {
-          if (updatedPet) setPet(updatedPet);
-        });
+      async () => {
+        try {
+          await petService.updateAllPetsStatus(user.uid);
+          // Aktives Pet neu laden
+          const activePetId = await petService.getActivePetId(user.uid);
+          if (activePetId) {
+            const updatedPet = await petService.getUserPet(user.uid, activePetId);
+            if (updatedPet) setPet(updatedPet);
+          }
+        } catch (error) {
+          console.error('Error updating pets status:', error);
+        }
       },
       5 * 60 * 1000
     );
@@ -219,11 +227,23 @@ export const PetWidget: React.FC = () => {
     if (!user) return;
 
     try {
-      const userPet = await petService.getUserPet(user.uid);
-      if (userPet) {
-        // Update Status beim Laden
-        const updatedPet = await petService.updatePetStatus(user.uid);
-        setPet(updatedPet || userPet);
+      // Aktives Pet laden oder auf erstes Pet zurückfallen
+      let petId = await petService.getActivePetId(user.uid);
+
+      if (!petId) {
+        const allPets = await petService.getUserPets(user.uid);
+        if (allPets.length > 0) {
+          petId = allPets[0].id;
+          await petService.setActivePetId(user.uid, petId);
+        }
+      }
+
+      if (petId) {
+        const userPet = await petService.getUserPet(user.uid, petId);
+        if (userPet) {
+          const updatedPet = await petService.updatePetStatus(user.uid, petId);
+          setPet(updatedPet || userPet);
+        }
       }
     } catch (error) {
       console.error('Error loading pet:', error);

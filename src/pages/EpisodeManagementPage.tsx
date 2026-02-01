@@ -198,9 +198,7 @@ export const EpisodeManagementPage = () => {
 
         // Pet XP geben
         // Genre-basierter Pet-Boost
-        const genres = series?.genre || series?.genres || [];
-        const genre = Array.isArray(genres) ? genres[0] : 'Drama';
-        await petService.watchedSeriesWithGenre(user.uid, genre);
+        await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
 
         // 🎁 Wrapped 2026: Episode-Watch loggen
         WatchActivityService.logEpisodeWatch(
@@ -314,9 +312,7 @@ export const EpisodeManagementPage = () => {
         const { petService } = await import('../services/petService');
         for (let i = 0; i < previouslyUnwatched.length; i++) {
           // Genre-basierter Pet-Boost
-          const genres = series?.genre || series?.genres || [];
-          const genre = Array.isArray(genres) ? genres[0] : 'Drama';
-          await petService.watchedSeriesWithGenre(user.uid, genre);
+          await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
         }
 
         // 🎁 Wrapped 2026: Alle neu gesehenen Episoden loggen

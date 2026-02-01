@@ -438,8 +438,7 @@ export const RecentlyWatchedPage = memo(() => {
       await lastWatchedRef.set(new Date().toISOString());
 
       const series = seriesList.find((s) => s.id === episode.seriesId);
-      const seriesGenre = series?.genre?.genres?.[0] || 'Drama';
-      await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+      await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
 
       setCompletingEpisodes((prev) => new Set([...prev, key]));
       setTimeout(() => {

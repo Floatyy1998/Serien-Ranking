@@ -50,8 +50,9 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
 
       // Hintergrund-Glow basierend auf Level
       if (pet.level >= 5) {
+        const glowIntensity = pet.level >= 25 ? '33' : pet.level >= 20 ? '2a' : pet.level >= 15 ? '26' : '22';
         const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-        gradient.addColorStop(0, color + '22');
+        gradient.addColorStop(0, color + glowIntensity);
         gradient.addColorStop(1, 'transparent');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, size, size);
@@ -88,6 +89,61 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
 
       // Mood-Indikator entfernt - wird schon im PetWidget angezeigt
 
+      // Level 15+ Sparkle-Partikel
+      if (pet.level >= 15 && animated) {
+        const sparkleCount = pet.level >= 25 ? 8 : pet.level >= 20 ? 6 : 4;
+        for (let i = 0; i < sparkleCount; i++) {
+          const angle = (frameRef.current * 0.02 * animationSpeed + i * (Math.PI * 2 / sparkleCount));
+          const radius = size * 0.35 + Math.sin(frameRef.current * 0.03 + i) * size * 0.05;
+          const sx = size / 2 + Math.cos(angle) * radius;
+          const sy = size / 2 + Math.sin(angle) * radius + moodBounce;
+          const sparkleAlpha = 0.4 + Math.sin(frameRef.current * 0.08 + i * 1.5) * 0.3;
+          const sparkleSize = pixelSize * (0.5 + Math.sin(frameRef.current * 0.06 + i) * 0.3);
+          ctx.fillStyle = pet.level >= 25 ? `rgba(255, 215, 0, ${sparkleAlpha})` :
+                          pet.level >= 20 ? `rgba(168, 85, 247, ${sparkleAlpha})` :
+                          `rgba(255, 255, 255, ${sparkleAlpha})`;
+          ctx.fillRect(sx - sparkleSize / 2, sy - sparkleSize / 2, sparkleSize, sparkleSize);
+        }
+      }
+
+      // Level 20+ Pulsing Aura
+      if (pet.level >= 20 && animated) {
+        const auraPhase = frameRef.current * 0.025 * animationSpeed;
+        const auraAlpha = 0.06 + Math.sin(auraPhase) * 0.04;
+        const auraRadius = size * 0.42 + Math.sin(auraPhase) * size * 0.03;
+        const auraGradient = ctx.createRadialGradient(size / 2, size / 2 + moodBounce, 0, size / 2, size / 2 + moodBounce, auraRadius);
+        const auraColor = pet.level >= 25 ? '255, 215, 0' : '168, 85, 247';
+        auraGradient.addColorStop(0, `rgba(${auraColor}, 0)`);
+        auraGradient.addColorStop(0.6, `rgba(${auraColor}, ${auraAlpha})`);
+        auraGradient.addColorStop(1, `rgba(${auraColor}, 0)`);
+        ctx.fillStyle = auraGradient;
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2 + moodBounce, auraRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Level 25+ Orbiting Energy Dots
+      if (pet.level >= 25 && animated) {
+        const dotCount = 3;
+        for (let i = 0; i < dotCount; i++) {
+          const orbitAngle = frameRef.current * 0.04 * animationSpeed + i * (Math.PI * 2 / dotCount);
+          const orbitRadius = size * 0.4;
+          const dx = size / 2 + Math.cos(orbitAngle) * orbitRadius;
+          const dy = size / 2 + Math.sin(orbitAngle) * orbitRadius * 0.4 + moodBounce;
+          const dotAlpha = 0.7 + Math.sin(frameRef.current * 0.1 + i) * 0.3;
+          ctx.fillStyle = `rgba(255, 215, 0, ${dotAlpha})`;
+          ctx.beginPath();
+          ctx.arc(dx, dy, pixelSize * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+          // Kleiner Trail
+          ctx.fillStyle = `rgba(255, 215, 0, ${dotAlpha * 0.3})`;
+          const trailAngle = orbitAngle - 0.3;
+          ctx.beginPath();
+          ctx.arc(size / 2 + Math.cos(trailAngle) * orbitRadius, size / 2 + Math.sin(trailAngle) * orbitRadius * 0.4 + moodBounce, pixelSize * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
       // Status-Effekte
       if (pet.happiness < 30) {
         // Träne
@@ -104,7 +160,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
 
       // Level-Anzeige
       if (pet.level > 1) {
-        ctx.fillStyle = pet.level >= 10 ? 'gold' : pet.level >= 5 ? color : darkColor;
+        ctx.fillStyle = pet.level >= 25 ? '#FF4500' : pet.level >= 20 ? '#9400D3' : pet.level >= 15 ? '#00CED1' : pet.level >= 10 ? 'gold' : pet.level >= 5 ? color : darkColor;
         ctx.font = 'bold 14px Arial';
         ctx.fillText(`Lv.${pet.level}`, 4, size - 4);
       }
@@ -430,9 +486,76 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.fillStyle = '#9400D3';
         ctx.fillRect((centerX + 1.4) * ps, (centerY - 10.5) * ps + offset, ps * 0.6, ps * 0.6);
       }
+
+      if (level >= 15) {
+        // Leuchtende Schnurrhaarspitzen
+        ctx.shadowColor = eyeColor;
+        ctx.shadowBlur = ps * 3;
+        ctx.strokeStyle = eyeColor;
+        ctx.lineWidth = ps * 0.2;
+        ctx.beginPath();
+        ctx.arc((centerX - 7) * ps, (centerY - 1.5) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+        ctx.arc((centerX - 7) * ps, (centerY) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+        ctx.arc((centerX + 7) * ps, (centerY - 1.5) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+        ctx.arc((centerX + 7) * ps, (centerY) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Größere, majestätischere Flügel
+        ctx.fillStyle = color + '66';
+        ctx.fillRect((centerX - 8) * ps, (centerY) * ps + offset, ps * 3, ps * 6);
+        ctx.fillRect((centerX + 5) * ps, (centerY) * ps + offset, ps * 3, ps * 6);
+        ctx.fillStyle = light + '88';
+        ctx.fillRect((centerX - 7) * ps, (centerY + 1) * ps + offset, ps * 2, ps * 4);
+        ctx.fillRect((centerX + 5.5) * ps, (centerY + 1) * ps + offset, ps * 2, ps * 4);
+      }
+
+      if (level >= 20) {
+        // Runen-Markierungen auf dem Körper
+        ctx.fillStyle = eyeColor + '66';
+        // Rune links
+        ctx.fillRect((centerX - 2) * ps, (centerY + 5) * ps + offset, ps * 0.4, ps * 2);
+        ctx.fillRect((centerX - 2.5) * ps, (centerY + 5.5) * ps + offset, ps * 1.5, ps * 0.4);
+        // Rune rechts
+        ctx.fillRect((centerX + 1.6) * ps, (centerY + 5) * ps + offset, ps * 0.4, ps * 2);
+        ctx.fillRect((centerX + 1.1) * ps, (centerY + 5.5) * ps + offset, ps * 1.5, ps * 0.4);
+
+        // Doppelte Schwanzspitze (gespalten)
+        ctx.fillStyle = light;
+        ctx.fillRect((centerX + 3 + tailLength * 2) * ps, (centerY + 6 - tailLength * 2) * ps + offset, ps, ps);
+        ctx.fillRect((centerX + 3 + tailLength * 2 + 1) * ps, (centerY + 7 - tailLength * 2) * ps + offset, ps, ps);
+      }
+
+      if (level >= 25) {
+        // Drittes Auge auf der Stirn
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(centerX * ps, (centerY - 4.5) * ps + offset, ps * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(centerX * ps, (centerY - 4.5) * ps + offset, ps * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        // Leuchten um das dritte Auge
+        ctx.shadowColor = '#FFD700';
+        ctx.shadowBlur = ps * 4;
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(centerX * ps, (centerY - 4.5) * ps + offset, ps * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Kosmisches Schwanzmuster
+        ctx.fillStyle = '#FFD700';
+        for (let i = 0; i < tailLength; i++) {
+          ctx.beginPath();
+          ctx.arc((centerX + 4 + i * 2) * ps, (centerY + 7.5 - i * 2) * ps + offset, ps * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
     };
 
-    const drawDog = (ctx: any, pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
+    const drawDog =(ctx: any, pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
       const centerX = 16;
       const centerY = 16;
 
@@ -595,9 +718,64 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.arc(centerX * ps, (centerY + 6) * ps + offset, ps * 1, 0, Math.PI * 2);
         ctx.fill();
       }
+
+      if (level >= 15) {
+        // Leuchtende Pfotenabdrücke unter dem Hund
+        const pawGlow = animated ? 0.3 + Math.sin(frameRef.current * 0.04 * animationSpeed) * 0.2 : 0.3;
+        ctx.fillStyle = `rgba(218, 165, 32, ${pawGlow})`;
+        ctx.beginPath();
+        ctx.arc((centerX - 3) * ps, (centerY + 14.5) * ps + offset, ps * 0.6, 0, Math.PI * 2);
+        ctx.arc((centerX + 3) * ps, (centerY + 14.5) * ps + offset, ps * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Größere Wolf-Mähne
+        ctx.fillStyle = dark;
+        for (let i = -3; i <= 3; i++) {
+          const height = 3.5 - Math.abs(i) * 0.4;
+          ctx.fillRect((centerX + i * 1.2) * ps, (centerY + 2.5) * ps + offset, ps * 0.8, ps * height);
+        }
+      }
+
+      if (level >= 20) {
+        // Narben-Markierungen (leuchten)
+        ctx.strokeStyle = `rgba(218, 165, 32, 0.5)`;
+        ctx.lineWidth = ps * 0.4;
+        // Narbe über dem linken Auge
+        ctx.beginPath();
+        ctx.moveTo((centerX - 4) * ps, (centerY - 2.5) * ps + offset);
+        ctx.lineTo((centerX - 2) * ps, (centerY) * ps + offset);
+        ctx.stroke();
+
+        // Leuchtende Augen
+        ctx.shadowColor = eyeColor;
+        ctx.shadowBlur = ps * 3;
+        ctx.fillStyle = eyeColor;
+        ctx.fillRect((centerX - 3) * ps, (centerY - 1) * ps + offset, ps * 2, ps * eyeShape);
+        ctx.fillRect((centerX + 1) * ps, (centerY - 1) * ps + offset, ps * 2, ps * eyeShape);
+        ctx.shadowBlur = 0;
+      }
+
+      if (level >= 25) {
+        // Fenrir-Ketten (gebrochen) an den Beinen
+        ctx.fillStyle = '#808080';
+        ctx.fillRect((centerX - 5) * ps, (centerY + 11) * ps + offset, ps * 1.5, ps * 0.5);
+        ctx.fillRect((centerX - 5.5) * ps, (centerY + 11.5) * ps + offset, ps * 0.5, ps * 1);
+        ctx.fillRect((centerX + 3.5) * ps, (centerY + 11) * ps + offset, ps * 1.5, ps * 0.5);
+        ctx.fillRect((centerX + 4.5) * ps, (centerY + 11.5) * ps + offset, ps * 0.5, ps * 1);
+
+        // Eisatem-Effekt
+        if (animated && Math.random() > 0.4) {
+          ctx.fillStyle = 'rgba(135, 206, 235, 0.6)';
+          ctx.fillRect((centerX - 5) * ps, (centerY + 2) * ps + offset, ps * 1.5, ps);
+          ctx.fillStyle = 'rgba(135, 206, 235, 0.3)';
+          ctx.fillRect((centerX - 7) * ps, (centerY + 1.5) * ps + offset, ps * 2, ps * 0.8);
+          ctx.fillStyle = 'rgba(224, 255, 255, 0.4)';
+          ctx.fillRect((centerX - 6) * ps, (centerY + 2.3) * ps + offset, ps, ps * 0.5);
+        }
+      }
     };
 
-    const drawDragon = (ctx: any, level: number, ps: number, color: string, dark: string, light: string, offset: number) => {
+    const drawDragon =(ctx: any, level: number, ps: number, color: string, dark: string, light: string, offset: number) => {
       const centerX = 16;
       const centerY = 16;
 
@@ -766,9 +944,70 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.fillStyle = '#FFD700';
         ctx.fillRect((centerX - 0.5) * ps, (centerY + 3) * ps + offset, ps, ps * 0.5);
       }
+
+      if (level >= 15) {
+        // Kristallhörner (upgraden die goldenen)
+        ctx.fillStyle = '#00CED1';
+        ctx.fillRect((centerX - 5) * ps, (centerY - 9) * ps + offset, ps, ps * 2);
+        ctx.fillRect((centerX + 4) * ps, (centerY - 9) * ps + offset, ps, ps * 2);
+        // Kristall-Glanz
+        ctx.fillStyle = '#E0FFFF';
+        ctx.fillRect((centerX - 4.5) * ps, (centerY - 8.5) * ps + offset, ps * 0.3, ps * 0.5);
+        ctx.fillRect((centerX + 4.5) * ps, (centerY - 8.5) * ps + offset, ps * 0.3, ps * 0.5);
+
+        // Schuppenleuchten entlang des Rückens
+        const shimmerPhase = animated ? frameRef.current * 0.05 * animationSpeed : 0;
+        for (let i = 0; i < 5; i++) {
+          const shimmerAlpha = 0.2 + Math.sin(shimmerPhase + i * 0.8) * 0.2;
+          ctx.fillStyle = `rgba(0, 206, 209, ${shimmerAlpha})`;
+          ctx.fillRect((centerX - 1 + i * 0.3) * ps, (centerY - 5 + i * 0.8) * ps + offset, ps * 0.5, ps * 0.5);
+        }
+      }
+
+      if (level >= 20) {
+        // Runen auf der Rüstung
+        ctx.fillStyle = '#00FFFF88';
+        // Rune 1
+        ctx.fillRect((centerX - 2) * ps, (centerY + 2.8) * ps + offset, ps * 0.3, ps * 1.5);
+        ctx.fillRect((centerX - 2.3) * ps, (centerY + 3.2) * ps + offset, ps * 1, ps * 0.3);
+        // Rune 2
+        ctx.fillRect((centerX + 1.7) * ps, (centerY + 2.8) * ps + offset, ps * 0.3, ps * 1.5);
+        ctx.fillRect((centerX + 1.3) * ps, (centerY + 3.2) * ps + offset, ps * 1, ps * 0.3);
+
+        // Zweites Hornpaar (kleiner, dahinter)
+        ctx.fillStyle = '#B0C4DE';
+        ctx.fillRect((centerX - 2) * ps, (centerY - 7) * ps + offset, ps * 0.6, ps * 1.5);
+        ctx.fillRect((centerX + 1.4) * ps, (centerY - 7) * ps + offset, ps * 0.6, ps * 1.5);
+      }
+
+      if (level >= 25) {
+        // Kosmisches Feuer als permanente Aura um die Flügel
+        if (animated) {
+          const cosmicPhase = frameRef.current * 0.03 * animationSpeed;
+          const wingFlap25 = Math.sin(frameRef.current * 0.1 * animationSpeed) * 2;
+          // Linker Flügel-Aura
+          ctx.fillStyle = `rgba(0, 255, 255, ${0.15 + Math.sin(cosmicPhase) * 0.1})`;
+          ctx.fillRect((centerX - 10 - wingFlap25) * ps, (centerY - 1) * ps + offset, ps * 3, ps * 7);
+          // Rechter Flügel-Aura
+          ctx.fillRect((centerX + 8 + wingFlap25) * ps, (centerY - 1) * ps + offset, ps * 3, ps * 7);
+        }
+
+        // Drittes Auge auf der Stirn
+        ctx.fillStyle = '#FF0000';
+        ctx.beginPath();
+        ctx.arc(centerX * ps, (centerY - 5.5) * ps + offset, ps * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowColor = '#FF0000';
+        ctx.shadowBlur = ps * 3;
+        ctx.fillStyle = '#FF4500';
+        ctx.beginPath();
+        ctx.arc(centerX * ps, (centerY - 5.5) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
     };
 
-    const drawBird = (ctx: any, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
+    const drawBird =(ctx: any, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
       const centerX = 16;
       const centerY = 16;
       const wingFlap = animated ? Math.sin(frameRef.current * 0.2 * animationSpeed) * 3 : 0;
@@ -969,9 +1208,64 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.fillRect(centerX * ps, (centerY - 11) * ps + offset, ps, ps * 2);
         ctx.fillRect((centerX + 2) * ps, (centerY - 11) * ps + offset, ps, ps * 2);
       }
+
+      if (level >= 15) {
+        // Phoenix-Funken an den Flügelspitzen
+        if (animated) {
+          const sparkPhase = frameRef.current * 0.08 * animationSpeed;
+          for (let i = 0; i < 3; i++) {
+            const sparkAlpha = 0.4 + Math.sin(sparkPhase + i * 2) * 0.3;
+            const sparkY = (centerY + 2 + i * 1.5) * ps + offset + Math.sin(sparkPhase + i) * ps;
+            ctx.fillStyle = `rgba(255, 99, 71, ${sparkAlpha})`;
+            ctx.fillRect((centerX - 9 - wingFlap) * ps, sparkY, ps * 0.6, ps * 0.6);
+            ctx.fillRect((centerX + 8 + wingFlap) * ps, sparkY, ps * 0.6, ps * 0.6);
+          }
+        }
+
+        // Leuchtende Federspitzen
+        ctx.fillStyle = '#FF634788';
+        for (let i = 0; i < 7; i++) {
+          const height = 5 - Math.abs(i - 3) * 0.7;
+          ctx.fillRect((centerX - 3 + i * 0.9) * ps, (centerY - 8 - height - 0.5) * ps + offset, ps * 0.8, ps * 0.5);
+        }
+      }
+
+      if (level >= 20) {
+        // Phoenix-Flammenfedern (Flügel brennen)
+        if (animated) {
+          const flamePhase = frameRef.current * 0.06 * animationSpeed;
+          ctx.fillStyle = `rgba(255, 69, 0, ${0.2 + Math.sin(flamePhase) * 0.1})`;
+          ctx.fillRect((centerX - 10 - wingFlap) * ps, (centerY) * ps + offset, ps * 5, ps * 7);
+          ctx.fillRect((centerX + 5 + wingFlap) * ps, (centerY) * ps + offset, ps * 5, ps * 7);
+          ctx.fillStyle = `rgba(255, 215, 0, ${0.15 + Math.sin(flamePhase + 1) * 0.1})`;
+          ctx.fillRect((centerX - 9 - wingFlap) * ps, (centerY + 1) * ps + offset, ps * 3, ps * 5);
+          ctx.fillRect((centerX + 6 + wingFlap) * ps, (centerY + 1) * ps + offset, ps * 3, ps * 5);
+        }
+      }
+
+      if (level >= 25) {
+        // Vollständiger Phoenix - Flammen-Schweif
+        if (animated) {
+          const trailPhase = frameRef.current * 0.04 * animationSpeed;
+          const trailColors = ['rgba(255, 69, 0, 0.3)', 'rgba(255, 140, 0, 0.25)', 'rgba(255, 215, 0, 0.2)'];
+          for (let i = 0; i < 3; i++) {
+            ctx.fillStyle = trailColors[i];
+            const trailY = (centerY + 12 + i * 2) * ps + offset;
+            const trailWidth = 4 + i * 2 + Math.sin(trailPhase + i) * 1;
+            ctx.fillRect((centerX - trailWidth / 2) * ps, trailY, ps * trailWidth, ps * 2);
+          }
+        }
+
+        // Heiliger Heiligenschein
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+        ctx.lineWidth = ps * 0.4;
+        ctx.beginPath();
+        ctx.ellipse(centerX * ps, (centerY - 12) * ps + offset, ps * 3, ps * 0.8, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     };
 
-    const drawFox = (ctx: any, level: number, ps: number, color: string, _dark: string, light: string, offset: number) => {
+    const drawFox =(ctx: any, level: number, ps: number, color: string, _dark: string, light: string, offset: number) => {
       const centerX = 16;
       const centerY = 16;
 
@@ -1200,6 +1494,87 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.moveTo((centerX + 4) * ps, (centerY) * ps + offset);
         ctx.lineTo((centerX + 5) * ps, (centerY + 0.5) * ps + offset);
         ctx.stroke();
+      }
+
+      if (level >= 15) {
+        // Intensivere spirituelle Flammen an allen Schwanzspitzen
+        if (animated) {
+          const flamePhase = frameRef.current * 0.06 * animationSpeed;
+          for (let i = 0; i < 9; i++) {
+            const angle = (i - 4) * 0.25;
+            const xOff = Math.sin(angle) * 3;
+            const yOff = Math.abs(i - 4) * 0.8;
+            const flameAlpha = 0.3 + Math.sin(flamePhase + i * 0.7) * 0.2;
+            ctx.fillStyle = `rgba(65, 105, 225, ${flameAlpha})`;
+            ctx.fillRect((centerX + 10 + xOff) * ps, (centerY + 2 + yOff) * ps + offset, ps * 1.2, ps * 1.2);
+          }
+        }
+
+        // Leuchtende Ohrenspitzen
+        ctx.fillStyle = '#87CEEB88';
+        ctx.fillRect((centerX - 2) * ps, (centerY - 9.5) * ps + offset, ps, ps * 0.5);
+        ctx.fillRect((centerX + 1) * ps, (centerY - 9.5) * ps + offset, ps, ps * 0.5);
+      }
+
+      if (level >= 20) {
+        // Himmlisches Fellmuster (leuchtende Sterne im Fell)
+        if (animated) {
+          const starPhase = frameRef.current * 0.03 * animationSpeed;
+          const starPositions = [
+            { x: centerX - 1, y: centerY + 3 },
+            { x: centerX + 1, y: centerY + 5 },
+            { x: centerX - 2, y: centerY + 6 },
+            { x: centerX + 2, y: centerY + 4 },
+          ];
+          for (let i = 0; i < starPositions.length; i++) {
+            const starAlpha = 0.2 + Math.sin(starPhase + i * 1.5) * 0.2;
+            ctx.fillStyle = `rgba(255, 215, 0, ${starAlpha})`;
+            ctx.fillRect(starPositions[i].x * ps, starPositions[i].y * ps + offset, ps * 0.5, ps * 0.5);
+          }
+        }
+
+        // Größeres Torii-Symbol
+        ctx.fillStyle = '#DC143C';
+        ctx.fillRect((centerX - 2) * ps, (centerY - 5.5) * ps + offset, ps * 4, ps * 0.5);
+        ctx.fillRect((centerX - 1.5) * ps, (centerY - 5) * ps + offset, ps * 0.5, ps * 2);
+        ctx.fillRect((centerX + 1) * ps, (centerY - 5) * ps + offset, ps * 0.5, ps * 2);
+      }
+
+      if (level >= 25) {
+        // Göttliche Kitsune-Form - Alle 9 Schwänze leuchten
+        if (animated) {
+          const divinePhase = frameRef.current * 0.04 * animationSpeed;
+          for (let i = 0; i < 9; i++) {
+            const angle = (i - 4) * 0.25;
+            const xOff = Math.sin(angle) * 3;
+            const yOff = Math.abs(i - 4) * 0.8;
+            const glowAlpha = 0.15 + Math.sin(divinePhase + i * 0.5) * 0.1;
+            // Goldener Glow um jeden Schwanz
+            ctx.fillStyle = `rgba(255, 215, 0, ${glowAlpha})`;
+            ctx.fillRect((centerX + 2 + xOff) * ps, (centerY + 2 + yOff) * ps + offset, ps * 9, ps * 3);
+          }
+        }
+
+        // Göttliches Stirnsymbol (Sonne statt Torii)
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(centerX * ps, (centerY - 5) * ps + offset, ps * 1, 0, Math.PI * 2);
+        ctx.fill();
+        // Sonnenstrahlen
+        for (let i = 0; i < 8; i++) {
+          const rayAngle = (i / 8) * Math.PI * 2;
+          const rx = centerX * ps + Math.cos(rayAngle) * ps * 1.5;
+          const ry = (centerY - 5) * ps + offset + Math.sin(rayAngle) * ps * 1.5;
+          ctx.fillRect(rx - ps * 0.15, ry - ps * 0.15, ps * 0.3, ps * 0.3);
+        }
+        // Leuchten
+        ctx.shadowColor = '#FFD700';
+        ctx.shadowBlur = ps * 4;
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(centerX * ps, (centerY - 5) * ps + offset, ps * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
       }
     };
 

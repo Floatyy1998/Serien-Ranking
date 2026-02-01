@@ -22,6 +22,7 @@ import { DiscussionThread } from '../components/DiscussionThread';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../lib/date/episodeDate.utils';
+import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
 import { Series } from '../types/Series';
 import { getTVDBIdFromTMDB, getTVDBSeasons, TVDBEpisode, TVDBSeason } from '../services/tvdbService';
@@ -251,6 +252,9 @@ export const EpisodeDiscussionPage = () => {
           series.genre?.genres,
           series.provider?.provider?.map(p => p.name)
         );
+
+        // Pet XP vergeben
+        await petService.watchedSeriesWithGenreAllPets(user.uid, series.genre?.genres || []);
       }
     } catch (error) {
       console.error('Error toggling watched status:', error);

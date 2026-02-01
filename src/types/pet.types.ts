@@ -98,6 +98,6 @@ export const SPECIAL_PATTERNS = {
 };
 
 export const GENRE_FAVORITES = [
-  'Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Romance',
-  'Thriller', 'Animation', 'Documentary', 'Fantasy'
+  'Action & Adventure', 'Comedy', 'Drama', 'Crime', 'Sci-Fi & Fantasy',
+  'Mystery', 'Animation', 'Documentary', 'Family', 'Western'
 ];
