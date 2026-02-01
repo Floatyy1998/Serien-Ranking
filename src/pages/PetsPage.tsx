@@ -3,15 +3,15 @@
  * Beautiful tamagotchi-style pet companion
  */
 
-import React, { useState, useEffect } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../App';
 import { BackButton } from '../components/BackButton';
-import { Pet, PET_TYPES, PET_TYPE_NAMES, PET_COLORS, ACCESSORIES } from '../types/pet.types';
-import { petService } from '../services/petService';
-import { petMoodService } from '../services/petMoodService';
 import { EvolvingPixelPet } from '../components/EvolvingPixelPet';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../contexts/ThemeContext';
+import { petMoodService } from '../services/petMoodService';
+import { petService } from '../services/petService';
+import { ACCESSORIES, Pet, PET_COLORS, PET_TYPE_NAMES, PET_TYPES } from '../types/pet.types';
 
 export const PetsPage: React.FC = () => {
   const { currentTheme } = useTheme();
@@ -46,7 +46,7 @@ export const PetsPage: React.FC = () => {
         // Aktives Pet aus DB laden und Index setzen
         const activePetId = await petService.getActivePetId(user.uid);
         if (activePetId) {
-          const idx = updatedPets.findIndex(p => p.id === activePetId);
+          const idx = updatedPets.findIndex((p) => p.id === activePetId);
           if (idx >= 0) setSelectedPetIndex(idx);
         }
       } else {
@@ -66,7 +66,7 @@ export const PetsPage: React.FC = () => {
     if (!user || !petName.trim()) return;
     try {
       const newPet = await petService.createPet(user.uid, petName.trim(), selectedType);
-      setPets(prev => [...prev, newPet]);
+      setPets((prev) => [...prev, newPet]);
       setSelectedPetIndex(pets.length); // neues Pet auswählen
       setShowCreateModal(false);
       setPetName('');
@@ -81,7 +81,7 @@ export const PetsPage: React.FC = () => {
     if (!user || !pet) return;
     try {
       const updatedPet = await petService.feedPet(user.uid, pet.id);
-      if (updatedPet) setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
+      if (updatedPet) setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
     } catch (error) {
       console.error('Error feeding pet:', error);
     }
@@ -91,7 +91,7 @@ export const PetsPage: React.FC = () => {
     if (!user || !pet) return;
     try {
       const updatedPet = await petService.playWithPet(user.uid, pet.id);
-      if (updatedPet) setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
+      if (updatedPet) setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
     } catch (error) {
       console.error('Error playing with pet:', error);
     }
@@ -101,7 +101,7 @@ export const PetsPage: React.FC = () => {
     if (!user || !pet) return;
     try {
       const revivedPet = await petService.revivePet(user.uid, pet.id);
-      if (revivedPet) setPets(prev => prev.map(p => p.id === revivedPet.id ? revivedPet : p));
+      if (revivedPet) setPets((prev) => prev.map((p) => (p.id === revivedPet.id ? revivedPet : p)));
     } catch (error) {
       console.error('Error reviving pet:', error);
     }
@@ -111,7 +111,7 @@ export const PetsPage: React.FC = () => {
     if (!user || !pet) return;
     try {
       await petService.deletePet(user.uid, pet.id);
-      const remaining = pets.filter(p => p.id !== pet.id);
+      const remaining = pets.filter((p) => p.id !== pet.id);
       setPets(remaining);
       setShowReleaseConfirm(false);
 
@@ -138,7 +138,7 @@ export const PetsPage: React.FC = () => {
     try {
       const updatedPet = await petService.changePetColor(user.uid, pet.id, newColor);
       if (updatedPet) {
-        setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
+        setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
       }
     } catch (error) {
       console.error('Error changing color:', error);
@@ -176,14 +176,14 @@ export const PetsPage: React.FC = () => {
     }
 
     const optimisticPet = { ...pet, accessories: newAccessories };
-    setPets(prev => prev.map(p => p.id === pet.id ? optimisticPet : p));
+    setPets((prev) => prev.map((p) => (p.id === pet.id ? optimisticPet : p)));
 
     try {
       const updatedPet = await petService.toggleAccessory(user.uid, pet.id, accessoryId);
-      if (updatedPet) setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
+      if (updatedPet) setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
     } catch (error) {
       console.error('Error toggling accessory:', error);
-      setPets(prev => prev.map(p => p.id === pet.id ? pet : p));
+      setPets((prev) => prev.map((p) => (p.id === pet.id ? pet : p)));
     }
   };
 
@@ -328,9 +328,7 @@ export const PetsPage: React.FC = () => {
                           ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
                           : currentTheme.background.default,
                       border:
-                        selectedType === type
-                          ? 'none'
-                          : `1px solid ${currentTheme.border.default}`,
+                        selectedType === type ? 'none' : `1px solid ${currentTheme.border.default}`,
                       borderRadius: '12px',
                       color: selectedType === type ? 'white' : currentTheme.text.primary,
                       fontSize: '13px',
@@ -483,18 +481,19 @@ export const PetsPage: React.FC = () => {
               }}
               style={{
                 padding: '8px 18px',
-                background: idx === selectedPetIndex
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
-                  : currentTheme.background.surface,
-                border: idx === selectedPetIndex
-                  ? 'none'
-                  : `1px solid ${currentTheme.border.default}`,
+                background:
+                  idx === selectedPetIndex
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                    : currentTheme.background.surface,
+                border:
+                  idx === selectedPetIndex ? 'none' : `1px solid ${currentTheme.border.default}`,
                 borderRadius: '14px',
                 color: idx === selectedPetIndex ? '#fff' : currentTheme.text.primary,
                 fontSize: '14px',
                 fontWeight: 700,
                 cursor: 'pointer',
-                boxShadow: idx === selectedPetIndex ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                boxShadow:
+                  idx === selectedPetIndex ? `0 4px 15px ${currentTheme.primary}40` : 'none',
               }}
             >
               {p.name}
@@ -505,8 +504,8 @@ export const PetsPage: React.FC = () => {
           ))}
 
           {/* Zweites Pet hinzufügen */}
-          {pets.length < 2 && (
-            canAddSecondPet ? (
+          {pets.length < 2 &&
+            (canAddSecondPet ? (
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 whileHover={{ scale: 1.05 }}
@@ -543,8 +542,7 @@ export const PetsPage: React.FC = () => {
               >
                 2. Pet ab Lv.15
               </div>
-            )
-          )}
+            ))}
         </motion.div>
       )}
 
@@ -927,9 +925,7 @@ export const PetsPage: React.FC = () => {
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-                😢
-              </div>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>😢</div>
               <h3
                 style={{
                   color: currentTheme.text.primary,
@@ -948,7 +944,8 @@ export const PetsPage: React.FC = () => {
                   lineHeight: 1.5,
                 }}
               >
-                Dein Pet wird unwiderruflich entfernt. Level, XP und alle Fortschritte gehen verloren.
+                Dein Pet wird unwiderruflich entfernt. Level, XP und alle Fortschritte gehen
+                verloren.
               </p>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <motion.button
