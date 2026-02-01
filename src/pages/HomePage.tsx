@@ -259,8 +259,7 @@ export const HomePage: React.FC = () => {
           await firstWatchedRef.set(new Date().toISOString());
 
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
-          const seriesGenre = item.genre?.genres?.[0] || 'Drama'; // Fallback Genre
-          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+          await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
 
           // 🎁 Wrapped 2026: Episode-Watch loggen
           const providers = item.provider?.provider?.map((p: any) => p.name);
@@ -344,8 +343,7 @@ export const HomePage: React.FC = () => {
           await firstWatchedRef.set(new Date().toISOString());
 
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
-          const seriesGenre = episode.seriesGenre?.[0] || 'Drama'; // Fallback Genre
-          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+          await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
 
           // 🎁 Wrapped 2026: Episode-Watch loggen
           WatchActivityService.logEpisodeWatch(

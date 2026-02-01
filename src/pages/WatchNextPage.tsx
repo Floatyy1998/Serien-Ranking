@@ -824,8 +824,7 @@ export const WatchNextPage = () => {
 
           // Pet XP geben mit Genre-Bonus
           const { petService } = await import('../services/petService');
-          const seriesGenre = series.genre?.genres?.[0] || 'Drama'; // Fallback Genre
-          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+          await petService.watchedSeriesWithGenreAllPets(user.uid, series.genre?.genres || []);
 
           // Also update watchCount if needed
           const watchCountRef = firebase
@@ -846,8 +845,7 @@ export const WatchNextPage = () => {
 
         // XP für das Pet vergeben mit Genre-Bonus (nur bei nicht-Rewatch)
         if (!episode.isRewatch) {
-          const seriesGenre = series.genre?.genres?.[0] || 'Drama'; // Fallback Genre
-          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+          await petService.watchedSeriesWithGenreAllPets(user.uid, series.genre?.genres || []);
         }
 
         // 🎁 Wrapped 2026: Episode-Watch loggen

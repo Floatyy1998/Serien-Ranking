@@ -17,33 +17,46 @@ export const PetsPage: React.FC = () => {
   const { currentTheme } = useTheme();
   const authContext = useAuth();
   const user = authContext?.user;
-  const [pet, setPet] = useState<Pet | null>(null);
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [selectedPetIndex, setSelectedPetIndex] = useState(0);
+  const [canAddSecondPet, setCanAddSecondPet] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [petName, setPetName] = useState('');
   const [selectedType, setSelectedType] = useState<Pet['type']>('cat');
   const [activeColorBorder, setActiveColorBorder] = useState<string | null>(null);
+  const [showReleaseConfirm, setShowReleaseConfirm] = useState(false);
+
+  const pet = pets[selectedPetIndex] ?? null;
 
   useEffect(() => {
     if (user) {
-      loadPet();
+      loadPets();
     }
   }, [user]);
 
-  const loadPet = async () => {
+  const loadPets = async () => {
     if (!user) return;
     try {
-      const userPet = await petService.getUserPet(user.uid);
-      if (userPet) {
-        const updatedPet = await petService.updatePetStatus(user.uid);
-        const finalPet = updatedPet || userPet;
-        setPet(finalPet);
-        setActiveColorBorder(finalPet.color);
+      const updatedPets = await petService.updateAllPetsStatus(user.uid);
+      if (updatedPets.length > 0) {
+        setPets(updatedPets);
+        setActiveColorBorder(updatedPets[selectedPetIndex]?.color || updatedPets[0].color);
+
+        // Aktives Pet aus DB laden und Index setzen
+        const activePetId = await petService.getActivePetId(user.uid);
+        if (activePetId) {
+          const idx = updatedPets.findIndex(p => p.id === activePetId);
+          if (idx >= 0) setSelectedPetIndex(idx);
+        }
       } else {
         setShowCreateModal(true);
       }
+
+      const canAdd = await petService.canCreateSecondPet(user.uid);
+      setCanAddSecondPet(canAdd);
     } catch (error) {
-      console.error('Error loading pet:', error);
+      console.error('Error loading pets:', error);
     } finally {
       setIsLoading(false);
     }
@@ -53,9 +66,12 @@ export const PetsPage: React.FC = () => {
     if (!user || !petName.trim()) return;
     try {
       const newPet = await petService.createPet(user.uid, petName.trim(), selectedType);
-      setPet(newPet);
+      setPets(prev => [...prev, newPet]);
+      setSelectedPetIndex(pets.length); // neues Pet auswählen
       setShowCreateModal(false);
       setPetName('');
+      const canAdd = await petService.canCreateSecondPet(user.uid);
+      setCanAddSecondPet(canAdd);
     } catch (error) {
       console.error('Error creating pet:', error);
     }
@@ -64,8 +80,8 @@ export const PetsPage: React.FC = () => {
   const feedPet = async () => {
     if (!user || !pet) return;
     try {
-      const updatedPet = await petService.feedPet(user.uid);
-      if (updatedPet) setPet(updatedPet);
+      const updatedPet = await petService.feedPet(user.uid, pet.id);
+      if (updatedPet) setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
     } catch (error) {
       console.error('Error feeding pet:', error);
     }
@@ -74,8 +90,8 @@ export const PetsPage: React.FC = () => {
   const playWithPet = async () => {
     if (!user || !pet) return;
     try {
-      const updatedPet = await petService.playWithPet(user.uid);
-      if (updatedPet) setPet(updatedPet);
+      const updatedPet = await petService.playWithPet(user.uid, pet.id);
+      if (updatedPet) setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
     } catch (error) {
       console.error('Error playing with pet:', error);
     }
@@ -84,10 +100,34 @@ export const PetsPage: React.FC = () => {
   const revivePet = async () => {
     if (!user || !pet) return;
     try {
-      const revivedPet = await petService.revivePet(user.uid);
-      if (revivedPet) setPet(revivedPet);
+      const revivedPet = await petService.revivePet(user.uid, pet.id);
+      if (revivedPet) setPets(prev => prev.map(p => p.id === revivedPet.id ? revivedPet : p));
     } catch (error) {
       console.error('Error reviving pet:', error);
+    }
+  };
+
+  const releasePet = async () => {
+    if (!user || !pet) return;
+    try {
+      await petService.deletePet(user.uid, pet.id);
+      const remaining = pets.filter(p => p.id !== pet.id);
+      setPets(remaining);
+      setShowReleaseConfirm(false);
+
+      if (remaining.length > 0) {
+        setSelectedPetIndex(0);
+        setActiveColorBorder(remaining[0].color);
+        await petService.setActivePetId(user.uid, remaining[0].id);
+      } else {
+        setSelectedPetIndex(0);
+        setShowCreateModal(true);
+      }
+
+      const canAdd = await petService.canCreateSecondPet(user.uid);
+      setCanAddSecondPet(canAdd);
+    } catch (error) {
+      console.error('Error releasing pet:', error);
     }
   };
 
@@ -96,9 +136,9 @@ export const PetsPage: React.FC = () => {
     setActiveColorBorder(newColor);
 
     try {
-      const updatedPet = await petService.changePetColor(user.uid, newColor);
+      const updatedPet = await petService.changePetColor(user.uid, pet.id, newColor);
       if (updatedPet) {
-        setPet(updatedPet);
+        setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
       }
     } catch (error) {
       console.error('Error changing color:', error);
@@ -136,14 +176,14 @@ export const PetsPage: React.FC = () => {
     }
 
     const optimisticPet = { ...pet, accessories: newAccessories };
-    setPet(optimisticPet);
+    setPets(prev => prev.map(p => p.id === pet.id ? optimisticPet : p));
 
     try {
-      const updatedPet = await petService.toggleAccessory(user.uid, accessoryId);
-      if (updatedPet) setPet(updatedPet);
+      const updatedPet = await petService.toggleAccessory(user.uid, pet.id, accessoryId);
+      if (updatedPet) setPets(prev => prev.map(p => p.id === updatedPet.id ? updatedPet : p));
     } catch (error) {
       console.error('Error toggling accessory:', error);
-      setPet(pet);
+      setPets(prev => prev.map(p => p.id === pet.id ? pet : p));
     }
   };
 
@@ -412,10 +452,101 @@ export const PetsPage: React.FC = () => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Mein Pet
+            Meine Pets
           </h1>
         </motion.div>
       </header>
+
+      {/* Pet Selector */}
+      {pets.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            padding: '8px 20px 0',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          {pets.map((p, idx) => (
+            <motion.button
+              key={p.id}
+              whileTap={{ scale: 0.95 }}
+              onClick={async () => {
+                setSelectedPetIndex(idx);
+                setActiveColorBorder(p.color);
+                if (user) await petService.setActivePetId(user.uid, p.id);
+              }}
+              style={{
+                padding: '8px 18px',
+                background: idx === selectedPetIndex
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                  : currentTheme.background.surface,
+                border: idx === selectedPetIndex
+                  ? 'none'
+                  : `1px solid ${currentTheme.border.default}`,
+                borderRadius: '14px',
+                color: idx === selectedPetIndex ? '#fff' : currentTheme.text.primary,
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: idx === selectedPetIndex ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+              }}
+            >
+              {p.name}
+              <span style={{ marginLeft: '6px', fontSize: '11px', opacity: 0.8 }}>
+                Lv.{p.level}
+              </span>
+            </motion.button>
+          ))}
+
+          {/* Zweites Pet hinzufügen */}
+          {pets.length < 2 && (
+            canAddSecondPet ? (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => setShowCreateModal(true)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  background: `linear-gradient(135deg, #ec4899, #8b5cf6)`,
+                  border: 'none',
+                  borderRadius: '12px',
+                  color: '#fff',
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 15px rgba(236,72,153,0.35)',
+                }}
+              >
+                +
+              </motion.button>
+            ) : (
+              <div
+                style={{
+                  padding: '8px 14px',
+                  background: currentTheme.background.surface,
+                  border: `1px dashed ${currentTheme.border.default}`,
+                  borderRadius: '14px',
+                  color: currentTheme.text.muted,
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                2. Pet ab Lv.15
+              </div>
+            )
+          )}
+        </motion.div>
+      )}
 
       {/* Pet Name & Info */}
       <motion.div
@@ -757,6 +888,110 @@ export const PetsPage: React.FC = () => {
         </AnimatePresence>
       </motion.div>
 
+      {/* Release Confirmation Modal */}
+      <AnimatePresence>
+        {showReleaseConfirm && pet && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '20px',
+            }}
+            onClick={() => setShowReleaseConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
+                borderRadius: '24px',
+                padding: '28px',
+                maxWidth: '340px',
+                width: '100%',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                😢
+              </div>
+              <h3
+                style={{
+                  color: currentTheme.text.primary,
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  marginBottom: '8px',
+                }}
+              >
+                {pet.name} zur Adoption freigeben?
+              </h3>
+              <p
+                style={{
+                  color: currentTheme.text.muted,
+                  fontSize: '14px',
+                  marginBottom: '24px',
+                  lineHeight: 1.5,
+                }}
+              >
+                Dein Pet wird unwiderruflich entfernt. Level, XP und alle Fortschritte gehen verloren.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowReleaseConfirm(false)}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    background: currentTheme.background.default,
+                    border: `1px solid ${currentTheme.border.default}`,
+                    borderRadius: '14px',
+                    color: currentTheme.text.primary,
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Behalten
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={releasePet}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    border: 'none',
+                    borderRadius: '14px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(239,68,68,0.35)',
+                  }}
+                >
+                  Freigeben
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Customization Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -886,6 +1121,33 @@ export const PetsPage: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Release Button */}
+      <div
+        style={{
+          padding: '24px 20px 0',
+          display: 'flex',
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        <button
+          onClick={() => setShowReleaseConfirm(true)}
+          style={{
+            padding: '8px 20px',
+            background: 'transparent',
+            border: 'none',
+            color: currentTheme.text.muted,
+            fontSize: '12px',
+            fontWeight: 400,
+            cursor: 'pointer',
+            opacity: 0.5,
+          }}
+        >
+          Zur Adoption freigeben
+        </button>
+      </div>
     </div>
   );
 };

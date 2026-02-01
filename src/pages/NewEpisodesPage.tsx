@@ -389,8 +389,7 @@ export const NewEpisodesPage = () => {
         await firstWatchedRef.set(new Date().toISOString());
 
         const series = seriesList.find((s) => s.id === episode.seriesId);
-        const seriesGenre = series?.genre?.genres?.[0] || 'Drama';
-        await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+        await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
 
         WatchActivityService.logEpisodeWatch(
           user.uid,
@@ -469,8 +468,7 @@ export const NewEpisodesPage = () => {
           await firstWatchedRef.set(new Date().toISOString());
 
           const series = seriesList.find((s) => s.id === episode.seriesId);
-          const seriesGenre = series?.genre?.genres?.[0] || 'Drama';
-          await petService.watchedSeriesWithGenre(user.uid, seriesGenre);
+          await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
 
           WatchActivityService.logEpisodeWatch(
             user.uid,

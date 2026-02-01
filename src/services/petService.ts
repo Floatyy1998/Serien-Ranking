@@ -3,12 +3,118 @@ import 'firebase/compat/database';
 import { Pet, PET_COLORS, ACCESSORIES, GENRE_FAVORITES, PetAccessory } from '../types/pet.types';
 
 class PetService {
+  private migrationDone: Set<string> = new Set();
+
+  // Migration: altes Single-Pet-Format → neues Multi-Pet-Format
+  private async migrateIfNeeded(userId: string): Promise<void> {
+    if (this.migrationDone.has(userId)) return;
+
+    const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
+    if (!snapshot.exists()) {
+      this.migrationDone.add(userId);
+      return;
+    }
+
+    const data = snapshot.val();
+
+    // Altes Format erkennen: data hat direkt 'name' und 'type' (Pet-Objekt)
+    // Neues Format: data hat petId-Keys als Kinder
+    if (data.name && data.type && data.id) {
+      const petId = data.id;
+      await firebase.database().ref(`pets/${userId}`).set({
+        [petId]: data
+      });
+      await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
+    }
+
+    this.migrationDone.add(userId);
+  }
+
+  // Hole ALLE Pets eines Users
+  async getUserPets(userId: string): Promise<Pet[]> {
+    await this.migrateIfNeeded(userId);
+
+    const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
+    if (!snapshot.exists()) return [];
+
+    const data = snapshot.val();
+    const pets: Pet[] = [];
+
+    for (const petId of Object.keys(data)) {
+      const petData = data[petId];
+      if (!petData || typeof petData !== 'object' || !petData.type) continue;
+
+      if (!petData.createdAt) {
+        petData.createdAt = Date.now();
+        await firebase.database().ref(`pets/${userId}/${petId}/createdAt`).set(petData.createdAt);
+      }
+
+      if (!petData.favoriteGenre || petData.favoriteGenre === 'All') {
+        const randomGenre = GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)];
+        petData.favoriteGenre = randomGenre;
+        await firebase.database().ref(`pets/${userId}/${petId}/favoriteGenre`).set(randomGenre);
+      }
+
+      pets.push({
+        ...petData,
+        lastFed: new Date(petData.lastFed),
+        createdAt: new Date(petData.createdAt)
+      });
+    }
+
+    return pets;
+  }
+
+  // Hole ein einzelnes Pet
+  async getUserPet(userId: string, petId: string): Promise<Pet | null> {
+    await this.migrateIfNeeded(userId);
+
+    const snapshot = await firebase.database().ref(`pets/${userId}/${petId}`).once('value');
+    if (!snapshot.exists()) return null;
+
+    const petData = snapshot.val();
+
+    if (!petData.createdAt) {
+      const now = new Date();
+      petData.createdAt = now.getTime();
+      await firebase.database().ref(`pets/${userId}/${petId}/createdAt`).set(petData.createdAt);
+    }
+
+    if (!petData.favoriteGenre || petData.favoriteGenre === 'All') {
+      const randomGenre = GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)];
+      petData.favoriteGenre = randomGenre;
+      await firebase.database().ref(`pets/${userId}/${petId}/favoriteGenre`).set(randomGenre);
+    }
+
+    return {
+      ...petData,
+      lastFed: new Date(petData.lastFed),
+      createdAt: new Date(petData.createdAt)
+    };
+  }
+
+  // Aktives Pet für Widget
+  async getActivePetId(userId: string): Promise<string | null> {
+    const snapshot = await firebase.database().ref(`petWidget/${userId}/activePetId`).once('value');
+    return snapshot.val() || null;
+  }
+
+  async setActivePetId(userId: string, petId: string): Promise<void> {
+    await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
+  }
+
+  // Prüfe ob 2. Pet erstellt werden kann
+  async canCreateSecondPet(userId: string): Promise<boolean> {
+    const pets = await this.getUserPets(userId);
+    if (pets.length === 0 || pets.length >= 2) return false;
+    return pets.some(p => p.level >= 15);
+  }
+
   // Erstelle ein neues Pet für den User
   async createPet(userId: string, name: string, type: Pet['type']): Promise<Pet> {
     const colors = Object.keys(PET_COLORS);
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-    // Zufällige einzigartige Merkmale
     const patterns: Pet['pattern'][] = ['spots', 'stripes', 'plain', 'patches'];
     const eyeColors = ['#000000', '#0066CC', '#00AA00', '#8B4513', '#FFD700', '#FF0000'];
     const personalities: Pet['personality'][] = ['lazy', 'playful', 'brave', 'shy', 'smart'];
@@ -31,22 +137,19 @@ class PetService {
       createdAt: now,
       isAlive: true,
       reviveCount: 0,
-      // Einzigartige Merkmale
       pattern: patterns[Math.floor(Math.random() * patterns.length)],
       eyeColor: eyeColors[Math.floor(Math.random() * eyeColors.length)],
       personality: personalities[Math.floor(Math.random() * personalities.length)],
       size: sizes[Math.floor(Math.random() * sizes.length)],
-      // Neue Features
       mood: 'happy',
       favoriteGenre: GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)],
       accessories: [
-        // Start-Accessoire (Halsband)
         {
           id: 'collar',
           type: 'collar' as const,
           name: 'Halsband',
           icon: '📿',
-          equipped: true, // Direkt ausgerüstet
+          equipped: true,
           color: '#8B4513'
         }
       ],
@@ -56,53 +159,24 @@ class PetService {
       achievementPoints: 0
     };
 
-    await firebase.database().ref(`pets/${userId}`).set(newPet);
+    await this.migrateIfNeeded(userId);
+    await firebase.database().ref(`pets/${userId}/${newPet.id}`).set(newPet);
+    await firebase.database().ref(`petWidget/${userId}/activePetId`).set(newPet.id);
     return newPet;
   }
 
-  // Hole das Pet des Users
-  async getUserPet(userId: string): Promise<Pet | null> {
-    const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
-    if (!snapshot.exists()) return null;
-
-    const petData = snapshot.val();
-
-    // Falls createdAt fehlt, setze es auf das heutige Datum und speichere es
-    if (!petData.createdAt) {
-      const now = new Date();
-      petData.createdAt = now.getTime();
-      await firebase.database().ref(`pets/${userId}/createdAt`).set(petData.createdAt);
-    }
-
-    // Migration: Falls favoriteGenre fehlt oder "All" ist, füge ein zufälliges hinzu
-    if (!petData.favoriteGenre || petData.favoriteGenre === 'All') {
-      const randomGenre = GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)];
-      petData.favoriteGenre = randomGenre;
-      await firebase.database().ref(`pets/${userId}/favoriteGenre`).set(randomGenre);
-    }
-
-    return {
-      ...petData,
-      lastFed: new Date(petData.lastFed),
-      createdAt: new Date(petData.createdAt)
-    };
-  }
-
   // Füttere das Pet
-  async feedPet(userId: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async feedPet(userId: string, petId: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
-    // Kann tote Pets nicht füttern
-    if (!pet.isAlive) {
-      return pet;
-    }
+    if (!pet.isAlive) return pet;
 
     pet.hunger = Math.max(0, pet.hunger - 30);
     pet.happiness = Math.min(100, pet.happiness + 10);
     pet.lastFed = new Date();
 
-    await firebase.database().ref(`pets/${userId}`).update({
+    await firebase.database().ref(`pets/${userId}/${petId}`).update({
       hunger: pet.hunger,
       happiness: pet.happiness,
       lastFed: pet.lastFed.toISOString()
@@ -112,19 +186,16 @@ class PetService {
   }
 
   // Spiele mit dem Pet
-  async playWithPet(userId: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async playWithPet(userId: string, petId: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
-    // Kann nicht mit toten Pets spielen
-    if (!pet.isAlive) {
-      return pet;
-    }
+    if (!pet.isAlive) return pet;
 
     pet.happiness = Math.min(100, pet.happiness + 20);
-    pet.hunger = Math.min(100, pet.hunger + 10); // Spielen macht hungrig
+    pet.hunger = Math.min(100, pet.hunger + 10);
 
-    await firebase.database().ref(`pets/${userId}`).update({
+    await firebase.database().ref(`pets/${userId}/${petId}`).update({
       happiness: pet.happiness,
       hunger: pet.hunger
     });
@@ -133,24 +204,19 @@ class PetService {
   }
 
   // Update wenn Episode geschaut wurde
-  async watchedEpisode(userId: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async watchedEpisode(userId: string, petId: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
-    // Tote Pets bekommen keine XP
-    if (!pet.isAlive) {
-      return pet;
-    }
+    if (!pet.isAlive) return pet;
 
     pet.episodesWatched++;
     pet.experience += 10;
 
-    // Level up alle 100 XP - berechne korrekt mit Übertrag
     const xpPerLevel = 100;
     let newLevel = pet.level;
     let currentXP = pet.experience;
 
-    // Prüfe für Level-Ups
     while (currentXP >= xpPerLevel * newLevel) {
       currentXP -= xpPerLevel * newLevel;
       newLevel++;
@@ -159,9 +225,9 @@ class PetService {
     const hasLeveledUp = newLevel > pet.level;
     if (hasLeveledUp) {
       pet.level = newLevel;
-      pet.experience = currentXP; // Setze XP auf den Übertrag
-      pet.happiness = 100; // Level up macht glücklich!
-      pet.hunger = 0; // Level up macht satt!
+      pet.experience = currentXP;
+      pet.happiness = 100;
+      pet.hunger = 0;
     }
 
     const updateData: any = {
@@ -170,81 +236,59 @@ class PetService {
       level: pet.level
     };
 
-    // Nur bei Level-Up Hunger/Happiness updaten
     if (hasLeveledUp) {
       updateData.happiness = pet.happiness;
       updateData.hunger = pet.hunger;
     }
 
-    await firebase.database().ref(`pets/${userId}`).update(updateData);
+    await firebase.database().ref(`pets/${userId}/${petId}`).update(updateData);
 
     return pet;
   }
 
   // Auto-Update (Hunger steigt über Zeit)
-  async updatePetStatus(userId: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async updatePetStatus(userId: string, petId: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
-    // Wenn Pet tot ist, nicht weiter updaten
-    if (!pet.isAlive) {
-      return pet;
-    }
+    if (!pet.isAlive) return pet;
 
     const now = new Date();
     const lastUpdated = pet.lastUpdated ? new Date(pet.lastUpdated) : new Date(pet.createdAt);
     const lastFedTime = pet.lastFed instanceof Date ? pet.lastFed : new Date(pet.lastFed);
 
-    // Nur updaten wenn mehr als 1 Minute vergangen ist
     const minutesSinceLastUpdate = (now.getTime() - lastUpdated.getTime()) / (1000 * 60);
-    if (minutesSinceLastUpdate < 1) {
-      return pet; // Keine Änderung nötig
-    }
+    if (minutesSinceLastUpdate < 1) return pet;
 
-    // Validiere die Zeit
     if (isNaN(lastFedTime.getTime())) {
       console.warn('Invalid lastFed date, using current time');
       pet.lastFed = now;
-      pet.hunger = 50; // Setze default Hunger
+      pet.hunger = 50;
     } else {
       const hoursSinceLastUpdate = minutesSinceLastUpdate / 60;
-
-      // Hunger steigt um 1.5 pro Stunde seit letztem Update (langsamer)
-      // Bei Start-Hunger von 50: Nach ~33h erreicht Hunger 100
-      // Wenn Pet mit Hunger 30 gefüttert wird: Nach ~47h erreicht Hunger 100
       const hungerIncrease = Math.floor(hoursSinceLastUpdate * 1.5);
       pet.hunger = Math.min(100, pet.hunger + hungerIncrease);
-
-      // Happiness sinkt langsamer über Zeit (1 pro Stunde seit letztem Update)
       const happinessDecrease = Math.floor(hoursSinceLastUpdate * 1);
       pet.happiness = Math.max(0, pet.happiness - happinessDecrease);
     }
 
-    // Extra Happiness-Verlust wenn zu hungrig
     if (pet.hunger > 80) {
       pet.happiness = Math.max(0, pet.happiness - 3);
     }
 
-    // Stelle sicher, dass die Werte gültig sind
     pet.hunger = isNaN(pet.hunger) ? 50 : pet.hunger;
     pet.happiness = isNaN(pet.happiness) ? 75 : pet.happiness;
 
-    // TOD-PRÜFUNG
     let hasDied = false;
     let deathCause: Pet['deathCause'] = undefined;
 
-    // Stirbt bei 100 Hunger (Verhungert)
     if (pet.hunger >= 100) {
       hasDied = true;
       deathCause = 'hunger';
-    }
-    // Stirbt bei 0 Happiness (Traurigkeit)
-    else if (pet.happiness <= 0) {
+    } else if (pet.happiness <= 0) {
       hasDied = true;
       deathCause = 'sadness';
-    }
-    // Stirbt nach 14 Tagen ohne Fütterung (Vernachlässigung)
-    else if (lastFedTime && !isNaN(lastFedTime.getTime())) {
+    } else if (lastFedTime && !isNaN(lastFedTime.getTime())) {
       const daysSinceLastFed = (now.getTime() - lastFedTime.getTime()) / (1000 * 60 * 60 * 24);
       if (daysSinceLastFed >= 14) {
         hasDied = true;
@@ -257,7 +301,7 @@ class PetService {
       pet.deathTime = now;
       pet.deathCause = deathCause;
 
-      await firebase.database().ref(`pets/${userId}`).update({
+      await firebase.database().ref(`pets/${userId}/${petId}`).update({
         isAlive: false,
         deathTime: now.toISOString(),
         deathCause: deathCause,
@@ -266,7 +310,7 @@ class PetService {
         lastUpdated: now.toISOString()
       });
     } else {
-      await firebase.database().ref(`pets/${userId}`).update({
+      await firebase.database().ref(`pets/${userId}/${petId}`).update({
         hunger: pet.hunger,
         happiness: pet.happiness,
         lastUpdated: now.toISOString()
@@ -276,15 +320,23 @@ class PetService {
     return pet;
   }
 
+  // Update Status für ALLE Pets
+  async updateAllPetsStatus(userId: string): Promise<Pet[]> {
+    const pets = await this.getUserPets(userId);
+    const updated: Pet[] = [];
+    for (const pet of pets) {
+      const result = await this.updatePetStatus(userId, pet.id);
+      if (result) updated.push(result);
+    }
+    return updated;
+  }
+
   // Wiederbelebe das Pet
-  async revivePet(userId: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async revivePet(userId: string, petId: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
-    // Kann nur tote Pets wiederbeleben
-    if (pet.isAlive) {
-      return pet;
-    }
+    if (pet.isAlive) return pet;
 
     pet.isAlive = true;
     pet.hunger = 50;
@@ -292,10 +344,9 @@ class PetService {
     pet.lastFed = new Date();
     pet.reviveCount = (pet.reviveCount || 0) + 1;
 
-    // Level-Verlust als Strafe (verliert 1 Level, minimum Level 1)
     if (pet.level > 1) {
       pet.level = Math.max(1, pet.level - 1);
-      pet.experience = (pet.level - 1) * 100; // Setze XP zurück auf den neuen Level
+      pet.experience = (pet.level - 1) * 100;
     }
 
     const updates: any = {
@@ -308,42 +359,47 @@ class PetService {
       experience: pet.experience
     };
 
-    // Entferne Tod-bezogene Felder
-    await firebase.database().ref(`pets/${userId}`).update(updates);
-    await firebase.database().ref(`pets/${userId}/deathTime`).remove();
-    await firebase.database().ref(`pets/${userId}/deathCause`).remove();
+    await firebase.database().ref(`pets/${userId}/${petId}`).update(updates);
+    await firebase.database().ref(`pets/${userId}/${petId}/deathTime`).remove();
+    await firebase.database().ref(`pets/${userId}/${petId}/deathCause`).remove();
 
     return pet;
   }
 
-  // Lösche Pet (für Reset)
-  async deletePet(userId: string): Promise<void> {
-    await firebase.database().ref(`pets/${userId}`).remove();
+  // Lösche Pet
+  async deletePet(userId: string, petId: string): Promise<void> {
+    await firebase.database().ref(`pets/${userId}/${petId}`).remove();
   }
 
-  // Schaue Serie mit Genre-Boost
-  async watchedSeriesWithGenre(userId: string, genre: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  // Schaue Serie mit Genre-Boost (einzelnes Pet)
+  async watchedSeriesWithGenre(userId: string, petId: string, genres: string[]): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet || !pet.isAlive) return pet;
 
-    let xpGain = 10; // Standard XP
+    let xpGain = 10;
+    let genreMatched = false;
 
-    // Doppelte XP wenn Lieblings-Genre! (aber nie für "All")
-    if (pet.favoriteGenre === genre && genre !== 'All') {
+    if (pet.favoriteGenre && genres.length > 0) {
+      const favLower = pet.favoriteGenre.toLowerCase();
+      genreMatched = genres.some(g => {
+        const gLower = g.toLowerCase();
+        return favLower === gLower || gLower.includes(favLower) || favLower.includes(gLower);
+      });
+    }
+
+    if (genreMatched) {
       xpGain = 20;
-      pet.happiness = Math.min(100, pet.happiness + 5); // Extra Happiness für Lieblings-Genre
+      pet.happiness = Math.min(100, pet.happiness + 5);
     }
 
     pet.episodesWatched++;
     pet.experience += xpGain;
     pet.totalSeriesWatched = (pet.totalSeriesWatched || 0) + 1;
 
-    // Level up alle 100 XP - berechne korrekt mit Übertrag
     const xpPerLevel = 100;
     let newLevel = pet.level;
     let currentXP = pet.experience;
 
-    // Prüfe für Level-Ups
     while (currentXP >= xpPerLevel * newLevel) {
       currentXP -= xpPerLevel * newLevel;
       newLevel++;
@@ -352,15 +408,13 @@ class PetService {
     const hasLeveledUp = newLevel > pet.level;
     if (hasLeveledUp) {
       pet.level = newLevel;
-      pet.experience = currentXP; // Setze XP auf den Übertrag
+      pet.experience = currentXP;
       pet.happiness = 100;
       pet.hunger = 0;
 
-      // Schalte Accessoires bei bestimmten Levels frei
       await this.checkAndUnlockAccessories(pet);
     }
 
-    // Check für Achievement-basierte Freischaltungen
     await this.checkAchievements(pet);
 
     const updateData: any = {
@@ -370,20 +424,31 @@ class PetService {
       totalSeriesWatched: pet.totalSeriesWatched
     };
 
-    // Nur bei Level-Up Hunger/Happiness updaten
-    if (hasLeveledUp) {
+    if (hasLeveledUp || genreMatched) {
       updateData.happiness = pet.happiness;
+    }
+    if (hasLeveledUp) {
       updateData.hunger = pet.hunger;
     }
 
-    await firebase.database().ref(`pets/${userId}`).update(updateData);
+    await firebase.database().ref(`pets/${userId}/${petId}`).update(updateData);
 
     return pet;
   }
 
+  // XP für ALLE lebenden Pets
+  async watchedSeriesWithGenreAllPets(userId: string, genres: string[]): Promise<void> {
+    const pets = await this.getUserPets(userId);
+    for (const pet of pets) {
+      if (pet.isAlive) {
+        await this.watchedSeriesWithGenre(userId, pet.id, genres);
+      }
+    }
+  }
+
   // Accessoire ausrüsten/ablegen
-  async toggleAccessory(userId: string, accessoryId: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async toggleAccessory(userId: string, petId: string, accessoryId: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
     if (!pet.accessories) {
@@ -395,7 +460,6 @@ class PetService {
     if (existingAccessory) {
       existingAccessory.equipped = !existingAccessory.equipped;
     } else {
-      // Neues Accessoire hinzufügen
       const accessoryData = ACCESSORIES[accessoryId];
       if (accessoryData) {
         const newAccessory: PetAccessory = {
@@ -407,7 +471,7 @@ class PetService {
       }
     }
 
-    await firebase.database().ref(`pets/${userId}/accessories`).set(pet.accessories);
+    await firebase.database().ref(`pets/${userId}/${petId}/accessories`).set(pet.accessories);
     return pet;
   }
 
@@ -415,7 +479,6 @@ class PetService {
   private async checkAndUnlockAccessories(pet: Pet): Promise<void> {
     const month = new Date().getMonth() + 1;
 
-    // Level-basierte Freischaltungen
     if (pet.level >= 10 && !this.hasAccessory(pet, 'crown')) {
       if (!pet.accessories) pet.accessories = [];
       pet.accessories.push({
@@ -425,10 +488,9 @@ class PetService {
         icon: '👑',
         equipped: false
       });
-      await firebase.database().ref(`pets/${pet.userId}/accessories`).set(pet.accessories);
+      await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
     }
 
-    // Zeit-basierte Freischaltungen
     if (month === 12 && !this.hasAccessory(pet, 'santaHat')) {
       if (!pet.accessories) pet.accessories = [];
       pet.accessories.push({
@@ -438,7 +500,7 @@ class PetService {
         icon: '🎅',
         equipped: false
       });
-      await firebase.database().ref(`pets/${pet.userId}/accessories`).set(pet.accessories);
+      await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
     }
 
     if ((month >= 6 && month <= 8) && !this.hasAccessory(pet, 'sunglasses')) {
@@ -450,7 +512,7 @@ class PetService {
         icon: '🕶️',
         equipped: false
       });
-      await firebase.database().ref(`pets/${pet.userId}/accessories`).set(pet.accessories);
+      await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
     }
   }
 
@@ -458,7 +520,6 @@ class PetService {
   private async checkAchievements(pet: Pet): Promise<void> {
     const updates: any = {};
 
-    // Farben-Freischaltungen
     if (pet.totalSeriesWatched! >= 25 && !pet.unlockedColors?.includes('silver')) {
       pet.unlockedColors = [...(pet.unlockedColors || []), 'silver'];
       updates.unlockedColors = pet.unlockedColors;
@@ -474,14 +535,13 @@ class PetService {
       updates.unlockedColors = pet.unlockedColors;
     }
 
-    // Muster-Freischaltungen
     if (pet.episodesWatched >= 200 && !pet.unlockedPatterns?.includes('galaxy')) {
       pet.unlockedPatterns = [...(pet.unlockedPatterns || []), 'galaxy'];
       updates.unlockedPatterns = pet.unlockedPatterns;
     }
 
     if (Object.keys(updates).length > 0) {
-      await firebase.database().ref(`pets/${pet.userId}`).update(updates);
+      await firebase.database().ref(`pets/${pet.userId}/${pet.id}`).update(updates);
     }
   }
 
@@ -490,38 +550,36 @@ class PetService {
   }
 
   // Ändere Pet-Farbe
-  async changePetColor(userId: string, newColor: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async changePetColor(userId: string, petId: string, newColor: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
-    // Prüfe ob Farbe freigeschaltet ist
     if (!PET_COLORS[newColor] && !pet.unlockedColors?.includes(newColor)) {
-      return pet; // Farbe nicht verfügbar
+      return pet;
     }
 
     pet.color = newColor;
-    await firebase.database().ref(`pets/${userId}/color`).set(newColor);
+    await firebase.database().ref(`pets/${userId}/${petId}/color`).set(newColor);
     return pet;
   }
 
   // Ändere Pet-Muster
-  async changePetPattern(userId: string, newPattern: string): Promise<Pet | null> {
-    const pet = await this.getUserPet(userId);
+  async changePetPattern(userId: string, petId: string, newPattern: string): Promise<Pet | null> {
+    const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
     const basicPatterns = ['spots', 'stripes', 'plain', 'patches'];
 
-    // Prüfe ob Muster verfügbar ist
     if (!basicPatterns.includes(newPattern) && !pet.unlockedPatterns?.includes(newPattern)) {
-      return pet; // Muster nicht verfügbar
+      return pet;
     }
 
-    pet.pattern = newPattern as any; // Allow special patterns
-    await firebase.database().ref(`pets/${userId}/pattern`).set(newPattern);
+    pet.pattern = newPattern as any;
+    await firebase.database().ref(`pets/${userId}/${petId}/pattern`).set(newPattern);
     return pet;
   }
 
-  // Pet Widget Position Management (in percentage values for cross-device compatibility)
+  // Pet Widget Position Management
   async getPetWidgetPosition(userId: string): Promise<any> {
     try {
       const snapshot = await firebase.database().ref(`petWidget/${userId}/position`).once('value');
