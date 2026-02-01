@@ -380,10 +380,30 @@ class PetService {
     let genreMatched = false;
 
     if (pet.favoriteGenre && genres.length > 0) {
+      const genreAliases: Record<string, string[]> = {
+        'action & adventure': ['action & abenteuer', 'action', 'abenteuer', 'adventure'],
+        'action & abenteuer': ['action & adventure', 'action', 'abenteuer', 'adventure'],
+        'comedy': ['komödie'],
+        'komödie': ['comedy'],
+        'crime': ['krimi'],
+        'krimi': ['crime'],
+        'sci-fi & fantasy': ['science fiction', 'fantasy', 'sci-fi'],
+        'documentary': ['dokumentarfilm', 'dokumentation', 'doku'],
+        'dokumentarfilm': ['documentary', 'dokumentation'],
+        'mystery': ['geheimnis'],
+        'family': ['familie'],
+        'familie': ['family'],
+      };
+
       const favLower = pet.favoriteGenre.toLowerCase();
+      const favAliases = genreAliases[favLower] || [];
+
       genreMatched = genres.some(g => {
         const gLower = g.toLowerCase();
-        return favLower === gLower || gLower.includes(favLower) || favLower.includes(gLower);
+        return favLower === gLower ||
+          gLower.includes(favLower) ||
+          favLower.includes(gLower) ||
+          favAliases.some(alias => gLower.includes(alias) || alias.includes(gLower));
       });
     }
 
