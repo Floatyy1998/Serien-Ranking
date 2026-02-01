@@ -13,13 +13,14 @@ import {
   Timer,
   TrendingUp,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { BackButton } from '../components/BackButton';
 import { Series } from '../types/Series';
+import './CatchUpPage.css';
 
 interface CatchUpSeries {
   series: Series;
@@ -219,7 +220,7 @@ export const CatchUpPage: React.FC = () => {
             stroke={`${currentTheme.text.muted}20`}
             strokeWidth={strokeWidth}
           />
-          <motion.circle
+          <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
@@ -227,10 +228,8 @@ export const CatchUpPage: React.FC = () => {
             stroke={`url(#ring-gradient-${progress})`}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
-            style={{ strokeDasharray: circumference }}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
           />
         </svg>
         <div
@@ -496,9 +495,9 @@ export const CatchUpPage: React.FC = () => {
                 {sortOptions.map((option) => {
                   const isActive = sortBy === option.value;
                   return (
-                    <motion.button
+                    <button
                       key={option.value}
-                      whileTap={{ scale: 0.95 }}
+                      className="catchup-sort-btn"
                       onClick={() => setSortBy(option.value)}
                       style={{
                         flex: '1 1 0',
@@ -522,7 +521,7 @@ export const CatchUpPage: React.FC = () => {
                       }}
                     >
                       {option.icon}
-                    </motion.button>
+                    </button>
                   );
                 })}
               </div>
@@ -655,19 +654,10 @@ export const CatchUpPage: React.FC = () => {
 
         {/* Series List */}
         <div style={{ padding: '0 20px 120px' }}>
-          <AnimatePresence mode="popLayout">
-            {sortedData.map((item, index) => (
-              <motion.div
+            {sortedData.map((item) => (
+              <div
                 key={item.series.id}
-                layout
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                transition={{
-                  delay: index * 0.04,
-                  layout: { type: 'spring', stiffness: 300, damping: 30 },
-                }}
-                whileTap={{ scale: 0.98 }}
+                className="catchup-list-item"
                 onClick={() => navigate(`/series/${item.series.id}`)}
                 style={{
                   display: 'flex',
@@ -714,6 +704,8 @@ export const CatchUpPage: React.FC = () => {
                   <img
                     src={getImageUrl(item.series.poster?.poster)}
                     alt={item.series.title}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -826,12 +818,11 @@ export const CatchUpPage: React.FC = () => {
                       overflow: 'hidden',
                     }}
                   >
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${item.progress}%` }}
-                      transition={{ duration: 0.8, delay: index * 0.04, ease: [0.4, 0, 0.2, 1] }}
+                    <div
+                      className="catchup-progress-bar"
                       style={{
                         height: '100%',
+                        width: `${item.progress}%`,
                         background: `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
                         borderRadius: '3px',
                       }}
@@ -863,9 +854,8 @@ export const CatchUpPage: React.FC = () => {
                 >
                   <GradientRing progress={item.progress} size={52} strokeWidth={4} />
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
         </div>
       </div>
     </div>

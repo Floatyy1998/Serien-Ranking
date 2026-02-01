@@ -21,6 +21,18 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { Dialog } from '../components/Dialog';
+import './DiscoverPage.css';
+
+const PLACEHOLDER_SVG = `data:image/svg+xml,${encodeURIComponent(
+  '<svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect width="100%" height="100%" fill="#1a1a2e"/>' +
+    '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" ' +
+    'fill="#666" font-family="Arial" font-size="14">Kein Poster</text></svg>'
+)}`;
+
+const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  (e.target as HTMLImageElement).src = PLACEHOLDER_SVG;
+};
 
 // Premium memoized item card
 const ItemCard = memo(({
@@ -30,21 +42,7 @@ const ItemCard = memo(({
   addingItem,
   currentTheme,
   isDesktop,
-  index
 }: any) => {
-  const handleImageError = useCallback((e: any) => {
-    const target = e.target as HTMLImageElement;
-    if (!target.src.includes('data:image/svg')) {
-      target.src = `data:image/svg+xml;base64,${btoa(`
-        <svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" fill="${currentTheme.background.surface}"/>
-          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${currentTheme.text.muted}" font-family="Arial" font-size="16">
-            Kein Poster
-          </text>
-        </svg>
-      `)}`;
-    }
-  }, [currentTheme]);
 
   const imageUrl = useMemo(() => {
     if (!item.poster_path) return '/placeholder.jpg';
@@ -52,14 +50,12 @@ const ItemCard = memo(({
   }, [item.poster_path]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.03, 0.3) }}
+    <div
+      className="discover-item-card"
       style={{ position: 'relative' }}
     >
-      <motion.div
-        whileTap={{ scale: 0.97 }}
+      <div
+        className="discover-poster-wrap"
         onClick={() => onItemClick(item)}
         style={{
           width: '100%',
@@ -75,8 +71,9 @@ const ItemCard = memo(({
         <img
           src={imageUrl}
           alt={item.title || item.name}
-          onError={handleImageError}
+          onError={handleImgError}
           loading="lazy"
+          decoding="async"
           style={{
             width: '100%',
             height: '100%',
@@ -124,8 +121,8 @@ const ItemCard = memo(({
         )}
 
         {!item.inList && (
-          <motion.button
-            whileTap={{ scale: 0.85 }}
+          <button
+            className="discover-add-btn"
             onClick={(e) => onAddToList(item, e)}
             disabled={addingItem === `${item.type}-${item.id}`}
             style={{
@@ -155,9 +152,9 @@ const ItemCard = memo(({
                 opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
               }}
             />
-          </motion.button>
+          </button>
         )}
-      </motion.div>
+      </div>
 
       <h4
         style={{
@@ -188,7 +185,7 @@ const ItemCard = memo(({
           ? new Date(item.release_date || item.first_air_date).getFullYear()
           : 'TBA'}
       </p>
-    </motion.div>
+    </div>
   );
 });
 
@@ -1141,7 +1138,7 @@ export const DiscoverPage = memo(() => {
                     margin: '0',
                   }}
                 >
-                  {recommendations.map((item, index) => (
+                  {recommendations.map((item) => (
                     <ItemCard
                       key={`rec-${item.type}-${item.id}`}
                       item={item}
@@ -1150,7 +1147,6 @@ export const DiscoverPage = memo(() => {
                       addingItem={addingItem}
                       currentTheme={currentTheme}
                       isDesktop={isDesktop}
-                      index={index}
                     />
                   ))}
                 </div>
@@ -1243,7 +1239,7 @@ export const DiscoverPage = memo(() => {
                     margin: '0',
                   }}
                 >
-                  {searchResults.map((item, index) => (
+                  {searchResults.map((item) => (
                     <ItemCard
                       key={`search-${item.type}-${item.id}`}
                       item={item}
@@ -1252,7 +1248,6 @@ export const DiscoverPage = memo(() => {
                       addingItem={addingItem}
                       currentTheme={currentTheme}
                       isDesktop={isDesktop}
-                      index={index}
                     />
                   ))}
                 </div>
@@ -1270,7 +1265,7 @@ export const DiscoverPage = memo(() => {
                 margin: '0',
               }}
             >
-              {results.map((item, index) => (
+              {results.map((item) => (
                 <ItemCard
                   key={`${item.type}-${item.id}`}
                   item={item}
@@ -1279,7 +1274,6 @@ export const DiscoverPage = memo(() => {
                   addingItem={addingItem}
                   currentTheme={currentTheme}
                   isDesktop={isDesktop}
-                  index={index}
                 />
               ))}
             </div>

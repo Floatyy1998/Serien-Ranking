@@ -1,0 +1,48 @@
+/* ActivityPage - Performance-optimized styles */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.activity-group-item {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 80px;
+  animation: fadeInUp 0.3s ease-out both;
+}
+
+.activity-entry {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: fadeInUp 0.25s ease-out both;
+}
+
+.activity-entry:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.activity-filter-btn {
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: fadeInUp 0.2s ease-out both;
+}
+
+.activity-filter-btn:active {
+  transform: scale(0.95);
+}
+
+.activity-accordion-btn {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.activity-accordion-btn:active {
+  opacity: 0.8;
+}

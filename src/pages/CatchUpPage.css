@@ -1,0 +1,46 @@
+/* CatchUpPage - Performance-optimized styles */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes growWidth {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.catchup-list-item {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 130px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: fadeInUp 0.3s ease-out both;
+}
+
+.catchup-list-item:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.catchup-progress-bar {
+  transform-origin: left;
+  animation: growWidth 0.5s ease-out 0.15s both;
+}
+
+.catchup-sort-btn {
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: fadeInUp 0.2s ease-out both;
+}
+
+.catchup-sort-btn:active {
+  transform: scale(0.95);
+}

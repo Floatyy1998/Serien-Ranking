@@ -32,6 +32,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { FriendActivity } from '../types/Friend';
 import { BackButton } from '../components/BackButton';
 import { AddFriendDialog } from '../components/AddFriendDialog';
+import './ActivityPage.css';
 
 export const ActivityPage = () => {
   const navigate = useNavigate();
@@ -534,9 +535,9 @@ export const ActivityPage = () => {
                   { key: 'series', label: 'Serien' },
                   { key: 'movies', label: 'Filme' },
                 ].map((filter) => (
-                  <motion.button
+                  <button
                     key={filter.key}
-                    whileTap={{ scale: 0.95 }}
+                    className="activity-filter-btn"
                     onClick={() => setFilterType(filter.key as any)}
                     style={{
                       padding: '10px 18px',
@@ -558,7 +559,7 @@ export const ActivityPage = () => {
                     }}
                   >
                     {filter.label}
-                  </motion.button>
+                  </button>
                 ))}
               </div>
 
@@ -604,18 +605,16 @@ export const ActivityPage = () => {
                 </motion.div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {groupedActivities.map(([userId, activities], groupIndex) => {
+                  {groupedActivities.map(([userId, activities]) => {
                     const friendObj = friends.find((f) => f.uid === userId);
                     const userProfile = friendObj ? friendProfiles[friendObj.uid] || friendObj : null;
                     const isExpanded = expandedUsers.has(userId);
                     const latestActivity = activities[0];
 
                     return (
-                      <motion.div
+                      <div
                         key={userId}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: groupIndex * 0.05 }}
+                        className="activity-group-item"
                         style={{
                           background: currentTheme.background.surface,
                           borderRadius: '16px',
@@ -624,8 +623,8 @@ export const ActivityPage = () => {
                         }}
                       >
                         {/* Accordion Header */}
-                        <motion.button
-                          whileTap={{ scale: 0.99 }}
+                        <button
+                          className="activity-accordion-btn"
                           onClick={() => toggleUserExpanded(userId)}
                           style={{
                             width: '100%',
@@ -699,7 +698,7 @@ export const ActivityPage = () => {
                           >
                             <ExpandMore />
                           </motion.div>
-                        </motion.button>
+                        </button>
 
                         {/* Accordion Content */}
                         <AnimatePresence>
@@ -752,9 +751,9 @@ export const ActivityPage = () => {
                                     : getImageUrl(item?.poster);
 
                                   return (
-                                    <motion.div
+                                    <div
                                       key={activity.id}
-                                      whileTap={{ scale: 0.98 }}
+                                      className="activity-entry"
                                       onClick={() => {
                                         if (tmdbId) {
                                           navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
@@ -783,6 +782,8 @@ export const ActivityPage = () => {
                                           <img
                                             src={posterUrl}
                                             alt={item?.title || (activity as any).itemTitle}
+                                            loading="lazy"
+                                            decoding="async"
                                             style={{
                                               width: '100%',
                                               height: '100%',
@@ -902,14 +903,14 @@ export const ActivityPage = () => {
                                           {formatTimeAgo(activity.timestamp)}
                                         </span>
                                       </div>
-                                    </motion.div>
+                                    </div>
                                   );
                                 })}
                               </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>

@@ -39,8 +39,10 @@ export const LoginPage = () => {
         setError('Falsches Passwort.');
       } else if (error.code === 'auth/invalid-email') {
         setError('Ungültige E-Mail-Adresse.');
+      } else if (error.code === 'auth/invalid-credential') {
+        setError('E-Mail oder Passwort ist falsch.');
       } else {
-        setError('Ein Fehler ist aufgetreten. Bitte versuche es später erneut.');
+        setError(`Ein Fehler ist aufgetreten: ${error.code || error.message}`);
       }
     } finally {
       setLoading(false);

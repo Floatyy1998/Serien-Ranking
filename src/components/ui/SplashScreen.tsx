@@ -449,13 +449,30 @@ interface SplashScreenProps {
   minDisplayTime?: number;
 }
 
-export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
+export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps) => {
   const [isHiding, setIsHiding] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('Initialisiere System');
 
   // Track real loading progress
   useEffect(() => {
+    const startTime = Date.now();
+    let completed = false;
+
+    const finish = () => {
+      if (completed) return;
+      completed = true;
+      clearInterval(checkProgress);
+      setLoadingProgress(1);
+      setLoadingText('Start');
+      setTimeout(() => {
+        setIsHiding(true);
+        setTimeout(() => {
+          onComplete?.();
+        }, 500);
+      }, 400);
+    };
+
     const checkProgress = setInterval(() => {
       const status = window.appReadyStatus || {};
       const totalSystems = 5;
@@ -485,20 +502,26 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         setLoadingText('Start');
       }
 
+      // Complete when all systems ready
       if (progress >= 1) {
-        clearInterval(checkProgress);
-        // Wait a moment before hiding
-        setTimeout(() => {
-          setIsHiding(true);
-          setTimeout(() => {
-            onComplete?.();
-          }, 500);
-        }, 800);
+        finish();
+        return;
+      }
+
+      // Complete when external condition is met (e.g. AppWithSplash fallback)
+      if (waitForCondition?.()) {
+        finish();
+        return;
+      }
+
+      // Hard fallback: never hang longer than 4 seconds
+      if (Date.now() - startTime > 4000) {
+        finish();
       }
     }, 50);
 
     return () => clearInterval(checkProgress);
-  }, [onComplete]);
+  }, [onComplete, waitForCondition]);
 
   return (
     <SplashContainer isHiding={isHiding}>

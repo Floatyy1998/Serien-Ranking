@@ -1,0 +1,38 @@
+/* DiscoverPage - Performance-optimized styles */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.discover-item-card {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 280px;
+  animation: fadeInUp 0.3s ease-out both;
+}
+
+.discover-poster-wrap {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.discover-poster-wrap:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+.discover-add-btn {
+  border: none;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.discover-add-btn:active {
+  transform: scale(0.85);
+}
