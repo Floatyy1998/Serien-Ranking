@@ -185,6 +185,8 @@ const PROVIDER_COLORS: Record<string, string> = {
   'MagentaTV': '#E20074',
   'ARD Mediathek': '#003D7F',
   'ZDF Mediathek': '#FF6600',
+  'Animation Digital Network': '#0096FF',
+  'ADN': '#0096FF',
 };
 
 const FALLBACK_COLORS = [
@@ -428,29 +430,10 @@ export async function calculateWatchJourney(
     }
   }
 
-  // Top providers (limit to 5)
-  const sortedProviders = Array.from(providerCounts.entries())
+  // All providers sorted by watch time (no artificial limit)
+  const topProviders = Array.from(providerCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([provider]) => provider);
-  const topProviders = sortedProviders.slice(0, 5);
-
-  // Consolidate other providers
-  const otherProviders = sortedProviders.slice(5);
-  if (otherProviders.length > 0) {
-    providerMonthly.forEach((month) => {
-      let otherTotal = 0;
-      otherProviders.forEach((provider) => {
-        if (month.values[provider]) {
-          otherTotal += month.values[provider];
-          delete month.values[provider];
-        }
-      });
-      if (otherTotal > 0) month.values['Andere'] = otherTotal;
-    });
-    if (providerMonthly.some(m => m.values['Andere'] > 0)) {
-      topProviders.push('Andere');
-    }
-  }
 
   // Generate colors
   const genreColors: Record<string, string> = {};
@@ -460,7 +443,7 @@ export async function calculateWatchJourney(
 
   const providerColors: Record<string, string> = {};
   topProviders.forEach((provider, i) => {
-    providerColors[provider] = provider === 'Andere' ? '#636e72' : getColor(provider, PROVIDER_COLORS, i);
+    providerColors[provider] = getColor(provider, PROVIDER_COLORS, i);
   });
 
   // Build heatmap array
