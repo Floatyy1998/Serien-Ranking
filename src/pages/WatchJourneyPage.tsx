@@ -607,7 +607,7 @@ const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         }}
       >
         <h3 style={{ color: 'white', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-          Stunden pro Dienst
+          Stunden pro Streaming-Dienst
         </h3>
         <div style={{ width: '100%', height: barData.length * 50 + 20 }}>
           <ResponsiveContainer>
@@ -1522,7 +1522,6 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
             </div>
           </div>
         </motion.div>
-
       </div>
     </div>
   );
@@ -1552,7 +1551,20 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
   const [monthRangeStart, setMonthRangeStart] = useState(1); // 1-12
   const [monthRangeEnd, setMonthRangeEnd] = useState(12); // 1-12
 
-  const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mär',
+    'Apr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Dez',
+  ];
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -1573,7 +1585,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
       if (!TMDB_API_KEY || seriesStats.length === 0) return;
 
       const newPosters: Record<number, string> = {};
-      const seriesIds = seriesStats.map(s => s.seriesId);
+      const seriesIds = seriesStats.map((s) => s.seriesId);
 
       // Fetch in batches of 10 to avoid overwhelming the API
       const batchSize = 10;
@@ -1612,13 +1624,13 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
     const rangeDuration = rangeEnd - rangeStart;
 
     return seriesStats
-      .filter(series => {
+      .filter((series) => {
         // Include series that overlap with the selected month range
         const first = new Date(series.firstWatched).getTime();
         const last = new Date(series.lastWatched).getTime();
         return first <= rangeEnd && last >= rangeStart;
       })
-      .map(series => {
+      .map((series) => {
         const firstDate = new Date(series.firstWatched);
         const lastDate = new Date(series.lastWatched);
 
@@ -1633,7 +1645,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
 
         // Calculate total watch time in hours
         const totalMinutes = series.episodes * (series.avgRuntime || 45);
-        const totalHours = Math.round(totalMinutes / 60 * 10) / 10;
+        const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
 
         return {
           ...series,
@@ -1659,9 +1671,8 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
   // Total stats
   const totalEpisodes = seriesStats.reduce((sum, s) => sum + s.episodes, 0);
   const uniqueSeriesCount = seriesStats.length;
-  const avgEpisodesPerSeries = uniqueSeriesCount > 0
-    ? Math.round(totalEpisodes / uniqueSeriesCount * 10) / 10
-    : 0;
+  const avgEpisodesPerSeries =
+    uniqueSeriesCount > 0 ? Math.round((totalEpisodes / uniqueSeriesCount) * 10) / 10 : 0;
 
   if (seriesStats.length === 0) {
     return (
@@ -1706,7 +1717,15 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, marginBottom: 8 }}>
+          <p
+            style={{
+              color: textSecondary,
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 1,
+              marginBottom: 8,
+            }}
+          >
             DEINE SERIEN-REISE
           </p>
           <h2 style={{ color: textPrimary, fontSize: 32, fontWeight: 800, margin: '0 0 8px' }}>
@@ -1743,7 +1762,16 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+            flexWrap: 'wrap',
+            gap: 12,
+          }}
+        >
           <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: 0 }}>
             Serien-Timeline {data.year}
           </h3>
@@ -1773,20 +1801,26 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 }}
               >
                 {monthNames.map((name, i) => (
-                  <option key={i} value={i + 1} style={{ background: bgSurface, color: textPrimary }}>
+                  <option
+                    key={i}
+                    value={i + 1}
+                    style={{ background: bgSurface, color: textPrimary }}
+                  >
                     {name}
                   </option>
                 ))}
               </select>
-              <ExpandMore style={{
-                position: 'absolute',
-                right: 6,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: 18,
-                color: primaryColor,
-                pointerEvents: 'none',
-              }} />
+              <ExpandMore
+                style={{
+                  position: 'absolute',
+                  right: 6,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: 18,
+                  color: primaryColor,
+                  pointerEvents: 'none',
+                }}
+              />
             </div>
             <span style={{ color: textSecondary, fontSize: 13 }}>–</span>
             <div style={{ position: 'relative' }}>
@@ -1812,30 +1846,38 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 }}
               >
                 {monthNames.map((name, i) => (
-                  <option key={i} value={i + 1} style={{ background: bgSurface, color: textPrimary }}>
+                  <option
+                    key={i}
+                    value={i + 1}
+                    style={{ background: bgSurface, color: textPrimary }}
+                  >
                     {name}
                   </option>
                 ))}
               </select>
-              <ExpandMore style={{
-                position: 'absolute',
-                right: 6,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: 18,
-                color: primaryColor,
-                pointerEvents: 'none',
-              }} />
+              <ExpandMore
+                style={{
+                  position: 'absolute',
+                  right: 6,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: 18,
+                  color: primaryColor,
+                  pointerEvents: 'none',
+                }}
+              />
             </div>
           </div>
         </div>
 
         {/* Month headers - only show selected range */}
-        <div style={{
-          display: 'flex',
-          marginBottom: 8,
-          paddingLeft: isMobile ? 95 : 253,
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            marginBottom: 8,
+            paddingLeft: isMobile ? 95 : 253,
+          }}
+        >
           {monthNames.slice(monthRangeStart - 1, monthRangeEnd).map((month, i) => (
             <div
               key={i}
@@ -1891,11 +1933,13 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               </div>
 
               {/* Title & Stats */}
-              <div style={{
-                width: isMobile ? 55 : 170,
-                flexShrink: 0,
-                overflow: 'hidden',
-              }}>
+              <div
+                style={{
+                  width: isMobile ? 55 : 170,
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                }}
+              >
                 <div
                   style={{
                     color: textPrimary,
@@ -1908,35 +1952,40 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 >
                   {series.title}
                 </div>
-                <div style={{
-                  color: textSecondary,
-                  fontSize: isMobile ? 9 : 13,
-                  marginTop: isMobile ? 2 : 4,
-                }}>
+                <div
+                  style={{
+                    color: textSecondary,
+                    fontSize: isMobile ? 9 : 13,
+                    marginTop: isMobile ? 2 : 4,
+                  }}
+                >
                   {series.episodes} Ep{!isMobile && ` · ${series.totalHours}h`}
                 </div>
-                <div style={{
-                  color: primaryColor,
-                  fontSize: isMobile ? 8 : 12,
-                  marginTop: isMobile ? 2 : 4,
-                  fontWeight: 500,
-                  whiteSpace: 'nowrap',
-                }}>
+                <div
+                  style={{
+                    color: primaryColor,
+                    fontSize: isMobile ? 8 : 12,
+                    marginTop: isMobile ? 2 : 4,
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {isMobile
                     ? `${series.effectiveStart.getDate()}.${series.effectiveStart.getMonth() + 1}. – ${series.effectiveEnd.getDate()}.${series.effectiveEnd.getMonth() + 1}.`
-                    : `${formatDateShort(series.effectiveStart)} – ${formatDateShort(series.effectiveEnd)}`
-                  }
+                    : `${formatDateShort(series.effectiveStart)} – ${formatDateShort(series.effectiveEnd)}`}
                 </div>
               </div>
 
               {/* Gantt bar area */}
-              <div style={{
-                flex: 1,
-                height: isMobile ? 24 : 44,
-                position: 'relative',
-                background: `${textSecondary}10`,
-                borderRadius: 6,
-              }}>
+              <div
+                style={{
+                  flex: 1,
+                  height: isMobile ? 24 : 44,
+                  position: 'relative',
+                  background: `${textSecondary}10`,
+                  borderRadius: 6,
+                }}
+              >
                 {/* Month grid lines - based on selected range */}
                 {[...Array(Math.max(monthRangeEnd - monthRangeStart, 0))].map((_, i) => (
                   <div
@@ -1996,15 +2045,16 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               gap: 8,
             }}
           >
-            <ExpandMore style={{
-              fontSize: 18,
-              transform: showAllTimeline ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s',
-            }} />
+            <ExpandMore
+              style={{
+                fontSize: 18,
+                transform: showAllTimeline ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.2s',
+              }}
+            />
             {showAllTimeline
               ? 'Weniger anzeigen'
-              : `${timelineSeries.length - 10} weitere Serien anzeigen`
-            }
+              : `${timelineSeries.length - 10} weitere Serien anzeigen`}
           </motion.button>
         )}
 
@@ -2069,9 +2119,7 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                   justifyContent: 'center',
                 }}
               >
-                {!posters[series.seriesId] && (
-                  <Tv style={{ color: textSecondary, fontSize: 20 }} />
-                )}
+                {!posters[series.seriesId] && <Tv style={{ color: textSecondary, fontSize: 20 }} />}
               </div>
 
               {/* Rank */}
@@ -2080,9 +2128,8 @@ const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                   width: 28,
                   height: 28,
                   borderRadius: '50%',
-                  background: index < 3
-                    ? ['#ffd700', '#c0c0c0', '#cd7f32'][index]
-                    : `${textSecondary}30`,
+                  background:
+                    index < 3 ? ['#ffd700', '#c0c0c0', '#cd7f32'][index] : `${textSecondary}30`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -2158,13 +2205,13 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
       { label: '> 90', min: 90, max: Infinity, count: 0 },
     ];
 
-    data.seriesStats.forEach(series => {
-      const bucket = buckets.find(b => series.avgRuntime >= b.min && series.avgRuntime < b.max);
+    data.seriesStats.forEach((series) => {
+      const bucket = buckets.find((b) => series.avgRuntime >= b.min && series.avgRuntime < b.max);
       if (bucket) bucket.count += series.episodes;
     });
 
-    const maxCount = Math.max(...buckets.map(b => b.count));
-    return buckets.map(b => ({
+    const maxCount = Math.max(...buckets.map((b) => b.count));
+    return buckets.map((b) => ({
       ...b,
       percentage: maxCount > 0 ? (b.count / maxCount) * 100 : 0,
     }));
@@ -2173,7 +2220,7 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
   // Top rewatched series
   const topRewatched = useMemo(() => {
     return [...data.seriesStats]
-      .filter(s => s.rewatchEpisodes > 0)
+      .filter((s) => s.rewatchEpisodes > 0)
       .sort((a, b) => b.rewatchEpisodes - a.rewatchEpisodes)
       .slice(0, 5);
   }, [data.seriesStats]);
@@ -2181,7 +2228,7 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
   // Top binged series
   const topBinged = useMemo(() => {
     return [...data.seriesStats]
-      .filter(s => s.bingeEpisodes > 0)
+      .filter((s) => s.bingeEpisodes > 0)
       .sort((a, b) => b.bingeEpisodes - a.bingeEpisodes)
       .slice(0, 5);
   }, [data.seriesStats]);
@@ -2220,7 +2267,15 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <LocalFireDepartment style={{ color: '#e94560', fontSize: 32 }} />
             <div>
-              <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, margin: 0 }}>
+              <p
+                style={{
+                  color: textSecondary,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: 1,
+                  margin: 0,
+                }}
+              >
                 BINGE-STATISTIKEN
               </p>
               <h2 style={{ color: textPrimary, fontSize: 24, fontWeight: 800, margin: 0 }}>
@@ -2230,16 +2285,43 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
-              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>{data.bingeEpisodeCount}</div>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '16px',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: 12,
+              }}
+            >
+              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>
+                {data.bingeEpisodeCount}
+              </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Episoden gebinged</div>
             </div>
-            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
-              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>{data.avgBingeLength}</div>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '16px',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: 12,
+              }}
+            >
+              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>
+                {data.avgBingeLength}
+              </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Ø pro Session</div>
             </div>
-            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
-              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>{data.longestBinge}</div>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '16px',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: 12,
+              }}
+            >
+              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>
+                {data.longestBinge}
+              </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Längste Session</div>
             </div>
           </div>
@@ -2263,8 +2345,12 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       borderRadius: 8,
                     }}
                   >
-                    <span style={{ color: '#e94560', fontWeight: 700, width: 20 }}>{index + 1}</span>
-                    <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>{series.title}</span>
+                    <span style={{ color: '#e94560', fontWeight: 700, width: 20 }}>
+                      {index + 1}
+                    </span>
+                    <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>
+                      {series.title}
+                    </span>
                     <span style={{ color: '#e94560', fontWeight: 600, fontSize: 13 }}>
                       {series.bingeEpisodes} Ep.
                     </span>
@@ -2309,7 +2395,15 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <Replay style={{ color: '#a29bfe', fontSize: 32 }} />
             <div>
-              <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, letterSpacing: 1, margin: 0 }}>
+              <p
+                style={{
+                  color: textSecondary,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: 1,
+                  margin: 0,
+                }}
+              >
                 REWATCH-STATISTIKEN
               </p>
               <h2 style={{ color: textPrimary, fontSize: 24, fontWeight: 800, margin: 0 }}>
@@ -2319,14 +2413,30 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '16px',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: 12,
+              }}
+            >
               <div style={{ color: '#a29bfe', fontSize: 24, fontWeight: 700 }}>
                 {Math.round(data.rewatchMinutes / 60)}h
               </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Rewatch-Zeit</div>
             </div>
-            <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
-              <div style={{ color: '#a29bfe', fontSize: 24, fontWeight: 700 }}>{data.rewatchPercentage}%</div>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '16px',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: 12,
+              }}
+            >
+              <div style={{ color: '#a29bfe', fontSize: 24, fontWeight: 700 }}>
+                {data.rewatchPercentage}%
+              </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>deiner Zeit</div>
             </div>
           </div>
@@ -2350,8 +2460,12 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       borderRadius: 8,
                     }}
                   >
-                    <span style={{ color: '#a29bfe', fontWeight: 700, width: 20 }}>{index + 1}</span>
-                    <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>{series.title}</span>
+                    <span style={{ color: '#a29bfe', fontWeight: 700, width: 20 }}>
+                      {index + 1}
+                    </span>
+                    <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>
+                      {series.title}
+                    </span>
                     <span style={{ color: '#a29bfe', fontWeight: 600, fontSize: 13 }}>
                       {series.rewatchEpisodes}× rewatch
                     </span>
@@ -2440,7 +2554,9 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#fdcb6e', fontSize: 28, fontWeight: 700 }}>{data.totalEpisodes}</div>
+            <div style={{ color: '#fdcb6e', fontSize: 28, fontWeight: 700 }}>
+              {data.totalEpisodes}
+            </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Episoden insgesamt</div>
           </div>
 
@@ -2468,7 +2584,9 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#667eea', fontSize: 28, fontWeight: 700 }}>{data.uniqueSeriesCount}</div>
+            <div style={{ color: '#667eea', fontSize: 28, fontWeight: 700 }}>
+              {data.uniqueSeriesCount}
+            </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Verschiedene Serien</div>
           </div>
 
@@ -2481,7 +2599,9 @@ const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#e94560', fontSize: 28, fontWeight: 700 }}>{data.longestBinge}</div>
+            <div style={{ color: '#e94560', fontSize: 28, fontWeight: 700 }}>
+              {data.longestBinge}
+            </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Längste Binge-Session</div>
           </div>
         </div>
@@ -3042,7 +3162,15 @@ export const WatchJourneyPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const tabParam = searchParams.get('tab') as TabType;
-    const validTabs: TabType[] = ['genre', 'provider', 'heatmap', 'activity', 'trends', 'serien', 'insights'];
+    const validTabs: TabType[] = [
+      'genre',
+      'provider',
+      'heatmap',
+      'activity',
+      'trends',
+      'serien',
+      'insights',
+    ];
     return tabParam && validTabs.includes(tabParam) ? tabParam : 'trends';
   });
 
@@ -3580,13 +3708,15 @@ export const WatchJourneyPage: React.FC = () => {
 
         {/* Active Tab Title */}
         <div style={{ padding: '0 16px 16px' }}>
-          <h2 style={{
-            margin: 0,
-            fontSize: '18px',
-            fontWeight: 700,
-            color: 'white',
-          }}>
-            {tabs.find(t => t.id === activeTab)?.label}
+          <h2
+            style={{
+              margin: 0,
+              fontSize: '18px',
+              fontWeight: 700,
+              color: 'white',
+            }}
+          >
+            {tabs.find((t) => t.id === activeTab)?.label}
           </h2>
         </div>
 
