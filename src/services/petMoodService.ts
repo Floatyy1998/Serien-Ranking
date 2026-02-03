@@ -1,5 +1,7 @@
 import { Pet } from '../types/pet.types';
 
+type MoodAnimation = Record<string, number[]>;
+
 export class PetMoodService {
   getMoodByTimeOfDay(): Pet['mood'] {
     const hour = new Date().getHours();
@@ -105,7 +107,7 @@ export class PetMoodService {
     return mood ? moodEmojis[mood] : '😊';
   }
 
-  getMoodAnimation(mood: Pet['mood']): any {
+  getMoodAnimation(mood: Pet['mood']): MoodAnimation {
     // Verschiedene Animationen basierend auf Stimmung
     const animations = {
       happy: {

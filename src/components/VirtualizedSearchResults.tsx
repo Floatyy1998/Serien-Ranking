@@ -69,6 +69,7 @@ function SearchResultRow({
               : '/placeholder.jpg'
           }
           alt={item.title || item.name}
+          decoding="async"
           style={{
             width: '50px',
             height: '75px',

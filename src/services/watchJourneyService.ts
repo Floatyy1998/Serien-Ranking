@@ -221,8 +221,6 @@ export async function calculateWatchJourney(
   userId: string,
   year: number
 ): Promise<WatchJourneyData> {
-  console.log('[WatchJourney] Calculating for', year);
-
   const events = await getYearlyActivity(userId, year);
 
   // Filter watch events
@@ -230,8 +228,6 @@ export async function calculateWatchJourney(
     (e): e is EpisodeWatchEvent | MovieWatchEvent =>
       e.type === 'episode_watch' || e.type === 'movie_watch'
   );
-
-  console.log('[WatchJourney] Found', watchEvents.length, 'watch events');
 
   // Initialize data structures
   const genreMonthly = MONTH_NAMES.map((name, i) => ({
@@ -545,8 +541,6 @@ export async function calculateMultiYearTrends(
   userId: string,
   years: number[]
 ): Promise<MultiYearTrendsData> {
-  console.log('[WatchJourney] Calculating multi-year trends for', years);
-
   // Fetch data for all years in parallel
   const yearDataPromises = years.map((year) => calculateWatchJourney(userId, year));
   const allYearData = await Promise.all(yearDataPromises);

@@ -16,7 +16,15 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
-const FeatureCard = ({ icon, title, description, delay, color = '#a855f7' }: any) => (
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  delay: number;
+  color?: string;
+}
+
+const FeatureCard = ({ icon, title, description, delay, color = '#a855f7' }: FeatureCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}

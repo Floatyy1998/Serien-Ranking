@@ -53,11 +53,11 @@ export const PetWidget: React.FC = () => {
 
     try {
       const savedPosition = await petService.getPetWidgetPosition(user.uid);
-      if (savedPosition && savedPosition.edge !== undefined) {
+      if (savedPosition && 'edge' in savedPosition) {
         // If we have edge-based position saved
         setEdgePosition(savedPosition);
         calculateAndSetPixelPosition(savedPosition);
-      } else if (savedPosition && savedPosition.xPercent !== undefined) {
+      } else if (savedPosition && 'xPercent' in savedPosition) {
         // Legacy percentage-based position - convert to edge-based
         const convertedEdge = convertPercentToEdge(savedPosition);
         setEdgePosition(convertedEdge);

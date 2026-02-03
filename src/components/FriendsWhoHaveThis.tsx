@@ -7,6 +7,8 @@ import { useAuth } from '../App';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { calculateOverallRating } from '../lib/rating/rating';
+import { Series } from '../types/Series';
+import { Movie } from '../types/Movie';
 
 interface FriendWithItem {
   uid: string;
@@ -50,11 +52,13 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
 
               if (itemsData) {
                 // Find the item with matching ID
-                const foundItem = Object.values(itemsData).find((item: any) => item.id === itemId);
+                const foundItem = Object.values(itemsData).find(
+                  (item) => (item as Series | Movie).id === itemId
+                ) as Series | Movie | undefined;
 
                 if (foundItem) {
                   // Calculate rating
-                  const rating = calculateOverallRating(foundItem as any);
+                  const rating = calculateOverallRating(foundItem);
 
                   // Load profile from users/{uid} to get photoURL
                   const userRef = firebase.database().ref(`users/${friend.uid}`);

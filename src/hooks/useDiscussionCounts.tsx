@@ -116,9 +116,9 @@ export const useTotalSeriesDiscussionCount = (seriesId: number): number => {
       const data = snapshot.val();
       episodeCounts = {};
       if (data) {
-        Object.entries(data).forEach(([key, discussions]: [string, any]) => {
+        Object.entries(data).forEach(([key, discussions]: [string, unknown]) => {
           if (key.startsWith(`${seriesId}_s`)) {
-            episodeCounts[key] = discussions ? Object.keys(discussions).length : 0;
+            episodeCounts[key] = discussions ? Object.keys(discussions as Record<string, unknown>).length : 0;
           }
         });
       }

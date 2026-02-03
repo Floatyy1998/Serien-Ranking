@@ -76,7 +76,7 @@ export const InactiveSeriesNotification: React.FC<InactiveSeriesNotificationProp
   const handleDismissAll = async () => {
     if (user && series.length > 0) {
       // Mark all series as notified
-      const updates: any = {};
+      const updates: Record<string, { dismissed: boolean; timestamp: number }> = {};
       series.forEach(s => {
         updates[`users/${user.uid}/inactiveSeriesNotifications/${s.id}`] = {
           dismissed: true,
@@ -126,7 +126,6 @@ export const InactiveSeriesNotification: React.FC<InactiveSeriesNotificationProp
       // Mark as notified since user interacted with it
       await markSeriesAsNotified(seriesItem.id);
 
-      console.log(`✅ Removed ${seriesItem.title || seriesItem.original_name} from watchlist`);
     } catch (error) {
       console.error('Error removing from watchlist:', error);
     }

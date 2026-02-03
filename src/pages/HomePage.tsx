@@ -46,6 +46,23 @@ import { WrappedNotification } from '../components/WrappedNotification';
 import { TasteMatchCard } from '../components/TasteMatchCard';
 import { WatchJourneyCard } from '../components/WatchJourneyCard';
 import { CatchUpCard } from '../components/CatchUpCard';
+import type { Series } from '../types/Series';
+
+// Isolated clock component - updates every second without re-rendering parent
+const LiveClock = () => {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <>
+      {time.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
+      {' • '}
+      {time.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
+    </>
+  );
+};
 
 // Episode Discussion Button with count
 const EpisodeDiscussionButton: React.FC<{
@@ -118,7 +135,7 @@ export const HomePage: React.FC = () => {
     clearCompletedSeries
   } = useSeriesList();
   const { currentTheme } = useTheme();
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
   const [dragOffsetsEpisodes, setDragOffsetsEpisodes] = useState<{
     [key: string]: number;
@@ -161,14 +178,16 @@ export const HomePage: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Update time every second for clock display
+  // Update greeting only when hour changes (not every second)
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const timer = setInterval(() => {
+      const hour = new Date().getHours();
+      setCurrentHour((prev) => (prev !== hour ? hour : prev));
+    }, 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Use the imported greeting function
-  const greeting = useMemo(() => getGreeting(currentTime.getHours()), [currentTime]);
+  const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
 
   // Use optimized hooks for heavy computations
   const stats = useWebWorkerStatsOptimized();
@@ -192,13 +211,13 @@ export const HomePage: React.FC = () => {
         : Object.values(series.seasons);
 
       let hasUnwatchedEpisode = false;
-      for (const season of seasonsArray as any[]) {
+      for (const season of seasonsArray as Series['seasons']) {
         if (!season?.episodes) continue;
         const episodesArray = Array.isArray(season.episodes)
           ? season.episodes
           : Object.values(season.episodes);
 
-        for (const episode of episodesArray as any[]) {
+        for (const episode of episodesArray as Series['seasons'][number]['episodes']) {
           if (!episode?.watched && episode?.air_date) {
             const airDate = new Date(episode.air_date);
             if (airDate <= today) {
@@ -218,7 +237,7 @@ export const HomePage: React.FC = () => {
 
   // Handle continue watching episode complete
   const handleContinueEpisodeComplete = async (
-    item: any,
+    item: (typeof continueWatching)[number],
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
@@ -262,9 +281,7 @@ export const HomePage: React.FC = () => {
           await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
 
           // 🎁 Wrapped 2026: Episode-Watch loggen
-          const providers = item.provider?.provider?.map((p: any) => p.name);
-          console.log('[Wrapped Debug] Continue Watching - item.provider:', item.provider);
-          console.log('[Wrapped Debug] Continue Watching - providers:', providers);
+          const providers = item.provider?.provider?.map((p: { name: string }) => p.name);
           WatchActivityService.logEpisodeWatch(
             user.uid,
             item.id,
@@ -298,7 +315,7 @@ export const HomePage: React.FC = () => {
 
   // Handle episode swipe to complete
   const handleEpisodeComplete = async (
-    episode: any,
+    episode: (typeof todayEpisodes)[number] & { seriesGenre?: string[]; seriesProviders?: string[]; runtime?: number },
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
@@ -348,9 +365,9 @@ export const HomePage: React.FC = () => {
           // 🎁 Wrapped 2026: Episode-Watch loggen
           WatchActivityService.logEpisodeWatch(
             user.uid,
-            episode.seriesId,
+            Number(episode.seriesId),
             episode.seriesTitle,
-            episode.seriesNmr,
+            Number(episode.seriesNmr),
             episode.seasonNumber,
             episode.episodeNumber,
             episode.episodeName,
@@ -513,14 +530,7 @@ export const HomePage: React.FC = () => {
                 margin: 0,
               }}
             >
-              {currentTime.toLocaleDateString('de-DE', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })} • {currentTime.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })} Uhr
+              <LiveClock />
             </p>
           </div>
 
@@ -1060,6 +1070,7 @@ export const HomePage: React.FC = () => {
                         <img
                           src={item.poster}
                           alt={item.title}
+                          decoding="async"
                           onClick={() => navigate(`/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`)}
                           style={{
                             width: '50px',
@@ -1337,6 +1348,7 @@ export const HomePage: React.FC = () => {
                         <img
                           src={episode.poster}
                           alt={episode.seriesTitle}
+                          decoding="async"
                           onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`)}
                           style={{
                             width: '50px',
@@ -1470,6 +1482,7 @@ export const HomePage: React.FC = () => {
                   <img
                     src={item.poster}
                     alt={item.title}
+                    decoding="async"
                     style={{
                       width: '100%',
                       aspectRatio: '2/3',
@@ -1624,6 +1637,7 @@ export const HomePage: React.FC = () => {
                   <img
                     src={item.poster}
                     alt={item.title}
+                    decoding="async"
                     style={{
                       width: '100%',
                       aspectRatio: '2/3',

@@ -379,7 +379,7 @@ class TmdbJobsService {
 
       // Umwandlung in Record<department, jobs[]> Format
       const jobsByDepartment: Record<string, string[]> = {};
-      data.forEach((dept: any) => {
+      data.forEach((dept: { department?: string; jobs?: string[] }) => {
         if (dept.department && Array.isArray(dept.jobs)) {
           jobsByDepartment[dept.department] = dept.jobs;
         }

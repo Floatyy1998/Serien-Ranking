@@ -32,17 +32,18 @@ export const LoginPage = () => {
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password);
       navigate('/');
-    } catch (error: any) {
-      if (error.code === 'auth/user-not-found') {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
+      if (firebaseError.code === 'auth/user-not-found') {
         setError('Kein Benutzer mit dieser E-Mail-Adresse gefunden.');
-      } else if (error.code === 'auth/wrong-password') {
+      } else if (firebaseError.code === 'auth/wrong-password') {
         setError('Falsches Passwort.');
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (firebaseError.code === 'auth/invalid-email') {
         setError('Ungültige E-Mail-Adresse.');
-      } else if (error.code === 'auth/invalid-credential') {
+      } else if (firebaseError.code === 'auth/invalid-credential') {
         setError('E-Mail oder Passwort ist falsch.');
       } else {
-        setError(`Ein Fehler ist aufgetreten: ${error.code || error.message}`);
+        setError(`Ein Fehler ist aufgetreten: ${firebaseError.code || firebaseError.message || 'Unbekannter Fehler'}`);
       }
     } finally {
       setLoading(false);

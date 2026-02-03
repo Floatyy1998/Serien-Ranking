@@ -25,7 +25,7 @@ interface EnhancedCacheResult<T> {
 /**
  * Enhanced useFirebaseCache Hook with Offline-First capabilities
  */
-export function useEnhancedFirebaseCache<T = any>(
+export function useEnhancedFirebaseCache<T = unknown>(
   path: string,
   options: EnhancedCacheOptions = {}
 ): EnhancedCacheResult<T> {
@@ -53,7 +53,7 @@ export function useEnhancedFirebaseCache<T = any>(
       // 1. Versuche IndexedDB Cache
       const cachedData = await offlineFirebaseService.getCachedData(path);
       if (cachedData) {
-        return cachedData;
+        return cachedData as T;
       }
       // 2. Fallback: Memory Cache (falls implementiert)
       // Hier könnte ein Memory-Cache implementiert werden

@@ -144,14 +144,6 @@ export const WrappedPage: React.FC = () => {
           return;
         }
 
-        // Debug: Log events
-        console.log('[Wrapped Debug] Total events loaded:', events.length);
-        const movieEvts = events.filter((e: any) => e.type === 'movie_watch' || e.type === 'movie_rating');
-        const episodeEvts = events.filter((e: any) => e.type === 'episode_watch');
-        console.log('[Wrapped Debug] Movie events:', movieEvts.length, movieEvts);
-        console.log('[Wrapped Debug] Episode events:', episodeEvts.length);
-        console.log('[Wrapped Debug] All event types:', [...new Set(events.map((e: any) => e.type))]);
-
         // Statistiken berechnen
         let calculatedStats = calculateWrappedStats(events, bingeSessions, year);
 
@@ -258,7 +250,6 @@ export const WrappedPage: React.FC = () => {
         });
       } catch (err) {
         // User cancelled or share failed
-        console.log('Share cancelled');
       }
     } else {
       // Fallback: Copy to clipboard

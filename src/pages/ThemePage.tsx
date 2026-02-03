@@ -233,7 +233,7 @@ export const ThemePage = () => {
           <motion.button
             key={tab.key}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveTab(tab.key as any)}
+            onClick={() => setActiveTab(tab.key as 'colors' | 'sync')}
             style={{
               flex: 1,
               display: 'flex',

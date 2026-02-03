@@ -15,11 +15,84 @@ interface CastMember {
   known_for_department?: string;
 }
 
+interface SeriesDataProp {
+  name?: string;
+  title?: string;
+  genres?: { id: number; name: string }[];
+  genre?: { genres?: string[] };
+  origin_country?: string[];
+}
+
+interface AnimeCharacterData {
+  character: {
+    name: string;
+    native?: string;
+    image?: string;
+  };
+  role: string;
+  voice_actors?: VoiceActorRef[];
+}
+
+interface VoiceActorRef {
+  person: {
+    id: number;
+    name: string;
+    native?: string;
+    image?: string;
+  };
+  language: string;
+}
+
+interface PersonDetailsData {
+  name: string;
+  profile_path?: string;
+  known_for_department?: string;
+  birthday?: string;
+  credits: CreditItem[];
+}
+
+interface CreditItem {
+  id: number;
+  title?: string;
+  name?: string;
+  character?: string;
+  job?: string;
+  poster_path?: string;
+  media_type?: string;
+  vote_average?: number;
+  popularity?: number;
+  release_date?: string;
+  first_air_date?: string;
+}
+
+interface VoiceActorDetailsData {
+  name: { full: string; native?: string };
+  image?: { large?: string };
+  age?: number;
+  dateOfBirth?: { year?: number; month?: number; day?: number };
+  characterMedia?: {
+    edges?: CharacterMediaEdge[];
+  };
+}
+
+interface CharacterMediaEdge {
+  node: {
+    id: number;
+    title: { romaji?: string; english?: string };
+    type?: string;
+    coverImage?: { large?: string };
+    startDate?: { year?: number };
+    meanScore?: number;
+  };
+  characters?: { id: number; name: { full: string } }[];
+  characterRole?: string;
+}
+
 interface CastCrewProps {
   tmdbId: number;
   mediaType: 'tv' | 'movie';
   onPersonClick?: (personId: number) => void;
-  seriesData?: any; // For checking if it's anime
+  seriesData?: SeriesDataProp;
 }
 
 export const CastCrew: React.FC<CastCrewProps> = ({
@@ -31,19 +104,19 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   const { currentTheme } = useTheme();
   const [cast, setCast] = useState<CastMember[]>([]);
   const [crew, setCrew] = useState<CastMember[]>([]);
-  const [animeCharacters, setAnimeCharacters] = useState<any[]>([]);
+  const [animeCharacters, setAnimeCharacters] = useState<AnimeCharacterData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [personDetails, setPersonDetails] = useState<any>(null);
+  const [personDetails, setPersonDetails] = useState<PersonDetailsData | null>(null);
   const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null);
-  const [selectedVoiceActor, setSelectedVoiceActor] = useState<any>(null);
-  const [voiceActorDetails, setVoiceActorDetails] = useState<any>(null);
+  const [selectedVoiceActor, setSelectedVoiceActor] = useState<number | null>(null);
+  const [voiceActorDetails, setVoiceActorDetails] = useState<VoiceActorDetailsData | null>(null);
   const [voiceActorLoading, setVoiceActorLoading] = useState(false);
 
   // Check if anime - multiple detection methods
   // Method 1: Check for Animation genre (id 16) and Asian origin
   const hasAnimationGenre =
-    seriesData?.genres?.some((g: any) => g.id === 16) ||
-    seriesData?.genre?.genres?.some((g: string) => g.toLowerCase().includes('animation'));
+    seriesData?.genres?.some((g) => g.id === 16) ||
+    seriesData?.genre?.genres?.some((g) => g.toLowerCase().includes('animation'));
 
   const isFromAsianCountry =
     seriesData?.origin_country?.some((c: string) => ['JP', 'CN', 'KR'].includes(c)) || false;
@@ -138,18 +211,23 @@ export const CastCrew: React.FC<CastCrewProps> = ({
 
       const result = await response.json();
       if (result.data?.Media?.characters?.edges) {
-        const transformedCharacters = result.data.Media.characters.edges
-          .filter((edge: any) => edge.voiceActors && edge.voiceActors.length > 0)
-          .map((edge: any) => ({
+        interface AniListEdge {
+          node: { name: { first?: string; last?: string; native?: string }; image?: { large?: string } };
+          role: string;
+          voiceActors?: { id: number; name: { first?: string; last?: string; native?: string }; image?: { large?: string } }[];
+        }
+        const transformedCharacters = (result.data.Media.characters.edges as AniListEdge[])
+          .filter((edge) => edge.voiceActors && edge.voiceActors.length > 0)
+          .map((edge) => ({
             character: {
               name: `${edge.node.name.first || ''} ${edge.node.name.last || ''}`.trim(),
               native: edge.node.name.native,
               image: edge.node.image?.large,
             },
             role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
-            voice_actors: edge.voiceActors.map((va: any) => ({
+            voice_actors: edge.voiceActors!.map((va) => ({
               person: {
-                id: va.id, // AniList ID des Voice Actors
+                id: va.id,
                 name: `${va.name.first || ''} ${va.name.last || ''}`.trim(),
                 native: va.name.native,
                 image: va.image?.large,
@@ -159,7 +237,9 @@ export const CastCrew: React.FC<CastCrewProps> = ({
           }));
         setAnimeCharacters(transformedCharacters);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to fetch anime characters from AniList:', error);
+    }
   };
 
   const fetchCredits = async () => {
@@ -196,6 +276,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
       setCast(sortedCast);
       setCrew(importantCrew);
     } catch (error) {
+      console.error('Failed to fetch TMDB cast/crew credits:', error);
     } finally {
       setLoading(false);
     }
@@ -220,8 +301,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
       const creditsData = await creditsResponse.json();
 
       // Sort credits by popularity
-      const sortedCredits = [...creditsData.cast, ...creditsData.crew]
-        .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
+      const sortedCredits = ([...creditsData.cast, ...creditsData.crew] as CreditItem[])
+        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
         .slice(0, 20);
 
       setPersonDetails({
@@ -229,7 +310,9 @@ export const CastCrew: React.FC<CastCrewProps> = ({
         credits: sortedCredits,
       });
       setSelectedPersonId(personId);
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to fetch person details from TMDB:', error);
+    }
   };
 
   const handlePersonClick = (personId: number) => {
@@ -310,12 +393,13 @@ export const CastCrew: React.FC<CastCrewProps> = ({
         }
       }
     } catch (error) {
+      console.error('Failed to fetch voice actor details from AniList:', error);
     } finally {
       setVoiceActorLoading(false);
     }
   };
 
-  const handleVoiceActorClick = (voiceActor: any) => {
+  const handleVoiceActorClick = (voiceActor?: VoiceActorRef) => {
     if (voiceActor?.person?.id) {
       fetchVoiceActorDetails(voiceActor.person.id);
     }
@@ -452,7 +536,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
               </h4>
 
               <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
-                {voiceActorDetails.characterMedia?.edges?.map((edge: any, index: number) => (
+                {voiceActorDetails.characterMedia?.edges?.map((edge, index) => (
                   <div
                     key={`${edge.node.id}-${index}`}
                     style={{
@@ -684,7 +768,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
           </h4>
 
           <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
-            {personDetails.credits.map((credit: any, index: number) => (
+            {personDetails.credits.map((credit, index) => (
               <div
                 key={`${credit.id}-${index}`}
                 style={{
@@ -733,7 +817,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                   )}
 
                   {/* Rating Badge */}
-                  {credit.vote_average > 0 && (
+                  {credit.vote_average != null && credit.vote_average > 0 && (
                     <div
                       style={{
                         position: 'absolute',
@@ -768,7 +852,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                         fontWeight: 500,
                       }}
                     >
-                      {new Date(credit.release_date || credit.first_air_date).getFullYear()}
+                      {new Date((credit.release_date || credit.first_air_date)!).getFullYear()}
                     </div>
                   )}
                 </div>

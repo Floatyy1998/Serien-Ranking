@@ -31,6 +31,51 @@ import { getTVDBIdFromTMDB, getTVDBSeasons } from '../services/tvdbService';
 import { WatchActivityService } from '../services/watchActivityService';
 import { Series } from '../types/Series';
 
+/** Episode type from the Series seasons structure */
+type SeriesEpisode = Series['seasons'][number]['episodes'][number];
+
+/** Season type from the Series seasons structure */
+type SeriesSeason = Series['seasons'][number];
+
+/** TMDB season object returned from /tv/{id} endpoint */
+interface TMDBSeason {
+  air_date: string | null;
+  episode_count: number;
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  season_number: number;
+  vote_average: number;
+}
+
+/** TMDB episode object returned from /tv/{id}/season/{season_number} endpoint */
+interface TMDBEpisode {
+  air_date: string | null;
+  episode_number: number;
+  id: number;
+  name: string;
+  overview: string;
+  still_path: string | null;
+  vote_average?: number;
+  vote_count?: number;
+  runtime?: number;
+}
+
+/** TMDB genre object */
+interface TMDBGenre {
+  id: number;
+  name: string;
+}
+
+/** TMDB watch provider object (compatible with ProviderBadges Provider interface) */
+interface TMDBWatchProvider {
+  logo_path: string;
+  provider_id: number;
+  provider_name: string;
+  display_priority?: number;
+}
+
 export const SeriesDetailPage = memo(() => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -42,7 +87,7 @@ export const SeriesDetailPage = memo(() => {
   const [showRewatchDialog, setShowRewatchDialog] = useState<{
     show: boolean;
     type: 'episode' | 'season';
-    item: any;
+    item: SeriesEpisode | null;
   }>({ show: false, type: 'episode', item: null });
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
   const [tmdbSeries, setTmdbSeries] = useState<Series | null>(null);
@@ -78,7 +123,7 @@ export const SeriesDetailPage = memo(() => {
   // State for backdrop from TMDB
   const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
   // State for providers
-  const [providers, setProviders] = useState<any>(null);
+  const [providers, setProviders] = useState<TMDBWatchProvider[] | null>(null);
   // State for TMDB rating data
   const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(
     null
@@ -134,7 +179,7 @@ export const SeriesDetailPage = memo(() => {
         .then(async (data) => {
           if (data.id) {
             // Get TVDB ID and fetch episodes from TVDB (TVDB already filters out Season 0)
-            let seasonsWithEpisodes: any[] = [];
+            let seasonsWithEpisodes: SeriesSeason[] = [];
             try {
               const tvdbId = await getTVDBIdFromTMDB(Number(id));
               if (tvdbId) {
@@ -143,11 +188,9 @@ export const SeriesDetailPage = memo(() => {
                   seasonNumber: season.seasonNumber - 1, // Convert to 0-based to match local data format
                   episodes: season.episodes.map((ep) => ({
                     id: ep.id,
-                    name: ep.name,
+                    name: ep.name || '',
                     episode_number: ep.number,
-                    air_date: ep.aired,
-                    overview: ep.overview,
-                    still_path: ep.image,
+                    air_date: ep.aired || '',
                     watched: false,
                     watchCount: 0,
                   })),
@@ -159,9 +202,9 @@ export const SeriesDetailPage = memo(() => {
 
             // Fallback to TMDB if TVDB fails
             if (seasonsWithEpisodes.length === 0) {
-              const regularSeasons = (data.seasons || []).filter((s: any) => s.season_number > 0);
+              const regularSeasons = (data.seasons || []).filter((s: TMDBSeason) => s.season_number > 0);
               seasonsWithEpisodes = await Promise.all(
-                regularSeasons.map(async (season: any) => {
+                regularSeasons.map(async (season: TMDBSeason) => {
                   try {
                     const seasonResponse = await fetch(
                       `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
@@ -171,13 +214,11 @@ export const SeriesDetailPage = memo(() => {
                     return {
                       seasonNumber: season.season_number - 1,
                       episodes:
-                        seasonData.episodes?.map((ep: any) => ({
+                        seasonData.episodes?.map((ep: TMDBEpisode) => ({
                           id: ep.id,
                           name: ep.name,
                           episode_number: ep.episode_number,
-                          air_date: ep.air_date,
-                          overview: ep.overview,
-                          still_path: ep.still_path,
+                          air_date: ep.air_date || '',
                           watched: false,
                           watchCount: 0,
                         })) || [],
@@ -199,7 +240,7 @@ export const SeriesDetailPage = memo(() => {
               title: data.name,
               name: data.name,
               poster: { poster: data.poster_path },
-              genre: { genres: data.genres?.map((g: any) => g.name) || [] },
+              genre: { genres: data.genres?.map((g: TMDBGenre) => g.name) || [] },
               provider: { provider: [] },
               seasons: seasonsWithEpisodes,
               first_air_date: data.first_air_date,
@@ -327,7 +368,7 @@ export const SeriesDetailPage = memo(() => {
 
     setIsAdding(true);
     try {
-      const response = await fetch('https://serienapi.konrad-dinges.de/add', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/add`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
@@ -344,8 +385,8 @@ export const SeriesDetailPage = memo(() => {
         let posterPath: string | undefined;
         if (series.poster && typeof series.poster === 'object' && series.poster.poster) {
           posterPath = series.poster.poster;
-        } else if (tmdbSeries && 'poster_path' in tmdbSeries) {
-          posterPath = (tmdbSeries as any).poster_path;
+        } else if (tmdbSeries && tmdbSeries.poster?.poster) {
+          posterPath = tmdbSeries.poster.poster;
         }
         await logSeriesAdded(
           user.uid,
@@ -427,16 +468,16 @@ export const SeriesDetailPage = memo(() => {
   }, [series, user]);
 
   // Handle episode rewatch
-  const handleEpisodeRewatch = async (episode: any) => {
+  const handleEpisodeRewatch = async (episode: SeriesEpisode) => {
     if (!series || !user) return;
 
     try {
       // Find the season and episode indices
-      const seasonIndex = series.seasons?.findIndex((s: any) =>
-        s.episodes?.some((e: any) => e.id === episode.id)
+      const seasonIndex = series.seasons?.findIndex((s: SeriesSeason) =>
+        s.episodes?.some((e: SeriesEpisode) => e.id === episode.id)
       );
       const episodeIndex = series.seasons?.[seasonIndex]?.episodes?.findIndex(
-        (e: any) => e.id === episode.id
+        (e: SeriesEpisode) => e.id === episode.id
       );
 
       if (seasonIndex === -1 || episodeIndex === -1) {
@@ -473,16 +514,16 @@ export const SeriesDetailPage = memo(() => {
   };
 
   // Handle episode unwatch
-  const handleEpisodeUnwatch = async (episode: any) => {
+  const handleEpisodeUnwatch = async (episode: SeriesEpisode) => {
     if (!series || !user) return;
 
     try {
       // Find the season and episode indices
-      const seasonIndex = series.seasons?.findIndex((s: any) =>
-        s.episodes?.some((e: any) => e.id === episode.id)
+      const seasonIndex = series.seasons?.findIndex((s: SeriesSeason) =>
+        s.episodes?.some((e: SeriesEpisode) => e.id === episode.id)
       );
       const episodeIndex = series.seasons?.[seasonIndex]?.episodes?.findIndex(
-        (e: any) => e.id === episode.id
+        (e: SeriesEpisode) => e.id === episode.id
       );
 
       if (seasonIndex === -1 || episodeIndex === -1) {
@@ -983,7 +1024,7 @@ export const SeriesDetailPage = memo(() => {
                 providers={
                   series.provider?.provider && series.provider.provider.length > 0
                     ? series.provider.provider
-                    : providers
+                    : providers ?? undefined
                 }
                 size={isMobile ? 'medium' : 'large'}
                 maxDisplay={isMobile ? 4 : 6}
@@ -1574,7 +1615,7 @@ export const SeriesDetailPage = memo(() => {
               }}
             >
               <button
-                onClick={() => handleEpisodeRewatch(showRewatchDialog.item)}
+                onClick={() => handleEpisodeRewatch(showRewatchDialog.item!)}
                 style={{
                   padding: '12px',
                   background: 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)',
@@ -1586,12 +1627,12 @@ export const SeriesDetailPage = memo(() => {
                   cursor: 'pointer',
                 }}
               >
-                Nochmal gesehen ({(showRewatchDialog.item.watchCount || 1) + 1}
+                Nochmal gesehen ({(showRewatchDialog.item!.watchCount || 1) + 1}
                 x)
               </button>
 
               <button
-                onClick={() => handleEpisodeUnwatch(showRewatchDialog.item)}
+                onClick={() => handleEpisodeUnwatch(showRewatchDialog.item!)}
                 style={{
                   padding: '12px',
                   background: 'rgba(255, 107, 107, 0.2)',
@@ -1603,9 +1644,9 @@ export const SeriesDetailPage = memo(() => {
                   cursor: 'pointer',
                 }}
               >
-                {showRewatchDialog.item.watchCount > 2
-                  ? `Auf ${showRewatchDialog.item.watchCount - 1}x reduzieren`
-                  : showRewatchDialog.item.watchCount === 2
+                {(showRewatchDialog.item!.watchCount ?? 0) > 2
+                  ? `Auf ${showRewatchDialog.item!.watchCount! - 1}x reduzieren`
+                  : (showRewatchDialog.item!.watchCount ?? 0) === 2
                     ? 'Auf 1x reduzieren'
                     : 'Als nicht gesehen markieren'}
               </button>

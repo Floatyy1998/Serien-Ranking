@@ -17,6 +17,20 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded } from '../features/badges/minimalActivityLogger';
 import { Movie } from '../types/Movie';
 
+/** TMDB genre object */
+interface TMDBGenre {
+  id: number;
+  name: string;
+}
+
+/** TMDB watch provider object (compatible with ProviderBadges Provider interface) */
+interface TMDBWatchProvider {
+  logo_path: string;
+  provider_id: number;
+  provider_name: string;
+  display_priority?: number;
+}
+
 export const MovieDetailPage = memo(() => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -59,7 +73,7 @@ export const MovieDetailPage = memo(() => {
   // State for backdrop from TMDB
   const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
   // State for providers
-  const [providers, setProviders] = useState<any>(null);
+  const [providers, setProviders] = useState<TMDBWatchProvider[] | null>(null);
   // State for TMDB rating data
   const [tmdbRating, setTmdbRating] = useState<{ vote_average: number; vote_count: number } | null>(
     null
@@ -116,7 +130,7 @@ export const MovieDetailPage = memo(() => {
               nmr: 0, // No nmr for non-user movies
               title: data.title,
               poster: { poster: data.poster_path },
-              genre: { genres: data.genres?.map((g: any) => g.name) || [] },
+              genre: { genres: data.genres?.map((g: TMDBGenre) => g.name) || [] },
               provider: { provider: [] },
               release_date: data.release_date,
               runtime: data.runtime,
@@ -203,7 +217,7 @@ export const MovieDetailPage = memo(() => {
 
     setIsAdding(true);
     try {
-      const response = await fetch('https://serienapi.konrad-dinges.de/addMovie', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/addMovie`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
@@ -220,8 +234,8 @@ export const MovieDetailPage = memo(() => {
         let posterPath: string | undefined;
         if (movie.poster && typeof movie.poster === 'object' && movie.poster.poster) {
           posterPath = movie.poster.poster;
-        } else if (tmdbMovie && 'poster_path' in tmdbMovie) {
-          posterPath = (tmdbMovie as any).poster_path;
+        } else if (tmdbMovie && tmdbMovie.poster?.poster) {
+          posterPath = tmdbMovie.poster.poster;
         }
         await logMovieAdded(user.uid, movie.title || 'Unbekannter Film', movie.id, posterPath);
 
@@ -580,7 +594,7 @@ export const MovieDetailPage = memo(() => {
                 providers={
                   movie.provider?.provider && movie.provider.provider.length > 0
                     ? movie.provider.provider
-                    : providers
+                    : providers ?? undefined
                 }
                 size={isMobile ? 'medium' : 'large'}
                 maxDisplay={isMobile ? 4 : 6}

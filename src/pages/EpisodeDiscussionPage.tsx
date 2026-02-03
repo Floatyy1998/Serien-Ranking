@@ -213,7 +213,7 @@ export const EpisodeDiscussionPage = () => {
       const updatedEpisodes = localSeason.episodes!.map((ep, idx) => {
         if (idx === episodeIndex) {
           if (isCurrentlyWatched) {
-            const { watchCount, firstWatchedAt, lastWatchedAt, ...rest } = ep as any;
+            const { watchCount, firstWatchedAt, lastWatchedAt, ...rest } = ep as Series['seasons'][number]['episodes'][number] & { watchCount?: number; firstWatchedAt?: string; lastWatchedAt?: string };
             return { ...rest, watched: false };
           } else {
             return {

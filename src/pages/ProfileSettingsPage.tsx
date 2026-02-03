@@ -21,6 +21,13 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { BackButton } from '../components/BackButton';
 
+interface UserSettingsData {
+  username?: string;
+  displayName?: string;
+  photoURL?: string;
+  isPublic?: boolean;
+}
+
 export const ProfileSettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
@@ -41,7 +48,7 @@ export const ProfileSettingsPage = () => {
   const [displayNameEditable, setDisplayNameEditable] = useState(false);
 
   // Load user data from Firebase
-  const { data: userData, loading: userDataLoading } = useEnhancedFirebaseCache<any>(
+  const { data: userData, loading: userDataLoading } = useEnhancedFirebaseCache<UserSettingsData>(
     user ? `users/${user.uid}` : '',
     {
       ttl: 5 * 60 * 1000,
@@ -92,8 +99,8 @@ export const ProfileSettingsPage = () => {
 
       setPhotoURL(downloadURL);
       setSuccess('Profilbild erfolgreich hochgeladen');
-    } catch (error: any) {
-      setError('Fehler beim Hochladen: ' + (error.message || 'Unbekannter Fehler'));
+    } catch (error: unknown) {
+      setError('Fehler beim Hochladen: ' + ((error instanceof Error ? error.message : null) || 'Unbekannter Fehler'));
     } finally {
       setUploading(false);
     }

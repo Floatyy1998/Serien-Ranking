@@ -5,6 +5,25 @@ import { StatsData } from '../../types/StatsData';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import type { Series } from '../../types/Series';
+
+interface StatsEpisode {
+  watched: boolean;
+  watchCount?: number;
+}
+
+interface StatsSeason {
+  episodes?: StatsEpisode[];
+}
+
+interface StatsListItem {
+  seasons?: StatsSeason[];
+  episodeRuntime?: number;
+  runtime?: number;
+  rating?: Record<string, number>;
+  genre?: { genres?: string[] };
+  provider?: { provider?: { name: string }[] };
+}
 
 interface StatsContextType {
   seriesStatsData: StatsData | null;
@@ -18,8 +37,8 @@ export const StatsContext = createContext<StatsContextType>({
 
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth()!;
-  const [, setSeriesList] = useState<any[]>([]);
-  const [, setMovieList] = useState<any[]>([]);
+  const [, setSeriesList] = useState<StatsListItem[]>([]);
+  const [, setMovieList] = useState<StatsListItem[]>([]);
   const [seriesStatsData, setSeriesStatsData] = useState<StatsData | null>(
     null
   );
@@ -45,7 +64,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     return result;
   }
 
-  const computeStats = (list: any[]): StatsData => {
+  const computeStats = (list: StatsListItem[]): StatsData => {
     const genres: {
       [key: string]: {
         count: number;
@@ -65,15 +84,17 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     let episodesWatched = 0;
 
     list.forEach((item) => {
-      const ratingStr = calculateOverallRating(item);
+      const ratingStr = calculateOverallRating(item as unknown as Series);
       const rating = parseFloat(ratingStr);
+
+      const runtime = item.episodeRuntime || item.runtime || 0;
 
       // Watchtime und gesehene Episoden für ALLE Serien berechnen (inkl. Rewatches)
       episodesWatched +=
         item.seasons?.reduce(
-          (count: number, season: any) =>
+          (count: number, season: StatsSeason) =>
             count +
-            (season.episodes?.reduce((episodeCount: number, episode: any) => {
+            (season.episodes?.reduce((episodeCount: number, episode: StatsEpisode) => {
               if (episode.watched) {
                 return episodeCount + (episode.watchCount || 1);
               }
@@ -83,12 +104,12 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
         ) || 0;
       watchtime +=
         item.seasons?.reduce(
-          (time: number, season: any) =>
+          (time: number, season: StatsSeason) =>
             time +
-            (season.episodes?.reduce((episodeTime: number, episode: any) => {
+            (season.episodes?.reduce((episodeTime: number, episode: StatsEpisode) => {
               if (episode.watched) {
                 return (
-                  episodeTime + (episode.watchCount || 1) * item.episodeRuntime
+                  episodeTime + (episode.watchCount || 1) * runtime
                 );
               }
               return episodeTime;
@@ -108,7 +129,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
             genres[genre].totalRating += rating;
           }
         });
-        item.provider?.provider?.forEach((provider: { name: string }) => {
+        item.provider?.provider?.forEach((provider) => {
           if (!providers[provider.name]) {
             providers[provider.name] = {
               count: 0,
@@ -151,16 +172,16 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (user) {
       if (seriesList) {
-        const seriesArray = Array.isArray(seriesList)
+        const seriesArray = (Array.isArray(seriesList)
           ? seriesList
-          : Object.values(seriesList || {});
+          : Object.values(seriesList || {})) as StatsListItem[];
         setSeriesList(seriesArray);
         setSeriesStatsData(computeStats(seriesArray));
       }
       if (movieList) {
-        const movieArray = Array.isArray(movieList)
+        const movieArray = (Array.isArray(movieList)
           ? movieList
-          : Object.values(movieList || {});
+          : Object.values(movieList || {})) as StatsListItem[];
         setMovieList(movieArray);
         setMovieStatsData(computeStats(movieArray));
       }

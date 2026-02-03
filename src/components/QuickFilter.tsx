@@ -287,12 +287,13 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                   e.stopPropagation();
                   // Prevent parent scroll when at boundaries
                   const target = e.currentTarget;
-                  if (target.scrollTop === 0 && (e as any).deltaY < 0) {
+                  const wheelEvent = e.nativeEvent as WheelEvent;
+                  if (target.scrollTop === 0 && wheelEvent.deltaY < 0) {
                     e.preventDefault();
                   }
                   if (
                     target.scrollTop + target.clientHeight >= target.scrollHeight &&
-                    (e as any).deltaY > 0
+                    wheelEvent.deltaY > 0
                   ) {
                     e.preventDefault();
                   }
@@ -592,9 +593,9 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                             overflow: 'hidden',
                           }}
                         >
-                          {(provider as any)?.icon ? (
+                          {(provider as { icon?: string }).icon ? (
                             <img
-                              src={(provider as any).icon}
+                              src={(provider as { icon?: string }).icon}
                               alt={provider.label}
                               style={{
                                 width: '24px',

@@ -23,9 +23,14 @@ img {
   transform: translateZ(0);
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling - only when user has no motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
 * {
-  scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
 }
 

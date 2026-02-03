@@ -20,6 +20,7 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { BackButton } from '../components/BackButton';
 import { Series } from '../types/Series';
+import { getImageUrl } from '../utils/imageUrl';
 import './CatchUpPage.css';
 
 interface CatchUpSeries {
@@ -177,12 +178,6 @@ export const CatchUpPage: React.FC = () => {
     return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
   };
 
-  const getImageUrl = (poster: string | undefined): string => {
-    if (!poster) return '';
-    if (poster.startsWith('http')) return poster;
-    if (poster.startsWith('/')) return `https://image.tmdb.org/t/p/w500${poster}`;
-    return poster;
-  };
 
   const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
     { value: 'episodes', label: 'Meiste Episoden', icon: <MovieFilter style={{ fontSize: 18 }} /> },
@@ -702,7 +697,7 @@ export const CatchUpPage: React.FC = () => {
                   }}
                 >
                   <img
-                    src={getImageUrl(item.series.poster?.poster)}
+                    src={getImageUrl(item.series.poster?.poster, 'w500', '')}
                     alt={item.series.title}
                     loading="lazy"
                     decoding="async"

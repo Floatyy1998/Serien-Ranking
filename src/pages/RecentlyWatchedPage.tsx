@@ -24,6 +24,7 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
+import type { Series } from '../types/Series';
 
 // Component to show discussion indicator for an episode
 const EpisodeDiscussionIndicator: React.FC<{
@@ -93,7 +94,7 @@ class EpisodeDataManager {
   private cache = new Map<string, WatchedEpisode[]>();
   private dateGroups = new Map<string, DateGroup>();
 
-  constructor(private seriesList: any[], private daysToShow: number, private searchQuery: string) {
+  constructor(private seriesList: Series[], private daysToShow: number, private searchQuery: string) {
     this.initializeDateGroups();
   }
 
@@ -131,7 +132,7 @@ class EpisodeDataManager {
     });
   }
 
-  private getImageUrl(posterObj: any): string {
+  private getImageUrl(posterObj: string | { poster: string } | null | undefined): string {
     if (!posterObj) return '/placeholder.jpg';
     const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
     if (!path) return '/placeholder.jpg';
@@ -167,7 +168,7 @@ class EpisodeDataManager {
         : Object.values(series.seasons);
 
       for (let seasonIdx = 0; seasonIdx < seasonsArray.length; seasonIdx++) {
-        const season = seasonsArray[seasonIdx] as any;
+        const season = seasonsArray[seasonIdx] as Series['seasons'][number];
         if (!season?.episodes) continue;
 
         const episodesArray = Array.isArray(season.episodes)
@@ -175,12 +176,12 @@ class EpisodeDataManager {
           : Object.values(season.episodes);
 
         for (let episodeIndex = 0; episodeIndex < episodesArray.length; episodeIndex++) {
-          const episode = episodesArray[episodeIndex] as any;
+          const episode = episodesArray[episodeIndex] as Series['seasons'][number]['episodes'][number];
 
           const isWatched = !!(
             episode?.watched === true ||
-            episode?.watched === 1 ||
-            episode?.watched === "true" ||
+            (episode?.watched as unknown) === 1 ||
+            (episode?.watched as unknown) === "true" ||
             (episode?.watchCount && episode.watchCount > 0) ||
             episode?.firstWatchedAt ||
             episode?.lastWatchedAt
@@ -227,7 +228,7 @@ class EpisodeDataManager {
               seriesName: series.title || '',
               seriesPoster: this.getImageUrl(series.poster),
               seriesNmr: series.nmr,
-              seasonIndex: season.seasonIndex ?? seasonIdx,
+              seasonIndex: seasonIdx,
               episodeIndex,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
               episodeNumber: episodeIndex + 1,

@@ -31,7 +31,9 @@ export const storeSeasonData = async (
   try {
     const ref = firebase.database().ref(`${userId}/newSeasonData`);
     await ref.set(data);
-  } catch (error) {}
+  } catch (error) {
+    console.error('Failed to store new season data in Firebase:', error);
+  }
 };
 
 export const detectNewSeasons = async (

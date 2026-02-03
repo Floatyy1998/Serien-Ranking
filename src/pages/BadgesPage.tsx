@@ -71,7 +71,7 @@ export const BadgesPage = () => {
 
         setEarnedBadges((prevBadges) => {
           const existingIds = new Set(prevBadges.map((b) => b.id));
-          const uniqueNewBadges = newBadges.filter((badge: any) => !existingIds.has(badge.id));
+          const uniqueNewBadges = newBadges.filter((badge: EarnedBadge) => !existingIds.has(badge.id));
           if (uniqueNewBadges.length > 0) {
             return [...prevBadges, ...uniqueNewBadges];
           }

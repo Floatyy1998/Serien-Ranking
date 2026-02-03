@@ -21,7 +21,42 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { Dialog } from '../components/Dialog';
+import type { Series } from '../types/Series';
+import type { Movie } from '../types/Movie';
 import './DiscoverPage.css';
+
+/** Item returned from TMDB discover/search/recommendations endpoints, enriched with local fields */
+interface DiscoverItem {
+  id: number;
+  title?: string;
+  name?: string;
+  poster_path: string | null;
+  overview?: string;
+  vote_average: number;
+  vote_count?: number;
+  genre_ids?: number[];
+  release_date?: string;
+  first_air_date?: string;
+  media_type?: string;
+  popularity?: number;
+  backdrop_path?: string | null;
+  original_language?: string;
+  original_title?: string;
+  original_name?: string;
+  /** Local enrichment fields */
+  type: 'series' | 'movie';
+  inList: boolean;
+  basedOn?: string;
+}
+
+interface ItemCardProps {
+  item: DiscoverItem;
+  onItemClick: (item: DiscoverItem) => void;
+  onAddToList: (item: DiscoverItem, event?: React.MouseEvent) => void;
+  addingItem: string | null;
+  currentTheme: ReturnType<typeof import('../contexts/ThemeContext').useTheme>['currentTheme'];
+  isDesktop: boolean;
+}
 
 const PLACEHOLDER_SVG = `data:image/svg+xml,${encodeURIComponent(
   '<svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">' +
@@ -42,7 +77,7 @@ const ItemCard = memo(({
   addingItem,
   currentTheme,
   isDesktop,
-}: any) => {
+}: ItemCardProps) => {
 
   const imageUrl = useMemo(() => {
     if (!item.poster_path) return '/placeholder.jpg';
@@ -182,7 +217,7 @@ const ItemCard = memo(({
         }}
       >
         {item.release_date || item.first_air_date
-          ? new Date(item.release_date || item.first_air_date).getFullYear()
+          ? new Date((item.release_date || item.first_air_date)!).getFullYear()
           : 'TBA'}
       </p>
     </div>
@@ -202,7 +237,7 @@ export const DiscoverPage = memo(() => {
   const [activeCategory, setActiveCategory] = useState<
     'trending' | 'popular' | 'top_rated' | 'upcoming' | 'recommendations'
   >('trending');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<DiscoverItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -212,12 +247,12 @@ export const DiscoverPage = memo(() => {
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<DiscoverItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<DiscoverItem[]>([]);
   const [recommendationsHasMore, setRecommendationsHasMore] = useState(true);
   const [usedRecommendationSources, setUsedRecommendationSources] = useState<Set<string>>(new Set());
 
@@ -307,9 +342,9 @@ export const DiscoverPage = memo(() => {
   const isInList = useCallback(
     (id: string | number, type: 'series' | 'movie') => {
       if (type === 'series') {
-        return seriesList.some((s: any) => s.id === id || s.id === id.toString());
+        return seriesList.some((s: Series) => s.id === id || s.id.toString() === id.toString());
       } else {
-        return movieList.some((m: any) => m.id === id || m.id === id.toString());
+        return movieList.some((m: Movie) => m.id === id || m.id.toString() === id.toString());
       }
     },
     [seriesList, movieList]
@@ -348,7 +383,7 @@ export const DiscoverPage = memo(() => {
       const shuffled = [...availableItems].sort(() => 0.5 - Math.random());
       const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
 
-      const allRecommendations: any[] = [];
+      const allRecommendations: DiscoverItem[] = [];
       const existingIds = new Set(recommendations.map(r => r.id));
 
       const mediaType = activeTab === 'series' ? 'tv' : 'movie';
@@ -364,7 +399,7 @@ export const DiscoverPage = memo(() => {
         const data = await response.json();
 
         if (data.results) {
-          data.results.forEach((rec: any) => {
+          data.results.forEach((rec: DiscoverItem) => {
             if (
               !existingIds.has(rec.id) &&
               !isInList(rec.id, activeTab === 'series' ? 'series' : 'movie')
@@ -374,7 +409,7 @@ export const DiscoverPage = memo(() => {
                 ...rec,
                 type: activeTab === 'series' ? 'series' : 'movie',
                 inList: false,
-                basedOn: (item as any).title || (item as any).name,
+                basedOn: (item as Series & Movie).title || (item as Series & Movie).name,
               });
             }
           });
@@ -462,10 +497,10 @@ export const DiscoverPage = memo(() => {
 
         if (data.results) {
           const mappedResults = data.results
-            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
-            .map((item: any) => ({
+            .filter((item: DiscoverItem) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
+            .map((item: DiscoverItem) => ({
               ...item,
-              type: activeTab === 'series' ? 'series' : 'movie',
+              type: activeTab === 'series' ? 'series' : 'movie' as const,
               inList: false,
             }));
 
@@ -474,9 +509,9 @@ export const DiscoverPage = memo(() => {
             setPage(1);
           } else {
             setResults((prev) => {
-              const existingIds = new Set(prev.map((item: any) => `${item.type}-${item.id}`));
+              const existingIds = new Set(prev.map((item: DiscoverItem) => `${item.type}-${item.id}`));
               const newResults = mappedResults.filter(
-                (item: any) => !existingIds.has(`${item.type}-${item.id}`)
+                (item: DiscoverItem) => !existingIds.has(`${item.type}-${item.id}`)
               );
               return [...prev, ...newResults];
             });
@@ -592,11 +627,11 @@ export const DiscoverPage = memo(() => {
 
         if (data.results) {
           const mappedResults = data.results
-            .filter((item: any) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
+            .filter((item: DiscoverItem) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
             .slice(0, 20)
-            .map((item: any) => ({
+            .map((item: DiscoverItem) => ({
               ...item,
-              type: activeTab === 'series' ? 'series' : 'movie',
+              type: activeTab === 'series' ? 'series' : 'movie' as const,
               inList: false,
             }));
 
@@ -622,7 +657,7 @@ export const DiscoverPage = memo(() => {
   }, [searchQuery, showSearch, searchItems]);
 
   const addToList = useCallback(
-    async (item: any, event?: React.MouseEvent) => {
+    async (item: DiscoverItem, event?: React.MouseEvent) => {
       if (event) {
         event.stopPropagation();
       }
@@ -637,8 +672,8 @@ export const DiscoverPage = memo(() => {
 
       const endpoint =
         item.type === 'series'
-          ? 'https://serienapi.konrad-dinges.de/add'
-          : 'https://serienapi.konrad-dinges.de/addMovie';
+          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
+          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
 
       try {
         const response = await fetch(endpoint, {
@@ -662,7 +697,7 @@ export const DiscoverPage = memo(() => {
             message: `"${title}" wurde erfolgreich hinzugefügt!`
           });
 
-          const posterPath = item.poster_path;
+          const posterPath = item.poster_path ?? undefined;
           if (item.type === 'series') {
             await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id, posterPath);
           } else {
@@ -683,7 +718,7 @@ export const DiscoverPage = memo(() => {
   );
 
   const handleItemClick = useCallback(
-    (item: any) => {
+    (item: DiscoverItem) => {
       const filterState = {
         activeTab,
         activeCategory,

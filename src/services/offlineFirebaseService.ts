@@ -16,9 +16,28 @@ interface OfflineQueueItem {
   id: string;
   path: string;
   operation: 'set' | 'update' | 'delete';
-  data: any;
+  data: unknown;
   timestamp: number;
   retryCount: number;
+}
+
+interface CachedUserData {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  emailVerified: boolean;
+  metadata: unknown;
+  cachedAt: number;
+}
+
+interface FirebaseUserLike {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  emailVerified: boolean;
+  metadata: unknown;
 }
 
 class OfflineFirebaseService {
@@ -135,7 +154,7 @@ class OfflineFirebaseService {
    */
   public async cacheData(
     path: string,
-    data: any,
+    data: unknown,
     ttl: number = 5 * 60 * 1000
   ): Promise<void> {
     try {
@@ -164,7 +183,7 @@ class OfflineFirebaseService {
   /**
    * 🔍 Cached Daten abrufen
    */
-  public async getCachedData(path: string): Promise<any | null> {
+  public async getCachedData(path: string): Promise<unknown | null> {
     try {
       if (!this.config.enableIndexedDB) return null;
 
@@ -227,7 +246,7 @@ class OfflineFirebaseService {
   public async queueOperation(
     path: string,
     operation: 'set' | 'update' | 'delete',
-    data: any
+    data: unknown
   ): Promise<void> {
     const queueItem: OfflineQueueItem = {
       id: `queue_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -354,14 +373,14 @@ class OfflineFirebaseService {
   /**
    * ✅ Sync Complete Handler
    */
-  private handleSyncComplete(_results: any): void {
+  private handleSyncComplete(_results: unknown): void {
     // Hier können Sie UI Updates oder weitere Aktionen durchführen
   }
 
   /**
    * 🗄️ IndexedDB Helper Funktionen
    */
-  private async storeInIndexedDB(storeName: string, data: any): Promise<void> {
+  private async storeInIndexedDB(storeName: string, data: unknown): Promise<void> {
     try {
       const db = await this.initIndexedDB();
       const transaction = db.transaction([storeName], 'readwrite');
@@ -473,11 +492,11 @@ class OfflineFirebaseService {
   /**
    * 👤 User Cache Management
    */
-  public async cacheUser(user: any): Promise<void> {
+  public async cacheUser(user: FirebaseUserLike): Promise<void> {
     if (!user) return;
-    
+
     try {
-      const userData = {
+      const userData: CachedUserData = {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
@@ -499,7 +518,7 @@ class OfflineFirebaseService {
     }
   }
 
-  public async getCachedUser(): Promise<any | null> {
+  public async getCachedUser(): Promise<CachedUserData | null> {
     try {
       // Try localStorage first
       const cached = localStorage.getItem('cachedUser');

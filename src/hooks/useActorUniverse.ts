@@ -65,6 +65,25 @@ export interface ActorUniverseData {
   loadingRecommendations: boolean;
 }
 
+interface TMDBCastMember {
+  id: number;
+  name: string;
+  character?: string;
+  profile_path: string | null;
+  popularity?: number;
+  known_for_department?: string;
+}
+
+interface TMDBCredit {
+  id: number;
+  name?: string;
+  original_name?: string;
+  character?: string;
+  poster_path: string | null;
+  vote_average: number;
+  vote_count: number;
+}
+
 export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUniverseData => {
   const { seriesList } = useSeriesList();
 
@@ -140,7 +159,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
               // Include all actors (top 25 per series)
               const topCast = cast.slice(0, 25);
 
-              topCast.forEach((member: any) => {
+              topCast.forEach((member: TMDBCastMember) => {
                 const existing = newActorMap.get(member.id);
 
                 if (existing) {
@@ -239,7 +258,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
 
               // Filter: series user doesn't have, good rating, real roles
               const recommendations = tvCredits
-                .filter((credit: any) => {
+                .filter((credit: TMDBCredit) => {
                   const notOwned = !userSeriesIds.has(credit.id);
                   const goodRating = credit.vote_average >= 6.5;
                   const hasVotes = credit.vote_count >= 50;
@@ -247,9 +266,9 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
                     !credit.character?.toLowerCase().includes('(voice)');
                   return notOwned && goodRating && hasVotes && notVoice;
                 })
-                .sort((a: any, b: any) => b.vote_average - a.vote_average)
+                .sort((a: TMDBCredit, b: TMDBCredit) => b.vote_average - a.vote_average)
                 .slice(0, 5)
-                .map((credit: any) => ({
+                .map((credit: TMDBCredit) => ({
                   id: credit.id,
                   title: credit.name || credit.original_name,
                   poster: credit.poster_path,

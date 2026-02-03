@@ -55,7 +55,8 @@ function handleImgError(e: React.SyntheticEvent<HTMLImageElement>) {
   }
 }
 
-function getImageUrl(posterObj: any): string {
+// getImageUrl imported from utils - uses '' fallback for ratings
+function getImageUrl(posterObj: string | { poster?: string } | null | undefined): string {
   if (!posterObj) return '';
   const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
   if (!path) return '';
@@ -114,7 +115,7 @@ function extractProviders(item: Series | Movie): { name: string; logo: string }[
 
 const RatingGridItem = React.memo<{
   item: PreparedItem;
-  theme: any;
+  theme: ReturnType<typeof import('../theme/dynamicTheme').generateDynamicTheme>;
 }>(({ item, theme }) => (
   <div className="ratings-grid-item" data-id={item.id} data-movie={item.isMovie || undefined}>
     <div className="ratings-poster-wrap">

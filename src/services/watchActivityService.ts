@@ -134,8 +134,6 @@ function checkBulkMarkingAndGetTimestamp(): { isBulkMarking: boolean; distribute
     distributedDate.setMinutes(Math.floor(Math.random() * 45) + 5); // 5-50 Minuten
     distributedDate.setSeconds(Math.floor(Math.random() * 60));
 
-    console.log(`[Wrapped] 📦 Bulk-marking detected (${recentCount} in ${BULK_MARK_WINDOW_MS/1000}s) - distributing timestamp to ${distributedDate.toLocaleString()}`);
-
     return { isBulkMarking: true, distributedDate };
   }
 
@@ -226,14 +224,7 @@ async function saveEvent(userId: string, event: ActivityEvent): Promise<boolean>
 
     const cleanEvent = cleanObject(event as unknown as Record<string, unknown>);
 
-    console.log('[Wrapped] 💾 Saving event:', event.type, eventPath);
-
     await firebase.database().ref(eventPath).set(cleanEvent);
-
-    console.log('[Wrapped] ✅ Event saved!', {
-      type: event.type,
-      id: eventId,
-    });
 
     return true;
   } catch (error) {
@@ -310,7 +301,6 @@ async function updateBingeSession(
             totalMinutes: activeSession.totalMinutes,
           });
 
-        console.log('[Wrapped] 🔥 Binge session continued!', activeSession.episodes.length, 'episodes');
         return activeSession.id;
       } else {
         // End session
@@ -386,7 +376,6 @@ async function updateWatchStreak(userId: string): Promise<void> {
       if (currentStreak.currentStreak > currentStreak.longestStreak) {
         currentStreak.longestStreak = currentStreak.currentStreak;
       }
-      console.log('[Wrapped] 🔥 Streak:', currentStreak.currentStreak, 'days!');
     } else if (lastDate) {
       if (currentStreak.currentStreak > 1) {
         const streakStart = new Date();
@@ -430,9 +419,6 @@ export async function logEpisodeWatch(
   genres?: string[],
   providers?: string[]  // Changed: now accepts array of provider names
 ): Promise<void> {
-  console.log('[Wrapped] 📺 Logging episode watch:', seriesTitle, `S${seasonNumber}E${episodeNumber}`);
-  console.log('[Wrapped] 📺 Providers received:', providers);
-
   // Verwende Episode-spezifische Event-Erstellung mit Bulk-Marking-Erkennung
   const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData(userId);
   const runtime = episodeRuntime || 45;
@@ -493,8 +479,6 @@ export async function logMovieWatch(
   genres?: string[],
   providers?: string[]  // Changed: now accepts array of provider names
 ): Promise<void> {
-  console.log('[Wrapped] 🎬 Logging movie watch:', movieTitle);
-
   const year = new Date().getFullYear();
 
   try {
@@ -507,7 +491,6 @@ export async function logMovieWatch(
           .database()
           .ref(`${getEventsPath(userId, year)}/${existingEventId}/rating`)
           .set(rating);
-        console.log('[Wrapped] Updated rating for existing movie');
       }
       return;
     }
@@ -573,8 +556,6 @@ export async function logSeriesAdded(
   genres?: string[],
   provider?: string
 ): Promise<void> {
-  console.log('[Wrapped] ➕ Logging series added:', seriesTitle);
-
   const baseEvent = createBaseEventData(userId);
 
   const event: SeriesAddedEvent = {
@@ -597,8 +578,6 @@ export async function logMovieAdded(
   genres?: string[],
   provider?: string
 ): Promise<void> {
-  console.log('[Wrapped] ➕ Logging movie added:', movieTitle);
-
   const baseEvent = createBaseEventData(userId);
 
   const event: MovieAddedEvent = {
@@ -626,8 +605,6 @@ export async function logRatingChange(
   rating: number,
   previousRating?: number
 ): Promise<void> {
-  console.log('[Wrapped] ⭐ Logging rating change:', itemTitle, rating);
-
   const baseEvent = createBaseEventData(userId);
 
   const eventType = previousRating
@@ -667,8 +644,6 @@ export async function getWatchStreak(userId: string, year: number): Promise<Watc
 
 export async function getYearlyActivity(userId: string, year: number): Promise<ActivityEvent[]> {
   const eventsPath = getEventsPath(userId, year);
-  console.log('[Wrapped] 📊 Loading events from:', eventsPath);
-
   try {
     const snapshot = await firebase
       .database()
@@ -679,14 +654,9 @@ export async function getYearlyActivity(userId: string, year: number): Promise<A
 
     if (data) {
       const events = Object.values(data) as ActivityEvent[];
-      const episodes = events.filter(e => e.type === 'episode_watch').length;
-      const movies = events.filter(e => e.type === 'movie_watch' || e.type === 'movie_rating').length;
-
-      console.log(`[Wrapped] ✅ Loaded ${events.length} events (${episodes} episodes, ${movies} movies)`);
       return events;
     }
 
-    console.log('[Wrapped] ⚠️ No events found for', year);
     return [];
   } catch (error) {
     console.error('[Wrapped] ❌ Error loading events:', error);
@@ -709,7 +679,6 @@ export async function getBingeSessionsForYear(userId: string, year: number): Pro
     if (!data) return [];
 
     const sessions = Object.values(data) as BingeSession[];
-    console.log(`[Wrapped] 🔥 Loaded ${sessions.length} binge sessions`);
     return sessions;
   } catch (error) {
     console.error('[Wrapped] Error getting binge sessions:', error);
@@ -722,12 +691,9 @@ export async function getBingeSessionsForYear(userId: string, year: number): Pro
 // ============================================================================
 
 export async function clearAllWrappedData(userId: string): Promise<void> {
-  console.log('[Wrapped] 🗑️ Clearing all wrapped data...');
-
   try {
     await firebase.database().ref(getWrappedBasePath(userId)).remove();
     localStorage.removeItem(LAST_CLEANUP_KEY);
-    console.log('[Wrapped] ✅ All data cleared');
   } catch (error) {
     console.error('[Wrapped] Error clearing data:', error);
     throw error;

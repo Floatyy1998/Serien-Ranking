@@ -1,5 +1,5 @@
 // TVDB API Service for episode data
-const TVDB_API_KEY = import.meta.env.VITE_API_TVDB || '2bf09fd1-9b49-42bd-a6e2-28fafb056c2f';
+const TVDB_API_KEY = import.meta.env.VITE_API_TVDB;
 const TVDB_API_URL = 'https://api4.thetvdb.com/v4';
 
 let tvdbToken: string | null = null;
@@ -70,6 +70,17 @@ export interface TVDBEpisode {
   image: string | null;
 }
 
+interface TVDBRawEpisode {
+  id: number;
+  name?: string;
+  overview?: string;
+  aired: string | null;
+  seasonNumber: number;
+  number: number;
+  runtime?: number | null;
+  image?: string | null;
+}
+
 export interface TVDBSeason {
   seasonNumber: number;
   episodes: TVDBEpisode[];
@@ -78,7 +89,7 @@ export interface TVDBSeason {
 // Get episodes from TVDB with pagination support
 export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> => {
   const token = await authenticateTVDB();
-  let allEpisodes: any[] = [];
+  let allEpisodes: TVDBRawEpisode[] = [];
   let page = 0;
   let hasMorePages = true;
   let useGerman = true;
@@ -96,7 +107,6 @@ export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> =>
     );
     useGerman = testResponse.ok;
     if (!useGerman) {
-      console.log('TVDB: German episodes not available, using English');
     }
 
     // Fetch all pages
@@ -122,7 +132,7 @@ export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> =>
       const data = await response.json();
 
       // Extract episodes from response
-      let episodesData: any[] = [];
+      let episodesData: TVDBRawEpisode[] = [];
       if (data.data && data.data.episodes && Array.isArray(data.data.episodes)) {
         episodesData = data.data.episodes;
       } else if (data.data && Array.isArray(data.data)) {
@@ -135,8 +145,6 @@ export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> =>
         hasMorePages = false;
       } else {
         allEpisodes = [...allEpisodes, ...episodesData];
-        console.log(`TVDB: Page ${page} loaded, ${episodesData.length} episodes (total: ${allEpisodes.length})`);
-
         // Check if there are more pages via links.next or if we got less than expected
         if (data.links && data.links.next) {
           page++;
@@ -144,15 +152,6 @@ export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> =>
           hasMorePages = false;
         }
       }
-    }
-
-    console.log(`TVDB: Total ${allEpisodes.length} episodes loaded from ${page + 1} pages`);
-
-    if (allEpisodes.length > 0) {
-      // Show first and last episode for debugging
-      const lastEp = allEpisodes[allEpisodes.length - 1];
-      console.log('TVDB: First episode:', { name: allEpisodes[0].name, season: allEpisodes[0].seasonNumber, ep: allEpisodes[0].number });
-      console.log('TVDB: Last episode:', { name: lastEp.name, season: lastEp.seasonNumber, ep: lastEp.number });
     }
 
     // Filter episodes with aired date and seasonNumber > 0
@@ -169,7 +168,6 @@ export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> =>
         image: episode.image || null,
       }));
 
-    console.log(`TVDB: Returning ${filteredEpisodes.length} filtered episodes`);
     return filteredEpisodes;
   } catch (error) {
     console.error('Error fetching TVDB episodes:', error);

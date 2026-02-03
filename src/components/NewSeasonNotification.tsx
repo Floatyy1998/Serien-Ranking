@@ -108,7 +108,6 @@ export const NewSeasonNotification: React.FC<NewSeasonNotificationProps> = ({
       // Mark as notified since user interacted with it
       await markMultipleSeasonsAsNotified([seriesItem.id], user.uid);
       
-      console.log(`✅ Added ${seriesItem.title || seriesItem.original_name} to watchlist`);
     } catch (error) {
       console.error('Error adding to watchlist:', error);
     }

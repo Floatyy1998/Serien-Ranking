@@ -78,35 +78,23 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       const loadReadTimes = async () => {
         try {
           const readTimesRef = firebase.database().ref(`users/${user.uid}/readTimes`);
-          console.log('🔍 Loading read times from Firebase...');
           const snapshot = await readTimesRef.once('value');
           const data = snapshot.val();
-          console.log('📖 Read times from Firebase:', data);
 
           if (data) {
-            console.log('✅ Found existing read times:', {
-              requests: new Date(data.requests || 0).toLocaleString(),
-              activities: new Date(data.activities || 0).toLocaleString(),
-            });
             setLastReadRequestsTime(data.requests || 0);
             setLastReadActivitiesTime(data.activities || 0);
             setReadTimesLoaded(true);
           } else {
             // Initialize with current time to only show new activities as unread
             const now = Date.now();
-            console.log(
-              '🆕 No read times found, initializing with current time:',
-              new Date(now).toLocaleString()
-            );
             setLastReadRequestsTime(now);
             setLastReadActivitiesTime(now);
             // Save initial read times to Firebase
-            console.log('💾 Saving initial read times to Firebase...');
             await firebase.database().ref(`users/${user.uid}/readTimes`).set({
               requests: now,
               activities: now,
             });
-            console.log('✅ Initial read times saved');
             setReadTimesLoaded(true);
           }
         } catch (error) {
@@ -255,14 +243,10 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   // 🚀 Optimiert: Friend Activities mit intelligenter Paginierung und Caching
   const loadFriendActivities = useCallback(async () => {
     if (!user || friends.length === 0) {
-      console.log('📊 No user or friends, setting activities to 0');
       setFriendActivities([]);
       setUnreadActivitiesCount(0);
       return;
     }
-
-    console.log(`🔍 Loading activities for ${friends.length} friends...`);
-    console.log('⏰ Last read activities time:', new Date(lastReadActivitiesTime).toLocaleString());
 
     try {
       const allActivities: FriendActivity[] = [];
@@ -271,8 +255,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       const activeFriends = friends;
 
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000; // Load last 7 days of activities
-      console.log('📅 Loading activities from:', new Date(sevenDaysAgo).toLocaleString());
-
       // Batch alle Requests parallel statt sequenziell
       const activityPromises = activeFriends.map(async (friend) => {
         try {
@@ -315,23 +297,11 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       // Sortiere nach Zeitstempel und limitiere früher
       allActivities.sort((a, b) => b.timestamp - a.timestamp);
       const recentActivities = allActivities.slice(0, 100); // Show up to 100 activities
-      console.log(
-        `📦 Loaded ${allActivities.length} total activities, showing ${recentActivities.length}`
-      );
       setFriendActivities(recentActivities);
 
       // Unread count
       const unreadActivities = recentActivities.filter(
         (activity) => activity.timestamp > lastReadActivitiesTime
-      );
-      console.log('🔴 Unread activities:', unreadActivities.length);
-      console.log(
-        '🔍 Unread activity details:',
-        unreadActivities.map((a) => ({
-          from: a.userName,
-          time: new Date(a.timestamp).toLocaleString(),
-          type: a.type,
-        }))
       );
       setUnreadActivitiesCount(unreadActivities.length);
     } catch (error) {
@@ -343,21 +313,18 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   useEffect(() => {
     if (!user || friends.length === 0 || !readTimesLoaded) {
       if (!readTimesLoaded && user) {
-        console.log('⏳ Waiting for read times to load before loading activities...');
       }
       return;
     }
 
     // Initial load after delay to ensure read times are set
     const loadTimer = setTimeout(() => {
-      console.log('🚀 Loading friend activities after read times are ready...');
       loadFriendActivities();
     }, 100);
 
     // Setup interval for periodic updates
     const interval = setInterval(
       () => {
-        console.log('⏰ Periodic activity refresh...');
         loadFriendActivities();
       },
       5 * 60 * 1000
@@ -398,8 +365,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const markActivitiesAsRead = useCallback(async () => {
     if (!user) return;
     const now = Date.now();
-    console.log('✅ Marking activities as read at:', new Date(now).toLocaleString());
-
     // Immediately update the unread count based on the new timestamp
     setFriendActivities(prevActivities => {
       const stillUnread = prevActivities.filter(activity => activity.timestamp > now);
@@ -410,9 +375,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     setLastReadActivitiesTime(now);
 
     try {
-      console.log('💾 Saving read time to Firebase...');
       await firebase.database().ref(`users/${user.uid}/readTimes/activities`).set(now);
-      console.log('✅ Read time saved successfully');
     } catch (error) {
       console.error('❌ Failed to save read time:', error);
     }
@@ -517,16 +480,13 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         try {
           const badgeSystem = getOfflineBadgeSystem(user.uid);
           badgeSystem.invalidateCache(); // Cache leeren für frische Friend-Zählung
-          const newBadges = await badgeSystem.checkForNewBadges();
+          await badgeSystem.checkForNewBadges();
 
           // Also check for the friend who sent the request
           const friendBadgeSystem = getOfflineBadgeSystem(request.fromUserId);
           friendBadgeSystem.invalidateCache();
           await friendBadgeSystem.checkForNewBadges();
 
-          if (newBadges.length > 0) {
-            console.log('New badges earned:', newBadges);
-          }
         } catch (badgeError) {
           console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
         }

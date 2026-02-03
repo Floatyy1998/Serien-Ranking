@@ -29,7 +29,7 @@ export const EpisodeManagementPage = () => {
   const [selectedEpisode, setSelectedEpisode] = useState<{
     seasonIndex: number;
     episodeIndex: number;
-    episode: any;
+    episode: Series['seasons'][number]['episodes'][number];
   } | null>(null);
 
   const series = seriesList.find((s: Series) => s.id === Number(id));
@@ -242,7 +242,9 @@ export const EpisodeManagementPage = () => {
           [...new Set(series.provider?.provider?.map(p => p.name))]
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to toggle episode watch status:', error);
+    }
   };
 
   const handleSeasonToggle = async (seasonIndex: number) => {
@@ -335,7 +337,9 @@ export const EpisodeManagementPage = () => {
           );
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to toggle season watch status:', error);
+    }
   };
 
   if (!series) {

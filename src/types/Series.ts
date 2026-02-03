@@ -107,8 +107,8 @@ export interface Series {
   name?: string; // Alternative to title
   genres?: { id: number; name: string }[]; // TMDB genre format
   tmdb_id?: number;
-  watch_providers?: any; // Provider data from TMDB
+  watch_providers?: Record<string, unknown>; // Provider data from TMDB
   first_air_date?: string;
   status?: string;
-  cast?: any[]; // Cast data from TMDB
+  cast?: { id: number; name: string; character?: string; profile_path?: string }[]; // Cast data from TMDB
 }

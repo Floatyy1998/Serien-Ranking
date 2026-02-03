@@ -10,7 +10,11 @@ interface Provider {
 }
 
 interface ProviderBadgesProps {
-  providers?: Provider[] | any;
+  providers?: Provider[] | {
+    results?: { DE?: { flatrate?: Provider[] } };
+    DE?: { flatrate?: Provider[] };
+    flatrate?: Provider[];
+  } | null;
   size?: 'small' | 'medium' | 'large';
   maxDisplay?: number;
   showNames?: boolean;
@@ -112,7 +116,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   tmdbId,
   mediaType: _mediaType // Reserved for future JustWatch integration
 }) => {
-  if (!providers || providers.length === 0) return null;
+  if (!providers || (Array.isArray(providers) && providers.length === 0)) return null;
 
   // Allowed German streaming providers from config
   const allowedProviders = [

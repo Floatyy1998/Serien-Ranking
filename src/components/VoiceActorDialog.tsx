@@ -30,6 +30,43 @@ interface CharacterRole {
   role: string;
 }
 
+interface AniListDate {
+  year?: number | null;
+  month?: number | null;
+  day?: number | null;
+}
+
+interface AniListCharacterMediaEdge {
+  node: {
+    id: number;
+    title: {
+      romaji: string;
+      english: string | null;
+    };
+    type: 'ANIME' | 'MANGA';
+    coverImage: {
+      large: string;
+    };
+    startDate: {
+      year: number | null;
+    };
+  };
+  characters: {
+    id: number;
+    name: { full: string };
+    image: { large: string };
+  }[];
+  characterRole: string;
+}
+
+interface TransformedCharacter {
+  id: number;
+  name: string;
+  image: string;
+  media: AniListCharacterMediaEdge['node'];
+  role: string;
+}
+
 interface VoiceActorDetails {
   id: number;
   name: {
@@ -44,16 +81,8 @@ interface VoiceActorDetails {
   gender: string | null;
   homeTown: string | null;
   bloodType: string | null;
-  dateOfBirth: {
-    year: number | null;
-    month: number | null;
-    day: number | null;
-  } | null;
-  dateOfDeath: {
-    year: number | null;
-    month: number | null;
-    day: number | null;
-  } | null;
+  dateOfBirth: AniListDate | null;
+  dateOfDeath: AniListDate | null;
   characters: {
     nodes: CharacterRole[];
   };
@@ -166,14 +195,14 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
           characters: {
             nodes:
               data.data.Staff.characterMedia?.edges
-                ?.map((edge: any) => ({
+                ?.map((edge: AniListCharacterMediaEdge) => ({
                   id: edge.characters?.[0]?.id || Math.random(),
                   name: edge.characters?.[0]?.name?.full || 'Unknown Character',
                   image: edge.characters?.[0]?.image?.large || '',
                   media: edge.node,
                   role: edge.characterRole || 'SUPPORTING',
                 }))
-                .filter((char: any) => char.media) || [], // Only show characters with media
+                .filter((char: TransformedCharacter) => char.media) || [], // Only show characters with media
           },
         };
         setVoiceActorData(transformedData);
@@ -185,7 +214,7 @@ export const MobileVoiceActorDialog: React.FC<VoiceActorDialogProps> = ({
     }
   };
 
-  const formatDate = (date: any) => {
+  const formatDate = (date: AniListDate | null) => {
     if (!date) return null;
     const { year, month, day } = date;
     if (!year) return null;
