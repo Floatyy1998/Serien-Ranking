@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pet, PET_COLORS } from '../types/pet.types';
+import { Pet, PET_COLORS, PetAccessory } from '../types/pet.types';
 import { petMoodService } from '../services/petMoodService';
 
 interface EvolvingPixelPetProps {
@@ -166,7 +166,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       }
     };
 
-    const drawAccessory = (ctx: any, accessory: any, ps: number, offset: number) => {
+    const drawAccessory = (ctx: CanvasRenderingContext2D, accessory: PetAccessory, ps: number, offset: number) => {
       const centerX = 16;
       const centerY = 16;
 
@@ -286,7 +286,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
 
     // drawMoodIndicator entfernt - nicht mehr benötigt
 
-    const drawCat = (ctx: any, _pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number) => {
+    const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number) => {
       const centerX = 16;
       const centerY = 16;
 
@@ -555,7 +555,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       }
     };
 
-    const drawDog =(ctx: any, pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
+    const drawDog =(ctx: CanvasRenderingContext2D, pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
       const centerX = 16;
       const centerY = 16;
 
@@ -775,7 +775,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       }
     };
 
-    const drawDragon =(ctx: any, level: number, ps: number, color: string, dark: string, light: string, offset: number) => {
+    const drawDragon =(ctx: CanvasRenderingContext2D, level: number, ps: number, color: string, dark: string, light: string, offset: number) => {
       const centerX = 16;
       const centerY = 16;
 
@@ -1007,7 +1007,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       }
     };
 
-    const drawBird =(ctx: any, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
+    const drawBird =(ctx: CanvasRenderingContext2D, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean) => {
       const centerX = 16;
       const centerY = 16;
       const wingFlap = animated ? Math.sin(frameRef.current * 0.2 * animationSpeed) * 3 : 0;
@@ -1265,7 +1265,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       }
     };
 
-    const drawFox =(ctx: any, level: number, ps: number, color: string, _dark: string, light: string, offset: number) => {
+    const drawFox =(ctx: CanvasRenderingContext2D, level: number, ps: number, color: string, _dark: string, light: string, offset: number) => {
       const centerX = 16;
       const centerY = 16;
 

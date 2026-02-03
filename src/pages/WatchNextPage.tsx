@@ -24,6 +24,7 @@ import { getNextRewatchEpisode, hasActiveRewatch } from '../lib/validation/rewat
 import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
 import { Series } from '../types/Series';
+import { getImageUrl } from '../utils/imageUrl';
 
 // Discussion button component for episodes
 const EpisodeDiscussionButton: React.FC<{
@@ -127,27 +128,19 @@ export const WatchNextPage = () => {
     const savedPosition = sessionStorage.getItem('watchNextScrollPosition');
     const isContainerScroll = sessionStorage.getItem('watchNextScrollIsContainer') === 'true';
 
-    console.log('WatchNextPage - comingFromDetail:', comingFromDetail);
-    console.log('WatchNextPage - savedPosition:', savedPosition);
-    console.log('WatchNextPage - isContainerScroll:', isContainerScroll);
-
     if (comingFromDetail && savedPosition) {
       const scrollY = parseInt(savedPosition, 10);
-      console.log('WatchNextPage - Restoring scroll to:', scrollY);
 
       // Try multiple timeouts to ensure scroll works
       const restoreScroll = () => {
         if (isContainerScroll) {
           const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
           if (container) {
-            console.log('WatchNextPage - Restoring container scroll');
             container.scrollTop = scrollY;
           } else {
-            console.log('WatchNextPage - Container not found, trying window scroll');
             window.scrollTo(0, scrollY);
           }
         } else {
-          console.log('WatchNextPage - Restoring window scroll');
           window.scrollTo(0, scrollY);
         }
       };
@@ -243,14 +236,7 @@ export const WatchNextPage = () => {
     }
   }, [draggedIndex, editModeActive]);
 
-  // Helper functions
-  const getImageUrl = (posterObj: any): string => {
-    if (!posterObj) return '/placeholder.jpg';
-    const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w342${path}`;
-  };
+  // Helper functions - getImageUrl imported from utils
 
   // Toggle sort function
   const toggleSort = (field: string) => {
@@ -863,7 +849,9 @@ export const WatchNextPage = () => {
           series.genre?.genres,
           series.provider?.provider?.map(p => p.name)
         );
-      } catch (error) {}
+      } catch (error) {
+        console.error('Failed to mark episode as watched:', error);
+      }
     }
 
     // After animation, hide the episode
@@ -1337,10 +1325,10 @@ export const WatchNextPage = () => {
                       <div
                         draggable={editModeActive}
                         onDragStart={
-                          editModeActive ? (e) => handleDragStart(e as any, index) : undefined
+                          editModeActive ? (e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, index) : undefined
                         }
                         onDragOver={editModeActive ? (e) => handleDragOver(e, index) : undefined}
-                        onDrop={editModeActive ? (e) => handleDrop(e as any, index) : undefined}
+                        onDrop={editModeActive ? (e: React.DragEvent<HTMLDivElement>) => handleDrop(e, index) : undefined}
                         onTouchStart={
                           editModeActive ? (e) => handleTouchStart(e, index) : undefined
                         }

@@ -28,6 +28,21 @@ import { Movie as MovieType } from '../types/Movie';
 import { Series } from '../types/Series';
 import './SearchPage.css';
 
+interface SearchResult {
+  id: number;
+  title?: string;
+  name?: string;
+  poster_path?: string;
+  overview?: string;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  popularity?: number;
+  media_type?: string;
+  type: 'series' | 'movie';
+  inList: boolean;
+}
+
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
@@ -53,7 +68,7 @@ export const SearchPage: React.FC = () => {
     }
     return 'all';
   });
-  const [searchResults, setSearchResults] = useState<any[]>(() => {
+  const [searchResults, setSearchResults] = useState<SearchResult[]>(() => {
     if (isReturning) {
       const saved = sessionStorage.getItem('searchResults');
       return saved ? JSON.parse(saved) : [];
@@ -126,40 +141,42 @@ export const SearchPage: React.FC = () => {
       saveToRecent(query);
 
       try {
-        const results = [];
+        const results: SearchResult[] = [];
 
-        if (searchType === 'all' || searchType === 'series') {
-          const seriesResponse = await fetch(
-            `https://api.themoviedb.org/3/search/tv?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+        const fetchSeries =
+          searchType === 'all' || searchType === 'series'
+            ? fetch(
+                `https://api.themoviedb.org/3/search/tv?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+              ).then((r) => r.json())
+            : Promise.resolve(null);
+
+        const fetchMovies =
+          searchType === 'all' || searchType === 'movies'
+            ? fetch(
+                `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+              ).then((r) => r.json())
+            : Promise.resolve(null);
+
+        const [seriesData, movieData] = await Promise.all([fetchSeries, fetchMovies]);
+
+        if (seriesData?.results) {
+          results.push(
+            ...seriesData.results.map((item: SearchResult) => ({
+              ...item,
+              type: 'series',
+              inList: isInList(item.id, 'series'),
+            }))
           );
-          const seriesData = await seriesResponse.json();
-
-          if (seriesData.results) {
-            results.push(
-              ...seriesData.results.map((item: any) => ({
-                ...item,
-                type: 'series',
-                inList: isInList(item.id, 'series'),
-              }))
-            );
-          }
         }
 
-        if (searchType === 'all' || searchType === 'movies') {
-          const movieResponse = await fetch(
-            `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+        if (movieData?.results) {
+          results.push(
+            ...movieData.results.map((item: SearchResult) => ({
+              ...item,
+              type: 'movie',
+              inList: isInList(item.id, 'movie'),
+            }))
           );
-          const movieData = await movieResponse.json();
-
-          if (movieData.results) {
-            results.push(
-              ...movieData.results.map((item: any) => ({
-                ...item,
-                type: 'movie',
-                inList: isInList(item.id, 'movie'),
-              }))
-            );
-          }
         }
 
         results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
@@ -191,7 +208,7 @@ export const SearchPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, searchTMDB]);
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: SearchResult) => {
     window.history.replaceState({ ...window.history.state, usr: { returning: true } }, '');
 
     if (item.type === 'series') {
@@ -201,7 +218,7 @@ export const SearchPage: React.FC = () => {
     }
   };
 
-  const addToList = async (item: any) => {
+  const addToList = async (item: SearchResult) => {
     if (!user) {
       setDialog({
         open: true,
@@ -213,8 +230,8 @@ export const SearchPage: React.FC = () => {
 
     const endpoint =
       item.type === 'series'
-        ? 'https://serienapi.konrad-dinges.de/add'
-        : 'https://serienapi.konrad-dinges.de/addMovie';
+        ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
+        : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
 
     try {
       const response = await fetch(endpoint, {
@@ -429,7 +446,7 @@ export const SearchPage: React.FC = () => {
             <button
               key={tab.key}
               className="search-filter-btn"
-              onClick={() => setSearchType(tab.key as any)}
+              onClick={() => setSearchType(tab.key as 'all' | 'series' | 'movies')}
               style={{
                 padding: '10px 18px',
                 background: searchType === tab.key ? tab.gradient : currentTheme.background.surface,
@@ -680,7 +697,7 @@ export const SearchPage: React.FC = () => {
                       }}
                     >
                       {item.release_date || item.first_air_date
-                        ? new Date(item.release_date || item.first_air_date).getFullYear()
+                        ? new Date((item.release_date || item.first_air_date)!).getFullYear()
                         : 'TBA'}
                     </p>
                   </div>

@@ -51,7 +51,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          console.log('📦 Loaded from sessionStorage:', parsed);
           return parsed;
         } catch (e) {
           console.error('❌ Error parsing sessionStorage:', e);
@@ -61,23 +60,22 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     return [];
   });
 
-  // Check sessionStorage periodically
+  // Listen for sessionStorage updates from other tabs via storage event
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (typeof window !== 'undefined') {
-        const stored = sessionStorage.getItem('seriesWithNewSeasons');
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            if (parsed.length > 0 && seriesWithNewSeasons.length === 0) {
-              setSeriesWithNewSeasons(parsed);
-            }
-          } catch (e) {}
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'seriesWithNewSeasons' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed.length > 0 && seriesWithNewSeasons.length === 0) {
+            setSeriesWithNewSeasons(parsed);
+          }
+        } catch (e) {
+          console.error('Failed to parse seriesWithNewSeasons from storage event:', e);
         }
       }
-    }, 1000);
-
-    return () => clearInterval(interval);
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, [seriesWithNewSeasons.length]);
 
   const [hasCheckedForNewSeasons, setHasCheckedForNewSeasons] = useState(() => {
@@ -164,12 +162,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     console.warn('⚠️ WARNUNG: Diese Funktion setzt das HEUTIGE Datum für alle alten Episoden!');
     console.warn('⚠️ Für Wrapped 2026 werden Daten automatisch korrekt gesammelt.');
     console.warn('⚠️ Nur verwenden wenn du weißt was du tust!');
-    console.log('🔧 Starting firstWatchedAt fix for user:', userId);
-    console.log('📊 Series data keys:', Object.keys(seriesData));
-
     try {
       const todayISO = new Date().toISOString();
-      const updates: { [key: string]: any } = {};
+      const updates: Record<string, string | null> = {};
       let totalUpdated = 0;
       let totalWatchedEpisodes = 0;
       let totalEpisodesWithFirstWatched = 0;
@@ -202,26 +197,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         });
       });
 
-      console.log('📈 Statistics:', {
-        totalWatchedEpisodes,
-        totalEpisodesWithFirstWatched,
-        episodesToFix: totalUpdated
-      });
-
       // Apply all updates in a single batch
       if (Object.keys(updates).length > 0) {
-        console.log('💾 Applying updates to Firebase...');
         await firebase.database().ref().update(updates);
-        console.log(`✅ Fixed ${totalUpdated} episodes with missing firstWatchedAt`);
-      } else {
-        console.log('✅ No episodes need fixing - all watched episodes already have firstWatchedAt');
       }
-
-      console.log('🏁 FirstWatchedAt fix completed successfully');
 
     } catch (error) {
       console.error('❌ Error fixing firstWatchedAt dates:', error);
-      console.log('🏁 FirstWatchedAt fix completed with errors');
     }
   }, []);
 
@@ -230,11 +212,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     if (user && seriesData && !loading) {
       // Make function available in console
       (window as any).fixFirstWatchedAt = () => {
-        console.log('🚀 Running firstWatchedAt fix manually...');
         fixMissingFirstWatchedAt(user.uid, seriesData);
       };
 
-      console.log('💡 Type "fixFirstWatchedAt()" in console to fix missing firstWatchedAt dates');
     } else {
       // Remove function when not ready
       delete (window as any).fixFirstWatchedAt;
@@ -279,11 +259,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         const newSeasons = await detectNewSeasons(seriesList, userId);
 
         if (newSeasons.length > 0) {
-          console.log('🎉 New seasons detected:', newSeasons);
           // Speichere in sessionStorage
           if (typeof window !== 'undefined') {
             const dataToStore = JSON.stringify(newSeasons);
-            console.log('💾 Storing to sessionStorage:', dataToStore);
             sessionStorage.setItem('seriesWithNewSeasons', dataToStore);
           }
           setSeriesWithNewSeasons(newSeasons);
@@ -328,7 +306,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         const inactive = await detectInactiveSeries(seriesList, userId);
 
         if (inactive.length > 0) {
-          console.log('⏰ Inactive series detected:', inactive);
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('inactiveSeries', JSON.stringify(inactive));
           }
@@ -373,7 +350,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         const completed = await detectCompletedSeries(seriesList, userId);
 
         if (completed.length > 0) {
-          console.log('✅ Completed series detected:', completed);
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('completedSeries', JSON.stringify(completed));
           }
@@ -570,8 +546,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newList));
       }
       
-      console.log(`🧪 Simulated new season for ${series.title || series.original_name}: Season ${testSeries.seasonCount}`);
-      console.log('🧪 Test Series Data:', testSeries);
     }
   }, [seriesList, seriesWithNewSeasons]);
 
@@ -590,7 +564,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     
     // Force run detection
     if (user && seriesList.length > 0) {
-      console.log('🧪 Forcing new season detection...');
       runNewSeasonDetection(seriesList, user.uid);
     }
   }, [user, seriesList, runNewSeasonDetection]);

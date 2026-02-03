@@ -1,18 +1,27 @@
 import { useMemo, useRef } from 'react';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
-
-const getImageUrl = (posterObj: any): string => {
-  if (!posterObj) return '/placeholder.jpg';
-  const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-  if (!path) return '/placeholder.jpg';
-  if (path.startsWith('http')) return path;
-  return `https://image.tmdb.org/t/p/w342${path}`;
-};
+import { getImageUrl } from '../utils/imageUrl';
+import type { Series } from '../types/Series';
 
 export const useContinueWatching = () => {
   const { seriesList } = useSeriesList();
-  const cacheRef = useRef<{ items: any[] | null; deps: string }>({ items: null, deps: '' });
-  
+  interface ContinueWatchingItem {
+    type: 'series';
+    id: number;
+    nmr: number;
+    title: string;
+    poster: string;
+    progress: number;
+    nextEpisode: { seasonNumber: number; episodeNumber: number; name: string; seasonIndex: number; episodeIndex: number };
+    airDate: string;
+    lastWatchedAt: string;
+    genre: Series['genre'];
+    provider: Series['provider'];
+    episodeRuntime: number;
+  }
+
+  const cacheRef = useRef<{ items: ContinueWatchingItem[] | null; deps: string }>({ items: null, deps: '' });
+
   const continueWatching = useMemo(() => {
     // Create a more detailed dependency string that includes watched status
     // This will invalidate the cache when episodes are marked as watched
@@ -21,7 +30,7 @@ export const useContinueWatching = () => {
       if (series.seasons) {
         for (const season of series.seasons) {
           if (season.episodes) {
-            watchedCount += season.episodes.filter((ep: any) => ep.watched).length;
+            watchedCount += season.episodes.filter((ep) => ep.watched).length;
           }
         }
       }
@@ -33,7 +42,7 @@ export const useContinueWatching = () => {
       return cacheRef.current.items;
     }
     
-    const items: any[] = [];
+    const items: ContinueWatchingItem[] = [];
     const today = new Date();
     
     for (let i = 0; i < seriesList.length; i++) {

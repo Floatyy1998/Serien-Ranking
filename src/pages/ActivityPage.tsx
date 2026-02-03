@@ -32,7 +32,18 @@ import { useTheme } from '../contexts/ThemeContext';
 import { FriendActivity } from '../types/Friend';
 import { BackButton } from '../components/BackButton';
 import { AddFriendDialog } from '../components/AddFriendDialog';
+import { getImageUrl } from '../utils/imageUrl';
 import './ActivityPage.css';
+
+/** Profile data loaded from Firebase for friends/request senders */
+interface FirebaseUserProfile {
+  displayName?: string;
+  username?: string;
+  photoURL?: string;
+  email?: string;
+}
+
+type ActivityFilterType = 'all' | 'movies' | 'series';
 
 export const ActivityPage = () => {
   const navigate = useNavigate();
@@ -72,9 +83,9 @@ export const ActivityPage = () => {
   );
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [tmdbPosters, setTmdbPosters] = useState<Record<string, string>>({});
-  const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
-  const [requestProfiles, setRequestProfiles] = useState<Record<string, any>>({});
-  const [filterType, setFilterType] = useState<'all' | 'movies' | 'series'>('all');
+  const [friendProfiles, setFriendProfiles] = useState<Record<string, FirebaseUserProfile>>({});
+  const [requestProfiles, setRequestProfiles] = useState<Record<string, FirebaseUserProfile>>({});
+  const [filterType, setFilterType] = useState<ActivityFilterType>('all');
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -91,7 +102,7 @@ export const ActivityPage = () => {
     if (friends.length === 0) return;
 
     const loadProfiles = async () => {
-      const newProfiles: Record<string, any> = {};
+      const newProfiles: Record<string, FirebaseUserProfile> = {};
       await Promise.all(
         friends.map(async (friend) => {
           try {
@@ -113,7 +124,7 @@ export const ActivityPage = () => {
 
   useEffect(() => {
     const loadRequestProfiles = async () => {
-      const profiles: Record<string, any> = {};
+      const profiles: Record<string, FirebaseUserProfile> = {};
       for (const request of friendRequests) {
         try {
           const userRef = firebase.database().ref(`users/${request.fromUserId}`);
@@ -134,21 +145,21 @@ export const ActivityPage = () => {
   }, [friendRequests]);
 
   const getItemDetails = (activity: FriendActivity) => {
-    const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
+    const tmdbId = activity.tmdbId || activity.itemId;
 
     if (
       activity.type === 'series_added' ||
       activity.type === 'series_rated' ||
       activity.type === 'rating_updated' ||
       activity.type === 'series_added_to_watchlist' ||
-      (activity as any).itemType === 'series'
+      activity.itemType === 'series'
     ) {
       const series = seriesList.find((s) => s.id === tmdbId || s.id === Number(tmdbId));
       if (!series) {
         return {
           id: tmdbId,
-          title: (activity as any).itemTitle || 'Unbekannte Serie',
-          poster: (activity as any).posterPath || (activity as any).poster,
+          title: activity.itemTitle || 'Unbekannte Serie',
+          poster: activity.posterPath || activity.poster,
         };
       }
       return series;
@@ -157,30 +168,14 @@ export const ActivityPage = () => {
       if (!movie) {
         return {
           id: tmdbId,
-          title: (activity as any).itemTitle || 'Unbekannter Film',
-          poster: (activity as any).posterPath || (activity as any).poster,
+          title: activity.itemTitle || 'Unbekannter Film',
+          poster: activity.posterPath || activity.poster,
         };
       }
       return movie;
     }
   };
 
-  const getImageUrl = (posterObj: any): string => {
-    if (!posterObj) return '/placeholder.jpg';
-
-    let path: string;
-    if (typeof posterObj === 'object' && posterObj.poster) {
-      path = posterObj.poster;
-    } else if (typeof posterObj === 'string') {
-      path = posterObj;
-    } else {
-      return '/placeholder.jpg';
-    }
-
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w342${path}`;
-  };
 
   const formatTimeAgo = (timestamp: number): string => {
     const now = Date.now();
@@ -210,7 +205,7 @@ export const ActivityPage = () => {
           activity.type === 'movie_added' ||
           activity.type === 'movie_rated' ||
           activity.type === 'rating_updated_movie' ||
-          (activity as any).itemType === 'movie'
+          activity.itemType === 'movie'
       );
     } else if (filterType === 'series') {
       filtered = filtered.filter(
@@ -219,8 +214,8 @@ export const ActivityPage = () => {
           activity.type === 'series_rated' ||
           activity.type === 'rating_updated' ||
           activity.type === 'series_added_to_watchlist' ||
-          ((activity as any).itemType === 'series' ||
-            (!(activity as any).itemType &&
+          (activity.itemType === 'series' ||
+            (!activity.itemType &&
               activity.type !== 'movie_added' &&
               activity.type !== 'movie_rated' &&
               activity.type !== 'rating_updated_movie'))
@@ -270,8 +265,8 @@ export const ActivityPage = () => {
       const postersToFetch: { id: string; type: 'series' | 'movie' }[] = [];
 
       for (const activity of friendActivities) {
-        const tmdbId = (activity as any).tmdbId || (activity as any).itemId;
-        const itemType = (activity as any).itemType;
+        const tmdbId = activity.tmdbId || activity.itemId;
+        const itemType = activity.itemType;
 
         if (!tmdbId) continue;
 
@@ -286,7 +281,7 @@ export const ActivityPage = () => {
           if (movie?.poster?.poster) continue;
         }
 
-        if ((activity as any).posterPath || (activity as any).poster) continue;
+        if (activity.posterPath || activity.poster) continue;
 
         postersToFetch.push({
           id: String(tmdbId),
@@ -538,7 +533,7 @@ export const ActivityPage = () => {
                   <button
                     key={filter.key}
                     className="activity-filter-btn"
-                    onClick={() => setFilterType(filter.key as any)}
+                    onClick={() => setFilterType(filter.key as ActivityFilterType)}
                     style={{
                       padding: '10px 18px',
                       background:
@@ -726,8 +721,8 @@ export const ActivityPage = () => {
                                     activity.type === 'movie_added' ||
                                     activity.type === 'movie_rated' ||
                                     activity.type === 'rating_updated_movie' ||
-                                    (activity as any).itemType === 'movie';
-                                  const rating = (activity as any).rating;
+                                    activity.itemType === 'movie';
+                                  const rating = activity.rating;
                                   const hasRating = rating && rating > 0;
                                   const isAdded =
                                     activity.type === 'movie_added' ||
@@ -742,8 +737,8 @@ export const ActivityPage = () => {
                                     activity.type === 'movie_added_to_watchlist';
 
                                   const tmdbId =
-                                    (activity as any).tmdbId || (activity as any).itemId;
-                                  const itemType = (activity as any).itemType;
+                                    activity.tmdbId || activity.itemId;
+                                  const itemType = activity.itemType;
                                   const cacheKey = `${itemType}_${tmdbId}`;
                                   const tmdbPoster = tmdbPosters[cacheKey];
                                   const posterUrl = tmdbPoster
@@ -781,7 +776,7 @@ export const ActivityPage = () => {
                                         >
                                           <img
                                             src={posterUrl}
-                                            alt={item?.title || (activity as any).itemTitle}
+                                            alt={item?.title || activity.itemTitle}
                                             loading="lazy"
                                             decoding="async"
                                             style={{
@@ -837,7 +832,7 @@ export const ActivityPage = () => {
                                               whiteSpace: 'nowrap',
                                             }}
                                           >
-                                            {(activity as any).itemTitle ||
+                                            {activity.itemTitle ||
                                               item?.title ||
                                               'Unbekannt'}
                                           </span>
@@ -1138,7 +1133,7 @@ export const ActivityPage = () => {
                                 margin: 0,
                               }}
                             >
-                              {formatTimeAgo((request as any).timestamp || Date.now())}
+                              {formatTimeAgo(request.timestamp || request.sentAt || Date.now())}
                             </p>
                           </div>
 

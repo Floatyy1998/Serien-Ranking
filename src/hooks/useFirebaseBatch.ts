@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 
 interface BatchUpdate {
   path: string;
-  value: any;
+  value: unknown;
   timestamp: number;
 }
 
@@ -29,7 +29,7 @@ export function useFirebaseBatch(config: BatchConfig = {}) {
     if (batchRef.current.length === 0) return;
 
     try {
-      const updates: Record<string, any> = {};
+      const updates: Record<string, unknown> = {};
 
       // Sammle alle Updates in ein großes Update-Object
       batchRef.current.forEach(({ path, value }) => {
@@ -58,7 +58,7 @@ export function useFirebaseBatch(config: BatchConfig = {}) {
   }, []);
 
   const addUpdate = useCallback(
-    (path: string, value: any) => {
+    (path: string, value: unknown) => {
       const now = Date.now();
 
       // Entferne vorherigen Update für denselben Pfad

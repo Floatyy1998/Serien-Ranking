@@ -14,9 +14,53 @@ import {
   type EarnedBadge,
 } from './badgeDefinitions';
 
+// ── Interfaces for Firebase data used in badge calculations ──
+
+interface BadgeEpisode {
+  watched: boolean;
+  watchCount?: number;
+  watchedAt?: number;
+  air_date?: string;
+}
+
+interface BadgeSeason {
+  episodes: BadgeEpisode[];
+  seasonNumber: number;
+}
+
+interface BadgeSeriesItem {
+  seasons?: BadgeSeason[];
+  rating?: number | Record<string, number>;
+}
+
+interface BadgeMovieItem {
+  rating?: number | Record<string, number>;
+}
+
+interface BingeWindow {
+  count?: number;
+  windowEnd?: number;
+}
+
+interface BadgeCounters {
+  currentStreak?: number;
+  quickwatchEpisodes?: number;
+  maxBingeEpisodes?: number;
+  marathonWeeks?: Record<string, number>;
+  bingeWindows?: Record<string, BingeWindow>;
+  [key: string]: unknown;
+}
+
+interface BadgeUserData {
+  series: BadgeSeriesItem[];
+  movies: BadgeMovieItem[];
+  activities: unknown[];
+  badgeCounters: BadgeCounters;
+}
+
 export class OfflineBadgeSystem {
   private userId: string;
-  private cachedData: any = null;
+  private cachedData: BadgeUserData | null = null;
   private lastCacheTime: number = 0;
   private CACHE_DURATION = 30 * 60 * 1000; // 30 Minuten Cache
   private cachedBadges: EarnedBadge[] | null = null;
@@ -61,7 +105,7 @@ export class OfflineBadgeSystem {
   /**
    * 📊 Lade alle User-Daten einmal (mit Caching)
    */
-  private async getUserData() {
+  private async getUserData(): Promise<BadgeUserData> {
     const now = Date.now();
     if (this.cachedData && now - this.lastCacheTime < this.CACHE_DURATION) {
       return this.cachedData;
@@ -79,23 +123,23 @@ export class OfflineBadgeSystem {
     return this.cachedData;
   }
 
-  private async getSeriesData() {
+  private async getSeriesData(): Promise<BadgeSeriesItem[]> {
     const snapshot = await firebase
       .database()
       .ref(`${this.userId}/serien`)
       .once('value');
-    return snapshot.exists() ? Object.values(snapshot.val()) : [];
+    return snapshot.exists() ? (Object.values(snapshot.val()) as BadgeSeriesItem[]) : [];
   }
 
-  private async getMoviesData() {
+  private async getMoviesData(): Promise<BadgeMovieItem[]> {
     const snapshot = await firebase
       .database()
       .ref(`${this.userId}/filme`)
       .once('value');
-    return snapshot.exists() ? Object.values(snapshot.val()) : [];
+    return snapshot.exists() ? (Object.values(snapshot.val()) as BadgeMovieItem[]) : [];
   }
 
-  private async getActivitiesData() {
+  private async getActivitiesData(): Promise<unknown[]> {
     const snapshot = await firebase
       .database()
       .ref(`activities/${this.userId}`)
@@ -103,12 +147,12 @@ export class OfflineBadgeSystem {
     return snapshot.exists() ? Object.values(snapshot.val()) : [];
   }
 
-  private async getBadgeCounters() {
+  private async getBadgeCounters(): Promise<BadgeCounters> {
     const snapshot = await firebase
       .database()
       .ref(`badgeCounters/${this.userId}`)
       .once('value');
-    return snapshot.exists() ? snapshot.val() : {};
+    return snapshot.exists() ? (snapshot.val() as BadgeCounters) : {};
   }
 
   /**
@@ -116,7 +160,7 @@ export class OfflineBadgeSystem {
    */
   private async checkBadgeRequirement(
     badge: Badge,
-    userData: any
+    userData: BadgeUserData
   ): Promise<{ earned: boolean; details?: string } | null> {
     const { series, movies, activities, badgeCounters } = userData;
 
@@ -160,7 +204,7 @@ export class OfflineBadgeSystem {
    */
   private checkExplorerBadge(
     badge: Badge,
-    series: any[]
+    series: BadgeSeriesItem[]
   ): { earned: boolean; details?: string } | null {
     const seriesCount = series.length;
 
@@ -178,20 +222,20 @@ export class OfflineBadgeSystem {
    */
   private checkCollectorBadge(
     badge: Badge,
-    series: any[],
-    movies: any[]
+    series: BadgeSeriesItem[],
+    movies: BadgeMovieItem[]
   ): { earned: boolean; details?: string } | null {
     let ratingCount = 0;
 
     // Zähle bewertete Serien
-    series.forEach((s: any) => {
+    series.forEach((s) => {
       if (s.rating && this.hasValidRating(s.rating)) {
         ratingCount++;
       }
     });
 
     // Zähle bewertete Filme
-    movies.forEach((m: any) => {
+    movies.forEach((m) => {
       if (m.rating && this.hasValidRating(m.rating)) {
         ratingCount++;
       }
@@ -206,12 +250,12 @@ export class OfflineBadgeSystem {
     return null;
   }
 
-  private hasValidRating(rating: any): boolean {
+  private hasValidRating(rating: number | Record<string, number>): boolean {
     if (typeof rating === 'number') return rating > 0;
     if (typeof rating === 'object') {
       // Prüfe auf irgendeine Bewertung in verschiedenen Kategorien
       return Object.values(rating).some(
-        (r: any) => typeof r === 'number' && r > 0
+        (r) => typeof r === 'number' && r > 0
       );
     }
     return false;
@@ -222,9 +266,9 @@ export class OfflineBadgeSystem {
    */
   private async checkSocialBadgeFromCounters(
     badge: Badge,
-    _badgeCounters: any,
-    _series: any[],
-    _movies: any[]
+    _badgeCounters: BadgeCounters,
+    _series: BadgeSeriesItem[],
+    _movies: BadgeMovieItem[]
   ): Promise<{ earned: boolean; details?: string } | null> {
     // Lade Anzahl Freunde aus Firebase (korrekterer Pfad: users/{userId}/friends/)
     const friendsSnapshot = await firebase
@@ -265,7 +309,7 @@ export class OfflineBadgeSystem {
    */
   private checkSeasonBadgeFromRealData(
     badge: Badge,
-    series: any[]
+    series: BadgeSeriesItem[]
   ): { earned: boolean; details?: string } | null {
     try {
       const timeWindowMs = this.getTimeWindowMs(badge.requirements.timeframe);
@@ -277,7 +321,7 @@ export class OfflineBadgeSystem {
       // Durchsuche alle Serien nach kürzlich komplettierte Staffeln
       series.forEach((s) => {
         if (s.seasons && Array.isArray(s.seasons)) {
-          s.seasons.forEach((season: any) => {
+          s.seasons.forEach((season) => {
             if (this.isSeasonCompleted(season)) {
               // Prüfe wann die Staffel komplett wurde (anhand der letzten Episode)
               const completionTime = this.getSeasonCompletionTime(season);
@@ -308,15 +352,15 @@ export class OfflineBadgeSystem {
   /**
    * Prüfe ob eine Staffel komplett ist
    */
-  private isSeasonCompleted(season: any): boolean {
+  private isSeasonCompleted(season: BadgeSeason): boolean {
     if (!season.episodes || !Array.isArray(season.episodes)) return false;
-    return season.episodes.every((ep: any) => ep.watched === true);
+    return season.episodes.every((ep) => ep.watched === true);
   }
 
   /**
    * Ermittle wann eine Staffel komplett wurde (Timestamp der letzten Episode)
    */
-  private getSeasonCompletionTime(season: any): number | null {
+  private getSeasonCompletionTime(season: BadgeSeason): number | null {
     if (!season.episodes || !Array.isArray(season.episodes)) return null;
 
     let latestWatchTime = 0;
@@ -335,8 +379,8 @@ export class OfflineBadgeSystem {
    */
   private checkBingeBadgeFromSeries(
     badge: Badge,
-    _series: any[],
-    _activities: any[]
+    _series: BadgeSeriesItem[],
+    _activities: unknown[]
   ): { earned: boolean; details?: string } | null {
     // Für Episode-basierte Binge-Badges: Nutze aktuelle Sessions
     if (badge.requirements.episodes && badge.requirements.timeframe) {
@@ -380,9 +424,8 @@ export class OfflineBadgeSystem {
    */
   private getCounterValue(counterName: string): number {
     if (this.cachedData && this.cachedData.badgeCounters) {
-      const value = this.cachedData.badgeCounters[counterName] || 0;
-
-      return value;
+      const value = this.cachedData.badgeCounters[counterName];
+      return typeof value === 'number' ? value : 0;
     }
     return 0;
   }
@@ -392,18 +435,18 @@ export class OfflineBadgeSystem {
    */
   private checkMarathonBadgeFromSeries(
     badge: Badge,
-    _series: any[],
-    _activities: any[]
+    _series: BadgeSeriesItem[],
+    _activities: unknown[]
   ): { earned: boolean; details?: string } | null {
     // Marathon = Beste Woche aller Zeiten (nicht nur aktuelle Woche!)
-    const marathonWeeks = this.getCounterValue('marathonWeeks') || {};
+    const marathonWeeks = this.cachedData?.badgeCounters?.marathonWeeks || {};
     let maxWeeklyEpisodes = 0;
     let bestWeek = '';
 
     // Finde die Woche mit den meisten Episoden
-    Object.entries(marathonWeeks as any).forEach(([weekKey, episodes]) => {
-      if ((episodes as number) > maxWeeklyEpisodes) {
-        maxWeeklyEpisodes = episodes as number;
+    Object.entries(marathonWeeks).forEach(([weekKey, episodes]) => {
+      if (episodes > maxWeeklyEpisodes) {
+        maxWeeklyEpisodes = episodes;
         bestWeek = weekKey;
       }
     });
@@ -422,7 +465,7 @@ export class OfflineBadgeSystem {
    */
   private checkStreakBadgeFromCounters(
     badge: Badge,
-    badgeCounters: any
+    badgeCounters: BadgeCounters
   ): { earned: boolean; details?: string } | null {
     // PROBLEM: episode_watched ist NICHT in Friend-Activities!
     // LÖSUNG: Verwende separaten Streak-Counter
@@ -442,7 +485,7 @@ export class OfflineBadgeSystem {
    */
   private checkQuickwatchBadgeFromCounters(
     badge: Badge,
-    badgeCounters: any
+    badgeCounters: BadgeCounters
   ): { earned: boolean; details?: string } | null {
     // Quickwatch-Count aus separatem Counter lesen
     const quickwatchCount = badgeCounters.quickwatchEpisodes || 0;
@@ -461,16 +504,16 @@ export class OfflineBadgeSystem {
    */
   private checkRewatchBadgeFromSeries(
     badge: Badge,
-    series: any[]
+    series: BadgeSeriesItem[]
   ): { earned: boolean; details?: string } | null {
     // Rewatch-Episoden durch watchCount > 1 in Serien-Daten erkennen
     let rewatchEpisodes = 0;
 
     series.forEach((s) => {
       if (s.seasons && Array.isArray(s.seasons)) {
-        s.seasons.forEach((season: any) => {
+        s.seasons.forEach((season) => {
           if (season.episodes && Array.isArray(season.episodes)) {
-            season.episodes.forEach((ep: any) => {
+            season.episodes.forEach((ep) => {
               if (ep.watched && ep.watchCount && ep.watchCount > 1) {
                 // Zähle Rewatch-Count minus erstes Schauen
                 rewatchEpisodes += ep.watchCount - 1;
@@ -575,7 +618,7 @@ export class OfflineBadgeSystem {
 
   private getBingeProgress(
     badge: Badge,
-    badgeCounters: any
+    badgeCounters: BadgeCounters
   ): BadgeProgress | null {
     if (!badge.requirements.episodes || !badge.requirements.timeframe)
       return null;
@@ -613,7 +656,7 @@ export class OfflineBadgeSystem {
 
   private getQuickwatchProgress(
     badge: Badge,
-    badgeCounters: any
+    badgeCounters: BadgeCounters
   ): BadgeProgress | null {
     if (!badge.requirements.episodes) return null;
 
@@ -627,7 +670,7 @@ export class OfflineBadgeSystem {
 
   private getMarathonProgress(
     badge: Badge,
-    badgeCounters: any
+    badgeCounters: BadgeCounters
   ): BadgeProgress | null {
     if (!badge.requirements.episodes) return null;
 
@@ -688,7 +731,7 @@ export class OfflineBadgeSystem {
 
   private getStreakProgress(
     badge: Badge,
-    badgeCounters: any
+    badgeCounters: BadgeCounters
   ): BadgeProgress | null {
     if (!badge.requirements.days) return null;
 
@@ -702,16 +745,16 @@ export class OfflineBadgeSystem {
 
   private getRewatchProgress(
     badge: Badge,
-    series: any[]
+    series: BadgeSeriesItem[]
   ): BadgeProgress | null {
     if (!badge.requirements.episodes) return null;
 
     let rewatchCount = 0;
     series.forEach((s) => {
       if (s.seasons && Array.isArray(s.seasons)) {
-        s.seasons.forEach((season: any) => {
+        s.seasons.forEach((season) => {
           if (season.episodes && Array.isArray(season.episodes)) {
-            season.episodes.forEach((ep: any) => {
+            season.episodes.forEach((ep) => {
               if (ep.watchCount && ep.watchCount > 1) {
                 rewatchCount += ep.watchCount - 1;
               }
@@ -731,7 +774,7 @@ export class OfflineBadgeSystem {
 
   private getExplorerProgress(
     badge: Badge,
-    series: any[]
+    series: BadgeSeriesItem[]
   ): BadgeProgress | null {
     if (!badge.requirements.series) return null;
 
@@ -745,18 +788,18 @@ export class OfflineBadgeSystem {
 
   private getCollectorProgress(
     badge: Badge,
-    series: any[],
-    movies: any[]
+    series: BadgeSeriesItem[],
+    movies: BadgeMovieItem[]
   ): BadgeProgress | null {
     if (!badge.requirements.ratings) return null;
 
     let ratingCount = 0;
-    series.forEach((s: any) => {
+    series.forEach((s) => {
       if (s.rating && this.hasValidRating(s.rating)) {
         ratingCount++;
       }
     });
-    movies.forEach((m: any) => {
+    movies.forEach((m) => {
       if (m.rating && this.hasValidRating(m.rating)) {
         ratingCount++;
       }
@@ -841,7 +884,7 @@ export class OfflineBadgeSystem {
     ]);
 
     // Cache befüllen für nächsten Aufruf
-    this.cachedData = { series, movies, badgeCounters };
+    this.cachedData = { series, movies, activities: [], badgeCounters };
     this.lastCacheTime = Date.now();
 
     const progressData: Record<string, BadgeProgress> = {};
@@ -931,7 +974,7 @@ export class OfflineBadgeSystem {
    */
   isCacheValid(): boolean {
     const now = Date.now();
-    return this.cachedData && now - this.lastCacheTime < this.CACHE_DURATION;
+    return this.cachedData !== null && now - this.lastCacheTime < this.CACHE_DURATION;
   }
 
   /**
@@ -939,8 +982,8 @@ export class OfflineBadgeSystem {
    */
   async debugSocialBadges(): Promise<{
     friendsCount: number;
-    socialBadges: any[];
-    earnedSocialBadges: any[];
+    socialBadges: Badge[];
+    earnedSocialBadges: EarnedBadge[];
   }> {
     const friendsSnapshot = await firebase
       .database()
@@ -1047,13 +1090,13 @@ if (typeof window !== 'undefined') {
     // Badge-Progress für alle Kategorien zeigen
     showBadgeProgress: async (userId: string) => {
       const badgeSystem = getOfflineBadgeSystem(userId);
-      const userData = await (badgeSystem as any).getUserData();
+      const userData = await (badgeSystem as unknown as { getUserData(): Promise<BadgeUserData> }).getUserData();
       const { series, movies } = userData;
 
       // Rating-Count berechnen
       let ratingCount = 0;
-      series.forEach((s: any) => s.rating && ratingCount++);
-      movies.forEach((m: any) => m.rating && ratingCount++);
+      series.forEach((s) => s.rating && ratingCount++);
+      movies.forEach((m) => m.rating && ratingCount++);
 
       return userData;
     },

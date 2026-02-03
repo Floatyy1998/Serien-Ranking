@@ -15,6 +15,20 @@ import firebase from 'firebase/compat/app';
 import { badgeCounterService } from './badgeCounterService';
 import type { EarnedBadge } from './badgeDefinitions';
 import { getOfflineBadgeSystem } from './offlineBadgeSystem';
+interface FriendActivityData {
+  type: string;
+  itemTitle: string;
+  tmdbId: number;
+  itemType: 'series' | 'movie';
+  posterPath?: string;
+  rating?: number;
+}
+
+interface BatchEpisodeEntry {
+  isRewatch?: boolean;
+  airDate?: string;
+}
+
 // Badge-Callback System (ersetzt activityBatchManager)
 const badgeCallbacks = new Map<string, (badges: EarnedBadge[]) => void>();
 
@@ -35,7 +49,7 @@ export const removeBadgeCallback = (userId: string) => {
  */
 const logFriendActivity = async (
   userId: string,
-  activityData: any
+  activityData: FriendActivityData
 ): Promise<void> => {
   try {
     const activitiesRef = firebase.database().ref(`activities/${userId}`);
@@ -348,7 +362,7 @@ export const logEpisodeWatchedClean = updateEpisodeCounters;
  */
 export const logBatchEpisodesWatchedClean = async (
   userId: string,
-  episodes: any[]
+  episodes: BatchEpisodeEntry[]
 ): Promise<EarnedBadge[]> => {
   try {
     // Alle Episoden einzeln durchgehen für zeitbasierte Binge-Erkennung

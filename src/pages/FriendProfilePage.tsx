@@ -8,17 +8,41 @@ import { BackButton } from '../components/BackButton';
 import { QuickFilter } from '../components/QuickFilter';
 import { useTheme } from '../contexts/ThemeContext';
 import { calculateOverallRating } from '../lib/rating/rating';
+import type { Series } from '../types/Series';
+import { getImageUrl } from '../utils/imageUrl';
+
+interface FriendProvider {
+  id: number;
+  logo: string;
+  name: string;
+}
+
+interface FriendEpisode {
+  air_date?: string;
+  id: number;
+  name?: string;
+  watched?: boolean;
+  watchCount?: number;
+  episode_number?: number;
+}
+
+interface FriendSeason {
+  seasonNumber?: number;
+  season_number?: number;
+  rating?: number;
+  episodes?: FriendEpisode[];
+}
 
 interface FriendItem {
   id: number;
   nmr: number;
   title: string;
-  poster: any;
-  rating: any;
-  genre?: any;
+  poster: string | { poster: string };
+  rating: Record<string, number> | number;
+  genre?: { genres?: string[] };
   genres?: string[];
-  provider?: any;
-  seasons?: any[];
+  provider?: { provider: FriendProvider[] };
+  seasons?: FriendSeason[];
   release_date?: string;
   status?: string;
   production?: { production: boolean };
@@ -60,7 +84,7 @@ export const FriendProfilePage: React.FC = () => {
 
         const seriesList: FriendItem[] = [];
         for (const [key, value] of Object.entries(seriesData)) {
-          const series = value as any;
+          const series = value as FriendItem;
           seriesList.push({
             id: series.id || parseInt(key),
             nmr: series.nmr || parseInt(key),
@@ -83,7 +107,7 @@ export const FriendProfilePage: React.FC = () => {
 
         const moviesList: FriendItem[] = [];
         for (const [key, value] of Object.entries(moviesData)) {
-          const movie = value as any;
+          const movie = value as FriendItem;
           moviesList.push({
             id: movie.id || parseInt(key),
             nmr: movie.nmr || parseInt(key),
@@ -109,18 +133,11 @@ export const FriendProfilePage: React.FC = () => {
     loadFriendData();
   }, [friendId]);
 
-  const calculateFriendRating = (item: any): string => {
+  const calculateFriendRating = (item: FriendItem): string => {
     if (!item.rating) return '0.00';
-    return calculateOverallRating(item);
+    return calculateOverallRating(item as unknown as Series);
   };
 
-  const getImageUrl = (posterObj: any): string => {
-    if (!posterObj) return '/placeholder.jpg';
-    const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w342${path}`;
-  };
 
   const ratedSeries = useMemo(() => {
     let filtered = friendSeries;
@@ -138,7 +155,7 @@ export const FriendProfilePage: React.FC = () => {
     if (filters.provider && filters.provider !== 'All') {
       filtered = filtered.filter((series) => {
         if (series.provider?.provider && Array.isArray(series.provider.provider)) {
-          return series.provider.provider.some((p: any) => p.name === filters.provider);
+          return series.provider.provider.some((p: FriendProvider) => p.name === filters.provider);
         }
         return false;
       });
@@ -161,9 +178,9 @@ export const FriendProfilePage: React.FC = () => {
         let totalAiredEpisodes = 0;
         const today = new Date();
 
-        s.seasons.forEach((season: any) => {
+        s.seasons.forEach((season: FriendSeason) => {
           if (season.episodes) {
-            season.episodes.forEach((ep: any) => {
+            season.episodes.forEach((ep: FriendEpisode) => {
               if (ep.air_date) {
                 const airDate = new Date(ep.air_date);
                 if (airDate <= today) {
@@ -183,9 +200,9 @@ export const FriendProfilePage: React.FC = () => {
         let watchedEpisodes = 0;
         const today = new Date();
 
-        s.seasons.forEach((season: any) => {
+        s.seasons.forEach((season: FriendSeason) => {
           if (season.episodes) {
-            season.episodes.forEach((ep: any) => {
+            season.episodes.forEach((ep: FriendEpisode) => {
               if (ep.air_date) {
                 const airDate = new Date(ep.air_date);
                 if (airDate <= today && ep.watched) watchedEpisodes++;
@@ -243,7 +260,7 @@ export const FriendProfilePage: React.FC = () => {
     if (filters.provider && filters.provider !== 'All') {
       filtered = filtered.filter((movie) => {
         if (movie.provider?.provider && Array.isArray(movie.provider.provider)) {
-          return movie.provider.provider.some((p: any) => p.name === filters.provider);
+          return movie.provider.provider.some((p: FriendProvider) => p.name === filters.provider);
         }
         return false;
       });
@@ -342,7 +359,7 @@ export const FriendProfilePage: React.FC = () => {
       ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateFriendRating(item)), 0) / itemsWithRating.length
       : 0;
 
-  const handleItemClick = (item: any, type: 'series' | 'movie') => {
+  const handleItemClick = (item: FriendItem, type: 'series' | 'movie') => {
     let position = 0;
     let scrollSource = '';
 
@@ -634,8 +651,8 @@ export const FriendProfilePage: React.FC = () => {
 
                   item.seasons.forEach((season) => {
                     if (season.episodes) {
-                      const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {});
-                      episodes.forEach((ep: any) => {
+                      const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as FriendEpisode[];
+                      episodes.forEach((ep: FriendEpisode) => {
                         if (ep.air_date) {
                           const airDate = new Date(ep.air_date);
                           if (airDate <= today) {
@@ -683,10 +700,10 @@ export const FriendProfilePage: React.FC = () => {
                           display: 'flex',
                           gap: '4px',
                         }}>
-                          {Array.from(new Set(item.provider.provider.map((p: any) => p.name)))
+                          {Array.from(new Set(item.provider.provider.map((p: FriendProvider) => p.name)))
                             .slice(0, 2)
                             .map((name) => {
-                              const provider = item.provider?.provider.find((p: any) => p.name === name);
+                              const provider = item.provider?.provider.find((p: FriendProvider) => p.name === name);
                               return provider ? (
                                 <div
                                   key={provider.id}

@@ -10,7 +10,7 @@ interface Notification {
   message: string;
   timestamp: number;
   read: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 interface NotificationContextType {
@@ -73,7 +73,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       await firebase.database()
         .ref(`users/${user.uid}/notifications`)
         .update(updates);
-      console.log(`Cleaned up ${toDelete.length} old notifications`);
     }
   };
 
@@ -89,7 +88,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     const handleData = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();
       if (data) {
-        const notificationsList = Object.entries(data).map(([id, notification]: [string, any]) => ({
+        const notificationsList = Object.entries(data as Record<string, Omit<Notification, 'id'>>).map(([id, notification]) => ({
           id,
           ...notification,
         }));
@@ -148,7 +147,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const markAllAsRead = async () => {
     if (!user) return;
 
-    const updates: any = {};
+    const updates: Record<string, boolean> = {};
     notifications.forEach(n => {
       if (!n.read) {
         updates[`${n.id}/read`] = true;

@@ -72,12 +72,13 @@ export const RegisterPage = () => {
 
         navigate('/');
       }
-    } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
+      if (firebaseError.code === 'auth/email-already-in-use') {
         setError('Diese E-Mail-Adresse wird bereits verwendet.');
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (firebaseError.code === 'auth/invalid-email') {
         setError('Ungültige E-Mail-Adresse.');
-      } else if (error.code === 'auth/weak-password') {
+      } else if (firebaseError.code === 'auth/weak-password') {
         setError('Passwort ist zu schwach.');
       } else {
         setError('Ein Fehler ist aufgetreten. Bitte versuche es später erneut.');

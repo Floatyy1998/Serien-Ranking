@@ -1,5 +1,10 @@
 import { Series } from '../../types/Series';
 
+type Episode = Series['seasons'][number]['episodes'][number];
+
+const toEpisodesArray = (episodes: Episode[] | Record<string, Episode>): Episode[] =>
+  Array.isArray(episodes) ? episodes : Object.values(episodes || {});
+
 export interface NextRewatchEpisode {
   id: number;
   name: string;
@@ -22,7 +27,7 @@ export const hasActiveRewatch = (series: Series): boolean => {
 
   // Finde die höchste watchCount in der Serie
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     
     for (const episode of episodes) {
       if (episode.watched) {
@@ -39,7 +44,7 @@ export const hasActiveRewatch = (series: Series): boolean => {
 
   // Prüfe ob es Episoden gibt, die weniger oft geschaut wurden als das Maximum
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     for (const episode of episodes) {
       if (episode.watched) {
         const watchCount = episode.watchCount || 1;
@@ -68,7 +73,7 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
 
   // Finde min und max watchCount
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     for (const episode of episodes) {
       if (episode.watched) {
         const watchCount = episode.watchCount || 1;
@@ -82,7 +87,7 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
 
   // Suche die erste Episode mit der niedrigsten watchCount
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     for (let i = 0; i < episodes.length; i++) {
       const episode = episodes[i];
       const currentWatchCount = episode.watched ? (episode.watchCount || 1) : 0;
@@ -114,7 +119,7 @@ export const isRewatchComplete = (series: Series): boolean => {
 
   // Finde die höchste watchCount
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     for (const episode of episodes) {
       if (episode.watched) {
         hasWatchedEpisodes = true;
@@ -128,7 +133,7 @@ export const isRewatchComplete = (series: Series): boolean => {
 
   // Prüfe ob alle Episoden die maximale watchCount haben
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     for (const episode of episodes) {
       const currentWatchCount = episode.watched ? (episode.watchCount || 1) : 0;
       if (currentWatchCount < maxWatchCount) {
@@ -154,7 +159,7 @@ export const getRewatchProgress = (series: Series): { current: number, total: nu
 
   // Finde die höchste watchCount
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     for (const episode of episodes) {
       totalEpisodes++;
       if (episode.watched) {
@@ -166,7 +171,7 @@ export const getRewatchProgress = (series: Series): { current: number, total: nu
 
   // Zähle Episoden die bereits die maximale Anzahl erreicht haben
   for (const season of series.seasons) {
-    const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as any[];
+    const episodes = toEpisodesArray(season.episodes);
     for (const episode of episodes) {
       const currentWatchCount = episode.watched ? (episode.watchCount || 1) : 0;
       if (currentWatchCount >= maxWatchCount) {

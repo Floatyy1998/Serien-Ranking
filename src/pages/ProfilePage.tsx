@@ -33,6 +33,14 @@ import { useTheme } from '../contexts/ThemeContext';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { useOptimizedFriends } from '../contexts/OptimizedFriendsProvider';
 import { useBadges } from '../features/badges/BadgeProvider';
+import type { Movie as MovieType } from '../types/Movie';
+
+interface UserProfileData {
+  username?: string;
+  displayName?: string;
+  photoURL?: string;
+  isPublic?: boolean;
+}
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
@@ -42,7 +50,7 @@ export const ProfilePage = () => {
   const { unreadBadgesCount } = useBadges();
 
   // Load user data from Firebase Database
-  const { data: userData } = useEnhancedFirebaseCache<any>(
+  const { data: userData } = useEnhancedFirebaseCache<UserProfileData>(
     user ? `users/${user.uid}` : '',
     {
       ttl: 5 * 60 * 1000,
@@ -73,8 +81,8 @@ export const ProfilePage = () => {
               const isWatched = !!(
                 episode.firstWatchedAt ||
                 episode.watched === true ||
-                (episode.watched as any) === 1 ||
-                (episode.watched as any) === 'true' ||
+                (episode.watched as unknown) === 1 ||
+                (episode.watched as unknown) === 'true' ||
                 (episode.watchCount && episode.watchCount > 0)
               );
 
@@ -100,7 +108,7 @@ export const ProfilePage = () => {
       }
     });
 
-    movieList.forEach((movie: any) => {
+    movieList.forEach((movie: MovieType) => {
       if (movie && movie.nmr !== undefined && movie.nmr !== null) {
         const rating = parseFloat(calculateOverallRating(movie));
         const isWatched = !isNaN(rating) && rating > 0;

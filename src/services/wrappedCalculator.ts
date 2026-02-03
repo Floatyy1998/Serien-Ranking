@@ -41,17 +41,6 @@ export function calculateWrappedStats(
   const episodeEvents = yearEvents.filter((e) => e.type === 'episode_watch') as EpisodeWatchEvent[];
   const movieEvents = yearEvents.filter((e) => e.type === 'movie_watch' || e.type === 'movie_rating') as MovieWatchEvent[];
 
-  // Debug logging
-  console.log('[wrappedCalculator] Input events:', events.length);
-  console.log('[wrappedCalculator] Year filter:', year);
-  console.log('[wrappedCalculator] Events with year field:', events.filter(e => e.year !== undefined).length);
-  console.log('[wrappedCalculator] Year-filtered events:', yearEvents.length);
-  console.log('[wrappedCalculator] Episode events:', episodeEvents.length);
-  console.log('[wrappedCalculator] Movie events:', movieEvents.length);
-  if (movieEvents.length > 0) {
-    console.log('[wrappedCalculator] First movie event:', movieEvents[0]);
-  }
-
   // Grundlegende Berechnungen
   const totalEpisodes = episodeEvents.length;
   const totalMovies = movieEvents.length;
@@ -277,7 +266,7 @@ function calculateTopProviders(
   // Unterstützt sowohl das neue providers-Array als auch das alte provider-Feld
   // Jeder Provider bekommt die volle Watchzeit (nicht aufgeteilt)
   for (const episode of episodes) {
-    const providers = [...new Set<string>((episode as any).providers || (episode.provider ? [episode.provider] : []))];
+    const providers = [...new Set<string>(episode.providers || (episode.provider ? [episode.provider] : []))];
     const runtime = episode.episodeRuntime || 45;
 
     for (const providerName of providers) {
@@ -298,7 +287,7 @@ function calculateTopProviders(
 
   // Sammle Provider aus Movie-Events
   for (const movie of movies) {
-    const providers = [...new Set<string>((movie as any).providers || (movie.provider ? [movie.provider] : []))];
+    const providers = [...new Set<string>(movie.providers || (movie.provider ? [movie.provider] : []))];
     const runtime = movie.runtime || 120;
 
     for (const providerName of providers) {

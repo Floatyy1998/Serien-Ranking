@@ -1,4 +1,55 @@
 // Web Worker for heavy statistics calculations
+// Workers can't import modules, so define local interfaces
+interface WorkerEpisode {
+  air_date?: string;
+  id: number;
+  name?: string;
+  watched: boolean | number | string;
+  watchCount?: number;
+  firstWatchedAt?: string;
+  lastWatchedAt?: string;
+  episode_number?: number;
+}
+
+interface WorkerSeason {
+  seasonNumber: number;
+  season_number?: number;
+  episodes?: WorkerEpisode[];
+}
+
+interface WorkerSeries {
+  id: number;
+  nmr?: number;
+  title: string;
+  watchlist?: boolean;
+  seasons?: WorkerSeason[];
+  poster?: string | { poster?: string };
+  genre?: { genres?: string[] };
+  provider?: { provider?: { id: number; name: string; logo: string }[] };
+}
+
+interface WorkerMovie {
+  id: number;
+  nmr?: number;
+  rating?: Record<string, number>;
+}
+
+interface WorkerProcessedEpisode {
+  seriesId: number;
+  seriesNmr: number | undefined;
+  seriesTitle: string;
+  poster: string;
+  seasonNumber: number;
+  episodeNumber: number;
+  seasonIndex: number;
+  episodeIndex: number;
+  episodeId: number;
+  episodeName: string | undefined;
+  watched: boolean | number | string;
+  seriesGenre: string[] | undefined;
+  seriesProviders: string[] | undefined;
+}
+
 self.addEventListener('message', (event) => {
   const { type, data } = event.data;
   
@@ -15,7 +66,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
-function calculateStats(data: any) {
+function calculateStats(data: { seriesList: WorkerSeries[]; movieList: WorkerMovie[]; userId: string }) {
   const { seriesList, movieList, userId } = data;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -51,8 +102,8 @@ function calculateStats(data: any) {
         const isWatched = !!(
           episode.firstWatchedAt ||
           episode.watched === true ||
-          (episode.watched as any) === 1 ||
-          (episode.watched as any) === 'true' ||
+          (episode.watched as unknown) === 1 ||
+          (episode.watched as unknown) === 'true' ||
           (episode.watchCount && episode.watchCount > 0)
         );
         
@@ -119,7 +170,8 @@ function calculateStats(data: any) {
   };
 }
 
-const getImageUrl = (posterObj: any): string => {
+// Worker kann keine Module importieren - lokale Kopie nötig
+const getImageUrl = (posterObj: string | { poster?: string } | null | undefined): string => {
   if (!posterObj) return '/placeholder.jpg';
   const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
   if (!path) return '/placeholder.jpg';
@@ -127,13 +179,13 @@ const getImageUrl = (posterObj: any): string => {
   return `https://image.tmdb.org/t/p/w342${path}`;
 };
 
-function processEpisodes(data: any) {
+function processEpisodes(data: { seriesList: WorkerSeries[] }) {
   const { seriesList } = data;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTime = today.getTime();
   
-  const episodes: any[] = [];
+  const episodes: WorkerProcessedEpisode[] = [];
   
   for (let i = 0; i < seriesList.length; i++) {
     const series = seriesList[i];
@@ -155,7 +207,7 @@ function processEpisodes(data: any) {
         episodeDate.setHours(0, 0, 0, 0);
         
         if (episodeDate.getTime() === todayTime) {
-          const actualSeasonIndex = series.seasons?.findIndex((s: any) => s.seasonNumber === season.seasonNumber) ?? 0;
+          const actualSeasonIndex = series.seasons?.findIndex((s: WorkerSeason) => s.seasonNumber === season.seasonNumber) ?? 0;
           
           episodes.push({
             seriesId: series.id,
@@ -170,7 +222,7 @@ function processEpisodes(data: any) {
             episodeName: episode.name,
             watched: episode.watched,
             seriesGenre: series.genre?.genres,
-            seriesProviders: series.provider?.provider?.map((p: any) => p.name),
+            seriesProviders: series.provider?.provider?.map((p: { id: number; name: string; logo: string }) => p.name),
           });
         }
       }

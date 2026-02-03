@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react';
 
+interface TMDBTrendingItem {
+  id: number;
+  name?: string;
+  original_name?: string;
+  title?: string;
+  original_title?: string;
+  poster_path: string | null;
+  vote_average: number;
+  vote_count: number;
+  first_air_date?: string;
+  release_date?: string;
+}
+
 interface TrendingItem {
   type: 'series' | 'movie';
   id: number;
@@ -32,7 +45,7 @@ export const useTMDBTrending = () => {
 
         // Combine and sort by popularity
         const combinedItems: TrendingItem[] = [
-          ...tvData.results.slice(0, 10).map((item: any) => ({
+          ...tvData.results.slice(0, 10).map((item: TMDBTrendingItem) => ({
             type: 'series' as const,
             id: item.id,
             title: item.name || item.original_name,
@@ -41,7 +54,7 @@ export const useTMDBTrending = () => {
             voteCount: item.vote_count,
             releaseDate: item.first_air_date
           })),
-          ...movieData.results.slice(0, 10).map((item: any) => ({
+          ...movieData.results.slice(0, 10).map((item: TMDBTrendingItem) => ({
             type: 'movie' as const,
             id: item.id,
             title: item.title || item.original_title,

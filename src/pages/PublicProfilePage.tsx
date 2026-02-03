@@ -7,17 +7,47 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { QuickFilter } from '../components/QuickFilter';
 import { BackButton } from '../components/BackButton';
+import { getImageUrl } from '../utils/imageUrl';
+
+interface PublicUserData {
+  publicProfileId?: string;
+  isPublicProfile?: boolean;
+  username?: string;
+  displayName?: string;
+}
+
+interface PublicProvider {
+  id: number;
+  logo: string;
+  name: string;
+}
+
+interface PublicEpisode {
+  air_date?: string;
+  id: number;
+  name?: string;
+  watched?: boolean;
+  watchCount?: number;
+  episode_number?: number;
+}
+
+interface PublicSeason {
+  seasonNumber?: number;
+  season_number?: number;
+  rating?: number;
+  episodes?: PublicEpisode[];
+}
 
 interface PublicItem {
   id: number;
   nmr: number;
   title: string;
-  poster: any;
-  rating: any;
-  genre?: any;
+  poster: string | { poster: string };
+  rating: Record<string, number> | number;
+  genre?: { genres?: string[] };
   genres?: string[];
-  provider?: any;
-  seasons?: any[];
+  provider?: { provider: PublicProvider[] };
+  seasons?: PublicSeason[];
   release_date?: string;
   status?: string;
   production?: {
@@ -31,7 +61,24 @@ export const PublicProfilePage: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Try to use theme, but fallback to default if not in ThemeProvider
-  let currentTheme: any;
+  interface FallbackTheme {
+    primary: string;
+    background: {
+      default: string;
+      surface: string;
+    };
+    text: {
+      primary: string;
+      secondary: string;
+    };
+    border: {
+      default: string;
+    };
+  }
+
+  type PublicTheme = ReturnType<typeof useTheme>['currentTheme'] | FallbackTheme;
+
+  let currentTheme: PublicTheme;
   try {
     const theme = useTheme();
     currentTheme = theme.currentTheme;
@@ -78,12 +125,12 @@ export const PublicProfilePage: React.FC = () => {
         const usersSnapshot = await usersRef.once('value');
         const users = usersSnapshot.val();
 
-        let foundUser = null;
-        let foundUserId = null;
+        let foundUser: PublicUserData | null = null;
+        let foundUserId: string | null = null;
 
         if (users) {
           for (const [userId, userData] of Object.entries(users)) {
-            const user = userData as any;
+            const user = userData as PublicUserData;
             if (user.publicProfileId === publicId && user.isPublicProfile) {
               foundUser = user;
               foundUserId = userId;
@@ -106,17 +153,20 @@ export const PublicProfilePage: React.FC = () => {
         const series = seriesSnapshot.val();
 
         if (series) {
-          const seriesArray = Object.entries(series).map(([key, data]: [string, any]) => ({
-            id: data.id || parseInt(key), // Use data.id if available, otherwise use the key
-            nmr: data.nmr || parseInt(key),
-            title: data.title,
-            poster: data.poster,
-            rating: data.rating,
-            genre: data.genre,
-            genres: data.genres,
-            provider: data.provider,
-            seasons: data.seasons,
-          }));
+          const seriesArray = Object.entries(series).map(([key, value]) => {
+            const data = value as PublicItem;
+            return {
+              id: data.id || parseInt(key),
+              nmr: data.nmr || parseInt(key),
+              title: data.title,
+              poster: data.poster,
+              rating: data.rating,
+              genre: data.genre,
+              genres: data.genres,
+              provider: data.provider,
+              seasons: data.seasons,
+            };
+          });
 
           setProfileSeries(seriesArray);
         }
@@ -127,17 +177,20 @@ export const PublicProfilePage: React.FC = () => {
         const movies = moviesSnapshot.val();
 
         if (movies) {
-          const moviesArray = Object.entries(movies).map(([key, data]: [string, any]) => ({
-            id: data.id || parseInt(key), // Use data.id if available, otherwise use the key
-            nmr: data.nmr || parseInt(key),
-            title: data.title,
-            poster: data.poster,
-            rating: data.rating,
-            genre: data.genre,
-            genres: data.genres,
-            provider: data.provider,
-            release_date: data.release_date,
-          }));
+          const moviesArray = Object.entries(movies).map(([key, value]) => {
+            const data = value as PublicItem;
+            return {
+              id: data.id || parseInt(key),
+              nmr: data.nmr || parseInt(key),
+              title: data.title,
+              poster: data.poster,
+              rating: data.rating,
+              genre: data.genre,
+              genres: data.genres,
+              provider: data.provider,
+              release_date: data.release_date,
+            };
+          });
 
           setProfileMovies(moviesArray);
         }
@@ -161,7 +214,7 @@ export const PublicProfilePage: React.FC = () => {
 
     // For series with seasons
     if (item.seasons && Array.isArray(item.seasons)) {
-      item.seasons.forEach((season: any) => {
+      item.seasons.forEach((season: PublicSeason) => {
         if (season.rating && season.rating > 0) {
           totalRating += season.rating;
           ratingCount++;
@@ -198,7 +251,7 @@ export const PublicProfilePage: React.FC = () => {
     if (filters.provider && filters.provider !== 'All') {
       filtered = filtered.filter((series) => {
         if (series.provider?.provider && Array.isArray(series.provider.provider)) {
-          return series.provider.provider.some((p: any) => p.name === filters.provider);
+          return series.provider.provider.some((p: PublicProvider) => p.name === filters.provider);
         }
         return false;
       });
@@ -226,9 +279,9 @@ export const PublicProfilePage: React.FC = () => {
         let totalAiredEpisodes = 0;
         let watchedEpisodes = 0;
 
-        s.seasons.forEach((season: any) => {
+        s.seasons.forEach((season: PublicSeason) => {
           if (season.episodes) {
-            season.episodes.forEach((ep: any) => {
+            season.episodes.forEach((ep: PublicEpisode) => {
               // Nur ausgestrahlte Episoden zählen
               if (ep.air_date) {
                 const airDate = new Date(ep.air_date);
@@ -252,9 +305,9 @@ export const PublicProfilePage: React.FC = () => {
         let watchedEpisodes = 0;
         const today = new Date();
 
-        s.seasons.forEach((season: any) => {
+        s.seasons.forEach((season: PublicSeason) => {
           if (season.episodes) {
-            season.episodes.forEach((ep: any) => {
+            season.episodes.forEach((ep: PublicEpisode) => {
               // Nur ausgestrahlte Episoden zählen
               if (ep.air_date) {
                 const airDate = new Date(ep.air_date);
@@ -272,7 +325,6 @@ export const PublicProfilePage: React.FC = () => {
     } else if (filters.quickFilter === 'ongoing') {
       // Public-Daten haben oft keine status/production Felder
       // Fallback: Zeige alle Serien, da wir nicht wissen können welche fortlaufend sind
-      console.log('Public Profile - ONGOING filter: Public data has no status info, showing all series');
       // filtered bleibt unverändert (alle Serien)
     } else if (filters.quickFilter === 'recently-added') {
       // Show all items, sorted by ID
@@ -327,7 +379,7 @@ export const PublicProfilePage: React.FC = () => {
     if (filters.provider && filters.provider !== 'All') {
       filtered = filtered.filter((movie) => {
         if (movie.provider?.provider && Array.isArray(movie.provider.provider)) {
-          return movie.provider.provider.some((p: any) => p.name === filters.provider);
+          return movie.provider.provider.some((p: PublicProvider) => p.name === filters.provider);
         }
         return false;
       });
@@ -443,7 +495,7 @@ export const PublicProfilePage: React.FC = () => {
   }, [publicId, activeTab, currentItems.length]); // Trigger when publicId, items are loaded and tab changes
 
   // Save scroll position before navigating away
-  const handleItemClick = (item: any, type: 'series' | 'movie') => {
+  const handleItemClick = (item: PublicItem, type: 'series' | 'movie') => {
     // Try to get scroll position from multiple sources
     let position = 0;
     let scrollSource = '';
@@ -520,14 +572,6 @@ export const PublicProfilePage: React.FC = () => {
     });
   }, [profileSeries, profileMovies]);
 
-  // Get TMDB image URL
-  const getImageUrl = (poster: any): string => {
-    if (!poster) return '/placeholder.jpg';
-    const path = typeof poster === 'object' ? poster.poster : poster;
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w500${path}`;
-  };
 
   // Premium loading state
   if (loading) {
@@ -908,9 +952,9 @@ export const PublicProfilePage: React.FC = () => {
                 let totalAiredEpisodes = 0;
                 let watchedEpisodes = 0;
 
-                item.seasons.forEach((season: any) => {
+                item.seasons.forEach((season: PublicSeason) => {
                   if (season.episodes) {
-                    season.episodes.forEach((ep: any) => {
+                    season.episodes.forEach((ep: PublicEpisode) => {
                       if (ep.air_date) {
                         const airDate = new Date(ep.air_date);
                         if (airDate <= today) {
@@ -937,7 +981,7 @@ export const PublicProfilePage: React.FC = () => {
                 >
                   <div style={{ position: 'relative' }}>
                     <img
-                      src={getImageUrl(item.poster)}
+                      src={getImageUrl(item.poster, 'w500')}
                       alt={item.title}
                       style={{
                         width: '100%',
@@ -962,11 +1006,11 @@ export const PublicProfilePage: React.FC = () => {
                           gap: '4px',
                         }}
                       >
-                        {Array.from(new Set(item.provider.provider.map((p: any) => p.name)))
+                        {Array.from(new Set(item.provider.provider.map((p: PublicProvider) => p.name)))
                           .slice(0, 2)
                           .map((name) => {
                             const provider = item.provider?.provider.find(
-                              (p: any) => p.name === name
+                              (p: PublicProvider) => p.name === name
                             );
                             return provider ? (
                               <div

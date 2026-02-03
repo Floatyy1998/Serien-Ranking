@@ -148,11 +148,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   const fiveMinutes = 5 * 60 * 1000;
 
                   if (!lastCheck || (now - parseInt(lastCheck)) > fiveMinutes) {
-                    console.log('Performing automatic badge check on app start...');
                     const newBadges = await badgeSystem.checkForNewBadges();
 
                     if (newBadges.length > 0) {
-                      console.log('New badges earned on app start:', newBadges);
                       // Event für neue Badges auslösen
                       window.dispatchEvent(
                         new CustomEvent('badgeProgressUpdate', {

@@ -48,7 +48,7 @@ const sendNotificationToUser = async (
     type: 'discussion_reply' | 'discussion_like' | 'spoiler_flag';
     title: string;
     message: string;
-    data?: any;
+    data?: Record<string, unknown>;
   }
 ) => {
   try {
@@ -90,7 +90,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          const discussionList: Discussion[] = Object.entries(data).map(([id, disc]: [string, any]) => ({
+          const discussionList: Discussion[] = Object.entries(data as Record<string, Discussion>).map(([id, disc]) => ({
             ...disc,
             id,
             likes: disc.likes ? Object.keys(disc.likes) : [],
@@ -184,7 +184,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         }
       }
 
-      const updates: Record<string, any> = {};
+      const updates: Record<string, unknown> = {};
 
       // Only set updatedAt if content/title changed (not just spoiler flag by others)
       if (isOwner && (input.title !== undefined || input.content !== undefined)) {
@@ -348,7 +348,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          const replyList: DiscussionReply[] = Object.entries(data).map(([id, reply]: [string, any]) => ({
+          const replyList: DiscussionReply[] = Object.entries(data as Record<string, DiscussionReply>).map(([id, reply]) => ({
             ...reply,
             id,
             likes: reply.likes ? Object.keys(reply.likes) : [],
@@ -394,7 +394,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
       // Only add userPhotoURL if it exists (Firebase doesn't accept undefined)
       const photoURL = userData.photoURL || user.photoURL;
       if (photoURL) {
-        (newReply as any).userPhotoURL = photoURL;
+        (newReply as Omit<DiscussionReply, 'id'> & { userPhotoURL?: string }).userPhotoURL = photoURL;
       }
 
       // Add reply
@@ -422,9 +422,10 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
       const existingRepliesSnapshot = await firebase.database().ref(repliesPath).once('value');
       if (existingRepliesSnapshot.exists()) {
         const existingReplies = existingRepliesSnapshot.val();
-        Object.values(existingReplies).forEach((reply: any) => {
-          if (reply?.userId) {
-            participantIds.add(reply.userId);
+        Object.values(existingReplies).forEach((reply: unknown) => {
+          const r = reply as DiscussionReply;
+          if (r?.userId) {
+            participantIds.add(r.userId);
           }
         });
       }
@@ -480,7 +481,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
         }
       }
 
-      const updates: Record<string, any> = {};
+      const updates: Record<string, unknown> = {};
 
       // Only set updatedAt if content changed (not just spoiler flag by others)
       if (isOwner && input.content !== undefined) {

@@ -19,6 +19,8 @@ import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { colors } from '../theme';
+import type { Movie as MovieType } from '../types/Movie';
+import type { Series } from '../types/Series';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -168,8 +170,8 @@ export const StatsGrid = () => {
           const isWatched = !!(
             ep.firstWatchedAt ||
             ep.watched === true ||
-            (ep.watched as any) === 1 ||
-            (ep.watched as any) === 'true' ||
+            (ep.watched as unknown) === 1 ||
+            (ep.watched as unknown) === 'true' ||
             (ep.watchCount && ep.watchCount > 0)
           );
 
@@ -198,7 +200,7 @@ export const StatsGrid = () => {
     // Movies stats - only count valid movies with ratings
     // Allow nmr: 0 as valid
     const totalMovies = movieList.filter((m) => m && m.nmr !== undefined && m.nmr !== null).length;
-    const watchedMovies = movieList.filter((movie: any) => {
+    const watchedMovies = movieList.filter((movie: MovieType) => {
       // Allow nmr: 0 as valid
       if (!movie || movie.nmr === undefined || movie.nmr === null) return false;
       // A movie is watched if it has a rating > 0
@@ -222,8 +224,8 @@ export const StatsGrid = () => {
           const isWatched = !!(
             ep.firstWatchedAt ||
             ep.watched === true ||
-            (ep.watched as any) === 1 ||
-            (ep.watched as any) === 'true' ||
+            (ep.watched as unknown) === 1 ||
+            (ep.watched as unknown) === 'true' ||
             (ep.watchCount && ep.watchCount > 0)
           );
 
@@ -246,7 +248,7 @@ export const StatsGrid = () => {
     });
 
     // Movie watch time
-    movieList.forEach((movie: any) => {
+    movieList.forEach((movie: MovieType) => {
       if (movie && movie.nmr !== undefined && movie.nmr !== null) {
         const rating = parseFloat(calculateOverallRating(movie));
         const isWatched = !isNaN(rating) && rating > 0;
@@ -298,7 +300,7 @@ export const StatsGrid = () => {
     const movieTimeString = formatMinutesToString(moviesMinutesWatched);
 
     // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
-    const seriesWithRating = seriesList.filter((s: any) => {
+    const seriesWithRating = seriesList.filter((s: Series) => {
       if (!s || s.nmr === undefined || s.nmr === null) return false;
       const rating = parseFloat(calculateOverallRating(s));
       return !isNaN(rating) && rating > 0;
@@ -310,7 +312,7 @@ export const StatsGrid = () => {
           seriesWithRating.length
         : 0;
 
-    const moviesWithRating = movieList.filter((m: any) => {
+    const moviesWithRating = movieList.filter((m: MovieType) => {
       if (!m || m.nmr === undefined || m.nmr === null) return false;
       const rating = parseFloat(calculateOverallRating(m));
       return !isNaN(rating) && rating > 0;
@@ -324,7 +326,7 @@ export const StatsGrid = () => {
 
     // Genres - fix genre detection and exclude "All"
     const genreCounts: Record<string, number> = {};
-    [...seriesList, ...movieList].forEach((item: any) => {
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
       if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
       // Handle different genre structures
@@ -333,7 +335,7 @@ export const StatsGrid = () => {
       if (item.genre?.genres && Array.isArray(item.genre.genres)) {
         genres = item.genre.genres;
       } else if (item.genres && Array.isArray(item.genres)) {
-        genres = item.genres.map((g: any) => (typeof g === 'string' ? g : g.name));
+        genres = item.genres.map((g: string | { id: number; name: string }) => (typeof g === 'string' ? g : g.name));
       }
 
       genres.forEach((genre: string) => {
@@ -353,19 +355,19 @@ export const StatsGrid = () => {
 
     // Providers - fix provider detection with the correct data structure
     const providerCounts: Record<string, number> = {};
-    [...seriesList, ...movieList].forEach((item: any) => {
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
       if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
       // Check the actual provider structure used in the app
-      let providers: any[] = [];
+      let providers: { id: number; logo: string; name: string }[] = [];
 
       // Main provider structure: item.provider.provider[]
       if (item.provider?.provider && Array.isArray(item.provider.provider)) {
         providers = item.provider.provider;
       }
 
-      providers.forEach((provider: any) => {
-        const name = provider.name || provider.provider_name;
+      providers.forEach((provider: { id: number; logo: string; name: string }) => {
+        const name = provider.name;
         if (name && typeof name === 'string') {
           providerCounts[name] = (providerCounts[name] || 0) + 1;
         }

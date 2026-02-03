@@ -61,7 +61,13 @@ import {
 // CUSTOM TOOLTIP COMPONENTS
 // ============================================================================
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipEntry {
+  name: string;
+  value: number;
+  color: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
       <div
@@ -74,7 +80,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         }}
       >
         <p style={{ color: 'white', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: TooltipEntry, index: number) => (
           <div
             key={index}
             style={{
@@ -103,7 +109,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const ActivityTooltip = ({ active, payload, label }: any) => {
+const ActivityTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
       <div
@@ -116,7 +122,7 @@ const ActivityTooltip = ({ active, payload, label }: any) => {
         }}
       >
         <p style={{ color: 'white', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: TooltipEntry, index: number) => (
           <div
             key={index}
             style={{

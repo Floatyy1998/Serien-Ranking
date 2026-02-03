@@ -26,6 +26,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useDiscussionCount } from '../hooks/useDiscussionCounts';
 import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
+import { getImageUrl } from '../utils/imageUrl';
 
 const EpisodeDiscussionButton: React.FC<{
   seriesId: number;
@@ -148,13 +149,6 @@ export const NewEpisodesPage = () => {
     }
   }, []);
 
-  const getImageUrl = (posterObj: any): string => {
-    if (!posterObj) return '/placeholder.jpg';
-    const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w342${path}`;
-  };
 
   const allEpisodes = useMemo(() => {
     const today = new Date();
@@ -192,7 +186,7 @@ export const NewEpisodesPage = () => {
             episodes.push({
               seriesId: series.id,
               seriesName: series.title || '',
-              seriesPoster: typeof series.poster === 'string' ? series.poster : (series.poster as any)?.poster || '',
+              seriesPoster: typeof series.poster === 'string' ? series.poster : series.poster?.poster || '',
               seriesNmr: series.nmr,
               seasonIndex,
               episodeIndex,
@@ -351,15 +345,15 @@ export const NewEpisodesPage = () => {
     const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
     if (scrollableDiv) {
       scrollableDiv.addEventListener('scroll', handleScroll);
-      scrollableDiv.addEventListener('touchstart', handleTouchStart as any);
-      scrollableDiv.addEventListener('touchmove', handleTouchMove as any, { passive: false });
-      scrollableDiv.addEventListener('touchend', handleTouchEnd as any);
+      scrollableDiv.addEventListener('touchstart', handleTouchStart as EventListener);
+      scrollableDiv.addEventListener('touchmove', handleTouchMove as EventListener, { passive: false });
+      scrollableDiv.addEventListener('touchend', handleTouchEnd as EventListener);
 
       return () => {
         scrollableDiv.removeEventListener('scroll', handleScroll);
-        scrollableDiv.removeEventListener('touchstart', handleTouchStart as any);
-        scrollableDiv.removeEventListener('touchmove', handleTouchMove as any);
-        scrollableDiv.removeEventListener('touchend', handleTouchEnd as any);
+        scrollableDiv.removeEventListener('touchstart', handleTouchStart as EventListener);
+        scrollableDiv.removeEventListener('touchmove', handleTouchMove as EventListener);
+        scrollableDiv.removeEventListener('touchend', handleTouchEnd as EventListener);
       };
     }
   }, [handleScroll, handleTouchStart, handleTouchMove, handleTouchEnd]);

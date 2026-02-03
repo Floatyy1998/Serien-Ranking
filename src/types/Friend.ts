@@ -38,6 +38,7 @@ export interface FriendRequest {
   toUsername?: string;
   status: 'pending' | 'accepted' | 'declined';
   sentAt: number;
+  timestamp?: number; // Alternatives Timestamp-Feld
   respondedAt?: number;
 }
 
@@ -62,6 +63,10 @@ export interface FriendActivity {
     | 'movie_removed_from_watchlist';
   itemTitle: string;
   tmdbId?: number; // TMDB ID für Serien/Filme (bevorzugt)
+  itemId?: number | string; // Fallback-ID wenn tmdbId fehlt
+  itemType?: 'series' | 'movie'; // Typ des Items
+  posterPath?: string; // Poster-Pfad aus Activity-Daten
+  poster?: string; // Alternativer Poster-Pfad
   rating?: number;
   timestamp: number;
 }

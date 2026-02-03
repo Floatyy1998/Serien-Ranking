@@ -128,7 +128,7 @@ class ServiceWorkerManager {
   /**
    * 💬 Worker Message Handler
    */
-  private handleWorkerMessage(data: any): void {
+  private handleWorkerMessage(data: Record<string, unknown>): void {
     switch (data.type) {
       case 'CACHE_UPDATED':
         // // console.log('📦 Cache aktualisiert:', data.version);
@@ -195,7 +195,7 @@ class ServiceWorkerManager {
   /**
    * 📦 Firebase Daten Cache Management
    */
-  public cacheFirebaseData(path: string, data: any): void {
+  public cacheFirebaseData(path: string, data: unknown): void {
     this.postMessage({
       type: 'CACHE_FIREBASE_DATA',
       data: { path, data },
@@ -237,7 +237,7 @@ class ServiceWorkerManager {
       if (!registration) return;
 
       if ('sync' in registration) {
-        await (registration as any).sync.register(tag);
+        await (registration as ServiceWorkerRegistration & { sync: { register(tag: string): Promise<void> } }).sync.register(tag);
       }
     } catch (error) {
       // // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
@@ -278,7 +278,7 @@ class ServiceWorkerManager {
   /**
    * 🗄️ IndexedDB Helper
    */
-  private async storeInIndexedDB(storeName: string, data: any): Promise<void> {
+  private async storeInIndexedDB(storeName: string, data: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('SerienRankingDB', 1);
 
@@ -305,7 +305,7 @@ class ServiceWorkerManager {
   /**
    * 💬 Message an Service Worker senden
    */
-  private postMessage(message: any, transfer?: Transferable[]): void {
+  private postMessage(message: Record<string, unknown>, transfer?: Transferable[]): void {
     if (navigator.serviceWorker.controller) {
       if (transfer) {
         navigator.serviceWorker.controller.postMessage(message, { transfer });

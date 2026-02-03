@@ -23,6 +23,8 @@ import { useMovieList } from '../contexts/MovieListProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../contexts/ThemeContext';
 import { calculateOverallRating } from '../lib/rating/rating';
+import type { Movie as MovieType } from '../types/Movie';
+import type { Series } from '../types/Series';
 
 export const StatsPage = () => {
   const { currentTheme } = useTheme();
@@ -73,7 +75,7 @@ export const StatsPage = () => {
           const isWatched = !!(
             ep.firstWatchedAt ||
             ep.watched === true ||
-            (ep.watched as any) === 1 ||
+            (ep.watched as unknown) === 1 ||
             (ep.watchCount && ep.watchCount > 0)
           );
 
@@ -103,7 +105,7 @@ export const StatsPage = () => {
     let watchedMovies = 0;
     let movieMinutes = 0;
 
-    movieList.forEach((movie: any) => {
+    movieList.forEach((movie: MovieType) => {
       if (!movie || movie.nmr === undefined || movie.nmr === null) return;
       const rating = parseFloat(calculateOverallRating(movie));
       if (!isNaN(rating) && rating > 0) {
@@ -113,7 +115,7 @@ export const StatsPage = () => {
     });
 
     // Ratings
-    const seriesWithRating = seriesList.filter((s: any) => {
+    const seriesWithRating = seriesList.filter((s: Series) => {
       if (!s || s.nmr === undefined) return false;
       const rating = parseFloat(calculateOverallRating(s));
       return !isNaN(rating) && rating > 0;
@@ -125,7 +127,7 @@ export const StatsPage = () => {
           seriesWithRating.length
         : 0;
 
-    const moviesWithRating = movieList.filter((m: any) => {
+    const moviesWithRating = movieList.filter((m: MovieType) => {
       if (!m || m.nmr === undefined) return false;
       const rating = parseFloat(calculateOverallRating(m));
       return !isNaN(rating) && rating > 0;
@@ -139,13 +141,13 @@ export const StatsPage = () => {
 
     // Genres
     const genreCounts: Record<string, number> = {};
-    [...seriesList, ...movieList].forEach((item: any) => {
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
       if (!item || item.nmr === undefined) return;
       let genres: string[] = [];
       if (item.genre?.genres && Array.isArray(item.genre.genres)) {
         genres = item.genre.genres;
       } else if (item.genres && Array.isArray(item.genres)) {
-        genres = item.genres.map((g: any) => (typeof g === 'string' ? g : g.name));
+        genres = item.genres.map((g: string | { id: number; name: string }) => (typeof g === 'string' ? g : g.name));
       }
       genres.forEach((genre: string) => {
         if (genre && genre.toLowerCase() !== 'all' && genre.toLowerCase() !== 'alle') {
@@ -161,11 +163,11 @@ export const StatsPage = () => {
 
     // Providers
     const providerCounts: Record<string, number> = {};
-    [...seriesList, ...movieList].forEach((item: any) => {
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
       if (!item || item.nmr === undefined) return;
       if (item.provider?.provider && Array.isArray(item.provider.provider)) {
-        item.provider.provider.forEach((p: any) => {
-          const name = p.name || p.provider_name;
+        item.provider.provider.forEach((p: { id: number; logo: string; name: string }) => {
+          const name = p.name;
           if (name) providerCounts[name] = (providerCounts[name] || 0) + 1;
         });
       }

@@ -66,7 +66,7 @@ export const CatchUpCard: React.FC = () => {
 
   const accentColor = typeof currentTheme.status.warning === 'string'
     ? currentTheme.status.warning
-    : (currentTheme.status.warning as any)?.main || '#f59e0b';
+    : (currentTheme.status.warning as Record<string, string>)?.main || '#f59e0b';
 
   return (
     <motion.div
