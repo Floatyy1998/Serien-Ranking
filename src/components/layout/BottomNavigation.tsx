@@ -30,7 +30,19 @@ export const BottomNavigation = () => {
     {
       id: 'home',
       path: '/',
-      icon: <img src="/tv-logo.svg" alt="TV-RANK" style={{ width: '24px', height: '24px' }} />,
+      icon: <div style={{
+        width: '24px',
+        height: '24px',
+        backgroundColor: 'currentColor',
+        WebkitMaskImage: 'url(/tv-logo.svg)',
+        maskImage: 'url(/tv-logo.svg)',
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain' as string,
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat' as string,
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center' as string,
+      }} />,
       label: 'Home',
     },
     {
