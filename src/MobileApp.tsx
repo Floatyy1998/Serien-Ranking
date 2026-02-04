@@ -33,6 +33,7 @@ const WatchJourneyPage = lazy(() => import('./pages/WatchJourney').then((m) => (
 const CatchUpPage = lazy(() => import('./pages/CatchUp').then((m) => ({ default: m.CatchUpPage })));
 const ImpressumPage = lazy(() => import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage })));
 const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.PrivacyPage })));
+const DiscussionFeedPage = lazy(() => import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage })));
 
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--theme-background, #000)' }}>
@@ -111,6 +112,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <ActivityPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/discussions"
+            element={
+              <Layout hideNav>
+                <DiscussionFeedPage />
               </Layout>
             }
           />

@@ -1116,6 +1116,11 @@ export const EpisodeDiscussionPage = () => {
             episodeNumber={Number(episodeNumber)}
             title="Episoden-Diskussion"
             isWatched={localEpisode?.watched}
+            feedMetadata={{
+              itemTitle: seriesTitle,
+              posterPath: seriesInfo?.poster_path || undefined,
+              episodeTitle: episodeName,
+            }}
           />
         </motion.div>
       </div>

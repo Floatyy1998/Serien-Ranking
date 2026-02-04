@@ -1,5 +1,5 @@
 import React from 'react';
-import { DiscussionItemType } from '../../types/Discussion';
+import { DiscussionFeedMetadata, DiscussionItemType } from '../../types/Discussion';
 
 export interface DiscussionThreadProps {
   itemId: number;
@@ -8,4 +8,5 @@ export interface DiscussionThreadProps {
   episodeNumber?: number;
   title?: React.ReactNode;
   isWatched?: boolean; // For spoiler protection on episodes
+  feedMetadata?: DiscussionFeedMetadata;
 }

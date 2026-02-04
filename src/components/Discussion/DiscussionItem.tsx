@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Discussion } from '../../types/Discussion';
+import { Discussion, DiscussionFeedMetadata } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
 import { extractImageUrls, formatRelativeTime } from './utils';
@@ -24,7 +24,8 @@ export const DiscussionItem: React.FC<{
   onToggleLike: () => void;
   isOwner: boolean;
   currentUserId?: string;
-}> = ({ discussion, discussionPath, onDelete, onEdit, onToggleLike, isOwner, currentUserId }) => {
+  feedMetadata?: DiscussionFeedMetadata;
+}> = ({ discussion, discussionPath, onDelete, onEdit, onToggleLike, isOwner, currentUserId, feedMetadata }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const isLiked = currentUserId ? discussion.likes.includes(currentUserId) : false;
@@ -512,6 +513,7 @@ export const DiscussionItem: React.FC<{
         discussionPath={discussionPath}
         replyCount={discussion.replyCount}
         isSpoilerHidden={discussion.isSpoiler && !showSpoiler}
+        feedMetadata={feedMetadata}
       />
     </motion.div>
   );

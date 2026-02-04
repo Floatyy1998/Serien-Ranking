@@ -5,15 +5,18 @@ import { useAuth } from '../App';
 import {
   CreateDiscussionInput,
   Discussion,
+  DiscussionFeedMetadata,
   DiscussionItemType,
   DiscussionReply,
 } from '../types/Discussion';
+import { writeDiscussionFeedEntry, deleteDiscussionFeedEntries } from '../services/discussionFeedService';
 
 interface UseDiscussionsOptions {
   itemId: number;
   itemType: DiscussionItemType;
   seasonNumber?: number;
   episodeNumber?: number;
+  feedMetadata?: DiscussionFeedMetadata;
 }
 
 interface EditDiscussionInput {
@@ -64,7 +67,7 @@ const sendNotificationToUser = async (
 };
 
 export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsResult => {
-  const { itemId, itemType, seasonNumber, episodeNumber } = options;
+  const { itemId, itemType, seasonNumber, episodeNumber, feedMetadata } = options;
   const { user } = useAuth() || {};
 
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
@@ -152,13 +155,34 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       const ref = firebase.database().ref(path);
       const newRef = await ref.push(newDiscussion);
 
+      // Write to discussion feed (fire-and-forget)
+      if (feedMetadata?.itemTitle) {
+        writeDiscussionFeedEntry({
+          type: 'discussion_created',
+          discussionId: newRef.key!,
+          discussionTitle: input.title,
+          userId: user.uid,
+          username: newDiscussion.username,
+          ...(newDiscussion.userPhotoURL && { userPhotoURL: newDiscussion.userPhotoURL }),
+          itemType,
+          itemId,
+          itemTitle: feedMetadata.itemTitle,
+          ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
+          ...(seasonNumber !== undefined && { seasonNumber }),
+          ...(episodeNumber !== undefined && { episodeNumber }),
+          ...(feedMetadata.episodeTitle && { episodeTitle: feedMetadata.episodeTitle }),
+          contentPreview: input.content.substring(0, 100),
+          createdAt: Date.now(),
+        });
+      }
+
       return newRef.key;
     } catch (err) {
       console.error('Error creating discussion:', err);
       setError('Fehler beim Erstellen der Diskussion');
       return null;
     }
-  }, [user, path, itemId, itemType, seasonNumber, episodeNumber]);
+  }, [user, path, itemId, itemType, seasonNumber, episodeNumber, feedMetadata]);
 
   // Edit a discussion (owner can edit all, others can only mark as spoiler)
   const editDiscussion = useCallback(async (discussionId: string, input: EditDiscussionInput): Promise<boolean> => {
@@ -242,6 +266,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       await discussionRef.remove();
       // Also remove replies
       await firebase.database().ref(`discussionReplies/${discussionId}`).remove();
+      // Remove feed entries (fire-and-forget)
+      deleteDiscussionFeedEntries(discussionId);
 
       return true;
     } catch (err) {
@@ -323,7 +349,7 @@ interface UseDiscussionRepliesResult {
   toggleReplyLike: (replyId: string) => Promise<void>;
 }
 
-export const useDiscussionReplies = (discussionId: string | null, discussionPath: string, shouldFetch: boolean = true): UseDiscussionRepliesResult => {
+export const useDiscussionReplies = (discussionId: string | null, discussionPath: string, shouldFetch: boolean = true, feedMetadata?: DiscussionFeedMetadata): UseDiscussionRepliesResult => {
   const { user } = useAuth() || {};
 
   const [replies, setReplies] = useState<DiscussionReply[]>([]);
@@ -449,13 +475,34 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
         });
       }
 
+      // Write to discussion feed (fire-and-forget)
+      if (feedMetadata?.itemTitle && discussion) {
+        writeDiscussionFeedEntry({
+          type: 'reply_created',
+          discussionId: discussionId!,
+          discussionTitle: discussion.title,
+          userId: user.uid,
+          username,
+          ...(photoURL && { userPhotoURL: photoURL }),
+          itemType: discussion.itemType || 'series',
+          itemId: discussion.itemId,
+          itemTitle: feedMetadata.itemTitle,
+          ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
+          ...(discussion.seasonNumber !== undefined && { seasonNumber: discussion.seasonNumber }),
+          ...(discussion.episodeNumber !== undefined && { episodeNumber: discussion.episodeNumber }),
+          ...(feedMetadata.episodeTitle && { episodeTitle: feedMetadata.episodeTitle }),
+          contentPreview: content.substring(0, 100),
+          createdAt: Date.now(),
+        });
+      }
+
       return true;
     } catch (err) {
       console.error('Error creating reply:', err);
       setError('Fehler beim Erstellen der Antwort');
       return false;
     }
-  }, [user, discussionId, repliesPath, discussionPath]);
+  }, [user, discussionId, repliesPath, discussionPath, feedMetadata]);
 
   // Edit a reply (owner can edit all, others can only mark as spoiler)
   const editReply = useCallback(async (replyId: string, input: EditReplyInput): Promise<boolean> => {

@@ -291,6 +291,51 @@ export const ActivityPage = () => {
         ))}
       </motion.div>
 
+      {/* Discussion Feed Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        onClick={() => navigate('/discussions')}
+        style={{
+          margin: '0 20px 16px',
+          padding: '14px 18px',
+          background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+          border: `1px solid ${currentTheme.primary}30`,
+          borderRadius: '16px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        <div
+          style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '12px',
+            background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <ChatBubbleOutline style={{ fontSize: '22px', color: 'white' }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: currentTheme.text.primary }}>
+            Diskussions-Feed
+          </div>
+          <div style={{ fontSize: '12px', color: currentTheme.text.muted, marginTop: '2px' }}>
+            Alle Diskussionen an einem Ort
+          </div>
+        </div>
+        <div style={{ color: currentTheme.text.muted, fontSize: '20px' }}>›</div>
+      </motion.div>
+
       {/* Content */}
       <div style={{ padding: '0 20px', position: 'relative', zIndex: 1 }}>
         <AnimatePresence mode="wait">

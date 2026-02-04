@@ -1341,7 +1341,14 @@ export const SeriesDetailPage = memo(() => {
       {/* Discussions Section */}
       {series && (
         <div style={{ padding: '0 20px 20px 20px' }}>
-          <DiscussionThread itemId={series.id} itemType="series" />
+          <DiscussionThread
+            itemId={series.id}
+            itemType="series"
+            feedMetadata={{
+              itemTitle: series.title || series.name || 'Unbekannte Serie',
+              posterPath: series.poster && typeof series.poster === 'object' ? series.poster.poster : undefined,
+            }}
+          />
         </div>
       )}
 
