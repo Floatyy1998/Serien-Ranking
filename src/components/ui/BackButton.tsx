@@ -57,7 +57,19 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
         style={style}
       />
       <IconButton
-        icon={<img src="/tv-logo.svg" alt="Home" style={{ width: '16px', height: '16px' }} />}
+        icon={<div style={{
+          width: '16px',
+          height: '16px',
+          backgroundColor: 'var(--color-primary)',
+          WebkitMaskImage: 'url(/tv-logo.svg)',
+          maskImage: 'url(/tv-logo.svg)',
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain' as string,
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat' as string,
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center' as string,
+        }} />}
         onClick={() => navigate('/')}
         size={32}
         borderRadius="10px"
