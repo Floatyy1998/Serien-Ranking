@@ -1,0 +1,1 @@
+export { ImpressumPage } from './ImpressumPage';

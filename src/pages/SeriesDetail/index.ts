@@ -1,0 +1,1 @@
+export { SeriesDetailPage } from './SeriesDetailPage';

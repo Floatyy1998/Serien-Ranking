@@ -1,0 +1,1 @@
+export { WatchJourneyPage } from './WatchJourneyPage';

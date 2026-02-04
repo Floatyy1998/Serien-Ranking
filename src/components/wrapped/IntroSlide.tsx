@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { GradientText } from '../ui';
 
 interface IntroSlideProps {
   year: number;
@@ -90,23 +91,20 @@ export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username }) => {
           Dein Jahr in Serien & Filmen
         </motion.h2>
 
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8, type: 'spring', stiffness: 200 }}
-          style={{
+        >
+          <GradientText as="h1" from="#667eea" to="#f093fb" style={{
             fontSize: 'clamp(6rem, 25vw, 14rem)',
             fontWeight: 'bold',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
             lineHeight: 1,
             margin: '20px 0',
-          }}
-        >
-          {year}
-        </motion.h1>
+          }}>
+            {year}
+          </GradientText>
+        </motion.div>
 
         <motion.p
           initial={{ opacity: 0 }}

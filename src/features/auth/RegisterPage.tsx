@@ -16,6 +16,7 @@ import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GradientText } from '../../components/ui';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -128,21 +129,14 @@ export const RegisterPage = () => {
           transition={{ duration: 0.5 }}
         >
           <Box sx={{ mb: 6, textAlign: 'center' }}>
-            <Typography
-              variant="h1"
-              sx={{
-                fontSize: { xs: '3rem', sm: '4rem' },
+            <GradientText as="h1" from="#00fed7" to="#ff0080" style={{
+                fontSize: '3rem',
                 fontWeight: 900,
-                background: 'linear-gradient(135deg, #00fed7 0%, #ff0080 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 2,
+                marginBottom: '16px',
                 letterSpacing: '-0.02em',
-              }}
-            >
+              }}>
               TV-RANK
-            </Typography>
+            </GradientText>
             <Typography
               variant="h6"
               sx={{
