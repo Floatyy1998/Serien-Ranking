@@ -959,6 +959,10 @@ export const MovieDetailPage = memo(() => {
         <DiscussionThread
           itemId={movie.id}
           itemType="movie"
+          feedMetadata={{
+            itemTitle: movie.title || 'Unbekannter Film',
+            posterPath: movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined,
+          }}
         />
       </div>
 

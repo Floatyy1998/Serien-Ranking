@@ -56,3 +56,28 @@ export interface CreateReplyInput {
   discussionId: string;
   content: string;
 }
+
+export interface DiscussionFeedMetadata {
+  itemTitle: string;
+  posterPath?: string;
+  episodeTitle?: string;
+}
+
+export interface DiscussionFeedEntry {
+  id: string;
+  type: 'discussion_created' | 'reply_created';
+  discussionId: string;
+  discussionTitle: string;
+  userId: string;
+  username: string;
+  userPhotoURL?: string;
+  itemType: DiscussionItemType;
+  itemId: number;
+  itemTitle: string;
+  posterPath?: string;
+  seasonNumber?: number;
+  episodeNumber?: number;
+  episodeTitle?: string;
+  contentPreview: string;
+  createdAt: number;
+}

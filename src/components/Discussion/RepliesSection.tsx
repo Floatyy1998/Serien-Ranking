@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
+import { DiscussionFeedMetadata } from '../../types/Discussion';
 import { useDiscussionReplies } from '../../hooks/useDiscussions';
 import { ReplyItem } from './ReplyItem';
 
@@ -22,7 +23,8 @@ export const RepliesSection: React.FC<{
   discussionPath: string;
   replyCount: number;
   isSpoilerHidden?: boolean;
-}> = ({ discussionId, discussionPath, replyCount, isSpoilerHidden = false }) => {
+  feedMetadata?: DiscussionFeedMetadata;
+}> = ({ discussionId, discussionPath, replyCount, isSpoilerHidden = false, feedMetadata }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,7 +38,8 @@ export const RepliesSection: React.FC<{
   const { replies, loading, createReply, editReply, deleteReply, toggleReplyLike } = useDiscussionReplies(
     discussionId,
     discussionPath,
-    isExpanded // Only fetch replies when expanded
+    isExpanded, // Only fetch replies when expanded
+    feedMetadata
   );
   const [newReplyIsSpoiler, setNewReplyIsSpoiler] = useState(false);
 

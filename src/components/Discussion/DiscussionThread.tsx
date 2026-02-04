@@ -20,6 +20,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   episodeNumber,
   title,
   isWatched,
+  feedMetadata,
 }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -52,6 +53,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     itemType,
     seasonNumber,
     episodeNumber,
+    feedMetadata,
   });
 
   // Generate the discussion path for replies
@@ -295,6 +297,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               onToggleLike={() => toggleLike(discussion.id)}
               isOwner={discussion.userId === user?.uid}
               currentUserId={user?.uid}
+              feedMetadata={feedMetadata}
             />
           ))}
         </div>
