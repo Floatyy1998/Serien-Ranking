@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { GradientText } from '../ui';
 import { WrappedStats } from '../../types/Wrapped';
 
 interface SummarySlideProps {
@@ -127,19 +128,13 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
           marginBottom: '30px',
         }}
       >
-        <h2
-          style={{
+        <GradientText as="h2" from="#fff" to="#e94560" style={{
             fontSize: 'clamp(2rem, 8vw, 3.5rem)',
             fontWeight: 'bold',
-            background: 'linear-gradient(135deg, #fff 0%, #f5af19 50%, #e94560 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
             marginBottom: '5px',
-          }}
-        >
+          }}>
           Dein {stats.year}
-        </h2>
+        </GradientText>
         <p style={{ color: 'white', opacity: 0.8, fontSize: '1.1rem' }}>
           in Zahlen
         </p>

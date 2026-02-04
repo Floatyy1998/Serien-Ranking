@@ -1,39 +1,38 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { DynamicThemeProvider } from './contexts/ThemeContext';
-import { Layout } from './components/Layout';
-import { ScrollToTop } from './components/ScrollToTop';
+import { Layout, ScrollToTop } from './components/layout';
 import './styles/App.css';
 
 // Lazy load all pages for better code splitting
 const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })));
-const WatchNextPage = lazy(() => import('./pages/WatchNextPage').then((m) => ({ default: m.WatchNextPage })));
-const RatingsPage = lazy(() => import('./pages/RatingsPage').then((m) => ({ default: m.RatingsPage })));
-const ProfilePage = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })));
-const NewEpisodesPage = lazy(() => import('./pages/NewEpisodesPage').then((m) => ({ default: m.NewEpisodesPage })));
-const RecentlyWatchedPage = lazy(() => import('./pages/RecentlyWatchedPage').then((m) => ({ default: m.RecentlyWatchedPage })));
-const DiscoverPage = lazy(() => import('./pages/DiscoverPage').then((m) => ({ default: m.DiscoverPage })));
-const ActivityPage = lazy(() => import('./pages/ActivityPage').then((m) => ({ default: m.ActivityPage })));
-const SearchPage = lazy(() => import('./pages/SearchPage').then((m) => ({ default: m.SearchPage })));
-const BadgesPage = lazy(() => import('./pages/BadgesPage').then((m) => ({ default: m.BadgesPage })));
-const PetsPage = lazy(() => import('./pages/PetsPage').then((m) => ({ default: m.PetsPage })));
-const ThemePage = lazy(() => import('./pages/ThemePage').then((m) => ({ default: m.ThemePage })));
-const StatsPage = lazy(() => import('./pages/StatsPage').then((m) => ({ default: m.StatsPage })));
-const WrappedPage = lazy(() => import('./pages/WrappedPage').then((m) => ({ default: m.WrappedPage })));
-const ActorUniversePage = lazy(() => import('./pages/ActorUniversePage').then((m) => ({ default: m.ActorUniversePage })));
-const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
-const ProfileSettingsPage = lazy(() => import('./pages/ProfileSettingsPage').then((m) => ({ default: m.ProfileSettingsPage })));
-const SeriesDetailPage = lazy(() => import('./pages/SeriesDetailPage').then((m) => ({ default: m.SeriesDetailPage })));
-const EpisodeManagementPage = lazy(() => import('./pages/EpisodeManagementPage').then((m) => ({ default: m.EpisodeManagementPage })));
-const EpisodeDiscussionPage = lazy(() => import('./pages/EpisodeDiscussionPage').then((m) => ({ default: m.EpisodeDiscussionPage })));
-const RatingPage = lazy(() => import('./pages/RatingPage').then((m) => ({ default: m.RatingPage })));
-const MovieDetailPage = lazy(() => import('./pages/MovieDetailPage').then((m) => ({ default: m.MovieDetailPage })));
-const FriendProfilePage = lazy(() => import('./pages/FriendProfilePage').then((m) => ({ default: m.FriendProfilePage })));
-const TasteMatchPage = lazy(() => import('./pages/TasteMatchPage').then((m) => ({ default: m.TasteMatchPage })));
-const WatchJourneyPage = lazy(() => import('./pages/WatchJourneyPage').then((m) => ({ default: m.WatchJourneyPage })));
-const CatchUpPage = lazy(() => import('./pages/CatchUpPage').then((m) => ({ default: m.CatchUpPage })));
-const ImpressumPage = lazy(() => import('./pages/ImpressumPage').then((m) => ({ default: m.ImpressumPage })));
-const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })));
+const WatchNextPage = lazy(() => import('./pages/WatchNext').then((m) => ({ default: m.WatchNextPage })));
+const RatingsPage = lazy(() => import('./pages/Ratings').then((m) => ({ default: m.RatingsPage })));
+const ProfilePage = lazy(() => import('./pages/Profile').then((m) => ({ default: m.ProfilePage })));
+const NewEpisodesPage = lazy(() => import('./pages/NewEpisodes').then((m) => ({ default: m.NewEpisodesPage })));
+const RecentlyWatchedPage = lazy(() => import('./pages/RecentlyWatched').then((m) => ({ default: m.RecentlyWatchedPage })));
+const DiscoverPage = lazy(() => import('./pages/Discover').then((m) => ({ default: m.DiscoverPage })));
+const ActivityPage = lazy(() => import('./pages/Activity').then((m) => ({ default: m.ActivityPage })));
+const SearchPage = lazy(() => import('./pages/Search').then((m) => ({ default: m.SearchPage })));
+const BadgesPage = lazy(() => import('./pages/Badges').then((m) => ({ default: m.BadgesPage })));
+const PetsPage = lazy(() => import('./pages/Pets').then((m) => ({ default: m.PetsPage })));
+const ThemePage = lazy(() => import('./pages/Theme').then((m) => ({ default: m.ThemePage })));
+const StatsPage = lazy(() => import('./pages/Stats').then((m) => ({ default: m.StatsPage })));
+const WrappedPage = lazy(() => import('./pages/Wrapped').then((m) => ({ default: m.WrappedPage })));
+const ActorUniversePage = lazy(() => import('./pages/ActorUniverse').then((m) => ({ default: m.ActorUniversePage })));
+const SettingsPage = lazy(() => import('./pages/Settings').then((m) => ({ default: m.SettingsPage })));
+const ProfileSettingsPage = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettingsPage })));
+const SeriesDetailPage = lazy(() => import('./pages/SeriesDetail').then((m) => ({ default: m.SeriesDetailPage })));
+const EpisodeManagementPage = lazy(() => import('./pages/EpisodeManagement').then((m) => ({ default: m.EpisodeManagementPage })));
+const EpisodeDiscussionPage = lazy(() => import('./pages/EpisodeDiscussion').then((m) => ({ default: m.EpisodeDiscussionPage })));
+const RatingPage = lazy(() => import('./pages/Rating').then((m) => ({ default: m.RatingPage })));
+const MovieDetailPage = lazy(() => import('./pages/MovieDetail').then((m) => ({ default: m.MovieDetailPage })));
+const FriendProfilePage = lazy(() => import('./pages/FriendProfile').then((m) => ({ default: m.FriendProfilePage })));
+const TasteMatchPage = lazy(() => import('./pages/TasteMatch').then((m) => ({ default: m.TasteMatchPage })));
+const WatchJourneyPage = lazy(() => import('./pages/WatchJourney').then((m) => ({ default: m.WatchJourneyPage })));
+const CatchUpPage = lazy(() => import('./pages/CatchUp').then((m) => ({ default: m.CatchUpPage })));
+const ImpressumPage = lazy(() => import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage })));
+const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.PrivacyPage })));
 
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--theme-background, #000)' }}>

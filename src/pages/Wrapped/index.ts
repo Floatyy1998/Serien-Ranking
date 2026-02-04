@@ -1,0 +1,1 @@
+export { WrappedPage } from './WrappedPage';
