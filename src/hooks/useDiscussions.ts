@@ -477,6 +477,19 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
 
       // Write to discussion feed (fire-and-forget)
       if (feedMetadata?.itemTitle && discussion) {
+        // Extract itemType from discussionPath if not stored in discussion
+        // Path format: "discussions/{itemType}/{itemId}" or "discussions/episode/{itemId}_s{season}_e{episode}"
+        let derivedItemType: DiscussionItemType = discussion.itemType || 'series';
+        if (!discussion.itemType && discussionPath) {
+          const pathParts = discussionPath.split('/');
+          if (pathParts.length >= 2 && pathParts[0] === 'discussions') {
+            const pathItemType = pathParts[1];
+            if (pathItemType === 'movie' || pathItemType === 'series' || pathItemType === 'episode') {
+              derivedItemType = pathItemType;
+            }
+          }
+        }
+
         writeDiscussionFeedEntry({
           type: 'reply_created',
           discussionId: discussionId!,
@@ -484,7 +497,7 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
           userId: user.uid,
           username,
           ...(photoURL && { userPhotoURL: photoURL }),
-          itemType: discussion.itemType || 'series',
+          itemType: derivedItemType,
           itemId: discussion.itemId,
           itemTitle: feedMetadata.itemTitle,
           ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
