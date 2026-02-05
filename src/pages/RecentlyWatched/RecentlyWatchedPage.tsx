@@ -565,7 +565,7 @@ export const RecentlyWatchedPage = memo(() => {
           <Search
             style={{
               position: 'absolute',
-              left: '14px',
+              left: '34px',
               top: '50%',
               transform: 'translateY(-50%)',
               fontSize: '20px',
@@ -593,7 +593,7 @@ export const RecentlyWatchedPage = memo(() => {
               onClick={() => setSearchQuery('')}
               style={{
                 position: 'absolute',
-                right: '14px',
+                right: '34px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: `${currentTheme.text.muted}20`,
