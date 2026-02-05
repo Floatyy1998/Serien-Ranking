@@ -1160,8 +1160,9 @@ export const ActivityPage = () => {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         markAsRead(notification.id);
-                        if (notification.data?.discussionPath && notification.data?.discussionId) {
+                        if (notification.data?.discussionPath) {
                           const path = notification.data.discussionPath as string;
+                          // Path format: "discussions/{itemType}/{itemId}" or "discussions/episode/{itemId}_s{season}_e{episode}"
                           if (path.includes('episode/')) {
                             const match = path.match(/episode\/(\d+)_s(\d+)_e(\d+)/);
                             if (match) {
@@ -1169,6 +1170,13 @@ export const ActivityPage = () => {
                               return;
                             }
                           }
+                          // Extract itemType and itemId from path for series/movie
+                          const pathMatch = path.match(/discussions\/(series|movie)\/(\d+)/);
+                          if (pathMatch) {
+                            navigate(`/${pathMatch[1]}/${pathMatch[2]}`);
+                            return;
+                          }
+                          // Fallback to notification data if available
                           if (notification.data.itemType && notification.data.itemId) {
                             navigate(`/${notification.data.itemType}/${notification.data.itemId}`);
                           }
