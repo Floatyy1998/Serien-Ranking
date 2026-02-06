@@ -75,6 +75,7 @@ export const SeriesDetailPage = memo(() => {
     providers,
     tmdbRating,
     imdbRating,
+    tmdbFirstAirDate,
   } = useSeriesData(id);
 
   // Episode discussion counts for the selected season
@@ -494,7 +495,9 @@ export const SeriesDetailPage = memo(() => {
               flexWrap: 'wrap',
             }}
           >
-            {series.release_date && <span>{new Date(series.release_date).getFullYear()}</span>}
+            {(tmdbFirstAirDate || series.first_air_date || series.release_date) && (
+              <span>{new Date(tmdbFirstAirDate || series.first_air_date || series.release_date).getFullYear()}</span>
+            )}
             {series.seasons && <span>• {series.seasons.length} Staffeln</span>}
             {series.status && (
               <span>
