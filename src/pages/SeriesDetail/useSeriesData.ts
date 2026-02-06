@@ -14,6 +14,7 @@ interface UseSeriesDataResult {
   providers: TMDBWatchProvider[] | null;
   tmdbRating: { vote_average: number; vote_count: number } | null;
   imdbRating: { rating: number; votes: string } | null;
+  tmdbFirstAirDate: string | null;
 }
 
 export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
@@ -27,6 +28,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     null
   );
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
+  const [tmdbFirstAirDate, setTmdbFirstAirDate] = useState<string | null>(null);
 
   // Find the series locally first
   const localSeries = useMemo(() => {
@@ -52,6 +54,10 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
               vote_average: data.vote_average,
               vote_count: data.vote_count,
             });
+          }
+          // Store first_air_date
+          if (data.first_air_date) {
+            setTmdbFirstAirDate(data.first_air_date);
           }
         })
         .catch(() => {
@@ -221,5 +227,6 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     providers,
     tmdbRating,
     imdbRating,
+    tmdbFirstAirDate,
   };
 };
