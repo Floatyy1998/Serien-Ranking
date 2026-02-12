@@ -19,7 +19,7 @@ export const EpisodeManagementPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);

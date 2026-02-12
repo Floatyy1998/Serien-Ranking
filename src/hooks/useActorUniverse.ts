@@ -85,7 +85,7 @@ interface TMDBCredit {
 }
 
 export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUniverseData => {
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
 
   // Create a hash to detect if series list changed
   const seriesListHash = useMemo(() => seriesList.map(s => s.id).sort().join(','), [seriesList]);

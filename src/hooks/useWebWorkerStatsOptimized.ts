@@ -16,7 +16,7 @@ interface Stats {
 
 export const useWebWorkerStatsOptimized = (): Stats => {
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   
   const workerRef = useRef<Worker | null>(null);

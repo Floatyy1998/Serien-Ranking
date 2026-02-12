@@ -45,7 +45,7 @@ interface SearchResult {
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme } = useTheme();
 

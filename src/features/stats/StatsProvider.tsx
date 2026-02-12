@@ -43,7 +43,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     null
   );
   const [movieStatsData, setMovieStatsData] = useState<StatsData | null>(null);
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   function secondsToString(minutes: number) {

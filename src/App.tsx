@@ -12,6 +12,7 @@ import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
 import { RatingsStateProvider } from './contexts/RatingsStateContext';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
+import { DynamicThemeProvider } from './contexts/ThemeContext';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import './styles/performance.css';
 import { updateTheme } from './theme';
@@ -465,6 +466,7 @@ function AppContent() {
               <BadgeProvider>
                 <RatingsStateProvider>
                   <ThemeProvider theme={currentTheme}>
+                    <DynamicThemeProvider>
                     <CssBaseline />
                     <div className="w-full">
                       <main className="w-full">
@@ -515,6 +517,7 @@ function AppContent() {
                         </Suspense>
                       </main>
                     </div>
+                    </DynamicThemeProvider>
                   </ThemeProvider>
                 </RatingsStateProvider>
               </BadgeProvider>

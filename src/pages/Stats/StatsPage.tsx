@@ -30,7 +30,7 @@ export const StatsPage = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   // Calculate all statistics

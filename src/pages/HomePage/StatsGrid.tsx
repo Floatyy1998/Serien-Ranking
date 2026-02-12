@@ -127,7 +127,7 @@ export const StatsGrid = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   // Calculate statistics
