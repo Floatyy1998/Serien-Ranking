@@ -18,7 +18,7 @@ interface UseSeriesDataResult {
 }
 
 export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
-  const { seriesList } = useSeriesList();
+  const { seriesList, hiddenSeriesList } = useSeriesList();
 
   const [tmdbSeries, setTmdbSeries] = useState<Series | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,10 +30,11 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
   const [tmdbFirstAirDate, setTmdbFirstAirDate] = useState<string | null>(null);
 
-  // Find the series locally first
+  // Find the series locally first (also check hidden series so detail page works for them)
   const localSeries = useMemo(() => {
-    return seriesList.find((s: Series) => s.id.toString() === id);
-  }, [seriesList, id]);
+    return seriesList.find((s: Series) => s.id.toString() === id)
+      || hiddenSeriesList.find((s: Series) => s.id.toString() === id);
+  }, [seriesList, hiddenSeriesList, id]);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {

@@ -198,7 +198,7 @@ export const RatingsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const authContext = useAuth();
   const user = authContext?.user;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme, getMobilePageBackground } = useTheme();
   const scrollRef = useRef<HTMLDivElement | null>(null);

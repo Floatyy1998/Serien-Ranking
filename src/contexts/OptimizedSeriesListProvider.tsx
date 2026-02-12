@@ -10,6 +10,8 @@ import 'firebase/compat/database';
 
 interface SeriesListContextType {
   seriesList: Series[];
+  allSeriesList: Series[];
+  hiddenSeriesList: Series[];
   loading: boolean;
   seriesWithNewSeasons: Series[];
   inactiveSeries: Series[];
@@ -19,6 +21,7 @@ interface SeriesListContextType {
   clearCompletedSeries: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
+  toggleHideSeries: (nmr: number, hidden: boolean) => Promise<void>;
   isOffline: boolean;
   isStale: boolean;
   // Test functions for development
@@ -28,6 +31,8 @@ interface SeriesListContextType {
 
 export const SeriesListContext = createContext<SeriesListContextType>({
   seriesList: [],
+  allSeriesList: [],
+  hiddenSeriesList: [],
   loading: true,
   seriesWithNewSeasons: [],
   inactiveSeries: [],
@@ -37,6 +42,7 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   clearCompletedSeries: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
+  toggleHideSeries: async () => {},
   isOffline: false,
   isStale: false,
 });
@@ -151,8 +157,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     syncOnReconnect: true, // Auto-Sync bei Reconnect
   });
 
-  // Konvertiere Object zu Array
-  const seriesList: Series[] = seriesData ? Object.values(seriesData) : [];
+  // Konvertiere Object zu Array und trenne sichtbare/versteckte Serien
+  const allSeries: Series[] = seriesData ? Object.values(seriesData) : [];
+  const seriesList = allSeries.filter(s => !s.hidden);
+  const hiddenSeriesList = allSeries.filter(s => s.hidden === true);
 
   // ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
   // Diese Funktion setzt das HEUTIGE Datum für alte Episoden - das verfälscht historische Daten!
@@ -525,6 +533,16 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     refetch();
   }, [refetch]);
 
+  const toggleHideSeries = useCallback(async (nmr: number, hidden: boolean) => {
+    if (!user) return;
+    const ref = firebase.database().ref(`${user.uid}/serien/${nmr}/hidden`);
+    if (hidden) {
+      await ref.set(true);
+    } else {
+      await ref.remove();
+    }
+  }, [user]);
+
   // TEST FUNCTIONS - Only available in development
   const simulateNewSeason = useCallback((seriesId: number) => {
     if (process.env.NODE_ENV !== 'development') return;
@@ -572,6 +590,8 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     <SeriesListContext.Provider
       value={{
         seriesList,
+        allSeriesList: allSeries,
+        hiddenSeriesList,
         loading,
         seriesWithNewSeasons,
         inactiveSeries,
@@ -581,6 +601,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         clearCompletedSeries,
         recheckForNewSeasons,
         refetchSeries,
+        toggleHideSeries,
         isOffline,
         isStale,
         ...(process.env.NODE_ENV === 'development' ? {

@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { DynamicThemeProvider } from './contexts/ThemeContext';
 import { Layout, ScrollToTop } from './components/layout';
 import './styles/App.css';
 
@@ -31,6 +30,7 @@ const FriendProfilePage = lazy(() => import('./pages/FriendProfile').then((m) =>
 const TasteMatchPage = lazy(() => import('./pages/TasteMatch').then((m) => ({ default: m.TasteMatchPage })));
 const WatchJourneyPage = lazy(() => import('./pages/WatchJourney').then((m) => ({ default: m.WatchJourneyPage })));
 const CatchUpPage = lazy(() => import('./pages/CatchUp').then((m) => ({ default: m.CatchUpPage })));
+const HiddenSeriesPage = lazy(() => import('./pages/HiddenSeries').then((m) => ({ default: m.HiddenSeriesPage })));
 const ImpressumPage = lazy(() => import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage })));
 const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.PrivacyPage })));
 const DiscussionFeedPage = lazy(() => import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage })));
@@ -43,7 +43,6 @@ const PageLoader = () => (
 
 export const MobileApp = () => {
   return (
-    <DynamicThemeProvider>
       <div className="mobile-app">
         <ScrollToTop />
         <Suspense fallback={<PageLoader />}>
@@ -258,6 +257,10 @@ export const MobileApp = () => {
             path="/catch-up"
             element={<CatchUpPage />}
           />
+          <Route
+            path="/hidden-series"
+            element={<HiddenSeriesPage />}
+          />
 
           {/* Legal Pages */}
           <Route
@@ -284,6 +287,5 @@ export const MobileApp = () => {
         </Routes>
         </Suspense>
       </div>
-    </DynamicThemeProvider>
   );
 };

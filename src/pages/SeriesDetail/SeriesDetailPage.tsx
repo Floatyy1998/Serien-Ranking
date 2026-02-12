@@ -8,6 +8,8 @@ import {
   People,
   PlayCircle,
   Star,
+  Visibility,
+  VisibilityOff,
 } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -24,6 +26,7 @@ import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { RewatchDialog } from './RewatchDialog';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useSeriesData } from './useSeriesData';
 import type { SeriesEpisode, SeriesSeason } from './types';
 
@@ -234,6 +237,23 @@ export const SeriesDetailPage = memo(() => {
       setDialog({ open: true, message: 'Fehler beim Aktualisieren der Watchlist.', type: 'error' });
     }
   }, [series, user]);
+
+  // Handle hide/unhide toggle ("Nicht weiterschauen")
+  const { toggleHideSeries } = useSeriesList();
+  const handleHideToggle = useCallback(async () => {
+    if (!series || !user) return;
+    const newHiddenStatus = !series.hidden;
+    try {
+      await toggleHideSeries(series.nmr, newHiddenStatus);
+      setSnackbar({
+        open: true,
+        message: newHiddenStatus ? 'Nicht weiterschauen' : 'Serie wieder aktiv',
+      });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+    } catch (error) {
+      setDialog({ open: true, message: 'Fehler beim Ändern des Status.', type: 'error' });
+    }
+  }, [series, user, toggleHideSeries]);
 
   // Handle episode rewatch
   const handleEpisodeRewatch = async (episode: SeriesEpisode) => {
@@ -920,6 +940,55 @@ export const SeriesDetailPage = memo(() => {
               <BookmarkAdd style={{ fontSize: isMobile ? '18px' : '24px' }} />
             )}
           </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleHideToggle}
+            style={{
+              padding: isMobile ? '10px' : '12px',
+              background: series.hidden
+                ? 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.2) 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+              border: series.hidden
+                ? '1px solid rgba(255, 152, 0, 0.4)'
+                : '1px solid rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              borderRadius: isMobile ? '10px' : '12px',
+              fontSize: isMobile ? '13px' : '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {series.hidden ? (
+              <Visibility style={{ fontSize: isMobile ? '18px' : '24px' }} />
+            ) : (
+              <VisibilityOff style={{ fontSize: isMobile ? '18px' : '24px' }} />
+            )}
+          </motion.button>
+        </div>
+      )}
+
+      {/* Hidden series banner */}
+      {series.hidden && !isReadOnlyTmdbSeries && (
+        <div
+          style={{
+            margin: isMobile ? '0 12px 12px' : '0 20px 20px',
+            padding: '10px 16px',
+            background: 'rgba(255, 152, 0, 0.15)',
+            border: '1px solid rgba(255, 152, 0, 0.3)',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '13px',
+            color: '#ffb74d',
+          }}
+        >
+          <VisibilityOff style={{ fontSize: '16px' }} />
+          Du schaust diese Serie nicht mehr
         </div>
       )}
 

@@ -40,7 +40,7 @@ export const useDiscoverFetch = (
   isRestoring: boolean
 ): UseDiscoverFetchResult => {
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   const [results, setResults] = useState<DiscoverItem[]>([]);

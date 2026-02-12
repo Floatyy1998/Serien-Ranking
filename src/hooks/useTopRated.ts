@@ -15,7 +15,7 @@ interface TopRatedItem {
 }
 
 export const useTopRated = () => {
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const cacheRef = useRef<{ items: TopRatedItem[] | null; deps: string }>({ items: null, deps: '' });
 

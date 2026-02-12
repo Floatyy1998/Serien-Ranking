@@ -60,7 +60,7 @@ export const ProfilePage = () => {
     }
   );
 
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   const stats = useMemo(() => {

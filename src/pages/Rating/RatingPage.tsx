@@ -59,7 +59,7 @@ const ratingEmojis = [
 export const RatingPage = () => {
   const { id, type } = useParams<{ id: string; type: 'series' | 'movie' }>();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const { currentTheme } = useTheme();
 

@@ -37,6 +37,7 @@ import { WrappedNotification } from './WrappedNotification';
 import { TasteMatchCard } from './TasteMatchCard';
 import { WatchJourneyCard } from './WatchJourneyCard';
 import { CatchUpCard } from './CatchUpCard';
+import { HiddenSeriesCard } from './HiddenSeriesCard';
 import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
 import type { Series } from '../../types/Series';
 
@@ -1380,6 +1381,7 @@ export const HomePage: React.FC = () => {
           <TasteMatchCard />
           <WatchJourneyCard />
           <CatchUpCard />
+          <HiddenSeriesCard />
         </div>
       </section>
 
