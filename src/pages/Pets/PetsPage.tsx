@@ -10,6 +10,7 @@ import { GradientText, LoadingSpinner, PageHeader } from '../../components/ui';
 import { EvolvingPixelPet } from '../../components/pet';
 import { useTheme } from '../../contexts/ThemeContext';
 import { petMoodService } from '../../services/petMoodService';
+import { PET_CONFIG } from '../../services/petConstants';
 import { petService } from '../../services/petService';
 import { ACCESSORIES, Pet, PET_COLORS, PET_TYPE_NAMES, PET_TYPES } from '../../types/pet.types';
 
@@ -754,6 +755,68 @@ export const PetsPage: React.FC = () => {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* XP Bonus Status */}
+      {pet.isAlive && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          style={{
+            padding: '0 20px 16px',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          {pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD && pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD ? (
+            <div
+              style={{
+                background: `linear-gradient(135deg, #22c55e18, #22c55e08)`,
+                border: `1px solid #22c55e40`,
+                borderRadius: '14px',
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <span style={{ fontSize: '14px', fontWeight: 800, color: '#22c55e', background: '#22c55e18', padding: '4px 8px', borderRadius: '8px' }}>+XP</span>
+              <div>
+                <div style={{ color: '#22c55e', fontSize: '13px', fontWeight: 700 }}>
+                  XP-Bonus aktiv: +50%
+                </div>
+                <div style={{ color: currentTheme.text.muted, fontSize: '11px', marginTop: '2px' }}>
+                  Dein gesundes Pet gibt dir mehr XP pro Episode!
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                background: `linear-gradient(135deg, #eab30818, #eab30808)`,
+                border: `1px solid #eab30840`,
+                borderRadius: '14px',
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>💤</span>
+              <div>
+                <div style={{ color: '#eab308', fontSize: '13px', fontWeight: 700 }}>
+                  XP-Bonus inaktiv
+                </div>
+                <div style={{ color: currentTheme.text.muted, fontSize: '11px', marginTop: '2px' }}>
+                  {pet.hunger >= PET_CONFIG.HEALTHY_HUNGER_THRESHOLD
+                    ? 'Füttere dein Pet um den +50% XP-Bonus zu aktivieren!'
+                    : 'Spiele mit deinem Pet um den +50% XP-Bonus zu aktivieren!'}
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* Action Buttons */}
       <motion.div

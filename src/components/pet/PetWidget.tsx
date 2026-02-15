@@ -3,10 +3,26 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
+import { PET_CONFIG } from '../../services/petConstants';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/petMoodService';
 import { Pet } from '../../types/pet.types';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
+import { PetHungerToast } from './PetHungerToast';
+
+const getStatusColor = (pet: Pet): string => {
+  if (!pet.isAlive) return '#6b7280';
+  if (pet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER) return '#ef4444';
+  if (pet.hunger >= PET_CONFIG.STATUS_WARNING_HUNGER) return '#f97316';
+  if (pet.hunger >= PET_CONFIG.STATUS_GOOD_HUNGER || pet.happiness <= PET_CONFIG.STATUS_GOOD_HAPPINESS) return '#eab308';
+  return '#22c55e';
+};
+
+const isPetHealthy = (pet: Pet): boolean => {
+  return pet.isAlive
+    && pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD
+    && pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD;
+};
 
 export const PetWidget: React.FC = () => {
   const authContext = useAuth();
@@ -31,6 +47,8 @@ export const PetWidget: React.FC = () => {
     offsetX: 2,
     offsetY: 2
   });
+  const [showHungerToast, setShowHungerToast] = useState(false);
+  const [hungerToastLevel, setHungerToastLevel] = useState<'warning' | 'critical'>('warning');
 
   useEffect(() => {
     if (user) {
@@ -177,6 +195,18 @@ export const PetWidget: React.FC = () => {
   useEffect(() => {
     if (!user || !pet) return;
 
+    const checkHungerToast = (updatedPet: Pet) => {
+      if (!updatedPet.isAlive || updatedPet.hunger < PET_CONFIG.STATUS_WARNING_HUNGER) return;
+
+      const lastToast = localStorage.getItem('petHungerToastLast');
+      const cooldown = 30 * 60 * 1000; // 30 Minuten
+      if (lastToast && Date.now() - Number(lastToast) < cooldown) return;
+
+      setHungerToastLevel(updatedPet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER ? 'critical' : 'warning');
+      setShowHungerToast(true);
+      localStorage.setItem('petHungerToastLast', String(Date.now()));
+    };
+
     const interval = setInterval(
       async () => {
         try {
@@ -185,7 +215,10 @@ export const PetWidget: React.FC = () => {
           const activePetId = await petService.getActivePetId(user.uid);
           if (activePetId) {
             const updatedPet = await petService.getUserPet(user.uid, activePetId);
-            if (updatedPet) setPet(updatedPet);
+            if (updatedPet) {
+              setPet(updatedPet);
+              checkHungerToast(updatedPet);
+            }
           }
         } catch (error) {
           console.error('Error updating pets status:', error);
@@ -193,6 +226,9 @@ export const PetWidget: React.FC = () => {
       },
       5 * 60 * 1000
     );
+
+    // Initial check on mount
+    checkHungerToast(pet);
 
     return () => clearInterval(interval);
   }, [user, pet]);
@@ -348,122 +384,202 @@ export const PetWidget: React.FC = () => {
 
   // Pet Widget mit neuen Features
   const currentMood = petMoodService.calculateCurrentMood(pet);
+  const statusColor = getStatusColor(pet);
+  const isCritical = pet.isAlive && pet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER;
+  const healthy = isPetHealthy(pet);
+  const hungerBarPercent = Math.max(0, 100 - pet.hunger);
 
   return (
-    <AnimatePresence>
-      {showWidget && (
-        <motion.div
-          drag
-          dragConstraints={dragConstraints}
-          dragElastic={0.1}
-          dragMomentum={false}
-          initial={{ opacity: 0, scale: 0.8, x: position.x, y: position.y }}
-          animate={{ opacity: 1, scale: 1, x: position.x, y: position.y }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          whileHover={{ scale: 1.05 }}
-          whileDrag={{ scale: 1.1, zIndex: 1000 }}
-          onDragStart={() => setIsDragging(true)}
-          onDragEnd={(_event, info) => {
-            setIsDragging(false);
-            setRecentlyDragged(true);
+    <>
+      <PetHungerToast
+        open={showHungerToast}
+        onClose={() => setShowHungerToast(false)}
+        petName={pet.name}
+        level={hungerToastLevel}
+        onFeed={() => {
+          setShowHungerToast(false);
+          navigate('/pets');
+        }}
+      />
+      <AnimatePresence>
+        {showWidget && (
+          <motion.div
+            drag
+            dragConstraints={dragConstraints}
+            dragElastic={0.1}
+            dragMomentum={false}
+            initial={{ opacity: 0, scale: 0.8, x: position.x, y: position.y }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              x: position.x,
+              y: position.y,
+              ...(isCritical ? {
+                boxShadow: [
+                  `0 0 8px ${statusColor}60`,
+                  `0 0 16px ${statusColor}90`,
+                  `0 0 8px ${statusColor}60`,
+                ],
+              } : {}),
+            }}
+            transition={isCritical ? {
+              boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+            } : undefined}
+            exit={{ opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            whileDrag={{ scale: 1.1, zIndex: 1000 }}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={(_event, info) => {
+              setIsDragging(false);
+              setRecentlyDragged(true);
 
-            // Reset recently dragged after 100ms
-            setTimeout(() => setRecentlyDragged(false), 100);
+              // Reset recently dragged after 100ms
+              setTimeout(() => setRecentlyDragged(false), 100);
 
-            const newPosition = {
-              x: position.x + info.offset.x,
-              y: position.y + info.offset.y
-            };
-            savePosition(newPosition);
-          }}
-          className="pet-widget"
-          style={{
-            position: 'fixed',
-            zIndex: 1001,
-            cursor: isDragging ? 'grabbing' : 'grab',
-            filter: pet.isAlive ? 'none' : 'grayscale(100%)',
-          }}
-        >
-          <div
-            style={{ position: 'relative' }}
-            onClick={(_e) => {
-              if (!isDragging && !recentlyDragged) {
-                navigate('/pets');
-              }
+              const newPosition = {
+                x: position.x + info.offset.x,
+                y: position.y + info.offset.y
+              };
+              savePosition(newPosition);
+            }}
+            className="pet-widget"
+            style={{
+              position: 'fixed',
+              zIndex: 1001,
+              cursor: isDragging ? 'grabbing' : 'grab',
+              filter: pet.isAlive ? 'none' : 'grayscale(100%)',
+              borderRadius: '16px',
             }}
           >
-            {/* Animiertes Pet - einfache Animation */}
-            <EvolvingPixelPet
-              pet={pet}
-              size={70}
-              animated={pet.isAlive}
-            />
+            <div
+              style={{ position: 'relative' }}
+              onClick={(_e) => {
+                if (!isDragging && !recentlyDragged) {
+                  navigate('/pets');
+                }
+              }}
+            >
+              {/* Animiertes Pet */}
+              <EvolvingPixelPet
+                pet={pet}
+                size={70}
+                animated={pet.isAlive}
+              />
 
-            {/* Tod-Indikator für tote Pets */}
-            {!pet.isAlive && (
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{
-                  position: 'absolute',
-                  top: '-8px',
-                  right: '-8px',
-                  fontSize: '18px',
-                }}
-              >
-                💀
-              </motion.div>
-            )}
+              {/* Mini Hunger-Bar unter dem Pet */}
+              {pet.isAlive && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '2px',
+                    left: '8px',
+                    right: '8px',
+                    height: '3px',
+                    background: `${statusColor}30`,
+                    borderRadius: '2px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <motion.div
+                    animate={{ width: `${hungerBarPercent}%` }}
+                    transition={{ duration: 0.5 }}
+                    style={{
+                      height: '100%',
+                      background: statusColor,
+                      borderRadius: '2px',
+                    }}
+                  />
+                </div>
+              )}
 
+              {/* Healthy XP Bonus Indicator */}
+              {healthy && (
+                <motion.div
+                  animate={{ opacity: [0.8, 1, 0.8] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    left: '-4px',
+                    fontSize: '9px',
+                    fontWeight: 800,
+                    color: '#22c55e',
+                    background: currentTheme.background.card + 'ee',
+                    padding: '1px 4px',
+                    borderRadius: '6px',
+                    lineHeight: 1.3,
+                    letterSpacing: '-0.5px',
+                  }}
+                >
+                  +XP
+                </motion.div>
+              )}
 
-            {/* Feed Indicator wenn hungrig (nur lebende Pets) */}
-            {pet.isAlive && pet.hunger > 70 && (
-              <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                style={{
-                  position: 'absolute',
-                  top: '-5px',
-                  right: '-5px',
-                  fontSize: '14px',
-                }}
-              >
-                🍖
-              </motion.div>
-            )}
+              {/* Tod-Indikator für tote Pets */}
+              {!pet.isAlive && (
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    right: '-8px',
+                    fontSize: '18px',
+                  }}
+                >
+                  💀
+                </motion.div>
+              )}
 
-            {/* Mood Text unter dem Pet */}
-            {pet.isAlive && currentMood && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                style={{
-                  position: 'absolute',
-                  bottom: '-20px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  fontSize: '10px',
-                  color: currentTheme.text.secondary,
-                  whiteSpace: 'nowrap',
-                  background: currentTheme.background.card + 'dd',
-                  padding: '2px 6px',
-                  borderRadius: '8px',
-                }}
-              >
-                {currentMood === 'festive' && '🎄 Festlich'}
-                {currentMood === 'sleepy' && '😴 Müde'}
-                {currentMood === 'playful' && '🎮 Spielfreudig'}
-                {currentMood === 'excited' && '✨ Aufgeregt'}
-                {currentMood === 'happy' && '😊 Glücklich'}
-                {currentMood === 'hungry' && '🍖 Hungrig'}
-                {currentMood === 'sad' && '😢 Traurig'}
-                {currentMood === 'loved' && '💕 Geliebt'}
-                {currentMood === 'scared' && '😨 Ängstlich'}
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+              {/* Feed Indicator wenn hungrig (nur lebende Pets) */}
+              {pet.isAlive && pet.hunger > 70 && (
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  style={{
+                    position: 'absolute',
+                    top: '-5px',
+                    right: '-5px',
+                    fontSize: '14px',
+                  }}
+                >
+                  🍖
+                </motion.div>
+              )}
+
+              {/* Mood Text unter dem Pet */}
+              {pet.isAlive && currentMood && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{
+                    position: 'absolute',
+                    bottom: '-20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    fontSize: '10px',
+                    color: currentTheme.text.secondary,
+                    whiteSpace: 'nowrap',
+                    background: currentTheme.background.card + 'dd',
+                    padding: '2px 6px',
+                    borderRadius: '8px',
+                  }}
+                >
+                  {currentMood === 'festive' && '🎄 Festlich'}
+                  {currentMood === 'sleepy' && '😴 Müde'}
+                  {currentMood === 'playful' && '🎮 Spielfreudig'}
+                  {currentMood === 'excited' && '✨ Aufgeregt'}
+                  {currentMood === 'happy' && '😊 Glücklich'}
+                  {currentMood === 'hungry' && '🍖 Hungrig'}
+                  {currentMood === 'sad' && '😢 Traurig'}
+                  {currentMood === 'loved' && '💕 Geliebt'}
+                  {currentMood === 'scared' && '😨 Ängstlich'}
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
