@@ -412,6 +412,13 @@ class PetService {
       pet.happiness = Math.min(100, pet.happiness + PET_CONFIG.GENRE_MATCH_HAPPINESS_BONUS);
     }
 
+    // Healthy pet XP bonus
+    const isHealthy = pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD
+      && pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD;
+    if (isHealthy) {
+      xpGain = Math.floor(xpGain * PET_CONFIG.HEALTHY_XP_MULTIPLIER);
+    }
+
     pet.episodesWatched++;
     pet.experience += xpGain;
     pet.totalSeriesWatched = (pet.totalSeriesWatched || 0) + 1;
