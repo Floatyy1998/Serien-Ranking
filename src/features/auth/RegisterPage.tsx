@@ -71,6 +71,9 @@ export const RegisterPage = () => {
           isOnline: true,
         });
 
+        // Send verification email
+        await userCredential.user.sendEmailVerification();
+
         navigate('/');
       }
     } catch (error: unknown) {
