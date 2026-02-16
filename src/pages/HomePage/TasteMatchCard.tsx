@@ -65,9 +65,10 @@ export const TasteMatchCard: React.FC = () => {
   return (
     <>
       {/* Main Card */}
-      <motion.div
+      <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={() => setShowSelector(true)}
+        aria-label="Taste Match: Geschmack mit Freunden vergleichen"
         style={{
           margin: '0 20px',
           padding: '12px 14px',
@@ -78,6 +79,8 @@ export const TasteMatchCard: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
+          width: 'calc(100% - 40px)',
+          textAlign: 'left',
         }}
       >
         {/* Icon */}
@@ -98,7 +101,7 @@ export const TasteMatchCard: React.FC = () => {
 
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3
+          <h2
             style={{
               margin: 0,
               fontSize: 15,
@@ -108,7 +111,7 @@ export const TasteMatchCard: React.FC = () => {
             }}
           >
             Taste Match
-          </h3>
+          </h2>
           <p
             style={{
               margin: '1px 0 0',
@@ -147,7 +150,7 @@ export const TasteMatchCard: React.FC = () => {
               {(friendProfiles[friend.uid]?.photoURL || friend.photoURL) ? (
                 <img
                   src={friendProfiles[friend.uid]?.photoURL || friend.photoURL}
-                  alt=""
+                  alt={`Profilbild von ${friendProfiles[friend.uid]?.displayName || friend.displayName || 'Freund'}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
@@ -177,8 +180,8 @@ export const TasteMatchCard: React.FC = () => {
           )}
         </div>
 
-        <ChevronRight style={{ color: currentTheme.text.secondary, fontSize: 20 }} />
-      </motion.div>
+        <ChevronRight style={{ color: currentTheme.text.secondary, fontSize: 20 }} aria-hidden="true" />
+      </motion.button>
 
       {/* Friend Selector Modal */}
       <AnimatePresence>

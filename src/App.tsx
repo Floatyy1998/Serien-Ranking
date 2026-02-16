@@ -469,7 +469,10 @@ function AppContent() {
                     <DynamicThemeProvider>
                     <CssBaseline />
                     <div className="w-full">
-                      <main className="w-full">
+                      <a href="#main-content" className="skip-to-content">
+                        Zum Hauptinhalt springen
+                      </a>
+                      <main className="w-full" id="main-content" tabIndex={-1}>
                         <Suspense fallback={<PageLoader />}>
                           <Routes>
                             <Route

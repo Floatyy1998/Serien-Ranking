@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { BackButton } from './BackButton';
 import { GradientText } from './GradientText';
 
@@ -26,6 +27,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   style,
 }) => {
   const { currentTheme } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <header
@@ -46,8 +48,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       }}
     >
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={shouldReduceMotion ? false : { opacity: 0, y: -20 }}
+        animate={shouldReduceMotion ? false : { opacity: 1, y: 0 }}
         style={{
           display: 'flex',
           alignItems: 'center',

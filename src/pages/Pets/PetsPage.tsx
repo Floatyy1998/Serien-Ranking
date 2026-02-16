@@ -285,7 +285,7 @@ export const PetsPage: React.FC = () => {
             />
 
             <div style={{ marginBottom: '24px' }}>
-              <h3
+              <h2
                 style={{
                   color: currentTheme.text.primary,
                   fontSize: '15px',
@@ -295,7 +295,7 @@ export const PetsPage: React.FC = () => {
                 }}
               >
                 Wähle deinen Typ:
-              </h3>
+              </h2>
               <div
                 style={{
                   display: 'grid',
@@ -939,7 +939,7 @@ export const PetsPage: React.FC = () => {
               }}
             >
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>😢</div>
-              <h3
+              <h2
                 style={{
                   color: currentTheme.text.primary,
                   fontSize: '18px',
@@ -948,7 +948,7 @@ export const PetsPage: React.FC = () => {
                 }}
               >
                 {pet.name} zur Adoption freigeben?
-              </h3>
+              </h2>
               <p
                 style={{
                   color: currentTheme.text.muted,
@@ -1023,7 +1023,7 @@ export const PetsPage: React.FC = () => {
             marginBottom: '16px',
           }}
         >
-          <h3
+          <h2
             style={{
               color: currentTheme.text.primary,
               fontSize: '15px',
@@ -1033,7 +1033,7 @@ export const PetsPage: React.FC = () => {
             }}
           >
             Farben
-          </h3>
+          </h2>
           <div
             style={{
               display: 'flex',
@@ -1079,7 +1079,7 @@ export const PetsPage: React.FC = () => {
             padding: '20px',
           }}
         >
-          <h3
+          <h2
             style={{
               color: currentTheme.text.primary,
               fontSize: '15px',
@@ -1089,7 +1089,7 @@ export const PetsPage: React.FC = () => {
             }}
           >
             Accessoires
-          </h3>
+          </h2>
           <div
             style={{
               display: 'grid',

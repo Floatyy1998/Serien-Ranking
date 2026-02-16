@@ -2,6 +2,7 @@ import { BarChart, Person, PlayCircle, Star } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { PetWidget } from '../pet';
@@ -25,6 +26,17 @@ export const BottomNavigation = () => {
   // Achievement badges are kept private and not shown in navigation
   const totalBadgeCount =
     (unreadActivitiesCount || 0) + (unreadRequestsCount || 0) + (notificationUnreadCount || 0);
+
+  const getActiveIndex = () => {
+    if (location.pathname === '/') return 0;
+    if (location.pathname.startsWith('/watchlist')) return 1;
+    if (location.pathname.startsWith('/discover')) return 2;
+    if (location.pathname.startsWith('/ratings')) return 3;
+    if (location.pathname.startsWith('/profile')) return 4;
+    return 0;
+  };
+
+  const activeIndex = getActiveIndex();
 
   const navItems: NavItem[] = [
     {
@@ -101,21 +113,45 @@ export const BottomNavigation = () => {
     location.pathname.includes('/episodes') ||
     location.pathname === '/new-episodes';
 
+  const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
+    itemCount: navItems.length,
+    currentIndex: activeIndex,
+    onIndexChange: (index) => handleNavigation(navItems[index].path),
+    orientation: 'horizontal',
+    loop: true,
+  });
+
   if (shouldHide) return null;
+
+  const getAriaLabel = (item: NavItem, active: boolean) => {
+    let label = item.label;
+    if (item.badge && typeof item.badge === 'number') {
+      label += `, ${item.badge} neue Benachrichtigungen`;
+    }
+    if (active) {
+      label += ' (aktuelle Seite)';
+    }
+    return label;
+  };
 
   return (
     <>
       {/* Pet Widget */}
       <PetWidget />
 
-      <div className="mobile-bottom-navigation">
-        <div className="nav-container">
+      <nav className="mobile-bottom-navigation" aria-label="Hauptnavigation">
+        <div className="nav-container" role="tablist" aria-label="Seitennavigation" onKeyDown={handleNavKeyDown}>
           {navItems.map((item) => {
             const active = isActive(item.path);
 
             return (
               <motion.button
                 key={item.id}
+                role="tab"
+                aria-selected={active}
+                aria-current={active ? 'page' : undefined}
+                aria-label={getAriaLabel(item, active)}
+                tabIndex={active ? 0 : -1}
                 className={`nav-item ${active ? 'active' : ''}`}
                 onClick={() => handleNavigation(item.path)}
                 whileTap={{ scale: 0.9 }}
@@ -166,7 +202,7 @@ export const BottomNavigation = () => {
 
         {/* Safe area for iPhone */}
         <div className="safe-area-bottom" />
-      </div>
+      </nav>
     </>
   );
 };

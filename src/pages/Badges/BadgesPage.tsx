@@ -431,7 +431,7 @@ export const BadgesPage = () => {
         </div>
 
         {/* Badge Info */}
-        <h4
+        <h2
           style={{
             fontSize: '16px',
             fontWeight: 700,
@@ -443,7 +443,7 @@ export const BadgesPage = () => {
           }}
         >
           {badge.name}
-        </h4>
+        </h2>
 
         <p
           style={{

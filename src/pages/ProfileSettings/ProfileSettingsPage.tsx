@@ -298,6 +298,7 @@ export const ProfileSettingsPage = () => {
       <div style={{ padding: '0 20px', position: 'relative', zIndex: 100 }}>
         {error && (
           <motion.div
+            role="alert"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
@@ -317,6 +318,7 @@ export const ProfileSettingsPage = () => {
 
         {success && (
           <motion.div
+            role="status"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
@@ -386,7 +388,7 @@ export const ProfileSettingsPage = () => {
               {photoURL ? (
                 <img
                   src={photoURL}
-                  alt="Profile"
+                  alt={`Profilbild von ${displayName || username || 'Benutzer'}`}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -402,6 +404,7 @@ export const ProfileSettingsPage = () => {
               whileTap={{ scale: 0.9 }}
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
+              aria-label="Profilbild hochladen"
               style={{
                 position: 'absolute',
                 bottom: 0,
@@ -418,7 +421,7 @@ export const ProfileSettingsPage = () => {
                 boxShadow: `0 4px 15px ${currentTheme.primary}50`,
               }}
             >
-              <PhotoCamera style={{ fontSize: '18px', color: 'white' }} />
+              <PhotoCamera style={{ fontSize: '18px', color: 'white' }} aria-hidden="true" />
             </motion.button>
 
             <input
@@ -426,6 +429,8 @@ export const ProfileSettingsPage = () => {
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
+              aria-hidden="true"
+              tabIndex={-1}
               style={{ display: 'none' }}
             />
           </div>
@@ -460,7 +465,7 @@ export const ProfileSettingsPage = () => {
         >
           {/* Username */}
           <div style={{ marginBottom: '20px' }}>
-            <label
+            <div
               style={{
                 fontSize: '13px',
                 fontWeight: 600,
@@ -471,10 +476,11 @@ export const ProfileSettingsPage = () => {
                 marginBottom: '8px',
               }}
             >
-              Benutzername
+              <label htmlFor="settings-username">Benutzername</label>
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setUsernameEditable(!usernameEditable)}
+                aria-label={usernameEditable ? 'Benutzername-Bearbeitung beenden' : 'Benutzername ändern'}
                 style={{
                   background: usernameEditable ? `${currentTheme.primary}20` : 'transparent',
                   border: 'none',
@@ -488,11 +494,12 @@ export const ProfileSettingsPage = () => {
                   fontSize: '12px',
                 }}
               >
-                <Edit style={{ fontSize: '14px' }} />
+                <Edit style={{ fontSize: '14px' }} aria-hidden="true" />
                 {usernameEditable ? 'Bearbeiten' : 'Ändern'}
               </motion.button>
-            </label>
+            </div>
             <input
+              id="settings-username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -518,7 +525,7 @@ export const ProfileSettingsPage = () => {
 
           {/* Display Name */}
           <div>
-            <label
+            <div
               style={{
                 fontSize: '13px',
                 fontWeight: 600,
@@ -529,10 +536,11 @@ export const ProfileSettingsPage = () => {
                 marginBottom: '8px',
               }}
             >
-              Anzeigename
+              <label htmlFor="settings-displayname">Anzeigename</label>
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setDisplayNameEditable(!displayNameEditable)}
+                aria-label={displayNameEditable ? 'Anzeigename-Bearbeitung beenden' : 'Anzeigename ändern'}
                 style={{
                   background: displayNameEditable ? `${currentTheme.primary}20` : 'transparent',
                   border: 'none',
@@ -546,11 +554,12 @@ export const ProfileSettingsPage = () => {
                   fontSize: '12px',
                 }}
               >
-                <Edit style={{ fontSize: '14px' }} />
+                <Edit style={{ fontSize: '14px' }} aria-hidden="true" />
                 {displayNameEditable ? 'Bearbeiten' : 'Ändern'}
               </motion.button>
-            </label>
+            </div>
             <input
+              id="settings-displayname"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
@@ -588,7 +597,10 @@ export const ProfileSettingsPage = () => {
             marginBottom: '20px',
           }}
         >
-          <motion.div
+          <motion.button
+            role="switch"
+            aria-checked={isPublic}
+            aria-label={isPublic ? 'Profil ist öffentlich, zum Deaktivieren klicken' : 'Profil ist privat, zum Aktivieren klicken'}
             whileTap={{ scale: 0.99 }}
             onClick={handleTogglePublic}
             style={{
@@ -596,6 +608,11 @@ export const ProfileSettingsPage = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               cursor: 'pointer',
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              textAlign: 'left',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -617,9 +634,9 @@ export const ProfileSettingsPage = () => {
                 )}
               </div>
               <div>
-                <h4 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 4px 0', color: currentTheme.text.primary }}>
+                <h2 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 4px 0', color: currentTheme.text.primary }}>
                   Öffentliches Profil
-                </h4>
+                </h2>
                 <p
                   style={{
                     fontSize: '13px',
@@ -633,6 +650,7 @@ export const ProfileSettingsPage = () => {
             </div>
 
             <div
+              aria-hidden="true"
               style={{
                 width: '48px',
                 height: '28px',
@@ -643,6 +661,7 @@ export const ProfileSettingsPage = () => {
                 position: 'relative',
                 transition: 'all 0.3s ease',
                 boxShadow: isPublic ? `0 2px 10px ${currentTheme.status.success}40` : 'none',
+                flexShrink: 0,
               }}
             >
               <motion.div
@@ -659,7 +678,7 @@ export const ProfileSettingsPage = () => {
                 }}
               />
             </div>
-          </motion.div>
+          </motion.button>
 
           {isPublic && (
             <motion.button

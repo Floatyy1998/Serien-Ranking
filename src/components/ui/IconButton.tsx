@@ -44,10 +44,16 @@ export const IconButton: React.FC<IconButtonProps> = ({
     },
   };
 
+  const effectiveAriaLabel = ariaLabel || tooltip;
+
+  if (process.env.NODE_ENV === 'development' && !ariaLabel && !tooltip) {
+    console.warn('IconButton: Neither ariaLabel nor tooltip provided. This button is not accessible to screen readers.');
+  }
+
   const button = (
     <button
       onClick={onClick}
-      aria-label={ariaLabel}
+      aria-label={effectiveAriaLabel}
       style={{
         width: size,
         height: size,

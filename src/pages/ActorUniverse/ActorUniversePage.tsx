@@ -547,7 +547,7 @@ export const ActorUniversePage = () => {
               </div>
 
               {/* Series list */}
-              <h3 style={{
+              <h2 style={{
                 margin: '0 0 14px 0',
                 fontSize: '13px',
                 color: currentTheme.text.muted,
@@ -556,7 +556,7 @@ export const ActorUniversePage = () => {
                 fontWeight: 700,
               }}>
                 In deiner Sammlung
-              </h3>
+              </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
                 {selectedActor.series.map(series => (
                   <motion.div
@@ -609,7 +609,7 @@ export const ActorUniversePage = () => {
               {/* Recommendations */}
               {selectedActor.recommendations && selectedActor.recommendations.length > 0 && (
                 <>
-                  <h3 style={{
+                  <h2 style={{
                     margin: '0 0 14px 0',
                     fontSize: '13px',
                     color: currentTheme.text.muted,
@@ -618,7 +618,7 @@ export const ActorUniversePage = () => {
                     fontWeight: 700,
                   }}>
                     Weitere Serien mit {selectedActor.name.split(' ')[0]}
-                  </h3>
+                  </h2>
                   <HorizontalScrollContainer gap={14}>
                     {selectedActor.recommendations.map(rec => (
                       <motion.div
@@ -696,7 +696,7 @@ export const ActorUniversePage = () => {
               {/* Connected actors */}
               {getActorConnections(selectedActor.id).length > 0 && (
                 <>
-                  <h3 style={{
+                  <h2 style={{
                     margin: '28px 0 14px 0',
                     fontSize: '13px',
                     color: currentTheme.text.muted,
@@ -705,7 +705,7 @@ export const ActorUniversePage = () => {
                     fontWeight: 700,
                   }}>
                     Spielt zusammen mit
-                  </h3>
+                  </h2>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                     {getActorConnections(selectedActor.id).slice(0, 8).map(conn => {
                       const otherId = conn.actor1Id === selectedActor.id ? conn.actor2Id : conn.actor1Id;

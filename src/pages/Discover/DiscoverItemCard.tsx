@@ -171,7 +171,7 @@ export const ItemCard = memo(({
         )}
       </div>
 
-      <h4
+      <h2
         style={{
           fontSize: isDesktop ? '14px' : '13px',
           fontWeight: 700,
@@ -186,7 +186,7 @@ export const ItemCard = memo(({
         }}
       >
         {item.title || item.name}
-      </h4>
+      </h2>
 
       <p
         style={{

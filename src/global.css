@@ -107,3 +107,64 @@ svg rect {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* ============================
+   WCAG 2.1 AA - Focus styles
+   ============================ */
+
+/* Global focus-visible outline for all interactive elements */
+*:focus-visible {
+  outline: 2px solid var(--theme-primary, #00fed7) !important;
+  outline-offset: 2px !important;
+}
+
+/* Remove default outlines for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+/* Enhanced focus styles for interactive elements */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--theme-primary, #00fed7) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(0, 254, 215, 0.15) !important;
+}
+
+/* Skip navigation link */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  padding: 12px 24px;
+  background: var(--theme-primary, #00fed7);
+  color: #000;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Visually hidden utility class */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

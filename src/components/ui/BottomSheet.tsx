@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AnimatePresence, motion, useDragControls, PanInfo } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -11,6 +13,8 @@ interface BottomSheetProps {
   showDragHandle?: boolean;
   dragThreshold?: number;
   bottomOffset?: string;
+  ariaLabel?: string;
+  ariaLabelledBy?: string;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -22,9 +26,15 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   showDragHandle = true,
   dragThreshold = 100,
   bottomOffset = '0px',
+  ariaLabel,
+  ariaLabelledBy,
 }) => {
   const { currentTheme } = useTheme();
   const dragControls = useDragControls();
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  useFocusTrap(sheetRef, isOpen, onClose);
 
   const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.y > dragThreshold || (info.offset.y > 0 && info.velocity.y > 500)) {
@@ -54,12 +64,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             backdropFilter: 'blur(20px)',
           }}
           onClick={onClose}
+          aria-hidden="true"
         >
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            ref={sheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabelledBy}
+            initial={shouldReduceMotion ? { opacity: 0 } : { y: '100%' }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { y: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { y: '100%' }}
+            transition={shouldReduceMotion ? { duration: 0.1 } : { type: 'spring', damping: 25, stiffness: 300 }}
             drag="y"
             dragControls={dragControls}
             dragListener={false}
@@ -83,6 +99,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             {showDragHandle && (
               <div
                 onPointerDown={(e) => dragControls.start(e)}
+                aria-hidden="true"
                 style={{
                   display: 'flex',
                   justifyContent: 'center',

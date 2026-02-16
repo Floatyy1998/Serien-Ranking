@@ -293,7 +293,7 @@ export const SettingsPage = () => {
               {photoURL ? (
                 <img
                   src={photoURL}
-                  alt="Profile"
+                  alt={`Profilbild von ${displayName || username || 'Benutzer'}`}
                   style={{
                     width: '90px',
                     height: '90px',
@@ -321,6 +321,7 @@ export const SettingsPage = () => {
                 whileTap={{ scale: 0.9 }}
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
+                aria-label="Profilbild hochladen"
                 style={{
                   position: 'absolute',
                   bottom: '0',
@@ -337,7 +338,7 @@ export const SettingsPage = () => {
                   cursor: 'pointer',
                 }}
               >
-                {uploading ? '...' : <PhotoCamera style={{ fontSize: '16px' }} />}
+                {uploading ? '...' : <PhotoCamera style={{ fontSize: '16px' }} aria-hidden="true" />}
               </motion.button>
             </div>
             <input
@@ -345,6 +346,8 @@ export const SettingsPage = () => {
               ref={fileInputRef}
               onChange={handleImageUpload}
               accept="image/*"
+              aria-hidden="true"
+              tabIndex={-1}
               style={{ display: 'none' }}
             />
             <p
@@ -438,6 +441,7 @@ export const SettingsPage = () => {
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setUsernameEditable(true)}
+                  aria-label="Benutzername ändern"
                   style={{
                     background: 'transparent',
                     border: 'none',
@@ -446,7 +450,7 @@ export const SettingsPage = () => {
                     padding: '8px',
                   }}
                 >
-                  <Edit style={{ fontSize: '18px' }} />
+                  <Edit style={{ fontSize: '18px' }} aria-hidden="true" />
                 </motion.button>
               )}
             </div>
@@ -530,6 +534,7 @@ export const SettingsPage = () => {
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setDisplayNameEditable(true)}
+                  aria-label="Anzeigename ändern"
                   style={{
                     background: 'transparent',
                     border: 'none',
@@ -538,7 +543,7 @@ export const SettingsPage = () => {
                     padding: '8px',
                   }}
                 >
-                  <Edit style={{ fontSize: '18px' }} />
+                  <Edit style={{ fontSize: '18px' }} aria-hidden="true" />
                 </motion.button>
               )}
             </div>
@@ -580,7 +585,7 @@ export const SettingsPage = () => {
             <Palette style={{ fontSize: '24px', color: 'white' }} />
           </div>
           <div style={{ flex: 1, textAlign: 'left' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Design & Themes</h3>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Design & Themes</h2>
             <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: '2px 0 0 0' }}>
               Farben und Aussehen anpassen
             </p>
@@ -601,7 +606,7 @@ export const SettingsPage = () => {
             marginBottom: '16px',
           }}
         >
-          <h3
+          <h2
             style={{
               fontSize: '16px',
               fontWeight: 700,
@@ -610,7 +615,7 @@ export const SettingsPage = () => {
             }}
           >
             Öffentliches Profil
-          </h3>
+          </h2>
 
           {/* Toggle */}
           <div
@@ -628,7 +633,7 @@ export const SettingsPage = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
               <Public style={{ fontSize: '22px', color: currentTheme.primary }} />
               <div>
-                <h4
+                <h3
                   style={{
                     margin: 0,
                     fontSize: '14px',
@@ -637,7 +642,7 @@ export const SettingsPage = () => {
                   }}
                 >
                   Profil öffentlich teilen
-                </h4>
+                </h3>
                 <p style={{ margin: 0, fontSize: '11px', color: currentTheme.text.muted }}>
                   Andere können deine Serien und Filme sehen
                 </p>
@@ -649,6 +654,7 @@ export const SettingsPage = () => {
                 checked={isPublicProfile}
                 onChange={(e) => handlePublicProfileToggle(e.target.checked)}
                 disabled={isLoadingProfile}
+                aria-label="Profil öffentlich teilen"
                 style={{ opacity: 0, width: 0, height: 0 }}
               />
               <span
@@ -691,7 +697,7 @@ export const SettingsPage = () => {
                 marginBottom: '16px',
               }}
             >
-              <h4
+              <h3
                 style={{
                   margin: '0 0 10px',
                   fontSize: '13px',
@@ -700,7 +706,7 @@ export const SettingsPage = () => {
                 }}
               >
                 Dein öffentlicher Link
-              </h4>
+              </h3>
               <div
                 style={{
                   display: 'flex',
@@ -809,7 +815,7 @@ export const SettingsPage = () => {
             marginBottom: '16px',
           }}
         >
-          <h3
+          <h2
             style={{
               fontSize: '16px',
               fontWeight: 700,
@@ -818,7 +824,7 @@ export const SettingsPage = () => {
             }}
           >
             Rechtliches & Datenquellen
-          </h3>
+          </h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
             <motion.button
@@ -870,7 +876,7 @@ export const SettingsPage = () => {
               borderRadius: '12px',
             }}
           >
-            <h4
+            <h3
               style={{
                 fontSize: '13px',
                 fontWeight: 600,
@@ -879,7 +885,7 @@ export const SettingsPage = () => {
               }}
             >
               Datenquellen
-            </h4>
+            </h3>
             <div
               style={{
                 display: 'flex',
@@ -943,6 +949,7 @@ export const SettingsPage = () => {
       <AnimatePresence>
         {snackbar.open && (
           <motion.div
+            role="status"
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}

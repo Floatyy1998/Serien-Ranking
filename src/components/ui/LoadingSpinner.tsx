@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { VisuallyHidden } from './VisuallyHidden';
 
 interface LoadingSpinnerProps {
   size?: number;
@@ -21,8 +22,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const spinnerColor = color || currentTheme.primary;
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px 0', ...style }}>
+    <div role="status" style={{ textAlign: 'center', padding: '40px 0', ...style }}>
       <motion.div
+        aria-hidden="true"
         animate={{ rotate: 360 }}
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         style={{
@@ -34,10 +36,12 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           margin: '0 auto 16px',
         }}
       />
-      {text && (
+      {text ? (
         <p style={{ color: currentTheme.text.secondary, fontSize: '15px', margin: 0 }}>
           {text}
         </p>
+      ) : (
+        <VisuallyHidden>Daten werden geladen</VisuallyHidden>
       )}
     </div>
   );

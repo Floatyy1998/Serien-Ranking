@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface Tab {
@@ -24,8 +25,20 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
+  const activeIndex = tabs.findIndex((t) => t.id === activeTab);
+
+  const { onKeyDown: handleTabKeyDown } = useKeyboardNavigation({
+    itemCount: tabs.length,
+    currentIndex: activeIndex,
+    onIndexChange: (index) => onTabChange(tabs[index].id),
+    orientation: 'horizontal',
+    loop: true,
+  });
+
   return (
     <div
+      role="tablist"
+      onKeyDown={handleTabKeyDown}
       style={{
         display: 'flex',
         margin: '0 20px 20px 20px',
@@ -41,6 +54,9 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
         return (
           <motion.button
             key={tab.id}
+            role="tab"
+            aria-selected={isActive}
+            tabIndex={isActive ? 0 : -1}
             whileTap={{ scale: 0.95 }}
             onClick={() => onTabChange(tab.id)}
             style={{
