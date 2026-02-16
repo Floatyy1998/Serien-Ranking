@@ -408,7 +408,7 @@ export const ActivityPage = () => {
                   >
                     <Timeline style={{ fontSize: '40px', color: currentTheme.text.muted }} />
                   </div>
-                  <h3
+                  <h2
                     style={{
                       margin: '0 0 8px',
                       fontSize: '18px',
@@ -417,7 +417,7 @@ export const ActivityPage = () => {
                     }}
                   >
                     Noch keine Aktivitäten
-                  </h3>
+                  </h2>
                   <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: '14px' }}>
                     {filterType !== 'all'
                       ? `Keine ${filterType === 'movies' ? 'Film' : 'Serien'}-Aktivitäten`
@@ -761,7 +761,7 @@ export const ActivityPage = () => {
                   >
                     <Person style={{ fontSize: '40px', color: currentTheme.text.muted }} />
                   </div>
-                  <h3
+                  <h2
                     style={{
                       margin: '0 0 8px',
                       fontSize: '18px',
@@ -770,7 +770,7 @@ export const ActivityPage = () => {
                     }}
                   >
                     Noch keine Freunde
-                  </h3>
+                  </h2>
                   <p
                     style={{ margin: '0 0 20px', color: currentTheme.text.muted, fontSize: '14px' }}
                   >
@@ -845,7 +845,7 @@ export const ActivityPage = () => {
                         </div>
 
                         <div style={{ flex: 1 }}>
-                          <h4
+                          <h3
                             style={{
                               fontSize: '15px',
                               fontWeight: 600,
@@ -853,7 +853,7 @@ export const ActivityPage = () => {
                             }}
                           >
                             {currentProfile.displayName || currentProfile.username}
-                          </h4>
+                          </h3>
                           <p
                             style={{
                               fontSize: '13px',
@@ -881,7 +881,7 @@ export const ActivityPage = () => {
             >
               {friendRequests.length > 0 && (
                 <div style={{ marginBottom: '24px' }}>
-                  <h3
+                  <h2
                     style={{
                       fontSize: '14px',
                       fontWeight: 700,
@@ -892,7 +892,7 @@ export const ActivityPage = () => {
                     }}
                   >
                     Eingehende Anfragen
-                  </h3>
+                  </h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {friendRequests.map((request, index) => {
                       const requestProfile = requestProfiles[request.fromUserId] || {};
@@ -937,7 +937,7 @@ export const ActivityPage = () => {
                           </div>
 
                           <div style={{ flex: 1 }}>
-                            <h4
+                            <h3
                               style={{
                                 fontSize: '14px',
                                 fontWeight: 600,
@@ -946,7 +946,7 @@ export const ActivityPage = () => {
                               }}
                             >
                               {requestProfile.displayName || request.fromUsername}
-                            </h4>
+                            </h3>
                             <p
                               style={{
                                 fontSize: '12px',
@@ -997,7 +997,7 @@ export const ActivityPage = () => {
 
               {sentRequests.length > 0 && (
                 <div>
-                  <h3
+                  <h2
                     style={{
                       fontSize: '14px',
                       fontWeight: 700,
@@ -1008,7 +1008,7 @@ export const ActivityPage = () => {
                     }}
                   >
                     Gesendete Anfragen
-                  </h3>
+                  </h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {sentRequests.map((request) => (
                       <div
@@ -1037,7 +1037,7 @@ export const ActivityPage = () => {
                           <Person style={{ fontSize: '22px', color: currentTheme.text.muted }} />
                         </div>
                         <div style={{ flex: 1 }}>
-                          <h4
+                          <h3
                             style={{
                               fontSize: '14px',
                               fontWeight: 600,
@@ -1046,7 +1046,7 @@ export const ActivityPage = () => {
                             }}
                           >
                             {request.toUsername}
-                          </h4>
+                          </h3>
                           <p
                             style={{
                               fontSize: '12px',
@@ -1097,7 +1097,7 @@ export const ActivityPage = () => {
                   >
                     <PersonAdd style={{ fontSize: '40px', color: currentTheme.text.muted }} />
                   </div>
-                  <h3
+                  <h2
                     style={{
                       margin: '0 0 8px',
                       fontSize: '18px',
@@ -1106,7 +1106,7 @@ export const ActivityPage = () => {
                     }}
                   >
                     Keine offenen Anfragen
-                  </h3>
+                  </h2>
                 </motion.div>
               )}
             </motion.div>
@@ -1141,7 +1141,7 @@ export const ActivityPage = () => {
                       style={{ fontSize: '40px', color: currentTheme.text.muted }}
                     />
                   </div>
-                  <h3
+                  <h2
                     style={{
                       margin: '0 0 8px',
                       fontSize: '18px',
@@ -1150,7 +1150,7 @@ export const ActivityPage = () => {
                     }}
                   >
                     Keine Benachrichtigungen
-                  </h3>
+                  </h2>
                 </motion.div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1223,7 +1223,7 @@ export const ActivityPage = () => {
                           )}
                         </div>
                         <div style={{ flex: 1 }}>
-                          <h4
+                          <h3
                             style={{
                               fontSize: '14px',
                               fontWeight: 600,
@@ -1232,7 +1232,7 @@ export const ActivityPage = () => {
                             }}
                           >
                             {notification.title}
-                          </h4>
+                          </h3>
                           <p
                             style={{
                               fontSize: '13px',

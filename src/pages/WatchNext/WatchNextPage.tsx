@@ -614,14 +614,14 @@ export const WatchNextPage = () => {
             >
               <PlayCircle style={{ fontSize: '44px', color: currentTheme.primary, opacity: 0.7 }} />
             </div>
-            <h3 style={{
+            <h2 style={{
               fontSize: '18px',
               fontWeight: 700,
               color: currentTheme.text.primary,
               margin: '0 0 8px 0',
             }}>
               Keine neuen Episoden
-            </h3>
+            </h2>
             <p style={{
               fontSize: '14px',
               color: currentTheme.text.muted,
@@ -887,9 +887,9 @@ export const WatchNextPage = () => {
                             }
                           }}
                         >
-                          <h4 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
+                          <h2 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
                             {episode.seriesTitle}
-                          </h4>
+                          </h2>
                           <p
                             style={{
                               fontSize: '13px',

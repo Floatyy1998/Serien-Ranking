@@ -640,7 +640,7 @@ export const SearchPage: React.FC = () => {
                     </div>
 
                     {/* Title */}
-                    <h4
+                    <h3
                       style={{
                         fontSize: '14px',
                         fontWeight: 600,
@@ -655,7 +655,7 @@ export const SearchPage: React.FC = () => {
                       }}
                     >
                       {item.title || item.name}
-                    </h4>
+                    </h3>
 
                     {/* Year */}
                     <p
@@ -697,7 +697,7 @@ export const SearchPage: React.FC = () => {
               >
                 <Search style={{ fontSize: '48px', color: currentTheme.text.muted }} />
               </div>
-              <h3
+              <h2
                 style={{
                   margin: '0 0 8px',
                   fontSize: '20px',
@@ -706,7 +706,7 @@ export const SearchPage: React.FC = () => {
                 }}
               >
                 Keine Ergebnisse
-              </h3>
+              </h2>
               <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: '15px' }}>
                 Keine Ergebnisse für "{searchQuery}"
               </p>
@@ -720,7 +720,7 @@ export const SearchPage: React.FC = () => {
             >
               {/* Trending Searches */}
               <section style={{ marginBottom: '32px' }}>
-                <h3
+                <h2
                   style={{
                     fontSize: '15px',
                     fontWeight: 700,
@@ -733,7 +733,7 @@ export const SearchPage: React.FC = () => {
                 >
                   <TrendingUp style={{ fontSize: '20px', color: currentTheme.primary }} />
                   Beliebte Suchen
-                </h3>
+                </h2>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {popularSearches.map((term, index) => (
@@ -765,7 +765,7 @@ export const SearchPage: React.FC = () => {
               {/* Recent Searches */}
               {recentSearches.length > 0 && (
                 <section>
-                  <h3
+                  <h2
                     style={{
                       fontSize: '15px',
                       fontWeight: 700,
@@ -778,7 +778,7 @@ export const SearchPage: React.FC = () => {
                   >
                     <History style={{ fontSize: '20px', color: currentTheme.text.muted }} />
                     Zuletzt gesucht
-                  </h3>
+                  </h2>
 
                   <div
                     style={{

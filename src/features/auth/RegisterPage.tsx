@@ -184,6 +184,7 @@ export const RegisterPage = () => {
                 margin="normal"
                 required
                 autoComplete="username"
+                error={!!error}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -220,6 +221,7 @@ export const RegisterPage = () => {
                 margin="normal"
                 required
                 autoComplete="email"
+                error={!!error}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -256,6 +258,7 @@ export const RegisterPage = () => {
                 margin="normal"
                 required
                 autoComplete="new-password"
+                error={!!error}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -268,6 +271,8 @@ export const RegisterPage = () => {
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
+                          aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                          aria-pressed={showPassword}
                           sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -305,6 +310,7 @@ export const RegisterPage = () => {
                 margin="normal"
                 required
                 autoComplete="new-password"
+                error={!!error}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -317,6 +323,8 @@ export const RegisterPage = () => {
                         <IconButton
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           edge="end"
+                          aria-label={showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                          aria-pressed={showConfirmPassword}
                           sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
                         >
                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}

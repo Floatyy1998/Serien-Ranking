@@ -79,8 +79,9 @@ export const DiscussionItem: React.FC<{
       {/* Header */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
         {/* Avatar */}
-        <div
+        <button
           onClick={() => navigate(`/friend/${discussion.userId}`)}
+          aria-label={`Profil von ${discussion.username} anzeigen`}
           style={{
             width: '40px',
             height: '40px',
@@ -89,6 +90,7 @@ export const DiscussionItem: React.FC<{
             cursor: 'pointer',
             border: `2px solid ${currentTheme.primary}40`,
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            padding: 0,
             ...(discussion.userPhotoURL
               ? {
                   backgroundImage: `url("${discussion.userPhotoURL}")`,
@@ -103,23 +105,26 @@ export const DiscussionItem: React.FC<{
                 }),
           }}
         >
-          {!discussion.userPhotoURL && <Person style={{ fontSize: '20px', color: 'white' }} />}
-        </div>
+          {!discussion.userPhotoURL && <Person style={{ fontSize: '20px', color: 'white' }} aria-hidden="true" />}
+        </button>
 
         {/* Title & Meta */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
-            <span
+            <button
               onClick={() => navigate(`/friend/${discussion.userId}`)}
               style={{
                 fontSize: '14px',
                 fontWeight: 700,
                 color: currentTheme.text.primary,
                 cursor: 'pointer',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
               }}
             >
               {discussion.username}
-            </span>
+            </button>
             <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
               {formatRelativeTime(discussion.createdAt)}
               {discussion.updatedAt && ' (bearb.)'}

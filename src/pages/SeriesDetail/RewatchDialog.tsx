@@ -1,4 +1,6 @@
 import { Tooltip } from '@mui/material';
+import { useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { SeriesEpisode } from './types';
 
 interface RewatchDialogProps {
@@ -14,8 +16,13 @@ export const RewatchDialog: React.FC<RewatchDialogProps> = ({
   onUnwatch,
   onClose,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, true, onClose);
+
   return (
     <div
+      onClick={onClose}
+      aria-hidden="true"
       style={{
         position: 'fixed',
         top: 0,
@@ -31,6 +38,12 @@ export const RewatchDialog: React.FC<RewatchDialogProps> = ({
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rewatch-dialog-title"
+        aria-describedby="rewatch-dialog-desc"
+        onClick={(e) => e.stopPropagation()}
         style={{
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
           borderRadius: '16px',
@@ -40,7 +53,8 @@ export const RewatchDialog: React.FC<RewatchDialogProps> = ({
           border: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <h3
+        <h2
+          id="rewatch-dialog-title"
           style={{
             margin: '0 0 16px 0',
             fontSize: '18px',
@@ -49,9 +63,10 @@ export const RewatchDialog: React.FC<RewatchDialogProps> = ({
           }}
         >
           Episode bearbeiten
-        </h3>
+        </h2>
 
         <p
+          id="rewatch-dialog-desc"
           style={{
             margin: '0 0 24px 0',
             fontSize: '14px',

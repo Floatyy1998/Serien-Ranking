@@ -251,7 +251,7 @@ export const ThemePage = () => {
                   marginBottom: '16px',
                 }}
               >
-                <h3
+                <h2
                   style={{
                     fontSize: '16px',
                     fontWeight: 700,
@@ -260,7 +260,7 @@ export const ThemePage = () => {
                   }}
                 >
                   Themes
-                </h3>
+                </h2>
                 <div
                   style={{
                     display: 'grid',
@@ -363,7 +363,7 @@ export const ThemePage = () => {
                   marginBottom: '16px',
                 }}
               >
-                <h3
+                <h2
                   style={{
                     fontSize: '16px',
                     fontWeight: 700,
@@ -372,7 +372,7 @@ export const ThemePage = () => {
                   }}
                 >
                   Farben anpassen
-                </h3>
+                </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {colorCategories.map((category) => {
                     const isActive = selectedColor === category.key;
@@ -414,7 +414,7 @@ export const ThemePage = () => {
                           {category.icon}
                         </div>
                         <div style={{ flex: 1 }}>
-                          <h4
+                          <h3
                             style={{
                               margin: 0,
                               fontSize: '14px',
@@ -423,7 +423,7 @@ export const ThemePage = () => {
                             }}
                           >
                             {category.name}
-                          </h4>
+                          </h3>
                           <p
                             style={{
                               margin: 0,
@@ -461,7 +461,7 @@ export const ThemePage = () => {
                   padding: '20px',
                 }}
               >
-                <h3
+                <h2
                   style={{
                     fontSize: '16px',
                     fontWeight: 700,
@@ -470,7 +470,7 @@ export const ThemePage = () => {
                   }}
                 >
                   {colorCategories.find((c) => c.key === selectedColor)?.name} Farbe
-                </h3>
+                </h2>
 
                 <div
                   style={{
@@ -583,7 +583,7 @@ export const ThemePage = () => {
                   marginBottom: '16px',
                 }}
               >
-                <h3
+                <h2
                   style={{
                     fontSize: '16px',
                     fontWeight: 700,
@@ -592,7 +592,7 @@ export const ThemePage = () => {
                   }}
                 >
                   Speicherung
-                </h3>
+                </h2>
                 <div
                   style={{
                     display: 'flex',
@@ -618,7 +618,7 @@ export const ThemePage = () => {
                     <CloudOff style={{ fontSize: '22px', color: currentTheme.primary }} />
                   </div>
                   <div>
-                    <h4
+                    <h3
                       style={{
                         margin: 0,
                         fontSize: '14px',
@@ -627,7 +627,7 @@ export const ThemePage = () => {
                       }}
                     >
                       Lokaler Speicher
-                    </h4>
+                    </h3>
                     <p style={{ margin: 0, fontSize: '12px', color: currentTheme.text.muted }}>
                       Themes werden lokal in Ihrem Browser gespeichert
                     </p>
@@ -648,7 +648,7 @@ export const ThemePage = () => {
                   marginBottom: '16px',
                 }}
               >
-                <h3
+                <h2
                   style={{
                     fontSize: '16px',
                     fontWeight: 700,
@@ -657,7 +657,7 @@ export const ThemePage = () => {
                   }}
                 >
                   Aktuelles Theme
-                </h3>
+                </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {colorCategories.map((category) => {
                     const color =
@@ -715,7 +715,7 @@ export const ThemePage = () => {
                   padding: '20px',
                 }}
               >
-                <h3
+                <h2
                   style={{
                     fontSize: '16px',
                     fontWeight: 700,
@@ -724,7 +724,7 @@ export const ThemePage = () => {
                   }}
                 >
                   Zurücksetzen
-                </h3>
+                </h2>
                 <AnimatePresence mode="wait">
                   {!showResetConfirm ? (
                     <motion.button
@@ -750,9 +750,9 @@ export const ThemePage = () => {
                     >
                       <Refresh style={{ fontSize: '22px' }} />
                       <div>
-                        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>
+                        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>
                           Theme zurücksetzen
-                        </h4>
+                        </h3>
                         <p
                           style={{
                             margin: 0,

@@ -589,9 +589,9 @@ export const StatsPage = () => {
               <AutoAwesome style={{ color: 'white', fontSize: '28px' }} />
             </motion.div>
             <div style={{ flex: 1 }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'white' }}>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'white' }}>
                 Actor Universe
-              </h3>
+              </h2>
               <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
                 Entdecke Verbindungen zwischen Schauspielern
               </p>
@@ -624,7 +624,7 @@ export const StatsPage = () => {
             border: `1px solid ${currentTheme.border.default}`,
           }}
         >
-          <h3
+          <h2
             style={{
               margin: '0 0 16px',
               fontSize: '16px',
@@ -636,7 +636,7 @@ export const StatsPage = () => {
           >
             <Timer style={{ fontSize: 20, color: currentTheme.primary }} />
             Zeit-Aufteilung
-          </h3>
+          </h2>
 
           <div style={{ display: 'flex', gap: '12px' }}>
             <div
@@ -685,7 +685,7 @@ export const StatsPage = () => {
             border: `1px solid ${currentTheme.border.default}`,
           }}
         >
-          <h3
+          <h2
             style={{
               margin: '0 0 16px',
               fontSize: '16px',
@@ -697,7 +697,7 @@ export const StatsPage = () => {
           >
             <Star style={{ fontSize: 20, color: '#fbbf24' }} />
             Deine Bewertungen
-          </h3>
+          </h2>
 
           <div style={{ display: 'flex', gap: '12px' }}>
             <div
@@ -745,7 +745,7 @@ export const StatsPage = () => {
               border: `1px solid ${currentTheme.border.default}`,
             }}
           >
-            <h3
+            <h2
               style={{
                 margin: '0 0 16px',
                 fontSize: '16px',
@@ -757,7 +757,7 @@ export const StatsPage = () => {
             >
               <Category style={{ fontSize: 20, color: '#8b5cf6' }} />
               Top Genres
-            </h3>
+            </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {stats.topGenres.map((genre, i) => (
@@ -831,7 +831,7 @@ export const StatsPage = () => {
               border: `1px solid ${currentTheme.border.default}`,
             }}
           >
-            <h3
+            <h2
               style={{
                 margin: '0 0 16px',
                 fontSize: '16px',
@@ -843,7 +843,7 @@ export const StatsPage = () => {
             >
               <Stream style={{ fontSize: 20, color: '#06b6d4' }} />
               Streaming-Dienste
-            </h3>
+            </h2>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {stats.topProviders.map((provider, i) => (

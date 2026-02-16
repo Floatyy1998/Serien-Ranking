@@ -69,9 +69,10 @@ export const CatchUpCard: React.FC = () => {
     : (currentTheme.status.warning as Record<string, string>)?.main || '#f59e0b';
 
   return (
-    <motion.div
+    <motion.button
       whileTap={{ scale: 0.98 }}
       onClick={() => navigate('/catch-up')}
+      aria-label={`Backlog: ${stats.seriesCount} Serien, ${stats.totalEpisodes} Episoden`}
       style={{
         margin: '0 20px',
         padding: '12px 14px',
@@ -82,6 +83,8 @@ export const CatchUpCard: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
+        width: 'calc(100% - 40px)',
+        textAlign: 'left',
       }}
     >
       {/* Icon */}
@@ -102,7 +105,7 @@ export const CatchUpCard: React.FC = () => {
 
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <h3
+        <h2
           style={{
             margin: 0,
             fontSize: 15,
@@ -112,7 +115,7 @@ export const CatchUpCard: React.FC = () => {
           }}
         >
           Backlog
-        </h3>
+        </h2>
         <p
           style={{
             margin: '1px 0 0',
@@ -161,6 +164,6 @@ export const CatchUpCard: React.FC = () => {
           flexShrink: 0,
         }}
       />
-    </motion.div>
+    </motion.button>
   );
 };

@@ -159,7 +159,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose}>
+    <BottomSheet isOpen={isOpen} onClose={handleClose} ariaLabel="Freund hinzufügen">
       {/* Header */}
       <div
         style={{
@@ -247,7 +247,8 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         {/* Search Results */}
         {searchResults.length > 0 && !searching && (
           <div>
-            <h3
+            <h2
+              aria-live="polite"
               style={{
                 fontSize: '12px',
                 fontWeight: 600,
@@ -258,7 +259,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
               }}
             >
               {searchResults.length} {searchResults.length === 1 ? 'Person' : 'Personen'} gefunden
-            </h3>
+            </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {searchResults.map((result) => (
@@ -380,6 +381,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         <AnimatePresence>
           {requestSuccess && (
             <motion.div
+              role="alert"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}

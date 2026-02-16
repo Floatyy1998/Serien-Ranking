@@ -50,11 +50,12 @@ export const WrappedNotification: React.FC = () => {
   if (loading || !enabled) return null;
 
   return (
-    <motion.div
+    <motion.button
       initial={{ opacity: 0, scale: 0.95, y: -20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 200 }}
       onClick={() => navigate('/wrapped')}
+      aria-label={`Dein ${year} Wrapped ist da – Entdecke deinen Jahresrückblick`}
       style={{
         margin: '16px',
         marginBottom: '8px',
@@ -65,6 +66,9 @@ export const WrappedNotification: React.FC = () => {
         overflow: 'hidden',
         cursor: 'pointer',
         boxShadow: `0 8px 32px ${currentTheme.primary}40`,
+        width: 'calc(100% - 32px)',
+        textAlign: 'left',
+        border: 'none',
       }}
     >
       {/* Animated Background Icons */}
@@ -169,7 +173,7 @@ export const WrappedNotification: React.FC = () => {
           </motion.p>
         </div>
       </div>
-    </motion.div>
+    </motion.button>
   );
 };
 

@@ -21,9 +21,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <div style={{ fontSize: '48px', color: iconColor || currentTheme.primary, marginBottom: '16px', opacity: 0.5, display: 'flex', justifyContent: 'center' }}>
         {icon}
       </div>
-      <h3 style={{ fontSize: '18px', fontWeight: 600, color: currentTheme.text.primary, marginBottom: '8px' }}>
+      <h2 style={{ fontSize: '18px', fontWeight: 600, color: currentTheme.text.primary, marginBottom: '8px' }}>
         {title}
-      </h3>
+      </h2>
       {description && (
         <p style={{ color: currentTheme.text.secondary, fontSize: '14px', margin: 0 }}>
           {description}

@@ -14,9 +14,10 @@ export const WatchJourneyCard: React.FC = () => {
   const primaryColor = currentTheme.primary;
 
   return (
-    <motion.div
+    <motion.button
       whileTap={{ scale: 0.98 }}
       onClick={() => navigate('/watch-journey')}
+      aria-label="Watch Journey: Trends und Entwicklung anzeigen"
       style={{
         margin: '0 20px',
         padding: '12px 14px',
@@ -27,6 +28,8 @@ export const WatchJourneyCard: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
+        width: 'calc(100% - 40px)',
+        textAlign: 'left',
       }}
     >
       {/* Icon */}
@@ -47,7 +50,7 @@ export const WatchJourneyCard: React.FC = () => {
 
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <h3
+        <h2
           style={{
             margin: 0,
             fontSize: 15,
@@ -57,7 +60,7 @@ export const WatchJourneyCard: React.FC = () => {
           }}
         >
           Watch Journey
-        </h3>
+        </h2>
         <p
           style={{
             margin: '1px 0 0',
@@ -89,8 +92,8 @@ export const WatchJourneyCard: React.FC = () => {
         ))}
       </div>
 
-      <ChevronRight style={{ color: currentTheme.text.secondary, fontSize: 20 }} />
-    </motion.div>
+      <ChevronRight style={{ color: currentTheme.text.secondary, fontSize: 20 }} aria-hidden="true" />
+    </motion.button>
   );
 };
 

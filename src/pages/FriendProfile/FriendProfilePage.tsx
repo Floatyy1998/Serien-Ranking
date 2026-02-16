@@ -477,9 +477,9 @@ export const FriendProfilePage: React.FC = () => {
               }}
             >
               <Star style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }} />
-              <h3 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
+              <h2 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
                 Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden
-              </h3>
+              </h2>
               <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
                 {friendName} hat noch keine {activeTab === 'series' ? 'Serien' : 'Filme'} bewertet
               </p>
@@ -651,7 +651,7 @@ export const FriendProfilePage: React.FC = () => {
                       )}
                     </div>
 
-                    <h3 style={{
+                    <h2 style={{
                       fontSize: '13px',
                       fontWeight: 600,
                       margin: '10px 0 0 0',
@@ -665,7 +665,7 @@ export const FriendProfilePage: React.FC = () => {
                       minHeight: '34px',
                     }}>
                       {item.title}
-                    </h3>
+                    </h2>
                   </motion.div>
                 );
               })}

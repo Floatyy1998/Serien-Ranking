@@ -18,8 +18,9 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   const { currentTheme } = useTheme();
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div role="search" style={{ position: 'relative' }}>
       <Search
+        aria-hidden="true"
         style={{
           position: 'absolute',
           left: '16px',
@@ -34,6 +35,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-label={placeholder || 'Suchen'}
         autoFocus={autoFocus}
         style={{
           width: '100%',
@@ -54,6 +56,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       {value && (
         <button
           onClick={() => onChange('')}
+          aria-label="Suchfeld leeren"
           style={{
             position: 'absolute',
             right: '12px',

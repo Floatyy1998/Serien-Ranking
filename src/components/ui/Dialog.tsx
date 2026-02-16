@@ -1,6 +1,7 @@
 import { Close } from '@mui/icons-material';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { IconButton } from './IconButton';
 
 interface MobileDialogProps {
@@ -25,6 +26,9 @@ export const Dialog = memo(({
   actions
 }: MobileDialogProps) => {
   const { currentTheme } = useTheme();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useFocusTrap(dialogRef, open, onClose);
 
   if (!open) return null;
 
@@ -32,7 +36,7 @@ export const Dialog = memo(({
     switch (type) {
       case 'success': return currentTheme.status.success;
       case 'error': return currentTheme.status.error;
-      case 'warning': return currentTheme.primary; // Use primary instead of yellow warning
+      case 'warning': return currentTheme.primary;
       default: return currentTheme.primary;
     }
   };
@@ -42,6 +46,7 @@ export const Dialog = memo(({
       {/* Backdrop */}
       <div
         onClick={onClose}
+        aria-hidden="true"
         style={{
           position: 'fixed',
           top: 0,
@@ -57,6 +62,12 @@ export const Dialog = memo(({
 
       {/* Dialog */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'dialog-title' : undefined}
+        aria-label={!title ? message.substring(0, 80) : undefined}
+        aria-describedby="dialog-message"
         style={{
           position: 'fixed',
           top: '50%',
@@ -83,7 +94,7 @@ export const Dialog = memo(({
           marginBottom: '16px',
         }}>
           {title && (
-            <h3 style={{
+            <h3 id="dialog-title" style={{
               margin: 0,
               fontSize: '18px',
               fontWeight: 600,
@@ -105,7 +116,7 @@ export const Dialog = memo(({
 
         {/* Type indicator bar - only show for errors */}
         {type === 'error' && (
-          <div style={{
+          <div aria-hidden="true" style={{
             height: '3px',
             background: getTypeColor(),
             borderRadius: '2px',
@@ -116,7 +127,7 @@ export const Dialog = memo(({
         )}
 
         {/* Message */}
-        <p style={{
+        <p id="dialog-message" style={{
           margin: '0 0 20px 0',
           fontSize: '14px',
           lineHeight: 1.5,

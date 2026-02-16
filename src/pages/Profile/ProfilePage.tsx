@@ -434,7 +434,7 @@ export const ProfilePage = () => {
         transition={{ delay: 0.3 }}
         style={{ padding: '0 20px', marginBottom: '20px' }}
       >
-        <h3
+        <h2
           style={{
             fontSize: '13px',
             fontWeight: 600,
@@ -445,7 +445,7 @@ export const ProfilePage = () => {
           }}
         >
           Schnellzugriff
-        </h3>
+        </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {menuItems.map((item, index) => (
             <motion.button
@@ -515,7 +515,7 @@ export const ProfilePage = () => {
         transition={{ delay: 0.4 }}
         style={{ padding: '0 20px', marginBottom: '20px' }}
       >
-        <h3
+        <h2
           style={{
             fontSize: '13px',
             fontWeight: 600,
@@ -526,7 +526,7 @@ export const ProfilePage = () => {
           }}
         >
           Deine Aktivitäten
-        </h3>
+        </h2>
         <div
           style={{
             background: currentTheme.background.surface,
@@ -606,7 +606,7 @@ export const ProfilePage = () => {
         transition={{ delay: 0.5 }}
         style={{ padding: '0 20px', marginBottom: '20px' }}
       >
-        <h3
+        <h2
           style={{
             fontSize: '13px',
             fontWeight: 600,
@@ -617,7 +617,7 @@ export const ProfilePage = () => {
           }}
         >
           Einstellungen
-        </h3>
+        </h2>
         <div
           style={{
             background: currentTheme.background.surface,

@@ -74,8 +74,9 @@ export const ReplyItem: React.FC<{
       }}
     >
       {/* Avatar */}
-      <div
+      <button
         onClick={() => navigate(`/friend/${reply.userId}`)}
+        aria-label={`Profil von ${reply.username} anzeigen`}
         style={{
           width: '30px',
           height: '30px',
@@ -83,6 +84,7 @@ export const ReplyItem: React.FC<{
           flexShrink: 0,
           cursor: 'pointer',
           border: `2px solid ${currentTheme.border.default}`,
+          padding: 0,
           ...(reply.userPhotoURL
             ? {
                 backgroundImage: `url("${reply.userPhotoURL}")`,
@@ -97,23 +99,26 @@ export const ReplyItem: React.FC<{
               }),
         }}
       >
-        {!reply.userPhotoURL && <Person style={{ fontSize: '15px', color: 'white' }} />}
-      </div>
+        {!reply.userPhotoURL && <Person style={{ fontSize: '15px', color: 'white' }} aria-hidden="true" />}
+      </button>
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-          <span
+          <button
             onClick={() => navigate(`/friend/${reply.userId}`)}
             style={{
               fontSize: '13px',
               fontWeight: 700,
               color: currentTheme.text.primary,
               cursor: 'pointer',
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
             }}
           >
             {reply.username}
-          </span>
+          </button>
           <span style={{ fontSize: '10px', color: currentTheme.text.muted }}>
             {formatRelativeTime(reply.createdAt)}
             {reply.updatedAt && ' (bearb.)'}

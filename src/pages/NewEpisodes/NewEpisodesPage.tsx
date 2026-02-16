@@ -741,9 +741,9 @@ export const NewEpisodesPage = () => {
               }}
             >
               <NewReleases style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }} />
-              <h3 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
+              <h2 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
                 Keine Episoden
-              </h3>
+              </h2>
               <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
                 Es gibt aktuell keine Episoden {showAllSeries ? '' : 'in deiner Watchlist'}
               </p>
@@ -808,14 +808,14 @@ export const NewEpisodesPage = () => {
                         color: isTodayDate ? '#fff' : currentTheme.text.muted,
                       }} />
                     </div>
-                    <h3 style={{
+                    <h2 style={{
                       fontSize: '15px',
                       fontWeight: 700,
                       margin: 0,
                       color: isTodayDate ? currentTheme.primary : currentTheme.text.primary,
                     }}>
                       {isTodayDate ? 'Heute' : date}
-                    </h3>
+                    </h2>
                     <span style={{
                       marginLeft: 'auto',
                       fontSize: '12px',
@@ -967,14 +967,14 @@ export const NewEpisodesPage = () => {
                                 />
 
                                 <div style={{ flex: 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}>
-                                  <h4 style={{
+                                  <h3 style={{
                                     fontSize: '15px',
                                     fontWeight: 700,
                                     margin: '0 0 6px 0',
                                     color: watched ? currentTheme.status.success : currentTheme.text.primary,
                                   }}>
                                     {episode.seriesName}
-                                  </h4>
+                                  </h3>
                                   <p style={{
                                     fontSize: '13px',
                                     margin: '0 0 4px 0',
@@ -1113,14 +1113,14 @@ export const NewEpisodesPage = () => {
                               />
 
                               <div style={{ flex: 1 }}>
-                                <h4 style={{
+                                <h3 style={{
                                   fontSize: '15px',
                                   fontWeight: 700,
                                   margin: '0 0 6px 0',
                                   color: allWatched ? currentTheme.status.success : currentTheme.text.primary,
                                 }}>
                                   {firstEpisode.seriesName}
-                                </h4>
+                                </h3>
                                 <p style={{
                                   fontSize: '13px',
                                   margin: '0 0 4px 0',

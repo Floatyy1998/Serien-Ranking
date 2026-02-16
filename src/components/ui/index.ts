@@ -14,3 +14,4 @@ export { PageLayout } from './PageLayout';
 export { PageHeader } from './PageHeader';
 export { TabSwitcher } from './TabSwitcher';
 export { ProgressBar } from './ProgressBar';
+export { VisuallyHidden } from './VisuallyHidden';

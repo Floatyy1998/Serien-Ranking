@@ -503,7 +503,7 @@ export const HomePage: React.FC = () => {
               marginBottom: isDesktop ? '4px' : '8px',
             }}
           />
-          <h3 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Weiterschauen</h3>
+          <h2 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Weiterschauen</h2>
           <p
             style={{
               fontSize: isDesktop ? '11px' : '12px',
@@ -548,7 +548,7 @@ export const HomePage: React.FC = () => {
               marginBottom: isDesktop ? '4px' : '8px',
             }}
           />
-          <h3 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Entdecken</h3>
+          <h2 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Entdecken</h2>
           <p
             style={{
               fontSize: isDesktop ? '11px' : '12px',
@@ -843,7 +843,7 @@ export const HomePage: React.FC = () => {
                             zIndex: 2,
                           }}
                         >
-                          <h4
+                          <h3
                             style={{
                               fontSize: '14px',
                               fontWeight: 600,
@@ -851,7 +851,7 @@ export const HomePage: React.FC = () => {
                             }}
                           >
                             {item.title}
-                          </h4>
+                          </h3>
                           <p
                             style={{
                               fontSize: '12px',
@@ -1085,7 +1085,7 @@ export const HomePage: React.FC = () => {
                           }}
                         />
                         <div style={{ flex: 1, pointerEvents: 'none' }}>
-                          <h4
+                          <h3
                             style={{
                               fontSize: '14px',
                               fontWeight: 600,
@@ -1093,7 +1093,7 @@ export const HomePage: React.FC = () => {
                             }}
                           >
                             {episode.seriesTitle}
-                          </h4>
+                          </h3>
                           <p
                             style={{
                               fontSize: '12px',
@@ -1253,7 +1253,7 @@ export const HomePage: React.FC = () => {
                   </div>
                 </div>
 
-                <h4
+                <h3
                   style={{
                     fontSize: '14px',
                     fontWeight: 500,
@@ -1264,7 +1264,7 @@ export const HomePage: React.FC = () => {
                   }}
                 >
                   {item.title}
-                </h4>
+                </h3>
                 <div
                   style={{
                     display: 'flex',
@@ -1350,7 +1350,7 @@ export const HomePage: React.FC = () => {
                   </div>
                 </div>
 
-                <h4
+                <h3
                   style={{
                     fontSize: '14px',
                     fontWeight: 500,
@@ -1361,7 +1361,7 @@ export const HomePage: React.FC = () => {
                   }}
                 >
                   {item.title}
-                </h4>
+                </h3>
               </motion.div>
             ))}
           </HorizontalScrollContainer>

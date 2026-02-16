@@ -706,9 +706,9 @@ export const RecentlyWatchedPage = memo(() => {
                 >
                   <History style={{ fontSize: '48px', color: currentTheme.text.muted }} />
                 </div>
-                <h3 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700 }}>
+                <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700 }}>
                   Keine Episoden gefunden
-                </h3>
+                </h2>
                 <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: '15px' }}>
                   {searchQuery
                     ? `Keine Ergebnisse für "${searchQuery}"`
@@ -753,7 +753,7 @@ export const RecentlyWatchedPage = memo(() => {
                             color: isToday ? currentTheme.status.success : currentTheme.text.muted,
                           }}
                         />
-                        <h3
+                        <h2
                           style={{
                             fontSize: '15px',
                             fontWeight: 700,
@@ -764,7 +764,7 @@ export const RecentlyWatchedPage = memo(() => {
                           }}
                         >
                           {dateGroup.displayDate}
-                        </h3>
+                        </h2>
                         <span
                           style={{
                             marginLeft: 'auto',
@@ -826,7 +826,7 @@ export const RecentlyWatchedPage = memo(() => {
                                 />
 
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <h4
+                                  <h3
                                     onClick={() => navigate(`/series/${episode.seriesId}`)}
                                     style={{
                                       fontSize: '14px',
@@ -840,7 +840,7 @@ export const RecentlyWatchedPage = memo(() => {
                                     }}
                                   >
                                     {episode.seriesName}
-                                  </h4>
+                                  </h3>
 
                                   <p
                                     onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`)}
@@ -972,7 +972,7 @@ export const RecentlyWatchedPage = memo(() => {
                                 />
 
                                 <div style={{ flex: 1 }}>
-                                  <h4
+                                  <h3
                                     style={{
                                       fontSize: '15px',
                                       fontWeight: 700,
@@ -981,7 +981,7 @@ export const RecentlyWatchedPage = memo(() => {
                                     }}
                                   >
                                     {firstEpisode.seriesName}
-                                  </h4>
+                                  </h3>
 
                                   <div
                                     style={{

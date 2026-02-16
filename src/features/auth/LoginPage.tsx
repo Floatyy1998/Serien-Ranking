@@ -144,6 +144,7 @@ export const LoginPage = () => {
                 margin="normal"
                 required
                 autoComplete="email"
+                error={!!error}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -180,6 +181,7 @@ export const LoginPage = () => {
                 margin="normal"
                 required
                 autoComplete="current-password"
+                error={!!error}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -192,6 +194,8 @@ export const LoginPage = () => {
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
+                          aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                          aria-pressed={showPassword}
                           sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}

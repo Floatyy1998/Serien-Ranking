@@ -179,7 +179,7 @@ const RatingGridItem = React.memo<{
       )}
     </div>
 
-    <h4 className="ratings-item-title" style={{ color: theme.text.primary }}>{item.title}</h4>
+    <h2 className="ratings-item-title" style={{ color: theme.text.primary }}>{item.title}</h2>
 
     {!item.isMovie && item.progress > 0 && (
       <p
@@ -711,9 +711,9 @@ export const RatingsPage: React.FC = () => {
             }}>
               <Star style={{ fontSize: 48, color: currentTheme.text.muted }} />
             </div>
-            <h3 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700 }}>
+            <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700 }}>
               Noch keine {activeTab === 'series' ? 'Serien' : 'Filme'}
-            </h3>
+            </h2>
             <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: 15 }}>
               {quickFilter
                 ? 'Keine Ergebnisse für diesen Filter'

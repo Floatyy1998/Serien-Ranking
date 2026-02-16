@@ -16,13 +16,14 @@ export const SharedItemCard: React.FC<{ item: SharedItem; index: number; type: '
   const hasMatchingRatings = item.ratingDiff !== undefined && item.ratingDiff < 1;
 
   return (
-    <motion.div
+    <motion.button
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
       whileTap={{ scale: 0.97 }}
       whileHover={{ scale: 1.01, y: -2 }}
       onClick={() => navigate(`/${type === 'series' ? 'series' : 'movie'}/${item.id}`)}
+      aria-label={`${item.title} – ${type === 'series' ? 'Serie' : 'Film'} Details anzeigen`}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -38,6 +39,8 @@ export const SharedItemCard: React.FC<{ item: SharedItem; index: number; type: '
           : '0 4px 15px rgba(0,0,0,0.1)',
         position: 'relative',
         overflow: 'hidden',
+        width: '100%',
+        textAlign: 'left',
       }}
     >
       {/* Perfect match glow */}
@@ -143,6 +146,6 @@ export const SharedItemCard: React.FC<{ item: SharedItem; index: number; type: '
           <Favorite style={{ fontSize: 18, color: ACCENT_COLORS.match }} />
         </motion.div>
       )}
-    </motion.div>
+    </motion.button>
   );
 };
