@@ -38,6 +38,8 @@ import { TasteMatchCard } from './TasteMatchCard';
 import { WatchJourneyCard } from './WatchJourneyCard';
 import { CatchUpCard } from './CatchUpCard';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
+import { WatchStreakCard } from './WatchStreakCard';
+import { SeriesCountdownCard } from './SeriesCountdownCard';
 import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
 import type { Series } from '../../types/Series';
 
@@ -1378,6 +1380,8 @@ export const HomePage: React.FC = () => {
 
         {/* Feature Cards Container */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <WatchStreakCard />
+          <SeriesCountdownCard />
           <TasteMatchCard />
           <WatchJourneyCard />
           <CatchUpCard />

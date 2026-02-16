@@ -123,6 +123,19 @@ svg rect {
   outline: none !important;
 }
 
+/* Exclude SVG icons and MUI icons from focus outlines */
+svg:focus,
+svg:focus-visible,
+svg *:focus,
+svg *:focus-visible,
+.MuiSvgIcon-root:focus,
+.MuiSvgIcon-root:focus-visible,
+[class*="Icon"]:focus,
+[class*="Icon"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Enhanced focus styles for interactive elements */
 button:focus-visible,
 [role="button"]:focus-visible,
@@ -133,6 +146,13 @@ textarea:focus-visible {
   outline: 2px solid var(--theme-primary, #00fed7) !important;
   outline-offset: 2px !important;
   box-shadow: 0 0 0 4px rgba(0, 254, 215, 0.15) !important;
+}
+
+/* MUI TextFields have their own focus border via fieldset — skip global outline */
+.MuiOutlinedInput-root input:focus-visible,
+.MuiOutlinedInput-root textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Skip navigation link */
@@ -167,4 +187,16 @@ textarea:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ============================
+   Animations
+   ============================ */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
