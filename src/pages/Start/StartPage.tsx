@@ -446,6 +446,40 @@ export const StartPage = () => {
             </Button>
           </Box>
         </motion.div>
+
+        {/* Legal Footer */}
+        <Box
+          component="footer"
+          sx={{
+            textAlign: 'center',
+            pt: 2,
+            pb: 4,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 3,
+          }}
+        >
+          <Link
+            to="/privacy"
+            style={{
+              color: 'rgba(255, 255, 255, 0.3)',
+              fontSize: '0.75rem',
+              textDecoration: 'none',
+            }}
+          >
+            Datenschutz
+          </Link>
+          <Link
+            to="/impressum"
+            style={{
+              color: 'rgba(255, 255, 255, 0.3)',
+              fontSize: '0.75rem',
+              textDecoration: 'none',
+            }}
+          >
+            Impressum
+          </Link>
+        </Box>
       </Container>
     </Box>
   );
