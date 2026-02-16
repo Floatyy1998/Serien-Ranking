@@ -1,5 +1,5 @@
 import { Email, Warning } from '@mui/icons-material';
-import { Alert, Button, Snackbar } from '@mui/material';
+import { Alert, Button, Snackbar, Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { useEffect, useState } from 'react';
@@ -123,35 +123,39 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
             </span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={resendVerification}
-              sx={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: colors.text.secondary,
-                '&:hover': {
-                  backgroundColor: 'rgba(255,255,255,0.3)',
-                },
-              }}
-            >
-              Erneut senden
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleLogout}
-              sx={{
-                borderColor: 'rgba(255,255,255,0.5)',
-                color: colors.text.secondary,
-                '&:hover': {
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                },
-              }}
-            >
-              Abmelden
-            </Button>
+            <Tooltip title="Verifizierungslink erneut senden" arrow>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={resendVerification}
+                sx={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  color: colors.text.secondary,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                  },
+                }}
+              >
+                Erneut senden
+              </Button>
+            </Tooltip>
+            <Tooltip title="Vom Account abmelden" arrow>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleLogout}
+                sx={{
+                  borderColor: 'rgba(255,255,255,0.5)',
+                  color: colors.text.secondary,
+                  '&:hover': {
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                  },
+                }}
+              >
+                Abmelden
+              </Button>
+            </Tooltip>
           </div>
         </div>
 
@@ -193,33 +197,37 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                 Überprüfen Sie Ihr Postfach und klicken Sie auf den Verifizierungslink.
               </p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                <Button
-                  variant="contained"
-                  onClick={resendVerification}
-                  sx={{
-                    backgroundColor: 'var(--theme-primary)',
-                    color: colors.background.default,
-                    '&:hover': {
-                      backgroundColor: 'var(--theme-accent)',
-                    },
-                  }}
-                >
-                  Link erneut senden
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleLogout}
-                  sx={{
-                    borderColor: 'var(--theme-primary)',
-                    color: 'var(--theme-primary)',
-                    '&:hover': {
-                      borderColor: 'var(--theme-accent)',
-                      backgroundColor: colors.overlay.medium,
-                    },
-                  }}
-                >
-                  Abmelden
-                </Button>
+                <Tooltip title="Verifizierungslink erneut senden" arrow>
+                  <Button
+                    variant="contained"
+                    onClick={resendVerification}
+                    sx={{
+                      backgroundColor: 'var(--theme-primary)',
+                      color: colors.background.default,
+                      '&:hover': {
+                        backgroundColor: 'var(--theme-accent)',
+                      },
+                    }}
+                  >
+                    Link erneut senden
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Vom Account abmelden" arrow>
+                  <Button
+                    variant="outlined"
+                    onClick={handleLogout}
+                    sx={{
+                      borderColor: 'var(--theme-primary)',
+                      color: 'var(--theme-primary)',
+                      '&:hover': {
+                        borderColor: 'var(--theme-accent)',
+                        backgroundColor: colors.overlay.medium,
+                      },
+                    }}
+                  >
+                    Abmelden
+                  </Button>
+                </Tooltip>
               </div>
             </div>
           </div>

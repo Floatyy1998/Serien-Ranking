@@ -1,4 +1,5 @@
 import { Person, Star } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
@@ -115,24 +116,24 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
         const isHighRating = rating >= 8.5;
 
         return (
-          <div
-            key={friend.uid}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/friend/${friend.uid}`);
-            }}
-            style={{
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
-          >
+          <Tooltip key={friend.uid} title={`${friend.displayName}${hasRating ? ` · ${friend.rating}` : ''}`} arrow>
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/friend/${friend.uid}`);
+              }}
+              style={{
+                position: 'relative',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
             {/* Avatar Circle */}
             <div
               style={{
@@ -163,7 +164,7 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
                     : '0 0 6px rgba(255, 165, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.3)'
                   : '0 2px 6px rgba(0, 0, 0, 0.3)',
               }}
-              title={`${friend.displayName}${hasRating ? ` · ${friend.rating}⭐` : ''}`}
+              // tooltip handled by parent Tooltip wrapper
             >
               {!friend.photoURL && <Person style={{ fontSize: '14px', color: 'white' }} />}
             </div>
@@ -206,31 +207,33 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
               </div>
             )}
           </div>
+          </Tooltip>
         );
       })}
 
       {/* +X More Badge */}
       {friendsWithItem.length > 4 && (
-        <div
-          style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%)',
-            border: '2px solid rgba(255, 255, 255, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '10px',
-            fontWeight: 800,
-            color: 'white',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
-            cursor: 'default',
-          }}
-          title={`+${friendsWithItem.length - 4} weitere Freunde`}
-        >
-          +{friendsWithItem.length - 4}
-        </div>
+        <Tooltip title={`+${friendsWithItem.length - 4} weitere Freunde`} arrow>
+          <div
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%)',
+              border: '2px solid rgba(255, 255, 255, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              fontWeight: 800,
+              color: 'white',
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+              cursor: 'default',
+            }}
+          >
+            +{friendsWithItem.length - 4}
+          </div>
+        </Tooltip>
       )}
     </div>
   );

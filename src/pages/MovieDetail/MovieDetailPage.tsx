@@ -1,4 +1,5 @@
 import { Delete, Info, People, Star } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { motion } from 'framer-motion';
@@ -401,50 +402,54 @@ export const MovieDetailPage = memo(() => {
 
           {/* Show Add button for TMDB movies, Delete button for user's movies */}
           {isReadOnlyTmdbMovie ? (
-            <button
-              onClick={handleAddMovie}
-              disabled={isAdding}
-              style={{
-                background: isAdding
-                  ? `${currentTheme.status.success}88`
-                  : `${currentTheme.status.success}CC`,
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                color: currentTheme.text.primary,
-                fontSize: '24px',
-                cursor: isAdding ? 'not-allowed' : 'pointer',
-                padding: '8px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-              }}
-            >
-              {isAdding ? '...' : '+'}
-            </button>
+            <Tooltip title="Zur Sammlung hinzufügen" arrow>
+              <button
+                onClick={handleAddMovie}
+                disabled={isAdding}
+                style={{
+                  background: isAdding
+                    ? `${currentTheme.status.success}88`
+                    : `${currentTheme.status.success}CC`,
+                  backdropFilter: 'blur(10px)',
+                  border: 'none',
+                  color: currentTheme.text.primary,
+                  fontSize: '24px',
+                  cursor: isAdding ? 'not-allowed' : 'pointer',
+                  padding: '8px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px',
+                }}
+              >
+                {isAdding ? '...' : '+'}
+              </button>
+            </Tooltip>
           ) : (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              style={{
-                background: `${currentTheme.status.error}CC`,
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                color: currentTheme.text.primary,
-                fontSize: '20px',
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-              }}
-            >
-              <Delete />
-            </button>
+            <Tooltip title="Film löschen" arrow>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                style={{
+                  background: `${currentTheme.status.error}CC`,
+                  backdropFilter: 'blur(10px)',
+                  border: 'none',
+                  color: currentTheme.text.primary,
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px',
+                }}
+              >
+                <Delete />
+              </button>
+            </Tooltip>
           )}
         </div>
 

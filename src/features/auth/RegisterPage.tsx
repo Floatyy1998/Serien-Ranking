@@ -9,6 +9,7 @@ import {
   Paper,
   TextField,
   Typography,
+  Tooltip,
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
@@ -263,13 +264,15 @@ export const RegisterPage = () => {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
+                      <Tooltip title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'} arrow>
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </Tooltip>
                     </InputAdornment>
                   ),
                 }}
@@ -310,13 +313,15 @@ export const RegisterPage = () => {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        edge="end"
-                        sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
-                      >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
+                      <Tooltip title={showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'} arrow>
+                        <IconButton
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          edge="end"
+                          sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                        >
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </Tooltip>
                     </InputAdornment>
                   ),
                 }}

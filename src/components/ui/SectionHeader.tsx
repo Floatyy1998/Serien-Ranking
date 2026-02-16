@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface SectionHeaderProps {
@@ -48,21 +49,23 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
         {title}
       </h2>
       {onSeeAll && (
-        <button
-          onClick={onSeeAll}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: currentTheme.text.secondary,
-            fontSize: '14px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            padding: 0,
-          }}
-        >
-          {seeAllLabel} <ChevronRight style={{ fontSize: '16px' }} />
-        </button>
+        <Tooltip title="Alle anzeigen" arrow>
+          <button
+            onClick={onSeeAll}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: currentTheme.text.secondary,
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              padding: 0,
+            }}
+          >
+            {seeAllLabel} <ChevronRight style={{ fontSize: '16px' }} />
+          </button>
+        </Tooltip>
       )}
     </div>
   );

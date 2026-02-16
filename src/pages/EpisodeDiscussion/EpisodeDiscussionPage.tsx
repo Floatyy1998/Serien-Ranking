@@ -11,6 +11,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -628,22 +629,28 @@ export const EpisodeDiscussionPage = () => {
             }}
           >
             {episodeAirDate && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <DateRange style={{ fontSize: '18px', color: currentTheme.primary }} />
-                {getUnifiedEpisodeDate(episodeAirDate)}
-              </span>
+              <Tooltip title="Erstausstrahlung" arrow>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <DateRange style={{ fontSize: '18px', color: currentTheme.primary }} />
+                  {getUnifiedEpisodeDate(episodeAirDate)}
+                </span>
+              </Tooltip>
             )}
             {localEpisode?.watched && (localEpisode as typeof localEpisode & { firstWatchedAt?: string }).firstWatchedAt && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Visibility style={{ fontSize: '18px', color: currentTheme.status.success }} />
-                {new Date((localEpisode as typeof localEpisode & { firstWatchedAt?: string }).firstWatchedAt!).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-              </span>
+              <Tooltip title="Erstmals gesehen" arrow>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Visibility style={{ fontSize: '18px', color: currentTheme.status.success }} />
+                  {new Date((localEpisode as typeof localEpisode & { firstWatchedAt?: string }).firstWatchedAt!).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                </span>
+              </Tooltip>
             )}
             {episodeRuntime && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <PlayCircle style={{ fontSize: '18px', color: '#8b5cf6' }} />
-                {episodeRuntime} Min.
-              </span>
+              <Tooltip title="Episodenlänge" arrow>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <PlayCircle style={{ fontSize: '18px', color: '#8b5cf6' }} />
+                  {episodeRuntime} Min.
+                </span>
+              </Tooltip>
             )}
           </motion.div>
         </div>

@@ -1,4 +1,5 @@
 import { FilterList, NewReleases, PlaylistAdd, Schedule, Star, Bookmark } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
 import { SearchInput } from './SearchInput';
@@ -146,48 +147,50 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
   return (
     <>
       {/* Filter Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: hasBottomNav ? '120px' : '30px', // Adjust based on navbar presence
-          right: '20px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          border: 'none',
-          borderRadius: '50%',
-          width: '56px',
-          height: '56px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
-          cursor: 'pointer',
-          zIndex: 1000,
-        }}
-      >
-        <FilterList />
-        {activeFiltersCount > 0 && (
-          <span
-            style={{
-              position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              background: '#ff4757',
-              borderRadius: '50%',
-              width: '20px',
-              height: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '11px',
-              fontWeight: 'bold',
-            }}
-          >
-            {activeFiltersCount}
-          </span>
-        )}
-      </button>
+      <Tooltip title="Filter & Sortierung" arrow>
+        <button
+          onClick={() => setIsOpen(true)}
+          style={{
+            position: 'fixed',
+            bottom: hasBottomNav ? '120px' : '30px', // Adjust based on navbar presence
+            right: '20px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            border: 'none',
+            borderRadius: '50%',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
+            cursor: 'pointer',
+            zIndex: 1000,
+          }}
+        >
+          <FilterList />
+          {activeFiltersCount > 0 && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                background: '#ff4757',
+                borderRadius: '50%',
+                width: '20px',
+                height: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '11px',
+                fontWeight: 'bold',
+              }}
+            >
+              {activeFiltersCount}
+            </span>
+          )}
+        </button>
+      </Tooltip>
 
       {/* Filter Panel */}
       <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} bottomOffset={hasBottomNav ? '83px' : '0px'}>
@@ -451,10 +454,9 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                       const isActive = selectedProvider === provider.value;
 
                       return (
+                        <Tooltip key={provider.value} title={provider.label} arrow>
                         <button
-                          key={provider.value}
                           onClick={() => setSelectedProvider(isActive ? '' : provider.value)}
-                          title={provider.label}
                           style={{
                             padding: '12px',
                             background: isActive
@@ -496,6 +498,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                             </span>
                           )}
                         </button>
+                        </Tooltip>
                       );
                     })}
                   </div>

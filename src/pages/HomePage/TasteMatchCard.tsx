@@ -235,7 +235,7 @@ export const TasteMatchCard: React.FC = () => {
                 >
                   Freund auswählen
                 </h2>
-                <IconButton icon={<Close style={{ fontSize: '20px' }} />} onClick={() => setShowSelector(false)} size={36} variant="surface" />
+                <IconButton icon={<Close style={{ fontSize: '20px' }} />} onClick={() => setShowSelector(false)} size={36} variant="surface" tooltip="Schließen" />
               </div>
 
               {/* Friend List */}

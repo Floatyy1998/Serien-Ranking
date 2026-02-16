@@ -12,6 +12,7 @@
  */
 
 import { Movie as MovieIcon, Star, Tv as TvIcon, WatchLater } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -132,41 +133,49 @@ const RatingGridItem = React.memo<{
       {item.providers.length > 0 && (
         <div className="ratings-provider-badges">
           {item.providers.map(p => (
-            <div key={p.name} className="ratings-provider-badge" style={{ background: `${theme.background.default}dd` }}>
-              <img src={p.logo} alt={p.name} />
-            </div>
+            <Tooltip key={p.name} title={p.name} arrow>
+              <div className="ratings-provider-badge" style={{ background: `${theme.background.default}dd` }}>
+                <img src={p.logo} alt={p.name} />
+              </div>
+            </Tooltip>
           ))}
         </div>
       )}
 
       {item.rating > 0 && (
-        <div className="ratings-rating-badge">
-          <Star style={{ fontSize: 12, color: '#fbbf24' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{item.rating.toFixed(1)}</span>
-        </div>
+        <Tooltip title={`Bewertung: ${item.rating.toFixed(1)}/10`} arrow>
+          <div className="ratings-rating-badge">
+            <Star style={{ fontSize: 12, color: '#fbbf24' }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{item.rating.toFixed(1)}</span>
+          </div>
+        </Tooltip>
       )}
 
       {item.watchlist && (
-        <div
-          className="ratings-watchlist-badge"
-          style={{ top: item.rating > 0 ? 36 : 6, background: `${theme.status.info}dd` }}
-        >
-          <WatchLater style={{ fontSize: 10, color: '#fff' }} />
-        </div>
+        <Tooltip title="Auf deiner Watchlist" arrow>
+          <div
+            className="ratings-watchlist-badge"
+            style={{ top: item.rating > 0 ? 36 : 6, background: `${theme.status.info}dd` }}
+          >
+            <WatchLater style={{ fontSize: 10, color: '#fff' }} />
+          </div>
+        </Tooltip>
       )}
 
       {!item.isMovie && item.progress > 0 && (
-        <div className="ratings-progress-track">
-          <div
-            className="ratings-progress-fill"
-            style={{
-              width: `${item.progress}%`,
-              background: item.progress === 100
-                ? `linear-gradient(90deg, ${theme.status.success}, #10b981)`
-                : `linear-gradient(90deg, ${theme.primary}, #8b5cf6)`,
-            }}
-          />
-        </div>
+        <Tooltip title={`${item.progress}% gesehen`} arrow>
+          <div className="ratings-progress-track">
+            <div
+              className="ratings-progress-fill"
+              style={{
+                width: `${item.progress}%`,
+                background: item.progress === 100
+                  ? `linear-gradient(90deg, ${theme.status.success}, #10b981)`
+                  : `linear-gradient(90deg, ${theme.primary}, #8b5cf6)`,
+              }}
+            />
+          </div>
+        </Tooltip>
       )}
     </div>
 

@@ -1,3 +1,4 @@
+import { Tooltip } from '@mui/material';
 import type { SeriesEpisode } from './types';
 
 interface RewatchDialogProps {
@@ -71,57 +72,63 @@ export const RewatchDialog: React.FC<RewatchDialogProps> = ({
             flexDirection: 'column',
           }}
         >
-          <button
-            onClick={() => onRewatch(item)}
-            style={{
-              padding: '12px',
-              background: 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)',
-              border: 'none',
-              borderRadius: '8px',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
-          >
-            Nochmal gesehen ({(item.watchCount || 1) + 1}x)
-          </button>
+          <Tooltip title="Episode als erneut gesehen markieren" arrow>
+            <button
+              onClick={() => onRewatch(item)}
+              style={{
+                padding: '12px',
+                background: 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Nochmal gesehen ({(item.watchCount || 1) + 1}x)
+            </button>
+          </Tooltip>
 
-          <button
-            onClick={() => onUnwatch(item)}
-            style={{
-              padding: '12px',
-              background: 'rgba(255, 107, 107, 0.2)',
-              border: '1px solid rgba(255, 107, 107, 0.4)',
-              borderRadius: '8px',
-              color: '#ff6b6b',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
-          >
-            {(item.watchCount ?? 0) > 2
-              ? `Auf ${item.watchCount! - 1}x reduzieren`
-              : (item.watchCount ?? 0) === 2
-                ? 'Auf 1x reduzieren'
-                : 'Als nicht gesehen markieren'}
-          </button>
+          <Tooltip title="Watch-Count reduzieren" arrow>
+            <button
+              onClick={() => onUnwatch(item)}
+              style={{
+                padding: '12px',
+                background: 'rgba(255, 107, 107, 0.2)',
+                border: '1px solid rgba(255, 107, 107, 0.4)',
+                borderRadius: '8px',
+                color: '#ff6b6b',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              {(item.watchCount ?? 0) > 2
+                ? `Auf ${item.watchCount! - 1}x reduzieren`
+                : (item.watchCount ?? 0) === 2
+                  ? 'Auf 1x reduzieren'
+                  : 'Als nicht gesehen markieren'}
+            </button>
+          </Tooltip>
 
-          <button
-            onClick={onClose}
-            style={{
-              padding: '12px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
-          >
-            Abbrechen
-          </button>
+          <Tooltip title="Dialog schließen" arrow>
+            <button
+              onClick={onClose}
+              style={{
+                padding: '12px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Abbrechen
+            </button>
+          </Tooltip>
         </div>
       </div>
     </div>

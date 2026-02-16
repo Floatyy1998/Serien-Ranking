@@ -10,7 +10,7 @@ import {
   TrendingUp,
   Tv,
 } from '@mui/icons-material';
-import { Box, Collapse, IconButton, Paper, Typography } from '@mui/material';
+import { Box, Collapse, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
@@ -496,16 +496,18 @@ export const StatsGrid = () => {
           Deine Statistiken
         </Typography>
 
-        <IconButton
-          onClick={() => setExpanded(!expanded)}
-          size="small"
-          sx={{
-            color: colors.text.muted,
-            padding: '4px',
-          }}
-        >
-          {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
-        </IconButton>
+        <Tooltip title={expanded ? 'Weniger anzeigen' : 'Mehr anzeigen'} arrow>
+          <IconButton
+            onClick={() => setExpanded(!expanded)}
+            size="small"
+            sx={{
+              color: colors.text.muted,
+              padding: '4px',
+            }}
+          >
+            {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* Progress Bar - Full Width */}

@@ -13,6 +13,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
@@ -993,15 +994,17 @@ export const NewEpisodesPage = () => {
 
                                 <AnimatePresence mode="wait">
                                   {!hasAired ? (
-                                    <div style={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      padding: '8px',
-                                      background: currentTheme.background.surfaceHover,
-                                      borderRadius: '10px',
-                                    }}>
-                                      <Timer style={{ fontSize: '20px', color: currentTheme.text.muted }} />
-                                    </div>
+                                    <Tooltip title="Noch nicht ausgestrahlt" arrow>
+                                      <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        padding: '8px',
+                                        background: currentTheme.background.surfaceHover,
+                                        borderRadius: '10px',
+                                      }}>
+                                        <Timer style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+                                      </div>
+                                    </Tooltip>
                                   ) : isCompleting ? (
                                     <motion.div
                                       initial={{ scale: 0, rotate: -180 }}
@@ -1024,13 +1027,15 @@ export const NewEpisodesPage = () => {
                                         seasonNumber={episode.seasonNumber}
                                         episodeNumber={episode.episodeNumber}
                                       />
-                                      <div style={{
-                                        padding: '8px',
-                                        background: `${currentTheme.status.success}20`,
-                                        borderRadius: '10px',
-                                      }}>
-                                        <CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
-                                      </div>
+                                      <Tooltip title="Bereits gesehen" arrow>
+                                        <div style={{
+                                          padding: '8px',
+                                          background: `${currentTheme.status.success}20`,
+                                          borderRadius: '10px',
+                                        }}>
+                                          <CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
+                                        </div>
+                                      </Tooltip>
                                     </div>
                                   ) : (
                                     <motion.div
@@ -1042,13 +1047,15 @@ export const NewEpisodesPage = () => {
                                         seasonNumber={episode.seasonNumber}
                                         episodeNumber={episode.episodeNumber}
                                       />
-                                      <div style={{
-                                        padding: '8px',
-                                        background: `${currentTheme.status.success}20`,
-                                        borderRadius: '10px',
-                                      }}>
-                                        <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
-                                      </div>
+                                      <Tooltip title="Als gesehen markieren" arrow>
+                                        <div style={{
+                                          padding: '8px',
+                                          background: `${currentTheme.status.success}20`,
+                                          borderRadius: '10px',
+                                        }}>
+                                          <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
+                                        </div>
+                                      </Tooltip>
                                     </motion.div>
                                   )}
                                 </AnimatePresence>

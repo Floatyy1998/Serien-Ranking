@@ -54,6 +54,7 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
         borderRadius="12px"
         variant="glass"
         ariaLabel={label || 'Zurück'}
+        tooltip="Zurück"
         style={style}
       />
       <IconButton
@@ -75,6 +76,7 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
         borderRadius="10px"
         variant="glass"
         ariaLabel="Zur Startseite"
+        tooltip="Zur Startseite"
         style={style}
       />
     </div>

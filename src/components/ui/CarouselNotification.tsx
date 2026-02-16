@@ -6,6 +6,7 @@ import {
   Close, ChevronRight, Tv,
   PlaylistAdd, PlaylistRemove, Check,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Series } from '../../types/Series';
 import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
@@ -177,13 +178,15 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
             color: currentTheme.text.primary,
           }}
         >
-          <button
-            className="close-button"
-            onClick={handleDismissAll}
-            style={{ color: currentTheme.text.primary + '80' }}
-          >
-            <Close />
-          </button>
+          <Tooltip title="Alle schließen" arrow>
+            <button
+              className="close-button"
+              onClick={handleDismissAll}
+              style={{ color: currentTheme.text.primary + '80' }}
+            >
+              <Close />
+            </button>
+          </Tooltip>
 
           <div className="notification-content">
             <div className="notification-header">
@@ -210,57 +213,69 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
               <div className="action-buttons">
                 {!isActioned ? (
-                  <button
-                    className="watchlist-button"
-                    onClick={() => handleAction(currentSeries)}
-                    style={{
-                      backgroundColor: currentTheme.background.paper,
-                      color: variant === 'new-season' ? currentTheme.text.primary : color,
-                      border: `1px solid ${color}40`,
-                    }}
-                  >
-                    <ActionIcon />
-                    <span>{config.actionLabel}</span>
-                  </button>
+                  <Tooltip title={config.actionLabel} arrow>
+                    <button
+                      className="watchlist-button"
+                      onClick={() => handleAction(currentSeries)}
+                      style={{
+                        backgroundColor: currentTheme.background.paper,
+                        color: variant === 'new-season' ? currentTheme.text.primary : color,
+                        border: `1px solid ${color}40`,
+                      }}
+                    >
+                      <ActionIcon />
+                      <span>{config.actionLabel}</span>
+                    </button>
+                  </Tooltip>
                 ) : (
-                  <button
-                    className="watchlist-button added"
-                    disabled
-                    style={{
-                      backgroundColor: currentTheme.status.success + '20',
-                      color: currentTheme.status.success,
-                      border: `1px solid ${currentTheme.status.success}40`,
-                    }}
-                  >
-                    {variant === 'new-season' && <Check />}
-                    <span>{config.actionDoneLabel}</span>
-                  </button>
+                  <Tooltip title={config.actionDoneLabel} arrow>
+                    <span>
+                      <button
+                        className="watchlist-button added"
+                        disabled
+                        style={{
+                          backgroundColor: currentTheme.status.success + '20',
+                          color: currentTheme.status.success,
+                          border: `1px solid ${currentTheme.status.success}40`,
+                        }}
+                      >
+                        {variant === 'new-season' && <Check />}
+                        <span>{config.actionDoneLabel}</span>
+                      </button>
+                    </span>
+                  </Tooltip>
                 )}
 
-                <button
-                  className="view-button"
-                  onClick={() => handleNavigate(currentSeries)}
-                  style={{
-                    backgroundColor: currentTheme.primary,
-                    color: currentTheme.text.onPrimary,
-                  }}
-                >
-                  Ansehen
-                  <ChevronRight />
-                </button>
+                <Tooltip title="Serie ansehen" arrow>
+                  <button
+                    className="view-button"
+                    onClick={() => handleNavigate(currentSeries)}
+                    style={{
+                      backgroundColor: currentTheme.primary,
+                      color: currentTheme.text.onPrimary,
+                    }}
+                  >
+                    Ansehen
+                    <ChevronRight />
+                  </button>
+                </Tooltip>
               </div>
             </div>
 
             {series.length > 1 && (
               <div className="navigation-dots">
-                <button
-                  onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-                  disabled={currentIndex === 0}
-                  className="nav-button"
-                  style={{ color: currentTheme.text.primary + '60' }}
-                >
-                  ‹
-                </button>
+                <Tooltip title="Vorherige" arrow>
+                  <span>
+                    <button
+                      onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+                      disabled={currentIndex === 0}
+                      className="nav-button"
+                      style={{ color: currentTheme.text.primary + '60' }}
+                    >
+                      ‹
+                    </button>
+                  </span>
+                </Tooltip>
 
                 <div className="dots" ref={dotsContainerRef}>
                   {series.map((_, index) => (
@@ -275,14 +290,18 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   ))}
                 </div>
 
-                <button
-                  onClick={() => setCurrentIndex((i) => Math.min(series.length - 1, i + 1))}
-                  disabled={currentIndex === series.length - 1}
-                  className="nav-button"
-                  style={{ color: currentTheme.text.primary + '60' }}
-                >
-                  ›
-                </button>
+                <Tooltip title="Nächste" arrow>
+                  <span>
+                    <button
+                      onClick={() => setCurrentIndex((i) => Math.min(series.length - 1, i + 1))}
+                      disabled={currentIndex === series.length - 1}
+                      className="nav-button"
+                      style={{ color: currentTheme.text.primary + '60' }}
+                    >
+                      ›
+                    </button>
+                  </span>
+                </Tooltip>
               </div>
             )}
 

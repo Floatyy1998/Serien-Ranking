@@ -203,7 +203,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <IconButton icon={<Close style={{ fontSize: '20px' }} />} onClick={handleClose} size={36} variant="surface" />
+        <IconButton icon={<Close style={{ fontSize: '20px' }} />} onClick={handleClose} size={36} variant="surface" tooltip="Schließen" />
       </div>
 
       {/* Search Input */}
