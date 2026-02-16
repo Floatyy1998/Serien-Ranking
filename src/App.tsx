@@ -39,6 +39,16 @@ const PublicProfilePage = lazy(() =>
     default: m.PublicProfilePage,
   }))
 );
+const PrivacyPage = lazy(() =>
+  import('./pages/Privacy').then((m) => ({
+    default: m.PrivacyPage,
+  }))
+);
+const ImpressumPage = lazy(() =>
+  import('./pages/Impressum').then((m) => ({
+    default: m.ImpressumPage,
+  }))
+);
 
 // Loading component
 const PageLoader = () => (
@@ -492,6 +502,8 @@ function AppContent() {
                               }
                             />
                             <Route path="/public/:publicId" element={<PublicProfilePage />} />
+                            <Route path="/privacy" element={<PrivacyPage />} />
+                            <Route path="/impressum" element={<ImpressumPage />} />
                             <Route
                               path="/*"
                               element={
@@ -505,7 +517,6 @@ function AppContent() {
                                         </EmailVerificationBanner>
                                       );
                                     } else if (auth?.authStateResolved) {
-                                      // Wenn kein User da ist, zeige StartPage
                                       return <StartPage />;
                                     } else {
                                       // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
