@@ -375,11 +375,12 @@ export const NewEpisodesPage = () => {
       const currentCount = snapshot.val() || 0;
       await watchCountRef.set(currentCount + 1);
 
+      // Always update lastWatchedAt
+      const episodeBasePath = `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}`;
+      await firebase.database().ref(`${episodeBasePath}/lastWatchedAt`).set(new Date().toISOString());
+
       if (currentCount === 0) {
-        const firstWatchedRef = firebase.database().ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
-        );
-        await firstWatchedRef.set(new Date().toISOString());
+        await firebase.database().ref(`${episodeBasePath}/firstWatchedAt`).set(new Date().toISOString());
 
         const series = seriesList.find((s) => s.id === episode.seriesId);
         await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);

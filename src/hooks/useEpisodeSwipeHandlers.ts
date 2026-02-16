@@ -67,14 +67,13 @@ export const useEpisodeSwipeHandlers = () => {
         const currentCount = snapshot.val() || 0;
         await watchCountRef.set(currentCount + 1);
 
+        // Always update lastWatchedAt
+        const episodeBasePath = `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}`;
+        await firebase.database().ref(`${episodeBasePath}/lastWatchedAt`).set(new Date().toISOString());
+
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}/firstWatchedAt`
-            );
-          await firstWatchedRef.set(new Date().toISOString());
+          await firebase.database().ref(`${episodeBasePath}/firstWatchedAt`).set(new Date().toISOString());
 
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
           await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
@@ -149,14 +148,13 @@ export const useEpisodeSwipeHandlers = () => {
         const currentCount = snapshot.val() || 0;
         await watchCountRef.set(currentCount + 1);
 
+        // Always update lastWatchedAt
+        const episodeBasePath = `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+        await firebase.database().ref(`${episodeBasePath}/lastWatchedAt`).set(new Date().toISOString());
+
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`
-            );
-          await firstWatchedRef.set(new Date().toISOString());
+          await firebase.database().ref(`${episodeBasePath}/firstWatchedAt`).set(new Date().toISOString());
 
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
           await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
