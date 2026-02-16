@@ -633,6 +633,12 @@ export const EpisodeDiscussionPage = () => {
                 {getUnifiedEpisodeDate(episodeAirDate)}
               </span>
             )}
+            {localEpisode?.watched && (localEpisode as typeof localEpisode & { firstWatchedAt?: string }).firstWatchedAt && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Visibility style={{ fontSize: '18px', color: currentTheme.status.success }} />
+                {new Date((localEpisode as typeof localEpisode & { firstWatchedAt?: string }).firstWatchedAt!).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </span>
+            )}
             {episodeRuntime && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <PlayCircle style={{ fontSize: '18px', color: '#8b5cf6' }} />
@@ -690,6 +696,7 @@ export const EpisodeDiscussionPage = () => {
             )}
           </motion.button>
         )}
+
 
         <motion.button
           whileTap={{ scale: 0.95 }}
