@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout, ScrollToTop } from './components/layout';
+import { useAuth } from './App';
 import './styles/App.css';
 
 // Lazy load all pages for better code splitting
@@ -34,6 +35,8 @@ const HiddenSeriesPage = lazy(() => import('./pages/HiddenSeries').then((m) => (
 const ImpressumPage = lazy(() => import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage })));
 const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.PrivacyPage })));
 const DiscussionFeedPage = lazy(() => import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage })));
+const CountdownPage = lazy(() => import('./pages/Countdown').then((m) => ({ default: m.CountdownPage })));
+const OnboardingPage = lazy(() => import('./pages/Onboarding').then((m) => ({ default: m.OnboardingPage })));
 
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--theme-background, #000)' }}>
@@ -42,11 +45,22 @@ const PageLoader = () => (
 );
 
 export const MobileApp = () => {
+  const { onboardingComplete } = useAuth() || {};
+  const location = useLocation();
+
+  // Redirect to onboarding if not complete
+  if (onboardingComplete === false && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return (
       <div className="mobile-app">
         <ScrollToTop />
         <Suspense fallback={<PageLoader />}>
         <Routes>
+          {/* Onboarding - Full-screen, no Layout */}
+          <Route path="/onboarding" element={<OnboardingPage />} />
+
           {/* Main Pages */}
           <Route
             path="/"
@@ -260,6 +274,14 @@ export const MobileApp = () => {
           <Route
             path="/hidden-series"
             element={<HiddenSeriesPage />}
+          />
+          <Route
+            path="/countdowns"
+            element={
+              <Layout hideNav>
+                <CountdownPage />
+              </Layout>
+            }
           />
 
           {/* Legal Pages */}

@@ -18,9 +18,17 @@ export const GradientText: React.FC<GradientTextProps> = ({
   as: Tag = 'span',
   style,
 }) => {
-  const { currentTheme } = useTheme();
-  const fromColor = from || currentTheme.primary;
-  const toColor = to || currentTheme.text.primary;
+  // Defensive: useTheme optional — bei Navigation/Lazy Loading kann Context kurzzeitig fehlen
+  let currentTheme;
+  try {
+    currentTheme = useTheme()?.currentTheme;
+  } catch {
+    // Fallback wenn ThemeProvider noch nicht verfügbar (z.B. während Lazy Loading)
+    currentTheme = null;
+  }
+
+  const fromColor = from || currentTheme?.primary || '#00fed7';
+  const toColor = to || currentTheme?.text.primary || '#ffffff';
 
   return (
     <Tag

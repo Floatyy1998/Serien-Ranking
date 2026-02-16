@@ -68,11 +68,14 @@ export const AuthContext = createContext<{
   user: firebase.User | null;
   setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
   authStateResolved: boolean;
+  onboardingComplete: boolean;
+  setOnboardingComplete: React.Dispatch<React.SetStateAction<boolean>>;
 } | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
   const [, setFirebaseInitialized] = useState(false);
   const [authStateResolved, setAuthStateResolved] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(true);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
@@ -249,10 +252,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   createdAt: firebase.database.ServerValue.TIMESTAMP,
                   lastActive: firebase.database.ServerValue.TIMESTAMP,
                   isOnline: true,
-                  // username wird beim ersten Profil-Setup gesetzt
+                  onboardingComplete: false,
                 };
 
                 await userRef.set(userData);
+                setOnboardingComplete(false);
 
                 // 🚀 Cache User-Daten für Offline-Zugriff
                 await offlineFirebaseService.cacheData(
@@ -262,6 +266,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 );
               } else {
                 // Bestehender Benutzer - Online-Status aktualisieren
+                const existingData = snapshot.val();
+                setOnboardingComplete(existingData?.onboardingComplete !== false);
+
                 const updateData = {
                   lastActive: firebase.database.ServerValue.TIMESTAMP,
                   isOnline: true,
@@ -303,7 +310,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Provider trotzdem rendern damit initialData gesetzt werden kann
 
   return (
-    <AuthContext.Provider value={{ user, setUser, authStateResolved }}>
+    <AuthContext.Provider value={{ user, setUser, authStateResolved, onboardingComplete, setOnboardingComplete }}>
       {children}
     </AuthContext.Provider>
   );
