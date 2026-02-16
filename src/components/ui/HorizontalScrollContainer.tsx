@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
 interface HorizontalScrollContainerProps {
@@ -89,32 +90,34 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
     <div style={{ position: 'relative', ...style }} className={className}>
       {/* Left Arrow */}
       {shouldShowArrows && canScrollLeft && (
-        <button
-          onClick={() => scroll('left')}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 10,
-            background:
-              'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
-            border: 'none',
-            color: 'white',
-            cursor: 'pointer',
-            padding: '20px 8px 20px 4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '0 8px 8px 0',
-            backdropFilter: 'blur(4px)',
-            transition: 'opacity 0.2s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
-        >
-          <ChevronLeft style={{ fontSize: '28px' }} />
-        </button>
+        <Tooltip title="Nach links scrollen" arrow>
+          <button
+            onClick={() => scroll('left')}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              background:
+                'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              padding: '20px 8px 20px 4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '0 8px 8px 0',
+              backdropFilter: 'blur(4px)',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
+          >
+            <ChevronLeft style={{ fontSize: '28px' }} />
+          </button>
+        </Tooltip>
       )}
 
       {/* Scrollable Container */}
@@ -137,32 +140,34 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
 
       {/* Right Arrow */}
       {shouldShowArrows && canScrollRight && (
-        <button
-          onClick={() => scroll('right')}
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 10,
-            background:
-              'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
-            border: 'none',
-            color: 'white',
-            cursor: 'pointer',
-            padding: '20px 4px 20px 8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '8px 0 0 8px',
-            backdropFilter: 'blur(4px)',
-            transition: 'opacity 0.2s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
-        >
-          <ChevronRight style={{ fontSize: '28px' }} />
-        </button>
+        <Tooltip title="Nach rechts scrollen" arrow>
+          <button
+            onClick={() => scroll('right')}
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              background:
+                'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              padding: '20px 4px 20px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px 0 0 8px',
+              backdropFilter: 'blur(4px)',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
+          >
+            <ChevronRight style={{ fontSize: '28px' }} />
+          </button>
+        </Tooltip>
       )}
 
       {/* CSS for hiding scrollbar */}

@@ -1,3 +1,4 @@
+import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -8,6 +9,7 @@ interface IconButtonProps {
   borderRadius?: string;
   variant?: 'glass' | 'surface' | 'transparent';
   ariaLabel?: string;
+  tooltip?: string;
   style?: React.CSSProperties;
 }
 
@@ -18,6 +20,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   borderRadius = '50%',
   variant = 'surface',
   ariaLabel,
+  tooltip,
   style,
 }) => {
   const { currentTheme } = useTheme();
@@ -41,7 +44,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
     },
   };
 
-  return (
+  const button = (
     <button
       onClick={onClick}
       aria-label={ariaLabel}
@@ -63,4 +66,10 @@ export const IconButton: React.FC<IconButtonProps> = ({
       {icon}
     </button>
   );
+
+  if (tooltip) {
+    return <Tooltip title={tooltip} arrow>{button}</Tooltip>;
+  }
+
+  return button;
 };

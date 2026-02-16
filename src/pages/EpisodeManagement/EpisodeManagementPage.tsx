@@ -1,4 +1,5 @@
 import { ChatBubbleOutline, Check, DateRange, ExpandLess, ExpandMore, Refresh, Visibility } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -380,13 +381,17 @@ export const EpisodeManagementPage = () => {
 
       {/* Season Tabs with Swipe */}
       <div className="season-tabs">
-        <button
-          className="tab-nav-button"
-          onClick={handleSwipeRight}
-          disabled={selectedSeason === 0}
-        >
-          <ExpandLess />
-        </button>
+        <Tooltip title="Vorherige Staffel" arrow>
+          <span>
+            <button
+              className="tab-nav-button"
+              onClick={handleSwipeRight}
+              disabled={selectedSeason === 0}
+            >
+              <ExpandLess />
+            </button>
+          </span>
+        </Tooltip>
 
         <div className="tabs-container">
           {series.seasons.map((season, index) => (
@@ -404,13 +409,17 @@ export const EpisodeManagementPage = () => {
           ))}
         </div>
 
-        <button
-          className="tab-nav-button"
-          onClick={handleSwipeLeft}
-          disabled={!series || selectedSeason === series.seasons.length - 1}
-        >
-          <ExpandMore />
-        </button>
+        <Tooltip title="Nächste Staffel" arrow>
+          <span>
+            <button
+              className="tab-nav-button"
+              onClick={handleSwipeLeft}
+              disabled={!series || selectedSeason === series.seasons.length - 1}
+            >
+              <ExpandMore />
+            </button>
+          </span>
+        </Tooltip>
       </div>
 
       {/* Season Progress */}
@@ -472,33 +481,35 @@ export const EpisodeManagementPage = () => {
                 </div>
 
                 {/* Discussion Button */}
-                <button
-                  className="episode-discussion-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/episode/${id}/s/${currentSeason?.seasonNumber + 1}/e/${index + 1}`);
-                  }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: '8px',
-                    cursor: 'pointer',
-                    color: episodeDiscussionCounts[index + 1] ? currentTheme.primary : currentTheme.text.muted,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    borderRadius: '8px',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <ChatBubbleOutline style={{ fontSize: '18px' }} />
-                  {episodeDiscussionCounts[index + 1] > 0 && (
-                    <span style={{ fontSize: '12px', fontWeight: 600 }}>
-                      {episodeDiscussionCounts[index + 1]}
-                    </span>
-                  )}
-                </button>
+                <Tooltip title="Diskussion" arrow>
+                  <button
+                    className="episode-discussion-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/episode/${id}/s/${currentSeason?.seasonNumber + 1}/e/${index + 1}`);
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      padding: '8px',
+                      cursor: 'pointer',
+                      color: episodeDiscussionCounts[index + 1] ? currentTheme.primary : currentTheme.text.muted,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <ChatBubbleOutline style={{ fontSize: '18px' }} />
+                    {episodeDiscussionCounts[index + 1] > 0 && (
+                      <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                        {episodeDiscussionCounts[index + 1]}
+                      </span>
+                    )}
+                  </button>
+                </Tooltip>
 
                 <div className="episode-status">
                   {episode.watched ? (

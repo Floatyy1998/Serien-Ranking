@@ -1,3 +1,4 @@
+import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -468,83 +469,91 @@ export const PetWidget: React.FC = () => {
 
               {/* Mini Hunger-Bar unter dem Pet */}
               {pet.isAlive && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '2px',
-                    left: '8px',
-                    right: '8px',
-                    height: '3px',
-                    background: `${statusColor}30`,
-                    borderRadius: '2px',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <motion.div
-                    animate={{ width: `${hungerBarPercent}%` }}
-                    transition={{ duration: 0.5 }}
+                <Tooltip title={`Hunger: ${pet.hunger}%`} arrow>
+                  <div
                     style={{
-                      height: '100%',
-                      background: statusColor,
+                      position: 'absolute',
+                      bottom: '2px',
+                      left: '8px',
+                      right: '8px',
+                      height: '3px',
+                      background: `${statusColor}30`,
                       borderRadius: '2px',
+                      overflow: 'hidden',
                     }}
-                  />
-                </div>
+                  >
+                    <motion.div
+                      animate={{ width: `${hungerBarPercent}%` }}
+                      transition={{ duration: 0.5 }}
+                      style={{
+                        height: '100%',
+                        background: statusColor,
+                        borderRadius: '2px',
+                      }}
+                    />
+                  </div>
+                </Tooltip>
               )}
 
               {/* Healthy XP Bonus Indicator */}
               {healthy && (
-                <motion.div
-                  animate={{ opacity: [0.8, 1, 0.8] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                  style={{
-                    position: 'absolute',
-                    top: '-8px',
-                    left: '-4px',
-                    fontSize: '9px',
-                    fontWeight: 800,
-                    color: '#22c55e',
-                    background: currentTheme.background.card + 'ee',
-                    padding: '1px 4px',
-                    borderRadius: '6px',
-                    lineHeight: 1.3,
-                    letterSpacing: '-0.5px',
-                  }}
-                >
-                  +XP
-                </motion.div>
+                <Tooltip title="Gesundes Pet: +50% XP-Bonus aktiv" arrow>
+                  <motion.div
+                    animate={{ opacity: [0.8, 1, 0.8] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      left: '-4px',
+                      fontSize: '9px',
+                      fontWeight: 800,
+                      color: '#22c55e',
+                      background: currentTheme.background.card + 'ee',
+                      padding: '1px 4px',
+                      borderRadius: '6px',
+                      lineHeight: 1.3,
+                      letterSpacing: '-0.5px',
+                    }}
+                  >
+                    +XP
+                  </motion.div>
+                </Tooltip>
               )}
 
               {/* Tod-Indikator für tote Pets */}
               {!pet.isAlive && (
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  style={{
-                    position: 'absolute',
-                    top: '-8px',
-                    right: '-8px',
-                    fontSize: '18px',
-                  }}
-                >
-                  💀
-                </motion.div>
+                <Tooltip title="Pet ist verstorben – Tippe zum Wiederbeleben" arrow>
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      right: '-8px',
+                      fontSize: '18px',
+                    }}
+                  >
+                    💀
+                  </motion.div>
+                </Tooltip>
               )}
 
               {/* Feed Indicator wenn hungrig (nur lebende Pets) */}
               {pet.isAlive && pet.hunger > 70 && (
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  style={{
-                    position: 'absolute',
-                    top: '-5px',
-                    right: '-5px',
-                    fontSize: '14px',
-                  }}
-                >
-                  🍖
-                </motion.div>
+                <Tooltip title="Dein Pet hat Hunger!" arrow>
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    style={{
+                      position: 'absolute',
+                      top: '-5px',
+                      right: '-5px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    🍖
+                  </motion.div>
+                </Tooltip>
               )}
 
               {/* Mood Text unter dem Pet */}

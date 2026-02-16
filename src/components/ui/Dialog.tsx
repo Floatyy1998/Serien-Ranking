@@ -98,6 +98,7 @@ export const Dialog = memo(({
             onClick={onClose}
             variant="transparent"
             size={32}
+            tooltip="Schließen"
             style={{ marginLeft: 'auto', marginTop: '-4px', marginRight: '-4px' }}
           />
         </div>

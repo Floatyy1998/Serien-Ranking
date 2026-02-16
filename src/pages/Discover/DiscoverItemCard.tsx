@@ -1,4 +1,5 @@
 import { Add, Star } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { memo, useMemo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 
@@ -133,38 +134,40 @@ export const ItemCard = memo(({
         )}
 
         {!item.inList && (
-          <button
-            className="discover-add-btn"
-            onClick={(e) => onAddToList(item, e)}
-            disabled={addingItem === `${item.type}-${item.id}`}
-            style={{
-              position: 'absolute',
-              bottom: '10px',
-              right: '10px',
-              width: '34px',
-              height: '34px',
-              background: addingItem === `${item.type}-${item.id}`
-                ? 'rgba(255, 255, 255, 0.1)'
-                : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: 'none',
-              cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
-              transition: 'all 0.2s ease',
-              padding: 0,
-              boxShadow: `0 4px 12px ${currentTheme.primary}50`,
-            }}
-          >
-            <Add
+          <Tooltip title="Zur Liste hinzufügen" arrow>
+            <button
+              className="discover-add-btn"
+              onClick={(e) => onAddToList(item, e)}
+              disabled={addingItem === `${item.type}-${item.id}`}
               style={{
-                fontSize: '20px',
-                color: 'white',
-                opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
+                position: 'absolute',
+                bottom: '10px',
+                right: '10px',
+                width: '34px',
+                height: '34px',
+                background: addingItem === `${item.type}-${item.id}`
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: 'none',
+                cursor: addingItem === `${item.type}-${item.id}` ? 'wait' : 'pointer',
+                transition: 'all 0.2s ease',
+                padding: 0,
+                boxShadow: `0 4px 12px ${currentTheme.primary}50`,
               }}
-            />
-          </button>
+            >
+              <Add
+                style={{
+                  fontSize: '20px',
+                  color: 'white',
+                  opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
+                }}
+              />
+            </button>
+          </Tooltip>
         )}
       </div>
 

@@ -1,4 +1,5 @@
 import { Close, PlayArrow, PlayCircle, Theaters } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -177,30 +178,32 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
             }}
           >
             {/* Close Button */}
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                setSelectedVideo(null);
-              }}
-              style={{
-                position: 'fixed',
-                top: '16px',
-                right: '16px',
-                background: 'rgba(255,255,255,0.1)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: '#fff',
-                zIndex: 10001,
-              }}
-            >
-              <Close />
-            </button>
+            <Tooltip title="Schließen" arrow>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setSelectedVideo(null);
+                }}
+                style={{
+                  position: 'fixed',
+                  top: '16px',
+                  right: '16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '44px',
+                  height: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#fff',
+                  zIndex: 10001,
+                }}
+              >
+                <Close />
+              </button>
+            </Tooltip>
 
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}

@@ -19,6 +19,7 @@ import {
   Timeline,
   Tv as TvIcon,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -188,25 +189,27 @@ export const ActivityPage = () => {
             </GradientText>
           </div>
 
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setShowAddFriend(true)}
-            style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '14px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-              border: 'none',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: `0 4px 15px ${currentTheme.primary}40`,
-            }}
-          >
-            <PersonAdd style={{ fontSize: '22px' }} />
-          </motion.button>
+          <Tooltip title="Freund hinzufügen" arrow>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowAddFriend(true)}
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '14px',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                border: 'none',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: `0 4px 15px ${currentTheme.primary}40`,
+              }}
+            >
+              <PersonAdd style={{ fontSize: '22px' }} />
+            </motion.button>
+          </Tooltip>
         </motion.div>
       </header>
 

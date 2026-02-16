@@ -7,6 +7,7 @@ import {
   Person,
   Warning,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -165,23 +166,24 @@ export const DiscussionItem: React.FC<{
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
           {/* Spoiler Flag Button */}
           {!isOwner && !discussion.isSpoiler && currentUserId && !showSpoilerConfirm && (
-            <button
-              onClick={() => setShowSpoilerConfirm(true)}
-              title="Als Spoiler melden"
-              style={{
-                background: `${currentTheme.status.warning}15`,
-                border: 'none',
-                padding: '6px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                color: currentTheme.status.warning,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Flag style={{ fontSize: '18px' }} />
-            </button>
+            <Tooltip title="Als Spoiler melden" arrow>
+              <button
+                onClick={() => setShowSpoilerConfirm(true)}
+                style={{
+                  background: `${currentTheme.status.warning}15`,
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: currentTheme.status.warning,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Flag style={{ fontSize: '18px' }} />
+              </button>
+            </Tooltip>
           )}
 
           {/* Spoiler Confirm - inline */}
@@ -223,40 +225,42 @@ export const DiscussionItem: React.FC<{
           {/* Edit/Delete Buttons */}
           {isOwner && !showDeleteConfirm && !showSpoilerConfirm && (
             <>
-              <button
-                onClick={() => setIsEditing(true)}
-                title="Bearbeiten"
-                style={{
-                  background: `${currentTheme.primary}15`,
-                  border: 'none',
-                  padding: '6px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  color: currentTheme.primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Edit style={{ fontSize: '18px' }} />
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                title="Löschen"
-                style={{
-                  background: `${currentTheme.status.error}15`,
-                  border: 'none',
-                  padding: '6px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  color: currentTheme.status.error,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Delete style={{ fontSize: '18px' }} />
-              </button>
+              <Tooltip title="Bearbeiten" arrow>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    background: `${currentTheme.primary}15`,
+                    border: 'none',
+                    padding: '6px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: currentTheme.primary,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Edit style={{ fontSize: '18px' }} />
+                </button>
+              </Tooltip>
+              <Tooltip title="Löschen" arrow>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{
+                    background: `${currentTheme.status.error}15`,
+                    border: 'none',
+                    padding: '6px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: currentTheme.status.error,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Delete style={{ fontSize: '18px' }} />
+                </button>
+              </Tooltip>
             </>
           )}
 
@@ -484,27 +488,29 @@ export const DiscussionItem: React.FC<{
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${currentTheme.border.default}` }}>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={onToggleLike}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: isLiked ? `${currentTheme.status.error}15` : 'transparent',
-            border: `1px solid ${isLiked ? currentTheme.status.error + '40' : currentTheme.border.default}`,
-            padding: '8px 16px',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            color: isLiked ? '#e91e63' : currentTheme.text.muted,
-            fontSize: '14px',
-            fontWeight: 600,
-            transition: 'all 0.2s',
-          }}
-        >
-          {isLiked ? <Favorite style={{ fontSize: '20px' }} /> : <FavoriteBorder style={{ fontSize: '20px' }} />}
-          {discussion.likes.length > 0 ? discussion.likes.length : 'Gefällt mir'}
-        </motion.button>
+        <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onToggleLike}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: isLiked ? `${currentTheme.status.error}15` : 'transparent',
+              border: `1px solid ${isLiked ? currentTheme.status.error + '40' : currentTheme.border.default}`,
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              color: isLiked ? '#e91e63' : currentTheme.text.muted,
+              fontSize: '14px',
+              fontWeight: 600,
+              transition: 'all 0.2s',
+            }}
+          >
+            {isLiked ? <Favorite style={{ fontSize: '20px' }} /> : <FavoriteBorder style={{ fontSize: '20px' }} />}
+            {discussion.likes.length > 0 ? discussion.likes.length : 'Gefällt mir'}
+          </motion.button>
+        </Tooltip>
       </div>
 
       {/* Replies Section */}

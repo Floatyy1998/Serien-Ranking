@@ -1,4 +1,5 @@
 import { ZoomIn, ZoomOut } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -71,32 +72,33 @@ export const GalaxyMapTab = ({
         gap: '8px',
       }}>
         {[
-          { action: zoomIn, icon: <ZoomIn />, isText: false },
-          { action: zoomOut, icon: <ZoomOut />, isText: false },
-          { action: resetView, icon: 'Reset', isText: true },
+          { action: zoomIn, icon: <ZoomIn />, isText: false, tooltip: 'Hineinzoomen' },
+          { action: zoomOut, icon: <ZoomOut />, isText: false, tooltip: 'Herauszoomen' },
+          { action: resetView, icon: 'Reset', isText: true, tooltip: 'Ansicht zurücksetzen' },
         ].map((btn, idx) => (
-          <motion.button
-            key={idx}
-            onClick={btn.action}
-            whileTap={{ scale: 0.9 }}
-            style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '12px',
-              background: `linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 40, 0.9))`,
-              border: `1px solid rgba(255, 255, 255, 0.15)`,
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: btn.isText ? '11px' : 'inherit',
-              fontWeight: btn.isText ? 600 : 'normal',
-              boxShadow: `0 4px 12px rgba(0, 0, 0, 0.4)`,
-            }}
-          >
-            {btn.isText ? btn.icon : btn.icon}
-          </motion.button>
+          <Tooltip key={idx} title={btn.tooltip} arrow placement="left">
+            <motion.button
+              onClick={btn.action}
+              whileTap={{ scale: 0.9 }}
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                background: `linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 40, 0.9))`,
+                border: `1px solid rgba(255, 255, 255, 0.15)`,
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: btn.isText ? '11px' : 'inherit',
+                fontWeight: btn.isText ? 600 : 'normal',
+                boxShadow: `0 4px 12px rgba(0, 0, 0, 0.4)`,
+              }}
+            >
+              {btn.isText ? btn.icon : btn.icon}
+            </motion.button>
+          </Tooltip>
         ))}
       </div>
 

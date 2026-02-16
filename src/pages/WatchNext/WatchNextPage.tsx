@@ -8,6 +8,7 @@ import {
   PlayCircle,
   Repeat,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
@@ -351,48 +352,52 @@ export const WatchNextPage = () => {
 
           <div style={{ display: 'flex', gap: '8px' }}>
             {customOrderActive && (
+              <Tooltip title="Reihenfolge bearbeiten" arrow>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setEditModeActive(!editModeActive)}
+                  style={{
+                    padding: '10px',
+                    background: editModeActive
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                      : 'rgba(255, 255, 255, 0.05)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: editModeActive ? 'white' : currentTheme.text.primary,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: editModeActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                  }}
+                >
+                  <Edit />
+                </motion.button>
+              </Tooltip>
+            )}
+
+            <Tooltip title="Filter" arrow>
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setEditModeActive(!editModeActive)}
+                onClick={() => setShowFilter(!showFilter)}
                 style={{
                   padding: '10px',
-                  background: editModeActive
+                  background: showFilter
                     ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
                     : 'rgba(255, 255, 255, 0.05)',
                   border: 'none',
                   borderRadius: '12px',
-                  color: editModeActive ? 'white' : currentTheme.text.primary,
+                  color: showFilter ? 'white' : currentTheme.text.primary,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: editModeActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                  boxShadow: showFilter ? `0 4px 15px ${currentTheme.primary}40` : 'none',
                 }}
               >
-                <Edit />
+                <FilterList />
               </motion.button>
-            )}
-
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowFilter(!showFilter)}
-              style={{
-                padding: '10px',
-                background: showFilter
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                  : 'rgba(255, 255, 255, 0.05)',
-                border: 'none',
-                borderRadius: '12px',
-                color: showFilter ? 'white' : currentTheme.text.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: showFilter ? `0 4px 15px ${currentTheme.primary}40` : 'none',
-              }}
-            >
-              <FilterList />
-            </motion.button>
+            </Tooltip>
           </div>
         </div>
 

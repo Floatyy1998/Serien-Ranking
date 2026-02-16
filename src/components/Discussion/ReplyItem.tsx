@@ -7,6 +7,7 @@ import {
   Person,
   Warning,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -262,47 +263,50 @@ export const ReplyItem: React.FC<{
         {/* Actions */}
         {!isEditing && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              onClick={onToggleLike}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: isLiked ? `${currentTheme.status.error}15` : 'transparent',
-                border: 'none',
-                padding: '6px 10px',
-                borderRadius: '16px',
-                cursor: 'pointer',
-                color: isLiked ? '#e91e63' : currentTheme.text.muted,
-                fontSize: '12px',
-                fontWeight: 600,
-                transition: 'all 0.2s',
-              }}
-            >
-              {isLiked ? <Favorite style={{ fontSize: '16px' }} /> : <FavoriteBorder style={{ fontSize: '16px' }} />}
-              {reply.likes.length > 0 && reply.likes.length}
-            </button>
-
-            {/* Flag as Spoiler (non-owners only, if not already spoiler) */}
-            {!isOwner && !reply.isSpoiler && currentUserId && !showSpoilerConfirm && (
+            <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
               <button
-                onClick={() => setShowSpoilerConfirm(true)}
-                title="Als Spoiler melden"
+                onClick={onToggleLike}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  background: 'transparent',
+                  gap: '6px',
+                  background: isLiked ? `${currentTheme.status.error}15` : 'transparent',
                   border: 'none',
                   padding: '6px 10px',
                   borderRadius: '16px',
                   cursor: 'pointer',
-                  color: currentTheme.status.warning,
+                  color: isLiked ? '#e91e63' : currentTheme.text.muted,
+                  fontSize: '12px',
+                  fontWeight: 600,
                   transition: 'all 0.2s',
                 }}
               >
-                <Flag style={{ fontSize: '16px' }} />
+                {isLiked ? <Favorite style={{ fontSize: '16px' }} /> : <FavoriteBorder style={{ fontSize: '16px' }} />}
+                {reply.likes.length > 0 && reply.likes.length}
               </button>
+            </Tooltip>
+
+            {/* Flag as Spoiler (non-owners only, if not already spoiler) */}
+            {!isOwner && !reply.isSpoiler && currentUserId && !showSpoilerConfirm && (
+              <Tooltip title="Als Spoiler melden" arrow>
+                <button
+                  onClick={() => setShowSpoilerConfirm(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '6px 10px',
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    color: currentTheme.status.warning,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Flag style={{ fontSize: '16px' }} />
+                </button>
+              </Tooltip>
             )}
 
             {/* Spoiler Confirm - inline */}
@@ -343,46 +347,48 @@ export const ReplyItem: React.FC<{
 
             {/* Edit Button (owner only) */}
             {isOwner && !showDeleteConfirm && (
-              <button
-                onClick={() => setIsEditing(true)}
-                title="Bearbeiten"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: '6px 10px',
-                  borderRadius: '16px',
-                  cursor: 'pointer',
-                  color: currentTheme.text.muted,
-                  transition: 'all 0.2s',
-                }}
-              >
-                <Edit style={{ fontSize: '16px' }} />
-              </button>
+              <Tooltip title="Bearbeiten" arrow>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '6px 10px',
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    color: currentTheme.text.muted,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Edit style={{ fontSize: '16px' }} />
+                </button>
+              </Tooltip>
             )}
 
             {/* Delete Button (owner only) */}
             {isOwner && !showDeleteConfirm && (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                title="Löschen"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: '6px 10px',
-                  borderRadius: '16px',
-                  cursor: 'pointer',
-                  color: currentTheme.text.muted,
-                  transition: 'all 0.2s',
-                }}
-              >
-                <Delete style={{ fontSize: '16px' }} />
-              </button>
+              <Tooltip title="Löschen" arrow>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '6px 10px',
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    color: currentTheme.text.muted,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Delete style={{ fontSize: '16px' }} />
+                </button>
+              </Tooltip>
             )}
 
             {/* Delete Confirm - inline */}

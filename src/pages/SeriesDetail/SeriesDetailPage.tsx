@@ -11,6 +11,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { motion } from 'framer-motion';
@@ -445,35 +446,37 @@ export const SeriesDetailPage = memo(() => {
 
         {/* Add button for TMDB-only series */}
         {isReadOnlyTmdbSeries && (
-          <button
-            onClick={handleAddSeries}
-            disabled={isAdding}
-            style={{
-              position: 'absolute',
-              top: isMobile
-                ? 'calc(10px + env(safe-area-inset-top))'
-                : 'calc(20px + env(safe-area-inset-top))',
-              right: isMobile ? '10px' : '20px',
-              zIndex: 10,
-              background: isAdding
-                ? `${currentTheme.status.success}88`
-                : `${currentTheme.status.success}CC`,
-              backdropFilter: 'blur(10px)',
-              border: 'none',
-              color: 'white',
-              fontSize: '24px',
-              cursor: isAdding ? 'not-allowed' : 'pointer',
-              padding: '8px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-            }}
-          >
-            {isAdding ? '...' : '+'}
-          </button>
+          <Tooltip title="Zur Sammlung hinzufügen" arrow>
+            <button
+              onClick={handleAddSeries}
+              disabled={isAdding}
+              style={{
+                position: 'absolute',
+                top: isMobile
+                  ? 'calc(10px + env(safe-area-inset-top))'
+                  : 'calc(20px + env(safe-area-inset-top))',
+                right: isMobile ? '10px' : '20px',
+                zIndex: 10,
+                background: isAdding
+                  ? `${currentTheme.status.success}88`
+                  : `${currentTheme.status.success}CC`,
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                color: 'white',
+                fontSize: '24px',
+                cursor: isAdding ? 'not-allowed' : 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+              }}
+            >
+              {isAdding ? '...' : '+'}
+            </button>
+          </Tooltip>
         )}
 
         {/* Series Info Overlay */}
@@ -913,61 +916,65 @@ export const SeriesDetailPage = memo(() => {
             Bewerten
           </motion.button>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={handleWatchlistToggle}
-            style={{
-              padding: isMobile ? '10px' : '12px',
-              background: series.watchlist
-                ? 'linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 180, 216, 0.2) 100%)'
-                : 'rgba(255, 255, 255, 0.05)',
-              border: series.watchlist
-                ? '1px solid rgba(0, 212, 170, 0.4)'
-                : '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              borderRadius: isMobile ? '10px' : '12px',
-              fontSize: isMobile ? '13px' : '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {series.watchlist ? (
-              <BookmarkRemove style={{ fontSize: isMobile ? '18px' : '24px' }} />
-            ) : (
-              <BookmarkAdd style={{ fontSize: isMobile ? '18px' : '24px' }} />
-            )}
-          </motion.button>
+          <Tooltip title={series.watchlist ? 'Von Watchlist entfernen' : 'Zur Watchlist'} arrow>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleWatchlistToggle}
+              style={{
+                padding: isMobile ? '10px' : '12px',
+                background: series.watchlist
+                  ? 'linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 180, 216, 0.2) 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                border: series.watchlist
+                  ? '1px solid rgba(0, 212, 170, 0.4)'
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                borderRadius: isMobile ? '10px' : '12px',
+                fontSize: isMobile ? '13px' : '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {series.watchlist ? (
+                <BookmarkRemove style={{ fontSize: isMobile ? '18px' : '24px' }} />
+              ) : (
+                <BookmarkAdd style={{ fontSize: isMobile ? '18px' : '24px' }} />
+              )}
+            </motion.button>
+          </Tooltip>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={handleHideToggle}
-            style={{
-              padding: isMobile ? '10px' : '12px',
-              background: series.hidden
-                ? 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.2) 100%)'
-                : 'rgba(255, 255, 255, 0.05)',
-              border: series.hidden
-                ? '1px solid rgba(255, 152, 0, 0.4)'
-                : '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              borderRadius: isMobile ? '10px' : '12px',
-              fontSize: isMobile ? '13px' : '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {series.hidden ? (
-              <Visibility style={{ fontSize: isMobile ? '18px' : '24px' }} />
-            ) : (
-              <VisibilityOff style={{ fontSize: isMobile ? '18px' : '24px' }} />
-            )}
-          </motion.button>
+          <Tooltip title={series.hidden ? 'Serie einblenden' : 'Serie ausblenden'} arrow>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleHideToggle}
+              style={{
+                padding: isMobile ? '10px' : '12px',
+                background: series.hidden
+                  ? 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.2) 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                border: series.hidden
+                  ? '1px solid rgba(255, 152, 0, 0.4)'
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                borderRadius: isMobile ? '10px' : '12px',
+                fontSize: isMobile ? '13px' : '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {series.hidden ? (
+                <Visibility style={{ fontSize: isMobile ? '18px' : '24px' }} />
+              ) : (
+                <VisibilityOff style={{ fontSize: isMobile ? '18px' : '24px' }} />
+              )}
+            </motion.button>
+          </Tooltip>
         </div>
       )}
 

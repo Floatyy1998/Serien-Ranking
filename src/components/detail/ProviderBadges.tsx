@@ -1,3 +1,4 @@
+import { Tooltip } from '@mui/material';
 import React from 'react';
 
 interface Provider {
@@ -270,38 +271,38 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
         // Wenn Deep Link vorhanden, als klickbares Element rendern
         if (deepLink) {
           return (
-            <a
-              key={providerId}
-              href={deepLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={`${providerName} öffnen`}
-              style={{
-                ...badgeStyle,
-                textDecoration: 'none',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              {badgeContent}
-            </a>
+            <Tooltip key={providerId} title={`${providerName} öffnen`} arrow>
+              <a
+                href={deepLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  ...badgeStyle,
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {badgeContent}
+              </a>
+            </Tooltip>
           );
         }
 
         return (
-          <div
-            key={providerId}
-            style={badgeStyle}
-            title={providerName}
-          >
-            {badgeContent}
-          </div>
+          <Tooltip key={providerId} title={providerName} arrow>
+            <div
+              style={badgeStyle}
+            >
+              {badgeContent}
+            </div>
+          </Tooltip>
         );
       })}
 
