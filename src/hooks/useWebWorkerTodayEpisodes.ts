@@ -13,6 +13,7 @@ interface TodayEpisode {
   episodeId: string;
   episodeName: string;
   watched: boolean;
+  runtime: number;
 }
 
 export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {

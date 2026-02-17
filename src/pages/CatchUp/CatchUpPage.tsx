@@ -69,6 +69,8 @@ export const CatchUpPage: React.FC = () => {
       let currentEpisode = 1;
       let lastWatchedDate: string | undefined;
       let foundUnwatched = false;
+      let remainingMinutes = 0;
+      const seriesRuntime = series.episodeRuntime || 45;
 
       series.seasons.forEach((season) => {
         if (!season.episodes) return;
@@ -88,10 +90,13 @@ export const CatchUpPage: React.FC = () => {
                   lastWatchedDate = watchDate;
                 }
               }
-            } else if (!foundUnwatched) {
-              currentSeason = season.seasonNumber || season.season_number || 1;
-              currentEpisode = episode.episode_number || epIndex + 1;
-              foundUnwatched = true;
+            } else {
+              remainingMinutes += episode.runtime || seriesRuntime;
+              if (!foundUnwatched) {
+                currentSeason = season.seasonNumber || season.season_number || 1;
+                currentEpisode = episode.episode_number || epIndex + 1;
+                foundUnwatched = true;
+              }
             }
           }
         });
@@ -100,8 +105,6 @@ export const CatchUpPage: React.FC = () => {
       const remainingEpisodes = totalEpisodes - watchedEpisodes;
 
       if (remainingEpisodes > 0 && totalEpisodes > 0) {
-        const runtime = series.episodeRuntime || 45;
-        const remainingMinutes = remainingEpisodes * runtime;
         const progress = (watchedEpisodes / totalEpisodes) * 100;
 
         data.push({

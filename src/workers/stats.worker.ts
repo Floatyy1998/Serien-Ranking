@@ -8,6 +8,7 @@ interface WorkerEpisode {
   watchCount?: number;
   firstWatchedAt?: string;
   lastWatchedAt?: string;
+  runtime?: number;
   episode_number?: number;
 }
 
@@ -22,10 +23,12 @@ interface WorkerSeries {
   nmr?: number;
   title: string;
   watchlist?: boolean;
+  episodeRuntime?: number;
   seasons?: WorkerSeason[];
   poster?: string | { poster?: string };
   genre?: { genres?: string[] };
   provider?: { provider?: { id: number; name: string; logo: string }[] };
+  nextEpisode?: { nextEpisodes?: { id: number; seasonNumber: number; number: number; runtime?: number }[] };
 }
 
 interface WorkerMovie {
@@ -48,6 +51,7 @@ interface WorkerProcessedEpisode {
   watched: boolean | number | string;
   seriesGenre: string[] | undefined;
   seriesProviders: string[] | undefined;
+  runtime: number;
 }
 
 self.addEventListener('message', (event) => {
@@ -208,14 +212,23 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
         
         if (episodeDate.getTime() === todayTime) {
           const actualSeasonIndex = series.seasons?.findIndex((s: WorkerSeason) => s.seasonNumber === season.seasonNumber) ?? 0;
-          
+          const seasonNum = (season.seasonNumber ?? 0) + 1;
+          const epNum = k + 1;
+          type NextEp = { id: number; seasonNumber: number; number: number; runtime?: number };
+          const nextEpisodesArr: NextEp[] = Array.isArray(series.nextEpisode?.nextEpisodes)
+            ? series.nextEpisode.nextEpisodes
+            : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) : [];
+          const nextEp = nextEpisodesArr.find(
+            (ne) => ne.id === episode.id || (ne.seasonNumber === season.seasonNumber && ne.number === epNum)
+          );
+
           episodes.push({
             seriesId: series.id,
             seriesNmr: series.nmr,
             seriesTitle: series.title,
             poster: getImageUrl(series.poster),
-            seasonNumber: (season.seasonNumber ?? 0) + 1,
-            episodeNumber: k + 1,
+            seasonNumber: seasonNum,
+            episodeNumber: epNum,
             seasonIndex: actualSeasonIndex,
             episodeIndex: k,
             episodeId: episode.id,
@@ -223,6 +236,7 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             watched: episode.watched,
             seriesGenre: series.genre?.genres,
             seriesProviders: series.provider?.provider?.map((p: { id: number; name: string; logo: string }) => p.name),
+            runtime: episode.runtime || nextEp?.runtime || series.episodeRuntime || 45,
           });
         }
       }

@@ -78,6 +78,7 @@ interface UpcomingEpisode {
   airDate: Date;
   daysUntil: number;
   watched: boolean;
+  episodeRuntime: number;
 }
 
 export const NewEpisodesPage = () => {
@@ -183,6 +184,16 @@ export const NewEpisodesPage = () => {
               (episodeDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
             );
 
+            // Echte Episode-Runtime aus nextEpisodes nachschlagen
+            const seasonNum = (season.seasonNumber ?? seasonIndex) + 1;
+            const epNum = episodeIndex + 1;
+            const nextEpisodesArr = Array.isArray(series.nextEpisode?.nextEpisodes)
+              ? series.nextEpisode.nextEpisodes
+              : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : [];
+            const nextEp = nextEpisodesArr.find(
+              (ne) => ne.id === episode.id || (ne.seasonNumber === seasonNum - 1 && ne.number === epNum)
+            );
+
             episodes.push({
               seriesId: series.id,
               seriesName: series.title || '',
@@ -191,11 +202,12 @@ export const NewEpisodesPage = () => {
               seasonIndex,
               episodeIndex,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
-              episodeNumber: episodeIndex + 1,
-              seasonNumber: (season.seasonNumber ?? seasonIndex) + 1,
+              episodeNumber: epNum,
+              seasonNumber: seasonNum,
               airDate: episodeDate,
               daysUntil,
               watched: !!episode.watched,
+              episodeRuntime: nextEp?.runtime || series.episodeRuntime || 45,
             });
           }
         });
@@ -394,7 +406,7 @@ export const NewEpisodesPage = () => {
           episode.seasonNumber,
           episode.episodeNumber,
           episode.episodeName,
-          series?.episodeRuntime || 45,
+          episode.episodeRuntime,
           false,
           1,
           series?.genre?.genres,
@@ -473,7 +485,7 @@ export const NewEpisodesPage = () => {
             episode.seasonNumber,
             episode.episodeNumber,
             episode.episodeName,
-            series?.episodeRuntime || 45,
+            episode.episodeRuntime,
             false,
             1,
             series?.genre?.genres,

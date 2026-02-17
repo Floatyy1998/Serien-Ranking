@@ -13,6 +13,7 @@ export interface NextEpisode {
   episodeNumber: number;
   episodeName: string;
   airDate?: string;
+  runtime?: number;
   isRewatch?: boolean;
   currentWatchCount?: number;
   targetWatchCount?: number;
@@ -68,6 +69,13 @@ export const useWatchNextEpisodes = (
               (s) => s.seasonNumber === rewatchEpisode.seasonNumber
             );
             if (seasonIndex !== -1) {
+              const ep = seasonsArray[seasonIndex]?.episodes?.[rewatchEpisode.episodeIndex];
+              const rwNextEpisodesArr = Array.isArray(series.nextEpisode?.nextEpisodes)
+                ? series.nextEpisode.nextEpisodes
+                : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : [];
+              const rwNextEp = rwNextEpisodesArr.find(
+                (ne) => ne.id === rewatchEpisode.id || (ne.seasonNumber === rewatchEpisode.seasonNumber && ne.number === rewatchEpisode.episodeIndex + 1)
+              );
               rewatches.push({
                 seriesId: series.id,
                 seriesTitle: series.title,
@@ -78,6 +86,7 @@ export const useWatchNextEpisodes = (
                 episodeNumber: rewatchEpisode.episodeIndex + 1,
                 episodeName: rewatchEpisode.name || `Episode ${rewatchEpisode.episodeIndex + 1}`,
                 airDate: rewatchEpisode.air_date,
+                runtime: ep?.runtime || rwNextEp?.runtime || series.episodeRuntime || 45,
                 isRewatch: true,
                 currentWatchCount: rewatchEpisode.currentWatchCount,
                 targetWatchCount: rewatchEpisode.targetWatchCount,
@@ -106,6 +115,12 @@ export const useWatchNextEpisodes = (
             if (!episode.air_date) continue; // Skip episodes without air date
             const airDate = new Date(episode.air_date);
             if (airDate > today) continue; // Skip future episodes
+            const nextEpisodesArr = Array.isArray(series.nextEpisode?.nextEpisodes)
+              ? series.nextEpisode.nextEpisodes
+              : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : [];
+            const nextEp = nextEpisodesArr.find(
+              (ne) => ne.id === episode.id || (ne.seasonNumber === season.seasonNumber && ne.number === episodeIndex + 1)
+            );
             episodes.push({
               seriesId: series.id,
               seriesTitle: series.title,
@@ -116,6 +131,7 @@ export const useWatchNextEpisodes = (
               episodeNumber: episodeIndex + 1,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
               airDate: episode.air_date,
+              runtime: episode.runtime || nextEp?.runtime || series.episodeRuntime || 45,
             });
             foundUnwatched = true;
             break; // Only first unwatched per series

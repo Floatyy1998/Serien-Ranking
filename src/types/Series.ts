@@ -83,6 +83,7 @@ export interface Series {
       watchCount?: number;
       firstWatchedAt?: string;
       lastWatchedAt?: string;
+      runtime?: number; // Episodenlänge in Minuten (von TVDB)
       episode_number?: number; // TMDB format
       airDate?: string; // Alternative date format
       firstAired?: string; // Another alternative date format

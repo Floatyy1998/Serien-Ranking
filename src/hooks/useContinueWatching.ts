@@ -119,7 +119,12 @@ export const useContinueWatching = () => {
                   lastWatchedAt: lastWatchedAt || '1900-01-01',
                   genre: series.genre,
                   provider: series.provider,  // Für Wrapped-Statistiken
-                  episodeRuntime: series.episodeRuntime,
+                  episodeRuntime: episode.runtime || (Array.isArray(series.nextEpisode?.nextEpisodes)
+                    ? series.nextEpisode.nextEpisodes
+                    : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : []
+                  ).find(
+                    (ne) => ne.id === episode.id || (ne.seasonNumber === (season.seasonNumber ?? 0) && ne.number === k + 1)
+                  )?.runtime || series.episodeRuntime,
                 });
                 foundNext = true;
                 break;

@@ -247,7 +247,7 @@ export const EpisodeDiscussionPage = () => {
           Number(seasonNumber),
           Number(episodeNumber),
           localEpisode.name,
-          series.episodeRuntime || 45,
+          tvdbEpisode?.runtime || tmdbDetails?.runtime || series.episodeRuntime || 45,
           false,
           1,
           series.genre?.genres,
