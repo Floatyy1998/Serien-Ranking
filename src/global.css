@@ -155,6 +155,12 @@ textarea:focus-visible {
   box-shadow: none !important;
 }
 
+/* Inline-styled inputs (e.g. search) that set their own outline: none — skip global outline */
+input[style*="outline"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Skip navigation link */
 .skip-to-content {
   position: absolute;
