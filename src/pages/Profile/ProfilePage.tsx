@@ -25,6 +25,7 @@ import {
   Group,
   Pets,
   History,
+  Leaderboard,
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -179,6 +180,7 @@ export const ProfilePage = () => {
   ];
 
   const secondaryMenuItems = [
+    { label: 'Rangliste', icon: Leaderboard, color: '#f59e0b', path: '/leaderboard' },
     { label: 'Statistiken', icon: TrendingUp, color: currentTheme.primary, path: '/stats' },
     { label: 'Verlauf', icon: History, color: currentTheme.status.success, path: '/recently-watched' },
     {
