@@ -289,7 +289,12 @@ export const SeriesDetailPage = memo(() => {
         seasonNumber,
         episodeIndex + 1,
         episode.name,
-        series.episodeRuntime || 45,
+        (Array.isArray(series.nextEpisode?.nextEpisodes)
+          ? series.nextEpisode.nextEpisodes
+          : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : []
+        ).find(
+          (ne) => ne.id === episode.id || (ne.seasonNumber === (series.seasons?.[seasonIndex]?.seasonNumber || 0) && ne.number === episodeIndex + 1)
+        )?.runtime || series.episodeRuntime || 45,
         true, // isRewatch
         newWatchCount,
         series.genre?.genres,

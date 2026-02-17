@@ -23,8 +23,10 @@ export const CatchUpCard: React.FC = () => {
     seriesList.forEach((series) => {
       if (!series.seasons || series.seasons.length === 0) return;
 
-      let seriesTotal = 0;
-      let seriesWatched = 0;
+      let hasUnwatched = false;
+      let seriesRemainingEpisodes = 0;
+      let seriesRemainingMinutes = 0;
+      const seriesRuntime = series.episodeRuntime || 45;
 
       series.seasons.forEach((season) => {
         if (!season.episodes) return;
@@ -32,18 +34,18 @@ export const CatchUpCard: React.FC = () => {
           const airDate = episode.air_date || episode.airDate || episode.firstAired;
           if (!airDate) return; // Skip episodes without air date
           const hasAired = new Date(airDate) <= new Date();
-          if (hasAired) {
-            seriesTotal++;
-            if (episode.watched) seriesWatched++;
+          if (hasAired && !episode.watched) {
+            hasUnwatched = true;
+            seriesRemainingEpisodes++;
+            seriesRemainingMinutes += episode.runtime || seriesRuntime;
           }
         });
       });
 
-      const remaining = seriesTotal - seriesWatched;
-      if (remaining > 0 && seriesTotal > 0) {
+      if (hasUnwatched) {
         seriesCount++;
-        totalEpisodes += remaining;
-        totalMinutes += remaining * (series.episodeRuntime || 45);
+        totalEpisodes += seriesRemainingEpisodes;
+        totalMinutes += seriesRemainingMinutes;
       }
     });
 

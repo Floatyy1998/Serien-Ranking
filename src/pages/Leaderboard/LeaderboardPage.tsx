@@ -24,7 +24,7 @@ const CATEGORIES: {
 }[] = [
   { id: 'episodesThisMonth', label: 'Episoden', icon: <PlayCircle sx={{ fontSize: 18 }} />, unit: 'Ep.' },
   { id: 'moviesThisMonth', label: 'Filme', icon: <Movie sx={{ fontSize: 18 }} />, unit: 'Filme' },
-  { id: 'watchtimeThisMonth', label: 'Watchtime', icon: <Timer sx={{ fontSize: 18 }} />, unit: 'Min.' },
+  { id: 'watchtimeThisMonth', label: 'Watchtime', icon: <Timer sx={{ fontSize: 18 }} />, unit: '' },
   { id: 'streakThisMonth', label: 'Monats-Streak', icon: <LocalFireDepartment sx={{ fontSize: 18 }} />, unit: 'Tage' },
   { id: 'streakAllTime', label: 'Längste Streak', icon: <EmojiEvents sx={{ fontSize: 18 }} />, unit: 'Tage' },
 ];

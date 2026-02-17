@@ -65,7 +65,7 @@ export const StatsPage = () => {
 
     seriesList.forEach((series) => {
       if (!series || series.nmr === undefined || series.nmr === null) return;
-      const runtime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || 45;
 
       let seriesTotal = 0;
       let seriesWatched = 0;
@@ -89,7 +89,7 @@ export const StatsPage = () => {
               watchedEpisodes++;
               seriesWatched++;
               const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-              seriesMinutes += runtime * count;
+              seriesMinutes += (ep.runtime || seriesRuntime) * count;
             }
           }
         });

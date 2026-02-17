@@ -45,7 +45,7 @@ export async function updateLeaderboardStats(
   }
 ): Promise<void> {
   try {
-    const ref = firebase.database().ref(`users/${userId}/leaderboardStats`);
+    const ref = firebase.database().ref(`${userId}/leaderboardStats`);
     const snapshot = await ref.once('value');
     const current: LeaderboardStats = snapshot.val() || getDefaultStats();
     const currentMonth = getCurrentMonthKey();
@@ -117,7 +117,7 @@ export async function fetchLeaderboardData(
       try {
         const snapshot = await firebase
           .database()
-          .ref(`users/${uid}/leaderboardStats`)
+          .ref(`${uid}/leaderboardStats`)
           .once('value');
         const stats: LeaderboardStats | null = snapshot.val();
 

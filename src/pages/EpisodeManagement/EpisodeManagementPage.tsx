@@ -16,6 +16,18 @@ import { Series } from '../../types/Series';
 import { PageHeader } from '../../components/ui';
 import './EpisodeManagementPage.css';
 
+// Versuche echte Episode-Runtime zu holen: 1. direkt gespeichert, 2. aus nextEpisodes, 3. Serie-Default
+function getEpisodeRuntime(series: Series, episode: Series['seasons'][number]['episodes'][number], seasonNum: number, episodeNum: number): number {
+  if (episode.runtime) return episode.runtime;
+  const nextEpisodesArr = Array.isArray(series.nextEpisode?.nextEpisodes)
+    ? series.nextEpisode.nextEpisodes
+    : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : [];
+  const nextEp = nextEpisodesArr.find(
+    (ne) => ne.id === episode.id || (ne.seasonNumber === seasonNum - 1 && ne.number === episodeNum)
+  );
+  return nextEp?.runtime || series.episodeRuntime || 45;
+}
+
 export const EpisodeManagementPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -210,7 +222,7 @@ export const EpisodeManagementPage = () => {
           season.seasonNumber + 1,
           episodeIndex + 1,
           episode.name,
-          series.episodeRuntime || 45,
+          getEpisodeRuntime(series, episode, season.seasonNumber + 1, episodeIndex + 1),
           false, // isRewatch
           newWatchCount,
           series.genre?.genres,
@@ -236,7 +248,7 @@ export const EpisodeManagementPage = () => {
           season.seasonNumber + 1,
           episodeIndex + 1,
           episode.name,
-          series.episodeRuntime || 45,
+          getEpisodeRuntime(series, episode, season.seasonNumber + 1, episodeIndex + 1),
           true, // isRewatch
           newWatchCount,
           series.genre?.genres,
@@ -330,7 +342,7 @@ export const EpisodeManagementPage = () => {
             season.seasonNumber + 1,
             epIndex + 1,
             ep.name,
-            series.episodeRuntime || 45,
+            getEpisodeRuntime(series, ep, season.seasonNumber + 1, epIndex + 1),
             false,
             1,
             series.genre?.genres,

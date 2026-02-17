@@ -74,7 +74,7 @@ export const ProfilePage = () => {
 
     seriesList.forEach((series) => {
       if (!series || series.nmr === undefined || series.nmr === null) return;
-      const runtime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || 45;
 
       if (series.seasons) {
         series.seasons.forEach((season) => {
@@ -89,19 +89,20 @@ export const ProfilePage = () => {
               );
 
               if (isWatched) {
+                const epRuntime = episode.runtime || seriesRuntime;
                 if (episode.air_date) {
                   const airDate = new Date(episode.air_date);
                   if (airDate <= today) {
                     watchedEpisodes++;
                     const watchCount =
                       episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
-                    totalMinutesWatched += runtime * watchCount;
+                    totalMinutesWatched += epRuntime * watchCount;
                   }
                 } else {
                   watchedEpisodes++;
                   const watchCount =
                     episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
-                  totalMinutesWatched += runtime * watchCount;
+                  totalMinutesWatched += epRuntime * watchCount;
                 }
               }
             });

@@ -279,7 +279,7 @@ export const WatchNextPage = () => {
           episode.seasonIndex + 1, // seasonNumber (1-basiert)
           episode.episodeIndex + 1, // episodeNumber (1-basiert)
           episode.episodeName,
-          series.episodeRuntime || 45,
+          episode.runtime || series.episodeRuntime || 45,
           episode.isRewatch || false,
           (episode.currentWatchCount || 0) + 1,
           series.genre?.genres,

@@ -10,6 +10,7 @@ import type { Series } from '../../types/Series';
 interface StatsEpisode {
   watched: boolean;
   watchCount?: number;
+  runtime?: number;
 }
 
 interface StatsSeason {
@@ -87,7 +88,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       const ratingStr = calculateOverallRating(item as unknown as Series);
       const rating = parseFloat(ratingStr);
 
-      const runtime = item.episodeRuntime || item.runtime || 0;
+      const seriesRuntime = item.episodeRuntime || item.runtime || 0;
 
       // Watchtime und gesehene Episoden für ALLE Serien berechnen (inkl. Rewatches)
       episodesWatched +=
@@ -109,7 +110,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
             (season.episodes?.reduce((episodeTime: number, episode: StatsEpisode) => {
               if (episode.watched) {
                 return (
-                  episodeTime + (episode.watchCount || 1) * runtime
+                  episodeTime + (episode.watchCount || 1) * (episode.runtime || seriesRuntime)
                 );
               }
               return episodeTime;

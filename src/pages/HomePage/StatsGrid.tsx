@@ -216,7 +216,7 @@ export const StatsGrid = () => {
     seriesList.forEach((series) => {
       // Allow nmr: 0 as valid (only skip if undefined/null)
       if (!series || series.nmr === undefined || series.nmr === null) return;
-      const runtime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || 45;
 
       series.seasons?.forEach((season) => {
         season.episodes?.forEach((ep) => {
@@ -230,17 +230,16 @@ export const StatsGrid = () => {
           );
 
           if (isWatched) {
+            const epRuntime = ep.runtime || seriesRuntime;
             if (ep.air_date) {
               const airDate = new Date(ep.air_date);
               if (airDate <= today) {
-                // Count rewatches for time calculation
                 const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-                seriesMinutesWatched += runtime * count;
+                seriesMinutesWatched += epRuntime * count;
               }
             } else {
-              // No air_date means it's probably an old episode that's already aired
               const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-              seriesMinutesWatched += runtime * count;
+              seriesMinutesWatched += epRuntime * count;
             }
           }
         });
