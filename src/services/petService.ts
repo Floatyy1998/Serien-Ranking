@@ -616,6 +616,69 @@ class PetService {
     }
   }
 
+  // Streak Shield: Pet opfert XP um die Watch Streak zu retten
+  async activateStreakShield(userId: string, petId: string): Promise<{
+    success: boolean;
+    error?: string;
+    newLevel?: number;
+    newExperience?: number;
+  }> {
+    try {
+      const pet = await this.getUserPet(userId, petId);
+      if (!pet) return { success: false, error: 'Pet nicht gefunden' };
+      if (!pet.isAlive) return { success: false, error: 'Dein Pet lebt nicht' };
+
+      // Check if pet can afford it (including level-down)
+      const totalXP = ((pet.level - 1) * PET_CONFIG.XP_PER_LEVEL) + pet.experience;
+      if (totalXP < PET_CONFIG.STREAK_SHIELD_XP_COST) {
+        return { success: false, error: `Nicht genug XP (${pet.experience} XP, Level ${pet.level})` };
+      }
+
+      // Deduct XP with level-down support
+      let newExperience = pet.experience - PET_CONFIG.STREAK_SHIELD_XP_COST;
+      let newLevel = pet.level;
+      while (newExperience < 0 && newLevel > 1) {
+        newLevel--;
+        newExperience += newLevel * PET_CONFIG.XP_PER_LEVEL;
+      }
+      newExperience = Math.max(0, newExperience);
+
+      // Reduce happiness
+      const newHappiness = Math.max(0, pet.happiness - PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST);
+
+      // Update pet in Firebase
+      await firebase.database().ref(`pets/${userId}/${petId}`).update({
+        experience: newExperience,
+        level: newLevel,
+        happiness: newHappiness,
+      });
+
+      // Update streak: set lastWatchDate to yesterday so status becomes at_risk
+      const year = new Date().getFullYear();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      const streakRef = firebase.database().ref(`${userId}/wrapped/${year}/streak`);
+      const streakSnapshot = await streakRef.once('value');
+      const streakData = streakSnapshot.val();
+
+      if (streakData) {
+        await streakRef.update({
+          lastWatchDate: yesterdayStr,
+          lastShieldUsedDate: todayStr,
+          shieldUsedCount: (streakData.shieldUsedCount || 0) + 1,
+        });
+      }
+
+      return { success: true, newLevel, newExperience };
+    } catch (error) {
+      console.error('Streak Shield error:', error);
+      return { success: false, error: 'Unbekannter Fehler' };
+    }
+  }
+
   async savePetWidgetPosition(userId: string, position: { edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'; offsetX: number; offsetY: number }): Promise<void> {
     try {
       await firebase.database().ref(`petWidget/${userId}/position`).set(position);

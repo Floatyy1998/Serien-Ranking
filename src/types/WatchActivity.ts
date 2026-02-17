@@ -344,6 +344,10 @@ export interface WatchStreak {
     endDate: string;
     length: number;
   }[];
+
+  // Streak Shield
+  lastShieldUsedDate?: string;
+  shieldUsedCount?: number;
 }
 
 // Erweiterte Episode-Daten (für Types/Series.ts Integration)
