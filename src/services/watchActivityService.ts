@@ -21,6 +21,7 @@ import {
   MovieAddedEvent,
   WatchStreak,
 } from '../types/WatchActivity';
+import { updateLeaderboardStats } from './leaderboardService';
 
 // ============================================================================
 // KONSTANTEN
@@ -463,6 +464,12 @@ export async function logEpisodeWatch(
 
   await saveEvent(userId, event);
   await updateWatchStreak(userId);
+
+  // Leaderboard-Stats aktualisieren
+  updateLeaderboardStats(userId, {
+    episodesWatched: 1,
+    watchtimeMinutes: runtime,
+  }).catch(() => {});
 }
 
 // ============================================================================
@@ -516,6 +523,12 @@ export async function logMovieWatch(
 
     await saveEvent(userId, event);
     await updateWatchStreak(userId);
+
+    // Leaderboard-Stats aktualisieren
+    updateLeaderboardStats(userId, {
+      moviesWatched: 1,
+      watchtimeMinutes: runtime || 120,
+    }).catch(() => {});
   } catch (error) {
     console.error('[Wrapped] Error logging movie watch:', error);
   }

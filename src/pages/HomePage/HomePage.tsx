@@ -3,6 +3,7 @@ import {
   CalendarToday,
   Check,
   CheckCircle,
+  EmojiEvents,
   Group,
   History,
   LocalFireDepartment,
@@ -634,7 +635,7 @@ export const HomePage: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '10px',
           padding: '0 20px',
           marginBottom: '32px',
@@ -642,22 +643,42 @@ export const HomePage: React.FC = () => {
       >
         <motion.button
           whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/leaderboard')}
+          style={{
+            padding: isDesktop ? '12px' : '14px',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.2)',
+            borderRadius: '12px',
+            color: '#f59e0b',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
+          <EmojiEvents style={{ fontSize: '18px' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600 }}>Rangliste</span>
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/badges')}
           style={{
             padding: isDesktop ? '12px' : '14px',
             background: `linear-gradient(135deg, ${currentTheme.primary}1A 0%, ${currentTheme.accent}1A 100%)`,
             border: `1px solid ${currentTheme.primary}33`,
-            borderRadius: isDesktop ? '12px' : '12px',
+            borderRadius: '12px',
             color: currentTheme.primary,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px',
+            gap: '6px',
           }}
         >
-          <AutoAwesome style={{ fontSize: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: 600 }}>Badges</span>
+          <AutoAwesome style={{ fontSize: '18px' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600 }}>Badges</span>
         </motion.button>
 
         <motion.button
@@ -667,17 +688,17 @@ export const HomePage: React.FC = () => {
             padding: isDesktop ? '12px' : '14px',
             background: `linear-gradient(135deg, ${currentTheme.status.success}1A 0%, ${currentTheme.status.info.main}1A 100%)`,
             border: `1px solid ${currentTheme.status.success}33`,
-            borderRadius: isDesktop ? '12px' : '12px',
+            borderRadius: '12px',
             color: currentTheme.status.success,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px',
+            gap: '6px',
           }}
         >
-          <LocalFireDepartment style={{ fontSize: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: 600 }}>Pets</span>
+          <LocalFireDepartment style={{ fontSize: '18px' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600 }}>Pets</span>
         </motion.button>
       </div>
 

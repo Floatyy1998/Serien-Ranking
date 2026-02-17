@@ -37,6 +37,7 @@ const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default:
 const DiscussionFeedPage = lazy(() => import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage })));
 const CountdownPage = lazy(() => import('./pages/Countdown').then((m) => ({ default: m.CountdownPage })));
 const OnboardingPage = lazy(() => import('./pages/Onboarding').then((m) => ({ default: m.OnboardingPage })));
+const LeaderboardPage = lazy(() => import('./pages/Leaderboard').then((m) => ({ default: m.LeaderboardPage })));
 
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--theme-background, #000)' }}>
@@ -274,6 +275,14 @@ export const MobileApp = () => {
           <Route
             path="/hidden-series"
             element={<HiddenSeriesPage />}
+          />
+          <Route
+            path="/leaderboard"
+            element={
+              <Layout hideNav>
+                <LeaderboardPage />
+              </Layout>
+            }
           />
           <Route
             path="/countdowns"
