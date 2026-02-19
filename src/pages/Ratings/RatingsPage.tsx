@@ -145,8 +145,8 @@ const RatingGridItem = React.memo<{
       {item.rating > 0 && (
         <Tooltip title={`Bewertung: ${item.rating.toFixed(1)}/10`} arrow>
           <div className="ratings-rating-badge">
-            <Star style={{ fontSize: 12, color: '#fbbf24' }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{item.rating.toFixed(1)}</span>
+            <Star style={{ fontSize: 14, color: '#fbbf24' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{item.rating.toFixed(1)}</span>
           </div>
         </Tooltip>
       )}
@@ -155,9 +155,9 @@ const RatingGridItem = React.memo<{
         <Tooltip title="Auf deiner Watchlist" arrow>
           <div
             className="ratings-watchlist-badge"
-            style={{ top: item.rating > 0 ? 36 : 6, background: `${theme.status.info}dd` }}
+            style={{ top: item.rating > 0 ? 42 : 6, background: `${theme.status.info}dd` }}
           >
-            <WatchLater style={{ fontSize: 10, color: '#fff' }} />
+            <WatchLater style={{ fontSize: 16, color: '#fff' }} />
           </div>
         </Tooltip>
       )}

@@ -1,7 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout, ScrollToTop } from './components/layout';
 import { useAuth } from './App';
+import { useOptimizedFriends } from './contexts/OptimizedFriendsProvider';
+import { useNotifications } from './contexts/NotificationContext';
 import './styles/App.css';
 
 // Lazy load all pages for better code splitting
@@ -48,6 +50,74 @@ const PageLoader = () => (
 export const MobileApp = () => {
   const { onboardingComplete } = useAuth() || {};
   const location = useLocation();
+  const { unreadActivitiesCount, unreadRequestsCount, friendActivities, friendRequests } = useOptimizedFriends();
+  const { unreadCount: notificationUnreadCount, notifications: generalNotifications } = useNotifications();
+
+  const totalUnread = unreadActivitiesCount + unreadRequestsCount + notificationUnreadCount;
+
+  // Build ticker messages from recent activities
+  const tickerMessages = useMemo(() => {
+    if (totalUnread === 0) return [];
+    const messages: string[] = [];
+
+    for (const activity of friendActivities.slice(0, 5)) {
+      const name = activity.userName || 'Jemand';
+      switch (activity.type) {
+        case 'series_added':
+        case 'movie_added':
+          messages.push(`${name} hat "${activity.itemTitle}" hinzugefügt`);
+          break;
+        case 'series_rated':
+        case 'rating_updated':
+        case 'movie_rated':
+        case 'rating_updated_movie':
+          messages.push(`${name} hat "${activity.itemTitle}" mit ${activity.rating}/10 bewertet`);
+          break;
+        case 'series_added_to_watchlist':
+        case 'movie_added_to_watchlist':
+          messages.push(`${name} hat "${activity.itemTitle}" auf die Watchlist gesetzt`);
+          break;
+      }
+    }
+
+    for (const req of friendRequests) {
+      messages.push(`${req.fromUsername || 'Jemand'} möchte dein Freund werden`);
+    }
+
+    for (const notif of generalNotifications.filter(n => !n.read).slice(0, 3)) {
+      messages.push(notif.title);
+    }
+
+    return messages;
+  }, [totalUnread, friendActivities, friendRequests, generalNotifications]);
+
+  const [tickerIndex, setTickerIndex] = useState(0);
+  const tickerRef = useRef(tickerIndex);
+  tickerRef.current = tickerIndex;
+
+  // Cycle through ticker messages in the tab title
+  useEffect(() => {
+    if (totalUnread === 0 || tickerMessages.length === 0) {
+      document.title = 'TV-RANK';
+      return;
+    }
+
+    // Set initial title
+    const safeIndex = tickerRef.current % tickerMessages.length;
+    document.title = `(${totalUnread}) ${tickerMessages[safeIndex]} — TV-RANK`;
+
+    if (tickerMessages.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setTickerIndex(prev => {
+        const next = (prev + 1) % tickerMessages.length;
+        document.title = `(${totalUnread}) ${tickerMessages[next]} — TV-RANK`;
+        return next;
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [totalUnread, tickerMessages]);
 
   // Redirect to onboarding if not complete
   if (onboardingComplete === false && location.pathname !== '/onboarding') {

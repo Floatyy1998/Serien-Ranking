@@ -497,8 +497,8 @@ export const FriendProfilePage: React.FC = () => {
                     ? 'repeat(8, 1fr)'
                     : window.innerWidth >= 768
                       ? 'repeat(5, 1fr)'
-                      : 'repeat(auto-fill, minmax(120px, 1fr))',
-                gap: window.innerWidth >= 768 ? '20px' : '16px',
+                      : 'repeat(auto-fill, minmax(105px, 1fr))',
+                gap: '12px',
               }}
             >
               {currentItems.map((item, index) => {
@@ -557,10 +557,10 @@ export const FriendProfilePage: React.FC = () => {
                       {item.provider?.provider && item.provider.provider.length > 0 && (
                         <div style={{
                           position: 'absolute',
-                          top: '8px',
-                          left: '8px',
+                          top: '6px',
+                          left: '6px',
                           display: 'flex',
-                          gap: '4px',
+                          gap: '3px',
                         }}>
                           {Array.from(new Set(item.provider.provider.map((p: FriendProvider) => p.name)))
                             .slice(0, 2)
@@ -575,8 +575,8 @@ export const FriendProfilePage: React.FC = () => {
                                     border: '1px solid rgba(255, 255, 255, 0.1)',
                                     borderRadius: '8px',
                                     padding: '3px',
-                                    width: '28px',
-                                    height: '28px',
+                                    width: '34px',
+                                    height: '34px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -586,9 +586,9 @@ export const FriendProfilePage: React.FC = () => {
                                     src={provider.logo}
                                     alt={provider.name}
                                     style={{
-                                      width: '22px',
-                                      height: '22px',
-                                      borderRadius: '4px',
+                                      width: '28px',
+                                      height: '28px',
+                                      borderRadius: '6px',
                                       objectFit: 'cover',
                                     }}
                                   />
@@ -602,12 +602,12 @@ export const FriendProfilePage: React.FC = () => {
                       {rating > 0 && (
                         <div style={{
                           position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          background: 'linear-gradient(135deg, rgba(0,0,0,0.8), rgba(20,20,40,0.9))',
-                          backdropFilter: 'blur(10px)',
+                          top: '6px',
+                          right: '6px',
+                          background: 'linear-gradient(135deg, #1a1a1aee, #2a2a2aee)',
+                          backdropFilter: 'blur(8px)',
                           borderRadius: '10px',
-                          padding: '6px 10px',
+                          padding: '5px 9px',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
@@ -652,9 +652,9 @@ export const FriendProfilePage: React.FC = () => {
                     </div>
 
                     <h2 style={{
-                      fontSize: '13px',
+                      fontSize: '14px',
                       fontWeight: 600,
-                      margin: '10px 0 0 0',
+                      margin: '6px 0 0 0',
                       color: currentTheme.text.primary,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -662,7 +662,6 @@ export const FriendProfilePage: React.FC = () => {
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       lineHeight: '1.3',
-                      minHeight: '34px',
                     }}>
                       {item.title}
                     </h2>
