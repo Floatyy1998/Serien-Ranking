@@ -299,57 +299,8 @@ export const EpisodeManagementPage = () => {
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
 
-      // Badge system logging for season changes
-      if (!allWatched && updatedEpisodes) {
-        const previouslyUnwatched = season.episodes?.filter((ep) => !ep.watched) || [];
-        if (previouslyUnwatched.length === season.episodes?.length) {
-          // Whole season completed
-          const { logSeasonWatchedClean } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
-          await logSeasonWatchedClean(user.uid, season.episodes?.length || 0);
-        } else {
-          // Partial season completion - log individual episodes
-          const { updateEpisodeCounters } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
-
-          for (const episode of previouslyUnwatched) {
-            await updateEpisodeCounters(
-              user.uid,
-              false, // nicht rewatch
-              episode.air_date
-            );
-          }
-        }
-
-        // Pet XP für alle neu gesehenen Episoden geben
-        const { petService } = await import('../../services/petService');
-        for (let i = 0; i < previouslyUnwatched.length; i++) {
-          // Genre-basierter Pet-Boost
-          await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
-        }
-
-        // Wrapped 2026: Alle neu gesehenen Episoden loggen
-        for (let i = 0; i < previouslyUnwatched.length; i++) {
-          const ep = previouslyUnwatched[i];
-          const epIndex = season.episodes?.findIndex((e) => e.id === ep.id) || i;
-          WatchActivityService.logEpisodeWatch(
-            user.uid,
-            series.id,
-            series.title,
-            series.nmr,
-            season.seasonNumber + 1,
-            epIndex + 1,
-            ep.name,
-            getEpisodeRuntime(series, ep, season.seasonNumber + 1, epIndex + 1),
-            false,
-            1,
-            series.genre?.genres,
-            [...new Set(series.provider?.provider?.map(p => p.name))]
-          );
-        }
-      }
+      // Bulk season toggle: Keine Badge-, Wrapped- oder Leaderboard-Updates
+      // Diese sollen nur bei einzelnen Episoden zählen
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
     }
