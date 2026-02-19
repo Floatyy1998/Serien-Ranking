@@ -15,6 +15,7 @@ import {
   Movie as MovieIcon,
   Person,
   PersonAdd,
+  PersonRemove,
   Star,
   Timeline,
   Tv as TvIcon,
@@ -26,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { BackButton, GradientText } from '../../components/ui';
+import { BackButton, GradientText, BottomSheet } from '../../components/ui';
 import { AddFriendDialog } from './AddFriendDialog';
 import { useActivityFriendProfiles } from './useActivityFriendProfiles';
 import { useActivityGrouping } from './useActivityGrouping';
@@ -48,6 +49,7 @@ export const ActivityPage = () => {
     acceptFriendRequest,
     declineFriendRequest,
     cancelFriendRequest,
+    removeFriend,
   } = useOptimizedFriends();
 
   const {
@@ -69,6 +71,8 @@ export const ActivityPage = () => {
   );
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
+  const [friendToRemove, setFriendToRemove] = useState<{ uid: string; name: string } | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   const { friendProfiles, requestProfiles } = useActivityFriendProfiles(friends, friendRequests);
   const {
@@ -799,12 +803,11 @@ export const ActivityPage = () => {
                   {friends.map((friend, index) => {
                     const currentProfile = friendProfiles[friend.uid] || friend;
                     return (
-                      <motion.button
+                      <motion.div
                         key={friend.uid}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        whileTap={{ scale: 0.98 }}
                         onClick={() => navigate(`/friend/${friend.uid}`)}
                         style={{
                           display: 'flex',
@@ -816,8 +819,6 @@ export const ActivityPage = () => {
                           borderRadius: '14px',
                           color: currentTheme.text.primary,
                           cursor: 'pointer',
-                          textAlign: 'left',
-                          width: '100%',
                         }}
                       >
                         <div
@@ -837,6 +838,7 @@ export const ActivityPage = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
+                            flexShrink: 0,
                           }}
                         >
                           {!currentProfile.photoURL && (
@@ -844,7 +846,7 @@ export const ActivityPage = () => {
                           )}
                         </div>
 
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <h3
                             style={{
                               fontSize: '15px',
@@ -864,7 +866,33 @@ export const ActivityPage = () => {
                             @{currentProfile.username}
                           </p>
                         </div>
-                      </motion.button>
+
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFriendToRemove({
+                              uid: friend.uid,
+                              name: currentProfile.displayName || currentProfile.username || 'Unbekannt',
+                            });
+                          }}
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '10px',
+                            background: `${currentTheme.status.error}10`,
+                            border: 'none',
+                            color: currentTheme.text.muted,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <PersonRemove style={{ fontSize: '18px' }} />
+                        </motion.button>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -1273,6 +1301,100 @@ export const ActivityPage = () => {
       </div>
 
       <AddFriendDialog isOpen={showAddFriend} onClose={() => setShowAddFriend(false)} />
+
+      {/* Remove Friend Confirmation */}
+      <BottomSheet
+        isOpen={!!friendToRemove}
+        onClose={() => setFriendToRemove(null)}
+        ariaLabel="Freund entfernen"
+      >
+        <div style={{ padding: '0 20px 32px', textAlign: 'center' }}>
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 16px',
+              borderRadius: '50%',
+              background: `${currentTheme.status.error}15`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <PersonRemove style={{ fontSize: '32px', color: currentTheme.status.error }} />
+          </div>
+          <h2
+            style={{
+              fontSize: '20px',
+              fontWeight: 700,
+              color: currentTheme.text.primary,
+              margin: '0 0 8px',
+            }}
+          >
+            Freund entfernen
+          </h2>
+          <p
+            style={{
+              fontSize: '14px',
+              color: currentTheme.text.secondary,
+              margin: '0 0 24px',
+              lineHeight: 1.5,
+            }}
+          >
+            Möchtest du <strong>{friendToRemove?.name}</strong> wirklich als Freund entfernen?
+            Ihr seht dann keine Aktivitäten mehr voneinander.
+          </p>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setFriendToRemove(null)}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
+                borderRadius: '12px',
+                color: currentTheme.text.primary,
+                fontSize: '15px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Abbrechen
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={async () => {
+                if (!friendToRemove || removing) return;
+                setRemoving(true);
+                try {
+                  await removeFriend(friendToRemove.uid);
+                } catch (error) {
+                  console.error('Failed to remove friend:', error);
+                } finally {
+                  setRemoving(false);
+                  setFriendToRemove(null);
+                }
+              }}
+              disabled={removing}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: `linear-gradient(135deg, ${currentTheme.status.error}, #ef4444)`,
+                border: 'none',
+                borderRadius: '12px',
+                color: 'white',
+                fontSize: '15px',
+                fontWeight: 600,
+                cursor: removing ? 'not-allowed' : 'pointer',
+                opacity: removing ? 0.7 : 1,
+              }}
+            >
+              {removing ? 'Entfernt...' : 'Entfernen'}
+            </motion.button>
+          </div>
+        </div>
+      </BottomSheet>
     </div>
   );
 };
