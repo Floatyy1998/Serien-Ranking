@@ -50,7 +50,7 @@ export function useSeriesCountdowns() {
       const updated = cached.data
         .map(c => ({
           ...c,
-          daysUntil: Math.ceil((new Date(c.nextDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24)),
+          daysUntil: Math.round((new Date(c.nextDate + 'T00:00:00').getTime() - today.getTime()) / (1000 * 60 * 60 * 24)),
         }))
         .filter(c => c.daysUntil > 0)
         .sort((a, b) => a.daysUntil - b.daysUntil);
@@ -100,7 +100,7 @@ export function useSeriesCountdowns() {
 
               const airDate = new Date(season.air_date);
               airDate.setHours(0, 0, 0, 0);
-              const daysUntil = Math.ceil((airDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+              const daysUntil = Math.round((airDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
               if (daysUntil > 0 && (!best || daysUntil < best.daysUntil)) {
                 best = {

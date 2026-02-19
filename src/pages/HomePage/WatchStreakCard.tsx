@@ -166,7 +166,7 @@ export const WatchStreakCard: React.FC = () => {
   const isRecord = displayStreak > 0 && displayStreak >= streak.longestStreak;
 
   // Shield eligibility
-  const canUseShield = status === 'at_risk' || status === 'shieldable';
+  const canUseShield = status === 'shieldable';
   const cooldown = getShieldCooldown(streak.lastShieldUsedDate);
   const petTotalXP = pet ? ((pet.level - 1) * PET_CONFIG.XP_PER_LEVEL) + pet.experience : 0;
   const petCanAfford = petTotalXP >= PET_CONFIG.STREAK_SHIELD_XP_COST;
@@ -242,13 +242,15 @@ export const WatchStreakCard: React.FC = () => {
                   (status === 'at_risk' || status === 'shieldable') ? flameColor :
                   currentTheme.text.secondary,
                 whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
                 fontWeight: (status === 'at_risk' || status === 'shieldable' || shieldJustUsed) ? 600 : 400,
               }}
             >
-              {shieldJustUsed && 'Streak gerettet! Schau heute um sie zu halten.'}
+              {shieldJustUsed && 'Streak gerettet!'}
               {!shieldJustUsed && status === 'active' && `${displayStreak} ${displayStreak === 1 ? 'Tag' : 'Tage'} in Folge`}
-              {!shieldJustUsed && status === 'at_risk' && 'Schau heute, um deine Streak zu halten!'}
-              {!shieldJustUsed && status === 'shieldable' && `${streak.currentStreak}-Tage-Streak in Gefahr!`}
+              {!shieldJustUsed && status === 'at_risk' && 'Schau heute!'}
+              {!shieldJustUsed && status === 'shieldable' && 'Streak in Gefahr!'}
               {!shieldJustUsed && status === 'lost' && 'Starte eine neue Streak!'}
             </p>
           </div>
