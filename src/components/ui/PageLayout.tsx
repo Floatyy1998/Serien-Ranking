@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface PageLayoutProps {
@@ -7,17 +7,18 @@ interface PageLayoutProps {
   style?: React.CSSProperties;
 }
 
-export const PageLayout: React.FC<PageLayoutProps> = ({
+export const PageLayout = forwardRef<HTMLDivElement, PageLayoutProps>(({
   children,
   gradientColors,
   style,
-}) => {
+}, ref) => {
   const { currentTheme } = useTheme();
   const color1 = gradientColors?.[0] || currentTheme.primary;
   const color2 = gradientColors?.[1] || '#8b5cf6';
 
   return (
     <div
+      ref={ref}
       style={{
         minHeight: '100vh',
         background: currentTheme.background.default,
@@ -42,4 +43,4 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       {children}
     </div>
   );
-};
+});

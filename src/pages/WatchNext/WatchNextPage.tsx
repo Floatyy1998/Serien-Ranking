@@ -23,7 +23,7 @@ import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { useWatchNextEpisodes, NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
-import { GradientText, HorizontalScrollContainer, PageLayout } from '../../components/ui';
+import { GradientText, HorizontalScrollContainer, PageLayout, ScrollToTopButton } from '../../components/ui';
 
 export const WatchNextPage = () => {
   const navigate = useNavigate();
@@ -1007,6 +1007,7 @@ export const WatchNextPage = () => {
         />
       </div>
       </div>
+      <ScrollToTopButton scrollContainerSelector=".episodes-scroll-container" />
     </PageLayout>
   );
 };

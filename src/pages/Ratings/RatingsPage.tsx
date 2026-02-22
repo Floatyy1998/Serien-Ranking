@@ -21,7 +21,7 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { GradientText, QuickFilter, TabSwitcher } from '../../components/ui';
+import { GradientText, QuickFilter, ScrollToTopButton, TabSwitcher } from '../../components/ui';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import './RatingsPage.css';
@@ -78,6 +78,7 @@ function getSeriesProgress(series: Series): number {
   for (const season of series.seasons) {
     if (!season.episodes) continue;
     for (const ep of season.episodes) {
+      if (!ep) continue;
       if (ep.air_date && new Date(ep.air_date).getTime() <= now) {
         aired++;
         if (ep.watched) watched++;
@@ -93,6 +94,7 @@ function hasWatchedEpisodes(series: Series): boolean {
   for (const season of series.seasons) {
     if (!season.episodes) continue;
     for (const ep of season.episodes) {
+      if (!ep) continue;
       if (ep.air_date && new Date(ep.air_date).getTime() <= now && ep.watched) return true;
     }
   }
@@ -730,6 +732,8 @@ export const RatingsPage: React.FC = () => {
         isRatingsMode={true}
         initialFilters={filters}
       />
+
+      <ScrollToTopButton scrollContainerSelector=".mobile-content" bottomOffset={72} />
     </div>
   );
 };

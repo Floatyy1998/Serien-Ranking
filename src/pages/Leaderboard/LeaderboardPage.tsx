@@ -7,7 +7,7 @@ import {
   Group,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { BackButton, GradientText } from '../../components/ui';
@@ -55,6 +55,38 @@ export const LeaderboardPage = () => {
   const [statsData, setStatsData] = useState<Record<string, LeaderboardStats>>({});
   const [profiles, setProfiles] = useState<Record<string, { displayName: string; photoURL?: string; username?: string }>>({});
   const [loading, setLoading] = useState(true);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll position management
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const savedPosition = sessionStorage.getItem('leaderboard-scroll');
+    if (savedPosition) {
+      container.scrollTo({ top: parseInt(savedPosition, 10) });
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const saveScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem('leaderboard-scroll', String(container.scrollTop));
+      }, 100);
+    };
+
+    container.addEventListener('scroll', saveScroll, { passive: true });
+    return () => {
+      container.removeEventListener('scroll', saveScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [loading]);
 
   const bgDefault = currentTheme.background.default;
   const textPrimary = currentTheme.text.primary;
@@ -243,6 +275,7 @@ export const LeaderboardPage = () => {
 
   return (
     <div
+      ref={scrollContainerRef}
       style={{
         position: 'fixed',
         top: 0,

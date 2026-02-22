@@ -101,7 +101,8 @@ function calculateStats(data: { seriesList: WorkerSeries[]; movieList: WorkerMov
       
       for (let k = 0; k < episodes.length; k++) {
         const episode = episodes[k];
-        
+        if (!episode) continue;
+
         // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
         const isWatched = !!(
           episode.firstWatchedAt ||
@@ -203,7 +204,7 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
       
       for (let k = 0; k < seasonEpisodes.length; k++) {
         const episode = seasonEpisodes[k];
-        if (!episode.air_date || episode.watched) continue;
+        if (!episode || !episode.air_date || episode.watched) continue;
         
         const episodeDate = new Date(episode.air_date);
         if (isNaN(episodeDate.getTime())) continue;

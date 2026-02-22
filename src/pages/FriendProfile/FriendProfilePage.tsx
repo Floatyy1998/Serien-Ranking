@@ -7,7 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
-import { LoadingSpinner, PageHeader, PageLayout, QuickFilter, TabSwitcher } from '../../components/ui';
+import { LoadingSpinner, PageHeader, PageLayout, QuickFilter, ScrollToTopButton, TabSwitcher } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
 
 interface FriendProvider {
@@ -673,6 +673,7 @@ export const FriendProfilePage: React.FC = () => {
         </AnimatePresence>
       </div>
       </div>
+      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>
   );
 };
