@@ -34,6 +34,7 @@ import { useTopRated } from '../../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 import type { Series } from '../../types/Series';
 import { getGreeting } from '../../utils/greetings';
+import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
 import { CatchUpCard } from './CatchUpCard';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
 import { LiveClock } from './LiveClock';
@@ -904,6 +905,22 @@ export const HomePage: React.FC = () => {
                             S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
                             {item.nextEpisode.name}
                           </p>
+                          {(() => {
+                            const pace = calculateWatchingPace(item.seasons, item.episodeRuntime);
+                            const text = formatPaceLine(pace, true);
+                            if (!text) return null;
+                            return (
+                              <p
+                                style={{
+                                  fontSize: '11px',
+                                  margin: '2px 0 0 0',
+                                  opacity: 0.5,
+                                }}
+                              >
+                                {text}
+                              </p>
+                            );
+                          })()}
                           <div
                             style={{
                               marginTop: '4px',

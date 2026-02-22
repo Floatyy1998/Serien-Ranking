@@ -26,6 +26,7 @@ import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { WatchActivityService } from '../../services/watchActivityService';
+import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
 import { RewatchDialog } from './RewatchDialog';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useSeriesData } from './useSeriesData';
@@ -132,6 +133,14 @@ export const SeriesDetailPage = memo(() => {
       total: airedCount, // Only show aired episodes in total
       percentage: airedCount > 0 ? Math.round((watchedCount / airedCount) * 100) : 0,
     };
+  }, [series]);
+
+  // Calculate watching pace
+  const paceInfo = useMemo(() => {
+    if (!series?.seasons) return null;
+    const pace = calculateWatchingPace(series.seasons, series.episodeRuntime);
+    if (!pace.shouldShow) return null;
+    return { pace, text: formatPaceLine(pace) };
   }, [series]);
 
   // Handle adding series - memoized
@@ -706,6 +715,17 @@ export const SeriesDetailPage = memo(() => {
                 {progressStats.watched} von {progressStats.total} Episoden (
                 {progressStats.percentage}%)
               </p>
+              {paceInfo && (
+                <p
+                  style={{
+                    fontSize: isMobile ? '10px' : '11px',
+                    margin: '2px 0 0 0',
+                    opacity: 0.5,
+                  }}
+                >
+                  {paceInfo.text}
+                </p>
+              )}
             </div>
           )}
 
