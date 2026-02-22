@@ -22,6 +22,7 @@ import {
   WatchStreak,
 } from '../types/WatchActivity';
 import { updateLeaderboardStats } from './leaderboardService';
+import { toLocalDateString } from '../lib/date/date.utils';
 
 // ============================================================================
 // KONSTANTEN
@@ -352,7 +353,7 @@ async function updateWatchStreak(userId: string): Promise<void> {
   try {
     const now = new Date();
     const year = now.getFullYear();
-    const today = now.toISOString().split('T')[0];
+    const today = toLocalDateString(now);
     const streakRef = firebase.database().ref(getStreakPath(userId, year));
     const snapshot = await streakRef.once('value');
 
@@ -370,7 +371,7 @@ async function updateWatchStreak(userId: string): Promise<void> {
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yesterdayStr = toLocalDateString(yesterday);
 
     if (lastDate === yesterdayStr) {
       currentStreak.currentStreak += 1;
@@ -382,7 +383,7 @@ async function updateWatchStreak(userId: string): Promise<void> {
         const streakStart = new Date();
         streakStart.setDate(streakStart.getDate() - currentStreak.currentStreak);
         currentStreak.streaks.push({
-          startDate: streakStart.toISOString().split('T')[0],
+          startDate: toLocalDateString(streakStart),
           endDate: lastDate,
           length: currentStreak.currentStreak,
         });

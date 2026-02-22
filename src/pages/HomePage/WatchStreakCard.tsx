@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../App';
 import { petService } from '../../services/petService';
 import { PET_CONFIG } from '../../services/petConstants';
+import { toLocalDateString } from '../../lib/date/date.utils';
 
 const STREAK_COLORS = {
   active: '#4caf50',
@@ -35,7 +36,7 @@ type StreakStatus = 'active' | 'at_risk' | 'shieldable' | 'lost';
 
 function getDaysSinceLastWatch(lastWatchDate: string): number {
   if (!lastWatchDate) return Infinity;
-  const today = new Date().toISOString().split('T')[0];
+  const today = toLocalDateString();
   const todayMs = new Date(today).getTime();
   const lastMs = new Date(lastWatchDate).getTime();
   return Math.round((todayMs - lastMs) / (1000 * 60 * 60 * 24));
@@ -52,7 +53,7 @@ function getStreakStatus(lastWatchDate: string): StreakStatus {
 
 function getShieldCooldown(lastShieldUsedDate?: string): { onCooldown: boolean; daysRemaining: number } {
   if (!lastShieldUsedDate) return { onCooldown: false, daysRemaining: 0 };
-  const today = new Date().toISOString().split('T')[0];
+  const today = toLocalDateString();
   const todayMs = new Date(today).getTime();
   const lastMs = new Date(lastShieldUsedDate).getTime();
   const daysSince = Math.round((todayMs - lastMs) / (1000 * 60 * 60 * 24));
