@@ -20,29 +20,29 @@ import { Badge, Chip } from '@mui/material';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { cloneElement, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getGreeting } from '../../utils/greetings';
 import { useAuth } from '../../App';
+import { EpisodeDiscussionButton } from '../../components/Discussion';
+import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
+import { CarouselNotification } from '../../components/ui/CarouselNotification';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { EpisodeDiscussionButton } from '../../components/Discussion';
-import { LiveClock } from './LiveClock';
+import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
-import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
-import { StatsGrid } from './StatsGrid';
-import { CarouselNotification } from '../../components/ui/CarouselNotification';
-import { WrappedNotification } from './WrappedNotification';
-import { TasteMatchCard } from './TasteMatchCard';
-import { WatchJourneyCard } from './WatchJourneyCard';
+import type { Series } from '../../types/Series';
+import { getGreeting } from '../../utils/greetings';
 import { CatchUpCard } from './CatchUpCard';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
-import { WatchStreakCard } from './WatchStreakCard';
+import { LiveClock } from './LiveClock';
 import { SeriesCountdownCard } from './SeriesCountdownCard';
-import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
-import type { Series } from '../../types/Series';
+import { StatsGrid } from './StatsGrid';
+import { TasteMatchCard } from './TasteMatchCard';
+import { WatchJourneyCard } from './WatchJourneyCard';
+import { WatchStreakCard } from './WatchStreakCard';
+import { WrappedNotification } from './WrappedNotification';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ export const HomePage: React.FC = () => {
     completedSeries,
     clearNewSeasons,
     clearInactiveSeries,
-    clearCompletedSeries
+    clearCompletedSeries,
   } = useSeriesList();
   const { currentTheme } = useTheme();
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
@@ -201,24 +201,26 @@ export const HomePage: React.FC = () => {
 
       {/* Inactive Series Notification - nur anzeigen wenn keine neue Staffel-Benachrichtigung */}
       {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
-       inactiveSeries && inactiveSeries.length > 0 && (
-        <CarouselNotification
-          variant="inactive"
-          series={inactiveSeries}
-          onDismiss={clearInactiveSeries}
-        />
-      )}
+        inactiveSeries &&
+        inactiveSeries.length > 0 && (
+          <CarouselNotification
+            variant="inactive"
+            series={inactiveSeries}
+            onDismiss={clearInactiveSeries}
+          />
+        )}
 
       {/* Completed Series Notification - nur anzeigen wenn keine anderen Benachrichtigungen */}
       {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
-       (!inactiveSeries || inactiveSeries.length === 0) &&
-       completedSeries && completedSeries.length > 0 && (
-        <CarouselNotification
-          variant="completed"
-          series={completedSeries}
-          onDismiss={clearCompletedSeries}
-        />
-      )}
+        (!inactiveSeries || inactiveSeries.length === 0) &&
+        completedSeries &&
+        completedSeries.length > 0 && (
+          <CarouselNotification
+            variant="completed"
+            series={completedSeries}
+            onDismiss={clearCompletedSeries}
+          />
+        )}
 
       {/* Tooltip - shows language info and is clickable */}
       {greetingInfo && (
@@ -285,7 +287,11 @@ export const HomePage: React.FC = () => {
           }}
         >
           <div>
-            <GradientText as="h1" from={currentTheme.primary} to="#f59e0b" style={{
+            <GradientText
+              as="h1"
+              from={currentTheme.primary}
+              to="#f59e0b"
+              style={{
                 fontSize: '24px',
                 fontWeight: 800,
                 margin: '0 0 4px 0',
@@ -320,7 +326,7 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
-            {(unreadActivitiesCount + notificationUnreadCount) > 0 ? (
+            {unreadActivitiesCount + notificationUnreadCount > 0 ? (
               <Badge
                 badgeContent={unreadActivitiesCount + notificationUnreadCount}
                 color="error"
@@ -506,7 +512,11 @@ export const HomePage: React.FC = () => {
               marginBottom: isDesktop ? '4px' : '8px',
             }}
           />
-          <h2 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Weiterschauen</h2>
+          <h2
+            style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}
+          >
+            Weiterschauen
+          </h2>
           <p
             style={{
               fontSize: isDesktop ? '11px' : '12px',
@@ -551,7 +561,11 @@ export const HomePage: React.FC = () => {
               marginBottom: isDesktop ? '4px' : '8px',
             }}
           />
-          <h2 style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}>Entdecken</h2>
+          <h2
+            style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}
+          >
+            Entdecken
+          </h2>
           <p
             style={{
               fontSize: isDesktop ? '11px' : '12px',
@@ -646,7 +660,8 @@ export const HomePage: React.FC = () => {
           onClick={() => navigate('/leaderboard')}
           style={{
             padding: isDesktop ? '12px' : '14px',
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
             border: '1px solid rgba(245, 158, 11, 0.2)',
             borderRadius: '12px',
             color: '#f59e0b',
@@ -729,7 +744,7 @@ export const HomePage: React.FC = () => {
                       `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`
                     )
                 )
-                .slice(0, 4) // Max 4 episodes like requested
+                .slice(0, 6)
                 .map((item) => {
                   const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
                   const isCompleting = completingContinueEpisodes.has(episodeKey);
@@ -847,7 +862,11 @@ export const HomePage: React.FC = () => {
                           src={item.poster}
                           alt={item.title}
                           decoding="async"
-                          onClick={() => navigate(`/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`)}
+                          onClick={() =>
+                            navigate(
+                              `/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`
+                            )
+                          }
                           style={{
                             width: '50px',
                             height: '75px',
@@ -924,7 +943,10 @@ export const HomePage: React.FC = () => {
                               />
                             </motion.div>
                           ) : (
-                            <motion.div animate={{ x: isSwiping ? 10 : 0 }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <motion.div
+                              animate={{ x: isSwiping ? 10 : 0 }}
+                              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
                               <EpisodeDiscussionButton
                                 seriesId={item.id}
                                 seasonNumber={item.nextEpisode.seasonNumber}
@@ -1096,7 +1118,11 @@ export const HomePage: React.FC = () => {
                           src={episode.poster}
                           alt={episode.seriesTitle}
                           decoding="async"
-                          onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`)}
+                          onClick={() =>
+                            navigate(
+                              `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`
+                            )
+                          }
                           style={{
                             width: '50px',
                             height: '75px',
@@ -1124,8 +1150,7 @@ export const HomePage: React.FC = () => {
                               color: episode.watched ? '#4cd137' : '#ffd700',
                             }}
                           >
-                            S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
-                            {episode.episodeName}
+                            S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
                           </p>
                         </div>
 
@@ -1158,7 +1183,10 @@ export const HomePage: React.FC = () => {
                               />
                             </div>
                           ) : (
-                            <motion.div animate={{ x: isSwiping ? 10 : 0 }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <motion.div
+                              animate={{ x: isSwiping ? 10 : 0 }}
+                              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
                               <EpisodeDiscussionButton
                                 seriesId={Number(episode.seriesId)}
                                 seasonNumber={episode.seasonNumber}
@@ -1393,11 +1421,7 @@ export const HomePage: React.FC = () => {
 
       {/* Für dich Section - Feature Cards */}
       <section style={{ marginBottom: '32px' }}>
-        <SectionHeader
-          icon={<AutoAwesome />}
-          iconColor={currentTheme.primary}
-          title="Für dich"
-        />
+        <SectionHeader icon={<AutoAwesome />} iconColor={currentTheme.primary} title="Für dich" />
 
         {/* Feature Cards Container */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1414,7 +1438,6 @@ export const HomePage: React.FC = () => {
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
         <StatsGrid />
       </div>
-
     </div>
   );
 };

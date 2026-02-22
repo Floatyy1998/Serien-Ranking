@@ -12,7 +12,7 @@ import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
@@ -85,58 +85,39 @@ export const WatchNextPage = () => {
     watchlistOrder
   );
 
-  // Save scroll position when navigating away to SeriesDetailPage or MovieDetailPage
+  // Scroll position restore
+  const scrollRestoredRef = useRef(false);
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      const scrollY = window.scrollY || window.pageYOffset;
-      if (scrollY > 0) {
-        sessionStorage.setItem('watchNextScrollPosition', scrollY.toString());
-      }
-    };
-
-    // Save scroll position before navigation
-    return () => {
-      handleBeforeUnload();
-    };
+    const saved = sessionStorage.getItem('watchNext-scroll');
+    if (saved && !scrollRestoredRef.current) {
+      scrollRestoredRef.current = true;
+      const scrollY = parseInt(saved, 10);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
+          if (container) container.scrollTop = scrollY;
+        });
+      });
+      sessionStorage.removeItem('watchNext-scroll');
+    }
   }, []);
 
-  // Restore scroll position when coming back from SeriesDetailPage or MovieDetailPage with back button
+  // Save scroll position on scroll (debounced)
   useEffect(() => {
-    // Check if we're coming from a detail page via back navigation
-    const comingFromDetail = sessionStorage.getItem('comingFromDetail') === 'true';
-    const savedPosition = sessionStorage.getItem('watchNextScrollPosition');
-    const isContainerScroll = sessionStorage.getItem('watchNextScrollIsContainer') === 'true';
-
-    if (comingFromDetail && savedPosition) {
-      const scrollY = parseInt(savedPosition, 10);
-
-      // Try multiple timeouts to ensure scroll works
-      const restoreScroll = () => {
-        if (isContainerScroll) {
-          const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
-          if (container) {
-            container.scrollTop = scrollY;
-          } else {
-            window.scrollTo(0, scrollY);
-          }
-        } else {
-          window.scrollTo(0, scrollY);
-        }
-      };
-
-      requestAnimationFrame(() => {
-        restoreScroll();
-        // Also try after a delay
-        setTimeout(restoreScroll, 100);
-        setTimeout(restoreScroll, 300);
-        setTimeout(restoreScroll, 500);
-      });
-
-      // Clear the flags after restoring
-      sessionStorage.removeItem('comingFromDetail');
-      sessionStorage.removeItem('watchNextScrollPosition');
-      sessionStorage.removeItem('watchNextScrollIsContainer');
-    }
+    const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
+    if (!container) return;
+    let timeout: ReturnType<typeof setTimeout>;
+    const handleScroll = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        sessionStorage.setItem('watchNext-scroll', String(container.scrollTop));
+      }, 100);
+    };
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      clearTimeout(timeout);
+      container.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   // Removed tabs - only show next episodes
@@ -816,29 +797,6 @@ export const WatchNextPage = () => {
                           src={episode.poster}
                           alt={episode.seriesTitle}
                           onClick={() => {
-                            // Save current scroll position before navigating
-                            const scrollY =
-                              window.scrollY ||
-                              window.pageYOffset ||
-                              document.documentElement.scrollTop ||
-                              document.body.scrollTop ||
-                              0;
-                            // Also check container scroll
-                            const container = document.querySelector(
-                              '.episodes-scroll-container'
-                            ) as HTMLElement;
-                            const containerScrollY = container ? container.scrollTop : 0;
-                            const finalScrollY = scrollY || containerScrollY;
-                            if (finalScrollY > 0) {
-                              sessionStorage.setItem(
-                                'watchNextScrollPosition',
-                                finalScrollY.toString()
-                              );
-                              sessionStorage.setItem(
-                                'watchNextScrollIsContainer',
-                                containerScrollY > 0 ? 'true' : 'false'
-                              );
-                            }
                             navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`);
                           }}
                           style={{
@@ -860,29 +818,6 @@ export const WatchNextPage = () => {
                           }}
                           onClick={() => {
                             if (!editModeActive) {
-                              // Save current scroll position before navigating
-                              const scrollY =
-                                window.scrollY ||
-                                window.pageYOffset ||
-                                document.documentElement.scrollTop ||
-                                document.body.scrollTop ||
-                                0;
-                              // Also check container scroll
-                              const container = document.querySelector(
-                                '.episodes-scroll-container'
-                              ) as HTMLElement;
-                              const containerScrollY = container ? container.scrollTop : 0;
-                              const finalScrollY = scrollY || containerScrollY;
-                              if (finalScrollY > 0) {
-                                sessionStorage.setItem(
-                                  'watchNextScrollPosition',
-                                  finalScrollY.toString()
-                                );
-                                sessionStorage.setItem(
-                                  'watchNextScrollIsContainer',
-                                  containerScrollY > 0 ? 'true' : 'false'
-                                );
-                              }
                               navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`);
                             }
                           }}
