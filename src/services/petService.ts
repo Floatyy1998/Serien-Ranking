@@ -2,6 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { Pet, PET_COLORS, ACCESSORIES, GENRE_FAVORITES, PetAccessory } from '../types/pet.types';
 import { PET_CONFIG } from './petConstants';
+import { toLocalDateString } from '../lib/date/date.utils';
 
 class PetService {
   private migrationDone: Set<string> = new Set();
@@ -657,8 +658,8 @@ class PetService {
       const year = new Date().getFullYear();
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
-      const todayStr = new Date().toISOString().split('T')[0];
+      const yesterdayStr = toLocalDateString(yesterday);
+      const todayStr = toLocalDateString();
 
       const streakRef = firebase.database().ref(`${userId}/wrapped/${year}/streak`);
       const streakSnapshot = await streakRef.once('value');

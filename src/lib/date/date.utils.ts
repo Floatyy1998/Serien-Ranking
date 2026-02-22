@@ -1,3 +1,15 @@
+/**
+ * Returns a date as YYYY-MM-DD string in the local timezone.
+ * Unlike toISOString().split('T')[0], this avoids UTC conversion
+ * which can shift the date by ±1 day depending on timezone.
+ */
+export const toLocalDateString = (date: Date = new Date()): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const getFormattedDate = (date: string) => {
   if (!date) return 'Kein Datum';
   const parsedDate = new Date(date);

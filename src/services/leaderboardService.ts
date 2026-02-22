@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { LeaderboardStats } from '../types/Leaderboard';
+import { toLocalDateString } from '../lib/date/date.utils';
 
 function getCurrentMonthKey(): string {
   const now = new Date();
@@ -8,13 +9,13 @@ function getCurrentMonthKey(): string {
 }
 
 function getTodayStr(): string {
-  return new Date().toISOString().split('T')[0];
+  return toLocalDateString();
 }
 
 function getYesterdayStr(): string {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return d.toISOString().split('T')[0];
+  return toLocalDateString(d);
 }
 
 function getDefaultStats(): LeaderboardStats {
