@@ -18,6 +18,7 @@ export const useContinueWatching = () => {
     genre: Series['genre'];
     provider: Series['provider'];
     episodeRuntime: number;
+    seasons: Series['seasons'];
   }
 
   const cacheRef = useRef<{ items: ContinueWatchingItem[] | null; deps: string }>({ items: null, deps: '' });
@@ -118,7 +119,8 @@ export const useContinueWatching = () => {
                   airDate: episode.air_date,
                   lastWatchedAt: lastWatchedAt || '1900-01-01',
                   genre: series.genre,
-                  provider: series.provider,  // Für Wrapped-Statistiken
+                  seasons: series.seasons,
+                  provider: series.provider,
                   episodeRuntime: episode.runtime || (Array.isArray(series.nextEpisode?.nextEpisodes)
                     ? series.nextEpisode.nextEpisodes
                     : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : []
