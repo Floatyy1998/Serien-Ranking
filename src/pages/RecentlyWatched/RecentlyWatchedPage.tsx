@@ -23,7 +23,7 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDiscussionCount } from '../../hooks/useDiscussionCounts';
 import { petService } from '../../services/petService';
-import { LoadingSpinner, PageHeader, PageLayout } from '../../components/ui';
+import { LoadingSpinner, PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
 import type { Series } from '../../types/Series';
 
 // Component to show discussion indicator for an episode
@@ -317,6 +317,43 @@ export const RecentlyWatchedPage = memo(() => {
 
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState<number>(200);
+
+  // Scroll position restoration
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('recentlyWatched-scroll');
+    if (savedPosition) {
+      const pos = parseInt(savedPosition, 10);
+      const tryRestore = () => {
+        const container = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
+        if (container) {
+          container.scrollTo({ top: pos });
+        } else {
+          requestAnimationFrame(tryRestore);
+        }
+      };
+      requestAnimationFrame(() => requestAnimationFrame(tryRestore));
+    }
+  }, []);
+
+  // Save scroll position on scroll
+  useEffect(() => {
+    const container = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
+    if (!container) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const saveScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem('recentlyWatched-scroll', String(container.scrollTop));
+      }, 100);
+    };
+
+    container.addEventListener('scroll', saveScroll, { passive: true });
+    return () => {
+      container.removeEventListener('scroll', saveScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [headerHeight]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -1138,6 +1175,7 @@ export const RecentlyWatchedPage = memo(() => {
           </AnimatePresence>
         </div>
       </div>
+      <ScrollToTopButton scrollContainerSelector='[data-scrollable="episodes"]' />
     </PageLayout>
   );
 });

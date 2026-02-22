@@ -24,7 +24,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { Movie as MovieType } from '../../types/Movie';
 import { Series } from '../../types/Series';
-import { Dialog, LoadingSpinner, PageHeader } from '../../components/ui';
+import { Dialog, LoadingSpinner, PageHeader, ScrollToTopButton } from '../../components/ui';
 import './SearchPage.css';
 
 interface SearchResult {
@@ -113,6 +113,22 @@ export const SearchPage: React.FC = () => {
   useEffect(() => {
     sessionStorage.setItem('searchResults', JSON.stringify(searchResults));
   }, [searchResults]);
+
+  // Scroll position restoration
+  useEffect(() => {
+    if (isReturning) {
+      const savedScroll = sessionStorage.getItem('search-scroll');
+      if (savedScroll) {
+        const pos = parseInt(savedScroll, 10);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const container = document.querySelector('.mobile-content') as HTMLElement;
+            if (container) container.scrollTo({ top: pos });
+          });
+        });
+      }
+    }
+  }, []);
 
   const saveToRecent = (query: string) => {
     const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
@@ -209,6 +225,11 @@ export const SearchPage: React.FC = () => {
 
   const handleItemClick = (item: SearchResult) => {
     window.history.replaceState({ ...window.history.state, usr: { returning: true } }, '');
+
+    const container = document.querySelector('.mobile-content') as HTMLElement;
+    if (container && container.scrollTop > 0) {
+      sessionStorage.setItem('search-scroll', String(container.scrollTop));
+    }
 
     if (item.type === 'series') {
       navigate(`/series/${item.id}`);
@@ -883,6 +904,8 @@ export const SearchPage: React.FC = () => {
         message={dialog.message}
         type={dialog.type}
       />
+
+      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </div>
   );
 };

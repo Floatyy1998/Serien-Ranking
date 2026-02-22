@@ -16,7 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { ItemCard } from './DiscoverItemCard';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
-import { Dialog, GradientText, LoadingSpinner, PageLayout, TabSwitcher } from '../../components/ui';
+import { Dialog, GradientText, LoadingSpinner, PageLayout, ScrollToTopButton, TabSwitcher } from '../../components/ui';
 import './DiscoverPage.css';
 
 export const DiscoverPage = memo(() => {
@@ -609,6 +609,7 @@ export const DiscoverPage = memo(() => {
         message={dialog.message}
         type={dialog.type}
       />
+      <ScrollToTopButton scrollContainerSelector=".mobile-discover-container" />
     </PageLayout>
   );
 });

@@ -22,12 +22,12 @@ import {
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { BackButton, GradientText, BottomSheet } from '../../components/ui';
+import { BackButton, GradientText, BottomSheet, ScrollToTopButton } from '../../components/ui';
 import { AddFriendDialog } from './AddFriendDialog';
 import { useActivityFriendProfiles } from './useActivityFriendProfiles';
 import { useActivityGrouping } from './useActivityGrouping';
@@ -73,6 +73,32 @@ export const ActivityPage = () => {
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [friendToRemove, setFriendToRemove] = useState<{ uid: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
+
+  // Scroll position management
+  const scrollRestoredRef = useRef(false);
+
+  useEffect(() => {
+    if (scrollRestoredRef.current) return;
+    scrollRestoredRef.current = true;
+
+    const savedPosition = sessionStorage.getItem('activity-scroll');
+    if (savedPosition) {
+      const pos = parseInt(savedPosition, 10);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const container = document.querySelector('.mobile-content') as HTMLElement;
+          if (container) container.scrollTo({ top: pos });
+        });
+      });
+    }
+  }, []);
+
+  const saveScrollPosition = useCallback(() => {
+    const container = document.querySelector('.mobile-content') as HTMLElement;
+    if (container && container.scrollTop > 0) {
+      sessionStorage.setItem('activity-scroll', String(container.scrollTop));
+    }
+  }, []);
 
   const { friendProfiles, requestProfiles } = useActivityFriendProfiles(friends, friendRequests);
   const {
@@ -576,6 +602,7 @@ export const ActivityPage = () => {
                                       className="activity-entry"
                                       onClick={() => {
                                         if (tmdbId) {
+                                          saveScrollPosition();
                                           navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
                                         }
                                       }}
@@ -808,7 +835,7 @@ export const ActivityPage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        onClick={() => navigate(`/friend/${friend.uid}`)}
+                        onClick={() => { saveScrollPosition(); navigate(`/friend/${friend.uid}`); }}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -1395,6 +1422,7 @@ export const ActivityPage = () => {
           </div>
         </div>
       </BottomSheet>
+      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </div>
   );
 };

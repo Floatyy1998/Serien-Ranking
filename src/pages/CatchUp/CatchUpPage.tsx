@@ -4,7 +4,9 @@
  */
 
 import {
+  ArrowDownward,
   ArrowForward,
+  ArrowUpward,
   AutoAwesome,
   Bolt,
   CheckCircleOutline,
@@ -14,11 +16,11 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { GradientText, PageHeader, PageLayout, ProgressBar } from '../../components/ui';
+import { GradientText, PageHeader, PageLayout, ProgressBar, ScrollToTopButton } from '../../components/ui';
 import { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
 import './CatchUpPage.css';
@@ -36,14 +38,19 @@ interface CatchUpSeries {
 }
 
 type SortOption = 'episodes' | 'time' | 'progress' | 'recent';
+type SortDirection = 'asc' | 'desc';
+
+const SCROLL_STORAGE_KEY = 'catchup-scroll-position';
 
 export const CatchUpPage: React.FC = () => {
   const navigate = useNavigate();
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollRestoredRef = useRef(false);
 
-  // Initialize sortBy from URL params or default to 'episodes'
+  // Initialize sortBy and direction from URL params
   const [sortBy, setSortBy] = useState<SortOption>(() => {
     const sortParam = searchParams.get('sort') as SortOption;
     return sortParam && ['episodes', 'time', 'progress', 'recent'].includes(sortParam)
@@ -51,10 +58,65 @@ export const CatchUpPage: React.FC = () => {
       : 'episodes';
   });
 
-  // Update URL params when sortBy changes
+  const [sortDirection, setSortDirection] = useState<SortDirection>(() => {
+    const dirParam = searchParams.get('dir') as SortDirection;
+    return dirParam && ['asc', 'desc'].includes(dirParam) ? dirParam : 'desc';
+  });
+
+  // Handle tab click - toggle direction if same tab, otherwise switch tab
+  const handleSortClick = useCallback((value: SortOption) => {
+    if (sortBy === value) {
+      setSortDirection((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortBy(value);
+      setSortDirection('desc');
+    }
+    // Scroll to top when sort changes
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+  }, [sortBy]);
+
+  // Update URL params when sort changes
   useEffect(() => {
-    setSearchParams({ sort: sortBy }, { replace: true });
-  }, [sortBy, setSearchParams]);
+    setSearchParams({ sort: sortBy, dir: sortDirection }, { replace: true });
+  }, [sortBy, sortDirection, setSearchParams]);
+
+  // Save scroll position on scroll (debounced)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const handleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem(SCROLL_STORAGE_KEY, String(container.scrollTop));
+      }, 100);
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // Restore scroll position on mount
+  useEffect(() => {
+    if (scrollRestoredRef.current) return;
+    scrollRestoredRef.current = true;
+
+    const savedPosition = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+    if (savedPosition) {
+      const pos = parseInt(savedPosition, 10);
+      // Delay to ensure content is rendered
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollContainerRef.current?.scrollTo({ top: pos });
+        });
+      });
+    }
+  }, []);
 
   // Calculate catch-up data for each series
   const catchUpData = useMemo(() => {
@@ -127,29 +189,30 @@ export const CatchUpPage: React.FC = () => {
   // Sort the data
   const sortedData = useMemo(() => {
     const sorted = [...catchUpData];
+    const dir = sortDirection === 'desc' ? 1 : -1;
 
     switch (sortBy) {
       case 'episodes':
-        sorted.sort((a, b) => b.remainingEpisodes - a.remainingEpisodes);
+        sorted.sort((a, b) => dir * (b.remainingEpisodes - a.remainingEpisodes));
         break;
       case 'time':
-        sorted.sort((a, b) => b.remainingMinutes - a.remainingMinutes);
+        sorted.sort((a, b) => dir * (b.remainingMinutes - a.remainingMinutes));
         break;
       case 'progress':
-        sorted.sort((a, b) => b.progress - a.progress);
+        sorted.sort((a, b) => dir * (b.progress - a.progress));
         break;
       case 'recent':
         sorted.sort((a, b) => {
           if (!a.lastWatchedDate && !b.lastWatchedDate) return 0;
           if (!a.lastWatchedDate) return 1;
           if (!b.lastWatchedDate) return -1;
-          return new Date(b.lastWatchedDate).getTime() - new Date(a.lastWatchedDate).getTime();
+          return dir * (new Date(b.lastWatchedDate).getTime() - new Date(a.lastWatchedDate).getTime());
         });
         break;
     }
 
     return sorted;
-  }, [catchUpData, sortBy]);
+  }, [catchUpData, sortBy, sortDirection]);
 
   // Calculate totals
   const totals = useMemo(() => {
@@ -182,12 +245,15 @@ export const CatchUpPage: React.FC = () => {
   };
 
 
-  const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
-    { value: 'episodes', label: 'Meiste Episoden', icon: <MovieFilter style={{ fontSize: 18 }} /> },
-    { value: 'time', label: 'Längste Zeit', icon: <Timer style={{ fontSize: 18 }} /> },
-    { value: 'progress', label: 'Fast fertig', icon: <TrendingUp style={{ fontSize: 18 }} /> },
-    { value: 'recent', label: 'Zuletzt geschaut', icon: <Bolt style={{ fontSize: 18 }} /> },
+  const sortOptions: { value: SortOption; labelDesc: string; labelAsc: string; icon: React.ReactNode }[] = [
+    { value: 'episodes', labelDesc: 'Meiste Episoden', labelAsc: 'Wenigste Episoden', icon: <MovieFilter style={{ fontSize: 18 }} /> },
+    { value: 'time', labelDesc: 'Längste Zeit', labelAsc: 'Kürzeste Zeit', icon: <Timer style={{ fontSize: 18 }} /> },
+    { value: 'progress', labelDesc: 'Fast fertig', labelAsc: 'Am Anfang', icon: <TrendingUp style={{ fontSize: 18 }} /> },
+    { value: 'recent', labelDesc: 'Zuletzt geschaut', labelAsc: 'Am längsten her', icon: <Bolt style={{ fontSize: 18 }} /> },
   ];
+
+  const activeLabel = sortOptions.find((o) => o.value === sortBy);
+  const currentLabel = sortDirection === 'desc' ? activeLabel?.labelDesc : activeLabel?.labelAsc;
 
   const timeData = formatTime(totals.totalMinutes);
 
@@ -252,7 +318,7 @@ export const CatchUpPage: React.FC = () => {
   };
 
   return (
-    <PageLayout style={{ height: '100vh', overflowY: 'auto', overflowX: 'hidden', color: currentTheme.text.primary }}>
+    <PageLayout ref={scrollContainerRef} style={{ height: '100vh', overflowY: 'auto', overflowX: 'hidden', color: currentTheme.text.primary }}>
 
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
@@ -432,13 +498,13 @@ export const CatchUpPage: React.FC = () => {
                     <button
                       key={option.value}
                       className="catchup-sort-btn"
-                      onClick={() => setSortBy(option.value)}
+                      onClick={() => handleSortClick(option.value)}
                       style={{
                         flex: '1 1 0',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '5px',
+                        gap: '3px',
                         padding: '12px 8px',
                         borderRadius: '12px',
                         border: 'none',
@@ -455,6 +521,11 @@ export const CatchUpPage: React.FC = () => {
                       }}
                     >
                       {option.icon}
+                      {isActive && (
+                        sortDirection === 'desc'
+                          ? <ArrowDownward style={{ fontSize: 14 }} />
+                          : <ArrowUpward style={{ fontSize: 14 }} />
+                      )}
                     </button>
                   );
                 })}
@@ -471,7 +542,7 @@ export const CatchUpPage: React.FC = () => {
                   color: currentTheme.text.primary,
                 }}
               >
-                {sortOptions.find((o) => o.value === sortBy)?.label}
+                {currentLabel}
               </h2>
             </div>
           </>
@@ -790,6 +861,8 @@ export const CatchUpPage: React.FC = () => {
             ))}
         </div>
       </div>
+
+      <ScrollToTopButton scrollContainerRef={scrollContainerRef} />
     </PageLayout>
   );
 };

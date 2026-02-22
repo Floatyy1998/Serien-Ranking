@@ -81,6 +81,7 @@ export function useSeriesCountdowns() {
         if (cancelled) return;
 
         const promises = batch.map(async (series) => {
+          if (!series.id) return null;
           try {
             const res = await fetch(
               `https://api.themoviedb.org/3/tv/${series.id}?api_key=${apiKey}&language=de-DE`
