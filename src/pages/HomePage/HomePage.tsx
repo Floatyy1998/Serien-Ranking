@@ -1,5 +1,6 @@
 import {
   AutoAwesome,
+  CalendarMonth,
   CalendarToday,
   Check,
   CheckCircle,
@@ -29,6 +30,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
+import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
@@ -38,7 +40,6 @@ import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation
 import { CatchUpCard } from './CatchUpCard';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
 import { LiveClock } from './LiveClock';
-import { SeriesCountdownCard } from './SeriesCountdownCard';
 import { StatsGrid } from './StatsGrid';
 import { TasteMatchCard } from './TasteMatchCard';
 import { WatchJourneyCard } from './WatchJourneyCard';
@@ -77,6 +78,7 @@ export const HomePage: React.FC = () => {
     clearCompletedSeries,
   } = useSeriesList();
   const { currentTheme } = useTheme();
+  const { countdowns } = useSeriesCountdowns();
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
@@ -474,9 +476,9 @@ export const HomePage: React.FC = () => {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '12px',
+          gap: '10px',
           padding: '0 20px',
-          marginBottom: '24px',
+          marginBottom: '16px',
         }}
       >
         <motion.div
@@ -486,47 +488,29 @@ export const HomePage: React.FC = () => {
             background:
               'linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 180, 216, 0.2) 100%)',
             border: '1px solid rgba(0, 212, 170, 0.3)',
-            borderRadius: isDesktop ? '16px' : '16px',
-            padding: isDesktop ? '12px' : '14px',
+            borderRadius: '12px',
+            padding: '10px 12px',
             cursor: 'pointer',
-            position: 'relative',
-            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              top: '-20px',
-              right: '-20px',
-              width: isDesktop ? '60px' : '80px',
-              height: isDesktop ? '60px' : '80px',
-              background: `${currentTheme.status.success}33`,
-              borderRadius: '50%',
-              filter: 'blur(30px)',
-            }}
-          />
-
           <PlayCircle
             style={{
-              fontSize: isDesktop ? '24px' : '24px',
+              fontSize: '22px',
               color: currentTheme.status.success,
-              marginBottom: isDesktop ? '4px' : '8px',
+              flexShrink: 0,
             }}
           />
-          <h2
-            style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}
-          >
-            Weiterschauen
-          </h2>
-          <p
-            style={{
-              fontSize: isDesktop ? '11px' : '12px',
-              color: currentTheme.text.secondary,
-              margin: 0,
-            }}
-          >
-            {totalSeriesWithUnwatched} Serien bereit
-          </p>
+          <div>
+            <h2 style={{ fontSize: '13px', fontWeight: 700, margin: 0 }}>
+              Weiterschauen
+            </h2>
+            <p style={{ fontSize: '11px', color: currentTheme.text.secondary, margin: 0 }}>
+              {totalSeriesWithUnwatched} Serien
+            </p>
+          </div>
         </motion.div>
 
         <motion.div
@@ -535,49 +519,163 @@ export const HomePage: React.FC = () => {
           style={{
             background: `linear-gradient(135deg, ${currentTheme.primary}33 0%, ${currentTheme.accent}33 100%)`,
             border: `1px solid ${currentTheme.primary}4D`,
-            borderRadius: isDesktop ? '16px' : '16px',
-            padding: isDesktop ? '12px' : '14px',
+            borderRadius: '12px',
+            padding: '10px 12px',
             cursor: 'pointer',
-            position: 'relative',
-            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              top: '-20px',
-              right: '-20px',
-              width: isDesktop ? '60px' : '80px',
-              height: isDesktop ? '60px' : '80px',
-              background: `${currentTheme.primary}33`,
-              borderRadius: '50%',
-              filter: 'blur(30px)',
-            }}
-          />
-
           <AutoAwesome
             style={{
-              fontSize: isDesktop ? '24px' : '24px',
+              fontSize: '22px',
               color: currentTheme.primary,
-              marginBottom: isDesktop ? '4px' : '8px',
+              flexShrink: 0,
             }}
           />
-          <h2
-            style={{ fontSize: isDesktop ? '14px' : '14px', fontWeight: 700, margin: '0 0 2px 0' }}
-          >
-            Entdecken
-          </h2>
-          <p
-            style={{
-              fontSize: isDesktop ? '11px' : '12px',
-              color: currentTheme.text.secondary,
-              margin: 0,
-            }}
-          >
-            Neue Inhalte finden
-          </p>
+          <div>
+            <h2 style={{ fontSize: '13px', fontWeight: 700, margin: 0 }}>
+              Entdecken
+            </h2>
+            <p style={{ fontSize: '11px', color: currentTheme.text.secondary, margin: 0 }}>
+              Neue Inhalte
+            </p>
+          </div>
         </motion.div>
       </div>
+
+      {/* Countdown Hero Card */}
+      {countdowns.length > 0 && (() => {
+        const next = countdowns[0];
+        const countdownColor = '#a855f7';
+        const daysText = next.daysUntil === 0
+          ? 'Heute!'
+          : next.daysUntil === 1
+            ? 'Morgen'
+            : `in ${next.daysUntil} Tagen`;
+        return (
+          <motion.div
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate('/countdowns')}
+            style={{
+              margin: '0 20px 16px',
+              borderRadius: '14px',
+              padding: '12px 14px',
+              cursor: 'pointer',
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            {/* Background poster with blur */}
+            {next.posterUrl && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: `url(${next.posterUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  filter: 'blur(20px) brightness(0.3)',
+                  transform: 'scale(1.2)',
+                }}
+              />
+            )}
+            {/* Gradient overlay */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `linear-gradient(135deg, ${countdownColor}40 0%, rgba(0,0,0,0.7) 100%)`,
+                border: `1px solid ${countdownColor}50`,
+                borderRadius: '16px',
+              }}
+            />
+
+            {/* Poster thumbnail */}
+            {next.posterUrl && (
+              <img
+                src={next.posterUrl}
+                alt=""
+                style={{
+                  position: 'relative',
+                  width: 44,
+                  height: 66,
+                  borderRadius: '8px',
+                  objectFit: 'cover',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                }}
+              />
+            )}
+
+            {/* Text content */}
+            <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <CalendarMonth style={{ fontSize: '16px', color: countdownColor }} />
+                <span style={{ fontSize: '11px', fontWeight: 600, color: countdownColor, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Countdown
+                </span>
+                {countdowns.length > 1 && (
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    color: countdownColor,
+                    background: `${countdownColor}25`,
+                    padding: '1px 6px',
+                    borderRadius: '6px',
+                  }}>
+                    +{countdowns.length - 1}
+                  </span>
+                )}
+              </div>
+              <h2
+                style={{
+                  margin: '0 0 1px 0',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#fff',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {next.title}
+              </h2>
+              <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+                Staffel {next.seasonNumber} &middot; {daysText}
+              </p>
+            </div>
+
+            {/* Days badge */}
+            <div
+              style={{
+                position: 'relative',
+                width: 42,
+                height: 42,
+                borderRadius: '50%',
+                background: `${countdownColor}30`,
+                border: `2px solid ${countdownColor}80`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                {next.daysUntil}
+              </span>
+              <span style={{ fontSize: '7px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>
+                {next.daysUntil === 1 ? 'Tag' : 'Tage'}
+              </span>
+            </div>
+          </motion.div>
+        );
+      })()}
 
       {/* Quick Actions Grid */}
       <div
@@ -1443,7 +1541,6 @@ export const HomePage: React.FC = () => {
         {/* Feature Cards Container */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <WatchStreakCard />
-          <SeriesCountdownCard />
           <TasteMatchCard />
           <WatchJourneyCard />
           <CatchUpCard />
