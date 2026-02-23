@@ -16,9 +16,6 @@ import {
   BingeSession,
   EpisodeWatchEvent,
   MovieWatchEvent,
-  RatingEvent,
-  SeriesAddedEvent,
-  MovieAddedEvent,
   WatchStreak,
 } from '../types/WatchActivity';
 import { updateLeaderboardStats } from './leaderboardService';
@@ -81,24 +78,6 @@ function detectDeviceType(): 'mobile' | 'desktop' | 'tablet' {
   return 'desktop';
 }
 
-function detectPlatform(): string {
-  const ua = navigator.userAgent;
-  if (/iPad|iPhone|iPod/.test(ua)) return 'iOS';
-  if (/Android/.test(ua)) return 'Android';
-  if (/Windows/.test(ua)) return 'Windows';
-  if (/Mac/.test(ua)) return 'macOS';
-  if (/Linux/.test(ua)) return 'Linux';
-  return 'Unknown';
-}
-
-function getWeekNumber(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-}
-
 function generateEventId(): string {
   return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
@@ -145,18 +124,14 @@ function checkBulkMarkingAndGetTimestamp(): { isBulkMarking: boolean; distribute
 /**
  * Erstellt Basis-Metadaten für jedes Event
  */
-function createBaseEventData(userId: string) {
+function createBaseEventData() {
   const now = new Date();
   return {
     timestamp: now.toISOString(),
-    userId,
-    year: now.getFullYear(),
     month: now.getMonth() + 1,
-    week: getWeekNumber(now),
     dayOfWeek: now.getDay(),
     hour: now.getHours(),
     deviceType: detectDeviceType(),
-    platform: detectPlatform(),
   };
 }
 
@@ -164,7 +139,7 @@ function createBaseEventData(userId: string) {
  * Erstellt Basis-Metadaten für Episode-Events mit Bulk-Marking-Erkennung
  * Gibt auch zurück ob Bulk-Marking erkannt wurde (für Binge-Skipping)
  */
-function createEpisodeEventData(userId: string): {
+function createEpisodeEventData(): {
   eventData: ReturnType<typeof createBaseEventData>;
   isBulkMarking: boolean;
 } {
@@ -176,14 +151,10 @@ function createEpisodeEventData(userId: string): {
   return {
     eventData: {
       timestamp: dateToUse.toISOString(),
-      userId,
-      year: dateToUse.getFullYear(),
       month: dateToUse.getMonth() + 1,
-      week: getWeekNumber(dateToUse),
       dayOfWeek: dateToUse.getDay(),
       hour: dateToUse.getHours(),
       deviceType: detectDeviceType(),
-      platform: detectPlatform(),
     },
     isBulkMarking,
   };
@@ -218,7 +189,7 @@ async function cleanupOldYearData(_userId: string): Promise<void> {
 
 async function saveEvent(userId: string, event: ActivityEvent): Promise<boolean> {
   const eventId = generateEventId();
-  const year = event.year;
+  const year = new Date(event.timestamp).getFullYear();
   const eventPath = `${getEventsPath(userId, year)}/${eventId}`;
 
   try {
@@ -320,7 +291,6 @@ async function updateBingeSession(
     const newSessionId = generateEventId();
     const newSession: BingeSession = {
       id: newSessionId,
-      userId,
       startedAt: now.toISOString(),
       seriesId,
       seriesTitle,
@@ -358,7 +328,6 @@ async function updateWatchStreak(userId: string): Promise<void> {
     const snapshot = await streakRef.once('value');
 
     const currentStreak: WatchStreak = snapshot.val() || {
-      userId,
       currentStreak: 0,
       longestStreak: 0,
       lastWatchDate: '',
@@ -411,18 +380,15 @@ export async function logEpisodeWatch(
   userId: string,
   seriesId: number,
   seriesTitle: string,
-  seriesNmr: number,
   seasonNumber: number,
   episodeNumber: number,
-  episodeTitle?: string,
   episodeRuntime?: number,
   isRewatch: boolean = false,
-  watchCount: number = 1,
   genres?: string[],
-  providers?: string[]  // Changed: now accepts array of provider names
+  providers?: string[]
 ): Promise<void> {
   // Verwende Episode-spezifische Event-Erstellung mit Bulk-Marking-Erkennung
-  const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData(userId);
+  const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData();
   const runtime = episodeRuntime || 45;
 
   // Binge session handling - SKIP für Bulk-Marking
@@ -438,27 +404,23 @@ export async function logEpisodeWatch(
     isBingeSession = activeSession ? activeSession.episodes.length > 1 : false;
   }
 
-  // Build event - nur definierte Werte!
+  // Build event
   const event: EpisodeWatchEvent = {
     ...baseEvent,
     type: 'episode_watch',
     seriesId,
     seriesTitle,
-    seriesNmr,
     seasonNumber,
     episodeNumber,
     episodeRuntime: runtime,
     isRewatch,
-    watchCount,
   };
 
   // Optional fields
-  if (episodeTitle) event.episodeTitle = episodeTitle;
   if (genres && genres.length > 0) event.genres = genres;
-  // Speichere alle Provider (für Wrapped-Statistiken)
   if (providers && providers.length > 0) {
-    event.provider = providers[0];  // Hauptprovider für Abwärtskompatibilität
-    event.providers = providers;     // Alle Provider
+    event.provider = providers[0];
+    event.providers = providers;
   }
   if (isBingeSession) event.isBingeSession = true;
   if (bingeSessionId) event.bingeSessionId = bingeSessionId;
@@ -481,11 +443,10 @@ export async function logMovieWatch(
   userId: string,
   movieId: number,
   movieTitle: string,
-  movieNmr: number,
   runtime?: number,
   rating?: number,
   genres?: string[],
-  providers?: string[]  // Changed: now accepts array of provider names
+  providers?: string[]
 ): Promise<void> {
   const year = new Date().getFullYear();
 
@@ -503,23 +464,21 @@ export async function logMovieWatch(
       return;
     }
 
-    const baseEvent = createBaseEventData(userId);
+    const baseEvent = createBaseEventData();
 
     const event: MovieWatchEvent = {
       ...baseEvent,
       type: 'movie_watch',
       movieId,
       movieTitle,
-      movieNmr,
       runtime: runtime || 120,
     };
 
     if (rating !== undefined) event.rating = rating;
     if (genres && genres.length > 0) event.genres = genres;
-    // Speichere alle Provider (für Wrapped-Statistiken)
     if (providers && providers.length > 0) {
-      event.provider = providers[0];  // Hauptprovider für Abwärtskompatibilität
-      event.providers = providers;     // Alle Provider
+      event.provider = providers[0];
+      event.providers = providers;
     }
 
     await saveEvent(userId, event);
@@ -557,86 +516,6 @@ async function findExistingMovieEvent(userId: string, movieId: number, year: num
   } catch (error) {
     return null;
   }
-}
-
-// ============================================================================
-// PUBLIC API - SERIES/MOVIE ADDED
-// ============================================================================
-
-export async function logSeriesAdded(
-  userId: string,
-  seriesId: number,
-  seriesTitle: string,
-  genres?: string[],
-  provider?: string
-): Promise<void> {
-  const baseEvent = createBaseEventData(userId);
-
-  const event: SeriesAddedEvent = {
-    ...baseEvent,
-    type: 'series_added',
-    seriesId,
-    seriesTitle,
-  };
-
-  if (genres && genres.length > 0) event.genres = genres;
-  if (provider) event.provider = provider;
-
-  await saveEvent(userId, event);
-}
-
-export async function logMovieAdded(
-  userId: string,
-  movieId: number,
-  movieTitle: string,
-  genres?: string[],
-  provider?: string
-): Promise<void> {
-  const baseEvent = createBaseEventData(userId);
-
-  const event: MovieAddedEvent = {
-    ...baseEvent,
-    type: 'movie_added',
-    movieId,
-    movieTitle,
-  };
-
-  if (genres && genres.length > 0) event.genres = genres;
-  if (provider) event.provider = provider;
-
-  await saveEvent(userId, event);
-}
-
-// ============================================================================
-// PUBLIC API - RATING CHANGE
-// ============================================================================
-
-export async function logRatingChange(
-  userId: string,
-  itemType: 'series' | 'movie',
-  itemId: number,
-  itemTitle: string,
-  rating: number,
-  previousRating?: number
-): Promise<void> {
-  const baseEvent = createBaseEventData(userId);
-
-  const eventType = previousRating
-    ? rating === 0 ? 'rating_deleted' : 'rating_updated'
-    : 'rating_added';
-
-  const event: RatingEvent = {
-    ...baseEvent,
-    type: eventType,
-    itemType,
-    itemId,
-    itemTitle,
-    rating,
-  };
-
-  if (previousRating !== undefined) event.previousRating = previousRating;
-
-  await saveEvent(userId, event);
 }
 
 // ============================================================================
@@ -721,9 +600,6 @@ export async function clearAllWrappedData(userId: string): Promise<void> {
 export const WatchActivityService = {
   logEpisodeWatch,
   logMovieWatch,
-  logSeriesAdded,
-  logMovieAdded,
-  logRatingChange,
   getWatchStreak,
   getYearlyActivity,
   getEventsForYear,

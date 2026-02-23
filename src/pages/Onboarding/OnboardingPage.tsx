@@ -216,8 +216,6 @@ export const OnboardingPage: React.FC = () => {
                 id: ep.id,
                 episode_number: ep.episode_number,
                 name: ep.name || '',
-                overview: ep.overview || '',
-                still_path: ep.still_path || null,
                 air_date: ep.air_date || '',
                 watched: shouldMarkWatched,
                 watchCount: shouldMarkWatched ? 1 : 0,

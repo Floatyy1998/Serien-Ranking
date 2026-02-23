@@ -90,19 +90,17 @@ const hasUpcomingEpisodes = (series: Series): boolean => {
     return true;
   }
 
-  // Prüfe ob es eine nextEpisode mit zukünftigem Datum gibt
-  if (series.nextEpisode && series.nextEpisode.nextEpisodes) {
-    for (const episode of series.nextEpisode.nextEpisodes) {
-      if (episode.aired) {
-        const airDate = new Date(episode.aired);
-        if (airDate > today) {
-          return true;
-        }
-      }
-      if (episode.airdate) {
-        const airDate = new Date(episode.airdate);
-        if (airDate > today) {
-          return true;
+  // Prüfe ob es Episoden mit zukünftigem Datum in den Seasons gibt
+  if (series.seasons) {
+    const seasonsArr: Series['seasons'] = Array.isArray(series.seasons) ? series.seasons : Object.values(series.seasons) as Series['seasons'];
+    for (const season of seasonsArr) {
+      const episodes = Array.isArray(season.episodes) ? season.episodes : season.episodes ? Object.values(season.episodes) as typeof season.episodes : [];
+      for (const episode of episodes) {
+        if (episode.air_date) {
+          const airDate = new Date(episode.air_date);
+          if (airDate > today) {
+            return true;
+          }
         }
       }
     }

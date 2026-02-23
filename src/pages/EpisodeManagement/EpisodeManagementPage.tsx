@@ -16,16 +16,8 @@ import { Series } from '../../types/Series';
 import { PageHeader } from '../../components/ui';
 import './EpisodeManagementPage.css';
 
-// Versuche echte Episode-Runtime zu holen: 1. direkt gespeichert, 2. aus nextEpisodes, 3. Serie-Default
-function getEpisodeRuntime(series: Series, episode: Series['seasons'][number]['episodes'][number], seasonNum: number, episodeNum: number): number {
-  if (episode.runtime) return episode.runtime;
-  const nextEpisodesArr = Array.isArray(series.nextEpisode?.nextEpisodes)
-    ? series.nextEpisode.nextEpisodes
-    : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : [];
-  const nextEp = nextEpisodesArr.find(
-    (ne) => ne.id === episode.id || (ne.seasonNumber === seasonNum - 1 && ne.number === episodeNum)
-  );
-  return nextEp?.runtime || series.episodeRuntime || 45;
+function getEpisodeRuntime(series: Series, episode: Series['seasons'][number]['episodes'][number]): number {
+  return episode.runtime || series.episodeRuntime || 45;
 }
 
 export const EpisodeManagementPage = () => {
@@ -218,13 +210,10 @@ export const EpisodeManagementPage = () => {
           user.uid,
           series.id,
           series.title,
-          series.nmr,
           season.seasonNumber + 1,
           episodeIndex + 1,
-          episode.name,
-          getEpisodeRuntime(series, episode, season.seasonNumber + 1, episodeIndex + 1),
+          getEpisodeRuntime(series, episode),
           false, // isRewatch
-          newWatchCount,
           series.genre?.genres,
           [...new Set(series.provider?.provider?.map(p => p.name))]
         );
@@ -244,13 +233,10 @@ export const EpisodeManagementPage = () => {
           user.uid,
           series.id,
           series.title,
-          series.nmr,
           season.seasonNumber + 1,
           episodeIndex + 1,
-          episode.name,
-          getEpisodeRuntime(series, episode, season.seasonNumber + 1, episodeIndex + 1),
+          getEpisodeRuntime(series, episode),
           true, // isRewatch
-          newWatchCount,
           series.genre?.genres,
           [...new Set(series.provider?.provider?.map(p => p.name))]
         );

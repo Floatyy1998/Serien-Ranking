@@ -111,7 +111,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const markAsNotified = async (seriesIds: number[]) => {
     if (!user) return;
     if (variant === 'new-season') {
-      await markMultipleSeasonsAsNotified(seriesIds, user.uid);
+      await markMultipleSeasonsAsNotified(seriesIds, user.uid, series);
     } else {
       const updates: Record<string, { dismissed: boolean; timestamp: number }> = {};
       seriesIds.forEach((id) => {

@@ -184,16 +184,6 @@ export const NewEpisodesPage = () => {
               (episodeDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
             );
 
-            // Echte Episode-Runtime aus nextEpisodes nachschlagen
-            const seasonNum = (season.seasonNumber ?? seasonIndex) + 1;
-            const epNum = episodeIndex + 1;
-            const nextEpisodesArr = Array.isArray(series.nextEpisode?.nextEpisodes)
-              ? series.nextEpisode.nextEpisodes
-              : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : [];
-            const nextEp = nextEpisodesArr.find(
-              (ne) => ne.id === episode.id || (ne.seasonNumber === seasonNum - 1 && ne.number === epNum)
-            );
-
             episodes.push({
               seriesId: series.id,
               seriesName: series.title || '',
@@ -202,12 +192,12 @@ export const NewEpisodesPage = () => {
               seasonIndex,
               episodeIndex,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
-              episodeNumber: epNum,
-              seasonNumber: seasonNum,
+              episodeNumber: episodeIndex + 1,
+              seasonNumber: (season.seasonNumber ?? seasonIndex) + 1,
               airDate: episodeDate,
               daysUntil,
               watched: !!episode.watched,
-              episodeRuntime: nextEp?.runtime || series.episodeRuntime || 45,
+              episodeRuntime: episode.runtime || series.episodeRuntime || 45,
             });
           }
         });
@@ -402,13 +392,10 @@ export const NewEpisodesPage = () => {
           user.uid,
           episode.seriesId,
           episode.seriesName,
-          episode.seriesNmr,
           episode.seasonNumber,
           episode.episodeNumber,
-          episode.episodeName,
           episode.episodeRuntime,
           false,
-          1,
           series?.genre?.genres,
           series?.provider?.provider?.map(p => p.name)
         );
@@ -481,13 +468,10 @@ export const NewEpisodesPage = () => {
             user.uid,
             episode.seriesId,
             episode.seriesName,
-            episode.seriesNmr,
             episode.seasonNumber,
             episode.episodeNumber,
-            episode.episodeName,
             episode.episodeRuntime,
             false,
-            1,
             series?.genre?.genres,
             series?.provider?.provider?.map(p => p.name)
           );

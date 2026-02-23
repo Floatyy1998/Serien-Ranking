@@ -256,13 +256,10 @@ export const WatchNextPage = () => {
           user.uid,
           series.id,
           series.title || series.name || 'Unbekannte Serie',
-          series.nmr,
           episode.seasonIndex + 1, // seasonNumber (1-basiert)
           episode.episodeIndex + 1, // episodeNumber (1-basiert)
-          episode.episodeName,
           episode.runtime || series.episodeRuntime || 45,
           episode.isRewatch || false,
-          (episode.currentWatchCount || 0) + 1,
           series.genre?.genres,
           series.provider?.provider?.map(p => p.name)
         );

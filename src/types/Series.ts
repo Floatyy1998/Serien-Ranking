@@ -1,6 +1,6 @@
 export interface Series {
   begründung: string;
-  beschreibung: string;
+  beschreibung?: string;
   episodeCount: number;
   episodeRuntime: number;
   genre: {
@@ -9,44 +9,6 @@ export interface Series {
   id: number;
   imdb: {
     imdb_id: string;
-  };
-  nextEpisode: {
-    episode: number;
-    nextEpisode: string;
-    nextEpisodes: {
-      absoluteNumber?: number;
-      aired?: string;
-      id: number;
-      isMovie?: number;
-      lastUpdated?: string;
-      number: number;
-      runtime?: number;
-      seasonNumber: number;
-      seriesId?: number;
-      watchCount?: number;
-      watched?: boolean;
-      year?: string;
-      name?: string;
-      title?: string;
-      // Legacy fields für Kompatibilität
-      _links?: {
-        self: {
-          href: string;
-        };
-        show: {
-          href: string;
-          name: string;
-        };
-      };
-      airdate?: string;
-      airstamp?: string;
-      airtime?: string;
-      season?: number;
-      type?: string;
-      url?: string;
-    }[];
-    season: number;
-    title?: string;
   };
   nmr: number;
   origin_country: string[];
@@ -90,9 +52,6 @@ export interface Series {
     }[];
   }[];
   title: string;
-  tvMaze: {
-    tvMazeID: number;
-  };
   watchtime: number;
   wo: {
     wo: string;

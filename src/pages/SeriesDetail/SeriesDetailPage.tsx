@@ -81,6 +81,7 @@ export const SeriesDetailPage = memo(() => {
     tmdbRating,
     imdbRating,
     tmdbFirstAirDate,
+    tmdbOverview,
   } = useSeriesData(id);
 
   // Episode discussion counts for the selected season
@@ -294,18 +295,10 @@ export const SeriesDetailPage = memo(() => {
         user.uid,
         series.id,
         series.title || series.name || 'Unbekannte Serie',
-        series.nmr,
         seasonNumber,
         episodeIndex + 1,
-        episode.name,
-        (Array.isArray(series.nextEpisode?.nextEpisodes)
-          ? series.nextEpisode.nextEpisodes
-          : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : []
-        ).find(
-          (ne) => ne.id === episode.id || (ne.seasonNumber === (series.seasons?.[seasonIndex]?.seasonNumber || 0) && ne.number === episodeIndex + 1)
-        )?.runtime || series.episodeRuntime || 45,
+        episode.runtime || series.episodeRuntime || 45,
         true, // isRewatch
-        newWatchCount,
         series.genre?.genres,
         series.provider?.provider?.map((p) => p.name)
       );
@@ -1089,7 +1082,7 @@ export const SeriesDetailPage = memo(() => {
       ) : (
         <>
           {/* Series Description */}
-          {(series.beschreibung || series.overview) && (
+          {(series.beschreibung || series.overview || tmdbOverview) && (
             <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
               <h3
                 style={{
@@ -1112,7 +1105,7 @@ export const SeriesDetailPage = memo(() => {
                   margin: 0,
                 }}
               >
-                {series.beschreibung || series.overview}
+                {series.beschreibung || series.overview || tmdbOverview}
               </p>
             </div>
           )}

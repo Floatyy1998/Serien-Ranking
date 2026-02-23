@@ -84,13 +84,10 @@ export const useEpisodeSwipeHandlers = () => {
             user.uid,
             item.id,
             item.title,
-            item.nmr,
             item.nextEpisode.seasonIndex + 1,
             item.nextEpisode.episodeIndex + 1,
-            item.nextEpisode.name,
             item.episodeRuntime || 45,
             false,
-            1,
             item.genre?.genres,
             providers
           );
@@ -164,13 +161,10 @@ export const useEpisodeSwipeHandlers = () => {
             user.uid,
             Number(episode.seriesId),
             episode.seriesTitle,
-            Number(episode.seriesNmr),
             episode.seasonNumber,
             episode.episodeNumber,
-            episode.episodeName,
             episode.runtime || 45,
             false,
-            1,
             episode.seriesGenre,
             episode.seriesProviders
           );

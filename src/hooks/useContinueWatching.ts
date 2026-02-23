@@ -121,12 +121,7 @@ export const useContinueWatching = () => {
                   genre: series.genre,
                   seasons: series.seasons,
                   provider: series.provider,
-                  episodeRuntime: episode.runtime || (Array.isArray(series.nextEpisode?.nextEpisodes)
-                    ? series.nextEpisode.nextEpisodes
-                    : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) as typeof series.nextEpisode.nextEpisodes : []
-                  ).find(
-                    (ne) => ne.id === episode.id || (ne.seasonNumber === (season.seasonNumber ?? 0) && ne.number === k + 1)
-                  )?.runtime || series.episodeRuntime,
+                  episodeRuntime: episode.runtime || series.episodeRuntime,
                 });
                 foundNext = true;
                 break;

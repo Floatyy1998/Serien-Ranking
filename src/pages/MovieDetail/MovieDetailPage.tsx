@@ -77,6 +77,8 @@ export const MovieDetailPage = memo(() => {
   );
   // State for IMDB rating from OMDb
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
+  // State for TMDB overview (description)
+  const [tmdbOverview, setTmdbOverview] = useState<string | null>(null);
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
@@ -97,6 +99,10 @@ export const MovieDetailPage = memo(() => {
               vote_average: data.vote_average,
               vote_count: data.vote_count,
             });
+          }
+          // Store overview for description
+          if (data.overview) {
+            setTmdbOverview(data.overview);
           }
         })
         .catch(() => {});
@@ -760,7 +766,7 @@ export const MovieDetailPage = memo(() => {
       ) : (
         <div style={{ padding: isMobile ? '12px' : '20px' }}>
           {/* Overview */}
-          {(movie.beschreibung || movie.overview) && (
+          {(movie.beschreibung || movie.overview || tmdbOverview) && (
             <div style={{ marginBottom: isMobile ? '16px' : '24px' }}>
               <h3
                 style={{
@@ -782,7 +788,7 @@ export const MovieDetailPage = memo(() => {
                   color: 'rgba(255, 255, 255, 0.8)',
                 }}
               >
-                {movie.beschreibung}
+                {movie.beschreibung || movie.overview || tmdbOverview}
               </p>
             </div>
           )}
