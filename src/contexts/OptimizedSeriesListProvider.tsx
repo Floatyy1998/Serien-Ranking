@@ -158,7 +158,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   });
 
   // Konvertiere Object zu Array und trenne sichtbare/versteckte Serien
-  const allSeries: Series[] = seriesData ? Object.values(seriesData) : [];
+  // Firebase can return sparse arrays as objects - normalize seasons to arrays
+  const allSeries: Series[] = seriesData ? Object.values(seriesData).map(s => ({
+    ...s,
+    seasons: Array.isArray(s.seasons) ? s.seasons : s.seasons ? Object.values(s.seasons) : [],
+  })) : [];
   const seriesList = allSeries.filter(s => !s.hidden);
   const hiddenSeriesList = allSeries.filter(s => s.hidden === true);
 

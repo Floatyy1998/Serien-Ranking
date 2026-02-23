@@ -89,7 +89,6 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
       const rating = parseFloat(ratingStr);
 
       const seriesRuntime = item.episodeRuntime || item.runtime || 0;
-
       // Watchtime und gesehene Episoden für ALLE Serien berechnen (inkl. Rewatches)
       episodesWatched +=
         item.seasons?.reduce(

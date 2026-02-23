@@ -10,18 +10,11 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function getUrgencyColor(days: number, primary: string, muted: string): string {
-  if (days <= 7) return primary;
-  if (days <= 30) return '#a855f7';
-  return muted;
-}
-
 const HeroCard: React.FC<{
   item: SeriesCountdown;
   onClick: () => void;
 }> = ({ item, onClick }) => {
-  const { currentTheme } = useTheme();
-  const primary = currentTheme.primary;
+  const accentColor = '#a855f7';
 
   return (
     <motion.button
@@ -37,26 +30,23 @@ const HeroCard: React.FC<{
         borderRadius: 20,
         overflow: 'hidden',
         cursor: 'pointer',
-        border: `1px solid ${primary}40`,
+        border: `1px solid ${accentColor}40`,
         padding: 0,
         textAlign: 'left',
-        background: currentTheme.background.surface,
+        background: '#0a0a0a',
       }}
     >
-      {/* Background poster */}
+      {/* Background poster with heavy blur */}
       {item.posterUrl && (
-        <img
-          src={item.posterUrl}
-          alt=""
+        <div
           style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: 0.3,
-            filter: 'blur(2px)',
+            inset: 0,
+            backgroundImage: `url(${item.posterUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(20px) brightness(0.35)',
+            transform: 'scale(1.2)',
           }}
         />
       )}
@@ -66,7 +56,7 @@ const HeroCard: React.FC<{
         style={{
           position: 'absolute',
           inset: 0,
-          background: `linear-gradient(135deg, ${currentTheme.background.surface}ee 0%, ${currentTheme.background.surface}aa 50%, ${primary}30 100%)`,
+          background: `linear-gradient(135deg, ${accentColor}30 0%, rgba(0,0,0,0.6) 100%)`,
         }}
       />
 
@@ -92,7 +82,7 @@ const HeroCard: React.FC<{
               borderRadius: 12,
               objectFit: 'cover',
               flexShrink: 0,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
             }}
           />
         ) : (
@@ -101,14 +91,14 @@ const HeroCard: React.FC<{
               width: 90,
               height: 135,
               borderRadius: 12,
-              background: `linear-gradient(135deg, ${primary}30, ${primary}10)`,
+              background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            <CalendarMonth style={{ fontSize: 36, color: primary, opacity: 0.5 }} />
+            <CalendarMonth style={{ fontSize: 36, color: accentColor, opacity: 0.5 }} />
           </div>
         )}
 
@@ -121,7 +111,7 @@ const HeroCard: React.FC<{
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '1px',
-              color: primary,
+              color: accentColor,
             }}
           >
             Als nächstes
@@ -131,7 +121,7 @@ const HeroCard: React.FC<{
               margin: '6px 0 0',
               fontSize: 20,
               fontWeight: 700,
-              color: currentTheme.text.primary,
+              color: '#fff',
               lineHeight: 1.2,
               display: '-webkit-box',
               WebkitLineClamp: 2,
@@ -141,22 +131,10 @@ const HeroCard: React.FC<{
           >
             {item.title}
           </h2>
-          <p
-            style={{
-              margin: '4px 0 0',
-              fontSize: 14,
-              color: currentTheme.text.secondary,
-            }}
-          >
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
             Staffel {item.seasonNumber}
           </p>
-          <p
-            style={{
-              margin: '2px 0 0',
-              fontSize: 12,
-              color: currentTheme.text.muted,
-            }}
-          >
+          <p style={{ margin: '2px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
             {formatDate(item.nextDate)}
           </p>
         </div>
@@ -168,29 +146,22 @@ const HeroCard: React.FC<{
             width: 68,
             height: 68,
             borderRadius: '50%',
-            background: `linear-gradient(135deg, ${primary}, #a855f7)`,
+            background: `${accentColor}30`,
+            border: `2px solid ${accentColor}70`,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: `0 4px 20px ${primary}50`,
           }}
         >
-          <span
-            style={{
-              fontSize: 24,
-              fontWeight: 800,
-              color: 'white',
-              lineHeight: 1,
-            }}
-          >
+          <span style={{ fontSize: 24, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
             {item.daysUntil}
           </span>
           <span
             style={{
               fontSize: 9,
               fontWeight: 600,
-              color: 'rgba(255,255,255,0.85)',
+              color: 'rgba(255,255,255,0.6)',
               marginTop: 1,
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
@@ -210,7 +181,7 @@ const CountdownItem: React.FC<{
   onClick: () => void;
 }> = ({ item, index, onClick }) => {
   const { currentTheme } = useTheme();
-  const urgencyColor = getUrgencyColor(item.daysUntil, currentTheme.primary, currentTheme.text.secondary);
+  const accentColor = '#a855f7';
 
   return (
     <motion.button
@@ -224,12 +195,12 @@ const CountdownItem: React.FC<{
         alignItems: 'center',
         gap: 14,
         padding: '10px 14px',
-        background: currentTheme.background.surface,
-        border: `1px solid ${currentTheme.border.default}`,
         borderRadius: 16,
         cursor: 'pointer',
         textAlign: 'left',
         width: '100%',
+        border: `1px solid ${currentTheme.border.default}`,
+        background: currentTheme.background.surface,
       }}
     >
       {/* Poster */}
@@ -277,13 +248,7 @@ const CountdownItem: React.FC<{
         >
           {item.title}
         </h3>
-        <p
-          style={{
-            margin: '2px 0 0',
-            fontSize: 12,
-            color: currentTheme.text.secondary,
-          }}
-        >
+        <p style={{ margin: '2px 0 0', fontSize: 12, color: currentTheme.text.secondary }}>
           Staffel {item.seasonNumber} &middot; {formatDate(item.nextDate)}
         </p>
       </div>
@@ -298,23 +263,10 @@ const CountdownItem: React.FC<{
           minWidth: 44,
         }}
       >
-        <span
-          style={{
-            fontSize: 20,
-            fontWeight: 800,
-            color: urgencyColor,
-            lineHeight: 1,
-          }}
-        >
+        <span style={{ fontSize: 20, fontWeight: 800, color: accentColor, lineHeight: 1 }}>
           {item.daysUntil}
         </span>
-        <span
-          style={{
-            fontSize: 9,
-            color: currentTheme.text.muted,
-            marginTop: 2,
-          }}
-        >
+        <span style={{ fontSize: 9, color: currentTheme.text.muted, marginTop: 2 }}>
           {item.daysUntil === 1 ? 'Tag' : 'Tage'}
         </span>
       </div>

@@ -163,7 +163,7 @@ export const PublicProfilePage: React.FC = () => {
               genre: data.genre,
               genres: data.genres,
               provider: data.provider,
-              seasons: data.seasons,
+              seasons: Array.isArray(data.seasons) ? data.seasons : data.seasons ? Object.values(data.seasons) as PublicSeason[] : [],
             };
           });
 

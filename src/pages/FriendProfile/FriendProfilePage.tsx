@@ -93,7 +93,7 @@ export const FriendProfilePage: React.FC = () => {
             genre: series.genre,
             genres: series.genre?.genres || [],
             provider: series.provider,
-            seasons: series.seasons,
+            seasons: Array.isArray(series.seasons) ? series.seasons : series.seasons ? Object.values(series.seasons) as FriendSeason[] : [],
             status: series.status,
             production: series.production,
           });
