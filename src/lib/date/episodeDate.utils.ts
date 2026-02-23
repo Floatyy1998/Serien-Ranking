@@ -1,6 +1,5 @@
 /**
  * Einheitliche Episode-Datum Formatierung für konsistente Anzeige
- * zwischen TVMaze (nextEpisode) und TMDB (air_date) Daten
  */
 
 export const getUnifiedEpisodeDate = (date: string | Date): string => {

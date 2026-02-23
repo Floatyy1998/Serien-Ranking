@@ -28,7 +28,6 @@ interface WorkerSeries {
   poster?: string | { poster?: string };
   genre?: { genres?: string[] };
   provider?: { provider?: { id: number; name: string; logo: string }[] };
-  nextEpisode?: { nextEpisodes?: { id: number; seasonNumber: number; number: number; runtime?: number }[] };
 }
 
 interface WorkerMovie {
@@ -215,14 +214,6 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
           const actualSeasonIndex = series.seasons?.findIndex((s: WorkerSeason) => s.seasonNumber === season.seasonNumber) ?? 0;
           const seasonNum = (season.seasonNumber ?? 0) + 1;
           const epNum = k + 1;
-          type NextEp = { id: number; seasonNumber: number; number: number; runtime?: number };
-          const nextEpisodesArr: NextEp[] = Array.isArray(series.nextEpisode?.nextEpisodes)
-            ? series.nextEpisode.nextEpisodes
-            : series.nextEpisode?.nextEpisodes ? Object.values(series.nextEpisode.nextEpisodes) : [];
-          const nextEp = nextEpisodesArr.find(
-            (ne) => ne.id === episode.id || (ne.seasonNumber === season.seasonNumber && ne.number === epNum)
-          );
-
           episodes.push({
             seriesId: series.id,
             seriesNmr: series.nmr,
@@ -237,7 +228,7 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             watched: episode.watched,
             seriesGenre: series.genre?.genres,
             seriesProviders: series.provider?.provider?.map((p: { id: number; name: string; logo: string }) => p.name),
-            runtime: episode.runtime || nextEp?.runtime || series.episodeRuntime || 45,
+            runtime: episode.runtime || series.episodeRuntime || 45,
           });
         }
       }

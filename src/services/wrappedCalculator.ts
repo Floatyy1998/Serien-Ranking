@@ -37,7 +37,7 @@ export function calculateWrappedStats(
   year: number
 ): WrappedStats {
   // Filtere Events für das gewünschte Jahr
-  const yearEvents = events.filter((e) => e.year === year);
+  const yearEvents = events.filter((e) => new Date(e.timestamp).getFullYear() === year);
   const episodeEvents = yearEvents.filter((e) => e.type === 'episode_watch') as EpisodeWatchEvent[];
   const movieEvents = yearEvents.filter((e) => e.type === 'movie_watch' || e.type === 'movie_rating') as MovieWatchEvent[];
 
@@ -120,8 +120,6 @@ export function calculateWrappedStats(
     totalMinutesWatched: totalMinutes,
     totalHoursWatched: Math.round(totalMinutes / 60),
     totalDaysEquivalent: Math.round((totalMinutes / 60 / 24) * 10) / 10,
-    totalSeriesStarted: yearEvents.filter((e) => e.type === 'series_added').length,
-    totalSeriesCompleted: 0, // TODO: Implementieren wenn Daten verfügbar
     uniqueSeriesWatched: uniqueSeriesIds.size,
     topSeries,
     topMovies,

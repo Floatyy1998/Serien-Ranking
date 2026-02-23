@@ -9,18 +9,14 @@
 // Basis-Interface für alle Watch-Events
 export interface WatchEvent {
   timestamp: string;        // ISO-Datum
-  userId: string;
 
   // Zeitliche Metadaten für Auswertungen
-  year: number;             // 2026
   month: number;            // 1-12
-  week: number;             // 1-53 (Kalenderwoche)
   dayOfWeek: number;        // 0-6 (So-Sa)
   hour: number;             // 0-23
 
   // Gerät/Kontext (optional)
   deviceType?: 'mobile' | 'desktop' | 'tablet';
-  platform?: string;        // z.B. "iOS", "Android", "Windows"
 }
 
 // Episode-spezifisches Watch-Event
@@ -30,27 +26,23 @@ export interface EpisodeWatchEvent extends WatchEvent {
   // Serien-Referenz
   seriesId: number;
   seriesTitle: string;
-  seriesNmr: number;
 
   // Episode-Details
   seasonNumber: number;
   episodeNumber: number;
-  episodeTitle?: string;
   episodeRuntime?: number;  // Minuten
 
   // Genres für Genre-Statistiken
   genres?: string[];
 
   // Streaming-Dienst
-  provider?: string;        // z.B. "Netflix", "Disney+" (Hauptprovider für Abwärtskompatibilität)
+  provider?: string;        // z.B. "Netflix", "Disney+"
   providers?: string[];     // Alle Provider (für Wrapped-Statistiken)
 
   // Watch-Kontext
   isRewatch: boolean;
-  watchCount: number;       // Wie oft insgesamt
 
   // Binge-Detection
-  previousEpisodeTimestamp?: string;  // Wann wurde letzte Episode geschaut?
   isBingeSession?: boolean;           // < 30min seit letzter Episode
   bingeSessionId?: string;            // Gruppiert Binge-Sessions
 }
@@ -61,7 +53,6 @@ export interface MovieWatchEvent extends WatchEvent {
 
   movieId: number;
   movieTitle: string;
-  movieNmr: number;
 
   runtime?: number;         // Minuten
   rating?: number;          // 0-10
@@ -74,45 +65,10 @@ export interface MovieWatchEvent extends WatchEvent {
   providers?: string[];     // Alle Provider (für Wrapped-Statistiken)
 }
 
-// Serien hinzugefügt Event
-export interface SeriesAddedEvent extends WatchEvent {
-  type: 'series_added';
-
-  seriesId: number;
-  seriesTitle: string;
-  genres?: string[];
-  provider?: string;
-}
-
-// Film hinzugefügt Event
-export interface MovieAddedEvent extends WatchEvent {
-  type: 'movie_added';
-
-  movieId: number;
-  movieTitle: string;
-  genres?: string[];
-  provider?: string;
-}
-
-// Bewertungs-Event
-export interface RatingEvent extends WatchEvent {
-  type: 'rating_added' | 'rating_updated' | 'rating_deleted';
-
-  itemType: 'series' | 'movie';
-  itemId: number;
-  itemTitle: string;
-
-  rating: number;
-  previousRating?: number;
-}
-
 // Union Type für alle Events
 export type ActivityEvent =
   | EpisodeWatchEvent
-  | MovieWatchEvent
-  | SeriesAddedEvent
-  | MovieAddedEvent
-  | RatingEvent;
+  | MovieWatchEvent;
 
 // Tägliche Zusammenfassung (für effiziente Wrapped-Berechnung)
 export interface DailySummary {
@@ -314,7 +270,6 @@ export interface YearlyWrapped {
 // Binge-Session Tracking
 export interface BingeSession {
   id: string;
-  userId: string;
   startedAt: string;
   endedAt?: string;
 
@@ -333,7 +288,6 @@ export interface BingeSession {
 
 // Streak Tracking
 export interface WatchStreak {
-  userId: string;
   currentStreak: number;
   longestStreak: number;
   lastWatchDate: string;

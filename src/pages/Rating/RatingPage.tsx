@@ -196,31 +196,12 @@ export const RatingPage = () => {
             user.uid,
             movieItem.id,
             movieItem.title,
-            movieItem.nmr,
             movieItem.runtime,
             overallRating,
             movieItem.genre?.genres,
             movieItem.provider?.provider?.map(p => p.name)
           );
 
-          // Rating-Change auch separat loggen
-          WatchActivityService.logRatingChange(
-            user.uid,
-            'movie',
-            movieItem.id,
-            movieItem.title,
-            overallRating
-          );
-        } else {
-          // Wrapped 2026: Series-Rating loggen
-          const seriesItem = item as Series;
-          WatchActivityService.logRatingChange(
-            user.uid,
-            'series',
-            seriesItem.id,
-            seriesItem.title,
-            overallRating
-          );
         }
 
         // Activity-Logging für Friend + Badge-System (wie Desktop)

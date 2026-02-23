@@ -1,172 +1,98 @@
 import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
 
-export interface NewSeasonData {
-  seriesId: number;
-  previousSeasonCount: number;
-  currentSeasonCount: number;
-  lastChecked: number;
-  notified?: boolean; // Track if user has been notified
-  detectedAt?: number; // When the new season was first detected
-}
+// Einfache Map: seriesId → bekannte Staffelanzahl
+type SeasonCounts = Record<string, number>;
 
-const CHECK_COOLDOWN = process.env.NODE_ENV === 'development' ? 0 : 24 * 60 * 60 * 1000;
+const NOTIFIED_KEY = 'newSeasonNotified';
 
-export const getStoredSeasonData = async (
-  userId: string
-): Promise<Record<string, NewSeasonData>> => {
+const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
   try {
-    const ref = firebase.database().ref(`${userId}/newSeasonData`);
-    const snapshot = await ref.once('value');
+    const snapshot = await firebase.database().ref(`${userId}/seasonCounts`).once('value');
     return snapshot.val() || {};
   } catch {
     return {};
   }
 };
 
-export const storeSeasonData = async (
-  userId: string,
-  data: Record<string, NewSeasonData>
-) => {
+const storeSeasonCounts = async (userId: string, data: SeasonCounts) => {
   try {
-    const ref = firebase.database().ref(`${userId}/newSeasonData`);
-    await ref.set(data);
+    await firebase.database().ref(`${userId}/seasonCounts`).set(data);
   } catch (error) {
-    console.error('Failed to store new season data in Firebase:', error);
+    console.error('Failed to store season counts:', error);
   }
+};
+
+// Notified-Tracking in sessionStorage (nur für aktuelle Session relevant)
+const getNotifiedIds = (): Set<string> => {
+  try {
+    const stored = sessionStorage.getItem(NOTIFIED_KEY);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch {
+    return new Set();
+  }
+};
+
+const addNotifiedIds = (ids: string[]) => {
+  const notified = getNotifiedIds();
+  ids.forEach((id) => notified.add(id));
+  sessionStorage.setItem(NOTIFIED_KEY, JSON.stringify([...notified]));
 };
 
 export const detectNewSeasons = async (
   seriesList: Series[],
   userId: string
 ): Promise<Series[]> => {
-  const storedData = await getStoredSeasonData(userId);
-  const currentTime = Date.now();
+  const storedCounts = await getStoredSeasonCounts(userId);
+  const notifiedIds = getNotifiedIds();
   const seriesWithNewSeasons: Series[] = [];
-  const updatedStoredData = { ...storedData };
+  const updatedCounts: SeasonCounts = {};
 
   for (const series of seriesList) {
-    // Nur gültige Serien prüfen
     if (!series || !series.id || typeof series.seasonCount !== 'number') continue;
-    
-    // Prüfe alle Serien, auch die in der Watchlist (User will über neue Staffeln informiert werden!)
-    // if (series.watchlist) continue; // REMOVED - we want to track all series
 
-    const seriesKey = series.id.toString();
-    const stored = storedData[seriesKey];
+    const key = series.id.toString();
+    const storedCount = storedCounts[key];
+    updatedCounts[key] = storedCount ?? series.seasonCount;
 
-    if (!stored) {
-      // Erste Erfassung - keine neue Staffel, aber Daten speichern
-      updatedStoredData[seriesKey] = {
-        seriesId: series.id,
-        previousSeasonCount: series.seasonCount,
-        currentSeasonCount: series.seasonCount,
-        lastChecked: currentTime,
-        notified: false,
-      };
-    } else {
-      // Prüfen ob genug Zeit vergangen ist (Cooldown) - aber nur für erneute Checks, nicht für Benachrichtigungen
-      const timeSinceLastCheck = currentTime - stored.lastChecked;
-      const shouldCheckAgain = timeSinceLastCheck >= CHECK_COOLDOWN || process.env.NODE_ENV === 'development';
-
-      // Prüfen ob neue Staffel hinzugekommen ist ODER ob User noch nicht benachrichtigt wurde
-      if (series.seasonCount > stored.previousSeasonCount && series.seasonCount > 0) {
-        // Neue Staffel erkannt!
-        if (!stored.notified) {
-          // User wurde noch nicht benachrichtigt - zur Liste hinzufügen
-          seriesWithNewSeasons.push(series);
-        }
-
-        // Daten aktualisieren, aber previousSeasonCount NICHT ändern bis User benachrichtigt wurde
-        updatedStoredData[seriesKey] = {
-          ...stored,
-          currentSeasonCount: series.seasonCount,
-          lastChecked: shouldCheckAgain ? currentTime : stored.lastChecked,
-          detectedAt: stored.detectedAt || currentTime, // Zeitpunkt der ersten Erkennung speichern
-          // previousSeasonCount bleibt unverändert bis User benachrichtigt wurde!
-        };
-      } else if (stored.currentSeasonCount !== series.seasonCount) {
-        // Staffelanzahl hat sich geändert (könnte auch weniger sein bei Korrekturen)
-        updatedStoredData[seriesKey] = {
-          ...stored,
-          previousSeasonCount: Math.min(stored.previousSeasonCount, series.seasonCount),
-          currentSeasonCount: series.seasonCount,
-          lastChecked: shouldCheckAgain ? currentTime : stored.lastChecked,
-        };
-      } else if (shouldCheckAgain) {
-        // Keine Änderung, aber lastChecked aktualisieren
-        updatedStoredData[seriesKey] = {
-          ...stored,
-          lastChecked: currentTime,
-        };
-      }
+    if (storedCount !== undefined && series.seasonCount > storedCount && !notifiedIds.has(key)) {
+      seriesWithNewSeasons.push(series);
     }
   }
 
-  // Aufräumen: Entferne Daten für Serien die nicht mehr in der Liste sind
-  const currentSeriesIds = new Set(seriesList.filter(s => s && s.id).map((s) => s.id.toString()));
-  for (const key of Object.keys(updatedStoredData)) {
-    if (!currentSeriesIds.has(key)) {
-      delete updatedStoredData[key];
-    }
+  // Speichere nur wenn sich was geändert hat (neue Serien hinzugekommen)
+  const hasNewEntries = Object.keys(updatedCounts).some((k) => !(k in storedCounts));
+  if (hasNewEntries) {
+    await storeSeasonCounts(userId, updatedCounts);
   }
-
-  // Aktualisierte Daten speichern
-  await storeSeasonData(userId, updatedStoredData);
 
   return seriesWithNewSeasons;
 };
 
-export const markSeasonAsNotified = async (
-  seriesId: number,
-  userId: string,
-  updatePreviousCount: boolean = true
-) => {
-  const storedData = await getStoredSeasonData(userId);
-  const seriesKey = seriesId.toString();
-
-  if (storedData[seriesKey]) {
-    const currentData = storedData[seriesKey];
-    storedData[seriesKey] = {
-      ...currentData,
-      notified: true,
-      lastChecked: Date.now(),
-      // Nur wenn User die Benachrichtigung gesehen hat, aktualisieren wir previousSeasonCount
-      previousSeasonCount: updatePreviousCount 
-        ? currentData.currentSeasonCount 
-        : currentData.previousSeasonCount,
-    };
-    await storeSeasonData(userId, storedData);
-  }
-};
-
-// Markiere mehrere Serien als benachrichtigt
+// Nach Benachrichtigung: seasonCount auf aktuellen Wert setzen
 export const markMultipleSeasonsAsNotified = async (
   seriesIds: number[],
   userId: string,
-  updatePreviousCount: boolean = true
+  seriesList?: Series[]
 ) => {
-  const storedData = await getStoredSeasonData(userId);
-  let hasChanges = false;
+  const storedCounts = await getStoredSeasonCounts(userId);
+  const keys = seriesIds.map((id) => id.toString());
 
-  for (const seriesId of seriesIds) {
-    const seriesKey = seriesId.toString();
-    if (storedData[seriesKey]) {
-      const currentData = storedData[seriesKey];
-      storedData[seriesKey] = {
-        ...currentData,
-        notified: true,
-        lastChecked: Date.now(),
-        previousSeasonCount: updatePreviousCount 
-          ? currentData.currentSeasonCount 
-          : currentData.previousSeasonCount,
-      };
+  // SessionStorage updaten
+  addNotifiedIds(keys);
+
+  // Firebase updaten: Staffelanzahl auf aktuellen Wert setzen
+  let hasChanges = false;
+  for (const id of seriesIds) {
+    const key = id.toString();
+    const series = seriesList?.find((s) => s.id === id);
+    if (series && series.seasonCount > (storedCounts[key] ?? 0)) {
+      storedCounts[key] = series.seasonCount;
       hasChanges = true;
     }
   }
 
   if (hasChanges) {
-    await storeSeasonData(userId, storedData);
+    await storeSeasonCounts(userId, storedCounts);
   }
 };
-

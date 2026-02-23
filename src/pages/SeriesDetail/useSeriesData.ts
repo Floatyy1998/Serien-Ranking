@@ -15,6 +15,7 @@ interface UseSeriesDataResult {
   tmdbRating: { vote_average: number; vote_count: number } | null;
   imdbRating: { rating: number; votes: string } | null;
   tmdbFirstAirDate: string | null;
+  tmdbOverview: string | null;
 }
 
 export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
@@ -29,6 +30,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
   );
   const [imdbRating, setImdbRating] = useState<{ rating: number; votes: string } | null>(null);
   const [tmdbFirstAirDate, setTmdbFirstAirDate] = useState<string | null>(null);
+  const [tmdbOverview, setTmdbOverview] = useState<string | null>(null);
 
   // Find the series locally first (also check hidden series so detail page works for them)
   const localSeries = useMemo(() => {
@@ -59,6 +61,10 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
           // Store first_air_date
           if (data.first_air_date) {
             setTmdbFirstAirDate(data.first_air_date);
+          }
+          // Store overview for description
+          if (data.overview) {
+            setTmdbOverview(data.overview);
           }
         })
         .catch(() => {
@@ -164,12 +170,6 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
               episodeCount: 0,
               episodeRuntime: 0,
               imdb: { imdb_id: data.external_ids?.imdb_id || '' },
-              nextEpisode: {
-                episode: 0,
-                nextEpisode: '',
-                nextEpisodes: [],
-                season: 0,
-              },
               origin_country: data.origin_country || [],
               original_language: data.original_language || '',
               original_name: data.original_name || data.name || '',
@@ -177,7 +177,6 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
               vote_average: data.vote_average || 0,
               vote_count: data.vote_count || 0,
               seasonCount: seasonsWithEpisodes.length || 0,
-              tvMaze: { tvMazeID: 0 },
               watchtime: 0,
               wo: { wo: '' },
               release_date: data.first_air_date || '',
@@ -229,5 +228,6 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     tmdbRating,
     imdbRating,
     tmdbFirstAirDate,
+    tmdbOverview,
   };
 };

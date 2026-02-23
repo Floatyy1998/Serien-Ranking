@@ -19,8 +19,6 @@ export interface WrappedStats {
   totalDaysEquivalent: number; // Umgerechnet in Tage (z.B. "3.5 Tage")
 
   // Serien-Statistiken
-  totalSeriesStarted: number;
-  totalSeriesCompleted: number;
   uniqueSeriesWatched: number;
 
   // Top-Listen

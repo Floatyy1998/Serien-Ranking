@@ -243,13 +243,10 @@ export const EpisodeDiscussionPage = () => {
           user.uid,
           series.id,
           series.title || series.name || 'Unbekannte Serie',
-          series.nmr,
           Number(seasonNumber),
           Number(episodeNumber),
-          localEpisode.name,
           tvdbEpisode?.runtime || tmdbDetails?.runtime || series.episodeRuntime || 45,
           false,
-          1,
           series.genre?.genres,
           series.provider?.provider?.map(p => p.name)
         );
