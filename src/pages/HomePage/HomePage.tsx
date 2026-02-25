@@ -1196,7 +1196,7 @@ export const HomePage: React.FC = () => {
             icon={<Repeat />}
             iconColor={currentTheme.status.warning}
             title="Rewatches"
-            onSeeAll={() => navigate('/watchlist')}
+            onSeeAll={() => navigate('/watchlist?rewatches=open')}
           />
 
           <div
