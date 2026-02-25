@@ -1,5 +1,6 @@
 import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
+import { hasActiveRewatch } from './rewatch.utils';
 
 export interface InactiveSeriesData {
   seriesId: number;
@@ -152,8 +153,9 @@ export const detectInactiveSeries = async (
   const dismissedNotifications = notificationsSnapshot.val() || {};
 
   for (const series of seriesList) {
-    // Nur Serien auf der Watchlist prüfen
+    // Nur Serien auf der Watchlist prüfen, aktive Rewatches überspringen
     if (!series || !series.id || !series.watchlist) continue;
+    if (hasActiveRewatch(series)) continue;
 
     // Überspringe Serien mit zukünftigen Episoden (laufende Serien)
     if (hasUpcomingEpisodes(series)) continue;
@@ -236,6 +238,46 @@ export const detectInactiveSeries = async (
   await storeInactiveData(userId, updatedStoredData);
 
   return inactiveSeries;
+};
+
+/**
+ * Erkennt Serien mit aktivem Rewatch, die seit 30 Tagen nicht mehr rewatcht wurden.
+ */
+export const detectInactiveRewatches = async (
+  seriesList: Series[],
+  userId: string
+): Promise<Series[]> => {
+  const currentTime = Date.now();
+  const result: Series[] = [];
+
+  const notificationsRef = firebase.database().ref(`users/${userId}/inactiveRewatchNotifications`);
+  const notificationsSnapshot = await notificationsRef.once('value');
+  const dismissedNotifications = notificationsSnapshot.val() || {};
+
+  for (const series of seriesList) {
+    if (!series || !series.id || !series.watchlist) continue;
+    if (!hasActiveRewatch(series)) continue;
+
+    const dismissedData = dismissedNotifications[series.id];
+    const wasDismissedRecently = dismissedData?.dismissed &&
+      (currentTime - dismissedData.timestamp) < CHECK_COOLDOWN;
+    if (wasDismissedRecently) continue;
+
+    // Use the later of: last watched episode date OR rewatch start date
+    const lastWatchedDate = getLastWatchedDate(series);
+    const rewatchStartedAt = series.rewatch?.startedAt
+      ? new Date(series.rewatch.startedAt).getTime()
+      : null;
+
+    // Take the most recent activity (either a watched episode or the rewatch start)
+    const lastActivity = Math.max(lastWatchedDate || 0, rewatchStartedAt || 0);
+
+    if (lastActivity > 0 && (currentTime - lastActivity) > ONE_MONTH_MS) {
+      result.push(series);
+    }
+  }
+
+  return result;
 };
 
 export const markInactiveSeriesAsNotified = async (

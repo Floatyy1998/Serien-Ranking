@@ -1,5 +1,6 @@
 import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
+import { hasActiveRewatch } from './rewatch.utils';
 
 export interface CompletedSeriesData {
   seriesId: number;
@@ -88,8 +89,9 @@ export const detectCompletedSeries = async (
   const dismissedNotifications = notificationsSnapshot.val() || {};
 
   for (const series of seriesList) {
-    // Nur Serien auf der Watchlist prüfen
+    // Nur Serien auf der Watchlist prüfen, aktive Rewatches überspringen
     if (!series || !series.id || !series.watchlist) continue;
+    if (hasActiveRewatch(series)) continue;
 
     const seriesKey = series.id.toString();
     const stored = storedData[seriesKey];

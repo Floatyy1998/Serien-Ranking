@@ -58,6 +58,11 @@ export interface Series {
   };
   watchlist?: boolean;
   hidden?: boolean;
+  rewatch?: {
+    active: boolean;
+    round: number;
+    startedAt?: string;
+  };
   release_date: string;
   media_type?: string;
   // Note: userRating is stored in rating[userId], not as separate field

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
-import { detectInactiveSeries } from '../lib/validation/inactiveSeriesDetection';
+import { detectInactiveSeries, detectInactiveRewatches } from '../lib/validation/inactiveSeriesDetection';
 import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
 import { Series } from '../types/Series';
 import firebase from 'firebase/compat/app';
@@ -15,9 +15,11 @@ interface SeriesListContextType {
   loading: boolean;
   seriesWithNewSeasons: Series[];
   inactiveSeries: Series[];
+  inactiveRewatches: Series[];
   completedSeries: Series[];
   clearNewSeasons: () => void;
   clearInactiveSeries: () => void;
+  clearInactiveRewatches: () => void;
   clearCompletedSeries: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
@@ -36,9 +38,11 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   loading: true,
   seriesWithNewSeasons: [],
   inactiveSeries: [],
+  inactiveRewatches: [],
   completedSeries: [],
   clearNewSeasons: () => {},
   clearInactiveSeries: () => {},
+  clearInactiveRewatches: () => {},
   clearCompletedSeries: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
@@ -101,6 +105,18 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         } catch (e) {
           console.error('❌ Error parsing inactiveSeries from sessionStorage:', e);
         }
+      }
+    }
+    return [];
+  });
+
+  const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('inactiveRewatches');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch { /* ignore */ }
       }
     }
     return [];
@@ -315,7 +331,17 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       inactiveDetectionRunRef.current = true;
 
       try {
-        const inactive = await detectInactiveSeries(seriesList, userId);
+        const [inactive, inactiveRew] = await Promise.all([
+          detectInactiveSeries(seriesList, userId),
+          detectInactiveRewatches(seriesList, userId),
+        ]);
+
+        if (inactiveRew.length > 0) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('inactiveRewatches', JSON.stringify(inactiveRew));
+          }
+          setInactiveRewatches(inactiveRew);
+        }
 
         if (inactive.length > 0) {
           if (typeof window !== 'undefined') {
@@ -325,7 +351,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
           setTimeout(() => {
             setInactiveSeries([...inactive]);
           }, 100);
-        } else {
+        } else if (inactiveRew.length === 0) {
           setHasCheckedForInactive(true);
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('hasCheckedForInactive', 'true');
@@ -451,6 +477,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setSeriesWithNewSeasons([]);
       setHasCheckedForNewSeasons(false);
       setInactiveSeries([]);
+      setInactiveRewatches([]);
       setHasCheckedForInactive(false);
       setCompletedSeries([]);
       setHasCheckedForCompleted(false);
@@ -477,6 +504,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         sessionStorage.removeItem('seriesWithNewSeasons');
         sessionStorage.removeItem('hasCheckedForNewSeasons');
         sessionStorage.removeItem('inactiveSeries');
+        sessionStorage.removeItem('inactiveRewatches');
         sessionStorage.removeItem('hasCheckedForInactive');
         sessionStorage.removeItem('completedSeries');
         sessionStorage.removeItem('hasCheckedForCompleted');
@@ -504,6 +532,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('inactiveSeries');
       sessionStorage.setItem('hasCheckedForInactive', 'true');
+    }
+  }, []);
+
+  const clearInactiveRewatches = useCallback(() => {
+    setInactiveRewatches([]);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('inactiveRewatches');
     }
   }, []);
 
@@ -599,9 +634,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         loading,
         seriesWithNewSeasons,
         inactiveSeries,
+        inactiveRewatches,
         completedSeries,
         clearNewSeasons,
         clearInactiveSeries,
+        clearInactiveRewatches,
         clearCompletedSeries,
         recheckForNewSeasons,
         refetchSeries,

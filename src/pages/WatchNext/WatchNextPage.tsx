@@ -12,7 +12,7 @@ import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
@@ -24,6 +24,7 @@ import { WatchActivityService } from '../../services/watchActivityService';
 import { useWatchNextEpisodes, NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
 import { GradientText, HorizontalScrollContainer, PageLayout, ScrollToTopButton } from '../../components/ui';
+import { hasActiveRewatch, getRewatchProgress, getRewatchRound } from '../../lib/validation/rewatch.utils';
 
 export const WatchNextPage = () => {
   const navigate = useNavigate();
@@ -142,7 +143,23 @@ export const WatchNextPage = () => {
     localStorage.setItem('watchNextSortOption', sortOption);
   }, [sortOption]);
 
-  // Helper functions - getImageUrl imported from utils
+  // Rewatch summaries - always computed when there are active rewatches
+  const rewatchSummaries = useMemo(() => {
+    return seriesList
+      .filter(s => s.watchlist && hasActiveRewatch(s))
+      .map(s => {
+        const progress = getRewatchProgress(s);
+        const round = getRewatchRound(s);
+        return {
+          id: s.id,
+          title: s.title || s.name || '',
+          round: round - 1,
+          current: progress.current,
+          total: progress.total,
+          percent: progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0,
+        };
+      });
+  }, [seriesList, showRewatches]);
 
   // Toggle sort function
   const toggleSort = (field: string) => {
@@ -565,6 +582,32 @@ export const WatchNextPage = () => {
           msOverflowStyle: 'none',
         }}
       >
+        {/* Rewatch Summary Card - always visible when there are active rewatches */}
+        {!showRewatches && rewatchSummaries.length > 0 && (
+          <motion.div
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowRewatches(true)}
+            style={{
+              padding: '12px 16px',
+              background: `${currentTheme.status?.warning || '#f59e0b'}10`,
+              border: `1px solid ${currentTheme.status?.warning || '#f59e0b'}30`,
+              borderRadius: '12px',
+              marginBottom: '12px',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Repeat style={{ fontSize: '14px', color: currentTheme.status?.warning || '#f59e0b' }} />
+                {rewatchSummaries.length} aktive {rewatchSummaries.length === 1 ? 'Rewatch' : 'Rewatches'}
+              </div>
+              <span style={{ fontSize: '11px', color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)' }}>
+                Antippen zum Anzeigen
+              </span>
+            </div>
+          </motion.div>
+        )}
+
         {actualNextEpisodes.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
