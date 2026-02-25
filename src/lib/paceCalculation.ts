@@ -57,8 +57,32 @@ export function calculateWatchingPace(
 
   const remaining = airedCount - watchedCount;
 
-  // Need at least 3 timestamps and at least 1 remaining episode
-  if (watchDates.length < 3 || remaining < 1) return noShow;
+  if (remaining < 1) return noShow;
+
+  // Remaining watchtime (always calculable)
+  const avgRuntime = runtimeSamples > 0
+    ? totalRuntimeMinutes / runtimeSamples
+    : (episodeRuntime || 45);
+  const remainingHoursCalc = Math.round((remaining * avgRuntime) / 60 * 10) / 10;
+
+  // Not enough timestamps for pace calculation — still show pausiert + remaining time
+  if (watchDates.length < 2) {
+    const lastWatch = watchDates.length > 0
+      ? Math.max(...watchDates.map(d => d.getTime()))
+      : 0;
+    const daysSinceLastWatch = lastWatch > 0
+      ? (now.getTime() - lastWatch) / (1000 * 60 * 60 * 24)
+      : Infinity;
+
+    return {
+      episodesPerWeek: 0,
+      remainingEpisodes: remaining,
+      estimatedCompletionDate: null,
+      remainingHours: remainingHoursCalc,
+      isPaused: daysSinceLastWatch > 14,
+      shouldShow: true,
+    };
+  }
 
   // Sort dates ascending
   watchDates.sort((a, b) => a.getTime() - b.getTime());
@@ -106,17 +130,11 @@ export function calculateWatchingPace(
     estimatedCompletionDate = new Date(now.getTime() + daysRemaining * 24 * 60 * 60 * 1000);
   }
 
-  // Remaining watchtime
-  const avgRuntime = runtimeSamples > 0
-    ? totalRuntimeMinutes / runtimeSamples
-    : (episodeRuntime || 45);
-  const remainingHours = Math.round((remaining * avgRuntime) / 60 * 10) / 10;
-
   return {
     episodesPerWeek,
     remainingEpisodes: remaining,
     estimatedCompletionDate,
-    remainingHours,
+    remainingHours: remainingHoursCalc,
     isPaused,
     shouldShow: true,
   };
@@ -127,8 +145,10 @@ export function formatPaceLine(pace: WatchingPace, compact = false): string {
 
   const parts: string[] = [];
 
-  if (pace.isPaused) {
-    parts.push('Pausiert');
+  if (pace.episodesPerWeek === 0 && !pace.isPaused) {
+    return `Nicht genügend Daten · ${pace.remainingEpisodes} Ep. offen`;
+  } else if (pace.isPaused) {
+    return `Pausiert · ${pace.remainingEpisodes} Ep. offen`;
   } else {
     // Pace
     if (pace.episodesPerWeek >= 7) {
