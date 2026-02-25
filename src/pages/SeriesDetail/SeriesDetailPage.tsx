@@ -7,6 +7,7 @@ import {
   List,
   People,
   PlayCircle,
+  Repeat,
   Star,
   Visibility,
   VisibilityOff,
@@ -18,7 +19,7 @@ import { motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
-import { BackButton, Dialog } from '../../components/ui';
+import { BackButton, Dialog, ProgressBar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { CastCrew, FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -27,7 +28,8 @@ import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
-import { RewatchDialog } from './RewatchDialog';
+import { getImplicitRewatchRound, getMaxWatchCount, getNextRewatchEpisode, getRewatchProgress, getRewatchRound, hasActiveRewatch, isSeriesFullyWatched } from '../../lib/validation/rewatch.utils';
+import { EpisodeActionSheet } from './EpisodeActionSheet';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useSeriesData } from './useSeriesData';
 import type { SeriesEpisode, SeriesSeason } from './types';
@@ -43,6 +45,8 @@ export const SeriesDetailPage = memo(() => {
     show: boolean;
     type: 'episode' | 'season';
     item: SeriesEpisode | null;
+    seasonNumber?: number;
+    episodeNumber?: number;
   }>({ show: false, type: 'episode', item: null });
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
   const [isAdding, setIsAdding] = useState(false);
@@ -83,6 +87,37 @@ export const SeriesDetailPage = memo(() => {
     tmdbFirstAirDate,
     tmdbOverview,
   } = useSeriesData(id);
+
+  // Auto-select the most relevant season tab
+  useEffect(() => {
+    if (!series?.seasons || series.seasons.length === 0) return;
+
+    // If active rewatch, jump to the season with the next rewatch episode
+    if (hasActiveRewatch(series)) {
+      const nextEp = getNextRewatchEpisode(series);
+      if (nextEp) {
+        const idx = series.seasons.findIndex(s => s.seasonNumber === nextEp.seasonNumber);
+        if (idx >= 0) setSelectedSeasonIndex(idx);
+        return;
+      }
+    }
+
+    // Otherwise, find the season with the first unwatched aired episode
+    const today = new Date();
+    for (let i = 0; i < series.seasons.length; i++) {
+      const eps = series.seasons[i].episodes;
+      if (!eps) continue;
+      for (const ep of eps) {
+        if (!ep.watched && ep.air_date && new Date(ep.air_date) <= today) {
+          setSelectedSeasonIndex(i);
+          return;
+        }
+      }
+    }
+    // All watched and no active rewatch → go to season 1
+    setSelectedSeasonIndex(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [series?.id]);
 
   // Episode discussion counts for the selected season
   const selectedSeasonData = series?.seasons?.[selectedSeasonIndex];
@@ -303,6 +338,29 @@ export const SeriesDetailPage = memo(() => {
         series.provider?.provider?.map((p) => p.name)
       );
 
+      // Auto-complete rewatch: check if this was the last episode
+      if (series.rewatch?.active) {
+        const targetCount = Math.max(2, (series.rewatch.round || 0) + 1);
+        // Check if all other watched episodes are already at target
+        let allDone = true;
+        for (const s of series.seasons || []) {
+          for (const ep of s.episodes || []) {
+            if (!ep.watched) continue;
+            if (ep.id === episode.id) continue; // skip current (we just updated it)
+            if ((ep.watchCount || 1) < targetCount) {
+              allDone = false;
+              break;
+            }
+          }
+          if (!allDone) break;
+        }
+        if (allDone && newWatchCount >= targetCount) {
+          await firebase.database().ref(`${user.uid}/serien/${series.nmr}/rewatch`).remove();
+          setSnackbar({ open: true, message: `Rewatch #${series.rewatch.round} abgeschlossen!` });
+          setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+        }
+      }
+
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
     } catch (error) {
       setDialog({ open: true, message: 'Fehler beim Rewatch der Episode.', type: 'error' });
@@ -343,6 +401,45 @@ export const SeriesDetailPage = memo(() => {
       setShowRewatchDialog({ show: false, type: 'episode', item: null });
     } catch (error) {
       setDialog({ open: true, message: 'Fehler beim Markieren als nicht gesehen.', type: 'error' });
+    }
+  };
+
+  // Handle starting a new rewatch
+  const handleStartRewatch = async (continueExisting = false) => {
+    if (!series || !user) return;
+    setDialog({ open: false, message: '', type: 'info' });
+
+    try {
+      const currentMaxCount = getMaxWatchCount(series);
+      // "Fortsetzen": round = maxWatchCount - 1, target = maxWatchCount (bring lower ones up)
+      // "Neu starten": round = maxWatchCount, target = maxWatchCount + 1
+      // Ensure round >= 1 so targetWatchCount >= 2 (a rewatch always means "watch again")
+      const newRound = continueExisting ? Math.max(1, currentMaxCount - 1) : Math.max(1, currentMaxCount);
+
+      const seriesPath = `${user.uid}/serien/${series.nmr}`;
+      await firebase.database().ref(`${seriesPath}/rewatch`).set({
+        active: true,
+        round: newRound,
+        startedAt: new Date().toISOString(),
+      });
+
+      setSnackbar({ open: true, message: continueExisting ? `Rewatch #${newRound} fortgesetzt!` : `Rewatch #${newRound} gestartet!` });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+    } catch (error) {
+      setDialog({ open: true, message: 'Fehler beim Starten des Rewatches.', type: 'error' });
+    }
+  };
+
+  // Handle stopping an active rewatch
+  const handleStopRewatch = async () => {
+    if (!series || !user) return;
+
+    try {
+      await firebase.database().ref(`${user.uid}/serien/${series.nmr}/rewatch`).remove();
+      setSnackbar({ open: true, message: 'Rewatch beendet.' });
+      setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+    } catch (error) {
+      setDialog({ open: true, message: 'Fehler beim Beenden des Rewatches.', type: 'error' });
     }
   };
 
@@ -556,7 +653,7 @@ export const SeriesDetailPage = memo(() => {
             style={{
               display: 'flex',
               gap: isMobile ? '6px' : '8px',
-              marginBottom: isMobile ? '8px' : '12px',
+              marginBottom: isMobile ? '12px' : '12px',
               flexWrap: 'wrap',
               alignItems: 'center',
             }}
@@ -680,7 +777,7 @@ export const SeriesDetailPage = memo(() => {
 
           {/* Progress Bar */}
           {progressStats.total > 0 && (
-            <div style={{ marginBottom: isMobile ? '8px' : '12px' }}>
+            <div style={{ marginBottom: isMobile ? '14px' : '12px' }}>
               <div
                 style={{
                   background: 'rgba(255, 255, 255, 0.2)',
@@ -722,148 +819,141 @@ export const SeriesDetailPage = memo(() => {
             </div>
           )}
 
-          {/* Ratings from TMDB and IMDB */}
-          {!isMobile && (
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-                marginBottom: '12px',
-                flexWrap: 'wrap',
-              }}
-            >
-              {/* TMDB Rating - Always show */}
-              <a
-                href={`https://www.themoviedb.org/tv/${id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 10px',
-                  background: 'rgba(0, 188, 212, 0.15)',
-                  border: '1px solid rgba(0, 188, 212, 0.3)',
-                  borderRadius: '16px',
-                  fontSize: '13px',
-                  textDecoration: 'none',
-                  color: 'white',
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 900,
-                    fontSize: '11px',
-                    background: '#01b4e4',
-                    color: '#0d253f',
-                    padding: '2px 4px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  TMDB
-                </span>
-                <span style={{ fontWeight: 600 }}>
-                  {(
-                    tmdbRating?.vote_average ||
-                    series?.vote_average ||
-                    localSeries?.vote_average ||
-                    0
-                  ).toFixed(1)}
-                  /10
-                </span>
-                <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                  (
-                  {(
-                    (tmdbRating?.vote_count || series?.vote_count || localSeries?.vote_count || 0) /
-                    1000
-                  ).toFixed(1)}
-                  k)
-                </span>
-              </a>
-
-              {/* IMDB Rating - Always show */}
-              <a
-                href={`https://www.imdb.com/title/${series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id || ''}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 10px',
-                  background: 'rgba(245, 197, 24, 0.15)',
-                  border: '1px solid rgba(245, 197, 24, 0.3)',
-                  borderRadius: '16px',
-                  fontSize: '13px',
-                  textDecoration: 'none',
-                  color: 'white',
-                  opacity: series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 1 : 0.5,
-                  pointerEvents:
-                    series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 'auto' : 'none',
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 900,
-                    fontSize: '11px',
-                    background: '#F5C518',
-                    color: '#000',
-                    padding: '2px 4px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  IMDb
-                </span>
-                <span style={{ fontWeight: 600 }}>
-                  {imdbRating?.rating?.toFixed(1) || '0.0'}/10
-                </span>
-                <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                  (
-                  {imdbRating
-                    ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)
-                    : '0.0'}
-                  k)
-                </span>
-              </a>
-            </div>
-          )}
-
-          {/* Provider Badges unter dem Fortschrittsbalken */}
-          {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
-            <div>
-              <ProviderBadges
-                providers={
-                  series.provider?.provider && series.provider.provider.length > 0
-                    ? series.provider.provider
-                    : providers ?? undefined
-                }
-                size={isMobile ? 'medium' : 'large'}
-                maxDisplay={isMobile ? 4 : 6}
-                showNames={false}
-                searchTitle={series.title || series.name}
-                tmdbId={series.tmdb_id || series.id}
-                mediaType="tv"
-              />
-            </div>
-          )}
-
-          {/* Video Gallery Button - Desktop */}
-          {!isMobile && (
-            <VideoGallery
-              tmdbId={series.tmdb_id || series.id}
-              mediaType="tv"
-              buttonStyle="desktop"
-            />
-          )}
         </div>
       </div>
 
-      {/* Mobile Video Gallery Button */}
-      {isMobile && (
-        <div style={{ padding: '8px 12px 0' }}>
-          <VideoGallery tmdbId={series.tmdb_id || series.id} mediaType="tv" buttonStyle="mobile" />
+      {/* Ratings, Provider & Videos - below the hero backdrop */}
+      <div style={{ padding: isMobile ? '12px 16px 0' : '16px 20px 0' }}>
+        {/* Ratings from TMDB and IMDB */}
+        <div
+          style={{
+            display: 'flex',
+            gap: isMobile ? '8px' : '12px',
+            marginBottom: isMobile ? '12px' : '12px',
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* TMDB Rating */}
+          <a
+            href={`https://www.themoviedb.org/tv/${id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: isMobile ? '4px 8px' : '4px 10px',
+              background: 'rgba(0, 188, 212, 0.15)',
+              border: '1px solid rgba(0, 188, 212, 0.3)',
+              borderRadius: '16px',
+              fontSize: isMobile ? '12px' : '13px',
+              textDecoration: 'none',
+              color: 'white',
+            }}
+          >
+            <span
+              style={{
+                fontWeight: 900,
+                fontSize: '11px',
+                background: '#01b4e4',
+                color: '#0d253f',
+                padding: '2px 4px',
+                borderRadius: '4px',
+              }}
+            >
+              TMDB
+            </span>
+            <span style={{ fontWeight: 600 }}>
+              {(
+                tmdbRating?.vote_average ||
+                series?.vote_average ||
+                localSeries?.vote_average ||
+                0
+              ).toFixed(1)}
+              /10
+            </span>
+            <span style={{ fontSize: '11px', opacity: 0.7 }}>
+              (
+              {(
+                (tmdbRating?.vote_count || series?.vote_count || localSeries?.vote_count || 0) /
+                1000
+              ).toFixed(1)}
+              k)
+            </span>
+          </a>
+
+          {/* IMDB Rating */}
+          <a
+            href={`https://www.imdb.com/title/${series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id || ''}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: isMobile ? '4px 8px' : '4px 10px',
+              background: 'rgba(245, 197, 24, 0.15)',
+              border: '1px solid rgba(245, 197, 24, 0.3)',
+              borderRadius: '16px',
+              fontSize: isMobile ? '12px' : '13px',
+              textDecoration: 'none',
+              color: 'white',
+              opacity: series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 1 : 0.5,
+              pointerEvents:
+                series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 'auto' : 'none',
+            }}
+          >
+            <span
+              style={{
+                fontWeight: 900,
+                fontSize: '11px',
+                background: '#F5C518',
+                color: '#000',
+                padding: '2px 4px',
+                borderRadius: '4px',
+              }}
+            >
+              IMDb
+            </span>
+            <span style={{ fontWeight: 600 }}>
+              {imdbRating?.rating?.toFixed(1) || '0.0'}/10
+            </span>
+            <span style={{ fontSize: '11px', opacity: 0.7 }}>
+              (
+              {imdbRating
+                ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)
+                : '0.0'}
+              k)
+            </span>
+          </a>
         </div>
-      )}
+
+        {/* Provider Badges */}
+        {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
+          <div style={{ marginBottom: isMobile ? '8px' : '12px' }}>
+            <ProviderBadges
+              providers={
+                series.provider?.provider && series.provider.provider.length > 0
+                  ? series.provider.provider
+                  : providers ?? undefined
+              }
+              size={isMobile ? 'medium' : 'large'}
+              maxDisplay={isMobile ? 4 : 6}
+              showNames={false}
+              searchTitle={series.title || series.name}
+              tmdbId={series.tmdb_id || series.id}
+              mediaType="tv"
+            />
+          </div>
+        )}
+
+        {/* Video Gallery Button */}
+        <VideoGallery
+          tmdbId={series.tmdb_id || series.id}
+          mediaType="tv"
+          buttonStyle={isMobile ? 'mobile' : 'desktop'}
+        />
+      </div>
 
       {/* Action Buttons - only for user's series */}
       {!isReadOnlyTmdbSeries && (
@@ -1162,6 +1252,185 @@ export const SeriesDetailPage = memo(() => {
                     </motion.button>
                   </div>
 
+                  {/* Rewatch Progress Banner */}
+                  {hasActiveRewatch(series) && (() => {
+                    const rewatchRound = getRewatchRound(series);
+                    const rewatchProgress = getRewatchProgress(series);
+                    const rewatchPercent = rewatchProgress.total > 0
+                      ? Math.round((rewatchProgress.current / rewatchProgress.total) * 100)
+                      : 0;
+                    const warningColor = currentTheme.status?.warning || '#f59e0b';
+                    return (
+                      <div style={{
+                        background: `${warningColor}15`,
+                        border: `1px solid ${warningColor}40`,
+                        borderRadius: '12px',
+                        padding: '12px 16px',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                          }}>
+                            <Repeat style={{ fontSize: '16px', color: warningColor }} />
+                            <span style={{ fontSize: '14px', fontWeight: '600' }}>
+                              Rewatch #{rewatchRound}
+                            </span>
+                          </div>
+                          <span style={{
+                            fontSize: '12px',
+                            color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
+                          }}>
+                            {rewatchProgress.current}/{rewatchProgress.total} Episoden
+                          </span>
+                        </div>
+                        <ProgressBar
+                          value={rewatchPercent}
+                          color={warningColor}
+                          toColor="#f59e0b"
+                          height={6}
+                        />
+                        {(() => {
+                          const nextEp = getNextRewatchEpisode(series);
+                          if (!nextEp) return null;
+                          return (
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                // Find season index and navigate to season + scroll
+                                const sIdx = series.seasons.findIndex(s => s.seasonNumber === nextEp.seasonNumber);
+                                if (sIdx >= 0) {
+                                  setSelectedSeasonIndex(sIdx);
+                                  // Open ActionSheet for this episode
+                                  setShowRewatchDialog({
+                                    show: true,
+                                    type: 'episode',
+                                    item: series.seasons[sIdx].episodes[nextEp.episodeIndex],
+                                    seasonNumber: nextEp.seasonNumber + 1,
+                                    episodeNumber: nextEp.episodeIndex + 1,
+                                  });
+                                }
+                              }}
+                              style={{
+                                padding: '8px 14px',
+                                background: `${warningColor}25`,
+                                border: `1px solid ${warningColor}60`,
+                                borderRadius: '8px',
+                                color: warningColor,
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}
+                            >
+                              Nächste: S{nextEp.seasonNumber + 1} E{nextEp.episodeIndex + 1} — {nextEp.name}
+                            </motion.button>
+                          );
+                        })()}
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleStopRewatch}
+                          style={{
+                            padding: '6px 12px',
+                            background: 'transparent',
+                            border: `1px solid ${warningColor}40`,
+                            borderRadius: '8px',
+                            color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            alignSelf: 'flex-end',
+                          }}
+                        >
+                          Rewatch beenden
+                        </motion.button>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Start Rewatch Button - only when fully watched & no active rewatch */}
+                  {isSeriesFullyWatched(series) && !hasActiveRewatch(series) && (
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        const nextRound = getMaxWatchCount(series);
+                        setDialog({
+                          open: true,
+                          message: `Rewatch #${nextRound} starten? Deine Episoden werden in der Watchlist zum erneuten Abhaken angezeigt.`,
+                          type: 'info',
+                          onConfirm: handleStartRewatch,
+                        });
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: `${currentTheme.status?.warning || '#f59e0b'}20`,
+                        border: `1px solid ${currentTheme.status?.warning || '#f59e0b'}50`,
+                        borderRadius: '10px',
+                        color: currentTheme.status?.warning || '#f59e0b',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      <Repeat style={{ fontSize: '18px' }} />
+                      Rewatch starten
+                    </motion.button>
+                  )}
+
+                  {/* Continue Rewatch Button - implicit rewatch detected (uneven watchCounts, no flag) */}
+                  {(() => {
+                    const implicitRound = getImplicitRewatchRound(series);
+                    if (implicitRound === 0) return null;
+                    return (
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setDialog({
+                            open: true,
+                            message: `Es sieht aus als hättest du einen laufenden Rewatch #${implicitRound}. Soll der Rewatch offiziell fortgesetzt werden?`,
+                            type: 'info',
+                            onConfirm: () => handleStartRewatch(true),
+                          });
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          background: `${currentTheme.status?.warning || '#f59e0b'}20`,
+                          border: `1px solid ${currentTheme.status?.warning || '#f59e0b'}50`,
+                          borderRadius: '10px',
+                          color: currentTheme.status?.warning || '#f59e0b',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <Repeat style={{ fontSize: '18px' }} />
+                        Rewatch fortsetzen
+                      </motion.button>
+                    );
+                  })()}
+
                   {/* Horizontal Season Tabs */}
                   <div
                     style={{
@@ -1179,6 +1448,9 @@ export const SeriesDetailPage = memo(() => {
                       const sTotal = season.episodes?.length || 0;
                       const sProgress = sTotal > 0 ? Math.round((sWatched / sTotal) * 100) : 0;
                       const isSelected = index === selectedSeasonIndex;
+                      const sMinWatch = sProgress === 100 && sTotal > 0
+                        ? Math.min(...(season.episodes?.map((ep) => ep.watchCount || 1) || [1]))
+                        : 0;
 
                       return (
                         <motion.button
@@ -1213,7 +1485,14 @@ export const SeriesDetailPage = memo(() => {
                           </span>
                           <span style={{ fontSize: '10px', opacity: 0.7 }}>
                             {sProgress === 100 ? (
-                              <Check style={{ fontSize: '12px', color: '#00d4aa' }} />
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                <Check style={{ fontSize: '12px', color: '#00d4aa' }} />
+                                {sMinWatch > 1 && (
+                                  <span style={{ color: currentTheme.status?.warning || '#f59e0b', fontWeight: '700' }}>
+                                    ×{sMinWatch}
+                                  </span>
+                                )}
+                              </span>
                             ) : (
                               `${sProgress}%`
                             )}
@@ -1280,17 +1559,29 @@ export const SeriesDetailPage = memo(() => {
                             key={episode.id}
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() =>
-                              navigate(
-                                `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
-                              )
-                            }
+                            onClick={() => {
+                              if (episode.watched) {
+                                setShowRewatchDialog({
+                                  show: true,
+                                  type: 'episode',
+                                  item: episode,
+                                  seasonNumber: selectedSeason.seasonNumber + 1,
+                                  episodeNumber: episodeIndex + 1,
+                                });
+                              } else {
+                                navigate(
+                                  `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
+                                );
+                              }
+                            }}
                             style={{
                               width: '32px',
                               height: '32px',
                               borderRadius: '6px',
                               background: episode.watched
-                                ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                                ? (episode.watchCount || 1) > 1
+                                  ? `${currentTheme.status?.warning || '#f59e0b'}30`
+                                  : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
                                 : 'rgba(255, 255, 255, 0.1)',
                               display: 'flex',
                               alignItems: 'center',
@@ -1301,50 +1592,47 @@ export const SeriesDetailPage = memo(() => {
                               cursor: 'pointer',
                               position: 'relative',
                               border: episode.watched
-                                ? 'none'
+                                ? (episode.watchCount || 1) > 1
+                                  ? `2px solid ${currentTheme.status?.warning || '#f59e0b'}`
+                                  : 'none'
                                 : '1px solid rgba(255, 255, 255, 0.2)',
                             }}
                           >
                             {episodeIndex + 1}
-                            {(episode.watchCount || 0) > 1 && (
+                            {episode.watched && (episode.watchCount || 1) > 1 && (
                               <span
                                 style={{
                                   position: 'absolute',
-                                  top: '-3px',
-                                  right: '-3px',
-                                  background: '#ff6b6b',
-                                  borderRadius: '50%',
-                                  width: '14px',
-                                  height: '14px',
+                                  top: '-5px',
+                                  right: '-6px',
+                                  background: currentTheme.status?.warning || '#f59e0b',
+                                  borderRadius: '6px',
+                                  padding: '0 3px',
+                                  height: '12px',
                                   fontSize: '8px',
+                                  fontWeight: '700',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  fontWeight: '700',
+                                  color: '#000',
+                                  lineHeight: 1,
                                 }}
                               >
-                                {episode.watchCount}
+                                ×{episode.watchCount}
                               </span>
                             )}
-                            {discussionCount > 0 && (episode.watchCount || 0) <= 1 && (
+                            {discussionCount > 0 && (
                               <span
                                 style={{
                                   position: 'absolute',
-                                  top: '-3px',
-                                  right: '-3px',
+                                  bottom: '-2px',
+                                  left: '-2px',
                                   background: currentTheme.primary,
                                   borderRadius: '50%',
-                                  width: '14px',
-                                  height: '14px',
-                                  fontSize: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontWeight: '700',
+                                  width: '6px',
+                                  height: '6px',
                                 }}
-                              >
-                                {discussionCount}
-                              </span>
+                              />
                             )}
                           </motion.div>
                         );
@@ -1419,21 +1707,29 @@ export const SeriesDetailPage = memo(() => {
         </div>
       )}
 
-      {/* Rewatch Dialog */}
-      {showRewatchDialog.show && showRewatchDialog.item && (
-        <RewatchDialog
-          item={showRewatchDialog.item}
-          onRewatch={handleEpisodeRewatch}
-          onUnwatch={handleEpisodeUnwatch}
-          onClose={() =>
-            setShowRewatchDialog({
-              show: false,
-              type: 'episode',
-              item: null,
-            })
-          }
-        />
-      )}
+      {/* Episode Action Sheet (Rewatch/Unwatch) */}
+      <EpisodeActionSheet
+        isOpen={showRewatchDialog.show}
+        episode={showRewatchDialog.item}
+        seriesTitle={series?.title || series?.name || ''}
+        seasonNumber={showRewatchDialog.seasonNumber || 1}
+        episodeNumber={showRewatchDialog.episodeNumber || 1}
+        onRewatch={handleEpisodeRewatch}
+        onUnwatch={handleEpisodeUnwatch}
+        onNavigateToDiscussion={() => {
+          const sn = showRewatchDialog.seasonNumber || 1;
+          const en = showRewatchDialog.episodeNumber || 1;
+          setShowRewatchDialog({ show: false, type: 'episode', item: null });
+          navigate(`/episode/${series?.id}/s/${sn}/e/${en}`);
+        }}
+        onClose={() =>
+          setShowRewatchDialog({
+            show: false,
+            type: 'episode',
+            item: null,
+          })
+        }
+      />
 
       {/* Discussions Section */}
       {series && (

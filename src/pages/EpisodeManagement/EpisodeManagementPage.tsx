@@ -246,7 +246,7 @@ export const EpisodeManagementPage = () => {
     }
   };
 
-  const handleSeasonToggle = async (seasonIndex: number) => {
+  const handleSeasonToggle = async (seasonIndex: number, mode: 'watch' | 'unwatch' | 'rewatch' = 'watch') => {
     if (!series || !user) return;
 
     const season = series.seasons[seasonIndex];
@@ -254,22 +254,31 @@ export const EpisodeManagementPage = () => {
 
     try {
       const updatedEpisodes = season.episodes?.map((ep) => {
-        if (!allWatched) {
-          // Mark all as watched
+        if (mode === 'unwatch') {
+          const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
+          return { ...episodeWithoutFields, watched: false };
+        } else if (mode === 'rewatch') {
+          // Increment watchCount for all episodes
           return {
             ...ep,
             watched: true,
-            watchCount: 1,
+            watchCount: (ep.watchCount || 1) + 1,
             firstWatchedAt: ep.firstWatchedAt || new Date().toISOString(),
             lastWatchedAt: new Date().toISOString(),
           };
         } else {
-          // Mark all as unwatched
-          const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
-          return {
-            ...episodeWithoutFields,
-            watched: false,
-          };
+          if (!allWatched) {
+            return {
+              ...ep,
+              watched: true,
+              watchCount: 1,
+              firstWatchedAt: ep.firstWatchedAt || new Date().toISOString(),
+              lastWatchedAt: new Date().toISOString(),
+            };
+          } else {
+            const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
+            return { ...episodeWithoutFields, watched: false };
+          }
         }
       });
 
@@ -280,13 +289,8 @@ export const EpisodeManagementPage = () => {
         return s;
       });
 
-      // Use Firebase batch update for better performance
-      // Update seasons in Firebase using direct Firebase calls
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
-
-      // Bulk season toggle: Keine Badge-, Wrapped- oder Leaderboard-Updates
-      // Diese sollen nur bei einzelnen Episoden zählen
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
     }
@@ -303,6 +307,10 @@ export const EpisodeManagementPage = () => {
   const currentSeason = series.seasons[selectedSeason];
   const watchedCount = currentSeason?.episodes?.filter((ep) => ep.watched).length || 0;
   const totalCount = currentSeason?.episodes?.length || 0;
+  const allWatched = watchedCount === totalCount && totalCount > 0;
+  const seasonMinWatchCount = allWatched
+    ? Math.min(...(currentSeason?.episodes?.map((ep) => ep.watchCount || 1) || [1]))
+    : 0;
   const progress = totalCount > 0 ? (watchedCount / totalCount) * 100 : 0;
 
   return (
@@ -380,11 +388,28 @@ export const EpisodeManagementPage = () => {
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
-        <button className="mark-all-button" onClick={() => handleSeasonToggle(selectedSeason)}>
-          {watchedCount === totalCount
-            ? 'Alle als ungesehen markieren'
-            : 'Alle als gesehen markieren'}
-        </button>
+        {allWatched ? (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="mark-all-button"
+              style={{ flex: 1 }}
+              onClick={() => handleSeasonToggle(selectedSeason, 'rewatch')}
+            >
+              Alle als {seasonMinWatchCount + 1}× gesehen
+            </button>
+            <button
+              className="mark-all-button"
+              style={{ flex: 1, opacity: 0.6 }}
+              onClick={() => handleSeasonToggle(selectedSeason, 'unwatch')}
+            >
+              Alle als ungesehen
+            </button>
+          </div>
+        ) : (
+          <button className="mark-all-button" onClick={() => handleSeasonToggle(selectedSeason)}>
+            Alle als gesehen markieren
+          </button>
+        )}
       </div>
 
       {/* Episodes List */}

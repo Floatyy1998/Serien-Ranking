@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   NewReleases, CheckCircle, AccessTime,
   Close, ChevronRight, Tv,
-  PlaylistAdd, PlaylistRemove, Check,
+  PlaylistAdd, PlaylistRemove, Check, Stop,
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -16,7 +16,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import './CarouselNotification.css';
 
-type Variant = 'new-season' | 'completed' | 'inactive';
+type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch';
 
 interface VariantConfig {
   themeColor: (theme: ReturnType<typeof useTheme>['currentTheme']) => string;
@@ -71,6 +71,19 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     counterSuffix: 'inaktiven Serien',
     firebasePath: 'inactiveSeriesNotifications',
     watchlistValue: false,
+  },
+  'inactive-rewatch': {
+    themeColor: (t) => t.status.warning,
+    HeaderIcon: AccessTime,
+    DetailIcon: AccessTime,
+    headerText: (n) => `Inaktive${n > 1 ? 'r' : ''} Rewatch${n > 1 ? 'es' : ''}`,
+    detailText: () => 'Seit über einem Monat nicht rewatcht',
+    actionLabel: 'Beenden',
+    actionDoneLabel: 'Beendet',
+    ActionIcon: Stop,
+    counterSuffix: 'inaktiven Rewatches',
+    firebasePath: 'inactiveRewatchNotifications',
+    watchlistValue: true, // not used for rewatch
   },
 };
 
@@ -139,8 +152,13 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const handleAction = async (seriesItem: Series) => {
     if (!user) return;
     try {
-      const watchlistRef = firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/watchlist`);
-      await watchlistRef.set(config.watchlistValue);
+      if (variant === 'inactive-rewatch') {
+        // Rewatch beenden statt Watchlist ändern
+        await firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/rewatch`).remove();
+      } else {
+        const watchlistRef = firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/watchlist`);
+        await watchlistRef.set(config.watchlistValue);
+      }
 
       setActionedIds((prev) => new Set(prev).add(seriesItem.id));
 
@@ -159,7 +177,9 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const currentSeries = series[currentIndex];
   const isActioned = variant === 'new-season'
     ? actionedIds.has(currentSeries.id) || currentSeries.watchlist
-    : actionedIds.has(currentSeries.id) || !currentSeries.watchlist;
+    : variant === 'inactive-rewatch'
+      ? actionedIds.has(currentSeries.id)
+      : actionedIds.has(currentSeries.id) || !currentSeries.watchlist;
 
   const { HeaderIcon, DetailIcon, ActionIcon } = config;
 

@@ -56,12 +56,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.95)',
+            background: 'rgba(0, 0, 0, 0.5)',
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
             zIndex: 999,
-            backdropFilter: 'blur(20px)',
+            backdropFilter: 'blur(4px)',
           }}
           onClick={onClose}
           aria-hidden="true"

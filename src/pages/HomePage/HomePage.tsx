@@ -15,21 +15,25 @@ import {
   Search,
   Star,
   TrendingUp,
+  Repeat,
   Tv,
 } from '@mui/icons-material';
 import { Badge, Chip } from '@mui/material';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { cloneElement, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { EpisodeDiscussionButton } from '../../components/Discussion';
-import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
+import { BottomSheet, GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
 import { CarouselNotification } from '../../components/ui/CarouselNotification';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
+import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
@@ -37,6 +41,7 @@ import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimiz
 import type { Series } from '../../types/Series';
 import { getGreeting } from '../../utils/greetings';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
+import { WatchActivityService } from '../../services/watchActivityService';
 import { CatchUpCard } from './CatchUpCard';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
 import { LiveClock } from './LiveClock';
@@ -72,9 +77,11 @@ export const HomePage: React.FC = () => {
   const {
     seriesWithNewSeasons,
     inactiveSeries,
+    inactiveRewatches,
     completedSeries,
     clearNewSeasons,
     clearInactiveSeries,
+    clearInactiveRewatches,
     clearCompletedSeries,
   } = useSeriesList();
   const { currentTheme } = useTheme();
@@ -102,7 +109,19 @@ export const HomePage: React.FC = () => {
     handleEpisodeComplete,
     swipeDirections,
   } = useEpisodeSwipeHandlers();
+  const rewatchEpisodes = useRewatchEpisodes();
+  const [completingRewatches, setCompletingRewatches] = useState<Set<string>>(new Set());
+  const [hiddenRewatches, setHiddenRewatches] = useState<Set<string>>(new Set());
+  const [swipingRewatches, setSwipingRewatches] = useState<Set<string>>(new Set());
+  const [dragOffsetsRewatches, setDragOffsetsRewatches] = useState<Record<string, number>>({});
+  const [rewatchSwipeDirections, setRewatchSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
+  const [posterNav, setPosterNav] = useState<{
+    open: boolean;
+    seriesId: number;
+    title: string;
+    episodePath: string;
+  }>({ open: false, seriesId: 0, title: '', episodePath: '' });
 
   // Close tooltip when clicking elsewhere
   useEffect(() => {
@@ -143,6 +162,77 @@ export const HomePage: React.FC = () => {
   const stats = useWebWorkerStatsOptimized();
   const { trending } = useTMDBTrending(); // Use actual TMDB trending data
   const topRated = useTopRated();
+
+  // Handle rewatch episode swipe complete
+  const handleRewatchComplete = async (item: (typeof rewatchEpisodes)[number], swipeDirection: 'left' | 'right' = 'right') => {
+    const key = `rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`;
+    setRewatchSwipeDirections(prev => ({ ...prev, [key]: swipeDirection }));
+    setCompletingRewatches(prev => new Set(prev).add(key));
+
+    if (user) {
+      try {
+        const episodePath = `${user.uid}/serien/${item.nmr}/seasons/${item.seasonIndex}/episodes/${item.episodeIndex}`;
+        const newWatchCount = (item.currentWatchCount || 0) + 1;
+
+        await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
+        await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
+
+        if (!item.currentWatchCount) {
+          await firebase.database().ref(`${episodePath}/watched`).set(true);
+          await firebase.database().ref(`${episodePath}/firstWatchedAt`).set(new Date().toISOString());
+        }
+
+        // Log rewatch activity
+        WatchActivityService.logEpisodeWatch(
+          user.uid,
+          item.id,
+          item.title,
+          item.seasonNumber,
+          item.episodeNumber,
+          item.episodeRuntime,
+          true,
+          item.genre?.genres,
+          item.provider?.provider?.map((p: { name: string }) => p.name)
+        );
+
+        // Badge system
+        const { updateEpisodeCounters } = await import('../../features/badges/minimalActivityLogger');
+        await updateEpisodeCounters(user.uid, true);
+
+        // Auto-complete rewatch: check if this was the last episode
+        const series = seriesList.find(s => s.id === item.id);
+        if (series?.rewatch?.active) {
+          const targetCount = item.targetWatchCount;
+          let allDone = true;
+          for (const s of series.seasons || []) {
+            for (const ep of s.episodes || []) {
+              if (!ep.watched) continue;
+              if (s.seasonNumber === (item.seasonNumber - 1) && s.episodes?.indexOf(ep) === item.episodeIndex) continue;
+              if ((ep.watchCount || 1) < targetCount) {
+                allDone = false;
+                break;
+              }
+            }
+            if (!allDone) break;
+          }
+          if (allDone && newWatchCount >= targetCount) {
+            await firebase.database().ref(`${user.uid}/serien/${item.nmr}/rewatch`).remove();
+          }
+        }
+      } catch (error) {
+        console.error('Error completing rewatch episode:', error);
+      }
+    }
+
+    setTimeout(() => {
+      setHiddenRewatches(prev => new Set(prev).add(key));
+      setCompletingRewatches(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(key);
+        return newSet;
+      });
+    }, 300);
+  };
 
   // Get the total count of series with unwatched episodes in watchlist
   const { seriesList } = useSeriesList();
@@ -213,9 +303,22 @@ export const HomePage: React.FC = () => {
           />
         )}
 
+      {/* Inactive Rewatch Notification */}
+      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
+        (!inactiveSeries || inactiveSeries.length === 0) &&
+        inactiveRewatches &&
+        inactiveRewatches.length > 0 && (
+          <CarouselNotification
+            variant="inactive-rewatch"
+            series={inactiveRewatches}
+            onDismiss={clearInactiveRewatches}
+          />
+        )}
+
       {/* Completed Series Notification - nur anzeigen wenn keine anderen Benachrichtigungen */}
       {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
         (!inactiveSeries || inactiveSeries.length === 0) &&
+        (!inactiveRewatches || inactiveRewatches.length === 0) &&
         completedSeries &&
         completedSeries.length > 0 && (
           <CarouselNotification
@@ -961,11 +1064,12 @@ export const HomePage: React.FC = () => {
                           src={item.poster}
                           alt={item.title}
                           decoding="async"
-                          onClick={() =>
-                            navigate(
-                              `/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`
-                            )
-                          }
+                          onClick={() => setPosterNav({
+                            open: true,
+                            seriesId: item.id,
+                            title: item.title,
+                            episodePath: `/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`,
+                          })}
                           style={{
                             width: '50px',
                             height: '75px',
@@ -1073,6 +1177,208 @@ export const HomePage: React.FC = () => {
                                   color: currentTheme.status.success,
                                 }}
                               />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
+
+      {/* Rewatches Section */}
+      {rewatchEpisodes.length > 0 && (
+        <section style={{ marginBottom: '32px' }}>
+          <SectionHeader
+            icon={<Repeat />}
+            iconColor={currentTheme.status.warning}
+            title="Rewatches"
+            onSeeAll={() => navigate('/watchlist')}
+          />
+
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              padding: '0 20px',
+              position: 'relative',
+            }}
+          >
+            <AnimatePresence mode="popLayout">
+              {rewatchEpisodes
+                .filter(item => !hiddenRewatches.has(`rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`))
+                .slice(0, 4)
+                .map(item => {
+                  const key = `rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`;
+                  const isCompleting = completingRewatches.has(key);
+                  const isSwiping = swipingRewatches.has(key);
+                  const warningColor = currentTheme.status?.warning || '#f59e0b';
+
+                  return (
+                    <motion.div
+                      key={key}
+                      data-block-swipe
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{
+                        opacity: isCompleting ? 0.5 : 1,
+                        y: 0,
+                        scale: isCompleting ? 0.95 : 1,
+                      }}
+                      exit={{
+                        opacity: 0,
+                        x: rewatchSwipeDirections[key] === 'left' ? -300 : 300,
+                        transition: { duration: 0.3 },
+                      }}
+                      style={{ position: 'relative' }}
+                    >
+                      <motion.div
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        dragSnapToOrigin
+                        onDragStart={() => {
+                          setSwipingRewatches(prev => new Set(prev).add(key));
+                        }}
+                        onDrag={(_event, info: PanInfo) => {
+                          setDragOffsetsRewatches(prev => ({ ...prev, [key]: info.offset.x }));
+                        }}
+                        onDragEnd={(event, info: PanInfo) => {
+                          event.stopPropagation();
+                          setSwipingRewatches(prev => {
+                            const s = new Set(prev);
+                            s.delete(key);
+                            return s;
+                          });
+                          setDragOffsetsRewatches(prev => {
+                            const o = { ...prev };
+                            delete o[key];
+                            return o;
+                          });
+                          if (Math.abs(info.offset.x) > 100) {
+                            handleRewatchComplete(item, info.offset.x > 0 ? 'right' : 'left');
+                          }
+                        }}
+                        whileDrag={{ scale: 1.02 }}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: '70px',
+                          right: 0,
+                          bottom: 0,
+                          zIndex: 1,
+                        }}
+                      />
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          background: isCompleting
+                            ? `linear-gradient(90deg, ${warningColor}33, ${warningColor}0D)`
+                            : `${warningColor}${Math.min(Math.round((Math.abs(dragOffsetsRewatches[key] || 0) / 100) * 25), 25).toString(16).padStart(2, '0')}`,
+                          border: `1px solid ${
+                            isCompleting
+                              ? `${warningColor}80`
+                              : `${warningColor}${Math.round(51 + Math.min((Math.abs(dragOffsetsRewatches[key] || 0) / 100) * 77, 77)).toString(16)}`
+                          }`,
+                          transition: dragOffsetsRewatches[key] ? 'none' : 'all 0.3s ease',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          position: 'relative',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {/* Swipe Indicator */}
+                        <motion.div
+                          style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0, bottom: 0,
+                            background: `linear-gradient(90deg, transparent, ${warningColor}4D)`,
+                            opacity: 0,
+                          }}
+                          animate={{ opacity: isSwiping ? 1 : 0 }}
+                        />
+
+                        <img
+                          src={item.poster}
+                          alt={item.title}
+                          decoding="async"
+                          onClick={() => setPosterNav({
+                            open: true,
+                            seriesId: item.id,
+                            title: item.title,
+                            episodePath: `/episode/${item.id}/s/${item.seasonNumber}/e/${item.episodeNumber}`,
+                          })}
+                          style={{
+                            width: '50px',
+                            height: '75px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            zIndex: 2,
+                          }}
+                        />
+                        <div
+                          style={{
+                            flex: 1,
+                            pointerEvents: 'none',
+                            position: 'relative',
+                            zIndex: 2,
+                          }}
+                        >
+                          <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
+                            {item.title}
+                          </h3>
+                          <p style={{ fontSize: '12px', margin: 0, color: warningColor }}>
+                            S{item.seasonNumber} E{item.episodeNumber} • {item.episodeName}
+                          </p>
+                          <p style={{ fontSize: '11px', margin: '2px 0 0 0', opacity: 0.5 }}>
+                            {item.currentWatchCount}x → {item.targetWatchCount}x
+                          </p>
+                          <div
+                            style={{
+                              marginTop: '4px',
+                              height: '3px',
+                              background: currentTheme.border.default,
+                              borderRadius: '1.5px',
+                              overflow: 'hidden',
+                              position: 'relative',
+                            }}
+                          >
+                            <div
+                              style={{
+                                position: 'absolute',
+                                left: 0, top: 0,
+                                height: '100%',
+                                width: `${item.progress}%`,
+                                background: `linear-gradient(90deg, ${warningColor}, #f59e0b)`,
+                                transition: 'width 0.3s ease',
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <AnimatePresence mode="wait">
+                          {isCompleting ? (
+                            <motion.div
+                              initial={{ scale: 0, rotate: -180 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              exit={{ scale: 0, rotate: 180 }}
+                            >
+                              <Check style={{ fontSize: '24px', color: warningColor }} />
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              animate={{ x: isSwiping ? 10 : 0 }}
+                              style={{ display: 'flex', alignItems: 'center' }}
+                            >
+                              <Repeat style={{ fontSize: '20px', color: warningColor }} />
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -1233,11 +1539,12 @@ export const HomePage: React.FC = () => {
                           src={episode.poster}
                           alt={episode.seriesTitle}
                           decoding="async"
-                          onClick={() =>
-                            navigate(
-                              `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`
-                            )
-                          }
+                          onClick={() => setPosterNav({
+                            open: true,
+                            seriesId: Number(episode.seriesId),
+                            title: episode.seriesTitle,
+                            episodePath: `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`,
+                          })}
                           style={{
                             width: '50px',
                             height: '75px',
@@ -1552,6 +1859,63 @@ export const HomePage: React.FC = () => {
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
         <StatsGrid />
       </div>
+
+      {/* Poster Navigation Sheet */}
+      <BottomSheet
+        isOpen={posterNav.open}
+        onClose={() => setPosterNav(prev => ({ ...prev, open: false }))}
+        bottomOffset="calc(90px + env(safe-area-inset-bottom))"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 16px 16px' }}>
+          <p style={{ fontSize: '17px', fontWeight: '600', margin: 0, color: currentTheme.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{posterNav.title}</p>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              setPosterNav(prev => ({ ...prev, open: false }));
+              navigate(posterNav.episodePath);
+            }}
+            style={{
+              padding: '14px 16px',
+              background: 'rgba(0, 212, 170, 0.15)',
+              border: '1px solid rgba(0, 212, 170, 0.3)',
+              borderRadius: '12px',
+              color: '#00d4aa',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            <PlayCircle style={{ fontSize: '20px' }} />
+            Zur Episode
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              setPosterNav(prev => ({ ...prev, open: false }));
+              navigate(`/series/${posterNav.seriesId}`);
+            }}
+            style={{
+              padding: '14px 16px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '12px',
+              color: 'white',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            <Tv style={{ fontSize: '20px' }} />
+            Zur Serie
+          </motion.button>
+        </div>
+      </BottomSheet>
     </div>
   );
 };
