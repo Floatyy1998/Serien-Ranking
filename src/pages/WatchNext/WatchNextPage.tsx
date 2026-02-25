@@ -15,7 +15,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -35,8 +35,9 @@ export const WatchNextPage = () => {
   const { currentTheme } = useTheme();
   const [showFilter, setShowFilter] = useState(false);
   const [filterInput, setFilterInput] = useState('');
-  // Always start with rewatches hidden on /watchlist
-  const [showRewatches, setShowRewatches] = useState(false);
+  const [searchParams] = useSearchParams();
+  // Open rewatches dropdown if navigated with ?rewatches=open
+  const [showRewatches, setShowRewatches] = useState(searchParams.get('rewatches') === 'open');
   const [customOrderActive, setCustomOrderActive] = useState(
     localStorage.getItem('watchNextCustomOrderActive') === 'true'
   );
@@ -125,11 +126,12 @@ export const WatchNextPage = () => {
 
   // Removed tabs - only show next episodes
 
-  // Save preferences to localStorage and ensure rewatches start hidden
+  // Save preferences to localStorage — only reset if not opened via URL param
   useEffect(() => {
-    // Always set to false (hide rewatches) on mount
-    setShowRewatches(false);
-    localStorage.setItem('watchNextHideRewatches', 'true');
+    if (searchParams.get('rewatches') !== 'open') {
+      setShowRewatches(false);
+      localStorage.setItem('watchNextHideRewatches', 'true');
+    }
   }, []); // Only run on mount
 
   // Save when showRewatches changes after initial mount
