@@ -59,40 +59,38 @@ export const useWatchNextEpisodes = (
         ? series.seasons
         : (Object.values(series.seasons) as typeof series.seasons);
 
-      // If showing rewatches, ONLY show series with active rewatches
-      if (showRewatches) {
-        if (hasActiveRewatch(series)) {
-          const rewatchEpisode = getNextRewatchEpisode(series);
-          if (rewatchEpisode) {
-            // Find the correct season index based on seasonNumber
-            const seasonIndex = seasonsArray.findIndex(
-              (s) => s.seasonNumber === rewatchEpisode.seasonNumber
-            );
-            if (seasonIndex !== -1) {
-              const ep = seasonsArray[seasonIndex]?.episodes?.[rewatchEpisode.episodeIndex];
-              rewatches.push({
-                seriesId: series.id,
-                seriesTitle: series.title,
-                poster: getImageUrl(series.poster),
-                seasonIndex: seasonIndex,
-                episodeIndex: rewatchEpisode.episodeIndex,
-                seasonNumber: rewatchEpisode.seasonNumber,
-                episodeNumber: rewatchEpisode.episodeIndex + 1,
-                episodeName: rewatchEpisode.name || `Episode ${rewatchEpisode.episodeIndex + 1}`,
-                airDate: rewatchEpisode.air_date,
-                runtime: ep?.runtime || series.episodeRuntime || 45,
-                isRewatch: true,
-                currentWatchCount: rewatchEpisode.currentWatchCount,
-                targetWatchCount: rewatchEpisode.targetWatchCount,
-              });
-            }
+      // Collect rewatch episodes for series with active rewatches
+      if (hasActiveRewatch(series)) {
+        const rewatchEpisode = getNextRewatchEpisode(series);
+        if (rewatchEpisode) {
+          const seasonIndex = seasonsArray.findIndex(
+            (s) => s.seasonNumber === rewatchEpisode.seasonNumber
+          );
+          if (seasonIndex !== -1) {
+            const ep = seasonsArray[seasonIndex]?.episodes?.[rewatchEpisode.episodeIndex];
+            rewatches.push({
+              seriesId: series.id,
+              seriesTitle: series.title,
+              poster: getImageUrl(series.poster),
+              seasonIndex: seasonIndex,
+              episodeIndex: rewatchEpisode.episodeIndex,
+              seasonNumber: rewatchEpisode.seasonNumber,
+              episodeNumber: rewatchEpisode.episodeIndex + 1,
+              episodeName: rewatchEpisode.name || `Episode ${rewatchEpisode.episodeIndex + 1}`,
+              airDate: rewatchEpisode.air_date,
+              runtime: ep?.runtime || series.episodeRuntime || 45,
+              isRewatch: true,
+              currentWatchCount: rewatchEpisode.currentWatchCount,
+              targetWatchCount: rewatchEpisode.targetWatchCount,
+            });
           }
         }
-      } else {
-        // Normal mode: show next unwatched episodes
+      }
+
+      // Always collect normal next unwatched episodes
+      {
         let foundUnwatched = false;
 
-        // Find first unwatched episode that has already aired
         for (const [seasonIndex, season] of seasonsArray.entries()) {
           const episodesList: typeof season.episodes = Array.isArray(season.episodes)
             ? season.episodes
@@ -105,10 +103,9 @@ export const useWatchNextEpisodes = (
           for (const [episodeIndex, episode] of episodesList.entries()) {
             if (episode.watched) continue;
 
-            // Check if episode has aired
-            if (!episode.air_date) continue; // Skip episodes without air date
+            if (!episode.air_date) continue;
             const airDate = new Date(episode.air_date);
-            if (airDate > today) continue; // Skip future episodes
+            if (airDate > today) continue;
             episodes.push({
               seriesId: series.id,
               seriesTitle: series.title,
@@ -122,7 +119,7 @@ export const useWatchNextEpisodes = (
               runtime: episode.runtime || series.episodeRuntime || 45,
             });
             foundUnwatched = true;
-            break; // Only first unwatched per series
+            break;
           }
 
           if (foundUnwatched) break;
@@ -130,8 +127,8 @@ export const useWatchNextEpisodes = (
       }
     });
 
-    // Return only the appropriate episodes based on mode
-    const sortedEpisodes = showRewatches ? rewatches : episodes;
+    // Sort normal episodes, then prepend rewatches if expanded
+    const sortedEpisodes = episodes;
 
     if (!customOrderActive) {
       const [field, order] = sortOption.split('-');
@@ -161,6 +158,7 @@ export const useWatchNextEpisodes = (
       });
     }
 
-    return sortedEpisodes;
+    // Prepend rewatches when dropdown is open
+    return showRewatches ? [...rewatches, ...sortedEpisodes] : sortedEpisodes;
   }, [seriesList, filterInput, showRewatches, sortOption, customOrderActive, watchlistOrder]);
 };
