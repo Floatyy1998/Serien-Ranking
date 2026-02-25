@@ -22,7 +22,19 @@ export interface RewatchItem {
   genre: Series['genre'];
   provider: Series['provider'];
   episodeRuntime: number;
+  lastWatchedAt: string;
 }
+
+const getSeriesLastWatchedAt = (series: Series): string => {
+  let latest = '';
+  for (const season of series.seasons || []) {
+    for (const ep of season.episodes || []) {
+      if (ep.lastWatchedAt && ep.lastWatchedAt > latest) latest = ep.lastWatchedAt;
+      if (ep.firstWatchedAt && ep.firstWatchedAt > latest) latest = ep.firstWatchedAt;
+    }
+  }
+  return latest || '1900-01-01';
+};
 
 export const useRewatchEpisodes = (): RewatchItem[] => {
   const { seriesList } = useSeriesList();
@@ -66,8 +78,11 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
         genre: series.genre,
         provider: series.provider,
         episodeRuntime: ep?.runtime || series.episodeRuntime || 45,
+        lastWatchedAt: getSeriesLastWatchedAt(series),
       });
     }
+
+    items.sort((a, b) => new Date(b.lastWatchedAt).getTime() - new Date(a.lastWatchedAt).getTime());
 
     return items;
   }, [seriesList]);
