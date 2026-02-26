@@ -757,8 +757,8 @@ export const HomePage: React.FC = () => {
             <div
               style={{
                 position: 'relative',
-                width: 42,
-                height: 42,
+                width: 46,
+                height: 46,
                 borderRadius: '50%',
                 background: `${countdownColor}30`,
                 border: `2px solid ${countdownColor}80`,
@@ -769,12 +769,20 @@ export const HomePage: React.FC = () => {
                 flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
-                {next.daysUntil}
-              </span>
-              <span style={{ fontSize: '7px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>
-                {next.daysUntil === 1 ? 'Tag' : 'Tage'}
-              </span>
+              {next.daysUntil === 0 ? (
+                <span style={{ fontSize: '10px', fontWeight: 800, color: '#fff', lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Heute
+                </span>
+              ) : (
+                <>
+                  <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                    {next.daysUntil}
+                  </span>
+                  <span style={{ fontSize: '7px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>
+                    {next.daysUntil === 1 ? 'Tag' : 'Tage'}
+                  </span>
+                </>
+              )}
             </div>
           </motion.div>
         );

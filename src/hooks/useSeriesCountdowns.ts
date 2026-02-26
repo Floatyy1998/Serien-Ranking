@@ -38,10 +38,10 @@ export function useSeriesCountdowns() {
         airDate.setHours(0, 0, 0, 0);
         const daysUntil = Math.round((airDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-        if (daysUntil > 0 && (!best || daysUntil < best.daysUntil)) {
+        if (daysUntil >= 0 && (!best || daysUntil < best.daysUntil)) {
           best = {
             seriesId: series.id,
-            title: series.title,
+            title: series.title || series.name || series.original_name || '',
             posterUrl: series.poster?.poster || '',
             nextDate: dateStr,
             daysUntil,
