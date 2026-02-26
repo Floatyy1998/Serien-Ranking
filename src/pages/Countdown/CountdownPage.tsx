@@ -154,21 +154,29 @@ const HeroCard: React.FC<{
             justifyContent: 'center',
           }}
         >
-          <span style={{ fontSize: 24, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
-            {item.daysUntil}
-          </span>
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 600,
-              color: 'rgba(255,255,255,0.6)',
-              marginTop: 1,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            {item.daysUntil === 1 ? 'Tag' : 'Tage'}
-          </span>
+          {item.daysUntil === 0 ? (
+            <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Heute
+            </span>
+          ) : (
+            <>
+              <span style={{ fontSize: 24, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                {item.daysUntil}
+              </span>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.6)',
+                  marginTop: 1,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                {item.daysUntil === 1 ? 'Tag' : 'Tage'}
+              </span>
+            </>
+          )}
         </div>
       </div>
     </motion.button>
@@ -263,12 +271,20 @@ const CountdownItem: React.FC<{
           minWidth: 44,
         }}
       >
-        <span style={{ fontSize: 20, fontWeight: 800, color: accentColor, lineHeight: 1 }}>
-          {item.daysUntil}
-        </span>
-        <span style={{ fontSize: 9, color: currentTheme.text.muted, marginTop: 2 }}>
-          {item.daysUntil === 1 ? 'Tag' : 'Tage'}
-        </span>
+        {item.daysUntil === 0 ? (
+          <span style={{ fontSize: 13, fontWeight: 800, color: accentColor, lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Heute
+          </span>
+        ) : (
+          <>
+            <span style={{ fontSize: 20, fontWeight: 800, color: accentColor, lineHeight: 1 }}>
+              {item.daysUntil}
+            </span>
+            <span style={{ fontSize: 9, color: currentTheme.text.muted, marginTop: 2 }}>
+              {item.daysUntil === 1 ? 'Tag' : 'Tage'}
+            </span>
+          </>
+        )}
       </div>
     </motion.button>
   );
