@@ -123,13 +123,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
     const notificationsRef = firebase.database().ref(`users/${user.uid}/notifications`);
     await notificationsRef.push(newNotification);
-
-    // Also add to local state immediately
-    const id = `temp_${Date.now()}`;
-    setNotifications(prev => [{
-      id,
-      ...newNotification,
-    }, ...prev]);
+    // Firebase realtime listener handles the state update automatically
   };
 
   const markAsRead = async (notificationId: string) => {
