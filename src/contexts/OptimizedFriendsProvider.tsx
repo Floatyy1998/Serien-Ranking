@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../App';
 import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
@@ -70,7 +70,17 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const [unreadRequestsCount, setUnreadRequestsCount] = useState(0);
   const [unreadActivitiesCount, setUnreadActivitiesCount] = useState(0);
   const [readTimesLoaded, setReadTimesLoaded] = useState(false);
-  const friends: Friend[] = friendsData ? Object.values(friendsData) : [];
+
+  // Refs to avoid stale closures in intervals and listeners
+  const lastReadActivitiesTimeRef = useRef(lastReadActivitiesTime);
+  const lastReadRequestsTimeRef = useRef(lastReadRequestsTime);
+  const loadFriendActivitiesRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Keep refs in sync with state
+  useEffect(() => { lastReadActivitiesTimeRef.current = lastReadActivitiesTime; }, [lastReadActivitiesTime]);
+  useEffect(() => { lastReadRequestsTimeRef.current = lastReadRequestsTime; }, [lastReadRequestsTime]);
+
+  const friends: Friend[] = useMemo(() => friendsData ? Object.values(friendsData) : [], [friendsData]);
 
   // Lade gespeicherte Lesezeiten aus Firebase
   useEffect(() => {
@@ -180,7 +190,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
         // Unread count
         const unreadCount = pendingIncoming.filter(
-          (request) => request.sentAt > lastReadRequestsTime
+          (request) => request.sentAt > lastReadRequestsTimeRef.current
         ).length;
         setUnreadRequestsCount(unreadCount);
       } catch (error) {
@@ -217,7 +227,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       setFriendRequests(pending);
 
       // Update unread count
-      const unreadCount = pending.filter((request) => request.sentAt > lastReadRequestsTime).length;
+      const unreadCount = pending.filter((request) => request.sentAt > lastReadRequestsTimeRef.current).length;
       setUnreadRequestsCount(unreadCount);
     });
 
@@ -238,7 +248,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       incomingRef.off('value', incomingListener);
       outgoingRef.off('value', outgoingListener);
     };
-  }, [user?.uid, lastReadRequestsTime]); // Stabile Dependencies
+  }, [user?.uid]); // Stabile Dependencies - read times handled via ref
 
   // 🚀 Optimiert: Friend Activities mit intelligenter Paginierung und Caching
   const loadFriendActivities = useCallback(async () => {
@@ -301,41 +311,38 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
       // Unread count
       const unreadActivities = recentActivities.filter(
-        (activity) => activity.timestamp > lastReadActivitiesTime
+        (activity) => activity.timestamp > lastReadActivitiesTimeRef.current
       );
       setUnreadActivitiesCount(unreadActivities.length);
     } catch (error) {
       // // console.warn('Failed to load friend activities:', error);
     }
-  }, [user, friends, lastReadActivitiesTime]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, friends]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep loadFriendActivities ref in sync
+  useEffect(() => { loadFriendActivitiesRef.current = loadFriendActivities; }, [loadFriendActivities]);
 
   // Load activities when conditions are met
   useEffect(() => {
     if (!user || friends.length === 0 || !readTimesLoaded) {
-      if (!readTimesLoaded && user) {
-      }
       return;
     }
 
-    // Initial load after delay to ensure read times are set
-    const loadTimer = setTimeout(() => {
-      loadFriendActivities();
-    }, 100);
+    // Initial load
+    loadFriendActivitiesRef.current?.();
 
-    // Setup interval for periodic updates
+    // Setup interval for periodic updates - uses ref to always call latest version
     const interval = setInterval(
       () => {
-        loadFriendActivities();
+        loadFriendActivitiesRef.current?.();
       },
       5 * 60 * 1000
     );
 
     return () => {
-      clearTimeout(loadTimer);
       clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, readTimesLoaded]); // Nur wirklich stabile Dependencies
+  }, [user?.uid, friends.length, readTimesLoaded]);
 
   useEffect(() => {
     setLoading(friendsLoading);

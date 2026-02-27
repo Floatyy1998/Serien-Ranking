@@ -54,9 +54,7 @@ export const ActivityPage = () => {
 
   const {
     notifications,
-    unreadCount: unreadDiscussionCount,
     markAsRead,
-    markAllAsRead,
   } = useNotifications();
 
   const discussionNotifications = useMemo(() => {
@@ -110,15 +108,18 @@ export const ActivityPage = () => {
     getPosterUrl,
   } = useActivityGrouping(friendActivities);
 
+  // Calculate badge counts once to avoid recalculation in render
+  const unreadDiscussionsCount = discussionNotifications.filter((n) => !n.read).length;
+
   useEffect(() => {
     if (activeTab === 'activity' && unreadActivitiesCount > 0) {
       markActivitiesAsRead();
     } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
       markRequestsAsRead();
-    } else if (activeTab === 'discussions' && unreadDiscussionCount > 0) {
-      markAllAsRead();
+    } else if (activeTab === 'discussions' && unreadDiscussionsCount > 0) {
+      discussionNotifications.filter(n => !n.read).forEach(n => markAsRead(n.id));
     }
-  }, [activeTab, unreadActivitiesCount, unreadRequestsCount, unreadDiscussionCount]);
+  }, [activeTab, unreadActivitiesCount, unreadRequestsCount, unreadDiscussionsCount]);
 
   const toggleUserExpanded = (userId: string) => {
     setExpandedUsers((prev) => {
@@ -131,9 +132,6 @@ export const ActivityPage = () => {
       return newSet;
     });
   };
-
-  // Calculate badge counts once to avoid recalculation in render
-  const unreadDiscussionsCount = discussionNotifications.filter((n) => !n.read).length;
 
   const tabs = [
     {
