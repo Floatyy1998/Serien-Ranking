@@ -2,9 +2,9 @@ import { BarChart, Person, PlayCircle, Star } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { PetWidget } from '../pet';
 import './BottomNavigation.css';
 
@@ -42,19 +42,23 @@ export const BottomNavigation = () => {
     {
       id: 'home',
       path: '/',
-      icon: <div style={{
-        width: '24px',
-        height: '24px',
-        backgroundColor: 'currentColor',
-        WebkitMaskImage: 'url(/tv-logo.svg)',
-        maskImage: 'url(/tv-logo.svg)',
-        WebkitMaskSize: 'contain',
-        maskSize: 'contain' as string,
-        WebkitMaskRepeat: 'no-repeat',
-        maskRepeat: 'no-repeat' as string,
-        WebkitMaskPosition: 'center',
-        maskPosition: 'center' as string,
-      }} />,
+      icon: (
+        <div
+          style={{
+            width: '24px',
+            height: '24px',
+            backgroundColor: 'currentColor',
+            WebkitMaskImage: 'url(/tv-logo.svg)',
+            maskImage: 'url(/tv-logo.svg)',
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain' as string,
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat' as string,
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center' as string,
+          }}
+        />
+      ),
       label: 'Home',
     },
     {
@@ -79,7 +83,7 @@ export const BottomNavigation = () => {
       id: 'profile',
       path: '/profile',
       icon: <Person />,
-      label: 'Mehr',
+      label: 'Profil',
       badge: totalBadgeCount > 0 ? totalBadgeCount : undefined,
     },
   ];
@@ -140,7 +144,12 @@ export const BottomNavigation = () => {
       <PetWidget />
 
       <nav className="mobile-bottom-navigation" aria-label="Hauptnavigation">
-        <div className="nav-container" role="tablist" aria-label="Seitennavigation" onKeyDown={handleNavKeyDown}>
+        <div
+          className="nav-container"
+          role="tablist"
+          aria-label="Seitennavigation"
+          onKeyDown={handleNavKeyDown}
+        >
           {navItems.map((item) => {
             const active = isActive(item.path);
 
