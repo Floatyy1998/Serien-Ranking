@@ -255,7 +255,11 @@ export const PetsPage: React.FC = () => {
               boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
             }}
           >
-            <GradientText as="h2" from="#ec4899" to={currentTheme.primary} style={{
+            <GradientText
+              as="h2"
+              from="#ec4899"
+              to={currentTheme.primary}
+              style={{
                 fontSize: '28px',
                 fontWeight: 800,
                 textAlign: 'center',
@@ -404,11 +408,7 @@ export const PetsPage: React.FC = () => {
       />
 
       {/* Header */}
-      <PageHeader
-        title="Meine Pets"
-        gradientFrom="#ec4899"
-        gradientTo={currentTheme.primary}
-      />
+      <PageHeader title="Meine Pets" gradientFrom="#ec4899" gradientTo={currentTheme.primary} />
 
       {/* Pet Selector */}
       {pets.length > 0 && (
@@ -513,7 +513,11 @@ export const PetsPage: React.FC = () => {
           zIndex: 1,
         }}
       >
-        <GradientText as="h2" from={currentTheme.text.primary} to="#ec4899" style={{
+        <GradientText
+          as="h2"
+          from={currentTheme.text.primary}
+          to="#ec4899"
+          style={{
             fontSize: '36px',
             fontWeight: 800,
             margin: '0 0 12px',
@@ -768,7 +772,8 @@ export const PetsPage: React.FC = () => {
             zIndex: 1,
           }}
         >
-          {pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD && pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD ? (
+          {pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD &&
+          pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD ? (
             <div
               style={{
                 background: `linear-gradient(135deg, #22c55e18, #22c55e08)`,
@@ -780,7 +785,18 @@ export const PetsPage: React.FC = () => {
                 gap: '10px',
               }}
             >
-              <span style={{ fontSize: '14px', fontWeight: 800, color: '#22c55e', background: '#22c55e18', padding: '4px 8px', borderRadius: '8px' }}>+XP</span>
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 800,
+                  color: '#22c55e',
+                  background: '#22c55e18',
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                }}
+              >
+                +XP
+              </span>
               <div>
                 <div style={{ color: '#22c55e', fontSize: '13px', fontWeight: 700 }}>
                   XP-Bonus aktiv: +50%

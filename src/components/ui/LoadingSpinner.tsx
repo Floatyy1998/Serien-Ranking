@@ -37,9 +37,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         }}
       />
       {text ? (
-        <p style={{ color: currentTheme.text.secondary, fontSize: '15px', margin: 0 }}>
-          {text}
-        </p>
+        <p style={{ color: currentTheme.text.secondary, fontSize: '15px', margin: 0 }}>{text}</p>
       ) : (
         <VisuallyHidden>Daten werden geladen</VisuallyHidden>
       )}

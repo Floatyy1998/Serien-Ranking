@@ -85,10 +85,7 @@ class ServiceWorkerManager {
       const newWorker = registration.installing;
       if (newWorker) {
         newWorker.addEventListener('statechange', () => {
-          if (
-            newWorker.state === 'installed' &&
-            navigator.serviceWorker.controller
-          ) {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             this.showUpdateAvailable();
           }
         });
@@ -237,7 +234,11 @@ class ServiceWorkerManager {
       if (!registration) return;
 
       if ('sync' in registration) {
-        await (registration as ServiceWorkerRegistration & { sync: { register(tag: string): Promise<void> } }).sync.register(tag);
+        await (
+          registration as ServiceWorkerRegistration & {
+            sync: { register(tag: string): Promise<void> };
+          }
+        ).sync.register(tag);
       }
     } catch (error) {
       // // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
@@ -247,9 +248,7 @@ class ServiceWorkerManager {
   /**
    * 💾 Offline Update Queue Management
    */
-  public async queueFirebaseUpdate(
-    update: Omit<PendingUpdate, 'id' | 'timestamp'>
-  ): Promise<void> {
+  public async queueFirebaseUpdate(update: Omit<PendingUpdate, 'id' | 'timestamp'>): Promise<void> {
     const pendingUpdate: PendingUpdate = {
       ...update,
       id: `update_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -382,9 +381,7 @@ class ServiceWorkerManager {
     return navigator.onLine;
   }
 
-  public onOnlineStatusChange(
-    callback: (isOnline: boolean) => void
-  ): () => void {
+  public onOnlineStatusChange(callback: (isOnline: boolean) => void): () => void {
     const handleOnline = () => callback(true);
     const handleOffline = () => callback(false);
 

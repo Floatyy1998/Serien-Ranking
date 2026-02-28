@@ -101,7 +101,7 @@ export class PetMoodService {
       playful: '😄',
       festive: '🎉',
       scared: '😨',
-      loved: '🥰'
+      loved: '🥰',
     };
 
     return mood ? moodEmojis[mood] : '😊';
@@ -112,43 +112,43 @@ export class PetMoodService {
     const animations = {
       happy: {
         y: [0, -5, 0],
-        rotate: [0, 5, -5, 0]
+        rotate: [0, 5, -5, 0],
       },
       sad: {
         y: [0, 2, 0],
-        scale: [1, 0.95, 1]
+        scale: [1, 0.95, 1],
       },
       excited: {
         y: [0, -10, 0],
         rotate: [0, 10, -10, 0],
-        scale: [1, 1.1, 1]
+        scale: [1, 1.1, 1],
       },
       sleepy: {
         y: [0, 1, 0],
-        opacity: [1, 0.8, 1]
+        opacity: [1, 0.8, 1],
       },
       hungry: {
         x: [-2, 2, -2, 2, 0],
-        scale: [1, 0.98, 1]
+        scale: [1, 0.98, 1],
       },
       playful: {
         y: [0, -8, 0],
         rotate: [0, 360],
-        scale: [1, 1.05, 1]
+        scale: [1, 1.05, 1],
       },
       festive: {
         y: [0, -5, 0],
         rotate: [0, 15, -15, 0],
-        scale: [1, 1.2, 1, 1.2, 1]
+        scale: [1, 1.2, 1, 1.2, 1],
       },
       scared: {
         x: [-1, 1, -1, 1, 0],
-        scale: [1, 0.9, 1]
+        scale: [1, 0.9, 1],
       },
       loved: {
         scale: [1, 1.1, 1],
-        rotate: [0, 5, -5, 0]
-      }
+        rotate: [0, 5, -5, 0],
+      },
     };
 
     return mood ? animations[mood] : animations.happy;

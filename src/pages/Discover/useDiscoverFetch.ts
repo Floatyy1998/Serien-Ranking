@@ -22,7 +22,13 @@ interface UseDiscoverFetchResult {
   addingItem: string | null;
   snackbar: { open: boolean; message: string };
   dialog: { open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' };
-  setDialog: React.Dispatch<React.SetStateAction<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>>;
+  setDialog: React.Dispatch<
+    React.SetStateAction<{
+      open: boolean;
+      message: string;
+      type: 'success' | 'error' | 'info' | 'warning';
+    }>
+  >;
   fetchFromTMDB: (reset?: boolean) => Promise<void>;
   fetchRecommendations: (reset?: boolean) => Promise<void>;
   searchItems: (query: string) => Promise<void>;
@@ -48,14 +54,23 @@ export const useDiscoverFetch = (
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [addingItem, setAddingItem] = useState<string | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
-  const [dialog, setDialog] = useState<{ open: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', type: 'info' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({ open: false, message: '', type: 'info' });
   const [searchResults, setSearchResults] = useState<DiscoverItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<DiscoverItem[]>([]);
   const [recommendationsHasMore, setRecommendationsHasMore] = useState(true);
-  const [usedRecommendationSources, setUsedRecommendationSources] = useState<Set<string>>(new Set());
+  const [usedRecommendationSources, setUsedRecommendationSources] = useState<Set<string>>(
+    new Set()
+  );
 
   const pageRef = useRef(page);
   const hasMoreRef = useRef(hasMore);
@@ -65,117 +80,149 @@ export const useDiscoverFetch = (
   const recommendationsHasMoreRef = useRef(recommendationsHasMore);
   const activeCategoryRef = useRef(activeCategory);
 
-  useEffect(() => { pageRef.current = page; }, [page]);
-  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
-  useEffect(() => { loadingRef.current = loading; }, [loading]);
-  useEffect(() => { showSearchRef.current = showSearch; }, [showSearch]);
-  useEffect(() => { recommendationsLoadingRef.current = recommendationsLoading; }, [recommendationsLoading]);
-  useEffect(() => { recommendationsHasMoreRef.current = recommendationsHasMore; }, [recommendationsHasMore]);
-  useEffect(() => { activeCategoryRef.current = activeCategory; }, [activeCategory]);
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+  useEffect(() => {
+    showSearchRef.current = showSearch;
+  }, [showSearch]);
+  useEffect(() => {
+    recommendationsLoadingRef.current = recommendationsLoading;
+  }, [recommendationsLoading]);
+  useEffect(() => {
+    recommendationsHasMoreRef.current = recommendationsHasMore;
+  }, [recommendationsHasMore]);
+  useEffect(() => {
+    activeCategoryRef.current = activeCategory;
+  }, [activeCategory]);
 
   const isInList = useCallback(
     (id: string | number, type: 'series' | 'movie') => {
       if (type === 'series') {
-        return seriesList.some((s: Series) => s.id != null && (s.id === id || s.id.toString() === id.toString()));
+        return seriesList.some(
+          (s: Series) => s.id != null && (s.id === id || s.id.toString() === id.toString())
+        );
       } else {
-        return movieList.some((m: Movie) => m.id != null && (m.id === id || m.id.toString() === id.toString()));
+        return movieList.some(
+          (m: Movie) => m.id != null && (m.id === id || m.id.toString() === id.toString())
+        );
       }
     },
     [seriesList, movieList]
   );
 
-  const fetchRecommendations = useCallback(async (reset = false) => {
-    if (recommendationsLoading) return;
+  const fetchRecommendations = useCallback(
+    async (reset = false) => {
+      if (recommendationsLoading) return;
 
-    setRecommendationsLoading(true);
+      setRecommendationsLoading(true);
 
-    try {
-      const userItems = activeTab === 'series' ? seriesList : movieList;
+      try {
+        const userItems = activeTab === 'series' ? seriesList : movieList;
 
-      if (userItems.length === 0) {
-        setRecommendations([]);
-        setRecommendationsHasMore(false);
-        setRecommendationsLoading(false);
-        return;
-      }
-
-      if (reset) {
-        setUsedRecommendationSources(new Set());
-        setRecommendations([]);
-        setRecommendationsHasMore(true);
-      }
-
-      const currentUsedSources = reset ? new Set<string>() : new Set(usedRecommendationSources);
-      const availableItems = userItems.filter(item => !currentUsedSources.has(item.id.toString()));
-
-      if (availableItems.length === 0) {
-        setRecommendationsHasMore(false);
-        setRecommendationsLoading(false);
-        return;
-      }
-
-      const shuffled = [...availableItems].sort(() => 0.5 - Math.random());
-      const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
-
-      const allRecommendations: DiscoverItem[] = [];
-      const existingIds = new Set(recommendations.map(r => r.id));
-
-      const mediaType = activeTab === 'series' ? 'tv' : 'movie';
-
-      for (const item of selectedItems) {
-        const endpoint = `https://api.themoviedb.org/3/${mediaType}/${item.id}/recommendations`;
-        const params = new URLSearchParams({
-          api_key: import.meta.env.VITE_API_TMDB,
-          language: 'de-DE',
-        });
-
-        const response = await fetch(`${endpoint}?${params}`);
-        const data = await response.json();
-
-        if (data.results) {
-          data.results.forEach((rec: DiscoverItem) => {
-            if (
-              !existingIds.has(rec.id) &&
-              !isInList(rec.id, activeTab === 'series' ? 'series' : 'movie')
-            ) {
-              existingIds.add(rec.id);
-              allRecommendations.push({
-                ...rec,
-                type: activeTab === 'series' ? 'series' : 'movie',
-                inList: false,
-                basedOn: (item as Series & Movie).title || (item as Series & Movie).name,
-              });
-            }
-          });
+        if (userItems.length === 0) {
+          setRecommendations([]);
+          setRecommendationsHasMore(false);
+          setRecommendationsLoading(false);
+          return;
         }
 
-        currentUsedSources.add(item.id.toString());
+        if (reset) {
+          setUsedRecommendationSources(new Set());
+          setRecommendations([]);
+          setRecommendationsHasMore(true);
+        }
+
+        const currentUsedSources = reset ? new Set<string>() : new Set(usedRecommendationSources);
+        const availableItems = userItems.filter(
+          (item) => !currentUsedSources.has(item.id.toString())
+        );
+
+        if (availableItems.length === 0) {
+          setRecommendationsHasMore(false);
+          setRecommendationsLoading(false);
+          return;
+        }
+
+        const shuffled = [...availableItems].sort(() => 0.5 - Math.random());
+        const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
+
+        const allRecommendations: DiscoverItem[] = [];
+        const existingIds = new Set(recommendations.map((r) => r.id));
+
+        const mediaType = activeTab === 'series' ? 'tv' : 'movie';
+
+        for (const item of selectedItems) {
+          const endpoint = `https://api.themoviedb.org/3/${mediaType}/${item.id}/recommendations`;
+          const params = new URLSearchParams({
+            api_key: import.meta.env.VITE_API_TMDB,
+            language: 'de-DE',
+          });
+
+          const response = await fetch(`${endpoint}?${params}`);
+          const data = await response.json();
+
+          if (data.results) {
+            data.results.forEach((rec: DiscoverItem) => {
+              if (
+                !existingIds.has(rec.id) &&
+                !isInList(rec.id, activeTab === 'series' ? 'series' : 'movie')
+              ) {
+                existingIds.add(rec.id);
+                allRecommendations.push({
+                  ...rec,
+                  type: activeTab === 'series' ? 'series' : 'movie',
+                  inList: false,
+                  basedOn: (item as Series & Movie).title || (item as Series & Movie).name,
+                });
+              }
+            });
+          }
+
+          currentUsedSources.add(item.id.toString());
+        }
+
+        const shuffledRecommendations = allRecommendations
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 20);
+
+        setUsedRecommendationSources(currentUsedSources);
+
+        if (reset) {
+          setRecommendations(shuffledRecommendations);
+        } else {
+          setRecommendations((prev) => [...prev, ...shuffledRecommendations]);
+        }
+
+        const remainingItems = userItems.filter(
+          (item) => !currentUsedSources.has(item.id.toString())
+        );
+        setRecommendationsHasMore(remainingItems.length > 0);
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        if (reset) {
+          setRecommendations([]);
+        }
+      } finally {
+        setRecommendationsLoading(false);
       }
-
-      const shuffledRecommendations = allRecommendations
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 20);
-
-      setUsedRecommendationSources(currentUsedSources);
-
-      if (reset) {
-        setRecommendations(shuffledRecommendations);
-      } else {
-        setRecommendations(prev => [...prev, ...shuffledRecommendations]);
-      }
-
-      const remainingItems = userItems.filter(item => !currentUsedSources.has(item.id.toString()));
-      setRecommendationsHasMore(remainingItems.length > 0);
-
-    } catch (error) {
-      console.error('Error fetching recommendations:', error);
-      if (reset) {
-        setRecommendations([]);
-      }
-    } finally {
-      setRecommendationsLoading(false);
-    }
-  }, [activeTab, seriesList, movieList, isInList, recommendationsLoading, recommendations, usedRecommendationSources]);
+    },
+    [
+      activeTab,
+      seriesList,
+      movieList,
+      isInList,
+      recommendationsLoading,
+      recommendations,
+      usedRecommendationSources,
+    ]
+  );
 
   const fetchFromTMDB = useCallback(
     async (reset = false) => {
@@ -231,10 +278,13 @@ export const useDiscoverFetch = (
 
         if (data.results) {
           const mappedResults = data.results
-            .filter((item: DiscoverItem) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
+            .filter(
+              (item: DiscoverItem) =>
+                !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
+            )
             .map((item: DiscoverItem) => ({
               ...item,
-              type: activeTab === 'series' ? 'series' : 'movie' as const,
+              type: activeTab === 'series' ? 'series' : ('movie' as const),
               inList: false,
             }));
 
@@ -243,7 +293,9 @@ export const useDiscoverFetch = (
             setPage(1);
           } else {
             setResults((prev) => {
-              const existingIds = new Set(prev.map((item: DiscoverItem) => `${item.type}-${item.id}`));
+              const existingIds = new Set(
+                prev.map((item: DiscoverItem) => `${item.type}-${item.id}`)
+              );
               const newResults = mappedResults.filter(
                 (item: DiscoverItem) => !existingIds.has(`${item.type}-${item.id}`)
               );
@@ -279,7 +331,12 @@ export const useDiscoverFetch = (
 
   useEffect(() => {
     if (activeCategory === 'recommendations') {
-      if (recommendations.length > 0 && recommendationsHasMore && !recommendationsLoading && !showSearch) {
+      if (
+        recommendations.length > 0 &&
+        recommendationsHasMore &&
+        !recommendationsLoading &&
+        !showSearch
+      ) {
         const checkNeedMoreContent = () => {
           const scrollContainer = document.querySelector('.mobile-discover-container');
           if (scrollContainer) {
@@ -305,7 +362,18 @@ export const useDiscoverFetch = (
         setTimeout(checkNeedMoreContent, 100);
       }
     }
-  }, [results.length, hasMore, loading, showSearch, activeCategory, fetchFromTMDB, recommendations.length, recommendationsHasMore, recommendationsLoading, fetchRecommendations]);
+  }, [
+    results.length,
+    hasMore,
+    loading,
+    showSearch,
+    activeCategory,
+    fetchFromTMDB,
+    recommendations.length,
+    recommendationsHasMore,
+    recommendationsLoading,
+    fetchRecommendations,
+  ]);
 
   const searchItems = useCallback(
     async (query: string) => {
@@ -332,11 +400,14 @@ export const useDiscoverFetch = (
 
         if (data.results) {
           const mappedResults = data.results
-            .filter((item: DiscoverItem) => !isInList(item.id, activeTab === 'series' ? 'series' : 'movie'))
+            .filter(
+              (item: DiscoverItem) =>
+                !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
+            )
             .slice(0, 20)
             .map((item: DiscoverItem) => ({
               ...item,
-              type: activeTab === 'series' ? 'series' : 'movie' as const,
+              type: activeTab === 'series' ? 'series' : ('movie' as const),
               inList: false,
             }));
 
@@ -368,7 +439,11 @@ export const useDiscoverFetch = (
       }
 
       if (!user) {
-        setDialog({ open: true, message: 'Bitte einloggen um Inhalte hinzuzufügen!', type: 'warning' });
+        setDialog({
+          open: true,
+          message: 'Bitte einloggen um Inhalte hinzuzufügen!',
+          type: 'warning',
+        });
         return;
       }
 
@@ -399,12 +474,17 @@ export const useDiscoverFetch = (
           const title = item.title || item.name;
           setSnackbar({
             open: true,
-            message: `"${title}" wurde erfolgreich hinzugefügt!`
+            message: `"${title}" wurde erfolgreich hinzugefügt!`,
           });
 
           const posterPath = item.poster_path ?? undefined;
           if (item.type === 'series') {
-            await logSeriesAdded(user.uid, item.name || item.title || 'Unbekannte Serie', item.id, posterPath);
+            await logSeriesAdded(
+              user.uid,
+              item.name || item.title || 'Unbekannte Serie',
+              item.id,
+              posterPath
+            );
           } else {
             await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
           }
@@ -422,34 +502,37 @@ export const useDiscoverFetch = (
     [user]
   );
 
-  const setupScrollListener = useCallback((_currentActiveCategory: string) => {
-    const scrollContainer = document.querySelector('.mobile-discover-container');
-    if (scrollContainer) {
-      const scrollHandler = () => {
-        if (!scrollContainer) return;
+  const setupScrollListener = useCallback(
+    (_currentActiveCategory: string) => {
+      const scrollContainer = document.querySelector('.mobile-discover-container');
+      if (scrollContainer) {
+        const scrollHandler = () => {
+          if (!scrollContainer) return;
 
-        const scrollTop = scrollContainer.scrollTop;
-        const scrollHeight = scrollContainer.scrollHeight;
-        const clientHeight = scrollContainer.clientHeight;
-        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+          const scrollTop = scrollContainer.scrollTop;
+          const scrollHeight = scrollContainer.scrollHeight;
+          const clientHeight = scrollContainer.clientHeight;
+          const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
-        if (distanceFromBottom < 500) {
-          if (activeCategoryRef.current === 'recommendations') {
-            if (recommendationsHasMoreRef.current && !recommendationsLoadingRef.current) {
-              fetchRecommendations(false);
+          if (distanceFromBottom < 500) {
+            if (activeCategoryRef.current === 'recommendations') {
+              if (recommendationsHasMoreRef.current && !recommendationsLoadingRef.current) {
+                fetchRecommendations(false);
+              }
+            } else if (hasMoreRef.current && !loadingRef.current && !showSearchRef.current) {
+              fetchFromTMDB(false);
             }
-          } else if (hasMoreRef.current && !loadingRef.current && !showSearchRef.current) {
-            fetchFromTMDB(false);
           }
-        }
-      };
+        };
 
-      scrollContainer.addEventListener('scroll', scrollHandler);
-      return () => {
-        scrollContainer.removeEventListener('scroll', scrollHandler);
-      };
-    }
-  }, [fetchFromTMDB, fetchRecommendations]);
+        scrollContainer.addEventListener('scroll', scrollHandler);
+        return () => {
+          scrollContainer.removeEventListener('scroll', scrollHandler);
+        };
+      }
+    },
+    [fetchFromTMDB, fetchRecommendations]
+  );
 
   return {
     results,

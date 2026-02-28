@@ -22,7 +22,7 @@ export const ActorUniversePage = () => {
   });
 
   const toggleVoiceActors = () => {
-    setHideVoiceActors(prev => {
+    setHideVoiceActors((prev) => {
       const newValue = !prev;
       localStorage.setItem('actorUniverse_hideVoiceActors', String(newValue));
       return newValue;
@@ -45,9 +45,12 @@ export const ActorUniversePage = () => {
   const [activeTab, setActiveTab] = useState<'map' | 'recommendations' | 'top'>('recommendations');
 
   // Get actor connections
-  const getActorConnections = useCallback((actorId: number) => {
-    return connections.filter(c => c.actor1Id === actorId || c.actor2Id === actorId);
-  }, [connections]);
+  const getActorConnections = useCallback(
+    (actorId: number) => {
+      return connections.filter((c) => c.actor1Id === actorId || c.actor2Id === actorId);
+    },
+    [connections]
+  );
 
   // Tab configuration
   const tabs = [
@@ -58,33 +61,39 @@ export const ActorUniversePage = () => {
 
   if (loading && actors.length === 0) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: currentTheme.background.default,
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          backgroundColor: currentTheme.background.default,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
         {/* Decorative background */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
                        radial-gradient(ellipse at 70% 80%, #8b5cf615 0%, transparent 50%)`,
-          pointerEvents: 'none',
-        }} />
+            pointerEvents: 'none',
+          }}
+        />
 
         {/* Premium Header */}
-        <header style={{
-          padding: '16px 20px',
-          paddingTop: 'calc(16px + env(safe-area-inset-top))',
-          background: `linear-gradient(180deg, ${currentTheme.background.card}ee 0%, ${currentTheme.background.card}00 100%)`,
-          backdropFilter: 'blur(20px)',
-          position: 'relative',
-          zIndex: 10,
-        }}>
+        <header
+          style={{
+            padding: '16px 20px',
+            paddingTop: 'calc(16px + env(safe-area-inset-top))',
+            background: `linear-gradient(180deg, ${currentTheme.background.card}ee 0%, ${currentTheme.background.card}00 100%)`,
+            backdropFilter: 'blur(20px)',
+            position: 'relative',
+            zIndex: 10,
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <BackButton
               style={{
@@ -95,27 +104,35 @@ export const ActorUniversePage = () => {
               }}
             />
             <div style={{ flex: 1 }}>
-              <GradientText as="h1" to="#8b5cf6" style={{
-                fontSize: '22px',
-                fontWeight: 800,
-                margin: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}>
-                <AutoAwesome style={{
-                  fontSize: '24px',
-                  color: currentTheme.primary,
-                  WebkitTextFillColor: currentTheme.primary,
-                }} />
+              <GradientText
+                as="h1"
+                to="#8b5cf6"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 800,
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <AutoAwesome
+                  style={{
+                    fontSize: '24px',
+                    color: currentTheme.primary,
+                    WebkitTextFillColor: currentTheme.primary,
+                  }}
+                />
                 Actor Universe
               </GradientText>
-              <p style={{
-                fontSize: '12px',
-                color: currentTheme.text.muted,
-                margin: '4px 0 0 0',
-                letterSpacing: '0.3px',
-              }}>
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: currentTheme.text.muted,
+                  margin: '4px 0 0 0',
+                  letterSpacing: '0.3px',
+                }}
+              >
                 Analysiere deine Serien...
               </p>
             </div>
@@ -164,14 +181,16 @@ export const ActorUniversePage = () => {
                 borderBottomColor: currentTheme.primary,
               }}
             />
-            <AutoAwesome style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              fontSize: '28px',
-              color: currentTheme.primary,
-            }} />
+            <AutoAwesome
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                fontSize: '28px',
+                color: currentTheme.primary,
+              }}
+            />
           </div>
 
           <motion.p
@@ -189,15 +208,17 @@ export const ActorUniversePage = () => {
           </motion.p>
 
           {/* Premium progress bar */}
-          <div style={{
-            width: '260px',
-            height: '8px',
-            background: currentTheme.background.surface,
-            borderRadius: '10px',
-            marginTop: '20px',
-            overflow: 'hidden',
-            boxShadow: `inset 0 2px 4px ${currentTheme.background.default}`,
-          }}>
+          <div
+            style={{
+              width: '260px',
+              height: '8px',
+              background: currentTheme.background.surface,
+              borderRadius: '10px',
+              marginTop: '20px',
+              overflow: 'hidden',
+              boxShadow: `inset 0 2px 4px ${currentTheme.background.default}`,
+            }}
+          >
             <motion.div
               style={{
                 height: '100%',
@@ -221,35 +242,41 @@ export const ActorUniversePage = () => {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: currentTheme.background.default,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: currentTheme.background.default,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
       {/* Decorative background */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 40%),
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 40%),
                      radial-gradient(ellipse at 80% 90%, #8b5cf612 0%, transparent 40%)`,
-        pointerEvents: 'none',
-        zIndex: 0,
-      }} />
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
 
       {/* Premium Header */}
-      <header style={{
-        padding: '16px 20px',
-        paddingTop: 'calc(16px + env(safe-area-inset-top))',
-        background: `linear-gradient(180deg, ${currentTheme.background.card}f5 0%, ${currentTheme.background.card}00 100%)`,
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        backdropFilter: 'blur(20px)',
-      }}>
+      <header
+        style={{
+          padding: '16px 20px',
+          paddingTop: 'calc(16px + env(safe-area-inset-top))',
+          background: `linear-gradient(180deg, ${currentTheme.background.card}f5 0%, ${currentTheme.background.card}00 100%)`,
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          backdropFilter: 'blur(20px)',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
           <BackButton
             style={{
@@ -260,27 +287,35 @@ export const ActorUniversePage = () => {
             }}
           />
           <div style={{ flex: 1 }}>
-            <GradientText as="h1" to="#8b5cf6" style={{
-              fontSize: '22px',
-              fontWeight: 800,
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}>
-              <AutoAwesome style={{
-                fontSize: '24px',
-                color: currentTheme.primary,
-                WebkitTextFillColor: currentTheme.primary,
-              }} />
+            <GradientText
+              as="h1"
+              to="#8b5cf6"
+              style={{
+                fontSize: '22px',
+                fontWeight: 800,
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <AutoAwesome
+                style={{
+                  fontSize: '24px',
+                  color: currentTheme.primary,
+                  WebkitTextFillColor: currentTheme.primary,
+                }}
+              />
               Actor Universe
             </GradientText>
-            <p style={{
-              fontSize: '12px',
-              color: currentTheme.text.muted,
-              margin: '4px 0 0 0',
-              letterSpacing: '0.3px',
-            }}>
+            <p
+              style={{
+                fontSize: '12px',
+                color: currentTheme.text.muted,
+                margin: '4px 0 0 0',
+                letterSpacing: '0.3px',
+              }}
+            >
               {stats.totalActors} Schauspieler • {stats.actorsInMultipleSeries} in mehreren Serien
             </p>
           </div>
@@ -288,7 +323,7 @@ export const ActorUniversePage = () => {
 
         {/* Premium Tabs */}
         <div style={{ display: 'flex', gap: '8px' }}>
-          {tabs.map(tab => {
+          {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
@@ -302,9 +337,7 @@ export const ActorUniversePage = () => {
                   background: isActive
                     ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
                     : `${currentTheme.background.surface}`,
-                  border: isActive
-                    ? 'none'
-                    : `1px solid ${currentTheme.border.default}`,
+                  border: isActive ? 'none' : `1px solid ${currentTheme.border.default}`,
                   borderRadius: '14px',
                   color: isActive ? '#fff' : currentTheme.text.secondary,
                   fontSize: '12px',
@@ -366,52 +399,64 @@ export const ActorUniversePage = () => {
           }}
         >
           {/* Decorative gradient */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '150px',
-            height: '150px',
-            background: `radial-gradient(circle, ${currentTheme.primary}20 0%, transparent 70%)`,
-            pointerEvents: 'none',
-          }} />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '150px',
+              height: '150px',
+              background: `radial-gradient(circle, ${currentTheme.primary}20 0%, transparent 70%)`,
+              pointerEvents: 'none',
+            }}
+          />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '14px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: `0 4px 12px ${currentTheme.primary}40`,
-            }}>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 4px 12px ${currentTheme.primary}40`,
+              }}
+            >
               <People style={{ color: '#fff', fontSize: '24px' }} />
             </div>
             <div>
-              <p style={{
-                margin: 0,
-                fontSize: '12px',
-                color: currentTheme.text.muted,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontWeight: 600,
-              }}>Stärkstes Duo</p>
-              <p style={{
-                margin: '4px 0 0 0',
-                fontSize: '17px',
-                fontWeight: 700,
-                color: currentTheme.text.primary,
-              }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '12px',
+                  color: currentTheme.text.muted,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  fontWeight: 600,
+                }}
+              >
+                Stärkstes Duo
+              </p>
+              <p
+                style={{
+                  margin: '4px 0 0 0',
+                  fontSize: '17px',
+                  fontWeight: 700,
+                  color: currentTheme.text.primary,
+                }}
+              >
                 {stats.mostConnectedPair.actor1} & {stats.mostConnectedPair.actor2}
               </p>
-              <p style={{
-                margin: '4px 0 0 0',
-                fontSize: '13px',
-                color: currentTheme.primary,
-                fontWeight: 500,
-              }}>
+              <p
+                style={{
+                  margin: '4px 0 0 0',
+                  fontSize: '13px',
+                  color: currentTheme.primary,
+                  fontWeight: 500,
+                }}
+              >
                 {stats.mostConnectedPair.count} gemeinsame Serien
               </p>
             </div>
@@ -429,11 +474,7 @@ export const ActorUniversePage = () => {
         )}
 
         {activeTab === 'top' && (
-          <TopActorsTab
-            topActors={topActors}
-            actors={actors}
-            onSelectActor={setSelectedActor}
-          />
+          <TopActorsTab topActors={topActors} actors={actors} onSelectActor={setSelectedActor} />
         )}
 
         {activeTab === 'map' && (
@@ -486,58 +527,73 @@ export const ActorUniversePage = () => {
               }}
             >
               {/* Decorative gradient */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '150px',
-                background: `linear-gradient(180deg, ${currentTheme.primary}15, transparent)`,
-                borderRadius: '28px 28px 0 0',
-                pointerEvents: 'none',
-              }} />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '150px',
+                  background: `linear-gradient(180deg, ${currentTheme.primary}15, transparent)`,
+                  borderRadius: '28px 28px 0 0',
+                  pointerEvents: 'none',
+                }}
+              />
 
               {/* Handle bar */}
-              <div style={{
-                width: '44px',
-                height: '5px',
-                background: currentTheme.border.default,
-                borderRadius: '3px',
-                margin: '0 auto 24px',
-              }} />
+              <div
+                style={{
+                  width: '44px',
+                  height: '5px',
+                  background: currentTheme.border.default,
+                  borderRadius: '3px',
+                  margin: '0 auto 24px',
+                }}
+              />
 
               {/* Actor header */}
-              <div style={{ display: 'flex', gap: '18px', marginBottom: '28px', position: 'relative' }}>
-                <div style={{
-                  width: '90px',
-                  height: '90px',
-                  borderRadius: '50%',
-                  background: selectedActor.profilePath
-                    ? `url(${TMDB_IMAGE_BASE}${selectedActor.profilePath})`
-                    : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  border: `4px solid ${currentTheme.primary}`,
-                  flexShrink: 0,
-                  boxShadow: `0 8px 24px ${currentTheme.primary}40`,
-                }} />
+              <div
+                style={{ display: 'flex', gap: '18px', marginBottom: '28px', position: 'relative' }}
+              >
+                <div
+                  style={{
+                    width: '90px',
+                    height: '90px',
+                    borderRadius: '50%',
+                    background: selectedActor.profilePath
+                      ? `url(${TMDB_IMAGE_BASE}${selectedActor.profilePath})`
+                      : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    border: `4px solid ${currentTheme.primary}`,
+                    flexShrink: 0,
+                    boxShadow: `0 8px 24px ${currentTheme.primary}40`,
+                  }}
+                />
                 <div>
-                  <GradientText as="h2" from={currentTheme.text.primary} to={currentTheme.primary} style={{
-                    margin: '0 0 10px 0',
-                    fontSize: '24px',
-                    fontWeight: 800,
-                  }}>
+                  <GradientText
+                    as="h2"
+                    from={currentTheme.text.primary}
+                    to={currentTheme.primary}
+                    style={{
+                      margin: '0 0 10px 0',
+                      fontSize: '24px',
+                      fontWeight: 800,
+                    }}
+                  >
                     {selectedActor.name}
                   </GradientText>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
-                    padding: '8px 14px',
-                    borderRadius: '12px',
-                    width: 'fit-content',
-                  }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+                      padding: '8px 14px',
+                      borderRadius: '12px',
+                      width: 'fit-content',
+                    }}
+                  >
                     <Star style={{ fontSize: '18px', color: '#ffc107' }} />
                     <span style={{ fontSize: '15px', fontWeight: 600 }}>
                       {selectedActor.seriesCount} Serien
@@ -547,22 +603,34 @@ export const ActorUniversePage = () => {
               </div>
 
               {/* Series list */}
-              <h2 style={{
-                margin: '0 0 14px 0',
-                fontSize: '13px',
-                color: currentTheme.text.muted,
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                fontWeight: 700,
-              }}>
+              <h2
+                style={{
+                  margin: '0 0 14px 0',
+                  fontSize: '13px',
+                  color: currentTheme.text.muted,
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  fontWeight: 700,
+                }}
+              >
                 In deiner Sammlung
               </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-                {selectedActor.series.map(series => (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  marginBottom: '28px',
+                }}
+              >
+                {selectedActor.series.map((series) => (
                   <motion.div
                     key={series.id}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => { setSelectedActor(null); navigate(`/series/${series.id}`); }}
+                    onClick={() => {
+                      setSelectedActor(null);
+                      navigate(`/series/${series.id}`);
+                    }}
                     style={{
                       display: 'flex',
                       gap: '14px',
@@ -573,32 +641,38 @@ export const ActorUniversePage = () => {
                       border: `1px solid ${currentTheme.border.default}`,
                     }}
                   >
-                    <div style={{
-                      width: '44px',
-                      height: '66px',
-                      borderRadius: '8px',
-                      background: series.poster
-                        ? `url(https://image.tmdb.org/t/p/w92${series.poster})`
-                        : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
-                      backgroundSize: 'cover',
-                      flexShrink: 0,
-                      boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
-                    }} />
+                    <div
+                      style={{
+                        width: '44px',
+                        height: '66px',
+                        borderRadius: '8px',
+                        background: series.poster
+                          ? `url(https://image.tmdb.org/t/p/w92${series.poster})`
+                          : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
+                        backgroundSize: 'cover',
+                        flexShrink: 0,
+                        boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
+                      }}
+                    />
                     <div>
-                      <p style={{
-                        margin: 0,
-                        fontSize: '15px',
-                        fontWeight: 700,
-                        color: currentTheme.text.primary,
-                      }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '15px',
+                          fontWeight: 700,
+                          color: currentTheme.text.primary,
+                        }}
+                      >
                         {series.title}
                       </p>
-                      <p style={{
-                        margin: '5px 0 0 0',
-                        fontSize: '13px',
-                        color: currentTheme.primary,
-                        fontWeight: 500,
-                      }}>
+                      <p
+                        style={{
+                          margin: '5px 0 0 0',
+                          fontSize: '13px',
+                          color: currentTheme.primary,
+                          fontWeight: 500,
+                        }}
+                      >
                         als {series.character}
                       </p>
                     </div>
@@ -609,48 +683,58 @@ export const ActorUniversePage = () => {
               {/* Recommendations */}
               {selectedActor.recommendations && selectedActor.recommendations.length > 0 && (
                 <>
-                  <h2 style={{
-                    margin: '0 0 14px 0',
-                    fontSize: '13px',
-                    color: currentTheme.text.muted,
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    fontWeight: 700,
-                  }}>
+                  <h2
+                    style={{
+                      margin: '0 0 14px 0',
+                      fontSize: '13px',
+                      color: currentTheme.text.muted,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      fontWeight: 700,
+                    }}
+                  >
                     Weitere Serien mit {selectedActor.name.split(' ')[0]}
                   </h2>
                   <HorizontalScrollContainer gap={14}>
-                    {selectedActor.recommendations.map(rec => (
+                    {selectedActor.recommendations.map((rec) => (
                       <motion.div
                         key={rec.id}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => { setSelectedActor(null); navigate(`/series/${rec.id}`); }}
+                        onClick={() => {
+                          setSelectedActor(null);
+                          navigate(`/series/${rec.id}`);
+                        }}
                         style={{ minWidth: '110px', cursor: 'pointer' }}
                       >
-                        <div style={{
-                          width: '110px',
-                          height: '160px',
-                          borderRadius: '12px',
-                          marginBottom: '10px',
-                          background: rec.poster
-                            ? `url(${TMDB_IMAGE_BASE}${rec.poster})`
-                            : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          position: 'relative',
-                          boxShadow: `0 6px 16px ${currentTheme.background.default}60`,
-                        }}>
-                          <div style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 40, 0.9))',
-                            borderRadius: '8px',
-                            padding: '4px 8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '3px',
-                          }}>
+                        <div
+                          style={{
+                            width: '110px',
+                            height: '160px',
+                            borderRadius: '12px',
+                            marginBottom: '10px',
+                            background: rec.poster
+                              ? `url(${TMDB_IMAGE_BASE}${rec.poster})`
+                              : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            position: 'relative',
+                            boxShadow: `0 6px 16px ${currentTheme.background.default}60`,
+                          }}
+                        >
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '8px',
+                              right: '8px',
+                              background:
+                                'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 40, 0.9))',
+                              borderRadius: '8px',
+                              padding: '4px 8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                            }}
+                          >
                             <Star style={{ fontSize: '11px', color: '#ffc107' }} />
                             <span style={{ fontSize: '11px', color: 'white', fontWeight: 600 }}>
                               {rec.voteAverage.toFixed(1)}
@@ -676,15 +760,17 @@ export const ActorUniversePage = () => {
                             <Add style={{ fontSize: '18px' }} />
                           </motion.div>
                         </div>
-                        <p style={{
-                          margin: 0,
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          color: currentTheme.text.primary,
-                        }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            color: currentTheme.text.primary,
+                          }}
+                        >
                           {rec.title}
                         </p>
                       </motion.div>
@@ -696,59 +782,68 @@ export const ActorUniversePage = () => {
               {/* Connected actors */}
               {getActorConnections(selectedActor.id).length > 0 && (
                 <>
-                  <h2 style={{
-                    margin: '28px 0 14px 0',
-                    fontSize: '13px',
-                    color: currentTheme.text.muted,
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    fontWeight: 700,
-                  }}>
+                  <h2
+                    style={{
+                      margin: '28px 0 14px 0',
+                      fontSize: '13px',
+                      color: currentTheme.text.muted,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      fontWeight: 700,
+                    }}
+                  >
                     Spielt zusammen mit
                   </h2>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {getActorConnections(selectedActor.id).slice(0, 8).map(conn => {
-                      const otherId = conn.actor1Id === selectedActor.id ? conn.actor2Id : conn.actor1Id;
-                      const other = actors.find(a => a.id === otherId);
-                      if (!other) return null;
+                    {getActorConnections(selectedActor.id)
+                      .slice(0, 8)
+                      .map((conn) => {
+                        const otherId =
+                          conn.actor1Id === selectedActor.id ? conn.actor2Id : conn.actor1Id;
+                        const other = actors.find((a) => a.id === otherId);
+                        if (!other) return null;
 
-                      return (
-                        <motion.div
-                          key={otherId}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedActor(other)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '10px 14px',
-                            background: `linear-gradient(135deg, ${currentTheme.primary}25, #8b5cf625)`,
-                            borderRadius: '16px',
-                            cursor: 'pointer',
-                            border: `1px solid ${currentTheme.primary}30`,
-                          }}
-                        >
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '50%',
-                            background: other.profilePath
-                              ? `url(${TMDB_IMAGE_BASE}${other.profilePath})`
-                              : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-                            backgroundSize: 'cover',
-                            border: `2px solid ${currentTheme.primary}50`,
-                          }} />
-                          <span style={{ fontSize: '13px', fontWeight: 600 }}>{other.name}</span>
-                          <span style={{
-                            fontSize: '11px',
-                            color: currentTheme.primary,
-                            fontWeight: 600,
-                          }}>
-                            ({conn.strength})
-                          </span>
-                        </motion.div>
-                      );
-                    })}
+                        return (
+                          <motion.div
+                            key={otherId}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSelectedActor(other)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '10px 14px',
+                              background: `linear-gradient(135deg, ${currentTheme.primary}25, #8b5cf625)`,
+                              borderRadius: '16px',
+                              cursor: 'pointer',
+                              border: `1px solid ${currentTheme.primary}30`,
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '50%',
+                                background: other.profilePath
+                                  ? `url(${TMDB_IMAGE_BASE}${other.profilePath})`
+                                  : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                                backgroundSize: 'cover',
+                                border: `2px solid ${currentTheme.primary}50`,
+                              }}
+                            />
+                            <span style={{ fontSize: '13px', fontWeight: 600 }}>{other.name}</span>
+                            <span
+                              style={{
+                                fontSize: '11px',
+                                color: currentTheme.primary,
+                                fontWeight: 600,
+                              }}
+                            >
+                              ({conn.strength})
+                            </span>
+                          </motion.div>
+                        );
+                      })}
                   </div>
                 </>
               )}

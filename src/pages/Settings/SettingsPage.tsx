@@ -339,7 +339,11 @@ export const SettingsPage = () => {
                   cursor: 'pointer',
                 }}
               >
-                {uploading ? '...' : <PhotoCamera style={{ fontSize: '16px' }} aria-hidden="true" />}
+                {uploading ? (
+                  '...'
+                ) : (
+                  <PhotoCamera style={{ fontSize: '16px' }} aria-hidden="true" />
+                )}
               </motion.button>
             </div>
             <input
@@ -692,7 +696,14 @@ export const SettingsPage = () => {
                 </p>
               </div>
             </div>
-            <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '28px' }}>
+            <label
+              style={{
+                position: 'relative',
+                display: 'inline-block',
+                width: '50px',
+                height: '28px',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={isPublicProfile}
@@ -709,7 +720,9 @@ export const SettingsPage = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: isPublicProfile ? currentTheme.primary : `${currentTheme.text.muted}30`,
+                  backgroundColor: isPublicProfile
+                    ? currentTheme.primary
+                    : `${currentTheme.text.muted}30`,
                   transition: '0.3s',
                   borderRadius: '28px',
                   opacity: isLoadingProfile ? 0.5 : 1,
@@ -839,8 +852,16 @@ export const SettingsPage = () => {
               }}
             >
               <Public style={{ fontSize: '18px', color: currentTheme.primary, flexShrink: 0 }} />
-              <p style={{ margin: 0, fontSize: '12px', color: currentTheme.text.muted, lineHeight: 1.4 }}>
-                Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '12px',
+                  color: currentTheme.text.muted,
+                  lineHeight: 1.4,
+                }}
+              >
+                Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung
+                sehen
               </p>
             </div>
           </div>
@@ -870,7 +891,9 @@ export const SettingsPage = () => {
             Rechtliches & Datenquellen
           </h2>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}
+          >
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/privacy')}
@@ -940,7 +963,11 @@ export const SettingsPage = () => {
               }}
             >
               {[
-                { label: 'Streaming-Anbieter', link: 'https://www.justwatch.com', name: 'JustWatch' },
+                {
+                  label: 'Streaming-Anbieter',
+                  link: 'https://www.justwatch.com',
+                  name: 'JustWatch',
+                },
                 { label: 'Episoden-Informationen', link: 'https://thetvdb.com', name: 'TheTVDB' },
                 { label: 'Film- & Seriendaten', link: 'https://www.themoviedb.org', name: 'TMDB' },
                 { label: 'Bewertungen', link: 'https://www.imdb.com', name: 'IMDb' },

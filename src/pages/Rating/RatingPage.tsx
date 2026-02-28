@@ -67,7 +67,10 @@ export const RatingPage = () => {
   const [overallRating, setOverallRating] = useState(0);
   const [genreRatings, setGenreRatings] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
 
   // Get item based on type
   const item =
@@ -199,9 +202,8 @@ export const RatingPage = () => {
             movieItem.runtime,
             overallRating,
             movieItem.genre?.genres,
-            movieItem.provider?.provider?.map(p => p.name)
+            movieItem.provider?.provider?.map((p) => p.name)
           );
-
         }
 
         // Activity-Logging für Friend + Badge-System (wie Desktop)
@@ -218,7 +220,7 @@ export const RatingPage = () => {
         // Show success snackbar
         setSnackbar({
           open: true,
-          message: `Bewertung für "${item.title}" wurde gespeichert!`
+          message: `Bewertung für "${item.title}" wurde gespeichert!`,
         });
 
         // Hide snackbar after 3 seconds
@@ -230,7 +232,7 @@ export const RatingPage = () => {
       // Show error snackbar
       setSnackbar({
         open: true,
-        message: 'Fehler beim Speichern der Bewertung.'
+        message: 'Fehler beim Speichern der Bewertung.',
       });
       setTimeout(() => {
         setSnackbar({ open: false, message: '' });
@@ -257,7 +259,7 @@ export const RatingPage = () => {
       // Show success snackbar
       setSnackbar({
         open: true,
-        message: `Bewertung für "${item.title}" wurde gelöscht!`
+        message: `Bewertung für "${item.title}" wurde gelöscht!`,
       });
 
       // Hide snackbar after 3 seconds
@@ -268,7 +270,7 @@ export const RatingPage = () => {
       // Show error snackbar
       setSnackbar({
         open: true,
-        message: 'Fehler beim Löschen der Bewertung.'
+        message: 'Fehler beim Löschen der Bewertung.',
       });
       setTimeout(() => {
         setSnackbar({ open: false, message: '' });
@@ -360,7 +362,7 @@ export const RatingPage = () => {
                       whileTap={{ scale: 0.9 }}
                       style={{
                         opacity: Math.round(overallRating) === emoji.value ? 1 : 0.3,
-                        color: emoji.color
+                        color: emoji.color,
                       }}
                     >
                       {emoji.icon}
@@ -385,7 +387,9 @@ export const RatingPage = () => {
                 />
                 <div className="slider-marks">
                   {[0, 2, 4, 6, 8, 10].map((value) => (
-                    <span key={value} className="mark">{value}</span>
+                    <span key={value} className="mark">
+                      {value}
+                    </span>
                   ))}
                 </div>
               </div>

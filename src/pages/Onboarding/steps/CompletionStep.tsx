@@ -11,7 +11,13 @@ interface Props {
   onFinish: () => void;
 }
 
-export const CompletionStep: React.FC<Props> = ({ seriesCount, movieCount, isCompleting, completionProgress, onFinish }) => {
+export const CompletionStep: React.FC<Props> = ({
+  seriesCount,
+  movieCount,
+  isCompleting,
+  completionProgress,
+  onFinish,
+}) => {
   const { currentTheme } = useTheme();
   const totalCount = seriesCount + movieCount;
 
@@ -134,16 +140,29 @@ export const CompletionStep: React.FC<Props> = ({ seriesCount, movieCount, isCom
 
       {/* Summary */}
       {totalCount > 0 ? (
-        <p style={{ margin: '12px 0 0', fontSize: 15, color: currentTheme.text.secondary, lineHeight: 1.5 }}>
+        <p
+          style={{
+            margin: '12px 0 0',
+            fontSize: 15,
+            color: currentTheme.text.secondary,
+            lineHeight: 1.5,
+          }}
+        >
           {seriesCount > 0 && `${seriesCount} ${seriesCount === 1 ? 'Serie' : 'Serien'}`}
           {seriesCount > 0 && movieCount > 0 && ' und '}
-          {movieCount > 0 && `${movieCount} ${movieCount === 1 ? 'Film' : 'Filme'}`}
-          {' '}hinzugefügt.
+          {movieCount > 0 && `${movieCount} ${movieCount === 1 ? 'Film' : 'Filme'}`} hinzugefügt.
           <br />
           Du kannst jederzeit weitere Titel entdecken.
         </p>
       ) : (
-        <p style={{ margin: '12px 0 0', fontSize: 15, color: currentTheme.text.secondary, lineHeight: 1.5 }}>
+        <p
+          style={{
+            margin: '12px 0 0',
+            fontSize: 15,
+            color: currentTheme.text.secondary,
+            lineHeight: 1.5,
+          }}
+        >
           Du kannst jederzeit Serien und Filme über die Suche oder Entdecken-Seite hinzufügen.
         </p>
       )}

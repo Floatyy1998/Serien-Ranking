@@ -71,7 +71,9 @@ export const BadgesPage = () => {
 
         setEarnedBadges((prevBadges) => {
           const existingIds = new Set(prevBadges.map((b) => b.id));
-          const uniqueNewBadges = newBadges.filter((badge: EarnedBadge) => !existingIds.has(badge.id));
+          const uniqueNewBadges = newBadges.filter(
+            (badge: EarnedBadge) => !existingIds.has(badge.id)
+          );
           if (uniqueNewBadges.length > 0) {
             return [...prevBadges, ...uniqueNewBadges];
           }
@@ -564,7 +566,6 @@ export const BadgesPage = () => {
 
   return (
     <PageLayout gradientColors={[currentTheme.status.warning, currentTheme.primary]}>
-
       {/* Header */}
       <div
         style={{
@@ -647,7 +648,11 @@ export const BadgesPage = () => {
               {progressPercent}%
             </span>
           </div>
-          <ProgressBar value={progressPercent} color={currentTheme.status.warning} toColor="#fbbf24" />
+          <ProgressBar
+            value={progressPercent}
+            color={currentTheme.status.warning}
+            toColor="#fbbf24"
+          />
           <p style={{ fontSize: '12px', color: currentTheme.text.muted, marginTop: '8px' }}>
             {earnedBadges.length} von {BADGE_DEFINITIONS.length} Badges freigeschaltet
           </p>
@@ -687,7 +692,11 @@ export const BadgesPage = () => {
                     : hasEarned
                       ? `1px solid ${currentTheme.primary}30`
                       : `1px solid ${currentTheme.border.default}`,
-                  color: isActive ? 'white' : hasEarned ? currentTheme.primary : currentTheme.text.muted,
+                  color: isActive
+                    ? 'white'
+                    : hasEarned
+                      ? currentTheme.primary
+                      : currentTheme.text.muted,
                   boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
                 }}
               >
@@ -729,11 +738,20 @@ export const BadgesPage = () => {
               padding: '40px',
             }}
           >
-            <LoadingSpinner size={56} color={currentTheme.status.warning} text="Badges werden geladen..." />
+            <LoadingSpinner
+              size={56}
+              color={currentTheme.status.warning}
+              text="Badges werden geladen..."
+            />
 
             {loadingProgress && (
               <div style={{ width: '200px' }}>
-                <ProgressBar value={(loadingProgress.current / loadingProgress.total) * 100} color={currentTheme.status.warning} toColor="#fbbf24" height={6} />
+                <ProgressBar
+                  value={(loadingProgress.current / loadingProgress.total) * 100}
+                  color={currentTheme.status.warning}
+                  toColor="#fbbf24"
+                  height={6}
+                />
                 <p
                   style={{
                     color: currentTheme.text.muted,

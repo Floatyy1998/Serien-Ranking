@@ -96,12 +96,17 @@ export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username }) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8, type: 'spring', stiffness: 200 }}
         >
-          <GradientText as="h1" from="#667eea" to="#f093fb" style={{
-            fontSize: 'clamp(6rem, 25vw, 14rem)',
-            fontWeight: 'bold',
-            lineHeight: 1,
-            margin: '20px 0',
-          }}>
+          <GradientText
+            as="h1"
+            from="#667eea"
+            to="#f093fb"
+            style={{
+              fontSize: 'clamp(6rem, 25vw, 14rem)',
+              fontWeight: 'bold',
+              lineHeight: 1,
+              margin: '20px 0',
+            }}
+          >
             {year}
           </GradientText>
         </motion.div>

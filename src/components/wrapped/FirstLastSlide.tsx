@@ -39,11 +39,7 @@ const FilmIcon = () => (
   </svg>
 );
 
-export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({
-  firstWatch,
-  lastWatch,
-  year,
-}) => {
+export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, lastWatch, year }) => {
   if (!firstWatch && !lastWatch) {
     return (
       <div
@@ -157,7 +153,14 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({
               {firstWatch.type === 'episode' ? <TvIcon /> : <FilmIcon />}
             </div>
             <div style={{ flex: 1 }}>
-              <h3 style={{ color: 'white', fontSize: '1.2rem', fontWeight: 'bold', margin: '0 0 4px 0' }}>
+              <h3
+                style={{
+                  color: 'white',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  margin: '0 0 4px 0',
+                }}
+              >
                 {firstWatch.title}
               </h3>
               {firstWatch.subtitle && (
@@ -238,7 +241,14 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({
               {lastWatch.type === 'episode' ? <TvIcon /> : <FilmIcon />}
             </div>
             <div style={{ flex: 1 }}>
-              <h3 style={{ color: 'white', fontSize: '1.2rem', fontWeight: 'bold', margin: '0 0 4px 0' }}>
+              <h3
+                style={{
+                  color: 'white',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  margin: '0 0 4px 0',
+                }}
+              >
                 {lastWatch.title}
               </h3>
               {lastWatch.subtitle && (

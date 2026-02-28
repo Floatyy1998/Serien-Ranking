@@ -152,11 +152,7 @@ class OfflineFirebaseService {
   /**
    * 📦 Firebase Daten mit Offline Support cachen
    */
-  public async cacheData(
-    path: string,
-    data: unknown,
-    ttl: number = 5 * 60 * 1000
-  ): Promise<void> {
+  public async cacheData(path: string, data: unknown, ttl: number = 5 * 60 * 1000): Promise<void> {
     try {
       const cacheItem = {
         path,
@@ -294,8 +290,7 @@ class OfflineFirebaseService {
         item.retryCount += 1;
 
         // Entferne nach 3 Versuchen oder wenn zu alt
-        const isExpired =
-          Date.now() - item.timestamp > this.config.maxOfflineTime;
+        const isExpired = Date.now() - item.timestamp > this.config.maxOfflineTime;
         if (item.retryCount >= 3 || isExpired) {
           processedItems.push(item.id);
         }
@@ -303,9 +298,7 @@ class OfflineFirebaseService {
     }
 
     // Entferne verarbeitete Items
-    this.offlineQueue = this.offlineQueue.filter(
-      (item) => !processedItems.includes(item.id)
-    );
+    this.offlineQueue = this.offlineQueue.filter((item) => !processedItems.includes(item.id));
 
     // Update IndexedDB
     if (this.config.enableIndexedDB) {
@@ -396,10 +389,7 @@ class OfflineFirebaseService {
     }
   }
 
-  private async removeFromIndexedDB(
-    storeName: string,
-    key: string
-  ): Promise<void> {
+  private async removeFromIndexedDB(storeName: string, key: string): Promise<void> {
     try {
       const db = await this.initIndexedDB();
       const transaction = db.transaction([storeName], 'readwrite');
@@ -505,10 +495,10 @@ class OfflineFirebaseService {
         metadata: user.metadata,
         cachedAt: Date.now(),
       };
-      
+
       // Store in localStorage for quick access
       localStorage.setItem('cachedUser', JSON.stringify(userData));
-      
+
       // Also store in IndexedDB for persistence
       if (this.config.enableIndexedDB) {
         await this.cacheData(`user_${user.uid}`, userData);
@@ -529,20 +519,20 @@ class OfflineFirebaseService {
           return userData;
         }
       }
-      
+
       // Fallback to IndexedDB
       if (this.config.enableIndexedDB) {
         const db = await this.initIndexedDB();
         const transaction = db.transaction(['firebaseCache'], 'readonly');
         const store = transaction.objectStore('firebaseCache');
-        
+
         return new Promise((resolve, reject) => {
           const request = store.get('user_*');
           request.onsuccess = () => resolve(request.result?.data || null);
           request.onerror = () => reject(request.error);
         });
       }
-      
+
       return null;
     } catch (error) {
       console.error('Failed to get cached user:', error);
@@ -553,12 +543,12 @@ class OfflineFirebaseService {
   public async clearCachedUser(): Promise<void> {
     try {
       localStorage.removeItem('cachedUser');
-      
+
       if (this.config.enableIndexedDB) {
         const db = await this.initIndexedDB();
         const transaction = db.transaction(['firebaseCache'], 'readwrite');
         const store = transaction.objectStore('firebaseCache');
-        
+
         await new Promise<void>((resolve, reject) => {
           const request = store.delete('user_*');
           request.onsuccess = () => resolve();

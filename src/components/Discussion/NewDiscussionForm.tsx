@@ -1,8 +1,4 @@
-import {
-  AddPhotoAlternate,
-  Close,
-  Warning,
-} from '@mui/icons-material';
+import { AddPhotoAlternate, Close, Warning } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { motion } from 'framer-motion';
@@ -30,7 +26,9 @@ export const NewDiscussionForm: React.FC<{
     setUploadingImage(true);
     try {
       const timestamp = Date.now();
-      const storageRef = firebase.storage().ref(`discussions/${user.uid}/${timestamp}_${file.name}`);
+      const storageRef = firebase
+        .storage()
+        .ref(`discussions/${user.uid}/${timestamp}_${file.name}`);
       await storageRef.put(file);
       const downloadURL = await storageRef.getDownloadURL();
       setPreviewImages((prev) => [...prev, downloadURL]);
@@ -83,7 +81,14 @@ export const NewDiscussionForm: React.FC<{
         boxShadow: `0 8px 32px ${currentTheme.primary}20`,
       }}
     >
-      <h4 style={{ fontSize: '16px', fontWeight: 700, color: currentTheme.text.primary, margin: '0 0 16px 0' }}>
+      <h4
+        style={{
+          fontSize: '16px',
+          fontWeight: 700,
+          color: currentTheme.text.primary,
+          margin: '0 0 16px 0',
+        }}
+      >
         Neue Diskussion starten
       </h4>
 
@@ -161,7 +166,11 @@ export const NewDiscussionForm: React.FC<{
           </div>
         )}
         <textarea
-          placeholder={previewImages.length > 0 ? "Beschreibung hinzufügen (optional)..." : "Was möchtest du diskutieren? Teile deine Gedanken..."}
+          placeholder={
+            previewImages.length > 0
+              ? 'Beschreibung hinzufügen (optional)...'
+              : 'Was möchtest du diskutieren? Teile deine Gedanken...'
+          }
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={previewImages.length > 0 ? 2 : 4}
@@ -180,7 +189,15 @@ export const NewDiscussionForm: React.FC<{
       </div>
 
       {/* Actions Row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Image Upload */}
           <input
@@ -258,17 +275,34 @@ export const NewDiscussionForm: React.FC<{
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleSubmit}
-            disabled={!title.trim() || (!content.trim() && previewImages.length === 0) || submitting || uploadingImage}
+            disabled={
+              !title.trim() ||
+              (!content.trim() && previewImages.length === 0) ||
+              submitting ||
+              uploadingImage
+            }
             style={{
               padding: '12px 24px',
               borderRadius: '12px',
               border: 'none',
-              background: title.trim() && (content.trim() || previewImages.length > 0) ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})` : currentTheme.background.surface,
-              color: title.trim() && (content.trim() || previewImages.length > 0) ? '#fff' : currentTheme.text.muted,
-              cursor: title.trim() && (content.trim() || previewImages.length > 0) ? 'pointer' : 'default',
+              background:
+                title.trim() && (content.trim() || previewImages.length > 0)
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`
+                  : currentTheme.background.surface,
+              color:
+                title.trim() && (content.trim() || previewImages.length > 0)
+                  ? '#fff'
+                  : currentTheme.text.muted,
+              cursor:
+                title.trim() && (content.trim() || previewImages.length > 0)
+                  ? 'pointer'
+                  : 'default',
               fontSize: '14px',
               fontWeight: 700,
-              boxShadow: title.trim() && (content.trim() || previewImages.length > 0) ? '0 4px 16px rgba(0,0,0,0.2)' : 'none',
+              boxShadow:
+                title.trim() && (content.trim() || previewImages.length > 0)
+                  ? '0 4px 16px rgba(0,0,0,0.2)'
+                  : 'none',
             }}
           >
             {submitting ? 'Wird gepostet...' : 'Posten'}

@@ -35,12 +35,13 @@ export const RepliesSection: React.FC<{
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Always pass discussionId so createReply works, only load replies when expanded
-  const { replies, loading, createReply, editReply, deleteReply, toggleReplyLike } = useDiscussionReplies(
-    discussionId,
-    discussionPath,
-    isExpanded, // Only fetch replies when expanded
-    feedMetadata
-  );
+  const { replies, loading, createReply, editReply, deleteReply, toggleReplyLike } =
+    useDiscussionReplies(
+      discussionId,
+      discussionPath,
+      isExpanded, // Only fetch replies when expanded
+      feedMetadata
+    );
   const [newReplyIsSpoiler, setNewReplyIsSpoiler] = useState(false);
 
   const handleImageUpload = async (file: File) => {
@@ -49,7 +50,9 @@ export const RepliesSection: React.FC<{
     setUploadingImage(true);
     try {
       const timestamp = Date.now();
-      const storageRef = firebase.storage().ref(`discussions/${user.uid}/${timestamp}_${file.name}`);
+      const storageRef = firebase
+        .storage()
+        .ref(`discussions/${user.uid}/${timestamp}_${file.name}`);
       await storageRef.put(file);
       const downloadURL = await storageRef.getDownloadURL();
       setReplyImages((prev) => [...prev, downloadURL]);
@@ -95,7 +98,11 @@ export const RepliesSection: React.FC<{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          background: isExpanded ? `${currentTheme.primary}15` : isSpoilerHidden ? `${currentTheme.status.warning}10` : 'transparent',
+          background: isExpanded
+            ? `${currentTheme.primary}15`
+            : isSpoilerHidden
+              ? `${currentTheme.status.warning}10`
+              : 'transparent',
           border: `1px solid ${isExpanded ? currentTheme.primary + '40' : isSpoilerHidden ? currentTheme.status.warning + '30' : 'transparent'}`,
           padding: '8px 14px',
           cursor: isSpoilerHidden ? 'not-allowed' : 'pointer',
@@ -108,9 +115,18 @@ export const RepliesSection: React.FC<{
         }}
         title={isSpoilerHidden ? 'Zeige zuerst den Spoiler an, um Antworten zu sehen' : undefined}
       >
-        {isSpoilerHidden ? <VisibilityOff style={{ fontSize: '18px' }} /> : <ChatBubbleOutline style={{ fontSize: '18px' }} />}
+        {isSpoilerHidden ? (
+          <VisibilityOff style={{ fontSize: '18px' }} />
+        ) : (
+          <ChatBubbleOutline style={{ fontSize: '18px' }} />
+        )}
         {replyCount > 0 ? `${replyCount} Antworten` : 'Antworten'}
-        {!isSpoilerHidden && (isExpanded ? <ExpandLess style={{ fontSize: '20px' }} /> : <ExpandMore style={{ fontSize: '20px' }} />)}
+        {!isSpoilerHidden &&
+          (isExpanded ? (
+            <ExpandLess style={{ fontSize: '20px' }} />
+          ) : (
+            <ExpandMore style={{ fontSize: '20px' }} />
+          ))}
       </button>
 
       {/* Replies List */}
@@ -122,9 +138,18 @@ export const RepliesSection: React.FC<{
             exit={{ opacity: 0, height: 0 }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}
+            >
               {loading ? (
-                <div style={{ padding: '16px', color: currentTheme.text.muted, fontSize: '14px', textAlign: 'center' }}>
+                <div
+                  style={{
+                    padding: '16px',
+                    color: currentTheme.text.muted,
+                    fontSize: '14px',
+                    textAlign: 'center',
+                  }}
+                >
                   Lädt Antworten...
                 </div>
               ) : (
@@ -206,7 +231,11 @@ export const RepliesSection: React.FC<{
                       </div>
                     )}
                     <textarea
-                      placeholder={replyImages.length > 0 ? "Beschreibung (optional)..." : "Antwort schreiben..."}
+                      placeholder={
+                        replyImages.length > 0
+                          ? 'Beschreibung (optional)...'
+                          : 'Antwort schreiben...'
+                      }
                       value={newReply}
                       onChange={(e) => setNewReply(e.target.value)}
                       rows={1}
@@ -244,18 +273,28 @@ export const RepliesSection: React.FC<{
                         }}
                       >
                         <AddPhotoAlternate style={{ fontSize: '18px' }} />
-                        {uploadingImage && <span style={{ fontSize: '11px', marginLeft: '3px' }}>...</span>}
+                        {uploadingImage && (
+                          <span style={{ fontSize: '11px', marginLeft: '3px' }}>...</span>
+                        )}
                       </button>
                       {/* Spoiler Toggle */}
                       <button
                         onClick={() => setNewReplyIsSpoiler(!newReplyIsSpoiler)}
-                        title={newReplyIsSpoiler ? 'Spoiler-Markierung entfernen' : 'Als Spoiler markieren'}
+                        title={
+                          newReplyIsSpoiler
+                            ? 'Spoiler-Markierung entfernen'
+                            : 'Als Spoiler markieren'
+                        }
                         style={{
-                          background: newReplyIsSpoiler ? `${currentTheme.status.warning}20` : 'transparent',
+                          background: newReplyIsSpoiler
+                            ? `${currentTheme.status.warning}20`
+                            : 'transparent',
                           border: 'none',
                           padding: '2px',
                           cursor: 'pointer',
-                          color: newReplyIsSpoiler ? currentTheme.status.warning : currentTheme.text.muted,
+                          color: newReplyIsSpoiler
+                            ? currentTheme.status.warning
+                            : currentTheme.text.muted,
                           display: 'flex',
                           alignItems: 'center',
                           borderRadius: '4px',
@@ -268,20 +307,31 @@ export const RepliesSection: React.FC<{
                   <button
                     type="button"
                     onClick={handleSubmitReply}
-                    disabled={(!newReply.trim() && replyImages.length === 0) || submitting || uploadingImage}
+                    disabled={
+                      (!newReply.trim() && replyImages.length === 0) || submitting || uploadingImage
+                    }
                     style={{
                       width: '40px',
                       height: '40px',
                       borderRadius: '50%',
                       border: 'none',
                       flexShrink: 0,
-                      background: (newReply.trim() || replyImages.length > 0) ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})` : currentTheme.background.surface,
-                      color: (newReply.trim() || replyImages.length > 0) ? '#fff' : currentTheme.text.muted,
-                      cursor: (newReply.trim() || replyImages.length > 0) ? 'pointer' : 'default',
+                      background:
+                        newReply.trim() || replyImages.length > 0
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`
+                          : currentTheme.background.surface,
+                      color:
+                        newReply.trim() || replyImages.length > 0
+                          ? '#fff'
+                          : currentTheme.text.muted,
+                      cursor: newReply.trim() || replyImages.length > 0 ? 'pointer' : 'default',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: (newReply.trim() || replyImages.length > 0) ? '0 4px 12px rgba(0,0,0,0.2)' : 'none',
+                      boxShadow:
+                        newReply.trim() || replyImages.length > 0
+                          ? '0 4px 12px rgba(0,0,0,0.2)'
+                          : 'none',
                       transition: 'all 0.2s',
                     }}
                   >

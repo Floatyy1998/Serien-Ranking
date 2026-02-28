@@ -47,7 +47,9 @@ export const IconButton: React.FC<IconButtonProps> = ({
   const effectiveAriaLabel = ariaLabel || tooltip;
 
   if (process.env.NODE_ENV === 'development' && !ariaLabel && !tooltip) {
-    console.warn('IconButton: Neither ariaLabel nor tooltip provided. This button is not accessible to screen readers.');
+    console.warn(
+      'IconButton: Neither ariaLabel nor tooltip provided. This button is not accessible to screen readers.'
+    );
   }
 
   const button = (
@@ -74,7 +76,11 @@ export const IconButton: React.FC<IconButtonProps> = ({
   );
 
   if (tooltip) {
-    return <Tooltip title={tooltip} arrow>{button}</Tooltip>;
+    return (
+      <Tooltip title={tooltip} arrow>
+        {button}
+      </Tooltip>
+    );
   }
 
   return button;

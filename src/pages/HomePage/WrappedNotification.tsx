@@ -75,7 +75,12 @@ export const WrappedNotification: React.FC = () => {
       <FloatingIcon icon={<PlayCircle style={{ fontSize: 20 }} />} delay={0} left="10%" top="20%" />
       <FloatingIcon icon={<Star style={{ fontSize: 16 }} />} delay={0.5} left="85%" top="15%" />
       <FloatingIcon icon={<Theaters style={{ fontSize: 18 }} />} delay={1} left="75%" top="65%" />
-      <FloatingIcon icon={<TrendingUp style={{ fontSize: 16 }} />} delay={1.5} left="20%" top="70%" />
+      <FloatingIcon
+        icon={<TrendingUp style={{ fontSize: 16 }} />}
+        delay={1.5}
+        left="20%"
+        top="70%"
+      />
 
       {/* Shimmer Effect */}
       <motion.div
@@ -133,12 +138,14 @@ export const WrappedNotification: React.FC = () => {
             border: '2px solid rgba(255, 255, 255, 0.3)',
           }}
         >
-          <span style={{
-            fontSize: '18px',
-            fontWeight: 800,
-            color: 'white',
-            letterSpacing: '-1px',
-          }}>
+          <span
+            style={{
+              fontSize: '18px',
+              fontWeight: 800,
+              color: 'white',
+              letterSpacing: '-1px',
+            }}
+          >
             {year}
           </span>
         </motion.div>

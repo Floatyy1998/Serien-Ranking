@@ -46,10 +46,12 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
       '&:active': {
         transform: 'scale(0.98)',
       },
-      '&:hover': onClick ? {
-        transform: 'translateY(-2px)',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-      } : {},
+      '&:hover': onClick
+        ? {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          }
+        : {},
     }}
   >
     <Box
@@ -325,53 +327,59 @@ export const StatsGrid = () => {
 
     // Genres - fix genre detection and exclude "All"
     const genreCounts: Record<string, number> = {};
-    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
-      if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
+      (item: Series | MovieType) => {
+        if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
-      // Handle different genre structures
-      let genres: string[] = [];
+        // Handle different genre structures
+        let genres: string[] = [];
 
-      if (item.genre?.genres && Array.isArray(item.genre.genres)) {
-        genres = item.genre.genres;
-      } else if (item.genres && Array.isArray(item.genres)) {
-        genres = item.genres.map((g: string | { id: number; name: string }) => (typeof g === 'string' ? g : g.name));
-      }
-
-      genres.forEach((genre: string) => {
-        // Exclude "All" and other invalid genres
-        if (
-          genre &&
-          typeof genre === 'string' &&
-          genre.toLowerCase() !== 'all' &&
-          genre.toLowerCase() !== 'alle' &&
-          genre.trim() !== ''
-        ) {
-          genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+        if (item.genre?.genres && Array.isArray(item.genre.genres)) {
+          genres = item.genre.genres;
+        } else if (item.genres && Array.isArray(item.genres)) {
+          genres = item.genres.map((g: string | { id: number; name: string }) =>
+            typeof g === 'string' ? g : g.name
+          );
         }
-      });
-    });
+
+        genres.forEach((genre: string) => {
+          // Exclude "All" and other invalid genres
+          if (
+            genre &&
+            typeof genre === 'string' &&
+            genre.toLowerCase() !== 'all' &&
+            genre.toLowerCase() !== 'alle' &&
+            genre.trim() !== ''
+          ) {
+            genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+          }
+        });
+      }
+    );
     const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
 
     // Providers - fix provider detection with the correct data structure
     const providerCounts: Record<string, number> = {};
-    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
-      if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
+      (item: Series | MovieType) => {
+        if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
-      // Check the actual provider structure used in the app
-      let providers: { id: number; logo: string; name: string }[] = [];
+        // Check the actual provider structure used in the app
+        let providers: { id: number; logo: string; name: string }[] = [];
 
-      // Main provider structure: item.provider.provider[]
-      if (item.provider?.provider && Array.isArray(item.provider.provider)) {
-        providers = item.provider.provider;
-      }
-
-      providers.forEach((provider: { id: number; logo: string; name: string }) => {
-        const name = provider.name;
-        if (name && typeof name === 'string') {
-          providerCounts[name] = (providerCounts[name] || 0) + 1;
+        // Main provider structure: item.provider.provider[]
+        if (item.provider?.provider && Array.isArray(item.provider.provider)) {
+          providers = item.provider.provider;
         }
-      });
-    });
+
+        providers.forEach((provider: { id: number; logo: string; name: string }) => {
+          const name = provider.name;
+          if (name && typeof name === 'string') {
+            providerCounts[name] = (providerCounts[name] || 0) + 1;
+          }
+        });
+      }
+    );
     const topProvider =
       Object.entries(providerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
 
@@ -428,7 +436,8 @@ export const StatsGrid = () => {
       topProvider,
       lastWeekWatched,
       completedSeries: seriesList.filter((s) => {
-        if (!s || s.nmr === undefined || s.nmr === null || !s.seasons || s.seasons.length === 0) return false;
+        if (!s || s.nmr === undefined || s.nmr === null || !s.seasons || s.seasons.length === 0)
+          return false;
 
         // Only count aired episodes for completion
         let totalAired = 0;

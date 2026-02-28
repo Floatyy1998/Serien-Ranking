@@ -62,9 +62,7 @@ export function useFirebaseBatch(config: BatchConfig = {}) {
       const now = Date.now();
 
       // Entferne vorherigen Update für denselben Pfad
-      batchRef.current = batchRef.current.filter(
-        (update) => update.path !== path
-      );
+      batchRef.current = batchRef.current.filter((update) => update.path !== path);
 
       // Füge neuen Update hinzu
       batchRef.current.push({
@@ -86,10 +84,7 @@ export function useFirebaseBatch(config: BatchConfig = {}) {
       // Führe Batch aus wenn Limit erreicht oder max Delay überschritten
       const timeSinceFirst = now - (firstUpdateRef.current || now);
 
-      if (
-        batchRef.current.length >= batchSize ||
-        timeSinceFirst >= maxDelayMs
-      ) {
+      if (batchRef.current.length >= batchSize || timeSinceFirst >= maxDelayMs) {
         executeBatch();
       } else {
         // Setze neuen Timer

@@ -1,6 +1,14 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useAuth } from '../App';
 import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
@@ -77,10 +85,17 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const loadFriendActivitiesRef = useRef<(() => Promise<void>) | null>(null);
 
   // Keep refs in sync with state
-  useEffect(() => { lastReadActivitiesTimeRef.current = lastReadActivitiesTime; }, [lastReadActivitiesTime]);
-  useEffect(() => { lastReadRequestsTimeRef.current = lastReadRequestsTime; }, [lastReadRequestsTime]);
+  useEffect(() => {
+    lastReadActivitiesTimeRef.current = lastReadActivitiesTime;
+  }, [lastReadActivitiesTime]);
+  useEffect(() => {
+    lastReadRequestsTimeRef.current = lastReadRequestsTime;
+  }, [lastReadRequestsTime]);
 
-  const friends: Friend[] = useMemo(() => friendsData ? Object.values(friendsData) : [], [friendsData]);
+  const friends: Friend[] = useMemo(
+    () => (friendsData ? Object.values(friendsData) : []),
+    [friendsData]
+  );
 
   // Lade gespeicherte Lesezeiten aus Firebase
   useEffect(() => {
@@ -227,7 +242,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       setFriendRequests(pending);
 
       // Update unread count
-      const unreadCount = pending.filter((request) => request.sentAt > lastReadRequestsTimeRef.current).length;
+      const unreadCount = pending.filter(
+        (request) => request.sentAt > lastReadRequestsTimeRef.current
+      ).length;
       setUnreadRequestsCount(unreadCount);
     });
 
@@ -320,7 +337,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   }, [user, friends]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep loadFriendActivities ref in sync
-  useEffect(() => { loadFriendActivitiesRef.current = loadFriendActivities; }, [loadFriendActivities]);
+  useEffect(() => {
+    loadFriendActivitiesRef.current = loadFriendActivities;
+  }, [loadFriendActivities]);
 
   // Load activities when conditions are met
   useEffect(() => {
@@ -354,8 +373,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     const now = Date.now();
 
     // Immediately update the unread count based on the new timestamp
-    setFriendRequests(prevRequests => {
-      const stillUnread = prevRequests.filter(request => request.sentAt > now);
+    setFriendRequests((prevRequests) => {
+      const stillUnread = prevRequests.filter((request) => request.sentAt > now);
       setUnreadRequestsCount(stillUnread.length);
       return prevRequests;
     });
@@ -373,8 +392,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     if (!user) return;
     const now = Date.now();
     // Immediately update the unread count based on the new timestamp
-    setFriendActivities(prevActivities => {
-      const stillUnread = prevActivities.filter(activity => activity.timestamp > now);
+    setFriendActivities((prevActivities) => {
+      const stillUnread = prevActivities.filter((activity) => activity.timestamp > now);
       setUnreadActivitiesCount(stillUnread.length);
       return prevActivities;
     });
@@ -493,7 +512,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
           const friendBadgeSystem = getOfflineBadgeSystem(request.fromUserId);
           friendBadgeSystem.invalidateCache();
           await friendBadgeSystem.checkForNewBadges();
-
         } catch (badgeError) {
           console.error('Badge-Check Fehler nach Friend-Request:', badgeError);
         }

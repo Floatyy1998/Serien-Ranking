@@ -14,58 +14,83 @@ interface SummarySlideProps {
 
 // SVG Icons
 const TvIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-    <rect x="2" y="3" width="20" height="14" rx="2"/>
-    <path d="M8 21h8M12 17v4" strokeLinecap="round"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="rgba(255,255,255,0.8)"
+    strokeWidth="2"
+  >
+    <rect x="2" y="3" width="20" height="14" rx="2" />
+    <path d="M8 21h8M12 17v4" strokeLinecap="round" />
   </svg>
 );
 
 const FilmIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-    <rect x="2" y="2" width="20" height="20" rx="2"/>
-    <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="rgba(255,255,255,0.8)"
+    strokeWidth="2"
+  >
+    <rect x="2" y="2" width="20" height="20" rx="2" />
+    <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5" />
   </svg>
 );
 
 const ClockIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-    <circle cx="12" cy="12" r="10"/>
-    <path d="M12 6v6l4 2" strokeLinecap="round"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="rgba(255,255,255,0.8)"
+    strokeWidth="2"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 6v6l4 2" strokeLinecap="round" />
   </svg>
 );
 
 const BookIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-    <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="rgba(255,255,255,0.8)"
+    strokeWidth="2"
+  >
+    <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
   </svg>
 );
 
 const StarIcon = ({ size = 24, color = '#ffd700' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
   </svg>
 );
 
 const ShareIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-    <polyline points="16 6 12 2 8 6"/>
-    <line x1="12" y1="2" x2="12" y2="15"/>
+    <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+    <polyline points="16 6 12 2 8 6" />
+    <line x1="12" y1="2" x2="12" y2="15" />
   </svg>
 );
 
 const STAT_ICONS: Record<string, React.ReactNode> = {
-  'Episoden': <TvIcon />,
-  'Filme': <FilmIcon />,
-  'Stunden': <ClockIcon />,
-  'Serien': <BookIcon />,
+  Episoden: <TvIcon />,
+  Filme: <FilmIcon />,
+  Stunden: <ClockIcon />,
+  Serien: <BookIcon />,
 };
 
-export const SummarySlide: React.FC<SummarySlideProps> = ({
-  stats,
-  onShare,
-}) => {
+export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) => {
   const topSerie = stats.topSeries[0];
 
   // Confetti shapes - using colored divs instead of emojis
@@ -128,16 +153,19 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
           marginBottom: '30px',
         }}
       >
-        <GradientText as="h2" from="#fff" to="#e94560" style={{
+        <GradientText
+          as="h2"
+          from="#fff"
+          to="#e94560"
+          style={{
             fontSize: 'clamp(2rem, 8vw, 3.5rem)',
             fontWeight: 'bold',
             marginBottom: '5px',
-          }}>
+          }}
+        >
           Dein {stats.year}
         </GradientText>
-        <p style={{ color: 'white', opacity: 0.8, fontSize: '1.1rem' }}>
-          in Zahlen
-        </p>
+        <p style={{ color: 'white', opacity: 0.8, fontSize: '1.1rem' }}>in Zahlen</p>
       </motion.div>
 
       {/* Stats Grid */}
@@ -283,7 +311,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
       >
         <StarIcon size={28} />
         <p style={{ color: 'white', opacity: 0.9 }}>
-          <strong>{stats.achievements.filter(a => a.unlocked).length}</strong> Achievements freigeschaltet
+          <strong>{stats.achievements.filter((a) => a.unlocked).length}</strong> Achievements
+          freigeschaltet
         </p>
       </motion.div>
 

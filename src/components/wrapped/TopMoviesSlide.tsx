@@ -11,10 +11,7 @@ interface TopMoviesSlideProps {
   maxItems?: number;
 }
 
-export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({
-  topMovies,
-  maxItems = 5,
-}) => {
+export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({ topMovies, maxItems = 5 }) => {
   const displayMovies = topMovies.slice(0, maxItems);
   const topMovie = displayMovies[0];
   const otherMovies = displayMovies.slice(1);
@@ -54,17 +51,22 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({
               marginBottom: '20px',
             }}
           >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <rect x="2" y="2" width="20" height="20" rx="2"/>
-              <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/>
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="2" />
+              <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5" />
             </svg>
           </motion.div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', marginBottom: '15px' }}>
             Keine Filme dieses Jahr
           </h2>
-          <p style={{ opacity: 0.7, fontSize: '1.1rem' }}>
-            Zeit für einen Filmabend!
-          </p>
+          <p style={{ opacity: 0.7, fontSize: '1.1rem' }}>Zeit für einen Filmabend!</p>
         </motion.div>
       </div>
     );
@@ -104,8 +106,28 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({
       )}
 
       {/* Film Strip Decoration */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30px', background: 'repeating-linear-gradient(90deg, #111 0px, #111 20px, #333 20px, #333 40px)', opacity: 0.3 }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '30px', background: 'repeating-linear-gradient(90deg, #111 0px, #111 20px, #333 20px, #333 40px)', opacity: 0.3 }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '30px',
+          background: 'repeating-linear-gradient(90deg, #111 0px, #111 20px, #333 20px, #333 40px)',
+          opacity: 0.3,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '30px',
+          background: 'repeating-linear-gradient(90deg, #111 0px, #111 20px, #333 20px, #333 40px)',
+          opacity: 0.3,
+        }}
+      />
 
       <motion.p
         initial={{ opacity: 0, y: 20 }}
@@ -157,7 +179,7 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({
             }}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
           </motion.div>
 
@@ -184,9 +206,16 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({
                 boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
               }}
             >
-              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5">
-                <rect x="2" y="2" width="20" height="20" rx="2"/>
-                <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/>
+              <svg
+                width="60"
+                height="60"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgba(255,255,255,0.5)"
+                strokeWidth="1.5"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="2" />
+                <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5" />
               </svg>
             </div>
           )}
@@ -213,9 +242,16 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({
             {topMovie.title}
           </h2>
           {topMovie.rating && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+              }}
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd700">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
               <span style={{ color: '#ffd700', fontSize: '1.2rem', fontWeight: 'bold' }}>
                 {topMovie.rating.toFixed(1)}
@@ -299,9 +335,16 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({
                       justifyContent: 'center',
                     }}
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5">
-                      <rect x="2" y="2" width="20" height="20" rx="2"/>
-                      <path d="M7 2v20M17 2v20M2 12h20"/>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth="1.5"
+                    >
+                      <rect x="2" y="2" width="20" height="20" rx="2" />
+                      <path d="M7 2v20M17 2v20M2 12h20" />
                     </svg>
                   </div>
                 )}

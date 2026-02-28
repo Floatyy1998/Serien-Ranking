@@ -31,7 +31,8 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
   const getContainer = useCallback((): HTMLElement | Window | null => {
     if (scrollContainerRef?.current) return scrollContainerRef.current;
     if (scrollContainerSelector === 'window') return window;
-    if (scrollContainerSelector) return document.querySelector<HTMLElement>(scrollContainerSelector);
+    if (scrollContainerSelector)
+      return document.querySelector<HTMLElement>(scrollContainerSelector);
     return null;
   }, [scrollContainerSelector, scrollContainerRef]);
 

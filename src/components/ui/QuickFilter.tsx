@@ -1,4 +1,11 @@
-import { FilterList, NewReleases, PlaylistAdd, Schedule, Star, Bookmark } from '@mui/icons-material';
+import {
+  FilterList,
+  NewReleases,
+  PlaylistAdd,
+  Schedule,
+  Star,
+  Bookmark,
+} from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
@@ -58,7 +65,9 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(initialFilters.genre || '');
   const [selectedProvider, setSelectedProvider] = useState<string>(initialFilters.provider || '');
-  const [selectedQuickFilter, setSelectedQuickFilter] = useState<string>(initialFilters.quickFilter || '');
+  const [selectedQuickFilter, setSelectedQuickFilter] = useState<string>(
+    initialFilters.quickFilter || ''
+  );
   const [searchQuery, setSearchQuery] = useState(initialFilters.search || '');
   const [selectedSort, setSelectedSort] = useState<string>(initialFilters.sortBy || 'rating-desc');
   const quickFilters = isRatingsMode
@@ -193,316 +202,334 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
       </Tooltip>
 
       {/* Filter Panel */}
-      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} bottomOffset={hasBottomNav ? '83px' : '0px'}>
-        <div style={{ width: '90%', alignSelf: 'center', paddingBottom: '24px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
-                {/* Header */}
-                <div
+      <BottomSheet
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        bottomOffset={hasBottomNav ? '83px' : '0px'}
+      >
+        <div
+          style={{
+            width: '90%',
+            alignSelf: 'center',
+            paddingBottom: '24px',
+            overflowY: 'auto',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '24px',
+            }}
+          >
+            <GradientText
+              as="h2"
+              from="#667eea"
+              to="#764ba2"
+              style={{
+                fontSize: '20px',
+                fontWeight: 700,
+                margin: 0,
+              }}
+            >
+              Filter & Sortierung
+            </GradientText>
+
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearFilters}
+                style={{
+                  background: 'rgba(255, 71, 87, 0.1)',
+                  border: '1px solid rgba(255, 71, 87, 0.3)',
+                  borderRadius: '20px',
+                  padding: '6px 12px',
+                  color: '#ff4757',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Zurücksetzen
+              </button>
+            )}
+          </div>
+
+          {/* Search */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.7)',
+                display: 'block',
+                marginBottom: '8px',
+              }}
+            >
+              Suche
+            </label>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={`${isMovieMode ? 'Film' : 'Serie'} suchen...`}
+            />
+          </div>
+
+          {/* Quick Filters */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.7)',
+                display: 'block',
+                marginBottom: '12px',
+              }}
+            >
+              Schnellfilter
+            </label>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px',
+              }}
+            >
+              {quickFilters.map((filter) => {
+                const Icon = filter.icon;
+                const isActive = selectedQuickFilter === filter.value;
+
+                return (
+                  <button
+                    key={filter.value}
+                    onClick={() => setSelectedQuickFilter(isActive ? '' : filter.value)}
+                    style={{
+                      padding: '12px',
+                      background: isActive
+                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                      borderRadius: '12px',
+                      color: 'white',
+                      fontSize: '13px',
+                      fontWeight: isActive ? 600 : 500,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <Icon style={{ fontSize: '16px' }} />
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sort Options - Only for Ratings Mode */}
+          {isRatingsMode && (
+            <div style={{ marginBottom: '24px' }}>
+              <label
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  display: 'block',
+                  marginBottom: '12px',
+                }}
+              >
+                Sortierung
+              </label>
+              <select
+                value={selectedSort}
+                onChange={(e) => setSelectedSort(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  fontSize: '14px',
+                }}
+              >
+                <option
+                  value="rating-desc"
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '24px',
+                    background: 'var(--color-background-surface)',
+                    color: 'var(--color-text-primary)',
                   }}
                 >
-                  <GradientText as="h2" from="#667eea" to="#764ba2" style={{
-                      fontSize: '20px',
-                      fontWeight: 700,
-                      margin: 0,
-                    }}>
-                    Filter & Sortierung
-                  </GradientText>
+                  Beste zuerst
+                </option>
+                <option
+                  value="rating-asc"
+                  style={{
+                    background: 'var(--color-background-surface)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  Schlechteste zuerst
+                </option>
+                <option
+                  value="name-asc"
+                  style={{
+                    background: 'var(--color-background-surface)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  Name A-Z
+                </option>
+                <option
+                  value="name-desc"
+                  style={{
+                    background: 'var(--color-background-surface)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  Name Z-A
+                </option>
+                <option
+                  value="date-desc"
+                  style={{
+                    background: 'var(--color-background-surface)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  Neueste zuerst
+                </option>
+              </select>
+            </div>
+          )}
 
-                  {activeFiltersCount > 0 && (
+          {/* Genre Filter */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.7)',
+                display: 'block',
+                marginBottom: '12px',
+              }}
+            >
+              Genre
+            </label>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+              }}
+            >
+              {genreMenuItems.map((genre) => {
+                const isActive = selectedGenre === genre.value;
+
+                return (
+                  <button
+                    key={genre.value}
+                    onClick={() => setSelectedGenre(isActive ? '' : genre.value)}
+                    style={{
+                      padding: '10px',
+                      background: isActive
+                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                      borderRadius: '8px',
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: isActive ? 600 : 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {genre.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Provider Filter */}
+          <div>
+            <label
+              style={{
+                fontSize: '14px',
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.7)',
+                display: 'block',
+                marginBottom: '12px',
+              }}
+            >
+              Streaming-Anbieter
+            </label>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '8px',
+              }}
+            >
+              {providerMenuItems.map((provider) => {
+                const isActive = selectedProvider === provider.value;
+
+                return (
+                  <Tooltip key={provider.value} title={provider.label} arrow>
                     <button
-                      onClick={clearFilters}
+                      onClick={() => setSelectedProvider(isActive ? '' : provider.value)}
                       style={{
-                        background: 'rgba(255, 71, 87, 0.1)',
-                        border: '1px solid rgba(255, 71, 87, 0.3)',
-                        borderRadius: '20px',
-                        padding: '6px 12px',
-                        color: '#ff4757',
-                        fontSize: '13px',
-                        fontWeight: 600,
+                        padding: '12px',
+                        background: isActive
+                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                          : 'rgba(255, 255, 255, 0.05)',
+                        border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        position: 'relative',
+                        overflow: 'hidden',
                       }}
                     >
-                      Zurücksetzen
-                    </button>
-                  )}
-                </div>
-
-                {/* Search */}
-                <div style={{ marginBottom: '24px' }}>
-                  <label
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      display: 'block',
-                      marginBottom: '8px',
-                    }}
-                  >
-                    Suche
-                  </label>
-                  <SearchInput
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                    placeholder={`${isMovieMode ? 'Film' : 'Serie'} suchen...`}
-                  />
-                </div>
-
-                {/* Quick Filters */}
-                <div style={{ marginBottom: '24px' }}>
-                  <label
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      display: 'block',
-                      marginBottom: '12px',
-                    }}
-                  >
-                    Schnellfilter
-                  </label>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '8px',
-                    }}
-                  >
-                    {quickFilters.map((filter) => {
-                      const Icon = filter.icon;
-                      const isActive = selectedQuickFilter === filter.value;
-
-                      return (
-                        <button
-                          key={filter.value}
-                          onClick={() => setSelectedQuickFilter(isActive ? '' : filter.value)}
+                      {(provider as { icon?: string }).icon ? (
+                        <img
+                          src={(provider as { icon?: string }).icon}
+                          alt={provider.label}
                           style={{
-                            padding: '12px',
-                            background: isActive
-                              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                              : 'rgba(255, 255, 255, 0.05)',
-                            border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                            borderRadius: '12px',
-                            color: 'white',
-                            fontSize: '13px',
-                            fontWeight: isActive ? 600 : 500,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            transition: 'all 0.2s ease',
+                            width: '24px',
+                            height: '24px',
+                            objectFit: 'contain',
+                            filter: isActive ? 'brightness(1.2)' : 'none',
                           }}
-                        >
-                          <Icon style={{ fontSize: '16px' }} />
-                          {filter.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Sort Options - Only for Ratings Mode */}
-                {isRatingsMode && (
-                  <div style={{ marginBottom: '24px' }}>
-                    <label
-                      style={{
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        display: 'block',
-                        marginBottom: '12px',
-                      }}
-                    >
-                      Sortierung
-                    </label>
-                    <select
-                      value={selectedSort}
-                      onChange={(e) => setSelectedSort(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '12px',
-                        color: 'white',
-                        fontSize: '14px',
-                      }}
-                    >
-                      <option
-                        value="rating-desc"
-                        style={{
-                          background: 'var(--color-background-surface)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      >
-                        Beste zuerst
-                      </option>
-                      <option
-                        value="rating-asc"
-                        style={{
-                          background: 'var(--color-background-surface)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      >
-                        Schlechteste zuerst
-                      </option>
-                      <option
-                        value="name-asc"
-                        style={{
-                          background: 'var(--color-background-surface)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      >
-                        Name A-Z
-                      </option>
-                      <option
-                        value="name-desc"
-                        style={{
-                          background: 'var(--color-background-surface)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      >
-                        Name Z-A
-                      </option>
-                      <option
-                        value="date-desc"
-                        style={{
-                          background: 'var(--color-background-surface)',
-                          color: 'var(--color-text-primary)',
-                        }}
-                      >
-                        Neueste zuerst
-                      </option>
-                    </select>
-                  </div>
-                )}
-
-                {/* Genre Filter */}
-                <div style={{ marginBottom: '24px' }}>
-                  <label
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      display: 'block',
-                      marginBottom: '12px',
-                    }}
-                  >
-                    Genre
-                  </label>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: '8px',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                    }}
-                  >
-                    {genreMenuItems.map((genre) => {
-                      const isActive = selectedGenre === genre.value;
-
-                      return (
-                        <button
-                          key={genre.value}
-                          onClick={() => setSelectedGenre(isActive ? '' : genre.value)}
+                        />
+                      ) : (
+                        <span
                           style={{
-                            padding: '10px',
-                            background: isActive
-                              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                              : 'rgba(255, 255, 255, 0.05)',
-                            border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                            borderRadius: '8px',
-                            color: 'white',
                             fontSize: '12px',
-                            fontWeight: isActive ? 600 : 500,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
+                            fontWeight: 600,
+                            color: 'white',
+                            textAlign: 'center',
+                            lineHeight: '1.2',
                           }}
                         >
-                          {genre.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Provider Filter */}
-                <div>
-                  <label
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      display: 'block',
-                      marginBottom: '12px',
-                    }}
-                  >
-                    Streaming-Anbieter
-                  </label>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(4, 1fr)',
-                      gap: '8px',
-                    }}
-                  >
-                    {providerMenuItems.map((provider) => {
-                      const isActive = selectedProvider === provider.value;
-
-                      return (
-                        <Tooltip key={provider.value} title={provider.label} arrow>
-                        <button
-                          onClick={() => setSelectedProvider(isActive ? '' : provider.value)}
-                          style={{
-                            padding: '12px',
-                            background: isActive
-                              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                              : 'rgba(255, 255, 255, 0.05)',
-                            border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            position: 'relative',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          {(provider as { icon?: string }).icon ? (
-                            <img
-                              src={(provider as { icon?: string }).icon}
-                              alt={provider.label}
-                              style={{
-                                width: '24px',
-                                height: '24px',
-                                objectFit: 'contain',
-                                filter: isActive ? 'brightness(1.2)' : 'none',
-                              }}
-                            />
-                          ) : (
-                            <span
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 600,
-                                color: 'white',
-                                textAlign: 'center',
-                                lineHeight: '1.2',
-                              }}
-                            >
-                              {provider.label}
-                            </span>
-                          )}
-                        </button>
-                        </Tooltip>
-                      );
-                    })}
-                  </div>
-                </div>
+                          {provider.label}
+                        </span>
+                      )}
+                    </button>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </BottomSheet>
     </>

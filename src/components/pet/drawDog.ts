@@ -1,6 +1,18 @@
 import { Pet } from '../../types/pet.types';
 
-export const drawDog = (ctx: CanvasRenderingContext2D, pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean, frame: number, animationSpeed: number): void => {
+export const drawDog = (
+  ctx: CanvasRenderingContext2D,
+  pet: Pet,
+  level: number,
+  ps: number,
+  color: string,
+  dark: string,
+  light: string,
+  offset: number,
+  animated: boolean,
+  frame: number,
+  animationSpeed: number
+): void => {
   const centerX = 16;
   const centerY = 16;
 
@@ -9,7 +21,12 @@ export const drawDog = (ctx: CanvasRenderingContext2D, pet: Pet, level: number, 
 
   // Kopf (wird wolfartiger mit Level)
   ctx.fillStyle = color;
-  ctx.fillRect((centerX - 4 * headSize) * ps, (centerY - 3) * ps + offset, ps * 8 * headSize, ps * 6);
+  ctx.fillRect(
+    (centerX - 4 * headSize) * ps,
+    (centerY - 3) * ps + offset,
+    ps * 8 * headSize,
+    ps * 6
+  );
   ctx.fillRect((centerX - 3 * headSize) * ps, (centerY - 4) * ps + offset, ps * 6 * headSize, ps);
 
   // Schnauze (hervorstehend)
@@ -38,7 +55,12 @@ export const drawDog = (ctx: CanvasRenderingContext2D, pet: Pet, level: number, 
   const bodyWidth = level >= 10 ? 10 : level >= 7 ? 9 : level >= 3 ? 8.5 : 8;
   const bodyHeight = level >= 10 ? 9 : level >= 7 ? 8 : level >= 3 ? 7.5 : 7;
   ctx.fillStyle = color;
-  ctx.fillRect((centerX - bodyWidth/2) * ps, (centerY + 4) * ps + offset, ps * bodyWidth, ps * bodyHeight);
+  ctx.fillRect(
+    (centerX - bodyWidth / 2) * ps,
+    (centerY + 4) * ps + offset,
+    ps * bodyWidth,
+    ps * bodyHeight
+  );
   ctx.fillRect((centerX - 3) * ps, (centerY + 4 + bodyHeight) * ps + offset, ps * 6, ps);
 
   // Level 7+ dezente Muskeln
@@ -112,7 +134,7 @@ export const drawDog = (ctx: CanvasRenderingContext2D, pet: Pet, level: number, 
   if (pet.happiness > 60) {
     ctx.fillStyle = '#FF69B4';
     ctx.fillRect((centerX - 0.5) * ps, (centerY + 4.5) * ps + offset, ps * 1.5, ps * 2);
-    ctx.fillRect((centerX) * ps, (centerY + 6.5) * ps + offset, ps * 0.8, ps * 0.5);
+    ctx.fillRect(centerX * ps, (centerY + 6.5) * ps + offset, ps * 0.8, ps * 0.5);
   }
 
   // Level Features
@@ -188,7 +210,7 @@ export const drawDog = (ctx: CanvasRenderingContext2D, pet: Pet, level: number, 
     // Narbe über dem linken Auge
     ctx.beginPath();
     ctx.moveTo((centerX - 4) * ps, (centerY - 2.5) * ps + offset);
-    ctx.lineTo((centerX - 2) * ps, (centerY) * ps + offset);
+    ctx.lineTo((centerX - 2) * ps, centerY * ps + offset);
     ctx.stroke();
 
     // Leuchtende Augen

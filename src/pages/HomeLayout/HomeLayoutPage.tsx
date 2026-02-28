@@ -3,12 +3,7 @@
  * Drag-to-reorder sections and toggle visibility
  */
 
-import {
-  DragIndicator,
-  ExpandMore,
-  RestartAlt,
-  ViewQuilt,
-} from '@mui/icons-material';
+import { DragIndicator, ExpandMore, RestartAlt, ViewQuilt } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion, Reorder } from 'framer-motion';
@@ -18,23 +13,33 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const DEFAULT_SECTION_ORDER = [
-  'countdown', 'continue-watching', 'rewatches', 'today-episodes',
-  'trending', 'top-rated', 'for-you', 'stats',
+  'countdown',
+  'continue-watching',
+  'rewatches',
+  'today-episodes',
+  'trending',
+  'top-rated',
+  'for-you',
+  'stats',
 ];
 
 const DEFAULT_FOR_YOU_ORDER = [
-  'watch-streak', 'taste-match', 'watch-journey', 'catch-up', 'hidden-series',
+  'watch-streak',
+  'taste-match',
+  'watch-journey',
+  'catch-up',
+  'hidden-series',
 ];
 
 const SECTION_LABELS: Record<string, string> = {
-  'countdown': 'Countdown',
+  countdown: 'Countdown',
   'continue-watching': 'Weiterschauen',
-  'rewatches': 'Rewatches',
+  rewatches: 'Rewatches',
   'today-episodes': 'Heute Neu',
-  'trending': 'Trending',
+  trending: 'Trending',
   'top-rated': 'Bestbewertet',
   'for-you': 'Für dich',
-  'stats': 'Statistiken',
+  stats: 'Statistiken',
 };
 
 const FOR_YOU_LABELS: Record<string, string> = {
@@ -57,39 +62,46 @@ export const HomeLayoutPage = () => {
   const [forYouExpanded, setForYouExpanded] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const saveConfig = useCallback((
-    order: string[], hidden: string[],
-    fyOrder: string[], fyHidden: string[],
-  ) => {
-    if (!user) return;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      firebase.database().ref(`users/${user.uid}/homeConfig`).set({
-        sectionOrder: order,
-        hiddenSections: hidden,
-        forYouOrder: fyOrder,
-        hiddenForYou: fyHidden,
-      });
-    }, 500);
-  }, [user]);
+  const saveConfig = useCallback(
+    (order: string[], hidden: string[], fyOrder: string[], fyHidden: string[]) => {
+      if (!user) return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        firebase.database().ref(`users/${user.uid}/homeConfig`).set({
+          sectionOrder: order,
+          hiddenSections: hidden,
+          forYouOrder: fyOrder,
+          hiddenForYou: fyHidden,
+        });
+      }, 500);
+    },
+    [user]
+  );
 
   useEffect(() => {
     if (!user) return;
-    firebase.database().ref(`users/${user.uid}/homeConfig`).once('value').then((snap) => {
-      const data = snap.val();
-      if (data?.sectionOrder) {
-        // Filter out unknown section IDs (e.g. removed features)
-        const valid = data.sectionOrder.filter((id: string) => SECTION_LABELS[id]);
-        // Add any new defaults that aren't in the saved order
-        for (const id of DEFAULT_SECTION_ORDER) {
-          if (!valid.includes(id)) valid.push(id);
+    firebase
+      .database()
+      .ref(`users/${user.uid}/homeConfig`)
+      .once('value')
+      .then((snap) => {
+        const data = snap.val();
+        if (data?.sectionOrder) {
+          // Filter out unknown section IDs (e.g. removed features)
+          const valid = data.sectionOrder.filter((id: string) => SECTION_LABELS[id]);
+          // Add any new defaults that aren't in the saved order
+          for (const id of DEFAULT_SECTION_ORDER) {
+            if (!valid.includes(id)) valid.push(id);
+          }
+          setSectionOrder(valid);
         }
-        setSectionOrder(valid);
-      }
-      if (data?.hiddenSections) setHiddenSections(data.hiddenSections.filter((id: string) => SECTION_LABELS[id]));
-      if (data?.forYouOrder) setForYouOrder(data.forYouOrder.filter((id: string) => FOR_YOU_LABELS[id]));
-      if (data?.hiddenForYou) setHiddenForYou(data.hiddenForYou.filter((id: string) => FOR_YOU_LABELS[id]));
-    });
+        if (data?.hiddenSections)
+          setHiddenSections(data.hiddenSections.filter((id: string) => SECTION_LABELS[id]));
+        if (data?.forYouOrder)
+          setForYouOrder(data.forYouOrder.filter((id: string) => FOR_YOU_LABELS[id]));
+        if (data?.hiddenForYou)
+          setHiddenForYou(data.hiddenForYou.filter((id: string) => FOR_YOU_LABELS[id]));
+      });
   }, [user]);
 
   const handleSectionReorder = (newOrder: string[]) => {
@@ -99,7 +111,7 @@ export const HomeLayoutPage = () => {
 
   const handleSectionToggle = (id: string) => {
     const newHidden = hiddenSections.includes(id)
-      ? hiddenSections.filter(s => s !== id)
+      ? hiddenSections.filter((s) => s !== id)
       : [...hiddenSections, id];
     setHiddenSections(newHidden);
     saveConfig(sectionOrder, newHidden, forYouOrder, hiddenForYou);
@@ -113,7 +125,7 @@ export const HomeLayoutPage = () => {
 
   const handleForYouToggle = (id: string) => {
     const newHidden = hiddenForYou.includes(id)
-      ? hiddenForYou.filter(s => s !== id)
+      ? hiddenForYou.filter((s) => s !== id)
       : [...hiddenForYou, id];
     setHiddenForYou(newHidden);
     saveConfig(sectionOrder, hiddenSections, forYouOrder, newHidden);
@@ -129,8 +141,24 @@ export const HomeLayoutPage = () => {
     if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
   };
 
-  const Toggle = ({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) => (
-    <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', flexShrink: 0 }}>
+  const Toggle = ({
+    checked,
+    onChange,
+    label,
+  }: {
+    checked: boolean;
+    onChange: () => void;
+    label: string;
+  }) => (
+    <label
+      style={{
+        position: 'relative',
+        display: 'inline-block',
+        width: '44px',
+        height: '24px',
+        flexShrink: 0,
+      }}
+    >
       <input
         type="checkbox"
         checked={checked}
@@ -138,24 +166,31 @@ export const HomeLayoutPage = () => {
         aria-label={label}
         style={{ opacity: 0, width: 0, height: 0 }}
       />
-      <span style={{
-        position: 'absolute',
-        cursor: 'pointer',
-        top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: checked ? currentTheme.primary : `${currentTheme.text.muted}30`,
-        transition: '0.3s',
-        borderRadius: '24px',
-      }}>
-        <span style={{
+      <span
+        style={{
           position: 'absolute',
-          height: '18px',
-          width: '18px',
-          left: checked ? '23px' : '3px',
-          bottom: '3px',
-          backgroundColor: 'white',
+          cursor: 'pointer',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: checked ? currentTheme.primary : `${currentTheme.text.muted}30`,
           transition: '0.3s',
-          borderRadius: '50%',
-        }} />
+          borderRadius: '24px',
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            height: '18px',
+            width: '18px',
+            left: checked ? '23px' : '3px',
+            bottom: '3px',
+            backgroundColor: 'white',
+            transition: '0.3s',
+            borderRadius: '50%',
+          }}
+        />
       </span>
     </label>
   );
@@ -182,12 +217,14 @@ export const HomeLayoutPage = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <ViewQuilt style={{ fontSize: '22px', color: currentTheme.primary }} />
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              margin: 0,
-              color: currentTheme.text.primary,
-            }}>
+            <h2
+              style={{
+                fontSize: '18px',
+                fontWeight: 700,
+                margin: 0,
+                color: currentTheme.text.primary,
+              }}
+            >
               Sektionen
             </h2>
           </div>
@@ -223,7 +260,8 @@ export const HomeLayoutPage = () => {
             lineHeight: 1.5,
           }}
         >
-          Ziehe Sektionen um die Reihenfolge zu ändern. Schalte den Toggle um, um Sektionen auszublenden.
+          Ziehe Sektionen um die Reihenfolge zu ändern. Schalte den Toggle um, um Sektionen
+          auszublenden.
         </motion.p>
 
         {/* Section List */}
@@ -243,7 +281,14 @@ export const HomeLayoutPage = () => {
             axis="y"
             values={sectionOrder}
             onReorder={handleSectionReorder}
-            style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}
+            style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+            }}
           >
             {sectionOrder.map((sectionId) => {
               const isForYou = sectionId === 'for-you';
@@ -269,13 +314,17 @@ export const HomeLayoutPage = () => {
                   }}
                 >
                   {/* Main row */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 14px',
-                  }}>
-                    <DragIndicator style={{ fontSize: '20px', color: currentTheme.text.muted, flexShrink: 0 }} />
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px 14px',
+                    }}
+                  >
+                    <DragIndicator
+                      style={{ fontSize: '20px', color: currentTheme.text.muted, flexShrink: 0 }}
+                    />
 
                     {/* Label + optional expand button */}
                     <div
@@ -286,13 +335,22 @@ export const HomeLayoutPage = () => {
                         gap: '6px',
                         cursor: isForYou ? 'pointer' : 'default',
                       }}
-                      onClick={isForYou ? (e) => { e.stopPropagation(); setForYouExpanded(!forYouExpanded); } : undefined}
+                      onClick={
+                        isForYou
+                          ? (e) => {
+                              e.stopPropagation();
+                              setForYouExpanded(!forYouExpanded);
+                            }
+                          : undefined
+                      }
                     >
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: isHidden ? currentTheme.text.muted : currentTheme.text.primary,
-                      }}>
+                      <span
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: isHidden ? currentTheme.text.muted : currentTheme.text.primary,
+                        }}
+                      >
                         {SECTION_LABELS[sectionId] || sectionId}
                       </span>
                       {isForYou && (
@@ -301,7 +359,9 @@ export const HomeLayoutPage = () => {
                           transition={{ duration: 0.2 }}
                           style={{ display: 'flex', alignItems: 'center' }}
                         >
-                          <ExpandMore style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+                          <ExpandMore
+                            style={{ fontSize: '20px', color: currentTheme.text.muted }}
+                          />
                         </motion.div>
                       )}
                     </div>
@@ -324,17 +384,26 @@ export const HomeLayoutPage = () => {
                           transition={{ duration: 0.25 }}
                           style={{ overflow: 'hidden' }}
                         >
-                          <div style={{
-                            padding: '0 8px 10px 8px',
-                            borderTop: `1px solid ${currentTheme.border.default}`,
-                            margin: '0 10px',
-                            paddingTop: '10px',
-                          }}>
+                          <div
+                            style={{
+                              padding: '0 8px 10px 8px',
+                              borderTop: `1px solid ${currentTheme.border.default}`,
+                              margin: '0 10px',
+                              paddingTop: '10px',
+                            }}
+                          >
                             <Reorder.Group
                               axis="y"
                               values={forYouOrder}
                               onReorder={handleForYouReorder}
-                              style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}
+                              style={{
+                                listStyle: 'none',
+                                margin: 0,
+                                padding: 0,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '3px',
+                              }}
                             >
                               {forYouOrder.map((subId) => {
                                 const isSubHidden = hiddenForYou.includes(subId);
@@ -359,13 +428,23 @@ export const HomeLayoutPage = () => {
                                       zIndex: 10,
                                     }}
                                   >
-                                    <DragIndicator style={{ fontSize: '16px', color: currentTheme.text.muted, flexShrink: 0 }} />
-                                    <span style={{
-                                      flex: 1,
-                                      fontSize: '13px',
-                                      fontWeight: 500,
-                                      color: isSubHidden ? currentTheme.text.muted : currentTheme.text.primary,
-                                    }}>
+                                    <DragIndicator
+                                      style={{
+                                        fontSize: '16px',
+                                        color: currentTheme.text.muted,
+                                        flexShrink: 0,
+                                      }}
+                                    />
+                                    <span
+                                      style={{
+                                        flex: 1,
+                                        fontSize: '13px',
+                                        fontWeight: 500,
+                                        color: isSubHidden
+                                          ? currentTheme.text.muted
+                                          : currentTheme.text.primary,
+                                      }}
+                                    >
                                       {FOR_YOU_LABELS[subId] || subId}
                                     </span>
                                     <Toggle

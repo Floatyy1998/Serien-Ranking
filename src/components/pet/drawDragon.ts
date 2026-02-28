@@ -1,4 +1,15 @@
-export const drawDragon = (ctx: CanvasRenderingContext2D, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean, frame: number, animationSpeed: number): void => {
+export const drawDragon = (
+  ctx: CanvasRenderingContext2D,
+  level: number,
+  ps: number,
+  color: string,
+  dark: string,
+  light: string,
+  offset: number,
+  animated: boolean,
+  frame: number,
+  animationSpeed: number
+): void => {
   const centerX = 16;
   const centerY = 16;
 
@@ -33,8 +44,8 @@ export const drawDragon = (ctx: CanvasRenderingContext2D, level: number, ps: num
   for (let y = 0; y < 10; y++) {
     const width = 8 - Math.abs(y - 5) * 0.5;
     // Schuppenmuster
-    ctx.fillStyle = (y % 2 === 0) ? color : dark;
-    ctx.fillRect((centerX - width/2) * ps, (centerY + y) * ps + offset, ps * width, ps);
+    ctx.fillStyle = y % 2 === 0 ? color : dark;
+    ctx.fillRect((centerX - width / 2) * ps, (centerY + y) * ps + offset, ps * width, ps);
   }
 
   // Bauch (heller, mit Schuppen-Textur)
@@ -55,7 +66,7 @@ export const drawDragon = (ctx: CanvasRenderingContext2D, level: number, ps: num
   // Linker Flügel
   ctx.fillStyle = dark;
   ctx.fillRect((centerX - 5 - wingFlap) * ps, (centerY - 1) * ps + offset, ps * 3, ps * 8);
-  ctx.fillRect((centerX - 7 - wingFlap) * ps, (centerY) * ps + offset, ps * 3, ps * 6);
+  ctx.fillRect((centerX - 7 - wingFlap) * ps, centerY * ps + offset, ps * 3, ps * 6);
   ctx.fillRect((centerX - 9 - wingFlap) * ps, (centerY + 1) * ps + offset, ps * 2, ps * 4);
   // Flügelmembran
   ctx.fillStyle = color + '88';
@@ -64,7 +75,7 @@ export const drawDragon = (ctx: CanvasRenderingContext2D, level: number, ps: num
   // Rechter Flügel
   ctx.fillStyle = dark;
   ctx.fillRect((centerX + 2 + wingFlap) * ps, (centerY - 1) * ps + offset, ps * 3, ps * 8);
-  ctx.fillRect((centerX + 4 + wingFlap) * ps, (centerY) * ps + offset, ps * 3, ps * 6);
+  ctx.fillRect((centerX + 4 + wingFlap) * ps, centerY * ps + offset, ps * 3, ps * 6);
   ctx.fillRect((centerX + 7 + wingFlap) * ps, (centerY + 1) * ps + offset, ps * 2, ps * 4);
   // Flügelmembran
   ctx.fillStyle = color + '88';
@@ -122,23 +133,50 @@ export const drawDragon = (ctx: CanvasRenderingContext2D, level: number, ps: num
   if (level >= 3 && animated && Math.random() > 0.3) {
     const fireSize = 1 + (level - 3) * 0.15;
     // Farbe ändert sich dramatisch
-    const fireColor = level >= 10 ? '#00FFFF' : level >= 7 ? '#9400FF' : level >= 5 ? '#FF1493' : '#FF4500';
-    const innerColor = level >= 10 ? '#FFFFFF' : level >= 7 ? '#FF00FF' : level >= 5 ? '#FFB6C1' : '#FFD700';
+    const fireColor =
+      level >= 10 ? '#00FFFF' : level >= 7 ? '#9400FF' : level >= 5 ? '#FF1493' : '#FF4500';
+    const innerColor =
+      level >= 10 ? '#FFFFFF' : level >= 7 ? '#FF00FF' : level >= 5 ? '#FFB6C1' : '#FFD700';
 
     // Hauptfeuer
     ctx.fillStyle = fireColor;
-    ctx.fillRect((centerX - 6 * fireSize) * ps, (centerY) * ps + offset, ps * 2 * fireSize, ps * 1.5 * fireSize);
-    ctx.fillRect((centerX - 8 * fireSize) * ps, (centerY + 0.5) * ps + offset, ps * 2 * fireSize, ps * fireSize);
+    ctx.fillRect(
+      (centerX - 6 * fireSize) * ps,
+      centerY * ps + offset,
+      ps * 2 * fireSize,
+      ps * 1.5 * fireSize
+    );
+    ctx.fillRect(
+      (centerX - 8 * fireSize) * ps,
+      (centerY + 0.5) * ps + offset,
+      ps * 2 * fireSize,
+      ps * fireSize
+    );
 
     // Inneres Feuer
     ctx.fillStyle = innerColor;
-    ctx.fillRect((centerX - 7 * fireSize) * ps, (centerY + 0.3) * ps + offset, ps * 1.5 * fireSize, ps * 0.8);
+    ctx.fillRect(
+      (centerX - 7 * fireSize) * ps,
+      (centerY + 0.3) * ps + offset,
+      ps * 1.5 * fireSize,
+      ps * 0.8
+    );
 
     // Level 5+ mehr Flammen
     if (level >= 5) {
       ctx.fillStyle = fireColor;
-      ctx.fillRect((centerX - 9 * fireSize) * ps, (centerY - 0.5) * ps + offset, ps * fireSize, ps * 0.8);
-      ctx.fillRect((centerX - 10 * fireSize) * ps, (centerY + 1) * ps + offset, ps * fireSize * 0.8, ps * 0.5);
+      ctx.fillRect(
+        (centerX - 9 * fireSize) * ps,
+        (centerY - 0.5) * ps + offset,
+        ps * fireSize,
+        ps * 0.8
+      );
+      ctx.fillRect(
+        (centerX - 10 * fireSize) * ps,
+        (centerY + 1) * ps + offset,
+        ps * fireSize * 0.8,
+        ps * 0.5
+      );
     }
 
     // Level 10+ Explosion
@@ -153,8 +191,8 @@ export const drawDragon = (ctx: CanvasRenderingContext2D, level: number, ps: num
     // Größere Flügel
     const wingFlap5 = animated ? Math.sin(frame * 0.1 * animationSpeed) * 1.5 : 0;
     ctx.fillStyle = dark + 'AA';
-    ctx.fillRect((centerX - 6 - wingFlap5) * ps, (centerY) * ps + offset, ps * 2, ps * 6);
-    ctx.fillRect((centerX + 4 + wingFlap5) * ps, (centerY) * ps + offset, ps * 2, ps * 6);
+    ctx.fillRect((centerX - 6 - wingFlap5) * ps, centerY * ps + offset, ps * 2, ps * 6);
+    ctx.fillRect((centerX + 4 + wingFlap5) * ps, centerY * ps + offset, ps * 2, ps * 6);
   }
 
   if (level >= 10) {
@@ -183,7 +221,12 @@ export const drawDragon = (ctx: CanvasRenderingContext2D, level: number, ps: num
     for (let i = 0; i < 5; i++) {
       const shimmerAlpha = 0.2 + Math.sin(shimmerPhase + i * 0.8) * 0.2;
       ctx.fillStyle = `rgba(0, 206, 209, ${shimmerAlpha})`;
-      ctx.fillRect((centerX - 1 + i * 0.3) * ps, (centerY - 5 + i * 0.8) * ps + offset, ps * 0.5, ps * 0.5);
+      ctx.fillRect(
+        (centerX - 1 + i * 0.3) * ps,
+        (centerY - 5 + i * 0.8) * ps + offset,
+        ps * 0.5,
+        ps * 0.5
+      );
     }
   }
 

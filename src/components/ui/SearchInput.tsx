@@ -50,8 +50,12 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           transition: 'all 0.2s ease',
           boxSizing: 'border-box',
         }}
-        onFocus={(e) => { e.target.style.borderColor = currentTheme.primary; }}
-        onBlur={(e) => { e.target.style.borderColor = currentTheme.border.default; }}
+        onFocus={(e) => {
+          e.target.style.borderColor = currentTheme.primary;
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = currentTheme.border.default;
+        }}
       />
       {value && (
         <button

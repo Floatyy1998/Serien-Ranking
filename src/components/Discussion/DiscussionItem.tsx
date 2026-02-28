@@ -1,12 +1,4 @@
-import {
-  Delete,
-  Edit,
-  Favorite,
-  FavoriteBorder,
-  Flag,
-  Person,
-  Warning,
-} from '@mui/icons-material';
+import { Delete, Edit, Favorite, FavoriteBorder, Flag, Person, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -26,7 +18,16 @@ export const DiscussionItem: React.FC<{
   isOwner: boolean;
   currentUserId?: string;
   feedMetadata?: DiscussionFeedMetadata;
-}> = ({ discussion, discussionPath, onDelete, onEdit, onToggleLike, isOwner, currentUserId, feedMetadata }) => {
+}> = ({
+  discussion,
+  discussionPath,
+  onDelete,
+  onEdit,
+  onToggleLike,
+  isOwner,
+  currentUserId,
+  feedMetadata,
+}) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const isLiked = currentUserId ? discussion.likes.includes(currentUserId) : false;
@@ -105,12 +106,22 @@ export const DiscussionItem: React.FC<{
                 }),
           }}
         >
-          {!discussion.userPhotoURL && <Person style={{ fontSize: '20px', color: 'white' }} aria-hidden="true" />}
+          {!discussion.userPhotoURL && (
+            <Person style={{ fontSize: '20px', color: 'white' }} aria-hidden="true" />
+          )}
         </button>
 
         {/* Title & Meta */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flexWrap: 'wrap',
+              marginBottom: '2px',
+            }}
+          >
             <button
               onClick={() => navigate(`/friend/${discussion.userId}`)}
               style={{
@@ -194,7 +205,11 @@ export const DiscussionItem: React.FC<{
           {/* Spoiler Confirm - inline */}
           {showSpoilerConfirm && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: currentTheme.status.warning, fontWeight: 500 }}>Spoiler?</span>
+              <span
+                style={{ fontSize: '12px', color: currentTheme.status.warning, fontWeight: 500 }}
+              >
+                Spoiler?
+              </span>
               <button
                 onClick={handleFlagAsSpoiler}
                 style={{
@@ -272,7 +287,9 @@ export const DiscussionItem: React.FC<{
           {/* Delete Confirm - inline */}
           {showDeleteConfirm && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: currentTheme.status.error, fontWeight: 500 }}>Löschen?</span>
+              <span style={{ fontSize: '12px', color: currentTheme.status.error, fontWeight: 500 }}>
+                Löschen?
+              </span>
               <button
                 onClick={handleDelete}
                 style={{
@@ -371,7 +388,15 @@ export const DiscussionItem: React.FC<{
               boxSizing: 'border-box',
             }}
           />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '10px',
+            }}
+          >
             <label
               style={{
                 display: 'flex',
@@ -424,7 +449,9 @@ export const DiscussionItem: React.FC<{
                   padding: '10px 16px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: editTitle.trim() ? currentTheme.primary : currentTheme.background.surface,
+                  background: editTitle.trim()
+                    ? currentTheme.primary
+                    : currentTheme.background.surface,
                   color: editTitle.trim() ? '#fff' : currentTheme.text.muted,
                   cursor: editTitle.trim() ? 'pointer' : 'default',
                   fontSize: '13px',
@@ -439,8 +466,8 @@ export const DiscussionItem: React.FC<{
       )}
 
       {/* Content */}
-      {!isEditing && (
-        discussion.isSpoiler && !showSpoiler ? (
+      {!isEditing &&
+        (discussion.isSpoiler && !showSpoiler ? (
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowSpoiler(true)}
@@ -481,18 +508,33 @@ export const DiscussionItem: React.FC<{
 
             {/* Images */}
             {images.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: text ? '16px' : 0 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  marginTop: text ? '16px' : 0,
+                }}
+              >
                 {images.map((img, i) => (
                   <ImagePreview key={i} src={img} />
                 ))}
               </div>
             )}
           </>
-        )
-      )}
+        ))}
 
       {/* Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${currentTheme.border.default}` }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
         <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -512,7 +554,11 @@ export const DiscussionItem: React.FC<{
               transition: 'all 0.2s',
             }}
           >
-            {isLiked ? <Favorite style={{ fontSize: '20px' }} /> : <FavoriteBorder style={{ fontSize: '20px' }} />}
+            {isLiked ? (
+              <Favorite style={{ fontSize: '20px' }} />
+            ) : (
+              <FavoriteBorder style={{ fontSize: '20px' }} />
+            )}
             {discussion.likes.length > 0 ? discussion.likes.length : 'Gefällt mir'}
           </motion.button>
         </Tooltip>

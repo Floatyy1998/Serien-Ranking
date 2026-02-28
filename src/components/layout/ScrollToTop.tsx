@@ -17,8 +17,10 @@ export const ScrollToTop = () => {
       }
 
       // Also handle any other scrollable containers
-      const scrollableContainers = document.querySelectorAll('.mobile-app, .mobile-layout, [data-scrollable="true"]');
-      scrollableContainers.forEach(container => {
+      const scrollableContainers = document.querySelectorAll(
+        '.mobile-app, .mobile-layout, [data-scrollable="true"]'
+      );
+      scrollableContainers.forEach((container) => {
         container.scrollTop = 0;
       });
     }, 0);

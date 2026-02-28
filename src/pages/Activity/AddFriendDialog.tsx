@@ -6,7 +6,14 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { IconButton, EmptyState, SearchInput, BottomSheet, GradientText, LoadingSpinner } from '../../components/ui';
+import {
+  IconButton,
+  EmptyState,
+  SearchInput,
+  BottomSheet,
+  GradientText,
+  LoadingSpinner,
+} from '../../components/ui';
 
 interface UserSearchResult {
   uid: string;
@@ -70,7 +77,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
               try {
                 const [seriesSnapshot, moviesSnapshot] = await Promise.all([
                   firebase.database().ref(`${uid}/serien`).once('value'),
-                  firebase.database().ref(`${uid}/filme`).once('value')
+                  firebase.database().ref(`${uid}/filme`).once('value'),
                 ]);
 
                 const seriesData = seriesSnapshot.val();
@@ -90,15 +97,18 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 bio: userData.bio,
                 seriesCount,
                 moviesCount,
-                isAlreadyFriend: friends.some(f => f.uid === uid),
-                hasPendingRequest: sentRequests.some(r => r.toUserId === uid) || recentlyAdded.includes(uid),
+                isAlreadyFriend: friends.some((f) => f.uid === uid),
+                hasPendingRequest:
+                  sentRequests.some((r) => r.toUserId === uid) || recentlyAdded.includes(uid),
               };
             }
             return null;
           });
 
           const processedResults = await Promise.all(userPromises);
-          const validResults = processedResults.filter(result => result !== null) as UserSearchResult[];
+          const validResults = processedResults.filter(
+            (result) => result !== null
+          ) as UserSearchResult[];
 
           // Sort results - friends last, exact matches first
           validResults.sort((a, b) => {
@@ -107,8 +117,12 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
             }
 
             const searchLower = searchQuery.toLowerCase();
-            const aExact = a.username.toLowerCase() === searchLower || a.displayName.toLowerCase() === searchLower;
-            const bExact = b.username.toLowerCase() === searchLower || b.displayName.toLowerCase() === searchLower;
+            const aExact =
+              a.username.toLowerCase() === searchLower ||
+              a.displayName.toLowerCase() === searchLower;
+            const bExact =
+              b.username.toLowerCase() === searchLower ||
+              b.displayName.toLowerCase() === searchLower;
 
             if (aExact !== bExact) {
               return aExact ? -1 : 1;
@@ -184,11 +198,14 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
             <PersonAdd style={{ fontSize: '24px', color: currentTheme.primary }} />
           </div>
           <div>
-            <GradientText as="h2" style={{
+            <GradientText
+              as="h2"
+              style={{
                 fontSize: '24px',
                 fontWeight: 700,
                 margin: 0,
-              }}>
+              }}
+            >
               Neue Freunde
             </GradientText>
             <p
@@ -203,12 +220,23 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <IconButton icon={<Close style={{ fontSize: '20px' }} />} onClick={handleClose} size={36} variant="surface" tooltip="Schließen" />
+        <IconButton
+          icon={<Close style={{ fontSize: '20px' }} />}
+          onClick={handleClose}
+          size={36}
+          variant="surface"
+          tooltip="Schließen"
+        />
       </div>
 
       {/* Search Input */}
       <div style={{ padding: '0 20px 20px' }}>
-        <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Suche nach Benutzername..." autoFocus />
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Suche nach Benutzername..."
+          autoFocus
+        />
       </div>
 
       {/* Content Area */}
@@ -221,9 +249,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         }}
       >
         {/* Loading State */}
-        {searching && (
-          <LoadingSpinner text="Suche läuft..." />
-        )}
+        {searching && <LoadingSpinner text="Suche läuft..." />}
 
         {/* No Query State */}
         {!searchQuery && !searching && (
@@ -275,16 +301,20 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                     alignItems: 'center',
                     gap: '12px',
                     padding: '12px',
-                    background: result.isAlreadyFriend || result.hasPendingRequest
-                      ? currentTheme.background.surface
-                      : `linear-gradient(135deg, ${currentTheme.background.surface}AA 0%, ${currentTheme.background.default}AA 100%)`,
+                    background:
+                      result.isAlreadyFriend || result.hasPendingRequest
+                        ? currentTheme.background.surface
+                        : `linear-gradient(135deg, ${currentTheme.background.surface}AA 0%, ${currentTheme.background.default}AA 100%)`,
                     border: `1px solid ${
                       result.isAlreadyFriend || result.hasPendingRequest
                         ? currentTheme.border.default
                         : currentTheme.primary + '33'
                     }`,
                     borderRadius: '12px',
-                    cursor: result.isAlreadyFriend || result.hasPendingRequest ? 'not-allowed' : 'pointer',
+                    cursor:
+                      result.isAlreadyFriend || result.hasPendingRequest
+                        ? 'not-allowed'
+                        : 'pointer',
                     opacity: result.isAlreadyFriend || result.hasPendingRequest ? 0.6 : 1,
                     textAlign: 'left',
                     transition: 'all 0.2s ease',
@@ -351,7 +381,9 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                   {/* Status Icon */}
                   <div>
                     {result.isAlreadyFriend && (
-                      <CheckCircle style={{ fontSize: '24px', color: currentTheme.status.success }} />
+                      <CheckCircle
+                        style={{ fontSize: '24px', color: currentTheme.status.success }}
+                      />
                     )}
                     {result.hasPendingRequest && (
                       <div

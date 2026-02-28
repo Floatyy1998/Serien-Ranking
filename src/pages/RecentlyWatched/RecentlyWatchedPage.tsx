@@ -94,7 +94,11 @@ class EpisodeDataManager {
   private cache = new Map<string, WatchedEpisode[]>();
   private dateGroups = new Map<string, DateGroup>();
 
-  constructor(private seriesList: Series[], private daysToShow: number, private searchQuery: string) {
+  constructor(
+    private seriesList: Series[],
+    private daysToShow: number,
+    private searchQuery: string
+  ) {
     this.initializeDateGroups();
   }
 
@@ -114,7 +118,7 @@ class EpisodeDataManager {
         displayDate,
         episodes: [],
         loaded: false,
-        loading: false
+        loading: false,
       });
     }
   }
@@ -155,7 +159,7 @@ class EpisodeDataManager {
     const episodes: WatchedEpisode[] = [];
 
     const filteredSeries = this.searchQuery
-      ? this.seriesList.filter(series =>
+      ? this.seriesList.filter((series) =>
           series.title?.toLowerCase().includes(this.searchQuery.toLowerCase())
         )
       : this.seriesList;
@@ -176,12 +180,14 @@ class EpisodeDataManager {
           : Object.values(season.episodes);
 
         for (let episodeIndex = 0; episodeIndex < episodesArray.length; episodeIndex++) {
-          const episode = episodesArray[episodeIndex] as Series['seasons'][number]['episodes'][number];
+          const episode = episodesArray[
+            episodeIndex
+          ] as Series['seasons'][number]['episodes'][number];
 
           const isWatched = !!(
             episode?.watched === true ||
             (episode?.watched as unknown) === 1 ||
-            (episode?.watched as unknown) === "true" ||
+            (episode?.watched as unknown) === 'true' ||
             (episode?.watchCount && episode.watchCount > 0) ||
             episode?.firstWatchedAt ||
             episode?.lastWatchedAt
@@ -203,7 +209,8 @@ class EpisodeDataManager {
             dateSource = 'airDate';
           } else {
             watchedDate = new Date();
-            const estimatedDaysAgo = (seasonIdx * 20) + (episodeIndex * 2) + Math.floor(Math.random() * 7);
+            const estimatedDaysAgo =
+              seasonIdx * 20 + episodeIndex * 2 + Math.floor(Math.random() * 7);
             watchedDate.setDate(watchedDate.getDate() - estimatedDaysAgo);
             dateSource = 'estimated';
           }
@@ -263,7 +270,7 @@ class EpisodeDataManager {
           displayDate,
           episodes: [],
           loaded: true,
-          loading: false
+          loading: false,
         };
         this.dateGroups.set(dateKey, group);
       }
@@ -383,10 +390,7 @@ export const RecentlyWatchedPage = memo(() => {
       startDate.setDate(today.getDate() - daysToShow);
 
       try {
-        await dataManager.loadEpisodesForDateRange(
-          startDate.toDateString(),
-          today.toDateString()
-        );
+        await dataManager.loadEpisodesForDateRange(startDate.toDateString(), today.toDateString());
 
         const allDateGroups = dataManager.getDateGroups();
         const availableDays = Math.min(daysToShow, allDateGroups.length);
@@ -539,8 +543,10 @@ export const RecentlyWatchedPage = memo(() => {
   ];
 
   return (
-    <PageLayout gradientColors={[currentTheme.status.success, currentTheme.primary]} style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-
+    <PageLayout
+      gradientColors={[currentTheme.status.success, currentTheme.primary]}
+      style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+    >
       {/* Fixed Header */}
       <div
         ref={headerRef}
@@ -582,7 +588,13 @@ export const RecentlyWatchedPage = memo(() => {
                   }}
                 >
                   <PlayCircle style={{ fontSize: 16, color: currentTheme.status.success }} />
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: currentTheme.status.success }}>
+                  <span
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: currentTheme.status.success,
+                    }}
+                  >
                     {totalEpisodes}
                   </span>
                 </div>
@@ -676,12 +688,14 @@ export const RecentlyWatchedPage = memo(() => {
                 padding: '10px 18px',
                 borderRadius: '12px',
                 border: 'none',
-                background: daysToShow === range.days
-                  ? `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`
-                  : currentTheme.background.surface,
-                boxShadow: daysToShow === range.days
-                  ? `0 4px 12px ${currentTheme.status.success}40`
-                  : 'none',
+                background:
+                  daysToShow === range.days
+                    ? `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`
+                    : currentTheme.background.surface,
+                boxShadow:
+                  daysToShow === range.days
+                    ? `0 4px 12px ${currentTheme.status.success}40`
+                    : 'none',
                 color: daysToShow === range.days ? '#fff' : currentTheme.text.secondary,
                 fontSize: '13px',
                 fontWeight: 600,
@@ -795,9 +809,10 @@ export const RecentlyWatchedPage = memo(() => {
                             fontSize: '15px',
                             fontWeight: 700,
                             margin: 0,
-                            color: isToday || isYesterday
-                              ? currentTheme.status.success
-                              : currentTheme.text.primary,
+                            color:
+                              isToday || isYesterday
+                                ? currentTheme.status.success
+                                : currentTheme.text.primary,
                           }}
                         >
                           {dateGroup.displayDate}
@@ -880,7 +895,11 @@ export const RecentlyWatchedPage = memo(() => {
                                   </h3>
 
                                   <p
-                                    onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`)}
+                                    onClick={() =>
+                                      navigate(
+                                        `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`
+                                      )
+                                    }
                                     style={{
                                       fontSize: '13px',
                                       margin: '0 0 6px 0',
@@ -891,7 +910,8 @@ export const RecentlyWatchedPage = memo(() => {
                                       whiteSpace: 'nowrap',
                                     }}
                                   >
-                                    S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
+                                    S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
+                                    {episode.episodeName}
                                   </p>
 
                                   <div
@@ -926,19 +946,33 @@ export const RecentlyWatchedPage = memo(() => {
                                           color: '#fbbf24',
                                         }}
                                       >
-                                        {episode.dateSource === 'lastWatched' ? 'zuletzt' :
-                                         episode.dateSource === 'airDate' ? 'Ausstrahlung' : 'geschätzt'}
+                                        {episode.dateSource === 'lastWatched'
+                                          ? 'zuletzt'
+                                          : episode.dateSource === 'airDate'
+                                            ? 'Ausstrahlung'
+                                            : 'geschätzt'}
                                       </span>
                                     )}
                                   </div>
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                  }}
+                                >
                                   <EpisodeDiscussionIndicator
                                     seriesId={episode.seriesId}
                                     seasonNumber={episode.seasonNumber}
                                     episodeNumber={episode.episodeNumber}
-                                    onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}?tab=discussions`)}
+                                    onClick={() =>
+                                      navigate(
+                                        `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}?tab=discussions`
+                                      )
+                                    }
                                   />
 
                                   <motion.button
@@ -983,7 +1017,9 @@ export const RecentlyWatchedPage = memo(() => {
                               }}
                             >
                               <div
-                                onClick={() => toggleSeriesExpanded(dateGroup.date, Number(seriesId))}
+                                onClick={() =>
+                                  toggleSeriesExpanded(dateGroup.date, Number(seriesId))
+                                }
                                 style={{
                                   display: 'flex',
                                   gap: '12px',
@@ -1093,12 +1129,19 @@ export const RecentlyWatchedPage = memo(() => {
                                               gap: '12px',
                                               padding: '10px',
                                               borderRadius: '10px',
-                                              background: idx % 2 === 0 ? 'transparent' : `${currentTheme.text.muted}05`,
+                                              background:
+                                                idx % 2 === 0
+                                                  ? 'transparent'
+                                                  : `${currentTheme.text.muted}05`,
                                             }}
                                           >
                                             <div style={{ flex: 1 }}>
                                               <p
-                                                onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`)}
+                                                onClick={() =>
+                                                  navigate(
+                                                    `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`
+                                                  )
+                                                }
                                                 style={{
                                                   fontSize: '13px',
                                                   margin: 0,
@@ -1107,7 +1150,8 @@ export const RecentlyWatchedPage = memo(() => {
                                                   fontWeight: 500,
                                                 }}
                                               >
-                                                S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
+                                                S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
+                                                {episode.episodeName}
                                               </p>
                                               {episode.watchCount > 1 && (
                                                 <p
@@ -1126,7 +1170,11 @@ export const RecentlyWatchedPage = memo(() => {
                                               seriesId={episode.seriesId}
                                               seasonNumber={episode.seasonNumber}
                                               episodeNumber={episode.episodeNumber}
-                                              onClick={() => navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}?tab=discussions`)}
+                                              onClick={() =>
+                                                navigate(
+                                                  `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}?tab=discussions`
+                                                )
+                                              }
                                             />
 
                                             <motion.button

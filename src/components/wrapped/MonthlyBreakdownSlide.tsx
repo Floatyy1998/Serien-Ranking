@@ -16,10 +16,23 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
   mostActiveMonth,
 }) => {
   // Finde den maximalen Wert für die Skalierung
-  const maxMinutes = Math.max(...monthlyBreakdown.map(m => m.minutesWatched), 1);
+  const maxMinutes = Math.max(...monthlyBreakdown.map((m) => m.minutesWatched), 1);
 
   // Kurze Monatsnamen
-  const shortMonths = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+  const shortMonths = [
+    'Jan',
+    'Feb',
+    'Mär',
+    'Apr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Dez',
+  ];
 
   return (
     <div
@@ -42,7 +55,8 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
           backgroundSize: '50px 50px',
         }}
       />
@@ -73,9 +87,16 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
           zIndex: 1,
         }}
       >
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-          <path d="M3 3v18h18"/>
-          <path d="M7 16l4-8 4 5 5-9"/>
+        <svg
+          width="60"
+          height="60"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="rgba(255,255,255,0.8)"
+          strokeWidth="2"
+        >
+          <path d="M3 3v18h18" />
+          <path d="M7 16l4-8 4 5 5-9" />
         </svg>
       </motion.div>
 
@@ -159,8 +180,7 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
                     boxShadow: isTopMonth ? '0 0 20px rgba(102,126,234,0.5)' : 'none',
                     position: 'relative',
                   }}
-                >
-                </motion.div>
+                ></motion.div>
                 <span
                   style={{
                     fontSize: '0.6rem',

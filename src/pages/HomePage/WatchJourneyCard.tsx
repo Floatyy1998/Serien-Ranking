@@ -86,13 +86,16 @@ export const WatchJourneyCard: React.FC = () => {
               maxHeight: 24,
               borderRadius: 2,
               background: `linear-gradient(180deg, ${primaryColor}, ${primaryColor}cc)`,
-              opacity: 0.3 + (i * 0.1),
+              opacity: 0.3 + i * 0.1,
             }}
           />
         ))}
       </div>
 
-      <ChevronRight style={{ color: currentTheme.text.secondary, fontSize: 20 }} aria-hidden="true" />
+      <ChevronRight
+        style={{ color: currentTheme.text.secondary, fontSize: 20 }}
+        aria-hidden="true"
+      />
     </motion.button>
   );
 };

@@ -105,8 +105,7 @@ const JOB_TRANSLATIONS: Record<string, string> = {
   'Production Office Coordinator': 'Produktionsbüro-Koordinator',
   'Executive Consultant': 'Executive Consultant',
   'Development Manager': 'Entwicklungsmanager',
-  'Executive In Charge Of Post Production':
-    'Executive In Charge Of Post Production',
+  'Executive In Charge Of Post Production': 'Executive In Charge Of Post Production',
   'Production Director': 'Produktionsdirektor',
   'Executive In Charge Of Production': 'Executive In Charge Of Production',
   Researcher: 'Researcher',
@@ -142,8 +141,7 @@ const JOB_TRANSLATIONS: Record<string, string> = {
   'Feature Finishing Producer': 'Feature Finishing Producer',
   'Finishing Producer': 'Finishing Producer',
   'First Assistant Accountant': 'Erster Buchhaltungsassistent',
-  'First Assistant Production Coordinator':
-    'Erster Produktionskoordinationsassistent',
+  'First Assistant Production Coordinator': 'Erster Produktionskoordinationsassistent',
   'General Manager': 'General Manager',
   'Head of Production': 'Produktionsleiter',
   'Head of Programming': 'Programmleiter',
@@ -166,8 +164,7 @@ const JOB_TRANSLATIONS: Record<string, string> = {
   'Production Runner': 'Produktionsrunner',
   'Production Trainee': 'Produktionstrainee',
   'Second Assistant Accountant': 'Zweiter Buchhaltungsassistent',
-  'Second Assistant Production Coordinator':
-    'Zweiter Produktionskoordinationsassistent',
+  'Second Assistant Production Coordinator': 'Zweiter Produktionskoordinationsassistent',
   'Second Assistant Unit Manager': 'Zweiter Unit-Manager-Assistent',
   'Second Unit Location Manager': 'Second Unit Location Manager',
   'Street Casting': 'Street Casting',

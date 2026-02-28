@@ -63,10 +63,10 @@ export interface WatchJourneyData {
   totalMinutes: number;
 
   // Binge Stats
-  bingeSessionCount: number;    // Anzahl der Binge-Sessions
-  bingeEpisodeCount: number;    // Episoden in Binge-Sessions
-  avgBingeLength: number;       // Ø Episoden pro Binge-Session
-  longestBinge: number;         // Längste Binge-Session (Episoden)
+  bingeSessionCount: number; // Anzahl der Binge-Sessions
+  bingeEpisodeCount: number; // Episoden in Binge-Sessions
+  avgBingeLength: number; // Ø Episoden pro Binge-Session
+  longestBinge: number; // Längste Binge-Session (Episoden)
 
   // Rewatch Stats
   rewatchCount: number;
@@ -89,8 +89,8 @@ export interface WatchJourneyData {
     bingeEpisodes: number;
     genres: string[];
     provider?: string;
-    firstWatched: string;  // ISO date
-    lastWatched: string;   // ISO date
+    firstWatched: string; // ISO date
+    lastWatched: string; // ISO date
   }[];
   uniqueSeriesCount: number;
   avgEpisodesPerSeries: number;
@@ -136,35 +136,45 @@ export interface MultiYearTrendsData {
 // ============================================================================
 
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
+  'Jan',
+  'Feb',
+  'Mär',
+  'Apr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Okt',
+  'Nov',
+  'Dez',
 ];
 
 const DAY_NAMES = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
 const GENRE_COLORS: Record<string, string> = {
-  'Drama': '#667eea',
-  'Comedy': '#f5af19',
-  'Action': '#e94560',
+  Drama: '#667eea',
+  Comedy: '#f5af19',
+  Action: '#e94560',
   'Action & Adventure': '#e94560',
-  'Thriller': '#764ba2',
+  Thriller: '#764ba2',
   'Sci-Fi & Fantasy': '#00cec9',
   'Science Fiction': '#00cec9',
-  'Horror': '#d63031',
-  'Romance': '#ff6b9d',
-  'Crime': '#636e72',
-  'Documentary': '#00b894',
-  'Animation': '#fdcb6e',
-  'Family': '#74b9ff',
-  'Mystery': '#a29bfe',
-  'Fantasy': '#81ecec',
-  'Adventure': '#fab1a0',
-  'Kids': '#55efc4',
-  'Reality': '#ffeaa7',
+  Horror: '#d63031',
+  Romance: '#ff6b9d',
+  Crime: '#636e72',
+  Documentary: '#00b894',
+  Animation: '#fdcb6e',
+  Family: '#74b9ff',
+  Mystery: '#a29bfe',
+  Fantasy: '#81ecec',
+  Adventure: '#fab1a0',
+  Kids: '#55efc4',
+  Reality: '#ffeaa7',
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
-  'Netflix': '#E50914',
+  Netflix: '#E50914',
   'Disney Plus': '#113CCF',
   'Disney+': '#113CCF',
   'Amazon Prime Video': '#00A8E1',
@@ -172,26 +182,36 @@ const PROVIDER_COLORS: Record<string, string> = {
   'Apple TV+': '#000000',
   'Apple TV Plus': '#000000',
   'HBO Max': '#B428DB',
-  'Max': '#002BE7',
+  Max: '#002BE7',
   'Paramount+': '#0064FF',
   'Paramount Plus': '#0064FF',
-  'Peacock': '#000000',
-  'Hulu': '#1CE783',
-  'Crunchyroll': '#F47521',
-  'Sky': '#0072CE',
-  'WOW': '#6B3FA0',
+  Peacock: '#000000',
+  Hulu: '#1CE783',
+  Crunchyroll: '#F47521',
+  Sky: '#0072CE',
+  WOW: '#6B3FA0',
   'RTL+': '#E3000F',
-  'Joyn': '#1E1E1E',
-  'MagentaTV': '#E20074',
+  Joyn: '#1E1E1E',
+  MagentaTV: '#E20074',
   'ARD Mediathek': '#003D7F',
   'ZDF Mediathek': '#FF6600',
   'Animation Digital Network': '#0096FF',
-  'ADN': '#0096FF',
+  ADN: '#0096FF',
 };
 
 const FALLBACK_COLORS = [
-  '#667eea', '#f093fb', '#00cec9', '#fdcb6e', '#e94560', '#764ba2',
-  '#00b894', '#74b9ff', '#a29bfe', '#fab1a0', '#ff6b9d', '#81ecec',
+  '#667eea',
+  '#f093fb',
+  '#00cec9',
+  '#fdcb6e',
+  '#e94560',
+  '#764ba2',
+  '#00b894',
+  '#74b9ff',
+  '#a29bfe',
+  '#fab1a0',
+  '#ff6b9d',
+  '#81ecec',
 ];
 
 // ============================================================================
@@ -231,15 +251,25 @@ export async function calculateWatchJourney(
 
   // Initialize data structures
   const genreMonthly = MONTH_NAMES.map((name, i) => ({
-    month: i + 1, monthName: name, values: {} as Record<string, number>, total: 0
+    month: i + 1,
+    monthName: name,
+    values: {} as Record<string, number>,
+    total: 0,
   }));
 
   const providerMonthly = MONTH_NAMES.map((name, i) => ({
-    month: i + 1, monthName: name, values: {} as Record<string, number>, total: 0
+    month: i + 1,
+    monthName: name,
+    values: {} as Record<string, number>,
+    total: 0,
   }));
 
   const activityMonthly = MONTH_NAMES.map((name, i) => ({
-    month: i + 1, monthName: name, episodes: 0, movies: 0, totalMinutes: 0
+    month: i + 1,
+    monthName: name,
+    episodes: 0,
+    movies: 0,
+    totalMinutes: 0,
   }));
 
   const heatmapGrid: Record<string, { count: number; minutes: number }> = {};
@@ -265,19 +295,22 @@ export async function calculateWatchJourney(
   let longestEpisode = 0;
 
   // Series tracking
-  const seriesMap = new Map<number, {
-    seriesId: number;
-    title: string;
-    episodes: number;
-    minutes: number;
-    runtimes: number[];
-    rewatchEpisodes: number;
-    bingeEpisodes: number;
-    genres: Set<string>;
-    provider?: string;
-    firstWatched: string;
-    lastWatched: string;
-  }>();
+  const seriesMap = new Map<
+    number,
+    {
+      seriesId: number;
+      title: string;
+      episodes: number;
+      minutes: number;
+      runtimes: number[];
+      rewatchEpisodes: number;
+      bingeEpisodes: number;
+      genres: Set<string>;
+      provider?: string;
+      firstWatched: string;
+      lastWatched: string;
+    }
+  >();
 
   // Process events
   watchEvents.forEach((event) => {
@@ -311,7 +344,9 @@ export async function calculateWatchJourney(
     });
 
     // Providers
-    const providers = [...new Set(event.providers || (event.provider ? [event.provider] : []))].filter(isValidProvider);
+    const providers = [
+      ...new Set(event.providers || (event.provider ? [event.provider] : [])),
+    ].filter(isValidProvider);
     providers.forEach((provider) => {
       providerMonthly[monthIndex].values[provider] =
         (providerMonthly[monthIndex].values[provider] || 0) + runtime;
@@ -393,7 +428,7 @@ export async function calculateWatchJourney(
       }
 
       // Add genres
-      (epEvent.genres || []).filter(isValidGenre).forEach(g => seriesData.genres.add(g));
+      (epEvent.genres || []).filter(isValidGenre).forEach((g) => seriesData.genres.add(g));
 
       // Update provider if not set
       if (!seriesData.provider && epEvent.provider) {
@@ -421,7 +456,7 @@ export async function calculateWatchJourney(
       });
       if (otherTotal > 0) month.values['Andere'] = otherTotal;
     });
-    if (genreMonthly.some(m => m.values['Andere'] > 0)) {
+    if (genreMonthly.some((m) => m.values['Andere'] > 0)) {
       topGenres.push('Andere');
     }
   }
@@ -480,12 +515,12 @@ export async function calculateWatchJourney(
     // Binge stats
     bingeSessionCount: bingeSessionIds.size,
     bingeEpisodeCount,
-    avgBingeLength: bingeSessionIds.size > 0
-      ? Math.round((bingeEpisodeCount / bingeSessionIds.size) * 10) / 10
-      : 0,
-    longestBinge: bingeSessionEpisodes.size > 0
-      ? Math.max(...Array.from(bingeSessionEpisodes.values()))
-      : 0,
+    avgBingeLength:
+      bingeSessionIds.size > 0
+        ? Math.round((bingeEpisodeCount / bingeSessionIds.size) * 10) / 10
+        : 0,
+    longestBinge:
+      bingeSessionEpisodes.size > 0 ? Math.max(...Array.from(bingeSessionEpisodes.values())) : 0,
 
     // Rewatch stats
     rewatchCount,
@@ -493,22 +528,24 @@ export async function calculateWatchJourney(
     rewatchPercentage: totalMinutes > 0 ? Math.round((rewatchMinutes / totalMinutes) * 100) : 0,
 
     // Runtime stats
-    avgEpisodeRuntime: episodeRuntimes.length > 0
-      ? Math.round(episodeRuntimes.reduce((a, b) => a + b, 0) / episodeRuntimes.length)
-      : 0,
+    avgEpisodeRuntime:
+      episodeRuntimes.length > 0
+        ? Math.round(episodeRuntimes.reduce((a, b) => a + b, 0) / episodeRuntimes.length)
+        : 0,
     shortestEpisode: shortestEpisode === Infinity ? 0 : shortestEpisode,
     longestEpisode,
 
     // Series stats
     seriesStats: Array.from(seriesMap.values())
-      .map(s => ({
+      .map((s) => ({
         seriesId: s.seriesId,
         title: s.title,
         episodes: s.episodes,
         minutes: s.minutes,
-        avgRuntime: s.runtimes.length > 0
-          ? Math.round(s.runtimes.reduce((a, b) => a + b, 0) / s.runtimes.length)
-          : 0,
+        avgRuntime:
+          s.runtimes.length > 0
+            ? Math.round(s.runtimes.reduce((a, b) => a + b, 0) / s.runtimes.length)
+            : 0,
         rewatchEpisodes: s.rewatchEpisodes,
         bingeEpisodes: s.bingeEpisodes,
         genres: Array.from(s.genres),
@@ -518,12 +555,11 @@ export async function calculateWatchJourney(
       }))
       .sort((a, b) => b.episodes - a.episodes),
     uniqueSeriesCount: seriesMap.size,
-    avgEpisodesPerSeries: seriesMap.size > 0
-      ? Math.round(totalEpisodes / seriesMap.size * 10) / 10
-      : 0,
+    avgEpisodesPerSeries:
+      seriesMap.size > 0 ? Math.round((totalEpisodes / seriesMap.size) * 10) / 10 : 0,
     mostBingedSeries: (() => {
       let maxBinge = { title: '', bingeEpisodes: 0 };
-      seriesMap.forEach(s => {
+      seriesMap.forEach((s) => {
         if (s.bingeEpisodes > maxBinge.bingeEpisodes) {
           maxBinge = { title: s.title, bingeEpisodes: s.bingeEpisodes };
         }
@@ -564,14 +600,16 @@ export async function calculateMultiYearTrends(
     });
 
     // Find top genre
-    const topGenre = Object.entries(genreDistribution)
-      .filter(([genre]) => genre !== 'Andere')
-      .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+    const topGenre =
+      Object.entries(genreDistribution)
+        .filter(([genre]) => genre !== 'Andere')
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
 
     // Find top provider
-    const topProvider = Object.entries(providerDistribution)
-      .filter(([provider]) => provider !== 'Andere')
-      .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+    const topProvider =
+      Object.entries(providerDistribution)
+        .filter(([provider]) => provider !== 'Andere')
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
 
     return {
       year: data.year,
@@ -662,10 +700,7 @@ export async function calculateMultiYearTrends(
 // HELPER - Normalize data for stacked charts (0-100%)
 // ============================================================================
 
-export function normalizeMonthlyData(
-  months: MonthlyData[],
-  keys: string[]
-): MonthlyData[] {
+export function normalizeMonthlyData(months: MonthlyData[], keys: string[]): MonthlyData[] {
   return months.map((month) => {
     const normalized: Record<string, number> = {};
     if (month.total > 0) {
@@ -673,7 +708,9 @@ export function normalizeMonthlyData(
         normalized[key] = ((month.values[key] || 0) / month.total) * 100;
       });
     } else {
-      keys.forEach((key) => { normalized[key] = 0; });
+      keys.forEach((key) => {
+        normalized[key] = 0;
+      });
     }
     return { ...month, values: normalized, total: 100 };
   });

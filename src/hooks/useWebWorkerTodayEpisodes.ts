@@ -20,22 +20,21 @@ export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
   const { seriesList } = useSeriesList();
   const workerRef = useRef<Worker | null>(null);
   const [episodes, setEpisodes] = useState<TodayEpisode[]>([]);
-  
+
   useEffect(() => {
     // Initialize worker
     if (!workerRef.current) {
-      workerRef.current = new Worker(
-        new URL('../workers/stats.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-      
+      workerRef.current = new Worker(new URL('../workers/stats.worker.ts', import.meta.url), {
+        type: 'module',
+      });
+
       workerRef.current.addEventListener('message', (event) => {
         if (event.data.type === 'EPISODES_RESULT') {
           setEpisodes(event.data.data);
         }
       });
     }
-    
+
     // Send data to worker
     if (workerRef.current && seriesList.length > 0) {
       workerRef.current.postMessage({
@@ -43,7 +42,7 @@ export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
         data: { seriesList },
       });
     }
-    
+
     // Cleanup on unmount
     return () => {
       if (workerRef.current) {
@@ -52,6 +51,6 @@ export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
       }
     };
   }, [seriesList]);
-  
+
   return episodes;
 };

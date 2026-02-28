@@ -16,7 +16,11 @@
   width: 60%;
   height: 50%;
   border-radius: 50%;
-  background: radial-gradient(ellipse, var(--color-primary-alpha-15, rgba(102, 126, 234, 0.15)) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse,
+    var(--color-primary-alpha-15, rgba(102, 126, 234, 0.15)) 0%,
+    transparent 70%
+  );
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
@@ -298,7 +302,11 @@
 }
 
 .episode-item.watched {
-  background: linear-gradient(135deg, var(--color-primary-alpha-10, rgba(102, 126, 234, 0.1)) 0%, transparent 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-alpha-10, rgba(102, 126, 234, 0.1)) 0%,
+    transparent 100%
+  );
   border-color: var(--color-primary-alpha-20, rgba(102, 126, 234, 0.2));
 }
 
@@ -502,7 +510,11 @@
   transform: translateX(-50%);
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse, var(--color-primary-alpha-15, rgba(102, 126, 234, 0.15)) 0%, transparent 60%);
+  background: radial-gradient(
+    ellipse,
+    var(--color-primary-alpha-15, rgba(102, 126, 234, 0.15)) 0%,
+    transparent 60%
+  );
   pointer-events: none;
 }
 

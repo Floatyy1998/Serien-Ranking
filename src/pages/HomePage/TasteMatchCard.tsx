@@ -147,14 +147,16 @@ export const TasteMatchCard: React.FC = () => {
                 overflow: 'hidden',
               }}
             >
-              {(friendProfiles[friend.uid]?.photoURL || friend.photoURL) ? (
+              {friendProfiles[friend.uid]?.photoURL || friend.photoURL ? (
                 <img
                   src={friendProfiles[friend.uid]?.photoURL || friend.photoURL}
                   alt={`Profilbild von ${friendProfiles[friend.uid]?.displayName || friend.displayName || 'Freund'}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
-                (friendProfiles[friend.uid]?.displayName || friend.displayName)?.charAt(0).toUpperCase() || '?'
+                (friendProfiles[friend.uid]?.displayName || friend.displayName)
+                  ?.charAt(0)
+                  .toUpperCase() || '?'
               )}
             </div>
           ))}
@@ -180,7 +182,10 @@ export const TasteMatchCard: React.FC = () => {
           )}
         </div>
 
-        <ChevronRight style={{ color: currentTheme.text.secondary, fontSize: 20 }} aria-hidden="true" />
+        <ChevronRight
+          style={{ color: currentTheme.text.secondary, fontSize: 20 }}
+          aria-hidden="true"
+        />
       </motion.button>
 
       {/* Friend Selector Modal */}
@@ -238,7 +243,13 @@ export const TasteMatchCard: React.FC = () => {
                 >
                   Freund auswählen
                 </h2>
-                <IconButton icon={<Close style={{ fontSize: '20px' }} />} onClick={() => setShowSelector(false)} size={36} variant="surface" tooltip="Schließen" />
+                <IconButton
+                  icon={<Close style={{ fontSize: '20px' }} />}
+                  onClick={() => setShowSelector(false)}
+                  size={36}
+                  variant="surface"
+                  tooltip="Schließen"
+                />
               </div>
 
               {/* Friend List */}
@@ -277,7 +288,7 @@ export const TasteMatchCard: React.FC = () => {
                         flexShrink: 0,
                       }}
                     >
-                      {(friendProfiles[friend.uid]?.photoURL || friend.photoURL) ? (
+                      {friendProfiles[friend.uid]?.photoURL || friend.photoURL ? (
                         <img
                           src={friendProfiles[friend.uid]?.photoURL || friend.photoURL}
                           alt=""
@@ -297,23 +308,25 @@ export const TasteMatchCard: React.FC = () => {
                           color: currentTheme.text.primary,
                         }}
                       >
-                        {friendProfiles[friend.uid]?.displayName || friend.displayName || friend.username || 'Friend'}
+                        {friendProfiles[friend.uid]?.displayName ||
+                          friend.displayName ||
+                          friend.username ||
+                          'Friend'}
                       </div>
-                      {(friendProfiles[friend.uid]?.username || friend.username) && (friendProfiles[friend.uid]?.displayName || friend.displayName) && (
-                        <div
-                          style={{
-                            fontSize: 13,
-                            color: currentTheme.text.secondary,
-                          }}
-                        >
-                          @{friendProfiles[friend.uid]?.username || friend.username}
-                        </div>
-                      )}
+                      {(friendProfiles[friend.uid]?.username || friend.username) &&
+                        (friendProfiles[friend.uid]?.displayName || friend.displayName) && (
+                          <div
+                            style={{
+                              fontSize: 13,
+                              color: currentTheme.text.secondary,
+                            }}
+                          >
+                            @{friendProfiles[friend.uid]?.username || friend.username}
+                          </div>
+                        )}
                     </div>
 
-                    <CompareArrows
-                      style={{ color: currentTheme.primary, fontSize: 20 }}
-                    />
+                    <CompareArrows style={{ color: currentTheme.primary, fontSize: 20 }} />
                   </motion.button>
                 ))}
               </div>

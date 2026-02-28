@@ -4,4 +4,11 @@ export interface TooltipEntry {
   color: string;
 }
 
-export type TabType = 'genre' | 'provider' | 'heatmap' | 'activity' | 'trends' | 'serien' | 'insights';
+export type TabType =
+  | 'genre'
+  | 'provider'
+  | 'heatmap'
+  | 'activity'
+  | 'trends'
+  | 'serien'
+  | 'insights';

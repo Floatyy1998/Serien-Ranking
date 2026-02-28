@@ -1,8 +1,4 @@
-import {
-  ChatBubbleOutline,
-  Visibility,
-  VisibilityOff,
-} from '@mui/icons-material';
+import { ChatBubbleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useAuth } from '../../App';
@@ -27,9 +23,10 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const [showNewForm, setShowNewForm] = useState(false);
 
   // Spoiler protection for unwatched episodes
-  const spoilerKey = itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
-    ? `spoiler_revealed_${itemId}_s${seasonNumber}_e${episodeNumber}`
-    : null;
+  const spoilerKey =
+    itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
+      ? `spoiler_revealed_${itemId}_s${seasonNumber}_e${episodeNumber}`
+      : null;
 
   const [spoilerRevealed, setSpoilerRevealed] = useState(() => {
     if (spoilerKey) {
@@ -48,7 +45,15 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   // Show spoiler protection if episode is not watched and user hasn't revealed
   const showSpoilerProtection = itemType === 'episode' && isWatched === false && !spoilerRevealed;
 
-  const { discussions, loading, error, createDiscussion, editDiscussion, deleteDiscussion, toggleLike } = useDiscussions({
+  const {
+    discussions,
+    loading,
+    error,
+    createDiscussion,
+    editDiscussion,
+    deleteDiscussion,
+    toggleLike,
+  } = useDiscussions({
     itemId,
     itemType,
     seasonNumber,
@@ -62,7 +67,11 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
       ? `discussions/episode/${itemId}_s${seasonNumber}_e${episodeNumber}`
       : `discussions/${itemType}/${itemId}`;
 
-  const handleCreateDiscussion = async (data: { title: string; content: string; isSpoiler: boolean }) => {
+  const handleCreateDiscussion = async (data: {
+    title: string;
+    content: string;
+    isSpoiler: boolean;
+  }) => {
     const id = await createDiscussion(data);
     return !!id;
   };
@@ -168,7 +177,8 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
                 marginTop: '20px',
               }}
             >
-              {discussions.length} {discussions.length === 1 ? 'Diskussion' : 'Diskussionen'} versteckt
+              {discussions.length} {discussions.length === 1 ? 'Diskussion' : 'Diskussionen'}{' '}
+              versteckt
             </p>
           )}
         </div>
@@ -187,7 +197,14 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+        }}
+      >
         <h3
           style={{
             fontSize: '20px',
@@ -259,7 +276,10 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
       {/* New Discussion Form */}
       <AnimatePresence>
         {showNewForm && (
-          <NewDiscussionForm onSubmit={handleCreateDiscussion} onCancel={() => setShowNewForm(false)} />
+          <NewDiscussionForm
+            onSubmit={handleCreateDiscussion}
+            onCancel={() => setShowNewForm(false)}
+          />
         )}
       </AnimatePresence>
 

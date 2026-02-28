@@ -91,7 +91,7 @@ export const isRewatchComplete = (series: Series): boolean => {
  * Berechnet den Rewatch-Fortschritt einer Serie.
  * Zählt gesehene Episoden die die Ziel-watchCount erreicht haben.
  */
-export const getRewatchProgress = (series: Series): { current: number, total: number } => {
+export const getRewatchProgress = (series: Series): { current: number; total: number } => {
   if (!series.seasons || series.seasons.length === 0) {
     return { current: 0, total: 0 };
   }
@@ -114,7 +114,7 @@ export const getRewatchProgress = (series: Series): { current: number, total: nu
 
   return {
     current: episodesAtTarget,
-    total: totalWatchedEpisodes
+    total: totalWatchedEpisodes,
   };
 };
 

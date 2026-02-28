@@ -31,17 +31,18 @@ export const useTMDBTrending = () => {
     const fetchTrending = async () => {
       try {
         const apiKey = import.meta.env.VITE_API_TMDB;
-        
+
         // Fetch both TV and movie trending for the week
         const [tvResponse, movieResponse] = await Promise.all([
-          fetch(`https://api.themoviedb.org/3/trending/tv/week?api_key=${apiKey}&language=de-DE&region=DE`),
-          fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=de-DE&region=DE`)
+          fetch(
+            `https://api.themoviedb.org/3/trending/tv/week?api_key=${apiKey}&language=de-DE&region=DE`
+          ),
+          fetch(
+            `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=de-DE&region=DE`
+          ),
         ]);
 
-        const [tvData, movieData] = await Promise.all([
-          tvResponse.json(),
-          movieResponse.json()
-        ]);
+        const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
 
         // Combine and sort by popularity
         const combinedItems: TrendingItem[] = [
@@ -49,20 +50,24 @@ export const useTMDBTrending = () => {
             type: 'series' as const,
             id: item.id,
             title: item.name || item.original_name,
-            poster: item.poster_path ? `https://image.tmdb.org/t/p/w342${item.poster_path}` : '/placeholder.jpg',
+            poster: item.poster_path
+              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
+              : '/placeholder.jpg',
             rating: item.vote_average,
             voteCount: item.vote_count,
-            releaseDate: item.first_air_date
+            releaseDate: item.first_air_date,
           })),
           ...movieData.results.slice(0, 10).map((item: TMDBTrendingItem) => ({
             type: 'movie' as const,
             id: item.id,
             title: item.title || item.original_title,
-            poster: item.poster_path ? `https://image.tmdb.org/t/p/w342${item.poster_path}` : '/placeholder.jpg',
+            poster: item.poster_path
+              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
+              : '/placeholder.jpg',
             rating: item.vote_average,
             voteCount: item.vote_count,
-            releaseDate: item.release_date
-          }))
+            releaseDate: item.release_date,
+          })),
         ];
 
         // Sort by vote count (popularity) and take top 20

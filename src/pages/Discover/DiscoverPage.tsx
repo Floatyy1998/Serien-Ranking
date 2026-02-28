@@ -16,7 +16,14 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { ItemCard } from './DiscoverItemCard';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
-import { Dialog, GradientText, LoadingSpinner, PageLayout, ScrollToTopButton, TabSwitcher } from '../../components/ui';
+import {
+  Dialog,
+  GradientText,
+  LoadingSpinner,
+  PageLayout,
+  ScrollToTopButton,
+  TabSwitcher,
+} from '../../components/ui';
 import './DiscoverPage.css';
 
 export const DiscoverPage = memo(() => {
@@ -59,7 +66,14 @@ export const DiscoverPage = memo(() => {
     fetchRecommendations,
     addToList,
     setupScrollListener,
-  } = useDiscoverFetch(activeTab, activeCategory, selectedGenre, showSearch, searchQuery, isRestoring);
+  } = useDiscoverFetch(
+    activeTab,
+    activeCategory,
+    selectedGenre,
+    showSearch,
+    searchQuery,
+    isRestoring
+  );
 
   // Wire up restore callbacks
   useEffect(() => {
@@ -77,13 +91,17 @@ export const DiscoverPage = memo(() => {
     { id: 'trending', label: 'Trend', icon: TrendingUp, color: currentTheme.primary },
     { id: 'popular', label: 'Beliebt', icon: Whatshot, color: currentTheme.status.error },
     { id: 'top_rated', label: 'Top', icon: Star, color: currentTheme.status.warning },
-    { id: 'upcoming', label: activeTab === 'movies' ? 'Neu' : 'Läuft', icon: NewReleases, color: currentTheme.status.success },
+    {
+      id: 'upcoming',
+      label: activeTab === 'movies' ? 'Neu' : 'Läuft',
+      icon: NewReleases,
+      color: currentTheme.status.success,
+    },
     { id: 'recommendations', label: 'Für dich', icon: Recommend, color: '#8b5cf6' },
   ] as const;
 
   return (
     <PageLayout style={{ height: '100vh', overflow: 'hidden' }}>
-
       {/* Fixed Header and Controls */}
       <div
         data-header="discover-header"
@@ -117,11 +135,15 @@ export const DiscoverPage = memo(() => {
                 alignItems: 'center',
               }}
             >
-              <GradientText as="h1" to="#8b5cf6" style={{
+              <GradientText
+                as="h1"
+                to="#8b5cf6"
+                style={{
                   fontSize: '24px',
                   fontWeight: 800,
                   margin: 0,
-                }}>
+                }}
+              >
                 Entdecken
               </GradientText>
 
@@ -144,7 +166,11 @@ export const DiscoverPage = memo(() => {
                       justifyContent: 'center',
                       boxShadow: selectedGenre ? `0 4px 12px ${currentTheme.primary}40` : 'none',
                     }}
-                    title={selectedGenre ? genres.find((g) => g.id === selectedGenre)?.name : 'Genre Filter'}
+                    title={
+                      selectedGenre
+                        ? genres.find((g) => g.id === selectedGenre)?.name
+                        : 'Genre Filter'
+                    }
                   >
                     <FilterList style={{ fontSize: '20px' }} />
                   </motion.button>
@@ -231,7 +257,7 @@ export const DiscoverPage = memo(() => {
                 padding: '8px 20px 14px 20px',
               }}
             >
-              {categories.map(cat => {
+              {categories.map((cat) => {
                 const isActive = activeCategory === cat.id;
                 const Icon = cat.icon;
                 return (
@@ -330,7 +356,10 @@ export const DiscoverPage = memo(() => {
                             ? `1px solid ${currentTheme.primary}50`
                             : `1px solid ${currentTheme.border.default}`,
                         borderRadius: '10px',
-                        color: selectedGenre === genre.id ? currentTheme.primary : currentTheme.text.primary,
+                        color:
+                          selectedGenre === genre.id
+                            ? currentTheme.primary
+                            : currentTheme.text.primary,
                         fontSize: '12px',
                         fontWeight: 500,
                         cursor: 'pointer',
@@ -369,10 +398,7 @@ export const DiscoverPage = memo(() => {
         <div style={{ padding: '16px 20px' }}>
           {activeCategory === 'recommendations' ? (
             recommendationsLoading && recommendations.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <LoadingSpinner size={50} text="Lade Empfehlungen..." />
               </motion.div>
             ) : !recommendationsLoading && recommendations.length === 0 ? (
@@ -394,7 +420,14 @@ export const DiscoverPage = memo(() => {
                     color: currentTheme.text.muted,
                   }}
                 />
-                <p style={{ fontSize: '16px', color: currentTheme.text.secondary, marginBottom: '8px', fontWeight: 600 }}>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    color: currentTheme.text.secondary,
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                  }}
+                >
                   Keine Empfehlungen verfügbar
                 </p>
                 <p style={{ fontSize: '13px', color: currentTheme.text.muted }}>
@@ -442,10 +475,7 @@ export const DiscoverPage = memo(() => {
           ) : showSearch ? (
             <div>
               {searchLoading ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <LoadingSpinner size={50} text="Suche läuft..." />
                 </motion.div>
               ) : searchResults.length === 0 && searchQuery.trim() ? (
@@ -548,11 +578,10 @@ export const DiscoverPage = memo(() => {
 
           {/* Premium Loading indicator */}
           {((loading && !showSearch && activeCategory !== 'recommendations') ||
-            (recommendationsLoading && activeCategory === 'recommendations' && recommendations.length > 0)) && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+            (recommendationsLoading &&
+              activeCategory === 'recommendations' &&
+              recommendations.length > 0)) && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <LoadingSpinner size={36} />
             </motion.div>
           )}
@@ -586,15 +615,17 @@ export const DiscoverPage = memo(() => {
               maxWidth: 'calc(100% - 40px)',
             }}
           >
-            <div style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
+            <div
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <Check style={{ fontSize: '18px' }} />
             </div>
             <span style={{ fontSize: '14px', fontWeight: 600 }}>{snackbar.message}</span>

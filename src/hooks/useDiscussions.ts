@@ -9,7 +9,10 @@ import {
   DiscussionItemType,
   DiscussionReply,
 } from '../types/Discussion';
-import { writeDiscussionFeedEntry, deleteDiscussionFeedEntries } from '../services/discussionFeedService';
+import {
+  writeDiscussionFeedEntry,
+  deleteDiscussionFeedEntries,
+} from '../services/discussionFeedService';
 
 interface UseDiscussionsOptions {
   itemId: number;
@@ -29,7 +32,9 @@ interface UseDiscussionsResult {
   discussions: Discussion[];
   loading: boolean;
   error: string | null;
-  createDiscussion: (input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>) => Promise<string | null>;
+  createDiscussion: (
+    input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>
+  ) => Promise<string | null>;
   editDiscussion: (discussionId: string, input: EditDiscussionInput) => Promise<boolean>;
   deleteDiscussion: (discussionId: string) => Promise<boolean>;
   toggleLike: (discussionId: string) => Promise<void>;
@@ -37,7 +42,12 @@ interface UseDiscussionsResult {
 }
 
 // Helper to generate a unique path for discussions
-const getDiscussionPath = (itemType: DiscussionItemType, itemId: number, seasonNumber?: number, episodeNumber?: number): string => {
+const getDiscussionPath = (
+  itemType: DiscussionItemType,
+  itemId: number,
+  seasonNumber?: number,
+  episodeNumber?: number
+): string => {
   if (itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined) {
     return `discussions/episode/${itemId}_s${seasonNumber}_e${episodeNumber}`;
   }
@@ -93,7 +103,9 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          const discussionList: Discussion[] = Object.entries(data as Record<string, Discussion>).map(([id, disc]) => ({
+          const discussionList: Discussion[] = Object.entries(
+            data as Record<string, Discussion>
+          ).map(([id, disc]) => ({
             ...disc,
             id,
             likes: disc.likes ? Object.keys(disc.likes) : [],
@@ -123,185 +135,119 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
   }, [path, itemId]);
 
   // Create a new discussion
-  const createDiscussion = useCallback(async (
-    input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>
-  ): Promise<string | null> => {
-    if (!user?.uid) {
-      setError('Du musst eingeloggt sein um zu diskutieren');
-      return null;
-    }
-
-    try {
-      // Get user data for username (displayName is stored at users/{uid}, not users/{uid}/profile)
-      const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-      const userData = userSnapshot.val() || {};
-
-      const newDiscussion: Omit<Discussion, 'id'> = {
-        itemId,
-        itemType,
-        ...(seasonNumber !== undefined && { seasonNumber }),
-        ...(episodeNumber !== undefined && { episodeNumber }),
-        userId: user.uid,
-        username: userData.displayName || user.displayName || user.email?.split('@')[0] || 'Anonym',
-        userPhotoURL: userData.photoURL || user.photoURL || undefined,
-        title: input.title,
-        content: input.content,
-        createdAt: Date.now(),
-        likes: [],
-        replyCount: 0,
-        isSpoiler: input.isSpoiler || false,
-      };
-
-      const ref = firebase.database().ref(path);
-      const newRef = await ref.push(newDiscussion);
-
-      // Write to discussion feed (fire-and-forget)
-      if (feedMetadata?.itemTitle) {
-        writeDiscussionFeedEntry({
-          type: 'discussion_created',
-          discussionId: newRef.key!,
-          discussionTitle: input.title,
-          userId: user.uid,
-          username: newDiscussion.username,
-          ...(newDiscussion.userPhotoURL && { userPhotoURL: newDiscussion.userPhotoURL }),
-          itemType,
-          itemId,
-          itemTitle: feedMetadata.itemTitle,
-          ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
-          ...(seasonNumber !== undefined && { seasonNumber }),
-          ...(episodeNumber !== undefined && { episodeNumber }),
-          ...(feedMetadata.episodeTitle && { episodeTitle: feedMetadata.episodeTitle }),
-          contentPreview: input.content.substring(0, 100),
-          createdAt: Date.now(),
-        });
+  const createDiscussion = useCallback(
+    async (
+      input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>
+    ): Promise<string | null> => {
+      if (!user?.uid) {
+        setError('Du musst eingeloggt sein um zu diskutieren');
+        return null;
       }
 
-      return newRef.key;
-    } catch (err) {
-      console.error('Error creating discussion:', err);
-      setError('Fehler beim Erstellen der Diskussion');
-      return null;
-    }
-  }, [user, path, itemId, itemType, seasonNumber, episodeNumber, feedMetadata]);
-
-  // Edit a discussion (owner can edit all, others can only mark as spoiler)
-  const editDiscussion = useCallback(async (discussionId: string, input: EditDiscussionInput): Promise<boolean> => {
-    if (!user?.uid) return false;
-
-    try {
-      const discussionRef = firebase.database().ref(`${path}/${discussionId}`);
-      const snapshot = await discussionRef.once('value');
-      const discussion = snapshot.val();
-
-      const isOwner = discussion?.userId === user.uid;
-
-      // Non-owners can only set isSpoiler to true (flag as spoiler)
-      if (!isOwner) {
-        if (input.title !== undefined || input.content !== undefined) {
-          setError('Du kannst nur eigene Diskussionen bearbeiten');
-          return false;
-        }
-        // Non-owners can only add spoiler flag, not remove it
-        if (input.isSpoiler === false) {
-          setError('Nur der Autor kann die Spoiler-Markierung entfernen');
-          return false;
-        }
-      }
-
-      const updates: Record<string, unknown> = {};
-
-      // Only set updatedAt if content/title changed (not just spoiler flag by others)
-      if (isOwner && (input.title !== undefined || input.content !== undefined)) {
-        updates.updatedAt = Date.now();
-      }
-
-      if (input.title !== undefined) updates.title = input.title;
-      if (input.content !== undefined) updates.content = input.content;
-      if (input.isSpoiler !== undefined) updates.isSpoiler = input.isSpoiler;
-
-      await discussionRef.update(updates);
-
-      // Send notification to discussion owner if non-owner flagged as spoiler
-      if (!isOwner && input.isSpoiler === true && discussion?.userId) {
+      try {
+        // Get user data for username (displayName is stored at users/{uid}, not users/{uid}/profile)
         const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
         const userData = userSnapshot.val() || {};
-        const username = userData.displayName || user.displayName || 'Jemand';
 
-        await sendNotificationToUser(discussion.userId, {
-          type: 'spoiler_flag',
-          title: 'Spoiler-Markierung',
-          message: `${username} hat deine Diskussion "${discussion.title}" als Spoiler markiert`,
-          data: {
-            discussionId,
-            itemId,
+        const newDiscussion: Omit<Discussion, 'id'> = {
+          itemId,
+          itemType,
+          ...(seasonNumber !== undefined && { seasonNumber }),
+          ...(episodeNumber !== undefined && { episodeNumber }),
+          userId: user.uid,
+          username:
+            userData.displayName || user.displayName || user.email?.split('@')[0] || 'Anonym',
+          userPhotoURL: userData.photoURL || user.photoURL || undefined,
+          title: input.title,
+          content: input.content,
+          createdAt: Date.now(),
+          likes: [],
+          replyCount: 0,
+          isSpoiler: input.isSpoiler || false,
+        };
+
+        const ref = firebase.database().ref(path);
+        const newRef = await ref.push(newDiscussion);
+
+        // Write to discussion feed (fire-and-forget)
+        if (feedMetadata?.itemTitle) {
+          writeDiscussionFeedEntry({
+            type: 'discussion_created',
+            discussionId: newRef.key!,
+            discussionTitle: input.title,
+            userId: user.uid,
+            username: newDiscussion.username,
+            ...(newDiscussion.userPhotoURL && { userPhotoURL: newDiscussion.userPhotoURL }),
             itemType,
-            seasonNumber,
-            episodeNumber,
-          },
-        });
+            itemId,
+            itemTitle: feedMetadata.itemTitle,
+            ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
+            ...(seasonNumber !== undefined && { seasonNumber }),
+            ...(episodeNumber !== undefined && { episodeNumber }),
+            ...(feedMetadata.episodeTitle && { episodeTitle: feedMetadata.episodeTitle }),
+            contentPreview: input.content.substring(0, 100),
+            createdAt: Date.now(),
+          });
+        }
+
+        return newRef.key;
+      } catch (err) {
+        console.error('Error creating discussion:', err);
+        setError('Fehler beim Erstellen der Diskussion');
+        return null;
       }
+    },
+    [user, path, itemId, itemType, seasonNumber, episodeNumber, feedMetadata]
+  );
 
-      return true;
-    } catch (err) {
-      console.error('Error editing discussion:', err);
-      setError('Fehler beim Bearbeiten der Diskussion');
-      return false;
-    }
-  }, [user, path]);
+  // Edit a discussion (owner can edit all, others can only mark as spoiler)
+  const editDiscussion = useCallback(
+    async (discussionId: string, input: EditDiscussionInput): Promise<boolean> => {
+      if (!user?.uid) return false;
 
-  // Delete a discussion (only owner)
-  const deleteDiscussion = useCallback(async (discussionId: string): Promise<boolean> => {
-    if (!user?.uid) return false;
+      try {
+        const discussionRef = firebase.database().ref(`${path}/${discussionId}`);
+        const snapshot = await discussionRef.once('value');
+        const discussion = snapshot.val();
 
-    try {
-      const discussionRef = firebase.database().ref(`${path}/${discussionId}`);
-      const snapshot = await discussionRef.once('value');
-      const discussion = snapshot.val();
+        const isOwner = discussion?.userId === user.uid;
 
-      if (discussion?.userId !== user.uid) {
-        setError('Du kannst nur eigene Diskussionen löschen');
-        return false;
-      }
+        // Non-owners can only set isSpoiler to true (flag as spoiler)
+        if (!isOwner) {
+          if (input.title !== undefined || input.content !== undefined) {
+            setError('Du kannst nur eigene Diskussionen bearbeiten');
+            return false;
+          }
+          // Non-owners can only add spoiler flag, not remove it
+          if (input.isSpoiler === false) {
+            setError('Nur der Autor kann die Spoiler-Markierung entfernen');
+            return false;
+          }
+        }
 
-      await discussionRef.remove();
-      // Also remove replies
-      await firebase.database().ref(`discussionReplies/${discussionId}`).remove();
-      // Remove feed entries (fire-and-forget)
-      deleteDiscussionFeedEntries(discussionId);
+        const updates: Record<string, unknown> = {};
 
-      return true;
-    } catch (err) {
-      console.error('Error deleting discussion:', err);
-      setError('Fehler beim Löschen der Diskussion');
-      return false;
-    }
-  }, [user, path]);
+        // Only set updatedAt if content/title changed (not just spoiler flag by others)
+        if (isOwner && (input.title !== undefined || input.content !== undefined)) {
+          updates.updatedAt = Date.now();
+        }
 
-  // Toggle like on a discussion
-  const toggleLike = useCallback(async (discussionId: string): Promise<void> => {
-    if (!user?.uid) return;
+        if (input.title !== undefined) updates.title = input.title;
+        if (input.content !== undefined) updates.content = input.content;
+        if (input.isSpoiler !== undefined) updates.isSpoiler = input.isSpoiler;
 
-    try {
-      const likeRef = firebase.database().ref(`${path}/${discussionId}/likes/${user.uid}`);
-      const snapshot = await likeRef.once('value');
+        await discussionRef.update(updates);
 
-      if (snapshot.exists()) {
-        await likeRef.remove();
-      } else {
-        await likeRef.set(true);
-
-        // Send notification to discussion author (if not self)
-        const discussionSnapshot = await firebase.database().ref(`${path}/${discussionId}`).once('value');
-        const discussion = discussionSnapshot.val();
-        if (discussion && discussion.userId !== user.uid) {
+        // Send notification to discussion owner if non-owner flagged as spoiler
+        if (!isOwner && input.isSpoiler === true && discussion?.userId) {
           const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
           const userData = userSnapshot.val() || {};
           const username = userData.displayName || user.displayName || 'Jemand';
 
           await sendNotificationToUser(discussion.userId, {
-            type: 'discussion_like',
-            title: 'Neue Reaktion',
-            message: `${username} gefällt deine Diskussion "${discussion.title}"`,
+            type: 'spoiler_flag',
+            title: 'Spoiler-Markierung',
+            message: `${username} hat deine Diskussion "${discussion.title}" als Spoiler markiert`,
             data: {
               discussionId,
               itemId,
@@ -311,11 +257,93 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
             },
           });
         }
+
+        return true;
+      } catch (err) {
+        console.error('Error editing discussion:', err);
+        setError('Fehler beim Bearbeiten der Diskussion');
+        return false;
       }
-    } catch (err) {
-      console.error('Error toggling like:', err);
-    }
-  }, [user, path, itemId, itemType, seasonNumber, episodeNumber]);
+    },
+    [user, path]
+  );
+
+  // Delete a discussion (only owner)
+  const deleteDiscussion = useCallback(
+    async (discussionId: string): Promise<boolean> => {
+      if (!user?.uid) return false;
+
+      try {
+        const discussionRef = firebase.database().ref(`${path}/${discussionId}`);
+        const snapshot = await discussionRef.once('value');
+        const discussion = snapshot.val();
+
+        if (discussion?.userId !== user.uid) {
+          setError('Du kannst nur eigene Diskussionen löschen');
+          return false;
+        }
+
+        await discussionRef.remove();
+        // Also remove replies
+        await firebase.database().ref(`discussionReplies/${discussionId}`).remove();
+        // Remove feed entries (fire-and-forget)
+        deleteDiscussionFeedEntries(discussionId);
+
+        return true;
+      } catch (err) {
+        console.error('Error deleting discussion:', err);
+        setError('Fehler beim Löschen der Diskussion');
+        return false;
+      }
+    },
+    [user, path]
+  );
+
+  // Toggle like on a discussion
+  const toggleLike = useCallback(
+    async (discussionId: string): Promise<void> => {
+      if (!user?.uid) return;
+
+      try {
+        const likeRef = firebase.database().ref(`${path}/${discussionId}/likes/${user.uid}`);
+        const snapshot = await likeRef.once('value');
+
+        if (snapshot.exists()) {
+          await likeRef.remove();
+        } else {
+          await likeRef.set(true);
+
+          // Send notification to discussion author (if not self)
+          const discussionSnapshot = await firebase
+            .database()
+            .ref(`${path}/${discussionId}`)
+            .once('value');
+          const discussion = discussionSnapshot.val();
+          if (discussion && discussion.userId !== user.uid) {
+            const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
+            const userData = userSnapshot.val() || {};
+            const username = userData.displayName || user.displayName || 'Jemand';
+
+            await sendNotificationToUser(discussion.userId, {
+              type: 'discussion_like',
+              title: 'Neue Reaktion',
+              message: `${username} gefällt deine Diskussion "${discussion.title}"`,
+              data: {
+                discussionId,
+                itemId,
+                itemType,
+                seasonNumber,
+                episodeNumber,
+              },
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error toggling like:', err);
+      }
+    },
+    [user, path, itemId, itemType, seasonNumber, episodeNumber]
+  );
 
   const refetch = useCallback(() => {
     // Realtime listener handles this automatically
@@ -349,7 +377,12 @@ interface UseDiscussionRepliesResult {
   toggleReplyLike: (replyId: string) => Promise<void>;
 }
 
-export const useDiscussionReplies = (discussionId: string | null, discussionPath: string, shouldFetch: boolean = true, feedMetadata?: DiscussionFeedMetadata): UseDiscussionRepliesResult => {
+export const useDiscussionReplies = (
+  discussionId: string | null,
+  discussionPath: string,
+  shouldFetch: boolean = true,
+  feedMetadata?: DiscussionFeedMetadata
+): UseDiscussionRepliesResult => {
   const { user } = useAuth() || {};
 
   const [replies, setReplies] = useState<DiscussionReply[]>([]);
@@ -374,7 +407,9 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          const replyList: DiscussionReply[] = Object.entries(data as Record<string, DiscussionReply>).map(([id, reply]) => ({
+          const replyList: DiscussionReply[] = Object.entries(
+            data as Record<string, DiscussionReply>
+          ).map(([id, reply]) => ({
             ...reply,
             id,
             likes: reply.likes ? Object.keys(reply.likes) : [],
@@ -400,240 +435,181 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
   }, [discussionId, repliesPath, shouldFetch]);
 
   // Create a reply
-  const createReply = useCallback(async (content: string, isSpoiler?: boolean): Promise<boolean> => {
-    if (!user?.uid || !discussionId) return false;
+  const createReply = useCallback(
+    async (content: string, isSpoiler?: boolean): Promise<boolean> => {
+      if (!user?.uid || !discussionId) return false;
 
-    try {
-      // Get user data (displayName is stored at users/{uid}, not users/{uid}/profile)
-      const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-      const userData = userSnapshot.val() || {};
-      const username = userData.displayName || user.displayName || user.email?.split('@')[0] || 'Anonym';
-
-      const newReply: Omit<DiscussionReply, 'id'> = {
-        userId: user.uid,
-        username,
-        content,
-        createdAt: Date.now(),
-        likes: [],
-        ...(isSpoiler && { isSpoiler: true }),
-      };
-      // Only add userPhotoURL if it exists (Firebase doesn't accept undefined)
-      const photoURL = userData.photoURL || user.photoURL;
-      if (photoURL) {
-        (newReply as Omit<DiscussionReply, 'id'> & { userPhotoURL?: string }).userPhotoURL = photoURL;
-      }
-
-      // Add reply
-      await firebase.database().ref(repliesPath).push(newReply);
-
-      // Update reply count and lastReplyAt on discussion
-      const discussionRef = firebase.database().ref(`${discussionPath}/${discussionId}`);
-      const discussionSnapshot = await discussionRef.once('value');
-      const discussion = discussionSnapshot.val();
-
-      await discussionRef.update({
-        replyCount: firebase.database.ServerValue.increment(1),
-        lastReplyAt: Date.now(),
-      });
-
-      // Get all participants (discussion author + all reply authors)
-      const participantIds = new Set<string>();
-
-      // Add discussion author
-      if (discussion?.userId) {
-        participantIds.add(discussion.userId);
-      }
-
-      // Add all reply authors
-      const existingRepliesSnapshot = await firebase.database().ref(repliesPath).once('value');
-      if (existingRepliesSnapshot.exists()) {
-        const existingReplies = existingRepliesSnapshot.val();
-        Object.values(existingReplies).forEach((reply: unknown) => {
-          const r = reply as DiscussionReply;
-          if (r?.userId) {
-            participantIds.add(r.userId);
-          }
-        });
-      }
-
-      // Remove current user from notification list
-      participantIds.delete(user.uid);
-
-      // Send notification to all participants
-      for (const participantId of participantIds) {
-        const isAuthor = participantId === discussion?.userId;
-        await sendNotificationToUser(participantId, {
-          type: 'discussion_reply',
-          title: 'Neue Antwort',
-          message: isAuthor
-            ? `${username} hat auf deine Diskussion "${discussion.title}" geantwortet`
-            : `${username} hat auch auf "${discussion?.title}" geantwortet`,
-          data: {
-            discussionId,
-            discussionPath,
-          },
-        });
-      }
-
-      // Write to discussion feed (fire-and-forget)
-      if (feedMetadata?.itemTitle && discussion) {
-        // Extract itemType from discussionPath if not stored in discussion
-        // Path format: "discussions/{itemType}/{itemId}" or "discussions/episode/{itemId}_s{season}_e{episode}"
-        let derivedItemType: DiscussionItemType = discussion.itemType || 'series';
-        if (!discussion.itemType && discussionPath) {
-          const pathParts = discussionPath.split('/');
-          if (pathParts.length >= 2 && pathParts[0] === 'discussions') {
-            const pathItemType = pathParts[1];
-            if (pathItemType === 'movie' || pathItemType === 'series' || pathItemType === 'episode') {
-              derivedItemType = pathItemType;
-            }
-          }
-        }
-
-        writeDiscussionFeedEntry({
-          type: 'reply_created',
-          discussionId: discussionId!,
-          discussionTitle: discussion.title,
-          userId: user.uid,
-          username,
-          ...(photoURL && { userPhotoURL: photoURL }),
-          itemType: derivedItemType,
-          itemId: discussion.itemId,
-          itemTitle: feedMetadata.itemTitle,
-          ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
-          ...(discussion.seasonNumber !== undefined && { seasonNumber: discussion.seasonNumber }),
-          ...(discussion.episodeNumber !== undefined && { episodeNumber: discussion.episodeNumber }),
-          ...(feedMetadata.episodeTitle && { episodeTitle: feedMetadata.episodeTitle }),
-          contentPreview: content.substring(0, 100),
-          createdAt: Date.now(),
-        });
-      }
-
-      return true;
-    } catch (err) {
-      console.error('Error creating reply:', err);
-      setError('Fehler beim Erstellen der Antwort');
-      return false;
-    }
-  }, [user, discussionId, repliesPath, discussionPath, feedMetadata]);
-
-  // Edit a reply (owner can edit all, others can only mark as spoiler)
-  const editReply = useCallback(async (replyId: string, input: EditReplyInput): Promise<boolean> => {
-    if (!user?.uid || !discussionId) return false;
-
-    try {
-      const replyRef = firebase.database().ref(`${repliesPath}/${replyId}`);
-      const snapshot = await replyRef.once('value');
-      const reply = snapshot.val();
-
-      const isOwner = reply?.userId === user.uid;
-
-      // Non-owners can only set isSpoiler to true (flag as spoiler)
-      if (!isOwner) {
-        if (input.content !== undefined) {
-          setError('Du kannst nur eigene Antworten bearbeiten');
-          return false;
-        }
-        // Non-owners can only add spoiler flag, not remove it
-        if (input.isSpoiler === false) {
-          setError('Nur der Autor kann die Spoiler-Markierung entfernen');
-          return false;
-        }
-      }
-
-      const updates: Record<string, unknown> = {};
-
-      // Only set updatedAt if content changed (not just spoiler flag by others)
-      if (isOwner && input.content !== undefined) {
-        updates.updatedAt = Date.now();
-      }
-
-      if (input.content !== undefined) updates.content = input.content;
-      if (input.isSpoiler !== undefined) updates.isSpoiler = input.isSpoiler;
-
-      await replyRef.update(updates);
-
-      // Send notification to reply owner if non-owner flagged as spoiler
-      if (!isOwner && input.isSpoiler === true && reply?.userId) {
+      try {
+        // Get user data (displayName is stored at users/{uid}, not users/{uid}/profile)
         const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
         const userData = userSnapshot.val() || {};
-        const username = userData.displayName || user.displayName || 'Jemand';
+        const username =
+          userData.displayName || user.displayName || user.email?.split('@')[0] || 'Anonym';
 
-        await sendNotificationToUser(reply.userId, {
-          type: 'spoiler_flag',
-          title: 'Spoiler-Markierung',
-          message: `${username} hat deinen Kommentar als Spoiler markiert: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
-          data: {
-            discussionId,
-            discussionPath,
-            replyId,
-          },
+        const newReply: Omit<DiscussionReply, 'id'> = {
+          userId: user.uid,
+          username,
+          content,
+          createdAt: Date.now(),
+          likes: [],
+          ...(isSpoiler && { isSpoiler: true }),
+        };
+        // Only add userPhotoURL if it exists (Firebase doesn't accept undefined)
+        const photoURL = userData.photoURL || user.photoURL;
+        if (photoURL) {
+          (newReply as Omit<DiscussionReply, 'id'> & { userPhotoURL?: string }).userPhotoURL =
+            photoURL;
+        }
+
+        // Add reply
+        await firebase.database().ref(repliesPath).push(newReply);
+
+        // Update reply count and lastReplyAt on discussion
+        const discussionRef = firebase.database().ref(`${discussionPath}/${discussionId}`);
+        const discussionSnapshot = await discussionRef.once('value');
+        const discussion = discussionSnapshot.val();
+
+        await discussionRef.update({
+          replyCount: firebase.database.ServerValue.increment(1),
+          lastReplyAt: Date.now(),
         });
-      }
 
-      return true;
-    } catch (err) {
-      console.error('Error editing reply:', err);
-      setError('Fehler beim Bearbeiten der Antwort');
-      return false;
-    }
-  }, [user, discussionId, repliesPath, discussionPath]);
+        // Get all participants (discussion author + all reply authors)
+        const participantIds = new Set<string>();
 
-  // Delete a reply (only owner)
-  const deleteReply = useCallback(async (replyId: string): Promise<boolean> => {
-    if (!user?.uid || !discussionId) return false;
+        // Add discussion author
+        if (discussion?.userId) {
+          participantIds.add(discussion.userId);
+        }
 
-    try {
-      const replyRef = firebase.database().ref(`${repliesPath}/${replyId}`);
-      const snapshot = await replyRef.once('value');
-      const reply = snapshot.val();
+        // Add all reply authors
+        const existingRepliesSnapshot = await firebase.database().ref(repliesPath).once('value');
+        if (existingRepliesSnapshot.exists()) {
+          const existingReplies = existingRepliesSnapshot.val();
+          Object.values(existingReplies).forEach((reply: unknown) => {
+            const r = reply as DiscussionReply;
+            if (r?.userId) {
+              participantIds.add(r.userId);
+            }
+          });
+        }
 
-      if (reply?.userId !== user.uid) {
-        setError('Du kannst nur eigene Antworten löschen');
+        // Remove current user from notification list
+        participantIds.delete(user.uid);
+
+        // Send notification to all participants
+        for (const participantId of participantIds) {
+          const isAuthor = participantId === discussion?.userId;
+          await sendNotificationToUser(participantId, {
+            type: 'discussion_reply',
+            title: 'Neue Antwort',
+            message: isAuthor
+              ? `${username} hat auf deine Diskussion "${discussion.title}" geantwortet`
+              : `${username} hat auch auf "${discussion?.title}" geantwortet`,
+            data: {
+              discussionId,
+              discussionPath,
+            },
+          });
+        }
+
+        // Write to discussion feed (fire-and-forget)
+        if (feedMetadata?.itemTitle && discussion) {
+          // Extract itemType from discussionPath if not stored in discussion
+          // Path format: "discussions/{itemType}/{itemId}" or "discussions/episode/{itemId}_s{season}_e{episode}"
+          let derivedItemType: DiscussionItemType = discussion.itemType || 'series';
+          if (!discussion.itemType && discussionPath) {
+            const pathParts = discussionPath.split('/');
+            if (pathParts.length >= 2 && pathParts[0] === 'discussions') {
+              const pathItemType = pathParts[1];
+              if (
+                pathItemType === 'movie' ||
+                pathItemType === 'series' ||
+                pathItemType === 'episode'
+              ) {
+                derivedItemType = pathItemType;
+              }
+            }
+          }
+
+          writeDiscussionFeedEntry({
+            type: 'reply_created',
+            discussionId: discussionId!,
+            discussionTitle: discussion.title,
+            userId: user.uid,
+            username,
+            ...(photoURL && { userPhotoURL: photoURL }),
+            itemType: derivedItemType,
+            itemId: discussion.itemId,
+            itemTitle: feedMetadata.itemTitle,
+            ...(feedMetadata.posterPath && { posterPath: feedMetadata.posterPath }),
+            ...(discussion.seasonNumber !== undefined && { seasonNumber: discussion.seasonNumber }),
+            ...(discussion.episodeNumber !== undefined && {
+              episodeNumber: discussion.episodeNumber,
+            }),
+            ...(feedMetadata.episodeTitle && { episodeTitle: feedMetadata.episodeTitle }),
+            contentPreview: content.substring(0, 100),
+            createdAt: Date.now(),
+          });
+        }
+
+        return true;
+      } catch (err) {
+        console.error('Error creating reply:', err);
+        setError('Fehler beim Erstellen der Antwort');
         return false;
       }
+    },
+    [user, discussionId, repliesPath, discussionPath, feedMetadata]
+  );
 
-      await replyRef.remove();
+  // Edit a reply (owner can edit all, others can only mark as spoiler)
+  const editReply = useCallback(
+    async (replyId: string, input: EditReplyInput): Promise<boolean> => {
+      if (!user?.uid || !discussionId) return false;
 
-      // Update reply count on discussion
-      const discussionRef = firebase.database().ref(`${discussionPath}/${discussionId}`);
-      await discussionRef.update({
-        replyCount: firebase.database.ServerValue.increment(-1),
-      });
+      try {
+        const replyRef = firebase.database().ref(`${repliesPath}/${replyId}`);
+        const snapshot = await replyRef.once('value');
+        const reply = snapshot.val();
 
-      return true;
-    } catch (err) {
-      console.error('Error deleting reply:', err);
-      setError('Fehler beim Löschen der Antwort');
-      return false;
-    }
-  }, [user, discussionId, repliesPath, discussionPath]);
+        const isOwner = reply?.userId === user.uid;
 
-  // Toggle like on a reply
-  const toggleReplyLike = useCallback(async (replyId: string): Promise<void> => {
-    if (!user?.uid) return;
+        // Non-owners can only set isSpoiler to true (flag as spoiler)
+        if (!isOwner) {
+          if (input.content !== undefined) {
+            setError('Du kannst nur eigene Antworten bearbeiten');
+            return false;
+          }
+          // Non-owners can only add spoiler flag, not remove it
+          if (input.isSpoiler === false) {
+            setError('Nur der Autor kann die Spoiler-Markierung entfernen');
+            return false;
+          }
+        }
 
-    try {
-      const likeRef = firebase.database().ref(`${repliesPath}/${replyId}/likes/${user.uid}`);
-      const snapshot = await likeRef.once('value');
+        const updates: Record<string, unknown> = {};
 
-      if (snapshot.exists()) {
-        await likeRef.remove();
-      } else {
-        await likeRef.set(true);
+        // Only set updatedAt if content changed (not just spoiler flag by others)
+        if (isOwner && input.content !== undefined) {
+          updates.updatedAt = Date.now();
+        }
 
-        // Send notification to reply author (if not self)
-        const replySnapshot = await firebase.database().ref(`${repliesPath}/${replyId}`).once('value');
-        const reply = replySnapshot.val();
-        if (reply && reply.userId !== user.uid) {
+        if (input.content !== undefined) updates.content = input.content;
+        if (input.isSpoiler !== undefined) updates.isSpoiler = input.isSpoiler;
+
+        await replyRef.update(updates);
+
+        // Send notification to reply owner if non-owner flagged as spoiler
+        if (!isOwner && input.isSpoiler === true && reply?.userId) {
           const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
           const userData = userSnapshot.val() || {};
           const username = userData.displayName || user.displayName || 'Jemand';
 
           await sendNotificationToUser(reply.userId, {
-            type: 'discussion_like',
-            title: 'Neue Reaktion',
-            message: `${username} gefällt deine Antwort: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
+            type: 'spoiler_flag',
+            title: 'Spoiler-Markierung',
+            message: `${username} hat deinen Kommentar als Spoiler markiert: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
             data: {
               discussionId,
               discussionPath,
@@ -641,11 +617,93 @@ export const useDiscussionReplies = (discussionId: string | null, discussionPath
             },
           });
         }
+
+        return true;
+      } catch (err) {
+        console.error('Error editing reply:', err);
+        setError('Fehler beim Bearbeiten der Antwort');
+        return false;
       }
-    } catch (err) {
-      console.error('Error toggling reply like:', err);
-    }
-  }, [user, repliesPath, discussionId, discussionPath]);
+    },
+    [user, discussionId, repliesPath, discussionPath]
+  );
+
+  // Delete a reply (only owner)
+  const deleteReply = useCallback(
+    async (replyId: string): Promise<boolean> => {
+      if (!user?.uid || !discussionId) return false;
+
+      try {
+        const replyRef = firebase.database().ref(`${repliesPath}/${replyId}`);
+        const snapshot = await replyRef.once('value');
+        const reply = snapshot.val();
+
+        if (reply?.userId !== user.uid) {
+          setError('Du kannst nur eigene Antworten löschen');
+          return false;
+        }
+
+        await replyRef.remove();
+
+        // Update reply count on discussion
+        const discussionRef = firebase.database().ref(`${discussionPath}/${discussionId}`);
+        await discussionRef.update({
+          replyCount: firebase.database.ServerValue.increment(-1),
+        });
+
+        return true;
+      } catch (err) {
+        console.error('Error deleting reply:', err);
+        setError('Fehler beim Löschen der Antwort');
+        return false;
+      }
+    },
+    [user, discussionId, repliesPath, discussionPath]
+  );
+
+  // Toggle like on a reply
+  const toggleReplyLike = useCallback(
+    async (replyId: string): Promise<void> => {
+      if (!user?.uid) return;
+
+      try {
+        const likeRef = firebase.database().ref(`${repliesPath}/${replyId}/likes/${user.uid}`);
+        const snapshot = await likeRef.once('value');
+
+        if (snapshot.exists()) {
+          await likeRef.remove();
+        } else {
+          await likeRef.set(true);
+
+          // Send notification to reply author (if not self)
+          const replySnapshot = await firebase
+            .database()
+            .ref(`${repliesPath}/${replyId}`)
+            .once('value');
+          const reply = replySnapshot.val();
+          if (reply && reply.userId !== user.uid) {
+            const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
+            const userData = userSnapshot.val() || {};
+            const username = userData.displayName || user.displayName || 'Jemand';
+
+            await sendNotificationToUser(reply.userId, {
+              type: 'discussion_like',
+              title: 'Neue Reaktion',
+              message: `${username} gefällt deine Antwort: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
+              data: {
+                discussionId,
+                discussionPath,
+                replyId,
+              },
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error toggling reply like:', err);
+      }
+    },
+    [user, repliesPath, discussionId, discussionPath]
+  );
 
   return {
     replies,

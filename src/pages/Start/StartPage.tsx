@@ -127,7 +127,11 @@ export const StartPage = () => {
               Serien & Film Tracker
             </Typography>
 
-            <GradientText as="h1" from="#a855f7" to="#f97316" style={{
+            <GradientText
+              as="h1"
+              from="#a855f7"
+              to="#f97316"
+              style={{
                 fontSize: 'clamp(3.5rem, 8vw, 6.5rem)',
                 fontWeight: 800,
                 marginBottom: '24px',
@@ -159,8 +163,8 @@ export const StartPage = () => {
                 lineHeight: 1.7,
               }}
             >
-              Entdecke neue Serien, verwalte deine Watchlist, tracke deinen Fortschritt
-              und teile deine Favoriten mit Freunden.
+              Entdecke neue Serien, verwalte deine Watchlist, tracke deinen Fortschritt und teile
+              deine Favoriten mit Freunden.
             </Typography>
 
             {/* CTA Buttons */}
@@ -348,10 +352,30 @@ export const StartPage = () => {
                 }}
               >
                 {[
-                  { icon: Speed, title: 'Blitzschnell', desc: 'Optimierte Performance für ein flüssiges Erlebnis', color: '#a855f7' },
-                  { icon: CloudSync, title: 'Cloud-Sync', desc: 'Deine Daten auf allen Geräten synchronisiert', color: '#ec4899' },
-                  { icon: Notifications, title: 'Smart Notifications', desc: 'Benachrichtigungen für neue Episoden und Updates', color: '#f97316' },
-                  { icon: Analytics, title: 'Deep Analytics', desc: 'Umfassende Einblicke in deine Sehgewohnheiten', color: '#c084fc' },
+                  {
+                    icon: Speed,
+                    title: 'Blitzschnell',
+                    desc: 'Optimierte Performance für ein flüssiges Erlebnis',
+                    color: '#a855f7',
+                  },
+                  {
+                    icon: CloudSync,
+                    title: 'Cloud-Sync',
+                    desc: 'Deine Daten auf allen Geräten synchronisiert',
+                    color: '#ec4899',
+                  },
+                  {
+                    icon: Notifications,
+                    title: 'Smart Notifications',
+                    desc: 'Benachrichtigungen für neue Episoden und Updates',
+                    color: '#f97316',
+                  },
+                  {
+                    icon: Analytics,
+                    title: 'Deep Analytics',
+                    desc: 'Umfassende Einblicke in deine Sehgewohnheiten',
+                    color: '#c084fc',
+                  },
                 ].map(({ icon: Icon, title, desc, color }, index) => (
                   <motion.div
                     key={title}
@@ -375,10 +399,21 @@ export const StartPage = () => {
                         <Icon sx={{ color: color, fontSize: 22 }} />
                       </Box>
                       <Box>
-                        <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.85)', fontWeight: 600, fontSize: '0.95rem', mb: 0.25 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.85)',
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            mb: 0.25,
+                          }}
+                        >
                           {title}
                         </Typography>
-                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.85rem' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.85rem' }}
+                        >
                           {desc}
                         </Typography>
                       </Box>

@@ -21,9 +21,10 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
   totalMovies,
 }) => {
   // Berechne beste Darstellung
-  const displayTime = totalDays >= 1
-    ? { value: totalDays.toFixed(1), unit: 'Tage' }
-    : { value: Math.round(totalHours).toString(), unit: 'Stunden' };
+  const displayTime =
+    totalDays >= 1
+      ? { value: totalDays.toFixed(1), unit: 'Tage' }
+      : { value: Math.round(totalHours).toString(), unit: 'Stunden' };
 
   return (
     <div
@@ -171,21 +172,42 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
           >
             <div style={{ marginBottom: '5px', display: 'flex', justifyContent: 'center' }}>
               {stat.iconType === 'tv' && (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-                  <rect x="2" y="3" width="20" height="14" rx="2"/>
-                  <path d="M8 21h8M12 17v4" strokeLinecap="round"/>
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.8)"
+                  strokeWidth="2"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <path d="M8 21h8M12 17v4" strokeLinecap="round" />
                 </svg>
               )}
               {stat.iconType === 'film' && (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-                  <rect x="2" y="2" width="20" height="20" rx="2"/>
-                  <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/>
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.8)"
+                  strokeWidth="2"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="2" />
+                  <path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5" />
                 </svg>
               )}
               {stat.iconType === 'clock' && (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 6v6l4 2" strokeLinecap="round"/>
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.8)"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" strokeLinecap="round" />
                 </svg>
               )}
             </div>

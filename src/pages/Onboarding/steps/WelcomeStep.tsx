@@ -12,7 +12,14 @@ interface Props {
   onSkip: () => void;
 }
 
-export const WelcomeStep: React.FC<Props> = ({ username, genres, selectedGenres, onToggleGenre, onNext, onSkip }) => {
+export const WelcomeStep: React.FC<Props> = ({
+  username,
+  genres,
+  selectedGenres,
+  onToggleGenre,
+  onNext,
+  onSkip,
+}) => {
   const { currentTheme } = useTheme();
 
   return (
@@ -39,14 +46,27 @@ export const WelcomeStep: React.FC<Props> = ({ username, genres, selectedGenres,
         >
           Willkommen, {username}!
         </GradientText>
-        <p style={{ margin: '8px 0 0', fontSize: 13, color: currentTheme.text.secondary, lineHeight: 1.4 }}>
+        <p
+          style={{
+            margin: '8px 0 0',
+            fontSize: 13,
+            color: currentTheme.text.secondary,
+            lineHeight: 1.4,
+          }}
+        >
           Wähle bis zu 4 Genres
         </p>
         {selectedGenres.length > 0 && (
           <motion.p
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            style={{ margin: '6px 0 0', fontSize: 11, fontWeight: 600, color: selectedGenres.length >= 4 ? currentTheme.status.success : currentTheme.primary }}
+            style={{
+              margin: '6px 0 0',
+              fontSize: 11,
+              fontWeight: 600,
+              color:
+                selectedGenres.length >= 4 ? currentTheme.status.success : currentTheme.primary,
+            }}
           >
             {selectedGenres.length} von 4 {selectedGenres.length === 1 ? 'Genre' : 'Genres'}
           </motion.p>
@@ -107,7 +127,8 @@ export const WelcomeStep: React.FC<Props> = ({ username, genres, selectedGenres,
                     textAlign: 'center',
                   }}
                 >
-                  {selected && '✓ '}{genre.name}
+                  {selected && '✓ '}
+                  {genre.name}
                 </span>
               </motion.button>
             );
@@ -116,7 +137,16 @@ export const WelcomeStep: React.FC<Props> = ({ username, genres, selectedGenres,
       </div>
 
       {/* Actions */}
-      <div style={{ padding: '12px 0 28px', display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+      <div
+        style={{
+          padding: '12px 0 28px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          alignItems: 'center',
+          flexShrink: 0,
+        }}
+      >
         <button
           onClick={onNext}
           disabled={selectedGenres.length === 0}
@@ -125,9 +155,10 @@ export const WelcomeStep: React.FC<Props> = ({ username, genres, selectedGenres,
             padding: '14px 0',
             borderRadius: 12,
             border: 'none',
-            background: selectedGenres.length > 0
-              ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
-              : currentTheme.background.surface,
+            background:
+              selectedGenres.length > 0
+                ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
+                : currentTheme.background.surface,
             color: selectedGenres.length > 0 ? 'white' : currentTheme.text.muted,
             fontSize: 16,
             fontWeight: 600,

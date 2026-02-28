@@ -21,8 +21,14 @@ export function useKeyboardNavigation({
       const nextKeys = orientation === 'horizontal' ? ['ArrowRight'] : ['ArrowDown'];
 
       // Support both orientations
-      const allPrevKeys = [...prevKeys, ...(orientation === 'horizontal' ? ['ArrowUp'] : ['ArrowLeft'])];
-      const allNextKeys = [...nextKeys, ...(orientation === 'horizontal' ? ['ArrowDown'] : ['ArrowRight'])];
+      const allPrevKeys = [
+        ...prevKeys,
+        ...(orientation === 'horizontal' ? ['ArrowUp'] : ['ArrowLeft']),
+      ];
+      const allNextKeys = [
+        ...nextKeys,
+        ...(orientation === 'horizontal' ? ['ArrowDown'] : ['ArrowRight']),
+      ];
 
       if (allPrevKeys.includes(e.key)) {
         e.preventDefault();

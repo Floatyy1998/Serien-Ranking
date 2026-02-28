@@ -22,12 +22,14 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
       exit={{ opacity: 0, x: 20 }}
       style={{ padding: '0 20px 100px', position: 'relative', zIndex: 5 }}
     >
-      <h2 style={{
-        margin: '0 0 20px 0',
-        fontSize: '18px',
-        fontWeight: 700,
-        color: currentTheme.text.primary,
-      }}>
+      <h2
+        style={{
+          margin: '0 0 20px 0',
+          fontSize: '18px',
+          fontWeight: 700,
+          color: currentTheme.text.primary,
+        }}
+      >
         Deine meistgesehenen Schauspieler
       </h2>
 
@@ -65,72 +67,82 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
               }}
             >
               {/* Rank badge */}
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '12px',
-                background: isTop3
-                  ? `linear-gradient(135deg, ${rankColors[index]}, ${rankColors[index]}99)`
-                  : currentTheme.background.surfaceHover,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-                fontWeight: 800,
-                flexShrink: 0,
-                color: isTop3 ? '#000' : currentTheme.text.primary,
-                boxShadow: isTop3 ? `0 2px 8px ${rankColors[index]}40` : 'none',
-              }}>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '12px',
+                  background: isTop3
+                    ? `linear-gradient(135deg, ${rankColors[index]}, ${rankColors[index]}99)`
+                    : currentTheme.background.surfaceHover,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px',
+                  fontWeight: 800,
+                  flexShrink: 0,
+                  color: isTop3 ? '#000' : currentTheme.text.primary,
+                  boxShadow: isTop3 ? `0 2px 8px ${rankColors[index]}40` : 'none',
+                }}
+              >
                 {index + 1}
               </div>
 
               {/* Actor image */}
-              <div style={{
-                width: '54px',
-                height: '54px',
-                borderRadius: '50%',
-                background: actor.profilePath
-                  ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                  : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                flexShrink: 0,
-                border: isTop3
-                  ? `3px solid ${rankColors[index]}`
-                  : `2px solid ${currentTheme.border.default}`,
-                boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
-              }} />
+              <div
+                style={{
+                  width: '54px',
+                  height: '54px',
+                  borderRadius: '50%',
+                  background: actor.profilePath
+                    ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
+                    : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  flexShrink: 0,
+                  border: isTop3
+                    ? `3px solid ${rankColors[index]}`
+                    : `2px solid ${currentTheme.border.default}`,
+                  boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
+                }}
+              />
 
               <div style={{ flex: 1 }}>
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  color: currentTheme.text.primary,
-                }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: currentTheme.text.primary,
+                  }}
+                >
                   {actor.name}
                 </h3>
-                <p style={{
-                  margin: '4px 0 0 0',
-                  fontSize: '14px',
-                  color: currentTheme.primary,
-                  fontWeight: 600,
-                }}>
+                <p
+                  style={{
+                    margin: '4px 0 0 0',
+                    fontSize: '14px',
+                    color: currentTheme.primary,
+                    fontWeight: 600,
+                  }}
+                >
                   {actor.seriesCount} Serien
                 </p>
               </div>
 
               {/* Decorative shine for top 3 */}
               {isTop3 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: '120px',
-                  height: '100%',
-                  background: `linear-gradient(90deg, transparent, ${rankColors[index]}10)`,
-                  pointerEvents: 'none',
-                }} />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '120px',
+                    height: '100%',
+                    background: `linear-gradient(90deg, transparent, ${rankColors[index]}10)`,
+                    pointerEvents: 'none',
+                  }}
+                />
               )}
             </motion.div>
           );
@@ -138,12 +150,14 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
       </div>
 
       {/* All actors who appear in multiple series */}
-      <h3 style={{
-        margin: '36px 0 18px 0',
-        fontSize: '16px',
-        color: currentTheme.text.secondary,
-        fontWeight: 600,
-      }}>
+      <h3
+        style={{
+          margin: '36px 0 18px 0',
+          fontSize: '16px',
+          color: currentTheme.text.secondary,
+          fontWeight: 600,
+        }}
+      >
         Weitere Schauspieler in mehreren deiner Serien
       </h3>
       <HorizontalScrollContainer gap={14}>
@@ -161,36 +175,42 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
               cursor: 'pointer',
             }}
           >
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              margin: '0 auto 10px',
-              background: actor.profilePath
-                ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              border: `2px solid ${currentTheme.border.default}`,
-              boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
-            }} />
-            <p style={{
-              margin: 0,
-              fontSize: '12px',
-              fontWeight: 600,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              color: currentTheme.text.primary,
-            }}>
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                margin: '0 auto 10px',
+                background: actor.profilePath
+                  ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
+                  : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: `2px solid ${currentTheme.border.default}`,
+                boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
+              }}
+            />
+            <p
+              style={{
+                margin: 0,
+                fontSize: '12px',
+                fontWeight: 600,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                color: currentTheme.text.primary,
+              }}
+            >
               {actor.name.split(' ')[0]}
             </p>
-            <p style={{
-              margin: '3px 0 0 0',
-              fontSize: '11px',
-              color: currentTheme.primary,
-              fontWeight: 500,
-            }}>
+            <p
+              style={{
+                margin: '3px 0 0 0',
+                fontSize: '11px',
+                color: currentTheme.primary,
+                fontWeight: 500,
+              }}
+            >
               {actor.seriesCount} Serien
             </p>
           </motion.div>

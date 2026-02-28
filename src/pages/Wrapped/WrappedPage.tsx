@@ -117,10 +117,12 @@ export const WrappedPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
 
-  const year = yearParam ? parseInt(yearParam) : (wrappedConfig.year || DEFAULT_YEAR);
+  const year = yearParam ? parseInt(yearParam) : wrappedConfig.year || DEFAULT_YEAR;
 
   // Aktivierte Slides basierend auf Konfiguration
-  const enabledSlides = DEFAULT_SLIDE_CONFIG.filter(s => s.enabled).sort((a, b) => a.order - b.order);
+  const enabledSlides = DEFAULT_SLIDE_CONFIG.filter((s) => s.enabled).sort(
+    (a, b) => a.order - b.order
+  );
 
   // Daten laden
   useEffect(() => {
@@ -164,11 +166,14 @@ export const WrappedPage: React.FC = () => {
   }, [user, year]);
 
   // Navigation zwischen Slides
-  const goToSlide = useCallback((index: number) => {
-    const maxIndex = enabledSlides.length - 1;
-    const newIndex = Math.max(0, Math.min(index, maxIndex));
-    setCurrentSlide(newIndex);
-  }, [enabledSlides.length]);
+  const goToSlide = useCallback(
+    (index: number) => {
+      const maxIndex = enabledSlides.length - 1;
+      const newIndex = Math.max(0, Math.min(index, maxIndex));
+      setCurrentSlide(newIndex);
+    },
+    [enabledSlides.length]
+  );
 
   const nextSlide = useCallback(() => {
     goToSlide(currentSlide + 1);
@@ -215,14 +220,17 @@ export const WrappedPage: React.FC = () => {
   };
 
   // Wheel Navigation
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    if (e.deltaY > 0) {
-      nextSlide();
-    } else if (e.deltaY < 0) {
-      prevSlide();
-    }
-  }, [nextSlide, prevSlide]);
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY > 0) {
+        nextSlide();
+      } else if (e.deltaY < 0) {
+        prevSlide();
+      }
+    },
+    [nextSlide, prevSlide]
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -236,11 +244,12 @@ export const WrappedPage: React.FC = () => {
   const handleShare = async () => {
     if (!stats) return;
 
-    const shareText = `Mein ${year} in Zahlen:\n` +
+    const shareText =
+      `Mein ${year} in Zahlen:\n` +
       `${stats.totalEpisodesWatched} Episoden\n` +
       `${stats.totalMoviesWatched} Filme\n` +
       `${Math.round(stats.totalHoursWatched)} Stunden\n` +
-      `${stats.achievements.filter(a => a.unlocked).length} Achievements`;
+      `${stats.achievements.filter((a) => a.unlocked).length} Achievements`;
 
     if (navigator.share) {
       try {
@@ -269,7 +278,9 @@ export const WrappedPage: React.FC = () => {
 
     switch (slideType) {
       case 'intro':
-        return <IntroSlide year={year} username={user?.displayName || user?.email?.split('@')[0]} />;
+        return (
+          <IntroSlide year={year} username={user?.displayName || user?.email?.split('@')[0]} />
+        );
       case 'total_time':
         return (
           <TotalTimeSlide
@@ -316,11 +327,7 @@ export const WrappedPage: React.FC = () => {
         return <SummarySlide stats={stats} onShare={handleShare} />;
       case 'first_last':
         return (
-          <FirstLastSlide
-            firstWatch={stats.firstWatch}
-            lastWatch={stats.lastWatch}
-            year={year}
-          />
+          <FirstLastSlide firstWatch={stats.firstWatch} lastWatch={stats.lastWatch} year={year} />
         );
       case 'record_day':
         return <RecordDaySlide mostActiveDay={stats.mostActiveDay} />;
@@ -427,19 +434,23 @@ export const WrappedPage: React.FC = () => {
             />
           </div>
 
-          <p style={{
-            fontSize: '18px',
-            fontWeight: 600,
-            opacity: 0.9,
-            margin: 0,
-          }}>
+          <p
+            style={{
+              fontSize: '18px',
+              fontWeight: 600,
+              opacity: 0.9,
+              margin: 0,
+            }}
+          >
             Lade deinen Jahresrückblick...
           </p>
-          <p style={{
-            fontSize: '14px',
-            opacity: 0.6,
-            marginTop: '8px',
-          }}>
+          <p
+            style={{
+              fontSize: '14px',
+              opacity: 0.6,
+              marginTop: '8px',
+            }}
+          >
             Wir analysieren deine Statistiken
           </p>
         </div>
@@ -506,24 +517,35 @@ export const WrappedPage: React.FC = () => {
               border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
-          <h2 style={{
-            marginBottom: '12px',
-            fontSize: '20px',
-            fontWeight: 700,
-          }}>
+          <h2
+            style={{
+              marginBottom: '12px',
+              fontSize: '20px',
+              fontWeight: 700,
+            }}
+          >
             {error}
           </h2>
-          <p style={{
-            opacity: 0.7,
-            fontSize: '14px',
-            marginBottom: '28px',
-          }}>
+          <p
+            style={{
+              opacity: 0.7,
+              fontSize: '14px',
+              marginBottom: '28px',
+            }}
+          >
             Versuche es später noch einmal
           </p>
           <button
@@ -540,8 +562,8 @@ export const WrappedPage: React.FC = () => {
               boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
               transition: 'transform 0.2s ease',
             }}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+            onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           >
             Zurück zur Startseite
           </button>
@@ -594,11 +616,13 @@ export const WrappedPage: React.FC = () => {
           border: '1px solid rgba(255,255,255,0.1)',
         }}
       >
-        <span style={{
-          color: 'white',
-          fontSize: '13px',
-          fontWeight: 600,
-        }}>
+        <span
+          style={{
+            color: 'white',
+            fontSize: '13px',
+            fontWeight: 600,
+          }}
+        >
           {currentSlide + 1}
           <span style={{ opacity: 0.5 }}> / {enabledSlides.length}</span>
         </span>
@@ -673,12 +697,14 @@ export const WrappedPage: React.FC = () => {
             animation: 'bounce 2s ease-in-out infinite',
           }}
         >
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '8px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <svg
               width="24"
               height="24"
@@ -690,12 +716,14 @@ export const WrappedPage: React.FC = () => {
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            <p style={{
-              fontSize: '12px',
-              margin: 0,
-              opacity: 0.7,
-              fontWeight: 500,
-            }}>
+            <p
+              style={{
+                fontSize: '12px',
+                margin: 0,
+                opacity: 0.7,
+                fontWeight: 500,
+              }}
+            >
               Wischen zum Navigieren
             </p>
           </div>

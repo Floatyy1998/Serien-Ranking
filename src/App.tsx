@@ -310,7 +310,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Provider trotzdem rendern damit initialData gesetzt werden kann
 
   return (
-    <AuthContext.Provider value={{ user, setUser, authStateResolved, onboardingComplete, setOnboardingComplete }}>
+    <AuthContext.Provider
+      value={{ user, setUser, authStateResolved, onboardingComplete, setOnboardingComplete }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -484,60 +486,62 @@ function AppContent() {
                 <RatingsStateProvider>
                   <ThemeProvider theme={currentTheme}>
                     <DynamicThemeProvider>
-                    <CssBaseline />
-                    <div className="w-full">
-                      <a href="#main-content" className="skip-to-content">
-                        Zum Hauptinhalt springen
-                      </a>
-                      <main className="w-full" id="main-content" tabIndex={-1}>
-                        <Suspense fallback={<PageLoader />}>
-                          <Routes>
-                            <Route
-                              path="/login"
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route
-                              path="/register"
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route path="/public/:publicId" element={<PublicProfilePage />} />
-                            <Route path="/privacy" element={<PrivacyPage />} />
-                            <Route path="/impressum" element={<ImpressumPage />} />
-                            <Route
-                              path="/*"
-                              element={
-                                <AuthContext.Consumer>
-                                  {(auth) => {
-                                    // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
-                                    if (auth?.user) {
-                                      return (
-                                        <EmailVerificationBanner>
-                                          <MobileApp />
-                                        </EmailVerificationBanner>
-                                      );
-                                    } else if (auth?.authStateResolved) {
-                                      return <StartPage />;
-                                    } else {
-                                      // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
-                                      return null;
+                      <CssBaseline />
+                      <div className="w-full">
+                        <a href="#main-content" className="skip-to-content">
+                          Zum Hauptinhalt springen
+                        </a>
+                        <main className="w-full" id="main-content" tabIndex={-1}>
+                          <Suspense fallback={<PageLoader />}>
+                            <Routes>
+                              <Route
+                                path="/login"
+                                element={
+                                  <AuthContext.Consumer>
+                                    {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
+                                  </AuthContext.Consumer>
+                                }
+                              />
+                              <Route
+                                path="/register"
+                                element={
+                                  <AuthContext.Consumer>
+                                    {(auth) =>
+                                      auth?.user ? <Navigate to="/" /> : <RegisterPage />
                                     }
-                                  }}
-                                </AuthContext.Consumer>
-                              }
-                            />
-                            <Route path="*" element={<Navigate to="/" />} />
-                          </Routes>
-                        </Suspense>
-                      </main>
-                    </div>
+                                  </AuthContext.Consumer>
+                                }
+                              />
+                              <Route path="/public/:publicId" element={<PublicProfilePage />} />
+                              <Route path="/privacy" element={<PrivacyPage />} />
+                              <Route path="/impressum" element={<ImpressumPage />} />
+                              <Route
+                                path="/*"
+                                element={
+                                  <AuthContext.Consumer>
+                                    {(auth) => {
+                                      // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
+                                      if (auth?.user) {
+                                        return (
+                                          <EmailVerificationBanner>
+                                            <MobileApp />
+                                          </EmailVerificationBanner>
+                                        );
+                                      } else if (auth?.authStateResolved) {
+                                        return <StartPage />;
+                                      } else {
+                                        // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
+                                        return null;
+                                      }
+                                    }}
+                                  </AuthContext.Consumer>
+                                }
+                              />
+                              <Route path="*" element={<Navigate to="/" />} />
+                            </Routes>
+                          </Suspense>
+                        </main>
+                      </div>
                     </DynamicThemeProvider>
                   </ThemeProvider>
                 </RatingsStateProvider>

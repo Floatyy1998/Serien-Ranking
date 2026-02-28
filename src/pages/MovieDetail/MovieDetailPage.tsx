@@ -8,7 +8,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { BackButton, Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
-import { CastCrew, FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
+import {
+  CastCrew,
+  FriendsWhoHaveThis,
+  ProviderBadges,
+  VideoGallery,
+} from '../../components/detail';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
@@ -393,7 +398,9 @@ export const MovieDetailPage = memo(() => {
         <div
           style={{
             position: 'absolute',
-            top: isMobile ? 'calc(10px + env(safe-area-inset-top))' : 'calc(20px + env(safe-area-inset-top))',
+            top: isMobile
+              ? 'calc(10px + env(safe-area-inset-top))'
+              : 'calc(20px + env(safe-area-inset-top))',
             left: isMobile ? '10px' : '20px',
             right: isMobile ? '10px' : '20px',
             display: 'flex',
@@ -510,88 +517,97 @@ export const MovieDetailPage = memo(() => {
 
           {/* Ratings from TMDB and IMDB - nur auf Desktop */}
           {!isMobile && (
-          <div
-            style={{
-              display: 'flex',
-              gap: '12px',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-            }}
-          >
-            {/* TMDB Rating - Always show */}
-            <a
-              href={`https://www.themoviedb.org/movie/${id}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <div
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
-                background: 'rgba(0, 188, 212, 0.15)',
-                border: '1px solid rgba(0, 188, 212, 0.3)',
-                borderRadius: '16px',
-                fontSize: '13px',
-                textDecoration: 'none',
-                color: 'white',
+                gap: '12px',
+                marginBottom: '16px',
+                flexWrap: 'wrap',
               }}
             >
-              <span
+              {/* TMDB Rating - Always show */}
+              <a
+                href={`https://www.themoviedb.org/movie/${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
-                  fontWeight: 900,
-                  fontSize: '11px',
-                  background: '#01b4e4',
-                  color: '#0d253f',
-                  padding: '2px 4px',
-                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  background: 'rgba(0, 188, 212, 0.15)',
+                  border: '1px solid rgba(0, 188, 212, 0.3)',
+                  borderRadius: '16px',
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  color: 'white',
                 }}
               >
-                TMDB
-              </span>
-              <span style={{ fontWeight: 600 }}>{tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10</span>
-              <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                ({tmdbRating ? (tmdbRating.vote_count / 1000).toFixed(1) : '0.0'}k)
-              </span>
-            </a>
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: '11px',
+                    background: '#01b4e4',
+                    color: '#0d253f',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  TMDB
+                </span>
+                <span style={{ fontWeight: 600 }}>
+                  {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
+                </span>
+                <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                  ({tmdbRating ? (tmdbRating.vote_count / 1000).toFixed(1) : '0.0'}k)
+                </span>
+              </a>
 
-            {/* IMDB Rating - Always show */}
-            <a
-              href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id || ''}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
-                background: 'rgba(245, 197, 24, 0.15)',
-                border: '1px solid rgba(245, 197, 24, 0.3)',
-                borderRadius: '16px',
-                fontSize: '13px',
-                textDecoration: 'none',
-                color: 'white',
-                opacity: (movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id) ? 1 : 0.5,
-                pointerEvents: (movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id) ? 'auto' : 'none'
-              }}
-            >
-              <span
+              {/* IMDB Rating - Always show */}
+              <a
+                href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id || ''}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
-                  fontWeight: 900,
-                  fontSize: '11px',
-                  background: '#F5C518',
-                  color: '#000',
-                  padding: '2px 4px',
-                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  background: 'rgba(245, 197, 24, 0.15)',
+                  border: '1px solid rgba(245, 197, 24, 0.3)',
+                  borderRadius: '16px',
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  color: 'white',
+                  opacity: movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id ? 1 : 0.5,
+                  pointerEvents:
+                    movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id ? 'auto' : 'none',
                 }}
               >
-                IMDb
-              </span>
-              <span style={{ fontWeight: 600 }}>{imdbRating?.rating?.toFixed(1) || '0.0'}/10</span>
-              <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                ({imdbRating ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1) : '0.0'}k)
-              </span>
-            </a>
-          </div>
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: '11px',
+                    background: '#F5C518',
+                    color: '#000',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  IMDb
+                </span>
+                <span style={{ fontWeight: 600 }}>
+                  {imdbRating?.rating?.toFixed(1) || '0.0'}/10
+                </span>
+                <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                  (
+                  {imdbRating
+                    ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)
+                    : '0.0'}
+                  k)
+                </span>
+              </a>
+            </div>
           )}
 
           {/* Provider Badges */}
@@ -601,7 +617,7 @@ export const MovieDetailPage = memo(() => {
                 providers={
                   movie.provider?.provider && movie.provider.provider.length > 0
                     ? movie.provider.provider
-                    : providers ?? undefined
+                    : (providers ?? undefined)
                 }
                 size={isMobile ? 'medium' : 'large'}
                 maxDisplay={isMobile ? 4 : 6}
@@ -614,30 +630,27 @@ export const MovieDetailPage = memo(() => {
           )}
 
           {/* Video Gallery Button - Desktop */}
-          {!isMobile && (
-            <VideoGallery
-              tmdbId={movie.id}
-              mediaType="movie"
-              buttonStyle="desktop"
-            />
-          )}
+          {!isMobile && <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="desktop" />}
         </div>
       </div>
 
       {/* Mobile Video Gallery Button */}
       {isMobile && (
         <div style={{ padding: '8px 12px 0' }}>
-          <VideoGallery
-            tmdbId={movie.id}
-            mediaType="movie"
-            buttonStyle="mobile"
-          />
+          <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="mobile" />
         </div>
       )}
 
       {/* Action Buttons - for user's movies */}
       {!isReadOnlyTmdbMovie && (
-        <div style={{ padding: isMobile ? '10px 12px' : '20px', display: 'flex', gap: isMobile ? '8px' : '12px', justifyContent: 'center' }}>
+        <div
+          style={{
+            padding: isMobile ? '10px 12px' : '20px',
+            display: 'flex',
+            gap: isMobile ? '8px' : '12px',
+            justifyContent: 'center',
+          }}
+        >
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate(`/rating/movie/${movie.id}`)}
@@ -664,7 +677,12 @@ export const MovieDetailPage = memo(() => {
               position: 'relative',
             }}
           >
-            <Star style={{ fontSize: isMobile ? '16px' : '18px', color: isWatched ? '#ffd700' : 'white' }} />
+            <Star
+              style={{
+                fontSize: isMobile ? '16px' : '18px',
+                color: isWatched ? '#ffd700' : 'white',
+              }}
+            />
             Bewerten
           </motion.button>
         </div>
@@ -972,7 +990,8 @@ export const MovieDetailPage = memo(() => {
           itemType="movie"
           feedMetadata={{
             itemTitle: movie.title || 'Unbekannter Film',
-            posterPath: movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined,
+            posterPath:
+              movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined,
           }}
         />
       </div>

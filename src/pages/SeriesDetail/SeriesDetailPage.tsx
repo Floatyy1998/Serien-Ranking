@@ -21,14 +21,27 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { BackButton, Dialog, ProgressBar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
-import { CastCrew, FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
+import {
+  CastCrew,
+  FriendsWhoHaveThis,
+  ProviderBadges,
+  VideoGallery,
+} from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
-import { getImplicitRewatchRound, getMaxWatchCount, getNextRewatchEpisode, getRewatchProgress, getRewatchRound, hasActiveRewatch, isSeriesFullyWatched } from '../../lib/validation/rewatch.utils';
+import {
+  getImplicitRewatchRound,
+  getMaxWatchCount,
+  getNextRewatchEpisode,
+  getRewatchProgress,
+  getRewatchRound,
+  hasActiveRewatch,
+  isSeriesFullyWatched,
+} from '../../lib/validation/rewatch.utils';
 import { EpisodeActionSheet } from './EpisodeActionSheet';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useSeriesData } from './useSeriesData';
@@ -96,7 +109,7 @@ export const SeriesDetailPage = memo(() => {
     if (hasActiveRewatch(series)) {
       const nextEp = getNextRewatchEpisode(series);
       if (nextEp) {
-        const idx = series.seasons.findIndex(s => s.seasonNumber === nextEp.seasonNumber);
+        const idx = series.seasons.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
         if (idx >= 0) setSelectedSeasonIndex(idx);
         return;
       }
@@ -116,7 +129,7 @@ export const SeriesDetailPage = memo(() => {
     }
     // All watched and no active rewatch → go to season 1
     setSelectedSeasonIndex(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [series?.id]);
 
   // Episode discussion counts for the selected season
@@ -414,7 +427,9 @@ export const SeriesDetailPage = memo(() => {
       // "Fortsetzen": round = maxWatchCount - 1, target = maxWatchCount (bring lower ones up)
       // "Neu starten": round = maxWatchCount, target = maxWatchCount + 1
       // Ensure round >= 1 so targetWatchCount >= 2 (a rewatch always means "watch again")
-      const newRound = continueExisting ? Math.max(1, currentMaxCount - 1) : Math.max(1, currentMaxCount);
+      const newRound = continueExisting
+        ? Math.max(1, currentMaxCount - 1)
+        : Math.max(1, currentMaxCount);
 
       const seriesPath = `${user.uid}/serien/${series.nmr}`;
       await firebase.database().ref(`${seriesPath}/rewatch`).set({
@@ -423,7 +438,12 @@ export const SeriesDetailPage = memo(() => {
         startedAt: new Date().toISOString(),
       });
 
-      setSnackbar({ open: true, message: continueExisting ? `Rewatch #${newRound} fortgesetzt!` : `Rewatch #${newRound} gestartet!` });
+      setSnackbar({
+        open: true,
+        message: continueExisting
+          ? `Rewatch #${newRound} fortgesetzt!`
+          : `Rewatch #${newRound} gestartet!`,
+      });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
     } catch (error) {
       setDialog({ open: true, message: 'Fehler beim Starten des Rewatches.', type: 'error' });
@@ -623,7 +643,11 @@ export const SeriesDetailPage = memo(() => {
             }}
           >
             {(tmdbFirstAirDate || series.first_air_date || series.release_date) && (
-              <span>{new Date(tmdbFirstAirDate || series.first_air_date || series.release_date).getFullYear()}</span>
+              <span>
+                {new Date(
+                  tmdbFirstAirDate || series.first_air_date || series.release_date
+                ).getFullYear()}
+              </span>
             )}
             {series.seasons && <span>• {series.seasons.length} Staffeln</span>}
             {series.status && (
@@ -818,7 +842,6 @@ export const SeriesDetailPage = memo(() => {
               )}
             </div>
           )}
-
         </div>
       </div>
 
@@ -899,8 +922,7 @@ export const SeriesDetailPage = memo(() => {
               textDecoration: 'none',
               color: 'white',
               opacity: series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 1 : 0.5,
-              pointerEvents:
-                series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 'auto' : 'none',
+              pointerEvents: series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id ? 'auto' : 'none',
             }}
           >
             <span
@@ -915,9 +937,7 @@ export const SeriesDetailPage = memo(() => {
             >
               IMDb
             </span>
-            <span style={{ fontWeight: 600 }}>
-              {imdbRating?.rating?.toFixed(1) || '0.0'}/10
-            </span>
+            <span style={{ fontWeight: 600 }}>{imdbRating?.rating?.toFixed(1) || '0.0'}/10</span>
             <span style={{ fontSize: '11px', opacity: 0.7 }}>
               (
               {imdbRating
@@ -935,7 +955,7 @@ export const SeriesDetailPage = memo(() => {
               providers={
                 series.provider?.provider && series.provider.provider.length > 0
                   ? series.provider.provider
-                  : providers ?? undefined
+                  : (providers ?? undefined)
               }
               size={isMobile ? 'medium' : 'large'}
               maxDisplay={isMobile ? 4 : 6}
@@ -1253,110 +1273,123 @@ export const SeriesDetailPage = memo(() => {
                   </div>
 
                   {/* Rewatch Progress Banner */}
-                  {hasActiveRewatch(series) && (() => {
-                    const rewatchRound = getRewatchRound(series);
-                    const rewatchProgress = getRewatchProgress(series);
-                    const rewatchPercent = rewatchProgress.total > 0
-                      ? Math.round((rewatchProgress.current / rewatchProgress.total) * 100)
-                      : 0;
-                    const warningColor = currentTheme.status?.warning || '#f59e0b';
-                    return (
-                      <div style={{
-                        background: `${warningColor}15`,
-                        border: `1px solid ${warningColor}40`,
-                        borderRadius: '12px',
-                        padding: '12px 16px',
-                        marginBottom: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                        }}>
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                          }}>
-                            <Repeat style={{ fontSize: '16px', color: warningColor }} />
-                            <span style={{ fontSize: '14px', fontWeight: '600' }}>
-                              Rewatch #{rewatchRound}
-                            </span>
-                          </div>
-                          <span style={{
-                            fontSize: '12px',
-                            color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
-                          }}>
-                            {rewatchProgress.current}/{rewatchProgress.total} Episoden
-                          </span>
-                        </div>
-                        <ProgressBar
-                          value={rewatchPercent}
-                          color={warningColor}
-                          toColor="#f59e0b"
-                          height={6}
-                        />
-                        {(() => {
-                          const nextEp = getNextRewatchEpisode(series);
-                          if (!nextEp) return null;
-                          return (
-                            <motion.button
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => {
-                                // Find season index and navigate to season + scroll
-                                const sIdx = series.seasons.findIndex(s => s.seasonNumber === nextEp.seasonNumber);
-                                if (sIdx >= 0) {
-                                  setSelectedSeasonIndex(sIdx);
-                                  // Open ActionSheet for this episode
-                                  setShowRewatchDialog({
-                                    show: true,
-                                    type: 'episode',
-                                    item: series.seasons[sIdx].episodes[nextEp.episodeIndex],
-                                    seasonNumber: nextEp.seasonNumber + 1,
-                                    episodeNumber: nextEp.episodeIndex + 1,
-                                  });
-                                }
-                              }}
-                              style={{
-                                padding: '8px 14px',
-                                background: `${warningColor}25`,
-                                border: `1px solid ${warningColor}60`,
-                                borderRadius: '8px',
-                                color: warningColor,
-                                fontSize: '13px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                              }}
-                            >
-                              Nächste: S{nextEp.seasonNumber + 1} E{nextEp.episodeIndex + 1} — {nextEp.name}
-                            </motion.button>
-                          );
-                        })()}
-                        <motion.button
-                          whileTap={{ scale: 0.95 }}
-                          onClick={handleStopRewatch}
+                  {hasActiveRewatch(series) &&
+                    (() => {
+                      const rewatchRound = getRewatchRound(series);
+                      const rewatchProgress = getRewatchProgress(series);
+                      const rewatchPercent =
+                        rewatchProgress.total > 0
+                          ? Math.round((rewatchProgress.current / rewatchProgress.total) * 100)
+                          : 0;
+                      const warningColor = currentTheme.status?.warning || '#f59e0b';
+                      return (
+                        <div
                           style={{
-                            padding: '6px 12px',
-                            background: 'transparent',
+                            background: `${warningColor}15`,
                             border: `1px solid ${warningColor}40`,
-                            borderRadius: '8px',
-                            color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            alignSelf: 'flex-end',
+                            borderRadius: '12px',
+                            padding: '12px 16px',
+                            marginBottom: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
                           }}
                         >
-                          Rewatch beenden
-                        </motion.button>
-                      </div>
-                    );
-                  })()}
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
+                              <Repeat style={{ fontSize: '16px', color: warningColor }} />
+                              <span style={{ fontSize: '14px', fontWeight: '600' }}>
+                                Rewatch #{rewatchRound}
+                              </span>
+                            </div>
+                            <span
+                              style={{
+                                fontSize: '12px',
+                                color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
+                              }}
+                            >
+                              {rewatchProgress.current}/{rewatchProgress.total} Episoden
+                            </span>
+                          </div>
+                          <ProgressBar
+                            value={rewatchPercent}
+                            color={warningColor}
+                            toColor="#f59e0b"
+                            height={6}
+                          />
+                          {(() => {
+                            const nextEp = getNextRewatchEpisode(series);
+                            if (!nextEp) return null;
+                            return (
+                              <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => {
+                                  // Find season index and navigate to season + scroll
+                                  const sIdx = series.seasons.findIndex(
+                                    (s) => s.seasonNumber === nextEp.seasonNumber
+                                  );
+                                  if (sIdx >= 0) {
+                                    setSelectedSeasonIndex(sIdx);
+                                    // Open ActionSheet for this episode
+                                    setShowRewatchDialog({
+                                      show: true,
+                                      type: 'episode',
+                                      item: series.seasons[sIdx].episodes[nextEp.episodeIndex],
+                                      seasonNumber: nextEp.seasonNumber + 1,
+                                      episodeNumber: nextEp.episodeIndex + 1,
+                                    });
+                                  }
+                                }}
+                                style={{
+                                  padding: '8px 14px',
+                                  background: `${warningColor}25`,
+                                  border: `1px solid ${warningColor}60`,
+                                  borderRadius: '8px',
+                                  color: warningColor,
+                                  fontSize: '13px',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                }}
+                              >
+                                Nächste: S{nextEp.seasonNumber + 1} E{nextEp.episodeIndex + 1} —{' '}
+                                {nextEp.name}
+                              </motion.button>
+                            );
+                          })()}
+                          <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleStopRewatch}
+                            style={{
+                              padding: '6px 12px',
+                              background: 'transparent',
+                              border: `1px solid ${warningColor}40`,
+                              borderRadius: '8px',
+                              color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              alignSelf: 'flex-end',
+                            }}
+                          >
+                            Rewatch beenden
+                          </motion.button>
+                        </div>
+                      );
+                    })()}
 
                   {/* Start Rewatch Button - only when fully watched & no active rewatch */}
                   {isSeriesFullyWatched(series) && !hasActiveRewatch(series) && (
@@ -1448,9 +1481,10 @@ export const SeriesDetailPage = memo(() => {
                       const sTotal = season.episodes?.length || 0;
                       const sProgress = sTotal > 0 ? Math.round((sWatched / sTotal) * 100) : 0;
                       const isSelected = index === selectedSeasonIndex;
-                      const sMinWatch = sProgress === 100 && sTotal > 0
-                        ? Math.min(...(season.episodes?.map((ep) => ep.watchCount || 1) || [1]))
-                        : 0;
+                      const sMinWatch =
+                        sProgress === 100 && sTotal > 0
+                          ? Math.min(...(season.episodes?.map((ep) => ep.watchCount || 1) || [1]))
+                          : 0;
 
                       return (
                         <motion.button
@@ -1488,7 +1522,12 @@ export const SeriesDetailPage = memo(() => {
                               <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                                 <Check style={{ fontSize: '12px', color: '#00d4aa' }} />
                                 {sMinWatch > 1 && (
-                                  <span style={{ color: currentTheme.status?.warning || '#f59e0b', fontWeight: '700' }}>
+                                  <span
+                                    style={{
+                                      color: currentTheme.status?.warning || '#f59e0b',
+                                      fontWeight: '700',
+                                    }}
+                                  >
                                     ×{sMinWatch}
                                   </span>
                                 )}
@@ -1739,7 +1778,10 @@ export const SeriesDetailPage = memo(() => {
             itemType="series"
             feedMetadata={{
               itemTitle: series.title || series.name || 'Unbekannte Serie',
-              posterPath: series.poster && typeof series.poster === 'object' ? series.poster.poster : undefined,
+              posterPath:
+                series.poster && typeof series.poster === 'object'
+                  ? series.poster.poster
+                  : undefined,
             }}
           />
         </div>

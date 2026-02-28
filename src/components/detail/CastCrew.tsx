@@ -212,9 +212,16 @@ export const CastCrew: React.FC<CastCrewProps> = ({
       const result = await response.json();
       if (result.data?.Media?.characters?.edges) {
         interface AniListEdge {
-          node: { name: { first?: string; last?: string; native?: string }; image?: { large?: string } };
+          node: {
+            name: { first?: string; last?: string; native?: string };
+            image?: { large?: string };
+          };
           role: string;
-          voiceActors?: { id: number; name: { first?: string; last?: string; native?: string }; image?: { large?: string } }[];
+          voiceActors?: {
+            id: number;
+            name: { first?: string; last?: string; native?: string };
+            image?: { large?: string };
+          }[];
         }
         const transformedCharacters = (result.data.Media.characters.edges as AniListEdge[])
           .filter((edge) => edge.voiceActors && edge.voiceActors.length > 0)

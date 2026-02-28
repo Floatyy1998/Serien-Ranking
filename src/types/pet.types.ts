@@ -18,12 +18,30 @@ export interface Pet {
   deathCause?: 'hunger' | 'sadness' | 'neglect';
   reviveCount?: number; // Wie oft wurde das Pet wiederbelebt
   // Einzigartige Merkmale
-  pattern?: 'spots' | 'stripes' | 'plain' | 'patches' | 'galaxy' | 'hearts' | 'stars' | 'zigzag' | 'dots';
+  pattern?:
+    | 'spots'
+    | 'stripes'
+    | 'plain'
+    | 'patches'
+    | 'galaxy'
+    | 'hearts'
+    | 'stars'
+    | 'zigzag'
+    | 'dots';
   eyeColor?: string;
   personality?: 'lazy' | 'playful' | 'brave' | 'shy' | 'smart';
   size?: 'tiny' | 'small' | 'normal' | 'big' | 'chonky';
   // Neue Features
-  mood?: 'happy' | 'sad' | 'excited' | 'sleepy' | 'hungry' | 'playful' | 'festive' | 'scared' | 'loved';
+  mood?:
+    | 'happy'
+    | 'sad'
+    | 'excited'
+    | 'sleepy'
+    | 'hungry'
+    | 'playful'
+    | 'festive'
+    | 'scared'
+    | 'loved';
   favoriteGenre?: string; // Lieblings-Serie-Genre für XP-Bonus
   accessories?: PetAccessory[];
   unlockedColors?: string[]; // Freigeschaltete spezielle Farben
@@ -40,7 +58,7 @@ export const PET_COLORS: Record<string, string> = {
   gelb: '#FFD93D',
   rosa: '#FF6BCB',
   orange: '#FFA500',
-  tuerkis: '#00D4FF'
+  tuerkis: '#00D4FF',
 };
 
 export const PET_TYPES = {
@@ -48,7 +66,7 @@ export const PET_TYPES = {
   dog: '🐶',
   bird: '🐦',
   dragon: '🐲',
-  fox: '🦊'
+  fox: '🦊',
 };
 
 export const PET_TYPE_NAMES = {
@@ -56,7 +74,7 @@ export const PET_TYPE_NAMES = {
   dog: 'Hund',
   bird: 'Vogel',
   dragon: 'Drache',
-  fox: 'Fuchs'
+  fox: 'Fuchs',
 };
 
 export interface PetAccessory {
@@ -77,16 +95,19 @@ export const ACCESSORIES: Record<string, Omit<PetAccessory, 'id' | 'equipped'>> 
   crown: { type: 'crown', name: 'Krone', icon: '👑', unlockCondition: 'Level 10' },
   scarf: { type: 'scarf', name: 'Schal', icon: '🧣', unlockCondition: 'Winter' },
   collar: { type: 'collar', name: 'Halsband', icon: '📿' },
-  bandana: { type: 'bandana', name: 'Bandana', icon: '🔻', color: '#FF0000' }
+  bandana: { type: 'bandana', name: 'Bandana', icon: '🔻', color: '#FF0000' },
 };
 
-export const SPECIAL_COLORS: Record<string, { color: string; name: string; unlockCondition: string }> = {
+export const SPECIAL_COLORS: Record<
+  string,
+  { color: string; name: string; unlockCondition: string }
+> = {
   gold: { color: '#FFD700', name: 'Gold', unlockCondition: '50 Serien' },
   silver: { color: '#C0C0C0', name: 'Silber', unlockCondition: '25 Serien' },
   rainbow: { color: 'rainbow', name: 'Regenbogen', unlockCondition: '100 Serien' },
   neon: { color: '#39FF14', name: 'Neon', unlockCondition: 'Nacht-Eule Badge' },
   cosmic: { color: 'cosmic', name: 'Kosmisch', unlockCondition: 'Sci-Fi Fan' },
-  shadow: { color: '#2B2B2B', name: 'Schatten', unlockCondition: 'Horror Fan' }
+  shadow: { color: '#2B2B2B', name: 'Schatten', unlockCondition: 'Horror Fan' },
 };
 
 export const SPECIAL_PATTERNS = {
@@ -94,10 +115,18 @@ export const SPECIAL_PATTERNS = {
   hearts: { name: 'Herzen', unlockCondition: 'Valentinstag' },
   stars: { name: 'Sterne', unlockCondition: 'Nachtschwärmer' },
   zigzag: { name: 'Zickzack', unlockCondition: 'Speed Watcher' },
-  dots: { name: 'Punkte', unlockCondition: 'Anfänger' }
+  dots: { name: 'Punkte', unlockCondition: 'Anfänger' },
 };
 
 export const GENRE_FAVORITES = [
-  'Action & Adventure', 'Comedy', 'Drama', 'Crime', 'Sci-Fi & Fantasy',
-  'Mystery', 'Animation', 'Documentary', 'Family', 'Western'
+  'Action & Adventure',
+  'Comedy',
+  'Drama',
+  'Crime',
+  'Sci-Fi & Fantasy',
+  'Mystery',
+  'Animation',
+  'Documentary',
+  'Family',
+  'Western',
 ];

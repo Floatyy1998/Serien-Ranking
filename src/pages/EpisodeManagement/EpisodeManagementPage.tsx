@@ -1,4 +1,12 @@
-import { ChatBubbleOutline, Check, DateRange, ExpandLess, ExpandMore, Refresh, Visibility } from '@mui/icons-material';
+import {
+  ChatBubbleOutline,
+  Check,
+  DateRange,
+  ExpandLess,
+  ExpandMore,
+  Refresh,
+  Visibility,
+} from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -16,7 +24,10 @@ import { Series } from '../../types/Series';
 import { PageHeader } from '../../components/ui';
 import './EpisodeManagementPage.css';
 
-function getEpisodeRuntime(series: Series, episode: Series['seasons'][number]['episodes'][number]): number {
+function getEpisodeRuntime(
+  series: Series,
+  episode: Series['seasons'][number]['episodes'][number]
+): number {
   return episode.runtime || series.episodeRuntime || 45;
 }
 
@@ -192,9 +203,8 @@ export const EpisodeManagementPage = () => {
       // Badge system logging for episode changes
       if (!episode.watched && newWatched) {
         // Episode wird als gesehen markiert
-        const { updateEpisodeCounters } = await import(
-          '../../features/badges/minimalActivityLogger'
-        );
+        const { updateEpisodeCounters } =
+          await import('../../features/badges/minimalActivityLogger');
         await updateEpisodeCounters(
           user.uid,
           false, // nicht rewatch
@@ -215,13 +225,12 @@ export const EpisodeManagementPage = () => {
           getEpisodeRuntime(series, episode),
           false, // isRewatch
           series.genre?.genres,
-          [...new Set(series.provider?.provider?.map(p => p.name))]
+          [...new Set(series.provider?.provider?.map((p) => p.name))]
         );
       } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
         // Rewatch case
-        const { updateEpisodeCounters } = await import(
-          '../../features/badges/minimalActivityLogger'
-        );
+        const { updateEpisodeCounters } =
+          await import('../../features/badges/minimalActivityLogger');
         await updateEpisodeCounters(
           user.uid,
           true, // rewatch
@@ -238,7 +247,7 @@ export const EpisodeManagementPage = () => {
           getEpisodeRuntime(series, episode),
           true, // isRewatch
           series.genre?.genres,
-          [...new Set(series.provider?.provider?.map(p => p.name))]
+          [...new Set(series.provider?.provider?.map((p) => p.name))]
         );
       }
     } catch (error) {
@@ -246,7 +255,10 @@ export const EpisodeManagementPage = () => {
     }
   };
 
-  const handleSeasonToggle = async (seasonIndex: number, mode: 'watch' | 'unwatch' | 'rewatch' = 'watch') => {
+  const handleSeasonToggle = async (
+    seasonIndex: number,
+    mode: 'watch' | 'unwatch' | 'rewatch' = 'watch'
+  ) => {
     if (!series || !user) return;
 
     const season = series.seasons[seasonIndex];
@@ -316,11 +328,7 @@ export const EpisodeManagementPage = () => {
   return (
     <div className="mobile-episode-page">
       {/* Native App Header */}
-      <PageHeader
-        title={series.title}
-        subtitle="Episoden verwalten"
-        sticky={false}
-      />
+      <PageHeader title={series.title} subtitle="Episoden verwalten" sticky={false} />
 
       {/* Pull to Refresh Indicator */}
       <AnimatePresence>
@@ -460,14 +468,18 @@ export const EpisodeManagementPage = () => {
                     className="episode-discussion-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/episode/${id}/s/${currentSeason?.seasonNumber + 1}/e/${index + 1}`);
+                      navigate(
+                        `/episode/${id}/s/${currentSeason?.seasonNumber + 1}/e/${index + 1}`
+                      );
                     }}
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: '8px',
                       cursor: 'pointer',
-                      color: episodeDiscussionCounts[index + 1] ? currentTheme.primary : currentTheme.text.muted,
+                      color: episodeDiscussionCounts[index + 1]
+                        ? currentTheme.primary
+                        : currentTheme.text.muted,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',

@@ -12,7 +12,13 @@ export const useContinueWatching = () => {
     title: string;
     poster: string;
     progress: number;
-    nextEpisode: { seasonNumber: number; episodeNumber: number; name: string; seasonIndex: number; episodeIndex: number };
+    nextEpisode: {
+      seasonNumber: number;
+      episodeNumber: number;
+      name: string;
+      seasonIndex: number;
+      episodeIndex: number;
+    };
     airDate: string;
     lastWatchedAt: string;
     genre: Series['genre'];
@@ -21,7 +27,10 @@ export const useContinueWatching = () => {
     seasons: Series['seasons'];
   }
 
-  const cacheRef = useRef<{ items: ContinueWatchingItem[] | null; deps: string }>({ items: null, deps: '' });
+  const cacheRef = useRef<{ items: ContinueWatchingItem[] | null; deps: string }>({
+    items: null,
+    deps: '',
+  });
 
   const continueWatching = useMemo(() => {
     // Create a more detailed dependency string that includes watched status
@@ -36,28 +45,28 @@ export const useContinueWatching = () => {
         }
       }
     }
-    
+
     const depsString = `${seriesList.length}-${watchedCount}`;
-    
+
     if (cacheRef.current.items && cacheRef.current.deps === depsString) {
       return cacheRef.current.items;
     }
-    
+
     const items: ContinueWatchingItem[] = [];
     const today = new Date();
-    
+
     for (let i = 0; i < seriesList.length; i++) {
       const series = seriesList[i];
       if (!series.watchlist) continue;
-      
+
       let lastWatchedAt: string | null = null;
       const seasons = series.seasons;
-      
+
       if (seasons) {
         for (let j = 0; j < seasons.length; j++) {
           const episodes = seasons[j].episodes;
           if (!episodes) continue;
-          
+
           for (let k = 0; k < episodes.length; k++) {
             const ep = episodes[k];
             if (ep.firstWatchedAt && ep.watched) {
@@ -67,13 +76,13 @@ export const useContinueWatching = () => {
             }
           }
         }
-        
+
         let foundNext = false;
         for (let j = 0; j < seasons.length && !foundNext; j++) {
           const season = seasons[j];
           const episodes = season.episodes;
           if (!episodes) continue;
-          
+
           for (let k = 0; k < episodes.length; k++) {
             const episode = episodes[k];
             if (!episode.watched && episode.air_date) {
@@ -81,11 +90,11 @@ export const useContinueWatching = () => {
               if (airDate <= today) {
                 let totalAiredEpisodes = 0;
                 let watchedEpisodes = 0;
-                
+
                 for (let s = 0; s < seasons.length; s++) {
                   const sEpisodes = seasons[s].episodes;
                   if (!sEpisodes) continue;
-                  
+
                   for (let e = 0; e < sEpisodes.length; e++) {
                     const ep = sEpisodes[e];
                     if (ep.air_date) {
@@ -97,11 +106,10 @@ export const useContinueWatching = () => {
                     }
                   }
                 }
-                
-                const percentage = totalAiredEpisodes > 0 
-                  ? (watchedEpisodes / totalAiredEpisodes) * 100 
-                  : 0;
-                
+
+                const percentage =
+                  totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
+
                 items.push({
                   type: 'series',
                   id: series.id,
@@ -131,17 +139,17 @@ export const useContinueWatching = () => {
         }
       }
     }
-    
+
     items.sort((a, b) => {
       const dateA = new Date(a.lastWatchedAt).getTime();
       const dateB = new Date(b.lastWatchedAt).getTime();
       return dateB - dateA;
     });
-    
+
     const result = items.slice(0, 10);
     cacheRef.current = { items: result, deps: depsString };
     return result;
   }, [seriesList]);
-  
+
   return continueWatching;
 };

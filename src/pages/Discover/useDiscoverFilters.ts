@@ -7,7 +7,9 @@ interface UseDiscoverFiltersResult {
   activeTab: 'series' | 'movies';
   setActiveTab: React.Dispatch<React.SetStateAction<'series' | 'movies'>>;
   activeCategory: 'trending' | 'popular' | 'top_rated' | 'upcoming' | 'recommendations';
-  setActiveCategory: React.Dispatch<React.SetStateAction<'trending' | 'popular' | 'top_rated' | 'upcoming' | 'recommendations'>>;
+  setActiveCategory: React.Dispatch<
+    React.SetStateAction<'trending' | 'popular' | 'top_rated' | 'upcoming' | 'recommendations'>
+  >;
   selectedGenre: number | null;
   setSelectedGenre: React.Dispatch<React.SetStateAction<number | null>>;
   showFilters: boolean;
@@ -41,7 +43,9 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   const [headerHeight, setHeaderHeight] = useState(220);
 
   // Refs to allow fetch hooks to be called from restore logic
-  const fetchRecommendationsOnRestore = { current: null } as React.MutableRefObject<(() => void) | null>;
+  const fetchRecommendationsOnRestore = { current: null } as React.MutableRefObject<
+    (() => void) | null
+  >;
   const fetchFromTMDBOnRestore = { current: null } as React.MutableRefObject<(() => void) | null>;
 
   useEffect(() => {
@@ -115,7 +119,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
       selectedGenre,
       showFilters,
       searchQuery,
-      showSearch
+      showSearch,
     };
     sessionStorage.setItem('discoverFilters', JSON.stringify(filterState));
     sessionStorage.setItem('comingFromDetail', 'true');

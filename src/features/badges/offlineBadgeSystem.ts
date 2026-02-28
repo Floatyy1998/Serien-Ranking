@@ -74,10 +74,7 @@ export class OfflineBadgeSystem {
    * 🚀 Haupt-Badge-Prüfung - Berechnet aus echten Daten
    */
   async checkForNewBadges(): Promise<EarnedBadge[]> {
-    const [userData, currentBadges] = await Promise.all([
-      this.getUserData(),
-      this.getUserBadges(),
-    ]);
+    const [userData, currentBadges] = await Promise.all([this.getUserData(), this.getUserBadges()]);
 
     const currentBadgeIds = new Set(currentBadges.map((b) => b.id));
     const newBadges: EarnedBadge[] = [];
@@ -124,34 +121,22 @@ export class OfflineBadgeSystem {
   }
 
   private async getSeriesData(): Promise<BadgeSeriesItem[]> {
-    const snapshot = await firebase
-      .database()
-      .ref(`${this.userId}/serien`)
-      .once('value');
+    const snapshot = await firebase.database().ref(`${this.userId}/serien`).once('value');
     return snapshot.exists() ? (Object.values(snapshot.val()) as BadgeSeriesItem[]) : [];
   }
 
   private async getMoviesData(): Promise<BadgeMovieItem[]> {
-    const snapshot = await firebase
-      .database()
-      .ref(`${this.userId}/filme`)
-      .once('value');
+    const snapshot = await firebase.database().ref(`${this.userId}/filme`).once('value');
     return snapshot.exists() ? (Object.values(snapshot.val()) as BadgeMovieItem[]) : [];
   }
 
   private async getActivitiesData(): Promise<unknown[]> {
-    const snapshot = await firebase
-      .database()
-      .ref(`activities/${this.userId}`)
-      .once('value');
+    const snapshot = await firebase.database().ref(`activities/${this.userId}`).once('value');
     return snapshot.exists() ? Object.values(snapshot.val()) : [];
   }
 
   private async getBadgeCounters(): Promise<BadgeCounters> {
-    const snapshot = await firebase
-      .database()
-      .ref(`badgeCounters/${this.userId}`)
-      .once('value');
+    const snapshot = await firebase.database().ref(`badgeCounters/${this.userId}`).once('value');
     return snapshot.exists() ? (snapshot.val() as BadgeCounters) : {};
   }
 
@@ -172,12 +157,7 @@ export class OfflineBadgeSystem {
         return this.checkCollectorBadge(badge, series, movies);
 
       case 'social':
-        return await this.checkSocialBadgeFromCounters(
-          badge,
-          badgeCounters,
-          series,
-          movies
-        );
+        return await this.checkSocialBadgeFromCounters(badge, badgeCounters, series, movies);
 
       case 'binge':
         return this.checkBingeBadgeFromSeries(badge, series, activities);
@@ -254,9 +234,7 @@ export class OfflineBadgeSystem {
     if (typeof rating === 'number') return rating > 0;
     if (typeof rating === 'object') {
       // Prüfe auf irgendeine Bewertung in verschiedenen Kategorien
-      return Object.values(rating).some(
-        (r) => typeof r === 'number' && r > 0
-      );
+      return Object.values(rating).some((r) => typeof r === 'number' && r > 0);
     }
     return false;
   }
@@ -275,9 +253,7 @@ export class OfflineBadgeSystem {
       .database()
       .ref(`users/${this.userId}/friends`)
       .once('value');
-    const friendsCount = friendsSnapshot.exists()
-      ? Object.keys(friendsSnapshot.val()).length
-      : 0;
+    const friendsCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
 
     if (friendsCount >= badge.requirements.friends!) {
       return {
@@ -393,9 +369,7 @@ export class OfflineBadgeSystem {
       if (currentBinge >= badge.requirements.episodes) {
         return {
           earned: true,
-          details: `${currentBinge} Episoden in ${this.getTimeframeDescription(
-            timeframe
-          )}`,
+          details: `${currentBinge} Episoden in ${this.getTimeframeDescription(timeframe)}`,
         };
       }
     }
@@ -553,10 +527,7 @@ export class OfflineBadgeSystem {
       return this.cachedBadges;
     }
 
-    const snapshot = await firebase
-      .database()
-      .ref(`badges/${this.userId}`)
-      .once('value');
+    const snapshot = await firebase.database().ref(`badges/${this.userId}`).once('value');
 
     this.cachedBadges = snapshot.exists() ? Object.values(snapshot.val()) : [];
     return this.cachedBadges;
@@ -616,12 +587,8 @@ export class OfflineBadgeSystem {
     }
   }
 
-  private getBingeProgress(
-    badge: Badge,
-    badgeCounters: BadgeCounters
-  ): BadgeProgress | null {
-    if (!badge.requirements.episodes || !badge.requirements.timeframe)
-      return null;
+  private getBingeProgress(badge: Badge, badgeCounters: BadgeCounters): BadgeProgress | null {
+    if (!badge.requirements.episodes || !badge.requirements.timeframe) return null;
 
     const timeframe = badge.requirements.timeframe;
     const bingeWindow = badgeCounters.bingeWindows?.[timeframe];
@@ -654,10 +621,7 @@ export class OfflineBadgeSystem {
     };
   }
 
-  private getQuickwatchProgress(
-    badge: Badge,
-    badgeCounters: BadgeCounters
-  ): BadgeProgress | null {
+  private getQuickwatchProgress(badge: Badge, badgeCounters: BadgeCounters): BadgeProgress | null {
     if (!badge.requirements.episodes) return null;
 
     return {
@@ -668,10 +632,7 @@ export class OfflineBadgeSystem {
     };
   }
 
-  private getMarathonProgress(
-    badge: Badge,
-    badgeCounters: BadgeCounters
-  ): BadgeProgress | null {
+  private getMarathonProgress(badge: Badge, badgeCounters: BadgeCounters): BadgeProgress | null {
     if (!badge.requirements.episodes) return null;
 
     const marathonWeeks = badgeCounters.marathonWeeks || {};
@@ -700,9 +661,7 @@ export class OfflineBadgeSystem {
 
     // Setze auf Sonntag 23:59:59
     const daysUntilSunday = 7 - now.getDay(); // 0 = Sonntag, 1 = Montag, etc.
-    endOfWeek.setDate(
-      now.getDate() + (daysUntilSunday === 7 ? 0 : daysUntilSunday)
-    );
+    endOfWeek.setDate(now.getDate() + (daysUntilSunday === 7 ? 0 : daysUntilSunday));
     endOfWeek.setHours(23, 59, 59, 999);
 
     return Math.max(0, Math.ceil((endOfWeek.getTime() - now.getTime()) / 1000));
@@ -722,17 +681,13 @@ export class OfflineBadgeSystem {
     const year = target.getFullYear();
     const firstThursday = new Date(year, 0, 4); // January 4th is always in week 1
     const weekNumber = Math.ceil(
-      (target.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000) +
-        1
+      (target.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000) + 1
     );
 
     return `${year}-W${weekNumber}`;
   }
 
-  private getStreakProgress(
-    badge: Badge,
-    badgeCounters: BadgeCounters
-  ): BadgeProgress | null {
+  private getStreakProgress(badge: Badge, badgeCounters: BadgeCounters): BadgeProgress | null {
     if (!badge.requirements.days) return null;
 
     return {
@@ -743,10 +698,7 @@ export class OfflineBadgeSystem {
     };
   }
 
-  private getRewatchProgress(
-    badge: Badge,
-    series: BadgeSeriesItem[]
-  ): BadgeProgress | null {
+  private getRewatchProgress(badge: Badge, series: BadgeSeriesItem[]): BadgeProgress | null {
     if (!badge.requirements.episodes) return null;
 
     let rewatchCount = 0;
@@ -772,10 +724,7 @@ export class OfflineBadgeSystem {
     };
   }
 
-  private getExplorerProgress(
-    badge: Badge,
-    series: BadgeSeriesItem[]
-  ): BadgeProgress | null {
+  private getExplorerProgress(badge: Badge, series: BadgeSeriesItem[]): BadgeProgress | null {
     if (!badge.requirements.series) return null;
 
     return {
@@ -820,9 +769,7 @@ export class OfflineBadgeSystem {
       .database()
       .ref(`users/${this.userId}/friends`)
       .once('value');
-    const friendsCount = friendsSnapshot.exists()
-      ? Object.keys(friendsSnapshot.val()).length
-      : 0;
+    const friendsCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
 
     return {
       badgeId: badge.id,
@@ -856,10 +803,7 @@ export class OfflineBadgeSystem {
         Object.keys(updatedProgress).forEach((badgeId) => {
           const badge = BADGE_DEFINITIONS.find((b) => b.id === badgeId);
           if (badge?.category === 'binge' && badge.requirements.timeframe) {
-            const newProgress = this.getBingeProgress(
-              badge,
-              userData.badgeCounters
-            );
+            const newProgress = this.getBingeProgress(badge, userData.badgeCounters);
             if (newProgress) {
               updatedProgress[badgeId] = newProgress;
             } else {
@@ -935,9 +879,7 @@ export class OfflineBadgeSystem {
    * 📈 Fortschritt für alle Badges einer Kategorie
    */
   async getCategoryProgress(category: BadgeCategory): Promise<BadgeProgress[]> {
-    const categoryBadges = BADGE_DEFINITIONS.filter(
-      (b) => b.category === category
-    );
+    const categoryBadges = BADGE_DEFINITIONS.filter((b) => b.category === category);
     const progressList: BadgeProgress[] = [];
 
     for (const badge of categoryBadges) {
@@ -989,17 +931,11 @@ export class OfflineBadgeSystem {
       .database()
       .ref(`users/${this.userId}/friends`)
       .once('value');
-    const friendsCount = friendsSnapshot.exists()
-      ? Object.keys(friendsSnapshot.val()).length
-      : 0;
+    const friendsCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
 
-    const socialBadges = BADGE_DEFINITIONS.filter(
-      (b) => b.category === 'social'
-    );
+    const socialBadges = BADGE_DEFINITIONS.filter((b) => b.category === 'social');
     const currentBadges = await this.getUserBadges();
-    const earnedSocialBadges = currentBadges.filter(
-      (b) => b.category === 'social'
-    );
+    const earnedSocialBadges = currentBadges.filter((b) => b.category === 'social');
 
     // Prüfe jeden Social Badge manuell
 
@@ -1047,8 +983,7 @@ if (typeof window !== 'undefined') {
       // Fallback: Suche in localStorage nach User-ähnlichen Keys
       const keys = Object.keys(localStorage);
       const userKeys = keys.filter(
-        (key) =>
-          key.includes('user') || key.includes('uid') || key.length === 28 // Firebase UIDs sind 28 Zeichen
+        (key) => key.includes('user') || key.includes('uid') || key.length === 28 // Firebase UIDs sind 28 Zeichen
       );
 
       if (userKeys.length > 0) {
@@ -1090,7 +1025,9 @@ if (typeof window !== 'undefined') {
     // Badge-Progress für alle Kategorien zeigen
     showBadgeProgress: async (userId: string) => {
       const badgeSystem = getOfflineBadgeSystem(userId);
-      const userData = await (badgeSystem as unknown as { getUserData(): Promise<BadgeUserData> }).getUserData();
+      const userData = await (
+        badgeSystem as unknown as { getUserData(): Promise<BadgeUserData> }
+      ).getUserData();
       const { series, movies } = userData;
 
       // Rating-Count berechnen

@@ -26,7 +26,7 @@ const DEFAULT_STATE: RatingsState = {
   sortOption: 'rating-desc',
   selectedGenre: 'Alle',
   selectedProvider: null,
-  showUnrated: false
+  showUnrated: false,
 };
 
 // Pure functions that work with sessionStorage only
@@ -99,13 +99,11 @@ export const RatingsStateProvider: React.FC<{ children: ReactNode }> = ({ childr
     updateRatingsState,
     saveScrollPosition,
     restoreScrollPosition,
-    scrollRef
+    scrollRef,
   };
 
   return (
-    <RatingsStateContext.Provider value={contextValue}>
-      {children}
-    </RatingsStateContext.Provider>
+    <RatingsStateContext.Provider value={contextValue}>{children}</RatingsStateContext.Provider>
   );
 };
 

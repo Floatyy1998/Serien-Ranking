@@ -98,7 +98,7 @@ export const PrivacyPage = () => {
 
   useEffect(() => {
     fetch('/legal/privacy.json')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setData)
       .catch(() => {
         // File not found - content must be loaded from external source
@@ -264,9 +264,12 @@ export const PrivacyPage = () => {
               color: currentTheme.text.secondary,
             }}
           >
-            {data.sections.responsible.name}<br />
-            {data.sections.responsible.address}<br />
-            {data.sections.responsible.city}<br />
+            {data.sections.responsible.name}
+            <br />
+            {data.sections.responsible.address}
+            <br />
+            {data.sections.responsible.city}
+            <br />
             E-Mail: {data.sections.responsible.email}
           </p>
         </div>

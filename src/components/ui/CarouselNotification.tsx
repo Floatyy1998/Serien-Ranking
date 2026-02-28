@@ -2,9 +2,16 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  NewReleases, CheckCircle, AccessTime,
-  Close, ChevronRight, Tv,
-  PlaylistAdd, PlaylistRemove, Check, Stop,
+  NewReleases,
+  CheckCircle,
+  AccessTime,
+  Close,
+  ChevronRight,
+  Tv,
+  PlaylistAdd,
+  PlaylistRemove,
+  Check,
+  Stop,
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -156,7 +163,9 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
         // Rewatch beenden statt Watchlist ändern
         await firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/rewatch`).remove();
       } else {
-        const watchlistRef = firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/watchlist`);
+        const watchlistRef = firebase
+          .database()
+          .ref(`${user.uid}/serien/${seriesItem.nmr}/watchlist`);
         await watchlistRef.set(config.watchlistValue);
       }
 
@@ -175,11 +184,12 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   if (series.length === 0) return null;
 
   const currentSeries = series[currentIndex];
-  const isActioned = variant === 'new-season'
-    ? actionedIds.has(currentSeries.id) || currentSeries.watchlist
-    : variant === 'inactive-rewatch'
-      ? actionedIds.has(currentSeries.id)
-      : actionedIds.has(currentSeries.id) || !currentSeries.watchlist;
+  const isActioned =
+    variant === 'new-season'
+      ? actionedIds.has(currentSeries.id) || currentSeries.watchlist
+      : variant === 'inactive-rewatch'
+        ? actionedIds.has(currentSeries.id)
+        : actionedIds.has(currentSeries.id) || !currentSeries.watchlist;
 
   const { HeaderIcon, DetailIcon, ActionIcon } = config;
 
@@ -304,7 +314,8 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                       className={`dot ${index === currentIndex ? 'active' : ''}`}
                       onClick={() => setCurrentIndex(index)}
                       style={{
-                        backgroundColor: index === currentIndex ? color : currentTheme.text.primary + '30',
+                        backgroundColor:
+                          index === currentIndex ? color : currentTheme.text.primary + '30',
                       }}
                     />
                   ))}

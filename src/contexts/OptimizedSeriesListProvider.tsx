@@ -2,7 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
-import { detectInactiveSeries, detectInactiveRewatches } from '../lib/validation/inactiveSeriesDetection';
+import {
+  detectInactiveSeries,
+  detectInactiveRewatches,
+} from '../lib/validation/inactiveSeriesDetection';
 import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
 import { Series } from '../types/Series';
 import firebase from 'firebase/compat/app';
@@ -116,7 +119,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (stored) {
         try {
           return JSON.parse(stored);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
     return [];
@@ -175,65 +180,69 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   // Konvertiere Object zu Array und trenne sichtbare/versteckte Serien
   // Firebase can return sparse arrays as objects - normalize seasons to arrays
-  const allSeries: Series[] = seriesData ? Object.values(seriesData).map(s => ({
-    ...s,
-    seasons: Array.isArray(s.seasons) ? s.seasons : s.seasons ? Object.values(s.seasons) : [],
-  })) : [];
-  const seriesList = allSeries.filter(s => !s.hidden);
-  const hiddenSeriesList = allSeries.filter(s => s.hidden === true);
+  const allSeries: Series[] = seriesData
+    ? Object.values(seriesData).map((s) => ({
+        ...s,
+        seasons: Array.isArray(s.seasons) ? s.seasons : s.seasons ? Object.values(s.seasons) : [],
+      }))
+    : [];
+  const seriesList = allSeries.filter((s) => !s.hidden);
+  const hiddenSeriesList = allSeries.filter((s) => s.hidden === true);
 
   // ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
   // Diese Funktion setzt das HEUTIGE Datum für alte Episoden - das verfälscht historische Daten!
   // Für Wrapped 2026 werden die Daten korrekt über WatchActivityService gesammelt.
   // Diese Funktion sollte NICHT mehr verwendet werden, außer für spezielle Migrations-Fälle.
-  const fixMissingFirstWatchedAt = useCallback(async (userId: string, seriesData: Record<string, Series>) => {
-    console.warn('⚠️ WARNUNG: Diese Funktion setzt das HEUTIGE Datum für alle alten Episoden!');
-    console.warn('⚠️ Für Wrapped 2026 werden Daten automatisch korrekt gesammelt.');
-    console.warn('⚠️ Nur verwenden wenn du weißt was du tust!');
-    try {
-      const todayISO = new Date().toISOString();
-      const updates: Record<string, string | null> = {};
-      let totalUpdated = 0;
-      let totalWatchedEpisodes = 0;
-      let totalEpisodesWithFirstWatched = 0;
+  const fixMissingFirstWatchedAt = useCallback(
+    async (userId: string, seriesData: Record<string, Series>) => {
+      console.warn('⚠️ WARNUNG: Diese Funktion setzt das HEUTIGE Datum für alle alten Episoden!');
+      console.warn('⚠️ Für Wrapped 2026 werden Daten automatisch korrekt gesammelt.');
+      console.warn('⚠️ Nur verwenden wenn du weißt was du tust!');
+      try {
+        const todayISO = new Date().toISOString();
+        const updates: Record<string, string | null> = {};
+        let totalUpdated = 0;
+        let totalWatchedEpisodes = 0;
+        let totalEpisodesWithFirstWatched = 0;
 
-      // Iterate through all series
-      Object.keys(seriesData).forEach((seriesKey) => {
-        const series: Series = seriesData[seriesKey];
+        // Iterate through all series
+        Object.keys(seriesData).forEach((seriesKey) => {
+          const series: Series = seriesData[seriesKey];
 
-        if (!series.seasons) return;
+          if (!series.seasons) return;
 
-        // Iterate through all seasons
-        series.seasons.forEach((season, seasonIndex) => {
-          if (!season.episodes) return;
+          // Iterate through all seasons
+          series.seasons.forEach((season, seasonIndex) => {
+            if (!season.episodes) return;
 
-          // Iterate through all episodes
-          season.episodes.forEach((episode, episodeIndex) => {
-            if (episode.watched) {
-              totalWatchedEpisodes++;
+            // Iterate through all episodes
+            season.episodes.forEach((episode, episodeIndex) => {
+              if (episode.watched) {
+                totalWatchedEpisodes++;
 
-              if (episode.firstWatchedAt) {
-                totalEpisodesWithFirstWatched++;
-              } else {
-                // Check if episode is watched but doesn't have firstWatchedAt
-                const episodePath = `${userId}/serien/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
-                updates[episodePath] = todayISO;
-                totalUpdated++;
+                if (episode.firstWatchedAt) {
+                  totalEpisodesWithFirstWatched++;
+                } else {
+                  // Check if episode is watched but doesn't have firstWatchedAt
+                  const episodePath = `${userId}/serien/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
+                  updates[episodePath] = todayISO;
+                  totalUpdated++;
+                }
               }
-            }
+            });
           });
         });
-      });
 
-      // Apply all updates in a single batch
-      if (Object.keys(updates).length > 0) {
-        await firebase.database().ref().update(updates);
+        // Apply all updates in a single batch
+        if (Object.keys(updates).length > 0) {
+          await firebase.database().ref().update(updates);
+        }
+      } catch (error) {
+        console.error('❌ Error fixing firstWatchedAt dates:', error);
       }
-
-    } catch (error) {
-      console.error('❌ Error fixing firstWatchedAt dates:', error);
-    }
-  }, []);
+    },
+    []
+  );
 
   // Make fix function available globally for manual execution
   useEffect(() => {
@@ -242,7 +251,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       (window as any).fixFirstWatchedAt = () => {
         fixMissingFirstWatchedAt(user.uid, seriesData);
       };
-
     } else {
       // Remove function when not ready
       delete (window as any).fixFirstWatchedAt;
@@ -572,53 +580,58 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     refetch();
   }, [refetch]);
 
-  const toggleHideSeries = useCallback(async (nmr: number, hidden: boolean) => {
-    if (!user) return;
-    const ref = firebase.database().ref(`${user.uid}/serien/${nmr}/hidden`);
-    if (hidden) {
-      await ref.set(true);
-    } else {
-      await ref.remove();
-    }
-  }, [user]);
+  const toggleHideSeries = useCallback(
+    async (nmr: number, hidden: boolean) => {
+      if (!user) return;
+      const ref = firebase.database().ref(`${user.uid}/serien/${nmr}/hidden`);
+      if (hidden) {
+        await ref.set(true);
+      } else {
+        await ref.remove();
+      }
+    },
+    [user]
+  );
 
   // TEST FUNCTIONS - Only available in development
-  const simulateNewSeason = useCallback((seriesId: number) => {
-    if (process.env.NODE_ENV !== 'development') return;
-    
-    const series = seriesList.find(s => s.id === seriesId);
-    if (series) {
-      // Create a test series with increased season count
-      const testSeries = {
-        ...series,
-        seasonCount: (series.seasonCount || 0) + 1
-      };
-      
-      // Add to new seasons list
-      setSeriesWithNewSeasons(prev => [...prev, testSeries]);
-      
-      // Store in sessionStorage
-      if (typeof window !== 'undefined') {
-        const newList = [...seriesWithNewSeasons, testSeries];
-        sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newList));
+  const simulateNewSeason = useCallback(
+    (seriesId: number) => {
+      if (process.env.NODE_ENV !== 'development') return;
+
+      const series = seriesList.find((s) => s.id === seriesId);
+      if (series) {
+        // Create a test series with increased season count
+        const testSeries = {
+          ...series,
+          seasonCount: (series.seasonCount || 0) + 1,
+        };
+
+        // Add to new seasons list
+        setSeriesWithNewSeasons((prev) => [...prev, testSeries]);
+
+        // Store in sessionStorage
+        if (typeof window !== 'undefined') {
+          const newList = [...seriesWithNewSeasons, testSeries];
+          sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newList));
+        }
       }
-      
-    }
-  }, [seriesList, seriesWithNewSeasons]);
+    },
+    [seriesList, seriesWithNewSeasons]
+  );
 
   const forceDetection = useCallback(() => {
     if (process.env.NODE_ENV !== 'development') return;
-    
+
     // Reset detection state
     detectionRunRef.current = false;
     setHasCheckedForNewSeasons(false);
-    
+
     // Clear sessionStorage
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('hasCheckedForNewSeasons');
       sessionStorage.removeItem('seriesWithNewSeasons');
     }
-    
+
     // Force run detection
     if (user && seriesList.length > 0) {
       runNewSeasonDetection(seriesList, user.uid);
@@ -645,10 +658,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         toggleHideSeries,
         isOffline,
         isStale,
-        ...(process.env.NODE_ENV === 'development' ? {
-          simulateNewSeason,
-          forceDetection
-        } : {})
+        ...(process.env.NODE_ENV === 'development'
+          ? {
+              simulateNewSeason,
+              forceDetection,
+            }
+          : {}),
       }}
     >
       {children}

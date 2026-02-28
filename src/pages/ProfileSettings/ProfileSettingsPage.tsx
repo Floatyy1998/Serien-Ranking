@@ -100,7 +100,10 @@ export const ProfileSettingsPage = () => {
       setPhotoURL(downloadURL);
       setSuccess('Profilbild erfolgreich hochgeladen');
     } catch (error: unknown) {
-      setError('Fehler beim Hochladen: ' + ((error instanceof Error ? error.message : null) || 'Unbekannter Fehler'));
+      setError(
+        'Fehler beim Hochladen: ' +
+          ((error instanceof Error ? error.message : null) || 'Unbekannter Fehler')
+      );
     } finally {
       setUploading(false);
     }
@@ -270,7 +273,7 @@ export const ProfileSettingsPage = () => {
         gradientTo="#8b5cf6"
         icon={<Settings style={{ fontSize: 22, color: currentTheme.primary }} />}
         actions={
-          (usernameEditable || displayNameEditable) ? (
+          usernameEditable || displayNameEditable ? (
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handleSave}
@@ -480,7 +483,9 @@ export const ProfileSettingsPage = () => {
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setUsernameEditable(!usernameEditable)}
-                aria-label={usernameEditable ? 'Benutzername-Bearbeitung beenden' : 'Benutzername ändern'}
+                aria-label={
+                  usernameEditable ? 'Benutzername-Bearbeitung beenden' : 'Benutzername ändern'
+                }
                 style={{
                   background: usernameEditable ? `${currentTheme.primary}20` : 'transparent',
                   border: 'none',
@@ -540,7 +545,9 @@ export const ProfileSettingsPage = () => {
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setDisplayNameEditable(!displayNameEditable)}
-                aria-label={displayNameEditable ? 'Anzeigename-Bearbeitung beenden' : 'Anzeigename ändern'}
+                aria-label={
+                  displayNameEditable ? 'Anzeigename-Bearbeitung beenden' : 'Anzeigename ändern'
+                }
                 style={{
                   background: displayNameEditable ? `${currentTheme.primary}20` : 'transparent',
                   border: 'none',
@@ -600,7 +607,11 @@ export const ProfileSettingsPage = () => {
           <motion.button
             role="switch"
             aria-checked={isPublic}
-            aria-label={isPublic ? 'Profil ist öffentlich, zum Deaktivieren klicken' : 'Profil ist privat, zum Aktivieren klicken'}
+            aria-label={
+              isPublic
+                ? 'Profil ist öffentlich, zum Deaktivieren klicken'
+                : 'Profil ist privat, zum Aktivieren klicken'
+            }
             whileTap={{ scale: 0.99 }}
             onClick={handleTogglePublic}
             style={{
@@ -621,7 +632,9 @@ export const ProfileSettingsPage = () => {
                   width: '44px',
                   height: '44px',
                   borderRadius: '12px',
-                  background: isPublic ? `${currentTheme.status.success}20` : 'rgba(255, 255, 255, 0.05)',
+                  background: isPublic
+                    ? `${currentTheme.status.success}20`
+                    : 'rgba(255, 255, 255, 0.05)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -634,7 +647,14 @@ export const ProfileSettingsPage = () => {
                 )}
               </div>
               <div>
-                <h2 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 4px 0', color: currentTheme.text.primary }}>
+                <h2
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    margin: '0 0 4px 0',
+                    color: currentTheme.text.primary,
+                  }}
+                >
                   Öffentliches Profil
                 </h2>
                 <p

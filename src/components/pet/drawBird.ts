@@ -1,4 +1,15 @@
-export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: number, color: string, dark: string, light: string, offset: number, animated: boolean, frame: number, animationSpeed: number): void => {
+export const drawBird = (
+  ctx: CanvasRenderingContext2D,
+  level: number,
+  ps: number,
+  color: string,
+  dark: string,
+  light: string,
+  offset: number,
+  animated: boolean,
+  frame: number,
+  animationSpeed: number
+): void => {
   const centerX = 16;
   const centerY = 16;
   const wingFlap = animated ? Math.sin(frame * 0.2 * animationSpeed) * 3 : 0;
@@ -24,7 +35,7 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
 
   // Körper (stromlinienförmig)
   ctx.fillStyle = color;
-  ctx.fillRect((centerX - 3) * ps, (centerY) * ps + offset, ps * 6, ps * 8);
+  ctx.fillRect((centerX - 3) * ps, centerY * ps + offset, ps * 6, ps * 8);
   ctx.fillRect((centerX - 2) * ps, (centerY + 8) * ps + offset, ps * 4, ps * 2);
 
   // Bauchbereich (heller)
@@ -58,7 +69,7 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
   ctx.fillRect((centerX - 3) * ps, (centerY - 1) * ps + offset, ps * 2, ps);
   // Schnabelspitze
   ctx.fillStyle = beakTipColor;
-  ctx.fillRect((centerX - 3) * ps, (centerY) * ps + offset, ps * 2, ps * 0.5);
+  ctx.fillRect((centerX - 3) * ps, centerY * ps + offset, ps * 2, ps * 0.5);
 
   // Augen (groß und ausdrucksstark)
   ctx.fillStyle = '#FFF';
@@ -112,13 +123,20 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
     for (let i = 0; i < 5; i++) {
       ctx.fillStyle = crestColors[i];
       const height = 4 - Math.abs(i - 2) * 0.8;
-      ctx.fillRect((centerX - 2 + i * 0.8) * ps, (centerY - 7 - height) * ps + offset, ps * 0.7, ps * height);
+      ctx.fillRect(
+        (centerX - 2 + i * 0.8) * ps,
+        (centerY - 7 - height) * ps + offset,
+        ps * 0.7,
+        ps * height
+      );
     }
 
     // Flügel mit Farbverläufen
     const gradient = ctx.createLinearGradient(
-      (centerX - 8) * ps, centerY * ps,
-      (centerX - 3) * ps, centerY * ps
+      (centerX - 8) * ps,
+      centerY * ps,
+      (centerX - 3) * ps,
+      centerY * ps
     );
     gradient.addColorStop(0, dark);
     gradient.addColorStop(0.5, color);
@@ -145,18 +163,38 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
       const height = 5 - Math.abs(i - 3) * 0.7;
       // Abwechselnd Gold und Rot
       ctx.fillStyle = i % 2 === 0 ? '#FFD700' : '#FF6347';
-      ctx.fillRect((centerX - 3 + i * 0.9) * ps, (centerY - 8 - height) * ps + offset, ps * 0.8, ps * height);
+      ctx.fillRect(
+        (centerX - 3 + i * 0.9) * ps,
+        (centerY - 8 - height) * ps + offset,
+        ps * 0.8,
+        ps * height
+      );
       // Weiße Spitzen
       ctx.fillStyle = '#FFF';
-      ctx.fillRect((centerX - 3 + i * 0.9) * ps, (centerY - 8 - height) * ps + offset, ps * 0.8, ps * 0.3);
+      ctx.fillRect(
+        (centerX - 3 + i * 0.9) * ps,
+        (centerY - 8 - height) * ps + offset,
+        ps * 0.8,
+        ps * 0.3
+      );
     }
 
     // Flügel mit mehreren Farben
     const wingColors = [dark, color, '#00CED1', '#9400D3', '#FF1493'];
     for (let i = 0; i < 5; i++) {
       ctx.fillStyle = wingColors[i];
-      ctx.fillRect((centerX - 8 + i - wingFlap) * ps, (centerY + 1 + i) * ps + offset, ps * (6 - i), ps);
-      ctx.fillRect((centerX + 3 + wingFlap) * ps, (centerY + 1 + i) * ps + offset, ps * (6 - i), ps);
+      ctx.fillRect(
+        (centerX - 8 + i - wingFlap) * ps,
+        (centerY + 1 + i) * ps + offset,
+        ps * (6 - i),
+        ps
+      );
+      ctx.fillRect(
+        (centerX + 3 + wingFlap) * ps,
+        (centerY + 1 + i) * ps + offset,
+        ps * (6 - i),
+        ps
+      );
     }
 
     // Prächtiger Schwanz (5 lange Federn)
@@ -170,11 +208,23 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
       if (i >= 1 && i <= 3) {
         ctx.fillStyle = '#00CED1';
         ctx.beginPath();
-        ctx.arc((centerX - 2 + i + 0.5) * ps, (centerY + 9 + length) * ps + offset, ps * 0.5, 0, Math.PI * 2);
+        ctx.arc(
+          (centerX - 2 + i + 0.5) * ps,
+          (centerY + 9 + length) * ps + offset,
+          ps * 0.5,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc((centerX - 2 + i + 0.5) * ps, (centerY + 9 + length) * ps + offset, ps * 0.2, 0, Math.PI * 2);
+        ctx.arc(
+          (centerX - 2 + i + 0.5) * ps,
+          (centerY + 9 + length) * ps + offset,
+          ps * 0.2,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
       }
     }
@@ -217,7 +267,12 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
     ctx.fillStyle = '#FF634788';
     for (let i = 0; i < 7; i++) {
       const height = 5 - Math.abs(i - 3) * 0.7;
-      ctx.fillRect((centerX - 3 + i * 0.9) * ps, (centerY - 8 - height - 0.5) * ps + offset, ps * 0.8, ps * 0.5);
+      ctx.fillRect(
+        (centerX - 3 + i * 0.9) * ps,
+        (centerY - 8 - height - 0.5) * ps + offset,
+        ps * 0.8,
+        ps * 0.5
+      );
     }
   }
 
@@ -226,8 +281,8 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
     if (animated) {
       const flamePhase = frame * 0.06 * animationSpeed;
       ctx.fillStyle = `rgba(255, 69, 0, ${0.2 + Math.sin(flamePhase) * 0.1})`;
-      ctx.fillRect((centerX - 10 - wingFlap) * ps, (centerY) * ps + offset, ps * 5, ps * 7);
-      ctx.fillRect((centerX + 5 + wingFlap) * ps, (centerY) * ps + offset, ps * 5, ps * 7);
+      ctx.fillRect((centerX - 10 - wingFlap) * ps, centerY * ps + offset, ps * 5, ps * 7);
+      ctx.fillRect((centerX + 5 + wingFlap) * ps, centerY * ps + offset, ps * 5, ps * 7);
       ctx.fillStyle = `rgba(255, 215, 0, ${0.15 + Math.sin(flamePhase + 1) * 0.1})`;
       ctx.fillRect((centerX - 9 - wingFlap) * ps, (centerY + 1) * ps + offset, ps * 3, ps * 5);
       ctx.fillRect((centerX + 6 + wingFlap) * ps, (centerY + 1) * ps + offset, ps * 3, ps * 5);
@@ -238,7 +293,11 @@ export const drawBird = (ctx: CanvasRenderingContext2D, level: number, ps: numbe
     // Vollständiger Phoenix - Flammen-Schweif
     if (animated) {
       const trailPhase = frame * 0.04 * animationSpeed;
-      const trailColors = ['rgba(255, 69, 0, 0.3)', 'rgba(255, 140, 0, 0.25)', 'rgba(255, 215, 0, 0.2)'];
+      const trailColors = [
+        'rgba(255, 69, 0, 0.3)',
+        'rgba(255, 140, 0, 0.25)',
+        'rgba(255, 215, 0, 0.2)',
+      ];
       for (let i = 0; i < 3; i++) {
         ctx.fillStyle = trailColors[i];
         const trailY = (centerY + 12 + i * 2) * ps + offset;

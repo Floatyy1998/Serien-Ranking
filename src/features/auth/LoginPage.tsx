@@ -45,7 +45,9 @@ export const LoginPage = () => {
       } else if (firebaseError.code === 'auth/invalid-credential') {
         setError('E-Mail oder Passwort ist falsch.');
       } else {
-        setError(`Ein Fehler ist aufgetreten: ${firebaseError.code || firebaseError.message || 'Unbekannter Fehler'}`);
+        setError(
+          `Ein Fehler ist aufgetreten: ${firebaseError.code || firebaseError.message || 'Unbekannter Fehler'}`
+        );
       }
     } finally {
       setLoading(false);
@@ -92,12 +94,17 @@ export const LoginPage = () => {
           transition={{ duration: 0.5 }}
         >
           <Box sx={{ mb: 6, textAlign: 'center' }}>
-            <GradientText as="h1" from="#00fed7" to="#ff0080" style={{
+            <GradientText
+              as="h1"
+              from="#00fed7"
+              to="#ff0080"
+              style={{
                 fontSize: '3rem',
                 fontWeight: 900,
                 marginBottom: '16px',
                 letterSpacing: '-0.02em',
-              }}>
+              }}
+            >
               TV-RANK
             </GradientText>
             <Typography
@@ -190,7 +197,10 @@ export const LoginPage = () => {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <Tooltip title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'} arrow>
+                      <Tooltip
+                        title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                        arrow
+                      >
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"

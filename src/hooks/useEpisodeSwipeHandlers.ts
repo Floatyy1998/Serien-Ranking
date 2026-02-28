@@ -69,11 +69,17 @@ export const useEpisodeSwipeHandlers = () => {
 
         // Always update lastWatchedAt
         const episodeBasePath = `${user.uid}/serien/${item.nmr}/seasons/${item.nextEpisode.seasonIndex}/episodes/${item.nextEpisode.episodeIndex}`;
-        await firebase.database().ref(`${episodeBasePath}/lastWatchedAt`).set(new Date().toISOString());
+        await firebase
+          .database()
+          .ref(`${episodeBasePath}/lastWatchedAt`)
+          .set(new Date().toISOString());
 
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
-          await firebase.database().ref(`${episodeBasePath}/firstWatchedAt`).set(new Date().toISOString());
+          await firebase
+            .database()
+            .ref(`${episodeBasePath}/firstWatchedAt`)
+            .set(new Date().toISOString());
 
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
           await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
@@ -110,7 +116,11 @@ export const useEpisodeSwipeHandlers = () => {
 
   // Handle episode swipe to complete
   const handleEpisodeComplete = async (
-    episode: (typeof todayEpisodes)[number] & { seriesGenre?: string[]; seriesProviders?: string[]; runtime?: number },
+    episode: (typeof todayEpisodes)[number] & {
+      seriesGenre?: string[];
+      seriesProviders?: string[];
+      runtime?: number;
+    },
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
@@ -147,11 +157,17 @@ export const useEpisodeSwipeHandlers = () => {
 
         // Always update lastWatchedAt
         const episodeBasePath = `${user.uid}/serien/${episode.seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
-        await firebase.database().ref(`${episodeBasePath}/lastWatchedAt`).set(new Date().toISOString());
+        await firebase
+          .database()
+          .ref(`${episodeBasePath}/lastWatchedAt`)
+          .set(new Date().toISOString());
 
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
-          await firebase.database().ref(`${episodeBasePath}/firstWatchedAt`).set(new Date().toISOString());
+          await firebase
+            .database()
+            .ref(`${episodeBasePath}/firstWatchedAt`)
+            .set(new Date().toISOString());
 
           // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
           await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);

@@ -17,9 +17,11 @@ export const formatRelativeTime = (timestamp: number): string => {
 export const extractImageUrls = (content: string): { text: string; images: string[] } => {
   const imageRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp)(?:\?[^\s]*)?)/gi;
   const images: string[] = [];
-  const text = content.replace(imageRegex, (match) => {
-    images.push(match);
-    return '';
-  }).trim();
+  const text = content
+    .replace(imageRegex, (match) => {
+      images.push(match);
+      return '';
+    })
+    .trim();
   return { text, images };
 };

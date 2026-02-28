@@ -1,11 +1,4 @@
-import {
-  Alert,
-  Box,
-  Snackbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Alert, Box, Snackbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
 import { EarnedBadge } from './badgeDefinitions';
 import { BadgeIcon } from './BadgeIcons';
@@ -32,15 +25,15 @@ const BadgeNotification: React.FC<BadgeNotificationProps> = ({
   const getTextColor = (backgroundColor: string) => {
     // Entferne # falls vorhanden
     const hex = backgroundColor.replace('#', '');
-    
+
     // Konvertiere zu RGB
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-    
+
     // Berechne relative Luminanz
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
+
     // Weiß für dunkle Hintergründe, Schwarz für helle
     return luminance > 0.5 ? '#000000' : '#ffffff';
   };
@@ -52,9 +45,9 @@ const BadgeNotification: React.FC<BadgeNotificationProps> = ({
       open={open}
       autoHideDuration={4000}
       onClose={onClose}
-      anchorOrigin={{ 
-        vertical: isMobile ? 'top' : 'bottom', 
-        horizontal: 'right' 
+      anchorOrigin={{
+        vertical: isMobile ? 'top' : 'bottom',
+        horizontal: 'right',
       }}
       sx={{
         '& .MuiSnackbarContent-root': {
@@ -108,7 +101,8 @@ const BadgeNotification: React.FC<BadgeNotificationProps> = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box
             sx={{
-              backgroundColor: textColor === '#ffffff' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+              backgroundColor:
+                textColor === '#ffffff' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
               borderRadius: '50%',
               width: isMobile ? '32px' : '36px',
               height: isMobile ? '32px' : '36px',

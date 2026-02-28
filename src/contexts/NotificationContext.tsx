@@ -5,7 +5,15 @@ import 'firebase/compat/database';
 
 interface Notification {
   id: string;
-  type: 'new_season' | 'new_episode' | 'friend_activity' | 'achievement' | 'recommendation' | 'discussion_reply' | 'discussion_like' | 'spoiler_flag';
+  type:
+    | 'new_season'
+    | 'new_episode'
+    | 'friend_activity'
+    | 'achievement'
+    | 'recommendation'
+    | 'discussion_reply'
+    | 'discussion_like'
+    | 'spoiler_flag';
   title: string;
   message: string;
   timestamp: number;
@@ -44,11 +52,11 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const cleanupOldNotifications = async (notificationsList: Notification[]) => {
     if (!user || notificationsList.length === 0) return;
 
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const toDelete: string[] = [];
 
     // Find notifications older than 30 days
-    notificationsList.forEach(n => {
+    notificationsList.forEach((n) => {
       if (n.timestamp < thirtyDaysAgo) {
         toDelete.push(n.id);
       }
@@ -57,7 +65,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     // Also delete if more than 50 notifications (keep newest 50)
     if (notificationsList.length > 50) {
       const sorted = [...notificationsList].sort((a, b) => b.timestamp - a.timestamp);
-      sorted.slice(50).forEach(n => {
+      sorted.slice(50).forEach((n) => {
         if (!toDelete.includes(n.id)) {
           toDelete.push(n.id);
         }
@@ -67,12 +75,10 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     // Delete old notifications from Firebase
     if (toDelete.length > 0) {
       const updates: Record<string, null> = {};
-      toDelete.forEach(id => {
+      toDelete.forEach((id) => {
         updates[id] = null;
       });
-      await firebase.database()
-        .ref(`users/${user.uid}/notifications`)
-        .update(updates);
+      await firebase.database().ref(`users/${user.uid}/notifications`).update(updates);
     }
   };
 
@@ -88,7 +94,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     const handleData = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();
       if (data) {
-        const notificationsList = Object.entries(data as Record<string, Omit<Notification, 'id'>>).map(([id, notification]) => ({
+        const notificationsList = Object.entries(
+          data as Record<string, Omit<Notification, 'id'>>
+        ).map(([id, notification]) => ({
           id,
           ...notification,
         }));
@@ -110,7 +118,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     };
   }, [user]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const addNotification = async (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     if (!user) return;
@@ -129,12 +137,13 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const markAsRead = async (notificationId: string) => {
     if (!user) return;
 
-    await firebase.database()
+    await firebase
+      .database()
       .ref(`users/${user.uid}/notifications/${notificationId}/read`)
       .set(true);
 
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
     );
   };
 
@@ -142,27 +151,23 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     if (!user) return;
 
     const updates: Record<string, boolean> = {};
-    notifications.forEach(n => {
+    notifications.forEach((n) => {
       if (!n.read) {
         updates[`${n.id}/read`] = true;
       }
     });
 
     if (Object.keys(updates).length > 0) {
-      await firebase.database()
-        .ref(`users/${user.uid}/notifications`)
-        .update(updates);
+      await firebase.database().ref(`users/${user.uid}/notifications`).update(updates);
 
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     }
   };
 
   const clearNotifications = async () => {
     if (!user) return;
 
-    await firebase.database()
-      .ref(`users/${user.uid}/notifications`)
-      .remove();
+    await firebase.database().ref(`users/${user.uid}/notifications`).remove();
 
     setNotifications([]);
   };
@@ -176,9 +181,5 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     clearNotifications,
   };
 
-  return (
-    <NotificationContext.Provider value={value}>
-      {children}
-    </NotificationContext.Provider>
-  );
+  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 };

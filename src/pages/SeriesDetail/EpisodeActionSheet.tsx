@@ -37,13 +37,23 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel="Episode bearbeiten">
       <div style={{ padding: '0 20px 32px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <p style={{ fontSize: '12px', color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)', margin: '0 0 4px' }}>
+          <p
+            style={{
+              fontSize: '12px',
+              color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
+              margin: '0 0 4px',
+            }}
+          >
             {seriesTitle}
           </p>
-          <h3 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 4px' }}>
-            {episode.name}
-          </h3>
-          <p style={{ fontSize: '13px', color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)', margin: 0 }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 4px' }}>{episode.name}</h3>
+          <p
+            style={{
+              fontSize: '13px',
+              color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
+              margin: 0,
+            }}
+          >
             S{seasonNumber} E{episodeNumber} &middot; {watchCount}x gesehen
           </p>
         </div>

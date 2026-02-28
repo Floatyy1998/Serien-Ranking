@@ -39,7 +39,7 @@ export const ImpressumPage = () => {
 
   useEffect(() => {
     fetch('/legal/impressum.json')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setData)
       .catch(() => {
         // File not found - content must be loaded from external source

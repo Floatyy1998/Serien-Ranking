@@ -22,9 +22,7 @@ export const initFirebase = () => {
     //   authDomain: !!config.authDomain,
     //   projectId: !!config.projectId,
     // });
-    throw new Error(
-      'Firebase-Konfiguration unvollständig. Überprüfen Sie die .env-Datei.'
-    );
+    throw new Error('Firebase-Konfiguration unvollständig. Überprüfen Sie die .env-Datei.');
   }
 
   if (!Firebase.apps.length) {

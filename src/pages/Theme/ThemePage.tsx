@@ -4,31 +4,82 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Palette,
-  Refresh,
-  Check,
-  ColorLens,
-  Brightness6,
-  Wallpaper,
-} from '@mui/icons-material';
+import { Palette, Refresh, Check, ColorLens, Brightness6, Wallpaper } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout } from '../../components/ui';
 
 const presetThemes = [
-  { name: 'Ocean', primaryColor: '#00fed7', backgroundColor: '#000814', surfaceColor: '#001d3d', accentColor: '#ffd60a' },
-  { name: 'Fire', primaryColor: '#ff6b6b', backgroundColor: '#2d1b2e', surfaceColor: '#5d737e', accentColor: '#feca57' },
-  { name: 'Sakura', primaryColor: '#ff9ff3', backgroundColor: '#1a0e1a', surfaceColor: '#3d2b3d', accentColor: '#54a0ff' },
-  { name: 'Diamond', primaryColor: '#dfe6e9', backgroundColor: '#2d3436', surfaceColor: '#636e72', accentColor: '#00b894' },
-  { name: 'Forest', primaryColor: '#55efc4', backgroundColor: '#2d3436', surfaceColor: '#636e72', accentColor: '#fdcb6e' },
-  { name: 'Electric', primaryColor: '#6c5ce7', backgroundColor: '#2d3436', surfaceColor: '#636e72', accentColor: '#a29bfe' },
-  { name: 'Unicorn', primaryColor: '#fd79a8', backgroundColor: '#2d3436', surfaceColor: '#636e72', accentColor: '#00cec9' },
-  { name: 'Sunset', primaryColor: '#e17055', backgroundColor: '#2d3436', surfaceColor: '#636e72', accentColor: '#fdcb6e' },
+  {
+    name: 'Ocean',
+    primaryColor: '#00fed7',
+    backgroundColor: '#000814',
+    surfaceColor: '#001d3d',
+    accentColor: '#ffd60a',
+  },
+  {
+    name: 'Fire',
+    primaryColor: '#ff6b6b',
+    backgroundColor: '#2d1b2e',
+    surfaceColor: '#5d737e',
+    accentColor: '#feca57',
+  },
+  {
+    name: 'Sakura',
+    primaryColor: '#ff9ff3',
+    backgroundColor: '#1a0e1a',
+    surfaceColor: '#3d2b3d',
+    accentColor: '#54a0ff',
+  },
+  {
+    name: 'Diamond',
+    primaryColor: '#dfe6e9',
+    backgroundColor: '#2d3436',
+    surfaceColor: '#636e72',
+    accentColor: '#00b894',
+  },
+  {
+    name: 'Forest',
+    primaryColor: '#55efc4',
+    backgroundColor: '#2d3436',
+    surfaceColor: '#636e72',
+    accentColor: '#fdcb6e',
+  },
+  {
+    name: 'Electric',
+    primaryColor: '#6c5ce7',
+    backgroundColor: '#2d3436',
+    surfaceColor: '#636e72',
+    accentColor: '#a29bfe',
+  },
+  {
+    name: 'Unicorn',
+    primaryColor: '#fd79a8',
+    backgroundColor: '#2d3436',
+    surfaceColor: '#636e72',
+    accentColor: '#00cec9',
+  },
+  {
+    name: 'Sunset',
+    primaryColor: '#e17055',
+    backgroundColor: '#2d3436',
+    surfaceColor: '#636e72',
+    accentColor: '#fdcb6e',
+  },
 ];
 
 const colorCategories = [
-  { key: 'primaryColor', name: 'Primary', icon: <ColorLens />, description: 'Hauptfarbe für Buttons' },
-  { key: 'backgroundColor', name: 'Background', icon: <Brightness6 />, description: 'Hintergrundfarbe' },
+  {
+    key: 'primaryColor',
+    name: 'Primary',
+    icon: <ColorLens />,
+    description: 'Hauptfarbe für Buttons',
+  },
+  {
+    key: 'backgroundColor',
+    name: 'Background',
+    icon: <Brightness6 />,
+    description: 'Hintergrundfarbe',
+  },
   { key: 'surfaceColor', name: 'Surface', icon: <Wallpaper />, description: 'Kartenfarben' },
   { key: 'accentColor', name: 'Accent', icon: <Palette />, description: 'Akzentfarbe' },
 ];
@@ -78,7 +129,16 @@ export const ThemePage = () => {
         gradientTo="#8b5cf6"
       />
 
-      <div style={{ padding: '0 20px', paddingBottom: 120, flex: 1, overflow: 'auto', position: 'relative', zIndex: 1 }}>
+      <div
+        style={{
+          padding: '0 20px',
+          paddingBottom: 120,
+          flex: 1,
+          overflow: 'auto',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
         {/* Preset Themes */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -92,7 +152,14 @@ export const ThemePage = () => {
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px 0', color: currentTheme.text.primary }}>
+          <h2
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              margin: '0 0 14px 0',
+              color: currentTheme.text.primary,
+            }}
+          >
             Themes
           </h2>
           <div
@@ -149,7 +216,12 @@ export const ThemePage = () => {
                   )}
                   {/* Color dots */}
                   <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-                    {[preset.primaryColor, preset.backgroundColor, preset.surfaceColor, preset.accentColor].map((color, i) => (
+                    {[
+                      preset.primaryColor,
+                      preset.backgroundColor,
+                      preset.surfaceColor,
+                      preset.accentColor,
+                    ].map((color, i) => (
                       <div
                         key={i}
                         style={{
@@ -190,12 +262,20 @@ export const ThemePage = () => {
             marginBottom: 16,
           }}
         >
-          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 14px 0', color: currentTheme.text.primary }}>
+          <h2
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              margin: '0 0 14px 0',
+              color: currentTheme.text.primary,
+            }}
+          >
             Farben anpassen
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {colorCategories.map((category) => {
-              const color = (userConfig[category.key as keyof typeof userConfig] as string) || '#667eea';
+              const color =
+                (userConfig[category.key as keyof typeof userConfig] as string) || '#667eea';
               return (
                 <div
                   key={category.key}
@@ -237,7 +317,14 @@ export const ThemePage = () => {
                   </div>
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: currentTheme.text.primary }}>
+                    <h3
+                      style={{
+                        margin: 0,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: currentTheme.text.primary,
+                      }}
+                    >
                       {category.name}
                     </h3>
                     <p style={{ margin: 0, fontSize: 11, color: currentTheme.text.muted }}>

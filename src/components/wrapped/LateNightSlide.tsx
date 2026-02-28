@@ -61,7 +61,14 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
               margin: '0 auto 20px',
             }}
           >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10" />
               <path d="M12 6v6l4 2" strokeLinecap="round" />
             </svg>
@@ -210,7 +217,9 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
             <path d="M12 6v6" strokeLinecap="round" />
             <path d="M12 12l-4 2" strokeLinecap="round" />
           </svg>
-          <p style={{ color: 'white', fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 5px 0' }}>
+          <p
+            style={{ color: 'white', fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 5px 0' }}
+          >
             {lateNightStats.midnightWatches}
           </p>
           <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem', margin: 0 }}>
@@ -244,7 +253,14 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
               <circle cx="12" cy="12" r="4" fill="#ff6b6b" />
             </svg>
-            <p style={{ color: 'white', fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 5px 0' }}>
+            <p
+              style={{
+                color: 'white',
+                fontSize: '1.6rem',
+                fontWeight: 'bold',
+                margin: '0 0 5px 0',
+              }}
+            >
               {lateNightStats.latestWatch.time}
             </p>
             <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem', margin: 0 }}>
@@ -268,8 +284,17 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
             zIndex: 1,
           }}
         >
-          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.85rem', textAlign: 'center', margin: 0 }}>
-            Spätester Watch: <strong style={{ color: '#ffd700' }}>{lateNightStats.latestWatch.title}</strong>
+          <p
+            style={{
+              color: 'white',
+              opacity: 0.7,
+              fontSize: '0.85rem',
+              textAlign: 'center',
+              margin: 0,
+            }}
+          >
+            Spätester Watch:{' '}
+            <strong style={{ color: '#ffd700' }}>{lateNightStats.latestWatch.title}</strong>
           </p>
         </motion.div>
       )}

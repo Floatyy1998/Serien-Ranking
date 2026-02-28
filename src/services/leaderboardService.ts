@@ -116,10 +116,7 @@ export async function fetchLeaderboardData(
   const results = await Promise.all(
     allUids.map(async (uid) => {
       try {
-        const snapshot = await firebase
-          .database()
-          .ref(`${uid}/leaderboardStats`)
-          .once('value');
+        const snapshot = await firebase.database().ref(`${uid}/leaderboardStats`).once('value');
         const stats: LeaderboardStats | null = snapshot.val();
 
         if (!stats) {

@@ -12,8 +12,12 @@
 }
 
 @keyframes growWidth {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .catchup-list-item {

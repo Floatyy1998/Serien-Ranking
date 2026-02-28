@@ -40,9 +40,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth()!;
   const [, setSeriesList] = useState<StatsListItem[]>([]);
   const [, setMovieList] = useState<StatsListItem[]>([]);
-  const [seriesStatsData, setSeriesStatsData] = useState<StatsData | null>(
-    null
-  );
+  const [seriesStatsData, setSeriesStatsData] = useState<StatsData | null>(null);
   const [movieStatsData, setMovieStatsData] = useState<StatsData | null>(null);
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
@@ -108,9 +106,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
             time +
             (season.episodes?.reduce((episodeTime: number, episode: StatsEpisode) => {
               if (episode.watched) {
-                return (
-                  episodeTime + (episode.watchCount || 1) * (episode.runtime || seriesRuntime)
-                );
+                return episodeTime + (episode.watchCount || 1) * (episode.runtime || seriesRuntime);
               }
               return episodeTime;
             }, 0) || 0),
@@ -149,9 +145,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
     });
     Object.keys(providers).forEach((key) => {
       providers[key].averageRating =
-        providers[key].count > 0
-          ? providers[key].totalRating / providers[key].count
-          : 0;
+        providers[key].count > 0 ? providers[key].totalRating / providers[key].count : 0;
     });
 
     return {
@@ -172,16 +166,16 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (user) {
       if (seriesList) {
-        const seriesArray = (Array.isArray(seriesList)
-          ? seriesList
-          : Object.values(seriesList || {})) as StatsListItem[];
+        const seriesArray = (
+          Array.isArray(seriesList) ? seriesList : Object.values(seriesList || {})
+        ) as StatsListItem[];
         setSeriesList(seriesArray);
         setSeriesStatsData(computeStats(seriesArray));
       }
       if (movieList) {
-        const movieArray = (Array.isArray(movieList)
-          ? movieList
-          : Object.values(movieList || {})) as StatsListItem[];
+        const movieArray = (
+          Array.isArray(movieList) ? movieList : Object.values(movieList || {})
+        ) as StatsListItem[];
         setMovieList(movieArray);
         setMovieStatsData(computeStats(movieArray));
       }

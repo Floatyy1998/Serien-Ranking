@@ -3,7 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({ src, onRemove }) => {
+export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({
+  src,
+  onRemove,
+}) => {
   const { currentTheme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
 

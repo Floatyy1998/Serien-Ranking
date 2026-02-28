@@ -21,46 +21,49 @@ export const useTodayEpisodes = () => {
   const cacheRef = useRef<{ episodes: TodayEpisode[] | null; deps: string; date: string }>({
     episodes: null,
     deps: '',
-    date: ''
+    date: '',
   });
-  
+
   const todayEpisodes = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayTime = today.getTime();
     const todayString = today.toDateString();
     const depsString = `${seriesList.length}`;
-    
-    if (cacheRef.current.episodes && 
-        cacheRef.current.deps === depsString && 
-        cacheRef.current.date === todayString) {
+
+    if (
+      cacheRef.current.episodes &&
+      cacheRef.current.deps === depsString &&
+      cacheRef.current.date === todayString
+    ) {
       return cacheRef.current.episodes;
     }
-    
+
     const episodes: TodayEpisode[] = [];
-    
+
     for (let i = 0; i < seriesList.length; i++) {
       const series = seriesList[i];
       const seasons = series.seasons;
       if (!seasons) continue;
-      
+
       for (let j = 0; j < seasons.length; j++) {
         const season = seasons[j];
         const seasonEpisodes = season.episodes;
         if (!seasonEpisodes) continue;
-        
+
         for (let k = 0; k < seasonEpisodes.length; k++) {
           const episode = seasonEpisodes[k];
           if (!episode.air_date || episode.watched) continue;
-          
+
           const episodeDate = new Date(episode.air_date);
           if (isNaN(episodeDate.getTime())) continue;
-          
+
           episodeDate.setHours(0, 0, 0, 0);
-          
+
           if (episodeDate.getTime() === todayTime) {
-            const actualSeasonIndex = series.seasons?.findIndex(s => s.seasonNumber === season.seasonNumber) ?? 0;
-            
+            const actualSeasonIndex =
+              series.seasons?.findIndex((s) => s.seasonNumber === season.seasonNumber) ?? 0;
+
             episodes.push({
               seriesId: series.id,
               seriesNmr: series.nmr,
@@ -78,10 +81,10 @@ export const useTodayEpisodes = () => {
         }
       }
     }
-    
+
     cacheRef.current = { episodes, deps: depsString, date: todayString };
     return episodes;
   }, [seriesList]);
-  
+
   return todayEpisodes;
 };

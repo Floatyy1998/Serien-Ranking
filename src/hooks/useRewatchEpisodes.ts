@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
-import { hasActiveRewatch, getNextRewatchEpisode, getRewatchProgress } from '../lib/validation/rewatch.utils';
+import {
+  hasActiveRewatch,
+  getNextRewatchEpisode,
+  getRewatchProgress,
+} from '../lib/validation/rewatch.utils';
 import { getImageUrl } from '../utils/imageUrl';
 import type { Series } from '../types/Series';
 
@@ -52,13 +56,14 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
 
       const seasonsArray: Series['seasons'] = Array.isArray(series.seasons)
         ? series.seasons
-        : Object.values(series.seasons) as Series['seasons'];
-      const seasonIndex = seasonsArray.findIndex(s => s.seasonNumber === nextEp.seasonNumber);
+        : (Object.values(series.seasons) as Series['seasons']);
+      const seasonIndex = seasonsArray.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
       if (seasonIndex === -1) continue;
 
       const ep = seasonsArray[seasonIndex]?.episodes?.[nextEp.episodeIndex];
       const progress = getRewatchProgress(series);
-      const percent = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
+      const percent =
+        progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
 
       items.push({
         id: series.id,

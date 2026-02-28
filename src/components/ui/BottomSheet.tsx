@@ -75,7 +75,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             initial={shouldReduceMotion ? { opacity: 0 } : { y: '100%' }}
             animate={shouldReduceMotion ? { opacity: 1 } : { y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { y: '100%' }}
-            transition={shouldReduceMotion ? { duration: 0.1 } : { type: 'spring', damping: 25, stiffness: 300 }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0.1 }
+                : { type: 'spring', damping: 25, stiffness: 300 }
+            }
             drag="y"
             dragControls={dragControls}
             dragListener={false}

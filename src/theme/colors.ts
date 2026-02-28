@@ -4,7 +4,7 @@ export const colors = {
   primary: 'var(--theme-primary, #00fed7)',
   primaryHover: 'var(--theme-primary-hover, #00e6c3)',
   primaryDark: 'var(--theme-primary-hover, #00d4b4)',
-  
+
   // Hintergrundfarben
   background: {
     default: 'var(--theme-background, #000000)',
@@ -13,7 +13,8 @@ export const colors = {
     card: 'var(--theme-background, #000000)',
     cardHover: 'rgba(255, 255, 255, 0.05)',
     cardFocused: 'rgba(255, 255, 255, 0.08)',
-    cardGradient: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)',
+    cardGradient:
+      'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)',
     input: 'var(--theme-background, #090909)',
     loading: 'var(--theme-background, #0a0a0a)',
     surface: 'var(--theme-surface, #2d2d30)',
@@ -23,7 +24,7 @@ export const colors = {
       light: 'linear-gradient(135deg, #0C0C0C 0%, #1a1a1a 100%)',
     },
   },
-  
+
   // Textfarben
   text: {
     primary: 'var(--theme-text-primary, #00fed7)',
@@ -32,7 +33,7 @@ export const colors = {
     accent: 'var(--theme-accent, #ff6b6b)',
     placeholder: 'rgba(255, 255, 255, 0.5)',
   },
-  
+
   // Statusfarben
   status: {
     error: '#ff4444',
@@ -42,10 +43,11 @@ export const colors = {
     success: '#4caf50',
     info: {
       main: 'var(--theme-primary, #00fed7)',
-      gradient: 'linear-gradient(135deg, color-mix(in srgb, var(--theme-primary, #00fed7) 10%, transparent) 0%, color-mix(in srgb, var(--theme-primary, #00fed7) 5%, transparent) 100%)',
+      gradient:
+        'linear-gradient(135deg, color-mix(in srgb, var(--theme-primary, #00fed7) 10%, transparent) 0%, color-mix(in srgb, var(--theme-primary, #00fed7) 5%, transparent) 100%)',
     },
   },
-  
+
   // Border und Linien
   border: {
     default: '#404040',
@@ -54,7 +56,7 @@ export const colors = {
     lighter: 'color-mix(in srgb, var(--theme-primary, #00fed7) 5%, transparent)',
     subtle: 'rgba(255, 255, 255, 0.1)',
   },
-  
+
   // Transparente Overlays
   overlay: {
     light: 'color-mix(in srgb, var(--theme-primary, #00fed7) 2%, transparent)',
@@ -71,7 +73,8 @@ export const colors = {
     hover: '0 20px 40px -8px color-mix(in srgb, var(--theme-primary, #00fed7) 20%, transparent)',
     focus: '0 0 0 3px color-mix(in srgb, var(--theme-primary, #00fed7) 20%, transparent)',
     button: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    buttonHover: '0 10px 20px -5px color-mix(in srgb, var(--theme-primary, #00fed7) 30%, transparent)',
+    buttonHover:
+      '0 10px 20px -5px color-mix(in srgb, var(--theme-primary, #00fed7) 30%, transparent)',
     error: '0 10px 20px -5px rgba(255, 68, 68, 0.3)',
     light: '0 10px 20px -5px rgba(255, 255, 255, 0.1)',
   },

@@ -7,7 +7,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
-import { LoadingSpinner, PageHeader, PageLayout, QuickFilter, ScrollToTopButton, TabSwitcher } from '../../components/ui';
+import {
+  LoadingSpinner,
+  PageHeader,
+  PageLayout,
+  QuickFilter,
+  ScrollToTopButton,
+  TabSwitcher,
+} from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
 
 interface FriendProvider {
@@ -93,7 +100,11 @@ export const FriendProfilePage: React.FC = () => {
             genre: series.genre,
             genres: series.genre?.genres || [],
             provider: series.provider,
-            seasons: Array.isArray(series.seasons) ? series.seasons : series.seasons ? Object.values(series.seasons) as FriendSeason[] : [],
+            seasons: Array.isArray(series.seasons)
+              ? series.seasons
+              : series.seasons
+                ? (Object.values(series.seasons) as FriendSeason[])
+                : [],
             status: series.status,
             production: series.production,
           });
@@ -136,7 +147,6 @@ export const FriendProfilePage: React.FC = () => {
     if (!item.rating) return '0.00';
     return calculateOverallRating(item as unknown as Series);
   };
-
 
   const ratedSeries = useMemo(() => {
     let filtered = friendSeries;
@@ -215,7 +225,11 @@ export const FriendProfilePage: React.FC = () => {
     } else if (filters.quickFilter === 'ongoing') {
       filtered = filtered.filter((s) => {
         const status = s.status?.toLowerCase();
-        return status === 'returning series' || status === 'ongoing' || (!status && s.production?.production === true);
+        return (
+          status === 'returning series' ||
+          status === 'ongoing' ||
+          (!status && s.production?.production === true)
+        );
       });
     }
 
@@ -231,12 +245,18 @@ export const FriendProfilePage: React.FC = () => {
       const ratingB = parseFloat(calculateFriendRating(b));
 
       switch (sortBy) {
-        case 'rating-desc': return ratingB - ratingA;
-        case 'rating-asc': return ratingA - ratingB;
-        case 'name-asc': return (a.title || '').localeCompare(b.title || '');
-        case 'name-desc': return (b.title || '').localeCompare(a.title || '');
-        case 'date-desc': return Number(b.nmr) - Number(a.nmr);
-        default: return ratingB - ratingA;
+        case 'rating-desc':
+          return ratingB - ratingA;
+        case 'rating-asc':
+          return ratingA - ratingB;
+        case 'name-asc':
+          return (a.title || '').localeCompare(b.title || '');
+        case 'name-desc':
+          return (b.title || '').localeCompare(a.title || '');
+        case 'date-desc':
+          return Number(b.nmr) - Number(a.nmr);
+        default:
+          return ratingB - ratingA;
       }
     });
 
@@ -294,12 +314,18 @@ export const FriendProfilePage: React.FC = () => {
       const ratingB = parseFloat(calculateFriendRating(b));
 
       switch (sortBy) {
-        case 'rating-desc': return ratingB - ratingA;
-        case 'rating-asc': return ratingA - ratingB;
-        case 'name-asc': return (a.title || '').localeCompare(b.title || '');
-        case 'name-desc': return (b.title || '').localeCompare(a.title || '');
-        case 'date-desc': return Number(b.nmr) - Number(a.nmr);
-        default: return ratingB - ratingA;
+        case 'rating-desc':
+          return ratingB - ratingA;
+        case 'rating-asc':
+          return ratingA - ratingB;
+        case 'name-asc':
+          return (a.title || '').localeCompare(b.title || '');
+        case 'name-desc':
+          return (b.title || '').localeCompare(a.title || '');
+        case 'date-desc':
+          return Number(b.nmr) - Number(a.nmr);
+        default:
+          return ratingB - ratingA;
       }
     });
 
@@ -316,7 +342,9 @@ export const FriendProfilePage: React.FC = () => {
 
       const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
       const position = sessionStorage.getItem(scrollKey);
-      const scrollSource = sessionStorage.getItem(`friendProfilePageScrollSource_${friendId}_${activeTab}`);
+      const scrollSource = sessionStorage.getItem(
+        `friendProfilePageScrollSource_${friendId}_${activeTab}`
+      );
 
       if (position) {
         const scrollTop = parseInt(position, 10);
@@ -355,7 +383,8 @@ export const FriendProfilePage: React.FC = () => {
 
   const averageRating =
     itemsWithRating.length > 0
-      ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateFriendRating(item)), 0) / itemsWithRating.length
+      ? itemsWithRating.reduce((acc, item) => acc + parseFloat(calculateFriendRating(item)), 0) /
+        itemsWithRating.length
       : 0;
 
   const handleItemClick = (item: FriendItem, type: 'series' | 'movie') => {
@@ -388,7 +417,10 @@ export const FriendProfilePage: React.FC = () => {
       try {
         const scrollKey = `friendProfilePageScroll_${friendId}_${activeTab}`;
         sessionStorage.setItem(scrollKey, position.toString());
-        sessionStorage.setItem(`friendProfilePageScrollSource_${friendId}_${activeTab}`, scrollSource);
+        sessionStorage.setItem(
+          `friendProfilePageScrollSource_${friendId}_${activeTab}`,
+          scrollSource
+        );
         sessionStorage.setItem('shouldRestoreFriendProfileScroll', 'true');
       } catch (error) {
         console.error('Error saving scroll position:', error);
@@ -400,7 +432,14 @@ export const FriendProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <PageLayout style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <PageLayout
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <LoadingSpinner size={50} text="Lade Profil..." />
       </PageLayout>
     );
@@ -409,269 +448,297 @@ export const FriendProfilePage: React.FC = () => {
   return (
     <PageLayout>
       <div ref={scrollRef}>
-
-      {/* Premium Header */}
-      <PageHeader
-        title={friendName}
-        gradientTo="#8b5cf6"
-        sticky={false}
-        subtitle={`Ø ${averageRating.toFixed(1)} | ${itemsWithRating.length} bewertet`}
-        actions={
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate(`/taste-match/${friendId}`)}
-            style={{
-              padding: '12px 18px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-              border: 'none',
-              borderRadius: '14px',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: `0 4px 15px ${currentTheme.primary}40`,
-            }}
-          >
-            <CompareArrows style={{ fontSize: 20 }} />
-            Match
-          </motion.button>
-        }
-      />
-
-      {/* Quick Filter */}
-      <QuickFilter
-        onFilterChange={setFilters}
-        isMovieMode={activeTab === 'movies'}
-        isRatingsMode={true}
-        hasBottomNav={false}
-      />
-
-      {/* Premium Tab Switcher */}
-      <TabSwitcher
-        tabs={[
-          { id: 'series', label: 'Serien', icon: TvIcon, count: ratedSeries.length },
-          { id: 'movies', label: 'Filme', icon: MovieIcon, count: ratedMovies.length },
-        ]}
-        activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as 'series' | 'movies')}
-      />
-
-      {/* Items Grid */}
-      <div style={{ padding: window.innerWidth >= 768 ? '0 40px 40px' : '0 20px 100px', position: 'relative', zIndex: 5 }}>
-        <AnimatePresence mode="wait">
-          {currentItems.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+        {/* Premium Header */}
+        <PageHeader
+          title={friendName}
+          gradientTo="#8b5cf6"
+          sticky={false}
+          subtitle={`Ø ${averageRating.toFixed(1)} | ${itemsWithRating.length} bewertet`}
+          actions={
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate(`/taste-match/${friendId}`)}
               style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                background: currentTheme.background.card,
-                borderRadius: '20px',
-                border: `1px solid ${currentTheme.border.default}`,
+                padding: '12px 18px',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                border: 'none',
+                borderRadius: '14px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: `0 4px 15px ${currentTheme.primary}40`,
               }}
             >
-              <Star style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }} />
-              <h2 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
-                Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden
-              </h2>
-              <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
-                {friendName} hat noch keine {activeTab === 'series' ? 'Serien' : 'Filme'} bewertet
-              </p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="grid"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{
-                display: 'grid',
-                gridTemplateColumns:
-                  window.innerWidth >= 1200
-                    ? 'repeat(8, 1fr)'
-                    : window.innerWidth >= 768
-                      ? 'repeat(5, 1fr)'
-                      : 'repeat(auto-fill, minmax(105px, 1fr))',
-                gap: '12px',
-              }}
-            >
-              {currentItems.map((item, index) => {
-                const rating = parseFloat(calculateFriendRating(item));
-                const isMovie = 'release_date' in item;
+              <CompareArrows style={{ fontSize: 20 }} />
+              Match
+            </motion.button>
+          }
+        />
 
-                let progress = 0;
-                if (!isMovie && item.seasons) {
-                  const today = new Date();
-                  let totalAiredEpisodes = 0;
-                  let watchedEpisodes = 0;
+        {/* Quick Filter */}
+        <QuickFilter
+          onFilterChange={setFilters}
+          isMovieMode={activeTab === 'movies'}
+          isRatingsMode={true}
+          hasBottomNav={false}
+        />
 
-                  item.seasons.forEach((season) => {
-                    if (season.episodes) {
-                      const episodes = Array.isArray(season.episodes) ? season.episodes : Object.values(season.episodes || {}) as FriendEpisode[];
-                      episodes.forEach((ep: FriendEpisode) => {
-                        if (ep.air_date) {
-                          const airDate = new Date(ep.air_date);
-                          if (airDate <= today) {
-                            totalAiredEpisodes++;
-                            if (ep.watched) watchedEpisodes++;
+        {/* Premium Tab Switcher */}
+        <TabSwitcher
+          tabs={[
+            { id: 'series', label: 'Serien', icon: TvIcon, count: ratedSeries.length },
+            { id: 'movies', label: 'Filme', icon: MovieIcon, count: ratedMovies.length },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as 'series' | 'movies')}
+        />
+
+        {/* Items Grid */}
+        <div
+          style={{
+            padding: window.innerWidth >= 768 ? '0 40px 40px' : '0 20px 100px',
+            position: 'relative',
+            zIndex: 5,
+          }}
+        >
+          <AnimatePresence mode="wait">
+            {currentItems.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                style={{
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                  background: currentTheme.background.card,
+                  borderRadius: '20px',
+                  border: `1px solid ${currentTheme.border.default}`,
+                }}
+              >
+                <Star
+                  style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }}
+                />
+                <h2
+                  style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}
+                >
+                  Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden
+                </h2>
+                <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
+                  {friendName} hat noch keine {activeTab === 'series' ? 'Serien' : 'Filme'} bewertet
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns:
+                    window.innerWidth >= 1200
+                      ? 'repeat(8, 1fr)'
+                      : window.innerWidth >= 768
+                        ? 'repeat(5, 1fr)'
+                        : 'repeat(auto-fill, minmax(105px, 1fr))',
+                  gap: '12px',
+                }}
+              >
+                {currentItems.map((item, index) => {
+                  const rating = parseFloat(calculateFriendRating(item));
+                  const isMovie = 'release_date' in item;
+
+                  let progress = 0;
+                  if (!isMovie && item.seasons) {
+                    const today = new Date();
+                    let totalAiredEpisodes = 0;
+                    let watchedEpisodes = 0;
+
+                    item.seasons.forEach((season) => {
+                      if (season.episodes) {
+                        const episodes = Array.isArray(season.episodes)
+                          ? season.episodes
+                          : (Object.values(season.episodes || {}) as FriendEpisode[]);
+                        episodes.forEach((ep: FriendEpisode) => {
+                          if (ep.air_date) {
+                            const airDate = new Date(ep.air_date);
+                            if (airDate <= today) {
+                              totalAiredEpisodes++;
+                              if (ep.watched) watchedEpisodes++;
+                            }
                           }
-                        }
-                      });
-                    }
-                  });
+                        });
+                      }
+                    });
 
-                  progress = totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
-                }
+                    progress =
+                      totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
+                  }
 
-                return (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(index * 0.03, 0.3) }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
-                    style={{ cursor: 'pointer', position: 'relative' }}
-                  >
-                    <div style={{ position: 'relative' }}>
-                      <img
-                        src={getImageUrl(item.poster)}
-                        alt={item.title}
-                        style={{
-                          width: '100%',
-                          aspectRatio: '2/3',
-                          objectFit: 'cover',
-                          borderRadius: '12px',
-                          background: currentTheme.background.surface,
-                          boxShadow: `0 6px 16px ${currentTheme.background.default}60`,
-                        }}
-                      />
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(index * 0.03, 0.3) }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
+                      style={{ cursor: 'pointer', position: 'relative' }}
+                    >
+                      <div style={{ position: 'relative' }}>
+                        <img
+                          src={getImageUrl(item.poster)}
+                          alt={item.title}
+                          style={{
+                            width: '100%',
+                            aspectRatio: '2/3',
+                            objectFit: 'cover',
+                            borderRadius: '12px',
+                            background: currentTheme.background.surface,
+                            boxShadow: `0 6px 16px ${currentTheme.background.default}60`,
+                          }}
+                        />
 
-                      {/* Provider Badges */}
-                      {item.provider?.provider && item.provider.provider.length > 0 && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '6px',
-                          left: '6px',
-                          display: 'flex',
-                          gap: '3px',
-                        }}>
-                          {Array.from(new Set(item.provider.provider.map((p: FriendProvider) => p.name)))
-                            .slice(0, 2)
-                            .map((name) => {
-                              const provider = item.provider?.provider.find((p: FriendProvider) => p.name === name);
-                              return provider ? (
-                                <div
-                                  key={provider.id}
-                                  style={{
-                                    background: 'linear-gradient(135deg, rgba(0,0,0,0.7), rgba(20,20,40,0.8))',
-                                    backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '8px',
-                                    padding: '3px',
-                                    width: '34px',
-                                    height: '34px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                  }}
-                                >
-                                  <img
-                                    src={provider.logo}
-                                    alt={provider.name}
-                                    style={{
-                                      width: '28px',
-                                      height: '28px',
-                                      borderRadius: '6px',
-                                      objectFit: 'cover',
-                                    }}
-                                  />
-                                </div>
-                              ) : null;
-                            })}
-                        </div>
-                      )}
-
-                      {/* Premium Rating Badge */}
-                      {rating > 0 && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '6px',
-                          right: '6px',
-                          background: 'linear-gradient(135deg, #1a1a1aee, #2a2a2aee)',
-                          backdropFilter: 'blur(8px)',
-                          borderRadius: '10px',
-                          padding: '5px 9px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                        }}>
-                          <Star style={{ fontSize: '14px', color: '#ffc107' }} />
-                          <span style={{
-                            fontSize: '13px',
-                            fontWeight: 700,
-                            color: '#fff',
-                          }}>
-                            {rating.toFixed(1)}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Premium Progress Bar */}
-                      {!isMovie && progress > 0 && (
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '0',
-                          left: '0',
-                          right: '0',
-                          height: '5px',
-                          background: 'rgba(0, 0, 0, 0.5)',
-                          borderRadius: '0 0 12px 12px',
-                          overflow: 'hidden',
-                        }}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
-                            transition={{ duration: 0.5, delay: index * 0.02 }}
+                        {/* Provider Badges */}
+                        {item.provider?.provider && item.provider.provider.length > 0 && (
+                          <div
                             style={{
-                              height: '100%',
-                              background: progress === 100
-                                ? `linear-gradient(90deg, ${currentTheme.status.success}, #10b981)`
-                                : `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
+                              position: 'absolute',
+                              top: '6px',
+                              left: '6px',
+                              display: 'flex',
+                              gap: '3px',
                             }}
-                          />
-                        </div>
-                      )}
-                    </div>
+                          >
+                            {Array.from(
+                              new Set(item.provider.provider.map((p: FriendProvider) => p.name))
+                            )
+                              .slice(0, 2)
+                              .map((name) => {
+                                const provider = item.provider?.provider.find(
+                                  (p: FriendProvider) => p.name === name
+                                );
+                                return provider ? (
+                                  <div
+                                    key={provider.id}
+                                    style={{
+                                      background:
+                                        'linear-gradient(135deg, rgba(0,0,0,0.7), rgba(20,20,40,0.8))',
+                                      backdropFilter: 'blur(10px)',
+                                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                                      borderRadius: '8px',
+                                      padding: '3px',
+                                      width: '34px',
+                                      height: '34px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                    }}
+                                  >
+                                    <img
+                                      src={provider.logo}
+                                      alt={provider.name}
+                                      style={{
+                                        width: '28px',
+                                        height: '28px',
+                                        borderRadius: '6px',
+                                        objectFit: 'cover',
+                                      }}
+                                    />
+                                  </div>
+                                ) : null;
+                              })}
+                          </div>
+                        )}
 
-                    <h2 style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      margin: '6px 0 0 0',
-                      color: currentTheme.text.primary,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      lineHeight: '1.3',
-                    }}>
-                      {item.title}
-                    </h2>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                        {/* Premium Rating Badge */}
+                        {rating > 0 && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '6px',
+                              right: '6px',
+                              background: 'linear-gradient(135deg, #1a1a1aee, #2a2a2aee)',
+                              backdropFilter: 'blur(8px)',
+                              borderRadius: '10px',
+                              padding: '5px 9px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
+                            }}
+                          >
+                            <Star style={{ fontSize: '14px', color: '#ffc107' }} />
+                            <span
+                              style={{
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                color: '#fff',
+                              }}
+                            >
+                              {rating.toFixed(1)}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Premium Progress Bar */}
+                        {!isMovie && progress > 0 && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: '0',
+                              left: '0',
+                              right: '0',
+                              height: '5px',
+                              background: 'rgba(0, 0, 0, 0.5)',
+                              borderRadius: '0 0 12px 12px',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progress}%` }}
+                              transition={{ duration: 0.5, delay: index * 0.02 }}
+                              style={{
+                                height: '100%',
+                                background:
+                                  progress === 100
+                                    ? `linear-gradient(90deg, ${currentTheme.status.success}, #10b981)`
+                                    : `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <h2
+                        style={{
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          margin: '6px 0 0 0',
+                          color: currentTheme.text.primary,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          lineHeight: '1.3',
+                        }}
+                      >
+                        {item.title}
+                      </h2>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
       <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>

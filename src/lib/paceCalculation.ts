@@ -60,19 +60,15 @@ export function calculateWatchingPace(
   if (remaining < 1) return noShow;
 
   // Remaining watchtime (always calculable)
-  const avgRuntime = runtimeSamples > 0
-    ? totalRuntimeMinutes / runtimeSamples
-    : (episodeRuntime || 45);
-  const remainingHoursCalc = Math.round((remaining * avgRuntime) / 60 * 10) / 10;
+  const avgRuntime =
+    runtimeSamples > 0 ? totalRuntimeMinutes / runtimeSamples : episodeRuntime || 45;
+  const remainingHoursCalc = Math.round(((remaining * avgRuntime) / 60) * 10) / 10;
 
   // Not enough timestamps for pace calculation — still show pausiert + remaining time
   if (watchDates.length < 2) {
-    const lastWatch = watchDates.length > 0
-      ? Math.max(...watchDates.map(d => d.getTime()))
-      : 0;
-    const daysSinceLastWatch = lastWatch > 0
-      ? (now.getTime() - lastWatch) / (1000 * 60 * 60 * 24)
-      : Infinity;
+    const lastWatch = watchDates.length > 0 ? Math.max(...watchDates.map((d) => d.getTime())) : 0;
+    const daysSinceLastWatch =
+      lastWatch > 0 ? (now.getTime() - lastWatch) / (1000 * 60 * 60 * 24) : Infinity;
 
     return {
       episodesPerWeek: 0,
@@ -96,10 +92,7 @@ export function calculateWatchingPace(
 
   if (recentDates.length >= 2) {
     // Recent pace: episodes in the last 30 days
-    const daySpan = Math.max(
-      (now.getTime() - recentDates[0].getTime()) / (1000 * 60 * 60 * 24),
-      1
-    );
+    const daySpan = Math.max((now.getTime() - recentDates[0].getTime()) / (1000 * 60 * 60 * 24), 1);
     episodesPerDay = recentDates.length / daySpan;
   } else {
     // Fallback: overall pace
@@ -152,7 +145,7 @@ export function formatPaceLine(pace: WatchingPace, compact = false): string {
   } else {
     // Pace
     if (pace.episodesPerWeek >= 7) {
-      const perDay = Math.round(pace.episodesPerWeek / 7 * 10) / 10;
+      const perDay = Math.round((pace.episodesPerWeek / 7) * 10) / 10;
       parts.push(`~${perDay} Ep./Tag`);
     } else {
       parts.push(`~${pace.episodesPerWeek} Ep./Woche`);

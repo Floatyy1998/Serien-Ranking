@@ -44,9 +44,9 @@ export interface Movie {
   // ========================================
   // Wrapped 2026 - Zeitliche Metadaten
   // ========================================
-  addedAt?: string;      // Wann zur Sammlung hinzugefügt (ISO-Datum)
-  watchedAt?: string;    // Wann angeschaut (ISO-Datum)
-  ratedAt?: string;      // Wann bewertet (ISO-Datum)
+  addedAt?: string; // Wann zur Sammlung hinzugefügt (ISO-Datum)
+  watchedAt?: string; // Wann angeschaut (ISO-Datum)
+  ratedAt?: string; // Wann bewertet (ISO-Datum)
 
   // Watch-Historie für Rewatches (optional, für detaillierte Wrapped-Analyse)
   watchHistory?: {

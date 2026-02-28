@@ -5,13 +5,13 @@ import { GenreComparison } from '../../services/tasteMatchService';
 import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, FRIEND_GRADIENT } from './constants';
 
 // Genre Bar - Premium Version
-export const GenreBar: React.FC<{ genre: GenreComparison; index: number; userName: string; friendName: string; bgColor: string }> = ({
-  genre,
-  index,
-  userName,
-  friendName,
-  bgColor,
-}) => {
+export const GenreBar: React.FC<{
+  genre: GenreComparison;
+  index: number;
+  userName: string;
+  friendName: string;
+  bgColor: string;
+}> = ({ genre, index, userName, friendName, bgColor }) => {
   const maxPct = Math.max(genre.userPercentage, genre.friendPercentage, 15);
   const similarity = 100 - Math.abs(genre.userPercentage - genre.friendPercentage);
 
@@ -30,10 +30,15 @@ export const GenreBar: React.FC<{ genre: GenreComparison; index: number; userNam
         boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>
-          {genre.genre}
-        </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '14px',
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>{genre.genre}</div>
         {similarity >= 80 && (
           <motion.div
             initial={{ scale: 0 }}
@@ -57,17 +62,27 @@ export const GenreBar: React.FC<{ genre: GenreComparison; index: number; userNam
 
       {/* User Bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-        <div style={{
-          width: 28,
-          fontSize: 10,
-          color: USER_COLOR,
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
+        <div
+          style={{
+            width: 28,
+            fontSize: 10,
+            color: USER_COLOR,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
           {userName.slice(0, 3)}
         </div>
-        <div style={{ flex: 1, height: 10, background: 'rgba(255,255,255,0.08)', borderRadius: 5, overflow: 'hidden' }}>
+        <div
+          style={{
+            flex: 1,
+            height: 10,
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: 5,
+            overflow: 'hidden',
+          }}
+        >
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(genre.userPercentage / maxPct) * 100}%` }}
@@ -80,24 +95,42 @@ export const GenreBar: React.FC<{ genre: GenreComparison; index: number; userNam
             }}
           />
         </div>
-        <span style={{ fontSize: 14, fontWeight: 800, color: USER_COLOR, minWidth: 40, textAlign: 'right' }}>
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 800,
+            color: USER_COLOR,
+            minWidth: 40,
+            textAlign: 'right',
+          }}
+        >
           {genre.userPercentage}%
         </span>
       </div>
 
       {/* Friend Bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{
-          width: 28,
-          fontSize: 10,
-          color: FRIEND_COLOR,
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
+        <div
+          style={{
+            width: 28,
+            fontSize: 10,
+            color: FRIEND_COLOR,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
           {friendName.slice(0, 3)}
         </div>
-        <div style={{ flex: 1, height: 10, background: 'rgba(255,255,255,0.08)', borderRadius: 5, overflow: 'hidden' }}>
+        <div
+          style={{
+            flex: 1,
+            height: 10,
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: 5,
+            overflow: 'hidden',
+          }}
+        >
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(genre.friendPercentage / maxPct) * 100}%` }}
@@ -110,7 +143,15 @@ export const GenreBar: React.FC<{ genre: GenreComparison; index: number; userNam
             }}
           />
         </div>
-        <span style={{ fontSize: 14, fontWeight: 800, color: FRIEND_COLOR, minWidth: 40, textAlign: 'right' }}>
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 800,
+            color: FRIEND_COLOR,
+            minWidth: 40,
+            textAlign: 'right',
+          }}
+        >
           {genre.friendPercentage}%
         </span>
       </div>
