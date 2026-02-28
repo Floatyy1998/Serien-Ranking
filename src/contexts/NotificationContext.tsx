@@ -13,7 +13,8 @@ interface Notification {
     | 'recommendation'
     | 'discussion_reply'
     | 'discussion_like'
-    | 'spoiler_flag';
+    | 'spoiler_flag'
+    | 'trophy_won';
   title: string;
   message: string;
   timestamp: number;
