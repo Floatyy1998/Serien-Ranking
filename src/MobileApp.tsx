@@ -19,6 +19,7 @@ const SearchPage = lazy(() => import('./pages/Search').then((m) => ({ default: m
 const BadgesPage = lazy(() => import('./pages/Badges').then((m) => ({ default: m.BadgesPage })));
 const PetsPage = lazy(() => import('./pages/Pets').then((m) => ({ default: m.PetsPage })));
 const ThemePage = lazy(() => import('./pages/Theme').then((m) => ({ default: m.ThemePage })));
+const HomeLayoutPage = lazy(() => import('./pages/HomeLayout').then((m) => ({ default: m.HomeLayoutPage })));
 const StatsPage = lazy(() => import('./pages/Stats').then((m) => ({ default: m.StatsPage })));
 const WrappedPage = lazy(() => import('./pages/Wrapped').then((m) => ({ default: m.WrappedPage })));
 const ActorUniversePage = lazy(() => import('./pages/ActorUniverse').then((m) => ({ default: m.ActorUniversePage })));
@@ -236,6 +237,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <ThemePage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/home-layout"
+            element={
+              <Layout hideNav>
+                <HomeLayoutPage />
               </Layout>
             }
           />
