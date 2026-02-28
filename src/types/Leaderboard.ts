@@ -26,3 +26,31 @@ export interface LeaderboardEntry {
   rank: number;
   isCurrentUser: boolean;
 }
+
+export interface GlobalLeaderboardEntry {
+  uid: string;
+  episodesThisMonth: number;
+  moviesThisMonth: number;
+  watchtimeThisMonth: number;
+  streakThisMonth: number;
+  streakAllTime: number;
+  displayName: string;
+  photoURL?: string;
+  username?: string;
+  lastUpdated: number;
+}
+
+export interface TrophyEntry {
+  uid: string;
+  displayName: string;
+  photoURL?: string;
+  score: number;
+}
+
+export interface MonthlyTrophy {
+  monthKey: string;
+  category: string;
+  first: TrophyEntry | null;
+  second: TrophyEntry | null;
+  third: TrophyEntry | null;
+}
