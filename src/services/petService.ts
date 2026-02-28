@@ -641,9 +641,7 @@ class PetService {
   }
 
   // Pet Widget Position Management
-  async getPetWidgetPosition(
-    userId: string
-  ): Promise<
+  async getPetWidgetPosition(userId: string): Promise<
     | {
         edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
         offsetX: number;
