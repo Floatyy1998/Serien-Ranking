@@ -489,6 +489,10 @@ export const HomePage: React.FC = () => {
     markActivitiesAsRead();
     markRequestsAsRead();
     markAllAsRead();
+    // Dismiss all announcements
+    const allIds = ANNOUNCEMENTS.map((a) => a.id);
+    setDismissedAnnouncements(allIds);
+    localStorage.setItem('dismissed_announcements', JSON.stringify(allIds));
   };
 
   const getNotificationIcon = (icon: string) => {
