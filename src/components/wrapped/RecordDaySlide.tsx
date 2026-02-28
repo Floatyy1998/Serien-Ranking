@@ -245,7 +245,15 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           border: '1px solid rgba(255,215,0,0.3)',
         }}
       >
-        <p style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem', textAlign: 'center', margin: '0 0 5px 0' }}>
+        <p
+          style={{
+            color: 'white',
+            opacity: 0.8,
+            fontSize: '0.9rem',
+            textAlign: 'center',
+            margin: '0 0 5px 0',
+          }}
+        >
           Insgesamt
         </p>
         <p

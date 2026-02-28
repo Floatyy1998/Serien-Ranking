@@ -50,7 +50,11 @@ export const StatRing: React.FC<{
             opacity: 0.3,
           }}
         />
-        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', position: 'relative', zIndex: 1 }}>
+        <svg
+          width={size}
+          height={size}
+          style={{ transform: 'rotate(-90deg)', position: 'relative', zIndex: 1 }}
+        >
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -89,8 +93,26 @@ export const StatRing: React.FC<{
         </div>
       </div>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 17, fontWeight: 800, color: 'white', textShadow: `0 0 20px ${color}50` }}>{score}%</div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 500, letterSpacing: '0.3px' }}>{label}</div>
+        <div
+          style={{
+            fontSize: 17,
+            fontWeight: 800,
+            color: 'white',
+            textShadow: `0 0 20px ${color}50`,
+          }}
+        >
+          {score}%
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.5)',
+            fontWeight: 500,
+            letterSpacing: '0.3px',
+          }}
+        >
+          {label}
+        </div>
       </div>
     </motion.div>
   );

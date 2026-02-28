@@ -133,12 +133,17 @@ export const RegisterPage = () => {
           transition={{ duration: 0.5 }}
         >
           <Box sx={{ mb: 6, textAlign: 'center' }}>
-            <GradientText as="h1" from="#00fed7" to="#ff0080" style={{
+            <GradientText
+              as="h1"
+              from="#00fed7"
+              to="#ff0080"
+              style={{
                 fontSize: '3rem',
                 fontWeight: 900,
                 marginBottom: '16px',
                 letterSpacing: '-0.02em',
-              }}>
+              }}
+            >
               TV-RANK
             </GradientText>
             <Typography
@@ -267,7 +272,10 @@ export const RegisterPage = () => {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <Tooltip title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'} arrow>
+                      <Tooltip
+                        title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                        arrow
+                      >
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
@@ -319,11 +327,16 @@ export const RegisterPage = () => {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <Tooltip title={showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'} arrow>
+                      <Tooltip
+                        title={showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                        arrow
+                      >
                         <IconButton
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           edge="end"
-                          aria-label={showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                          aria-label={
+                            showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'
+                          }
                           aria-pressed={showConfirmPassword}
                           sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
                         >

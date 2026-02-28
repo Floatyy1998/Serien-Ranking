@@ -5,8 +5,7 @@ import { Series } from '../../types/Series';
  * Wird für WatchlistDialog und SeriesListItem verwendet, damit überall die gleiche Logik gilt.
  */
 export function cleanOverlappingEpisodes(series: Series) {
-  if (!series.seasons || series.seasons.length <= 1)
-    return series.seasons || [];
+  if (!series.seasons || series.seasons.length <= 1) return series.seasons || [];
 
   // Mappe air_date auf Map von Staffelnummern zu Set von Episoden-IDs
   const airDateMap = new Map<string, Map<number, Set<number>>>();

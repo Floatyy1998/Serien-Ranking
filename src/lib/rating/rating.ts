@@ -50,7 +50,7 @@ export const calculateOverallRating = (series: Series | Movie) => {
     });
 
     if (genreCount === 0) return '0.00';
-    
+
     const overallRating = totalRating / genreCount;
     const roundedRating = addZeroes(round(overallRating, 0.01));
     return roundedRating;

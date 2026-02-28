@@ -66,7 +66,7 @@ export interface Series {
   release_date: string;
   media_type?: string;
   // Note: userRating is stored in rating[userId], not as separate field
-  
+
   // Additional optional fields from TMDB API or other sources
   overview?: string;
   backdrop?: string;

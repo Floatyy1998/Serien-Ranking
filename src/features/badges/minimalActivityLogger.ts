@@ -62,9 +62,7 @@ const logFriendActivity = async (
     });
 
     // Limit to max 20 activities
-    const snapshot = await activitiesRef
-      .orderByChild('timestamp')
-      .once('value');
+    const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
     const activities = snapshot.val();
 
     if (activities) {
@@ -97,10 +95,7 @@ const logFriendActivity = async (
  */
 const recentlyTriggeredBadges = new Map<string, Set<string>>();
 
-const triggerBadgeCallback = async (
-  userId: string,
-  newBadges: EarnedBadge[]
-): Promise<void> => {
+const triggerBadgeCallback = async (userId: string, newBadges: EarnedBadge[]): Promise<void> => {
   if (newBadges.length === 0) return;
 
   // Filtere Badges die bereits in den letzten 5 Sekunden getriggert wurden
@@ -325,8 +320,7 @@ export const logRatingAdded = async (
 ): Promise<EarnedBadge[]> => {
   try {
     // Friend-Activity (unterscheide zwischen Serie und Film)
-    const activityType =
-      itemType === 'movie' ? 'rating_updated_movie' : 'rating_updated';
+    const activityType = itemType === 'movie' ? 'rating_updated_movie' : 'rating_updated';
     await logFriendActivity(userId, {
       type: activityType,
       itemTitle,
@@ -403,10 +397,7 @@ export const logSeasonWatchedClean = async (
     // Season-Complete ist nachträgliches Hinzufügen bereits gesehener Serien
     // KEINE Binge-Session, nur normale Counter-Updates
     await badgeCounterService.updateStreakCounter(userId);
-    await badgeCounterService.recordMarathonProgress(
-      userId,
-      seasonEpisodeCount
-    );
+    await badgeCounterService.recordMarathonProgress(userId, seasonEpisodeCount);
 
     // Badge-Check (Cache invalidieren für frische Counter-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);

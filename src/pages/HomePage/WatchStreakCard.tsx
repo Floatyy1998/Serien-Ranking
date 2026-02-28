@@ -13,7 +13,7 @@ const STREAK_COLORS = {
   active: '#4caf50',
   at_risk: '#ffa726',
   shieldable: '#ffa726',
-  lost: '',  // uses currentTheme.text.muted
+  lost: '', // uses currentTheme.text.muted
 } as const;
 
 interface WatchStreakData {
@@ -51,7 +51,10 @@ function getStreakStatus(lastWatchDate: string): StreakStatus {
   return 'lost';
 }
 
-function getShieldCooldown(lastShieldUsedDate?: string): { onCooldown: boolean; daysRemaining: number } {
+function getShieldCooldown(lastShieldUsedDate?: string): {
+  onCooldown: boolean;
+  daysRemaining: number;
+} {
   if (!lastShieldUsedDate) return { onCooldown: false, daysRemaining: 0 };
   const today = toLocalDateString();
   const todayMs = new Date(today).getTime();
@@ -169,14 +172,16 @@ export const WatchStreakCard: React.FC = () => {
   // Shield eligibility
   const canUseShield = status === 'shieldable';
   const cooldown = getShieldCooldown(streak.lastShieldUsedDate);
-  const petTotalXP = pet ? ((pet.level - 1) * PET_CONFIG.XP_PER_LEVEL) + pet.experience : 0;
+  const petTotalXP = pet ? (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL + pet.experience : 0;
   const petCanAfford = petTotalXP >= PET_CONFIG.STREAK_SHIELD_XP_COST;
 
   let shieldDisabledReason = '';
   if (!pet) shieldDisabledReason = 'Kein Pet vorhanden';
   else if (!pet.isAlive) shieldDisabledReason = 'Dein Pet lebt nicht';
-  else if (!petCanAfford) shieldDisabledReason = `Nicht genug XP (${petTotalXP}/${PET_CONFIG.STREAK_SHIELD_XP_COST})`;
-  else if (cooldown.onCooldown) shieldDisabledReason = `Cooldown: noch ${cooldown.daysRemaining} ${cooldown.daysRemaining === 1 ? 'Tag' : 'Tage'}`;
+  else if (!petCanAfford)
+    shieldDisabledReason = `Nicht genug XP (${petTotalXP}/${PET_CONFIG.STREAK_SHIELD_XP_COST})`;
+  else if (cooldown.onCooldown)
+    shieldDisabledReason = `Cooldown: noch ${cooldown.daysRemaining} ${cooldown.daysRemaining === 1 ? 'Tag' : 'Tage'}`;
 
   const shieldEligible = canUseShield && !shieldDisabledReason;
   const showShieldButton = canUseShield && pet;
@@ -239,17 +244,22 @@ export const WatchStreakCard: React.FC = () => {
               style={{
                 margin: '1px 0 0',
                 fontSize: 12,
-                color: shieldJustUsed ? shieldColor :
-                  (status === 'at_risk' || status === 'shieldable') ? flameColor :
-                  currentTheme.text.secondary,
+                color: shieldJustUsed
+                  ? shieldColor
+                  : status === 'at_risk' || status === 'shieldable'
+                    ? flameColor
+                    : currentTheme.text.secondary,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                fontWeight: (status === 'at_risk' || status === 'shieldable' || shieldJustUsed) ? 600 : 400,
+                fontWeight:
+                  status === 'at_risk' || status === 'shieldable' || shieldJustUsed ? 600 : 400,
               }}
             >
               {shieldJustUsed && 'Streak gerettet!'}
-              {!shieldJustUsed && status === 'active' && `${displayStreak} ${displayStreak === 1 ? 'Tag' : 'Tage'} in Folge`}
+              {!shieldJustUsed &&
+                status === 'active' &&
+                `${displayStreak} ${displayStreak === 1 ? 'Tag' : 'Tage'} in Folge`}
               {!shieldJustUsed && status === 'at_risk' && 'Schau heute!'}
               {!shieldJustUsed && status === 'shieldable' && 'Streak in Gefahr!'}
               {!shieldJustUsed && status === 'lost' && 'Starte eine neue Streak!'}
@@ -260,89 +270,97 @@ export const WatchStreakCard: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 4 }}>
             {/* Shield button */}
             {showShieldButton && !shieldJustUsed && (
-            <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              onClick={(e) => { e.stopPropagation(); if (shieldEligible) setShowConfirm(true); }}
-              disabled={!shieldEligible}
-              title={shieldDisabledReason || 'Streak Shield aktivieren'}
-              style={{
-                background: shieldEligible
-                  ? `linear-gradient(135deg, ${shieldColor}, ${shieldColor}cc)`
-                  : `${currentTheme.text.muted}20`,
-                border: 'none',
-                borderRadius: 8,
-                width: 32,
-                height: 32,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: shieldEligible ? 'pointer' : 'default',
-                opacity: shieldEligible ? 1 : 0.4,
-                padding: 0,
-              }}
-            >
-              <Shield style={{ fontSize: 16, color: shieldEligible ? 'white' : currentTheme.text.muted }} />
-            </motion.button>
-          )}
-
-          {(displayStreak > 0 || (status === 'shieldable' && streak.currentStreak > 0)) && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              <span
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (shieldEligible) setShowConfirm(true);
+                }}
+                disabled={!shieldEligible}
+                title={shieldDisabledReason || 'Streak Shield aktivieren'}
                 style={{
-                  fontSize: 24,
-                  fontWeight: 800,
-                  color: flameColor,
-                  lineHeight: 1,
+                  background: shieldEligible
+                    ? `linear-gradient(135deg, ${shieldColor}, ${shieldColor}cc)`
+                    : `${currentTheme.text.muted}20`,
+                  border: 'none',
+                  borderRadius: 8,
+                  width: 32,
+                  height: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: shieldEligible ? 'pointer' : 'default',
+                  opacity: shieldEligible ? 1 : 0.4,
+                  padding: 0,
                 }}
               >
-                {status === 'shieldable' ? streak.currentStreak : displayStreak}
-              </span>
+                <Shield
+                  style={{
+                    fontSize: 16,
+                    color: shieldEligible ? 'white' : currentTheme.text.muted,
+                  }}
+                />
+              </motion.button>
+            )}
+
+            {(displayStreak > 0 || (status === 'shieldable' && streak.currentStreak > 0)) && (
               <motion.div
-                animate={{ y: [0, -2, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
               >
-                <Whatshot style={{ fontSize: 18, color: flameColor }} />
+                <span
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 800,
+                    color: flameColor,
+                    lineHeight: 1,
+                  }}
+                >
+                  {status === 'shieldable' ? streak.currentStreak : displayStreak}
+                </span>
+                <motion.div
+                  animate={{ y: [0, -2, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                >
+                  <Whatshot style={{ fontSize: 18, color: flameColor }} />
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-          {isRecord && (
-            <span
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                color: flameColor,
-                background: `${flameColor}18`,
-                padding: '2px 5px',
-                borderRadius: 4,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}
-            >
-              Rekord
-            </span>
-          )}
-          {!isRecord && displayStreak > 0 && streak.longestStreak > displayStreak && (
-            <span
-              style={{
-                fontSize: 10,
-                color: currentTheme.text.muted,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Best: {streak.longestStreak}
-            </span>
-          )}
+            )}
+            {isRecord && (
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: flameColor,
+                  background: `${flameColor}18`,
+                  padding: '2px 5px',
+                  borderRadius: 4,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Rekord
+              </span>
+            )}
+            {!isRecord && displayStreak > 0 && streak.longestStreak > displayStreak && (
+              <span
+                style={{
+                  fontSize: 10,
+                  color: currentTheme.text.muted,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Best: {streak.longestStreak}
+              </span>
+            )}
           </div>
         </div>
 
@@ -383,7 +401,9 @@ export const WatchStreakCard: React.FC = () => {
                         flexShrink: 0,
                       }}
                     />
-                    <span style={{ fontSize: 12, color: currentTheme.text.secondary }}>{label}</span>
+                    <span style={{ fontSize: 12, color: currentTheme.text.secondary }}>
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -428,7 +448,14 @@ export const WatchStreakCard: React.FC = () => {
               }}
             >
               {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div
                     style={{
@@ -463,10 +490,21 @@ export const WatchStreakCard: React.FC = () => {
               </div>
 
               {/* Description */}
-              <p style={{ margin: '0 0 16px', fontSize: 14, color: currentTheme.text.secondary, lineHeight: 1.5 }}>
+              <p
+                style={{
+                  margin: '0 0 16px',
+                  fontSize: 14,
+                  color: currentTheme.text.secondary,
+                  lineHeight: 1.5,
+                }}
+              >
                 <strong style={{ color: currentTheme.text.primary }}>{pet.name}</strong> opfert{' '}
-                <strong style={{ color: shieldColor }}>{PET_CONFIG.STREAK_SHIELD_XP_COST} XP</strong> um deine{' '}
-                <strong style={{ color: flameColor }}>{streak.currentStreak}-Tage-Streak</strong> zu retten.
+                <strong style={{ color: shieldColor }}>
+                  {PET_CONFIG.STREAK_SHIELD_XP_COST} XP
+                </strong>{' '}
+                um deine{' '}
+                <strong style={{ color: flameColor }}>{streak.currentStreak}-Tage-Streak</strong> zu
+                retten.
               </p>
 
               {/* Cost breakdown */}
@@ -482,11 +520,15 @@ export const WatchStreakCard: React.FC = () => {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span>XP-Kosten</span>
-                  <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>-{PET_CONFIG.STREAK_SHIELD_XP_COST} XP</span>
+                  <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
+                    -{PET_CONFIG.STREAK_SHIELD_XP_COST} XP
+                  </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Happiness</span>
-                  <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>-{PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST}</span>
+                  <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
+                    -{PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST}
+                  </span>
                 </div>
                 {pet.experience < PET_CONFIG.STREAK_SHIELD_XP_COST && (
                   <div

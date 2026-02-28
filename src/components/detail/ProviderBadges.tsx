@@ -11,11 +11,14 @@ interface Provider {
 }
 
 interface ProviderBadgesProps {
-  providers?: Provider[] | {
-    results?: { DE?: { flatrate?: Provider[] } };
-    DE?: { flatrate?: Provider[] };
-    flatrate?: Provider[];
-  } | null;
+  providers?:
+    | Provider[]
+    | {
+        results?: { DE?: { flatrate?: Provider[] } };
+        DE?: { flatrate?: Provider[] };
+        flatrate?: Provider[];
+      }
+    | null;
   size?: 'small' | 'medium' | 'large';
   maxDisplay?: number;
   showNames?: boolean;
@@ -29,82 +32,85 @@ interface ProviderBadgesProps {
 
 // Deep Link Mapping für deutsche Streaming-Anbieter
 // Provider IDs von TMDB: https://developer.themoviedb.org/reference/watch-provider-tv-list
-const PROVIDER_LINKS: Record<number, {
-  web: (title: string, tmdbId?: number) => string;
-  name: string;
-}> = {
+const PROVIDER_LINKS: Record<
+  number,
+  {
+    web: (title: string, tmdbId?: number) => string;
+    name: string;
+  }
+> = {
   // Netflix (ID: 8)
   8: {
     web: (title) => `https://www.netflix.com/search?q=${encodeURIComponent(title)}`,
-    name: 'Netflix'
+    name: 'Netflix',
   },
   // Amazon Prime Video (ID: 9, 119)
   9: {
     web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
-    name: 'Amazon Prime Video'
+    name: 'Amazon Prime Video',
   },
   119: {
     web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
-    name: 'Amazon Prime Video'
+    name: 'Amazon Prime Video',
   },
   // Disney+ (ID: 337)
   337: {
     web: (title) => `https://www.disneyplus.com/de-de/search?q=${encodeURIComponent(title)}`,
-    name: 'Disney Plus'
+    name: 'Disney Plus',
   },
   // Apple TV+ (ID: 350)
   350: {
     web: (title) => `https://tv.apple.com/de/search?term=${encodeURIComponent(title)}`,
-    name: 'Apple TV Plus'
+    name: 'Apple TV Plus',
   },
   // Paramount+ (ID: 531)
   531: {
     web: (title) => `https://www.paramountplus.com/de/search/?q=${encodeURIComponent(title)}`,
-    name: 'Paramount Plus'
+    name: 'Paramount Plus',
   },
   // WOW / Sky (ID: 30)
   30: {
     web: (title) => `https://www.wowtv.de/suche?search=${encodeURIComponent(title)}`,
-    name: 'WOW'
+    name: 'WOW',
   },
   // Crunchyroll (ID: 283)
   283: {
     web: (title) => `https://www.crunchyroll.com/de/search?q=${encodeURIComponent(title)}`,
-    name: 'Crunchyroll'
+    name: 'Crunchyroll',
   },
   // RTL+ (ID: 298)
   298: {
     web: (title) => `https://plus.rtl.de/suche?term=${encodeURIComponent(title)}`,
-    name: 'RTL+'
+    name: 'RTL+',
   },
   // Joyn / Joyn Plus (ID: 421, 304)
   421: {
     web: (title) => `https://www.joyn.de/search?q=${encodeURIComponent(title)}`,
-    name: 'Joyn Plus'
+    name: 'Joyn Plus',
   },
   304: {
     web: (title) => `https://www.joyn.de/search?q=${encodeURIComponent(title)}`,
-    name: 'Joyn'
+    name: 'Joyn',
   },
   // MagentaTV (ID: 178)
   178: {
     web: (title) => `https://web.magentatv.de/search?q=${encodeURIComponent(title)}`,
-    name: 'MagentaTV'
+    name: 'MagentaTV',
   },
   // Freevee (ID: 613)
   613: {
     web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
-    name: 'Freevee'
+    name: 'Freevee',
   },
   // ADN - Animation Digital Network (ID: 415)
   415: {
     web: (title) => `https://animationdigitalnetwork.de/search/${encodeURIComponent(title)}`,
-    name: 'Animation Digital Network'
+    name: 'Animation Digital Network',
   },
   // HBO Max / Max (ID: 1899)
   1899: {
     web: (title) => `https://play.hbomax.com/search/result?q=${encodeURIComponent(title)}`,
-    name: 'HBO Max'
+    name: 'HBO Max',
   },
 };
 
@@ -115,7 +121,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   showNames = false,
   searchTitle,
   tmdbId,
-  mediaType: _mediaType // Reserved for future JustWatch integration
+  mediaType: _mediaType, // Reserved for future JustWatch integration
 }) => {
   if (!providers || (Array.isArray(providers) && providers.length === 0)) return null;
 
@@ -133,7 +139,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     'Netflix',
     'Paramount Plus',
     'RTL+',
-    'WOW'
+    'WOW',
   ];
 
   // Handle different provider data structures
@@ -144,7 +150,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     const lowerName = name.toLowerCase();
     if (lowerName.includes('netflix')) return 'Netflix';
     if (lowerName.includes('disney')) return 'Disney Plus';
-    if (lowerName.includes('amazon') || lowerName.includes('prime video')) return 'Amazon Prime Video';
+    if (lowerName.includes('amazon') || lowerName.includes('prime video'))
+      return 'Amazon Prime Video';
     if (lowerName.includes('paramount')) return 'Paramount Plus';
     if (lowerName.includes('apple tv')) return 'Apple TV Plus';
     if (lowerName.includes('joyn')) return 'Joyn Plus';
@@ -163,9 +170,10 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     if (seenProviders.has(normalizedName)) return false;
 
     // Check if allowed
-    const isAllowed = allowedProviders.some(allowed =>
-      normalizedName.toLowerCase().includes(allowed.toLowerCase()) ||
-      allowed.toLowerCase().includes(normalizedName.toLowerCase())
+    const isAllowed = allowedProviders.some(
+      (allowed) =>
+        normalizedName.toLowerCase().includes(allowed.toLowerCase()) ||
+        allowed.toLowerCase().includes(normalizedName.toLowerCase())
     );
 
     if (isAllowed) {
@@ -193,18 +201,20 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   const sizeStyles = {
     small: { width: 20, height: 20, fontSize: '9px' },
     medium: { width: 28, height: 28, fontSize: '10px' },
-    large: { width: 36, height: 36, fontSize: '11px' }
+    large: { width: 36, height: 36, fontSize: '11px' },
   };
 
   const style = sizeStyles[size];
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: '4px',
-      alignItems: 'center',
-      flexWrap: 'wrap'
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        gap: '4px',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+      }}
+    >
       {displayProviders.map((provider, index) => {
         const logoPath = provider.logo_path || provider.logo;
         const providerName = provider.provider_name || provider.name || 'Unknown';
@@ -212,9 +222,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
 
         // Deep Link ermitteln
         const providerConfig = PROVIDER_LINKS[providerId as number];
-        const deepLink = searchTitle && providerConfig
-          ? providerConfig.web(searchTitle, tmdbId)
-          : null;
+        const deepLink =
+          searchTitle && providerConfig ? providerConfig.web(searchTitle, tmdbId) : null;
 
         const badgeContent = (
           <>
@@ -226,7 +235,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
                 }}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -236,17 +245,19 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
               />
             ) : null}
 
-            <div style={{
-              display: logoPath ? 'none' : 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-              height: '100%',
-              fontSize: style.fontSize,
-              fontWeight: 'bold',
-              color: 'white',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            }}>
+            <div
+              style={{
+                display: logoPath ? 'none' : 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%',
+                fontSize: style.fontSize,
+                fontWeight: 'bold',
+                color: 'white',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              }}
+            >
               {providerName.substring(0, 2).toUpperCase()}
             </div>
           </>
@@ -297,38 +308,38 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
 
         return (
           <Tooltip key={providerId} title={providerName} arrow>
-            <div
-              style={badgeStyle}
-            >
-              {badgeContent}
-            </div>
+            <div style={badgeStyle}>{badgeContent}</div>
           </Tooltip>
         );
       })}
 
       {remainingCount > 0 && (
-        <div style={{
-          width: style.width,
-          height: style.height,
-          borderRadius: '6px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: style.fontSize,
-          fontWeight: 'bold',
-          color: 'rgba(255, 255, 255, 0.7)'
-        }}>
+        <div
+          style={{
+            width: style.width,
+            height: style.height,
+            borderRadius: '6px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: style.fontSize,
+            fontWeight: 'bold',
+            color: 'rgba(255, 255, 255, 0.7)',
+          }}
+        >
           +{remainingCount}
         </div>
       )}
 
       {showNames && displayProviders.length === 1 && (
-        <span style={{
-          fontSize: '11px',
-          color: 'rgba(255, 255, 255, 0.6)',
-          marginLeft: '4px'
-        }}>
+        <span
+          style={{
+            fontSize: '11px',
+            color: 'rgba(255, 255, 255, 0.6)',
+            marginLeft: '4px',
+          }}
+        >
           {displayProviders[0].provider_name || displayProviders[0].name || 'Unknown'}
         </span>
       )}

@@ -200,16 +200,51 @@ export interface WrappedAchievement {
 // Standard-Achievements die jedes Jahr verfügbar sind
 // icon values are icon identifiers, not emojis
 export const WRAPPED_ACHIEVEMENTS: Omit<WrappedAchievement, 'unlocked' | 'value'>[] = [
-  { id: 'night_owl', title: 'Nachteule', description: 'Mehr als 30% nachts geschaut', icon: 'moon' },
-  { id: 'early_bird', title: 'Frühaufsteher', description: 'Mehr als 30% morgens geschaut', icon: 'sunrise' },
+  {
+    id: 'night_owl',
+    title: 'Nachteule',
+    description: 'Mehr als 30% nachts geschaut',
+    icon: 'moon',
+  },
+  {
+    id: 'early_bird',
+    title: 'Frühaufsteher',
+    description: 'Mehr als 30% morgens geschaut',
+    icon: 'sunrise',
+  },
   { id: 'binge_king', title: 'Binge-König', description: '10+ Episoden am Stück', icon: 'crown' },
   { id: 'movie_lover', title: 'Cineast', description: '20+ Filme geschaut', icon: 'film' },
-  { id: 'series_addict', title: 'Serien-Junkie', description: '500+ Episoden geschaut', icon: 'tv' },
-  { id: 'genre_explorer', title: 'Genre-Entdecker', description: '5+ verschiedene Genres', icon: 'compass' },
-  { id: 'weekend_warrior', title: 'Wochenend-Krieger', description: '50%+ am Wochenende', icon: 'sword' },
+  {
+    id: 'series_addict',
+    title: 'Serien-Junkie',
+    description: '500+ Episoden geschaut',
+    icon: 'tv',
+  },
+  {
+    id: 'genre_explorer',
+    title: 'Genre-Entdecker',
+    description: '5+ verschiedene Genres',
+    icon: 'compass',
+  },
+  {
+    id: 'weekend_warrior',
+    title: 'Wochenend-Krieger',
+    description: '50%+ am Wochenende',
+    icon: 'sword',
+  },
   { id: 'consistent', title: 'Beständig', description: '30+ Tage Streak', icon: 'flame' },
-  { id: 'marathon_runner', title: 'Marathon-Läufer', description: '100+ Stunden geschaut', icon: 'runner' },
-  { id: 'completionist', title: 'Abschließer', description: '5+ Serien abgeschlossen', icon: 'check' },
+  {
+    id: 'marathon_runner',
+    title: 'Marathon-Läufer',
+    description: '100+ Stunden geschaut',
+    icon: 'runner',
+  },
+  {
+    id: 'completionist',
+    title: 'Abschließer',
+    description: '5+ Serien abgeschlossen',
+    icon: 'check',
+  },
 ];
 
 // ========================================
@@ -276,12 +311,28 @@ export const DEFAULT_SLIDE_CONFIG: WrappedSlideConfig[] = [
 // ========================================
 
 export const MONTH_NAMES = [
-  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+  'Januar',
+  'Februar',
+  'März',
+  'April',
+  'Mai',
+  'Juni',
+  'Juli',
+  'August',
+  'September',
+  'Oktober',
+  'November',
+  'Dezember',
 ];
 
 export const DAY_NAMES = [
-  'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'
+  'Sonntag',
+  'Montag',
+  'Dienstag',
+  'Mittwoch',
+  'Donnerstag',
+  'Freitag',
+  'Samstag',
 ];
 
 export const TIME_OF_DAY_LABELS: Record<string, string> = {

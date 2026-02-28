@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Badge,
-  IconButton,
-  Tooltip,
-  keyframes
-} from '@mui/material';
+import { Badge, IconButton, Tooltip, keyframes } from '@mui/material';
 import { EmojiEvents } from '@mui/icons-material';
 import { useBadges } from './BadgeProvider';
 
@@ -43,8 +38,8 @@ const BadgeButton = () => {
           '&:hover': {
             color: '#ffed4e',
             transform: 'scale(1.1)',
-            transition: 'all 0.2s ease'
-          }
+            transition: 'all 0.2s ease',
+          },
         }}
       >
         <Badge
@@ -54,8 +49,8 @@ const BadgeButton = () => {
             '& .MuiBadge-badge': {
               backgroundColor: '#ff4444',
               color: 'white',
-              fontWeight: 'bold'
-            }
+              fontWeight: 'bold',
+            },
           }}
         >
           <EmojiEvents sx={{ fontSize: 28 }} />

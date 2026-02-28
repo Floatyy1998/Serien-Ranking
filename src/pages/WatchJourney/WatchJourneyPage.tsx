@@ -442,11 +442,15 @@ export const WatchJourneyPage: React.FC = () => {
         >
           <BackButton />
           <div style={{ flex: 1 }}>
-            <GradientText as="h1" to={ACCENT_COLORS.movies} style={{
+            <GradientText
+              as="h1"
+              to={ACCENT_COLORS.movies}
+              style={{
                 margin: 0,
                 fontSize: 22,
                 fontWeight: 800,
-              }}>
+              }}
+            >
               Watch Journey
             </GradientText>
             <p style={{ margin: 0, fontSize: 12, color: textSecondary, marginTop: '2px' }}>

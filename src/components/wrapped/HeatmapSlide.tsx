@@ -81,7 +81,14 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
         transition={{ delay: 0.3, type: 'spring' }}
         style={{ marginBottom: '20px', zIndex: 1 }}
       >
-        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
+        <svg
+          width="50"
+          height="50"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="rgba(255,255,255,0.6)"
+          strokeWidth="2"
+        >
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M3 9h18M9 3v18" />
         </svg>
@@ -191,10 +198,10 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
                   i === 0
                     ? 'rgba(102, 126, 234, 0.3)'
                     : i === 1
-                    ? 'rgba(102, 126, 234, 0.5)'
-                    : i === 2
-                    ? 'rgba(118, 75, 162, 0.7)'
-                    : 'rgba(233, 69, 96, 0.9)',
+                      ? 'rgba(102, 126, 234, 0.5)'
+                      : i === 2
+                        ? 'rgba(118, 75, 162, 0.7)'
+                        : 'rgba(233, 69, 96, 0.9)',
               }}
             />
           ))}

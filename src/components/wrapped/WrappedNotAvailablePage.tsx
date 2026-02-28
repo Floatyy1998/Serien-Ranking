@@ -113,9 +113,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           border: '1px solid rgba(255, 255, 255, 0.2)',
         }}
       >
-        <span style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>
-          Wrapped {year}
-        </span>
+        <span style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>Wrapped {year}</span>
       </motion.div>
 
       {/* Title */}
@@ -147,8 +145,8 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           marginBottom: '40px',
         }}
       >
-        Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme –
-        Ende des Jahres zeigen wir dir deine persönlichen Highlights!
+        Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme – Ende
+        des Jahres zeigen wir dir deine persönlichen Highlights!
       </motion.p>
 
       {/* Stats Preview */}
@@ -181,9 +179,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
           >
-            <div style={{ color: '#667eea', fontSize: '24px', display: 'flex' }}>
-              {item.icon}
-            </div>
+            <div style={{ color: '#667eea', fontSize: '24px', display: 'flex' }}>{item.icon}</div>
             <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }}>
               {item.label}
             </span>

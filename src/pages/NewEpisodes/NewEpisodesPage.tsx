@@ -26,7 +26,12 @@ import { useDiscussionCount } from '../../hooks/useDiscussionCounts';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { getImageUrl } from '../../utils/imageUrl';
-import { HorizontalScrollContainer, LoadingSpinner, PageHeader, PageLayout } from '../../components/ui';
+import {
+  HorizontalScrollContainer,
+  LoadingSpinner,
+  PageHeader,
+  PageLayout,
+} from '../../components/ui';
 
 const EpisodeDiscussionButton: React.FC<{
   seriesId: number;
@@ -129,8 +134,12 @@ export const NewEpisodesPage = () => {
 
       requestAnimationFrame(() => {
         if (scrollContainer) scrollContainer.scrollTop = scrollY;
-        setTimeout(() => { if (scrollContainer) scrollContainer.scrollTop = scrollY; }, 100);
-        setTimeout(() => { if (scrollContainer) scrollContainer.scrollTop = scrollY; }, 300);
+        setTimeout(() => {
+          if (scrollContainer) scrollContainer.scrollTop = scrollY;
+        }, 100);
+        setTimeout(() => {
+          if (scrollContainer) scrollContainer.scrollTop = scrollY;
+        }, 300);
       });
 
       sessionStorage.removeItem('comingFromDetail');
@@ -149,7 +158,6 @@ export const NewEpisodesPage = () => {
       return () => window.removeEventListener('resize', updateHeaderHeight);
     }
   }, []);
-
 
   const allEpisodes = useMemo(() => {
     const today = new Date();
@@ -187,7 +195,8 @@ export const NewEpisodesPage = () => {
             episodes.push({
               seriesId: series.id,
               seriesName: series.title || '',
-              seriesPoster: typeof series.poster === 'string' ? series.poster : series.poster?.poster || '',
+              seriesPoster:
+                typeof series.poster === 'string' ? series.poster : series.poster?.poster || '',
               seriesNmr: series.nmr,
               seasonIndex,
               episodeIndex,
@@ -238,39 +247,42 @@ export const NewEpisodesPage = () => {
     }
   }, []);
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isPulling || isRefreshing) return;
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (!isPulling || isRefreshing) return;
 
-    const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
-    if (!scrollableDiv || scrollableDiv.scrollTop > 0) {
-      setIsPulling(false);
-      setPullDistance(0);
-      return;
-    }
+      const scrollableDiv = document.querySelector('[data-scrollable="episodes"]') as HTMLElement;
+      if (!scrollableDiv || scrollableDiv.scrollTop > 0) {
+        setIsPulling(false);
+        setPullDistance(0);
+        return;
+      }
 
-    const currentY = e.touches[0].clientY;
-    const rawDistance = currentY - startY.current;
+      const currentY = e.touches[0].clientY;
+      const rawDistance = currentY - startY.current;
 
-    if (rawDistance <= 5) {
-      setPullDistance(0);
-      return;
-    }
+      if (rawDistance <= 5) {
+        setPullDistance(0);
+        return;
+      }
 
-    let distance = rawDistance - 5;
-    if (distance > PULL_THRESHOLD) {
-      const overPull = distance - PULL_THRESHOLD;
-      distance = PULL_THRESHOLD + Math.pow(overPull, 0.6) * 0.4;
-    } else {
-      distance = distance * 0.8;
-    }
+      let distance = rawDistance - 5;
+      if (distance > PULL_THRESHOLD) {
+        const overPull = distance - PULL_THRESHOLD;
+        distance = PULL_THRESHOLD + Math.pow(overPull, 0.6) * 0.4;
+      } else {
+        distance = distance * 0.8;
+      }
 
-    distance = Math.max(0, Math.min(MAX_PULL, distance));
+      distance = Math.max(0, Math.min(MAX_PULL, distance));
 
-    if (distance > 0) {
-      e.preventDefault();
-      setPullDistance(distance);
-    }
-  }, [isPulling, isRefreshing]);
+      if (distance > 0) {
+        e.preventDefault();
+        setPullDistance(distance);
+      }
+    },
+    [isPulling, isRefreshing]
+  );
 
   const handleTouchEnd = useCallback(() => {
     if (!isPulling || isRefreshing) return;
@@ -348,7 +360,9 @@ export const NewEpisodesPage = () => {
     if (scrollableDiv) {
       scrollableDiv.addEventListener('scroll', handleScroll);
       scrollableDiv.addEventListener('touchstart', handleTouchStart as EventListener);
-      scrollableDiv.addEventListener('touchmove', handleTouchMove as EventListener, { passive: false });
+      scrollableDiv.addEventListener('touchmove', handleTouchMove as EventListener, {
+        passive: false,
+      });
       scrollableDiv.addEventListener('touchend', handleTouchEnd as EventListener);
 
       return () => {
@@ -366,24 +380,34 @@ export const NewEpisodesPage = () => {
     const key = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
 
     try {
-      const ref = firebase.database().ref(
-        `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-      );
+      const ref = firebase
+        .database()
+        .ref(
+          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
+        );
       await ref.set(true);
 
-      const watchCountRef = firebase.database().ref(
-        `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-      );
+      const watchCountRef = firebase
+        .database()
+        .ref(
+          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
+        );
       const snapshot = await watchCountRef.once('value');
       const currentCount = snapshot.val() || 0;
       await watchCountRef.set(currentCount + 1);
 
       // Always update lastWatchedAt
       const episodeBasePath = `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}`;
-      await firebase.database().ref(`${episodeBasePath}/lastWatchedAt`).set(new Date().toISOString());
+      await firebase
+        .database()
+        .ref(`${episodeBasePath}/lastWatchedAt`)
+        .set(new Date().toISOString());
 
       if (currentCount === 0) {
-        await firebase.database().ref(`${episodeBasePath}/firstWatchedAt`).set(new Date().toISOString());
+        await firebase
+          .database()
+          .ref(`${episodeBasePath}/firstWatchedAt`)
+          .set(new Date().toISOString());
 
         const series = seriesList.find((s) => s.id === episode.seriesId);
         await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
@@ -397,7 +421,7 @@ export const NewEpisodesPage = () => {
           episode.episodeRuntime,
           false,
           series?.genre?.genres,
-          series?.provider?.provider?.map(p => p.name)
+          series?.provider?.provider?.map((p) => p.name)
         );
       }
 
@@ -434,7 +458,10 @@ export const NewEpisodesPage = () => {
     }
   };
 
-  const handleEpisodeComplete = async (episode: UpcomingEpisode, swipeDirection: 'left' | 'right' = 'right') => {
+  const handleEpisodeComplete = async (
+    episode: UpcomingEpisode,
+    swipeDirection: 'left' | 'right' = 'right'
+  ) => {
     if (!hasEpisodeAired(episode)) return;
 
     const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
@@ -443,22 +470,28 @@ export const NewEpisodesPage = () => {
 
     if (user) {
       try {
-        const ref = firebase.database().ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-        );
+        const ref = firebase
+          .database()
+          .ref(
+            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
+          );
         await ref.set(true);
 
-        const watchCountRef = firebase.database().ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-        );
+        const watchCountRef = firebase
+          .database()
+          .ref(
+            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
+          );
         const snapshot = await watchCountRef.once('value');
         const currentCount = snapshot.val() || 0;
         await watchCountRef.set(currentCount + 1);
 
         if (currentCount === 0) {
-          const firstWatchedRef = firebase.database().ref(
-            `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
-          );
+          const firstWatchedRef = firebase
+            .database()
+            .ref(
+              `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
+            );
           await firstWatchedRef.set(new Date().toISOString());
 
           const series = seriesList.find((s) => s.id === episode.seriesId);
@@ -473,7 +506,7 @@ export const NewEpisodesPage = () => {
             episode.episodeRuntime,
             false,
             series?.genre?.genres,
-            series?.provider?.provider?.map(p => p.name)
+            series?.provider?.provider?.map((p) => p.name)
           );
         }
       } catch (error) {
@@ -530,775 +563,906 @@ export const NewEpisodesPage = () => {
           flexDirection: 'column',
         }}
       >
+        {/* Premium Pull to refresh indicator */}
+        <AnimatePresence>
+          {pullDistance > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              style={{
+                position: 'fixed',
+                top: headerHeight + 20,
+                left: '50vw',
+                transform: 'translateX(-50%)',
+                background: `linear-gradient(135deg, ${currentTheme.background.card}f5, ${currentTheme.background.surface}f5)`,
+                border: `1px solid ${currentTheme.primary}40`,
+                borderRadius: '16px',
+                padding: '12px 20px',
+                color: currentTheme.primary,
+                fontSize: '13px',
+                fontWeight: 600,
+                zIndex: 25,
+                backdropFilter: 'blur(20px)',
+                boxShadow: `0 4px 15px ${currentTheme.primary}30`,
+              }}
+            >
+              {isRefreshing
+                ? 'Lade 7 weitere Tage...'
+                : pullDistance >= PULL_THRESHOLD
+                  ? 'Loslassen für alte Episoden'
+                  : `${Math.round((pullDistance / PULL_THRESHOLD) * 100)}%`}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Premium Pull to refresh indicator */}
-      <AnimatePresence>
-        {pullDistance > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+        {/* Premium Fixed Header */}
+        <div
+          ref={headerRef}
+          style={{
+            padding: '0',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 20,
+            background: `${currentTheme.background.default}f0`,
+            backdropFilter: 'blur(20px)',
+          }}
+        >
+          {/* Premium gradient overlay */}
+          <div
             style={{
-              position: 'fixed',
-              top: headerHeight + 20,
-              left: '50vw',
-              transform: 'translateX(-50%)',
-              background: `linear-gradient(135deg, ${currentTheme.background.card}f5, ${currentTheme.background.surface}f5)`,
-              border: `1px solid ${currentTheme.primary}40`,
-              borderRadius: '16px',
-              padding: '12px 20px',
-              color: currentTheme.primary,
-              fontSize: '13px',
-              fontWeight: 600,
-              zIndex: 25,
-              backdropFilter: 'blur(20px)',
-              boxShadow: `0 4px 15px ${currentTheme.primary}30`,
-            }}
-          >
-            {isRefreshing
-              ? 'Lade 7 weitere Tage...'
-              : pullDistance >= PULL_THRESHOLD
-                ? 'Loslassen für alte Episoden'
-                : `${Math.round((pullDistance / PULL_THRESHOLD) * 100)}%`}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Premium Fixed Header */}
-      <div
-        ref={headerRef}
-        style={{
-          padding: '0',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 20,
-          background: `${currentTheme.background.default}f0`,
-          backdropFilter: 'blur(20px)',
-        }}
-      >
-        {/* Premium gradient overlay */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `linear-gradient(180deg, ${currentTheme.primary}15 0%, transparent 100%)`,
-          pointerEvents: 'none',
-        }} />
-
-        <PageHeader
-          title="Episoden Kalender"
-          gradientTo="#8b5cf6"
-          icon={<CalendarToday style={{
-            fontSize: '24px',
-            color: currentTheme.primary,
-            WebkitTextFillColor: currentTheme.primary,
-          }} />}
-          subtitle={`${allEpisodes.length} Episoden`}
-          sticky={false}
-          style={{ paddingTop: 'calc(30px + env(safe-area-inset-top))' }}
-        />
-
-        {/* Premium Search Bar */}
-        <div style={{ marginBottom: '16px', position: 'relative', padding: '0 20px' }}>
-          <Search style={{
-            position: 'absolute',
-            left: '34px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            fontSize: '20px',
-            color: currentTheme.text.muted,
-          }} />
-          <input
-            type="text"
-            placeholder="Nach Serie suchen..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px 14px 12px 44px',
-              background: currentTheme.background.surface,
-              border: `1px solid ${currentTheme.border.default}`,
-              borderRadius: '14px',
-              color: currentTheme.text.primary,
-              fontSize: '14px',
-              outline: 'none',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(180deg, ${currentTheme.primary}15 0%, transparent 100%)`,
+              pointerEvents: 'none',
             }}
           />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
+
+          <PageHeader
+            title="Episoden Kalender"
+            gradientTo="#8b5cf6"
+            icon={
+              <CalendarToday
+                style={{
+                  fontSize: '24px',
+                  color: currentTheme.primary,
+                  WebkitTextFillColor: currentTheme.primary,
+                }}
+              />
+            }
+            subtitle={`${allEpisodes.length} Episoden`}
+            sticky={false}
+            style={{ paddingTop: 'calc(30px + env(safe-area-inset-top))' }}
+          />
+
+          {/* Premium Search Bar */}
+          <div style={{ marginBottom: '16px', position: 'relative', padding: '0 20px' }}>
+            <Search
               style={{
                 position: 'absolute',
-                right: '34px',
+                left: '34px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: currentTheme.background.surfaceHover,
-                border: 'none',
+                fontSize: '20px',
                 color: currentTheme.text.muted,
-                cursor: 'pointer',
-                padding: '4px 8px',
-                fontSize: '12px',
-                borderRadius: '8px',
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Nach Serie suchen..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 14px 12px 44px',
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
+                borderRadius: '14px',
+                color: currentTheme.text.primary,
+                fontSize: '14px',
+                outline: 'none',
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  position: 'absolute',
+                  right: '34px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: currentTheme.background.surfaceHover,
+                  border: 'none',
+                  color: currentTheme.text.muted,
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  fontSize: '12px',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                }}
+              >
+                Löschen
+              </button>
+            )}
+          </div>
+
+          {/* Premium Filter Pills */}
+          <HorizontalScrollContainer
+            gap={10}
+            style={{ paddingBottom: '8px', paddingLeft: '20px', paddingRight: '20px' }}
+          >
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowAllSeries(!showAllSeries)}
+              style={{
+                background: showAllSeries
+                  ? `linear-gradient(135deg, ${currentTheme.primary}25, ${currentTheme.primary}10)`
+                  : `linear-gradient(135deg, ${currentTheme.status.success}25, ${currentTheme.status.success}10)`,
+                border: showAllSeries
+                  ? `1px solid ${currentTheme.primary}40`
+                  : `1px solid ${currentTheme.status.success}40`,
+                borderRadius: '12px',
+                padding: '10px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                whiteSpace: 'nowrap',
                 fontWeight: 600,
+                cursor: 'pointer',
+                color: showAllSeries ? currentTheme.primary : currentTheme.status.success,
               }}
             >
-              Löschen
-            </button>
-          )}
+              {showAllSeries ? (
+                <>
+                  <Visibility style={{ fontSize: '18px' }} /> Alle Serien
+                </>
+              ) : (
+                <>
+                  <VisibilityOff style={{ fontSize: '18px' }} /> Nur Watchlist
+                </>
+              )}
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={scrollToToday}
+              style={{
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                border: 'none',
+                borderRadius: '12px',
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '10px 14px',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                boxShadow: `0 4px 12px ${currentTheme.primary}40`,
+              }}
+            >
+              <Today style={{ fontSize: '18px' }} />
+              Heute
+            </motion.button>
+          </HorizontalScrollContainer>
         </div>
 
-        {/* Premium Filter Pills */}
-        <HorizontalScrollContainer gap={10} style={{ paddingBottom: '8px', paddingLeft: '20px', paddingRight: '20px' }}>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowAllSeries(!showAllSeries)}
-            style={{
-              background: showAllSeries
-                ? `linear-gradient(135deg, ${currentTheme.primary}25, ${currentTheme.primary}10)`
-                : `linear-gradient(135deg, ${currentTheme.status.success}25, ${currentTheme.status.success}10)`,
-              border: showAllSeries
-                ? `1px solid ${currentTheme.primary}40`
-                : `1px solid ${currentTheme.status.success}40`,
-              borderRadius: '12px',
-              padding: '10px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '13px',
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-              cursor: 'pointer',
-              color: showAllSeries ? currentTheme.primary : currentTheme.status.success,
-            }}
-          >
-            {showAllSeries ? (
-              <><Visibility style={{ fontSize: '18px' }} /> Alle Serien</>
-            ) : (
-              <><VisibilityOff style={{ fontSize: '18px' }} /> Nur Watchlist</>
-            )}
-          </motion.button>
-
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={scrollToToday}
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-              border: 'none',
-              borderRadius: '12px',
-              color: '#fff',
-              cursor: 'pointer',
-              padding: '10px 14px',
-              fontSize: '13px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: 700,
-              whiteSpace: 'nowrap',
-              boxShadow: `0 4px 12px ${currentTheme.primary}40`,
-            }}
-          >
-            <Today style={{ fontSize: '18px' }} />
-            Heute
-          </motion.button>
-        </HorizontalScrollContainer>
-      </div>
-
-      {/* Scrollable Episodes Container */}
-      <div
-        data-scrollable="episodes"
-        style={{
-          position: 'fixed',
-          top: headerHeight,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          overflow: 'auto',
-        }}
-      >
-        <motion.div
-          style={{ padding: '20px', position: 'relative', zIndex: 1 }}
-          animate={{ y: isPulling || isRefreshing ? pullDistance * 0.9 : 0 }}
-          transition={{ y: isPulling ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 40 } }}
+        {/* Scrollable Episodes Container */}
+        <div
+          data-scrollable="episodes"
+          style={{
+            position: 'fixed',
+            top: headerHeight,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            overflow: 'auto',
+          }}
         >
-          {Object.keys(groupedEpisodes).length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                background: currentTheme.background.card,
-                borderRadius: '20px',
-                border: `1px solid ${currentTheme.border.default}`,
-              }}
-            >
-              <NewReleases style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }} />
-              <h2 style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}>
-                Keine Episoden
-              </h2>
-              <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
-                Es gibt aktuell keine Episoden {showAllSeries ? '' : 'in deiner Watchlist'}
-              </p>
-            </motion.div>
-          ) : (
-            Object.entries(groupedEpisodes).map(([date, seriesGroups]) => {
-              const dateObj = new Date(
-                allEpisodes.find(
-                  (ep) =>
-                    ep.airDate.toLocaleDateString('de-DE', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    }) === date
-                )?.airDate || new Date()
-              );
-
-              const isPast = dateObj < new Date() && !isToday(dateObj);
-              const isTodayDate = isToday(dateObj);
-
-              return (
-                <motion.div
-                  key={date}
-                  ref={isTodayDate ? todayRef : undefined}
-                  data-date={date}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: isPast ? 0.7 : 1, y: 0 }}
-                  style={{ marginBottom: '28px' }}
+          <motion.div
+            style={{ padding: '20px', position: 'relative', zIndex: 1 }}
+            animate={{ y: isPulling || isRefreshing ? pullDistance * 0.9 : 0 }}
+            transition={{
+              y: isPulling ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 40 },
+            }}
+          >
+            {Object.keys(groupedEpisodes).length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                  background: currentTheme.background.card,
+                  borderRadius: '20px',
+                  border: `1px solid ${currentTheme.border.default}`,
+                }}
+              >
+                <NewReleases
+                  style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }}
+                />
+                <h2
+                  style={{ color: currentTheme.text.primary, margin: '0 0 8px 0', fontWeight: 700 }}
                 >
-                  {/* Premium Date Header */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    marginBottom: '14px',
-                    padding: '12px 16px',
-                    background: isTodayDate
-                      ? `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`
-                      : isPast
-                        ? currentTheme.background.surface
-                        : currentTheme.background.card,
-                    borderRadius: '16px',
-                    border: isTodayDate
-                      ? `2px solid ${currentTheme.primary}50`
-                      : `1px solid ${currentTheme.border.default}`,
-                    boxShadow: isTodayDate ? `0 4px 15px ${currentTheme.primary}25` : 'none',
-                  }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
-                      background: isTodayDate
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
-                        : currentTheme.background.surfaceHover,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      <CalendarToday style={{
-                        fontSize: '18px',
-                        color: isTodayDate ? '#fff' : currentTheme.text.muted,
-                      }} />
+                  Keine Episoden
+                </h2>
+                <p style={{ color: currentTheme.text.muted, margin: 0, fontSize: '14px' }}>
+                  Es gibt aktuell keine Episoden {showAllSeries ? '' : 'in deiner Watchlist'}
+                </p>
+              </motion.div>
+            ) : (
+              Object.entries(groupedEpisodes).map(([date, seriesGroups]) => {
+                const dateObj = new Date(
+                  allEpisodes.find(
+                    (ep) =>
+                      ep.airDate.toLocaleDateString('de-DE', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      }) === date
+                  )?.airDate || new Date()
+                );
+
+                const isPast = dateObj < new Date() && !isToday(dateObj);
+                const isTodayDate = isToday(dateObj);
+
+                return (
+                  <motion.div
+                    key={date}
+                    ref={isTodayDate ? todayRef : undefined}
+                    data-date={date}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: isPast ? 0.7 : 1, y: 0 }}
+                    style={{ marginBottom: '28px' }}
+                  >
+                    {/* Premium Date Header */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        marginBottom: '14px',
+                        padding: '12px 16px',
+                        background: isTodayDate
+                          ? `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`
+                          : isPast
+                            ? currentTheme.background.surface
+                            : currentTheme.background.card,
+                        borderRadius: '16px',
+                        border: isTodayDate
+                          ? `2px solid ${currentTheme.primary}50`
+                          : `1px solid ${currentTheme.border.default}`,
+                        boxShadow: isTodayDate ? `0 4px 15px ${currentTheme.primary}25` : 'none',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '10px',
+                          background: isTodayDate
+                            ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                            : currentTheme.background.surfaceHover,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CalendarToday
+                          style={{
+                            fontSize: '18px',
+                            color: isTodayDate ? '#fff' : currentTheme.text.muted,
+                          }}
+                        />
+                      </div>
+                      <h2
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 700,
+                          margin: 0,
+                          color: isTodayDate ? currentTheme.primary : currentTheme.text.primary,
+                        }}
+                      >
+                        {isTodayDate ? 'Heute' : date}
+                      </h2>
+                      <span
+                        style={{
+                          marginLeft: 'auto',
+                          fontSize: '12px',
+                          color: currentTheme.text.muted,
+                          background: currentTheme.background.surface,
+                          padding: '4px 10px',
+                          borderRadius: '10px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {Object.values(seriesGroups).flat().length} Episode
+                        {Object.values(seriesGroups).flat().length !== 1 ? 'n' : ''}
+                      </span>
                     </div>
-                    <h2 style={{
-                      fontSize: '15px',
-                      fontWeight: 700,
-                      margin: 0,
-                      color: isTodayDate ? currentTheme.primary : currentTheme.text.primary,
-                    }}>
-                      {isTodayDate ? 'Heute' : date}
-                    </h2>
-                    <span style={{
-                      marginLeft: 'auto',
-                      fontSize: '12px',
-                      color: currentTheme.text.muted,
-                      background: currentTheme.background.surface,
-                      padding: '4px 10px',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                    }}>
-                      {Object.values(seriesGroups).flat().length} Episode{Object.values(seriesGroups).flat().length !== 1 ? 'n' : ''}
-                    </span>
-                  </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <AnimatePresence mode="popLayout">
-                      {Object.entries(seriesGroups).map(([seriesId, episodes]) => {
-                        const firstEpisode = episodes[0];
-                        const isExpanded = isSeriesExpanded(date, Number(seriesId));
-                        const allWatched = episodes.every((ep) => isEpisodeWatched(ep));
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <AnimatePresence mode="popLayout">
+                        {Object.entries(seriesGroups).map(([seriesId, episodes]) => {
+                          const firstEpisode = episodes[0];
+                          const isExpanded = isSeriesExpanded(date, Number(seriesId));
+                          const allWatched = episodes.every((ep) => isEpisodeWatched(ep));
 
-                        if (episodes.length === 1) {
-                          const episode = episodes[0];
-                          const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
-                          const watched = isEpisodeWatched(episode);
-                          const isCompleting = completingEpisodes.has(episodeKey);
-                          const isSwiping = swipingEpisodes.has(episodeKey);
-                          const isHidden = hiddenEpisodes.has(episodeKey);
-                          const hasAired = hasEpisodeAired(episode);
+                          if (episodes.length === 1) {
+                            const episode = episodes[0];
+                            const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
+                            const watched = isEpisodeWatched(episode);
+                            const isCompleting = completingEpisodes.has(episodeKey);
+                            const isSwiping = swipingEpisodes.has(episodeKey);
+                            const isHidden = hiddenEpisodes.has(episodeKey);
+                            const hasAired = hasEpisodeAired(episode);
 
-                          if (isHidden) return null;
+                            if (isHidden) return null;
 
-                          return (
-                            <motion.div
-                              key={episodeKey}
-                              data-block-swipe
-                              layout
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{
-                                opacity: isCompleting ? 0.5 : 1,
-                                y: 0,
-                                scale: isCompleting ? 0.95 : 1,
-                              }}
-                              exit={{
-                                opacity: 0,
-                                x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
-                                transition: { duration: 0.3 },
-                              }}
-                              style={{ position: 'relative' }}
-                            >
+                            return (
                               <motion.div
-                                drag={hasAired && !watched ? 'x' : false}
-                                dragConstraints={{ left: 0, right: 0 }}
-                                dragElastic={1}
-                                dragSnapToOrigin={true}
-                                onDragStart={() => {
-                                  if (hasAired && !watched) {
-                                    setSwipingEpisodes((prev) => new Set(prev).add(episodeKey));
-                                  }
+                                key={episodeKey}
+                                data-block-swipe
+                                layout
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{
+                                  opacity: isCompleting ? 0.5 : 1,
+                                  y: 0,
+                                  scale: isCompleting ? 0.95 : 1,
                                 }}
-                                onDrag={(_event, info: PanInfo) => {
-                                  if (hasAired && !watched) {
-                                    setDragOffsets((prev) => ({ ...prev, [episodeKey]: info.offset.x }));
-                                  }
+                                exit={{
+                                  opacity: 0,
+                                  x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
+                                  transition: { duration: 0.3 },
                                 }}
-                                onDragEnd={(event, info: PanInfo) => {
-                                  event.stopPropagation();
-                                  setSwipingEpisodes((prev) => {
-                                    const newSet = new Set(prev);
-                                    newSet.delete(episodeKey);
-                                    return newSet;
-                                  });
-                                  setDragOffsets((prev) => {
-                                    const newOffsets = { ...prev };
-                                    delete newOffsets[episodeKey];
-                                    return newOffsets;
-                                  });
-
-                                  if (hasAired && Math.abs(info.offset.x) > 100 && Math.abs(info.velocity.x) > 50 && !watched) {
-                                    const direction = info.offset.x > 0 ? 'right' : 'left';
-                                    handleEpisodeComplete(episode, direction);
-                                  }
-                                }}
-                                whileDrag={{ scale: 1.02 }}
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: '72px',
-                                  right: 0,
-                                  bottom: 0,
-                                  zIndex: 1,
-                                }}
-                              />
-
-                              <div style={{
-                                display: 'flex',
-                                gap: '12px',
-                                padding: '14px',
-                                background: isCompleting
-                                  ? `linear-gradient(90deg, ${currentTheme.status.success}30, ${currentTheme.status.success}10)`
-                                  : watched
-                                    ? `${currentTheme.status.success}15`
-                                    : currentTheme.background.card,
-                                borderRadius: '16px',
-                                border: `1px solid ${
-                                  isCompleting
-                                    ? currentTheme.status.success
-                                    : watched
-                                      ? `${currentTheme.status.success}40`
-                                      : currentTheme.border.default
-                                }`,
-                                transition: 'all 0.3s ease',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                opacity: isPast && !hasAired ? 0.5 : 1,
-                              }}>
+                                style={{ position: 'relative' }}
+                              >
                                 <motion.div
+                                  drag={hasAired && !watched ? 'x' : false}
+                                  dragConstraints={{ left: 0, right: 0 }}
+                                  dragElastic={1}
+                                  dragSnapToOrigin={true}
+                                  onDragStart={() => {
+                                    if (hasAired && !watched) {
+                                      setSwipingEpisodes((prev) => new Set(prev).add(episodeKey));
+                                    }
+                                  }}
+                                  onDrag={(_event, info: PanInfo) => {
+                                    if (hasAired && !watched) {
+                                      setDragOffsets((prev) => ({
+                                        ...prev,
+                                        [episodeKey]: info.offset.x,
+                                      }));
+                                    }
+                                  }}
+                                  onDragEnd={(event, info: PanInfo) => {
+                                    event.stopPropagation();
+                                    setSwipingEpisodes((prev) => {
+                                      const newSet = new Set(prev);
+                                      newSet.delete(episodeKey);
+                                      return newSet;
+                                    });
+                                    setDragOffsets((prev) => {
+                                      const newOffsets = { ...prev };
+                                      delete newOffsets[episodeKey];
+                                      return newOffsets;
+                                    });
+
+                                    if (
+                                      hasAired &&
+                                      Math.abs(info.offset.x) > 100 &&
+                                      Math.abs(info.velocity.x) > 50 &&
+                                      !watched
+                                    ) {
+                                      const direction = info.offset.x > 0 ? 'right' : 'left';
+                                      handleEpisodeComplete(episode, direction);
+                                    }
+                                  }}
+                                  whileDrag={{ scale: 1.02 }}
                                   style={{
                                     position: 'absolute',
                                     top: 0,
-                                    left: 0,
+                                    left: '72px',
                                     right: 0,
                                     bottom: 0,
-                                    background: `linear-gradient(90deg, transparent, ${currentTheme.status.success}30)`,
-                                    opacity: 0,
+                                    zIndex: 1,
                                   }}
-                                  animate={{ opacity: isSwiping ? 1 : 0 }}
                                 />
 
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    gap: '12px',
+                                    padding: '14px',
+                                    background: isCompleting
+                                      ? `linear-gradient(90deg, ${currentTheme.status.success}30, ${currentTheme.status.success}10)`
+                                      : watched
+                                        ? `${currentTheme.status.success}15`
+                                        : currentTheme.background.card,
+                                    borderRadius: '16px',
+                                    border: `1px solid ${
+                                      isCompleting
+                                        ? currentTheme.status.success
+                                        : watched
+                                          ? `${currentTheme.status.success}40`
+                                          : currentTheme.border.default
+                                    }`,
+                                    transition: 'all 0.3s ease',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    opacity: isPast && !hasAired ? 0.5 : 1,
+                                  }}
+                                >
+                                  <motion.div
+                                    style={{
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      background: `linear-gradient(90deg, transparent, ${currentTheme.status.success}30)`,
+                                      opacity: 0,
+                                    }}
+                                    animate={{ opacity: isSwiping ? 1 : 0 }}
+                                  />
+
+                                  <img
+                                    src={getImageUrl(episode.seriesPoster)}
+                                    alt={episode.seriesName}
+                                    onClick={() => {
+                                      const scrollContainer =
+                                        document.querySelector('.mobile-content');
+                                      const scrollY = scrollContainer
+                                        ? scrollContainer.scrollTop
+                                        : 0;
+                                      sessionStorage.setItem(
+                                        'newEpisodesScrollPosition',
+                                        scrollY.toString()
+                                      );
+                                      sessionStorage.setItem('comingFromDetail', 'false');
+                                      navigate(
+                                        `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`
+                                      );
+                                    }}
+                                    style={{
+                                      width: '52px',
+                                      height: '78px',
+                                      objectFit: 'cover',
+                                      borderRadius: '10px',
+                                      cursor: 'pointer',
+                                      position: 'relative',
+                                      zIndex: 2,
+                                      boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
+                                    }}
+                                  />
+
+                                  <div
+                                    style={{
+                                      flex: 1,
+                                      pointerEvents: 'none',
+                                      position: 'relative',
+                                      zIndex: 2,
+                                    }}
+                                  >
+                                    <h3
+                                      style={{
+                                        fontSize: '15px',
+                                        fontWeight: 700,
+                                        margin: '0 0 6px 0',
+                                        color: watched
+                                          ? currentTheme.status.success
+                                          : currentTheme.text.primary,
+                                      }}
+                                    >
+                                      {episode.seriesName}
+                                    </h3>
+                                    <p
+                                      style={{
+                                        fontSize: '13px',
+                                        margin: '0 0 4px 0',
+                                        color: currentTheme.text.secondary,
+                                      }}
+                                    >
+                                      S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
+                                      {episode.episodeName}
+                                    </p>
+                                    <p
+                                      style={{
+                                        fontSize: '12px',
+                                        margin: 0,
+                                        color: currentTheme.text.muted,
+                                        fontWeight: 500,
+                                      }}
+                                    >
+                                      {getRelativeDateLabel(episode)}
+                                    </p>
+                                  </div>
+
+                                  <AnimatePresence mode="wait">
+                                    {!hasAired ? (
+                                      <Tooltip title="Noch nicht ausgestrahlt" arrow>
+                                        <div
+                                          style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            padding: '8px',
+                                            background: currentTheme.background.surfaceHover,
+                                            borderRadius: '10px',
+                                          }}
+                                        >
+                                          <Timer
+                                            style={{
+                                              fontSize: '20px',
+                                              color: currentTheme.text.muted,
+                                            }}
+                                          />
+                                        </div>
+                                      </Tooltip>
+                                    ) : isCompleting ? (
+                                      <motion.div
+                                        initial={{ scale: 0, rotate: -180 }}
+                                        animate={{ scale: 1, rotate: 0 }}
+                                        style={{
+                                          padding: '8px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          background: `${currentTheme.status.success}20`,
+                                          borderRadius: '10px',
+                                        }}
+                                      >
+                                        <Check
+                                          style={{
+                                            fontSize: '24px',
+                                            color: currentTheme.status.success,
+                                          }}
+                                        />
+                                      </motion.div>
+                                    ) : watched ? (
+                                      <div
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px',
+                                        }}
+                                      >
+                                        <EpisodeDiscussionButton
+                                          seriesId={episode.seriesId}
+                                          seasonNumber={episode.seasonNumber}
+                                          episodeNumber={episode.episodeNumber}
+                                        />
+                                        <Tooltip title="Bereits gesehen" arrow>
+                                          <div
+                                            style={{
+                                              padding: '8px',
+                                              background: `${currentTheme.status.success}20`,
+                                              borderRadius: '10px',
+                                            }}
+                                          >
+                                            <CheckCircle
+                                              style={{
+                                                fontSize: '20px',
+                                                color: currentTheme.status.success,
+                                              }}
+                                            />
+                                          </div>
+                                        </Tooltip>
+                                      </div>
+                                    ) : (
+                                      <motion.div
+                                        animate={{ x: isSwiping ? 10 : 0 }}
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px',
+                                        }}
+                                      >
+                                        <EpisodeDiscussionButton
+                                          seriesId={episode.seriesId}
+                                          seasonNumber={episode.seasonNumber}
+                                          episodeNumber={episode.episodeNumber}
+                                        />
+                                        <Tooltip title="Als gesehen markieren" arrow>
+                                          <div
+                                            style={{
+                                              padding: '8px',
+                                              background: `${currentTheme.status.success}20`,
+                                              borderRadius: '10px',
+                                            }}
+                                          >
+                                            <PlayCircle
+                                              style={{
+                                                fontSize: '20px',
+                                                color: currentTheme.status.success,
+                                              }}
+                                            />
+                                          </div>
+                                        </Tooltip>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              </motion.div>
+                            );
+                          }
+
+                          return (
+                            <motion.div
+                              key={seriesId}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              style={{
+                                background: allWatched
+                                  ? `${currentTheme.status.success}10`
+                                  : currentTheme.background.card,
+                                borderRadius: '16px',
+                                border: allWatched
+                                  ? `1px solid ${currentTheme.status.success}40`
+                                  : `1px solid ${currentTheme.border.default}`,
+                                overflow: 'hidden',
+                                opacity: isPast ? 0.8 : 1,
+                              }}
+                            >
+                              <div
+                                onClick={() => toggleSeriesExpanded(date, Number(seriesId))}
+                                style={{
+                                  display: 'flex',
+                                  gap: '12px',
+                                  padding: '14px',
+                                  cursor: 'pointer',
+                                  background: currentTheme.background.surface,
+                                }}
+                              >
                                 <img
-                                  src={getImageUrl(episode.seriesPoster)}
-                                  alt={episode.seriesName}
-                                  onClick={() => {
-                                    const scrollContainer = document.querySelector('.mobile-content');
+                                  src={getImageUrl(firstEpisode.seriesPoster)}
+                                  alt={firstEpisode.seriesName}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const scrollContainer =
+                                      document.querySelector('.mobile-content');
                                     const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
-                                    sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
+                                    sessionStorage.setItem(
+                                      'newEpisodesScrollPosition',
+                                      scrollY.toString()
+                                    );
                                     sessionStorage.setItem('comingFromDetail', 'false');
-                                    navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`);
+                                    navigate(`/series/${firstEpisode.seriesId}`);
                                   }}
                                   style={{
-                                    width: '52px',
-                                    height: '78px',
+                                    width: '60px',
+                                    height: '90px',
                                     objectFit: 'cover',
                                     borderRadius: '10px',
                                     cursor: 'pointer',
-                                    position: 'relative',
-                                    zIndex: 2,
                                     boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
                                   }}
                                 />
 
-                                <div style={{ flex: 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}>
-                                  <h3 style={{
-                                    fontSize: '15px',
-                                    fontWeight: 700,
-                                    margin: '0 0 6px 0',
-                                    color: watched ? currentTheme.status.success : currentTheme.text.primary,
-                                  }}>
-                                    {episode.seriesName}
+                                <div style={{ flex: 1 }}>
+                                  <h3
+                                    style={{
+                                      fontSize: '15px',
+                                      fontWeight: 700,
+                                      margin: '0 0 6px 0',
+                                      color: allWatched
+                                        ? currentTheme.status.success
+                                        : currentTheme.text.primary,
+                                    }}
+                                  >
+                                    {firstEpisode.seriesName}
                                   </h3>
-                                  <p style={{
-                                    fontSize: '13px',
-                                    margin: '0 0 4px 0',
-                                    color: currentTheme.text.secondary,
-                                  }}>
-                                    S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
+                                  <p
+                                    style={{
+                                      fontSize: '13px',
+                                      margin: '0 0 4px 0',
+                                      color: currentTheme.text.secondary,
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {episodes.length} Episoden
                                   </p>
-                                  <p style={{
-                                    fontSize: '12px',
-                                    margin: 0,
-                                    color: currentTheme.text.muted,
-                                    fontWeight: 500,
-                                  }}>
-                                    {getRelativeDateLabel(episode)}
+                                  <p
+                                    style={{
+                                      fontSize: '12px',
+                                      margin: 0,
+                                      color: currentTheme.text.muted,
+                                    }}
+                                  >
+                                    {episodes.filter((ep) => isEpisodeWatched(ep)).length} von{' '}
+                                    {episodes.length} gesehen
                                   </p>
                                 </div>
 
-                                <AnimatePresence mode="wait">
-                                  {!hasAired ? (
-                                    <Tooltip title="Noch nicht ausgestrahlt" arrow>
-                                      <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        padding: '8px',
-                                        background: currentTheme.background.surfaceHover,
-                                        borderRadius: '10px',
-                                      }}>
-                                        <Timer style={{ fontSize: '20px', color: currentTheme.text.muted }} />
-                                      </div>
-                                    </Tooltip>
-                                  ) : isCompleting ? (
-                                    <motion.div
-                                      initial={{ scale: 0, rotate: -180 }}
-                                      animate={{ scale: 1, rotate: 0 }}
-                                      style={{
-                                        padding: '8px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        background: `${currentTheme.status.success}20`,
-                                        borderRadius: '10px',
-                                      }}
-                                    >
-                                      <Check style={{ fontSize: '24px', color: currentTheme.status.success }} />
-                                    </motion.div>
-                                  ) : watched ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <EpisodeDiscussionButton
-                                        seriesId={episode.seriesId}
-                                        seasonNumber={episode.seasonNumber}
-                                        episodeNumber={episode.episodeNumber}
-                                      />
-                                      <Tooltip title="Bereits gesehen" arrow>
-                                        <div style={{
-                                          padding: '8px',
-                                          background: `${currentTheme.status.success}20`,
-                                          borderRadius: '10px',
-                                        }}>
-                                          <CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
-                                        </div>
-                                      </Tooltip>
-                                    </div>
-                                  ) : (
-                                    <motion.div
-                                      animate={{ x: isSwiping ? 10 : 0 }}
-                                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                                    >
-                                      <EpisodeDiscussionButton
-                                        seriesId={episode.seriesId}
-                                        seasonNumber={episode.seasonNumber}
-                                        episodeNumber={episode.episodeNumber}
-                                      />
-                                      <Tooltip title="Als gesehen markieren" arrow>
-                                        <div style={{
-                                          padding: '8px',
-                                          background: `${currentTheme.status.success}20`,
-                                          borderRadius: '10px',
-                                        }}>
-                                          <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
-                                        </div>
-                                      </Tooltip>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
-                            </motion.div>
-                          );
-                        }
-
-                        return (
-                          <motion.div
-                            key={seriesId}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            style={{
-                              background: allWatched
-                                ? `${currentTheme.status.success}10`
-                                : currentTheme.background.card,
-                              borderRadius: '16px',
-                              border: allWatched
-                                ? `1px solid ${currentTheme.status.success}40`
-                                : `1px solid ${currentTheme.border.default}`,
-                              overflow: 'hidden',
-                              opacity: isPast ? 0.8 : 1,
-                            }}
-                          >
-                            <div
-                              onClick={() => toggleSeriesExpanded(date, Number(seriesId))}
-                              style={{
-                                display: 'flex',
-                                gap: '12px',
-                                padding: '14px',
-                                cursor: 'pointer',
-                                background: currentTheme.background.surface,
-                              }}
-                            >
-                              <img
-                                src={getImageUrl(firstEpisode.seriesPoster)}
-                                alt={firstEpisode.seriesName}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const scrollContainer = document.querySelector('.mobile-content');
-                                  const scrollY = scrollContainer ? scrollContainer.scrollTop : 0;
-                                  sessionStorage.setItem('newEpisodesScrollPosition', scrollY.toString());
-                                  sessionStorage.setItem('comingFromDetail', 'false');
-                                  navigate(`/series/${firstEpisode.seriesId}`);
-                                }}
-                                style={{
-                                  width: '60px',
-                                  height: '90px',
-                                  objectFit: 'cover',
-                                  borderRadius: '10px',
-                                  cursor: 'pointer',
-                                  boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
-                                }}
-                              />
-
-                              <div style={{ flex: 1 }}>
-                                <h3 style={{
-                                  fontSize: '15px',
-                                  fontWeight: 700,
-                                  margin: '0 0 6px 0',
-                                  color: allWatched ? currentTheme.status.success : currentTheme.text.primary,
-                                }}>
-                                  {firstEpisode.seriesName}
-                                </h3>
-                                <p style={{
-                                  fontSize: '13px',
-                                  margin: '0 0 4px 0',
-                                  color: currentTheme.text.secondary,
-                                  fontWeight: 500,
-                                }}>
-                                  {episodes.length} Episoden
-                                </p>
-                                <p style={{
-                                  fontSize: '12px',
-                                  margin: 0,
-                                  color: currentTheme.text.muted,
-                                }}>
-                                  {episodes.filter((ep) => isEpisodeWatched(ep)).length} von {episodes.length} gesehen
-                                </p>
-                              </div>
-
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                color: currentTheme.text.muted,
-                              }}>
-                                {isExpanded ? <ExpandLess /> : <ExpandMore />}
-                              </div>
-                            </div>
-
-                            <AnimatePresence>
-                              {isExpanded && (
-                                <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: 'auto', opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
+                                <div
                                   style={{
-                                    borderTop: `1px solid ${currentTheme.border.default}`,
-                                    padding: '10px',
-                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    color: currentTheme.text.muted,
                                   }}
                                 >
-                                  {episodes.map((episode, idx) => {
-                                    const watched = isEpisodeWatched(episode);
-                                    const hasAired = hasEpisodeAired(episode);
+                                  {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                                </div>
+                              </div>
 
-                                    return (
-                                      <div
-                                        key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
-                                        style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '12px',
-                                          padding: '10px',
-                                          borderRadius: '10px',
-                                          background: idx % 2 === 0 ? 'transparent' : currentTheme.background.surfaceHover,
-                                        }}
-                                      >
-                                        <div style={{ flex: 1 }}>
-                                          <p style={{
-                                            fontSize: '13px',
-                                            margin: 0,
-                                            color: watched ? currentTheme.status.success : currentTheme.text.primary,
-                                            fontWeight: 500,
-                                          }}>
-                                            S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
-                                          </p>
-                                        </div>
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    style={{
+                                      borderTop: `1px solid ${currentTheme.border.default}`,
+                                      padding: '10px',
+                                      overflow: 'hidden',
+                                    }}
+                                  >
+                                    {episodes.map((episode, idx) => {
+                                      const watched = isEpisodeWatched(episode);
+                                      const hasAired = hasEpisodeAired(episode);
 
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                          {hasAired && (
-                                            <EpisodeDiscussionButton
-                                              seriesId={episode.seriesId}
-                                              seasonNumber={episode.seasonNumber}
-                                              episodeNumber={episode.episodeNumber}
-                                            />
-                                          )}
-                                          <motion.button
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              if (hasAired) handleMarkWatched(episode);
-                                            }}
-                                            disabled={watched || !hasAired}
-                                            style={{
-                                              background: !hasAired
-                                                ? currentTheme.background.surfaceHover
-                                                : watched
-                                                  ? `${currentTheme.status.success}20`
-                                                  : `${currentTheme.status.success}15`,
-                                              border: `1px solid ${
-                                                !hasAired
-                                                  ? currentTheme.border.default
-                                                  : watched
-                                                    ? currentTheme.status.success
-                                                    : `${currentTheme.status.success}40`
-                                              }`,
-                                              borderRadius: '10px',
-                                              padding: '8px',
-                                              color: !hasAired
-                                                ? currentTheme.text.muted
-                                                : watched
+                                      return (
+                                        <div
+                                          key={`${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`}
+                                          style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '12px',
+                                            padding: '10px',
+                                            borderRadius: '10px',
+                                            background:
+                                              idx % 2 === 0
+                                                ? 'transparent'
+                                                : currentTheme.background.surfaceHover,
+                                          }}
+                                        >
+                                          <div style={{ flex: 1 }}>
+                                            <p
+                                              style={{
+                                                fontSize: '13px',
+                                                margin: 0,
+                                                color: watched
                                                   ? currentTheme.status.success
-                                                  : currentTheme.status.success,
-                                              cursor: !hasAired || watched ? 'default' : 'pointer',
+                                                  : currentTheme.text.primary,
+                                                fontWeight: 500,
+                                              }}
+                                            >
+                                              S{episode.seasonNumber} E{episode.episodeNumber} •{' '}
+                                              {episode.episodeName}
+                                            </p>
+                                          </div>
+
+                                          <div
+                                            style={{
                                               display: 'flex',
                                               alignItems: 'center',
-                                              justifyContent: 'center',
+                                              gap: '6px',
                                             }}
                                           >
-                                            {!hasAired ? (
-                                              <Timer style={{ fontSize: '18px' }} />
-                                            ) : watched ? (
-                                              <CheckCircle style={{ fontSize: '18px' }} />
-                                            ) : (
-                                              <PlayCircle style={{ fontSize: '18px' }} />
+                                            {hasAired && (
+                                              <EpisodeDiscussionButton
+                                                seriesId={episode.seriesId}
+                                                seasonNumber={episode.seasonNumber}
+                                                episodeNumber={episode.episodeNumber}
+                                              />
                                             )}
-                                          </motion.button>
+                                            <motion.button
+                                              whileTap={{ scale: 0.9 }}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (hasAired) handleMarkWatched(episode);
+                                              }}
+                                              disabled={watched || !hasAired}
+                                              style={{
+                                                background: !hasAired
+                                                  ? currentTheme.background.surfaceHover
+                                                  : watched
+                                                    ? `${currentTheme.status.success}20`
+                                                    : `${currentTheme.status.success}15`,
+                                                border: `1px solid ${
+                                                  !hasAired
+                                                    ? currentTheme.border.default
+                                                    : watched
+                                                      ? currentTheme.status.success
+                                                      : `${currentTheme.status.success}40`
+                                                }`,
+                                                borderRadius: '10px',
+                                                padding: '8px',
+                                                color: !hasAired
+                                                  ? currentTheme.text.muted
+                                                  : watched
+                                                    ? currentTheme.status.success
+                                                    : currentTheme.status.success,
+                                                cursor:
+                                                  !hasAired || watched ? 'default' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                              }}
+                                            >
+                                              {!hasAired ? (
+                                                <Timer style={{ fontSize: '18px' }} />
+                                              ) : watched ? (
+                                                <CheckCircle style={{ fontSize: '18px' }} />
+                                              ) : (
+                                                <PlayCircle style={{ fontSize: '18px' }} />
+                                              )}
+                                            </motion.button>
+                                          </div>
                                         </div>
-                                      </div>
-                                    );
-                                  })}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </motion.div>
-                        );
-                      })}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              );
-            })
-          )}
+                                      );
+                                    })}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </motion.div>
+                          );
+                        })}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
 
-          {loadingFuture && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+            {loadingFuture && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '24px',
+                  color: currentTheme.text.muted,
+                }}
+              >
+                <LoadingSpinner size={24} borderWidth={2} text="Lade zukünftige Episoden..." />
+              </motion.div>
+            )}
+
+            <div style={{ height: '100px' }} />
+          </motion.div>
+        </div>
+
+        {/* Premium Scroll to Today Button */}
+        <AnimatePresence>
+          {showScrollButton && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={scrollToToday}
               style={{
+                position: 'fixed',
+                bottom: '24px',
+                right: '24px',
+                width: '52px',
+                height: '52px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                border: 'none',
                 display: 'flex',
-                justifyContent: 'center',
                 alignItems: 'center',
-                gap: '12px',
-                padding: '24px',
-                color: currentTheme.text.muted,
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: `0 6px 20px ${currentTheme.primary}50`,
+                zIndex: 30,
               }}
             >
-              <LoadingSpinner size={24} borderWidth={2} text="Lade zukünftige Episoden..." />
-            </motion.div>
+              <Today style={{ fontSize: '24px', color: '#fff' }} />
+            </motion.button>
           )}
-
-          <div style={{ height: '100px' }} />
-        </motion.div>
-      </div>
-
-      {/* Premium Scroll to Today Button */}
-      <AnimatePresence>
-        {showScrollButton && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={scrollToToday}
-            style={{
-              position: 'fixed',
-              bottom: '24px',
-              right: '24px',
-              width: '52px',
-              height: '52px',
-              borderRadius: '16px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: `0 6px 20px ${currentTheme.primary}50`,
-              zIndex: 30,
-            }}
-          >
-            <Today style={{ fontSize: '24px', color: '#fff' }} />
-          </motion.button>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
       </div>
     </PageLayout>
   );

@@ -8,12 +8,12 @@
 
 // Basis-Interface für alle Watch-Events
 export interface WatchEvent {
-  timestamp: string;        // ISO-Datum
+  timestamp: string; // ISO-Datum
 
   // Zeitliche Metadaten für Auswertungen
-  month: number;            // 1-12
-  dayOfWeek: number;        // 0-6 (So-Sa)
-  hour: number;             // 0-23
+  month: number; // 1-12
+  dayOfWeek: number; // 0-6 (So-Sa)
+  hour: number; // 0-23
 
   // Gerät/Kontext (optional)
   deviceType?: 'mobile' | 'desktop' | 'tablet';
@@ -30,21 +30,21 @@ export interface EpisodeWatchEvent extends WatchEvent {
   // Episode-Details
   seasonNumber: number;
   episodeNumber: number;
-  episodeRuntime?: number;  // Minuten
+  episodeRuntime?: number; // Minuten
 
   // Genres für Genre-Statistiken
   genres?: string[];
 
   // Streaming-Dienst
-  provider?: string;        // z.B. "Netflix", "Disney+"
-  providers?: string[];     // Alle Provider (für Wrapped-Statistiken)
+  provider?: string; // z.B. "Netflix", "Disney+"
+  providers?: string[]; // Alle Provider (für Wrapped-Statistiken)
 
   // Watch-Kontext
   isRewatch: boolean;
 
   // Binge-Detection
-  isBingeSession?: boolean;           // < 30min seit letzter Episode
-  bingeSessionId?: string;            // Gruppiert Binge-Sessions
+  isBingeSession?: boolean; // < 30min seit letzter Episode
+  bingeSessionId?: string; // Gruppiert Binge-Sessions
 }
 
 // Film Watch-Event
@@ -54,25 +54,23 @@ export interface MovieWatchEvent extends WatchEvent {
   movieId: number;
   movieTitle: string;
 
-  runtime?: number;         // Minuten
-  rating?: number;          // 0-10
+  runtime?: number; // Minuten
+  rating?: number; // 0-10
 
   // Genres für Genre-Statistiken
   genres?: string[];
 
   // Streaming-Dienst
-  provider?: string;        // z.B. "Netflix", "Amazon Prime" (Hauptprovider für Abwärtskompatibilität)
-  providers?: string[];     // Alle Provider (für Wrapped-Statistiken)
+  provider?: string; // z.B. "Netflix", "Amazon Prime" (Hauptprovider für Abwärtskompatibilität)
+  providers?: string[]; // Alle Provider (für Wrapped-Statistiken)
 }
 
 // Union Type für alle Events
-export type ActivityEvent =
-  | EpisodeWatchEvent
-  | MovieWatchEvent;
+export type ActivityEvent = EpisodeWatchEvent | MovieWatchEvent;
 
 // Tägliche Zusammenfassung (für effiziente Wrapped-Berechnung)
 export interface DailySummary {
-  date: string;             // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
 
   episodesWatched: number;
   moviesWatched: number;
@@ -93,7 +91,7 @@ export interface DailySummary {
   longestBingeEpisodes: number;
 
   // Zeitliche Verteilung
-  hourlyDistribution: Record<number, number>;  // Stunde -> Minuten
+  hourlyDistribution: Record<number, number>; // Stunde -> Minuten
 }
 
 // Wöchentliche Zusammenfassung
@@ -110,8 +108,8 @@ export interface WeeklySummary {
   topSeries: { id: number; title: string; episodes: number }[];
   topGenres: { genre: string; minutes: number }[];
 
-  streakDays: number;       // Wie viele Tage am Stück geschaut
-  mostActiveDay: string;    // Wochentag
+  streakDays: number; // Wie viele Tage am Stück geschaut
+  mostActiveDay: string; // Wochentag
 }
 
 // Monatliche Zusammenfassung
@@ -204,7 +202,7 @@ export interface YearlyWrapped {
 
   busiestHour: {
     hour: number;
-    label: string;  // "20:00 - 21:00"
+    label: string; // "20:00 - 21:00"
     totalMinutes: number;
   };
 
@@ -222,7 +220,7 @@ export interface YearlyWrapped {
 
   // Streaks
   streakStats: {
-    longestStreak: number;        // Tage am Stück
+    longestStreak: number; // Tage am Stück
     longestStreakStart: string;
     longestStreakEnd: string;
     currentStreak: number;
@@ -343,8 +341,8 @@ export interface FirebaseActivityLog {
 // Firebase-Struktur für Summaries
 export interface FirebaseSummaries {
   // /users/{uid}/wrappedData/{year}/
-  daily: Record<string, DailySummary>;    // YYYY-MM-DD -> Summary
-  weekly: Record<string, WeeklySummary>;  // YYYY-WW -> Summary
+  daily: Record<string, DailySummary>; // YYYY-MM-DD -> Summary
+  weekly: Record<string, WeeklySummary>; // YYYY-WW -> Summary
   monthly: Record<string, MonthlySummary>; // YYYY-MM -> Summary
   yearly?: YearlyWrapped;
 }

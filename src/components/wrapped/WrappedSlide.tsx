@@ -19,9 +19,7 @@ export const WrappedSlide: React.FC<WrappedSlideProps> = ({
   gradient,
   className = '',
 }) => {
-  const backgroundStyle = gradient
-    ? { background: gradient }
-    : { backgroundColor };
+  const backgroundStyle = gradient ? { background: gradient } : { backgroundColor };
 
   return (
     <div

@@ -212,8 +212,7 @@ export const DiscussionFeedPage = () => {
                 filter === tab.id
                   ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
                   : currentTheme.background.card,
-              border:
-                filter === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
+              border: filter === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '14px',
               color: filter === tab.id ? 'white' : currentTheme.text.primary,
               fontSize: '14px',

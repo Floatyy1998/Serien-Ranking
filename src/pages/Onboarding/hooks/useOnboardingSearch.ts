@@ -36,20 +36,22 @@ export function useOnboardingSearch() {
   useEffect(() => {
     if (!API_KEY) return;
     Promise.all([
-      fetch(`${BASE}/genre/tv/list?api_key=${API_KEY}&language=de-DE`).then(r => r.json()),
-      fetch(`${BASE}/genre/movie/list?api_key=${API_KEY}&language=de-DE`).then(r => r.json()),
-    ]).then(([tv, movie]) => {
-      const seen = new Set<number>();
-      const merged: Genre[] = [];
-      for (const g of [...(tv.genres || []), ...(movie.genres || [])]) {
-        if (!seen.has(g.id)) {
-          seen.add(g.id);
-          merged.push(g);
+      fetch(`${BASE}/genre/tv/list?api_key=${API_KEY}&language=de-DE`).then((r) => r.json()),
+      fetch(`${BASE}/genre/movie/list?api_key=${API_KEY}&language=de-DE`).then((r) => r.json()),
+    ])
+      .then(([tv, movie]) => {
+        const seen = new Set<number>();
+        const merged: Genre[] = [];
+        for (const g of [...(tv.genres || []), ...(movie.genres || [])]) {
+          if (!seen.has(g.id)) {
+            seen.add(g.id);
+            merged.push(g);
+          }
         }
-      }
-      merged.sort((a, b) => a.name.localeCompare(b.name, 'de'));
-      setGenres(merged);
-    }).catch(() => {});
+        merged.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+        setGenres(merged);
+      })
+      .catch(() => {});
   }, []);
 
   // Fetch suggestions based on selected genres
@@ -76,13 +78,17 @@ export function useOnboardingSearch() {
         // Pro Genre: 1 Page TV + 1 Page Movie holen
         for (const genreId of limitedGenreIds) {
           const [tvRes, movieRes] = await Promise.all([
-            fetch(`${BASE}/discover/tv?api_key=${API_KEY}&language=de-DE&with_genres=${genreId}&sort_by=popularity.desc&page=1`).then(r => r.json()),
-            fetch(`${BASE}/discover/movie?api_key=${API_KEY}&language=de-DE&with_genres=${genreId}&sort_by=popularity.desc&page=1`).then(r => r.json()),
+            fetch(
+              `${BASE}/discover/tv?api_key=${API_KEY}&language=de-DE&with_genres=${genreId}&sort_by=popularity.desc&page=1`
+            ).then((r) => r.json()),
+            fetch(
+              `${BASE}/discover/movie?api_key=${API_KEY}&language=de-DE&with_genres=${genreId}&sort_by=popularity.desc&page=1`
+            ).then((r) => r.json()),
           ]);
 
           // TV items sammeln
           (tvRes.results || []).forEach((item: Record<string, unknown>) => {
-            if (item.poster_path && !allTvResults.find(i => i.id === item.id)) {
+            if (item.poster_path && !allTvResults.find((i) => i.id === item.id)) {
               allTvResults.push({
                 id: item.id as number,
                 title: (item.name || item.title || '') as string,
@@ -97,7 +103,7 @@ export function useOnboardingSearch() {
 
           // Movie items sammeln
           (movieRes.results || []).forEach((item: Record<string, unknown>) => {
-            if (item.poster_path && !allMovieResults.find(i => i.id === item.id)) {
+            if (item.poster_path && !allMovieResults.find((i) => i.id === item.id)) {
               allMovieResults.push({
                 id: item.id as number,
                 title: (item.title || item.name || '') as string,
@@ -111,20 +117,17 @@ export function useOnboardingSearch() {
         }
 
         // Sortiere nach Popularität und nimm Top Items
-        tvItems = allTvResults
-          .sort((a, b) => b.vote_average - a.vote_average)
-          .slice(0, 60);
+        tvItems = allTvResults.sort((a, b) => b.vote_average - a.vote_average).slice(0, 60);
 
-        movieItems = allMovieResults
-          .sort((a, b) => b.vote_average - a.vote_average)
-          .slice(0, 60);
-
+        movieItems = allMovieResults.sort((a, b) => b.vote_average - a.vote_average).slice(0, 60);
       } else {
         // Fallback: Trending wenn keine Genres gewählt
         console.log('Fetching trending (no genres selected)');
         const [tvRes, movieRes] = await Promise.all([
-          fetch(`${BASE}/trending/tv/week?api_key=${API_KEY}&language=de-DE`).then(r => r.json()),
-          fetch(`${BASE}/trending/movie/week?api_key=${API_KEY}&language=de-DE`).then(r => r.json())
+          fetch(`${BASE}/trending/tv/week?api_key=${API_KEY}&language=de-DE`).then((r) => r.json()),
+          fetch(`${BASE}/trending/movie/week?api_key=${API_KEY}&language=de-DE`).then((r) =>
+            r.json()
+          ),
         ]);
 
         tvItems = (tvRes.results || [])
@@ -156,7 +159,12 @@ export function useOnboardingSearch() {
       // Combine: Series first, then movies
       const combined: OnboardingItem[] = [...tvItems, ...movieItems];
 
-      console.log('Combined suggestions:', combined.length, 'items', `(${tvItems.length} series, ${movieItems.length} movies)`);
+      console.log(
+        'Combined suggestions:',
+        combined.length,
+        'items',
+        `(${tvItems.length} series, ${movieItems.length} movies)`
+      );
       setSuggestions(combined);
     } catch (error) {
       console.error('Fehler beim Laden der Vorschläge:', error);
@@ -180,8 +188,12 @@ export function useOnboardingSearch() {
       try {
         const encoded = encodeURIComponent(query.trim());
         const [tvRes, movieRes] = await Promise.all([
-          fetch(`${BASE}/search/tv?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then(r => r.json()),
-          fetch(`${BASE}/search/movie?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then(r => r.json()),
+          fetch(`${BASE}/search/tv?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then((r) =>
+            r.json()
+          ),
+          fetch(`${BASE}/search/movie?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then(
+            (r) => r.json()
+          ),
         ]);
 
         const results: OnboardingItem[] = [
@@ -202,7 +214,9 @@ export function useOnboardingSearch() {
             release_date: item.release_date as string,
             type: 'movie' as const,
           })),
-        ].sort((a, b) => (b.vote_average as number) - (a.vote_average as number)).slice(0, 20);
+        ]
+          .sort((a, b) => (b.vote_average as number) - (a.vote_average as number))
+          .slice(0, 20);
 
         setSearchResults(results);
       } catch {
@@ -214,43 +228,47 @@ export function useOnboardingSearch() {
   }, []);
 
   // Add item to user's list
-  const addToList = useCallback(async (item: OnboardingItem): Promise<boolean> => {
-    if (!user?.uid) return false;
+  const addToList = useCallback(
+    async (item: OnboardingItem): Promise<boolean> => {
+      if (!user?.uid) return false;
 
-    const itemKey = `${item.type}-${item.id}`;
-    setAddingId(itemKey);
+      const itemKey = `${item.type}-${item.id}`;
+      setAddingId(itemKey);
 
-    const endpoint = item.type === 'series'
-      ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
-      : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
+      const endpoint =
+        item.type === 'series'
+          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
+          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
 
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: import.meta.env.VITE_USER,
-          id: item.id,
-          uuid: user.uid,
-        }),
-      });
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: import.meta.env.VITE_USER,
+            id: item.id,
+            uuid: user.uid,
+          }),
+        });
 
-      if (response.ok) {
-        setAddedIds(prev => new Set(prev).add(itemKey));
-        return true;
+        if (response.ok) {
+          setAddedIds((prev) => new Set(prev).add(itemKey));
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      } finally {
+        setAddingId(null);
       }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      setAddingId(null);
-    }
-  }, [user?.uid]);
+    },
+    [user?.uid]
+  );
 
   // Remove item from added list (client-side only, doesn't delete from backend)
   const removeFromList = useCallback((item: OnboardingItem) => {
     const itemKey = `${item.type}-${item.id}`;
-    setAddedIds(prev => {
+    setAddedIds((prev) => {
       const next = new Set(prev);
       next.delete(itemKey);
       return next;

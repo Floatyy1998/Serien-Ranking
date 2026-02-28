@@ -8,42 +8,94 @@ import './styles/App.css';
 
 // Lazy load all pages for better code splitting
 const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })));
-const WatchNextPage = lazy(() => import('./pages/WatchNext').then((m) => ({ default: m.WatchNextPage })));
+const WatchNextPage = lazy(() =>
+  import('./pages/WatchNext').then((m) => ({ default: m.WatchNextPage }))
+);
 const RatingsPage = lazy(() => import('./pages/Ratings').then((m) => ({ default: m.RatingsPage })));
 const ProfilePage = lazy(() => import('./pages/Profile').then((m) => ({ default: m.ProfilePage })));
-const NewEpisodesPage = lazy(() => import('./pages/NewEpisodes').then((m) => ({ default: m.NewEpisodesPage })));
-const RecentlyWatchedPage = lazy(() => import('./pages/RecentlyWatched').then((m) => ({ default: m.RecentlyWatchedPage })));
-const DiscoverPage = lazy(() => import('./pages/Discover').then((m) => ({ default: m.DiscoverPage })));
-const ActivityPage = lazy(() => import('./pages/Activity').then((m) => ({ default: m.ActivityPage })));
+const NewEpisodesPage = lazy(() =>
+  import('./pages/NewEpisodes').then((m) => ({ default: m.NewEpisodesPage }))
+);
+const RecentlyWatchedPage = lazy(() =>
+  import('./pages/RecentlyWatched').then((m) => ({ default: m.RecentlyWatchedPage }))
+);
+const DiscoverPage = lazy(() =>
+  import('./pages/Discover').then((m) => ({ default: m.DiscoverPage }))
+);
+const ActivityPage = lazy(() =>
+  import('./pages/Activity').then((m) => ({ default: m.ActivityPage }))
+);
 const SearchPage = lazy(() => import('./pages/Search').then((m) => ({ default: m.SearchPage })));
 const BadgesPage = lazy(() => import('./pages/Badges').then((m) => ({ default: m.BadgesPage })));
 const PetsPage = lazy(() => import('./pages/Pets').then((m) => ({ default: m.PetsPage })));
 const ThemePage = lazy(() => import('./pages/Theme').then((m) => ({ default: m.ThemePage })));
-const HomeLayoutPage = lazy(() => import('./pages/HomeLayout').then((m) => ({ default: m.HomeLayoutPage })));
+const HomeLayoutPage = lazy(() =>
+  import('./pages/HomeLayout').then((m) => ({ default: m.HomeLayoutPage }))
+);
 const StatsPage = lazy(() => import('./pages/Stats').then((m) => ({ default: m.StatsPage })));
 const WrappedPage = lazy(() => import('./pages/Wrapped').then((m) => ({ default: m.WrappedPage })));
-const ActorUniversePage = lazy(() => import('./pages/ActorUniverse').then((m) => ({ default: m.ActorUniversePage })));
-const SettingsPage = lazy(() => import('./pages/Settings').then((m) => ({ default: m.SettingsPage })));
-const ProfileSettingsPage = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettingsPage })));
-const SeriesDetailPage = lazy(() => import('./pages/SeriesDetail').then((m) => ({ default: m.SeriesDetailPage })));
-const EpisodeManagementPage = lazy(() => import('./pages/EpisodeManagement').then((m) => ({ default: m.EpisodeManagementPage })));
-const EpisodeDiscussionPage = lazy(() => import('./pages/EpisodeDiscussion').then((m) => ({ default: m.EpisodeDiscussionPage })));
+const ActorUniversePage = lazy(() =>
+  import('./pages/ActorUniverse').then((m) => ({ default: m.ActorUniversePage }))
+);
+const SettingsPage = lazy(() =>
+  import('./pages/Settings').then((m) => ({ default: m.SettingsPage }))
+);
+const ProfileSettingsPage = lazy(() =>
+  import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettingsPage }))
+);
+const SeriesDetailPage = lazy(() =>
+  import('./pages/SeriesDetail').then((m) => ({ default: m.SeriesDetailPage }))
+);
+const EpisodeManagementPage = lazy(() =>
+  import('./pages/EpisodeManagement').then((m) => ({ default: m.EpisodeManagementPage }))
+);
+const EpisodeDiscussionPage = lazy(() =>
+  import('./pages/EpisodeDiscussion').then((m) => ({ default: m.EpisodeDiscussionPage }))
+);
 const RatingPage = lazy(() => import('./pages/Rating').then((m) => ({ default: m.RatingPage })));
-const MovieDetailPage = lazy(() => import('./pages/MovieDetail').then((m) => ({ default: m.MovieDetailPage })));
-const FriendProfilePage = lazy(() => import('./pages/FriendProfile').then((m) => ({ default: m.FriendProfilePage })));
-const TasteMatchPage = lazy(() => import('./pages/TasteMatch').then((m) => ({ default: m.TasteMatchPage })));
-const WatchJourneyPage = lazy(() => import('./pages/WatchJourney').then((m) => ({ default: m.WatchJourneyPage })));
+const MovieDetailPage = lazy(() =>
+  import('./pages/MovieDetail').then((m) => ({ default: m.MovieDetailPage }))
+);
+const FriendProfilePage = lazy(() =>
+  import('./pages/FriendProfile').then((m) => ({ default: m.FriendProfilePage }))
+);
+const TasteMatchPage = lazy(() =>
+  import('./pages/TasteMatch').then((m) => ({ default: m.TasteMatchPage }))
+);
+const WatchJourneyPage = lazy(() =>
+  import('./pages/WatchJourney').then((m) => ({ default: m.WatchJourneyPage }))
+);
 const CatchUpPage = lazy(() => import('./pages/CatchUp').then((m) => ({ default: m.CatchUpPage })));
-const HiddenSeriesPage = lazy(() => import('./pages/HiddenSeries').then((m) => ({ default: m.HiddenSeriesPage })));
-const ImpressumPage = lazy(() => import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage })));
+const HiddenSeriesPage = lazy(() =>
+  import('./pages/HiddenSeries').then((m) => ({ default: m.HiddenSeriesPage }))
+);
+const ImpressumPage = lazy(() =>
+  import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage }))
+);
 const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.PrivacyPage })));
-const DiscussionFeedPage = lazy(() => import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage })));
-const CountdownPage = lazy(() => import('./pages/Countdown').then((m) => ({ default: m.CountdownPage })));
-const OnboardingPage = lazy(() => import('./pages/Onboarding').then((m) => ({ default: m.OnboardingPage })));
-const LeaderboardPage = lazy(() => import('./pages/Leaderboard').then((m) => ({ default: m.LeaderboardPage })));
+const DiscussionFeedPage = lazy(() =>
+  import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage }))
+);
+const CountdownPage = lazy(() =>
+  import('./pages/Countdown').then((m) => ({ default: m.CountdownPage }))
+);
+const OnboardingPage = lazy(() =>
+  import('./pages/Onboarding').then((m) => ({ default: m.OnboardingPage }))
+);
+const LeaderboardPage = lazy(() =>
+  import('./pages/Leaderboard').then((m) => ({ default: m.LeaderboardPage }))
+);
 
 const PageLoader = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--theme-background, #000)' }}>
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      background: 'var(--theme-background, #000)',
+    }}
+  >
     <div style={{ color: 'var(--theme-primary, #fff)' }}>Loading...</div>
   </div>
 );
@@ -51,8 +103,10 @@ const PageLoader = () => (
 export const MobileApp = () => {
   const { onboardingComplete } = useAuth() || {};
   const location = useLocation();
-  const { unreadActivitiesCount, unreadRequestsCount, friendActivities, friendRequests } = useOptimizedFriends();
-  const { unreadCount: notificationUnreadCount, notifications: generalNotifications } = useNotifications();
+  const { unreadActivitiesCount, unreadRequestsCount, friendActivities, friendRequests } =
+    useOptimizedFriends();
+  const { unreadCount: notificationUnreadCount, notifications: generalNotifications } =
+    useNotifications();
 
   const totalUnread = unreadActivitiesCount + unreadRequestsCount + notificationUnreadCount;
 
@@ -85,7 +139,7 @@ export const MobileApp = () => {
       messages.push(`${req.fromUsername || 'Jemand'} möchte dein Freund werden`);
     }
 
-    for (const notif of generalNotifications.filter(n => !n.read).slice(0, 3)) {
+    for (const notif of generalNotifications.filter((n) => !n.read).slice(0, 3)) {
       messages.push(notif.title);
     }
 
@@ -110,7 +164,7 @@ export const MobileApp = () => {
     if (tickerMessages.length <= 1) return;
 
     const interval = setInterval(() => {
-      setTickerIndex(prev => {
+      setTickerIndex((prev) => {
         const next = (prev + 1) % tickerMessages.length;
         document.title = `(${totalUnread}) ${tickerMessages[next]} — TV-RANK`;
         return next;
@@ -126,9 +180,9 @@ export const MobileApp = () => {
   }
 
   return (
-      <div className="mobile-app">
-        <ScrollToTop />
-        <Suspense fallback={<PageLoader />}>
+    <div className="mobile-app">
+      <ScrollToTop />
+      <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Onboarding - Full-screen, no Layout */}
           <Route path="/onboarding" element={<OnboardingPage />} />
@@ -257,14 +311,8 @@ export const MobileApp = () => {
             }
           />
           {/* Wrapped routes - config wird in WrappedPage aus Firebase geprüft */}
-          <Route
-            path="/wrapped"
-            element={<WrappedPage />}
-          />
-          <Route
-            path="/wrapped/:year"
-            element={<WrappedPage />}
-          />
+          <Route path="/wrapped" element={<WrappedPage />} />
+          <Route path="/wrapped/:year" element={<WrappedPage />} />
           <Route
             path="/actor-universe"
             element={
@@ -339,22 +387,10 @@ export const MobileApp = () => {
               </Layout>
             }
           />
-          <Route
-            path="/taste-match/:friendId"
-            element={<TasteMatchPage />}
-          />
-          <Route
-            path="/watch-journey"
-            element={<WatchJourneyPage />}
-          />
-          <Route
-            path="/catch-up"
-            element={<CatchUpPage />}
-          />
-          <Route
-            path="/hidden-series"
-            element={<HiddenSeriesPage />}
-          />
+          <Route path="/taste-match/:friendId" element={<TasteMatchPage />} />
+          <Route path="/watch-journey" element={<WatchJourneyPage />} />
+          <Route path="/catch-up" element={<CatchUpPage />} />
+          <Route path="/hidden-series" element={<HiddenSeriesPage />} />
           <Route
             path="/leaderboard"
             element={
@@ -395,7 +431,7 @@ export const MobileApp = () => {
           <Route path="/friends" element={<Navigate to="/activity" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-        </Suspense>
-      </div>
+      </Suspense>
+    </div>
   );
 };

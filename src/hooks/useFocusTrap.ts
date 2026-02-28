@@ -19,7 +19,8 @@ export function useFocusTrap(
     previouslyFocused.current = document.activeElement as HTMLElement;
 
     // Focus the first focusable element inside the container
-    const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    const focusableElements =
+      containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
     if (focusableElements.length > 0) {
       // Small delay to ensure the modal is rendered
       requestAnimationFrame(() => {

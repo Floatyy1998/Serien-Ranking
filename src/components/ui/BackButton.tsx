@@ -17,10 +17,9 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
     const cameFromRatings = sessionStorage.getItem('cameFromRatings') === 'true';
 
     // Check if we're navigating back FROM a detail page
-    const isFromDetailPage = location.pathname.includes('/series/') ||
-                            location.pathname.includes('/movie/');
+    const isFromDetailPage =
+      location.pathname.includes('/series/') || location.pathname.includes('/movie/');
     const isFromRatingDetail = location.pathname.includes('/rating/');
-
 
     // If navigating back FROM a series/movie detail page, set flag to preserve filters on Discover page
     if (isFromDetailPage) {
@@ -58,19 +57,23 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
         style={style}
       />
       <IconButton
-        icon={<div style={{
-          width: '16px',
-          height: '16px',
-          backgroundColor: 'var(--color-primary)',
-          WebkitMaskImage: 'url(/tv-logo.svg)',
-          maskImage: 'url(/tv-logo.svg)',
-          WebkitMaskSize: 'contain',
-          maskSize: 'contain' as string,
-          WebkitMaskRepeat: 'no-repeat',
-          maskRepeat: 'no-repeat' as string,
-          WebkitMaskPosition: 'center',
-          maskPosition: 'center' as string,
-        }} />}
+        icon={
+          <div
+            style={{
+              width: '16px',
+              height: '16px',
+              backgroundColor: 'var(--color-primary)',
+              WebkitMaskImage: 'url(/tv-logo.svg)',
+              maskImage: 'url(/tv-logo.svg)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain' as string,
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat' as string,
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center' as string,
+            }}
+          />
+        }
         onClick={() => navigate('/')}
         size={32}
         borderRadius="10px"

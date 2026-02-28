@@ -1,6 +1,15 @@
 import { Pet } from '../../types/pet.types';
 
-export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number, ps: number, color: string, dark: string, light: string, offset: number): void => {
+export const drawCat = (
+  ctx: CanvasRenderingContext2D,
+  _pet: Pet,
+  level: number,
+  ps: number,
+  color: string,
+  dark: string,
+  light: string,
+  offset: number
+): void => {
   const centerX = 16;
   const centerY = 16;
 
@@ -10,7 +19,12 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
   // Kopf (wird größer und ändert Form mit Level)
   ctx.fillStyle = color;
   // Hauptkopf
-  ctx.fillRect((centerX - 4 * headSize) * ps, (centerY - 4) * ps + offset, ps * 8 * headSize, ps * 6);
+  ctx.fillRect(
+    (centerX - 4 * headSize) * ps,
+    (centerY - 4) * ps + offset,
+    ps * 8 * headSize,
+    ps * 6
+  );
 
   // Rundungen oben und unten ZUERST
   ctx.fillRect((centerX - 3 * headSize) * ps, (centerY - 5) * ps + offset, ps * 6 * headSize, ps);
@@ -46,14 +60,24 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
   const bodyWidth = level >= 10 ? 8 : level >= 7 ? 7.5 : level >= 3 ? 6.5 : 6;
   const bodyHeight = level >= 10 ? 8 : level >= 7 ? 7.5 : level >= 3 ? 6.5 : 6;
   ctx.fillStyle = color;
-  ctx.fillRect((centerX - bodyWidth/2) * ps, (centerY + 3) * ps + offset, ps * bodyWidth, ps * bodyHeight);
+  ctx.fillRect(
+    (centerX - bodyWidth / 2) * ps,
+    (centerY + 3) * ps + offset,
+    ps * bodyWidth,
+    ps * bodyHeight
+  );
   ctx.fillRect((centerX - 2) * ps, (centerY + 3 + bodyHeight) * ps + offset, ps * 4, ps * 2);
 
   // Level 7+ subtile Muskel-Definition
   if (level >= 7) {
     ctx.fillStyle = dark;
-    ctx.fillRect((centerX - bodyWidth/2 + 1) * ps, (centerY + 4) * ps + offset, ps * 0.3, ps * 2);
-    ctx.fillRect((centerX + bodyWidth/2 - 1.3) * ps, (centerY + 4) * ps + offset, ps * 0.3, ps * 2);
+    ctx.fillRect((centerX - bodyWidth / 2 + 1) * ps, (centerY + 4) * ps + offset, ps * 0.3, ps * 2);
+    ctx.fillRect(
+      (centerX + bodyWidth / 2 - 1.3) * ps,
+      (centerY + 4) * ps + offset,
+      ps * 0.3,
+      ps * 2
+    );
   }
 
   // Bauch (heller)
@@ -74,24 +98,40 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
   ctx.fillStyle = color;
   for (let i = 0; i < tailLength; i++) {
     const width = 2 + (level >= 7 ? 0.5 : 0);
-    ctx.fillRect((centerX + 3 + i * 2) * ps, (centerY + 7 - i * 2) * ps + offset, ps * width, ps * 2);
+    ctx.fillRect(
+      (centerX + 3 + i * 2) * ps,
+      (centerY + 7 - i * 2) * ps + offset,
+      ps * width,
+      ps * 2
+    );
   }
 
   // Level 5+ Gestreifter Schwanz
   if (level >= 5) {
     ctx.fillStyle = dark;
     for (let i = 0; i < tailLength; i += 2) {
-      ctx.fillRect((centerX + 3 + i * 2) * ps, (centerY + 7 - i * 2) * ps + offset, ps * 2, ps * 0.3);
+      ctx.fillRect(
+        (centerX + 3 + i * 2) * ps,
+        (centerY + 7 - i * 2) * ps + offset,
+        ps * 2,
+        ps * 0.3
+      );
     }
   }
 
   // Schwanzspitze
   ctx.fillStyle = level >= 10 ? light : dark;
-  ctx.fillRect((centerX + 3 + tailLength * 2) * ps, (centerY + 7 - tailLength * 2) * ps + offset, ps, ps * 2);
+  ctx.fillRect(
+    (centerX + 3 + tailLength * 2) * ps,
+    (centerY + 7 - tailLength * 2) * ps + offset,
+    ps,
+    ps * 2
+  );
 
   // Gesicht Details
   // Augen Evolution (ändern Farbe deutlicher)
-  const eyeColor = level >= 10 ? '#9400D3' : level >= 7 ? '#00CED1' : level >= 5 ? '#00FF7F' : '#00FF00'; // Violett > Türkis > Mint > Grün
+  const eyeColor =
+    level >= 10 ? '#9400D3' : level >= 7 ? '#00CED1' : level >= 5 ? '#00FF7F' : '#00FF00'; // Violett > Türkis > Mint > Grün
   const eyeSize = level >= 7 ? 2.2 : 2;
 
   ctx.fillStyle = eyeColor;
@@ -116,7 +156,7 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
 
   // Nase (klein, rosa)
   ctx.fillStyle = '#FFB6C1';
-  ctx.fillRect((centerX - 0.5) * ps, (centerY) * ps + offset, ps, ps * 0.5);
+  ctx.fillRect((centerX - 0.5) * ps, centerY * ps + offset, ps, ps * 0.5);
 
   // Mund (Y-förmig)
   ctx.fillStyle = dark;
@@ -131,8 +171,8 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
   ctx.lineTo((centerX - 7) * ps, (centerY - 1.5) * ps + offset);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo((centerX - 4) * ps, (centerY) * ps + offset);
-  ctx.lineTo((centerX - 7) * ps, (centerY) * ps + offset);
+  ctx.moveTo((centerX - 4) * ps, centerY * ps + offset);
+  ctx.lineTo((centerX - 7) * ps, centerY * ps + offset);
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo((centerX - 4) * ps, (centerY + 1) * ps + offset);
@@ -144,8 +184,8 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
   ctx.lineTo((centerX + 7) * ps, (centerY - 1.5) * ps + offset);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo((centerX + 4) * ps, (centerY) * ps + offset);
-  ctx.lineTo((centerX + 7) * ps, (centerY) * ps + offset);
+  ctx.moveTo((centerX + 4) * ps, centerY * ps + offset);
+  ctx.lineTo((centerX + 7) * ps, centerY * ps + offset);
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo((centerX + 4) * ps, (centerY + 1) * ps + offset);
@@ -209,16 +249,16 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
     ctx.lineWidth = ps * 0.2;
     ctx.beginPath();
     ctx.arc((centerX - 7) * ps, (centerY - 1.5) * ps + offset, ps * 0.4, 0, Math.PI * 2);
-    ctx.arc((centerX - 7) * ps, (centerY) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+    ctx.arc((centerX - 7) * ps, centerY * ps + offset, ps * 0.4, 0, Math.PI * 2);
     ctx.arc((centerX + 7) * ps, (centerY - 1.5) * ps + offset, ps * 0.4, 0, Math.PI * 2);
-    ctx.arc((centerX + 7) * ps, (centerY) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+    ctx.arc((centerX + 7) * ps, centerY * ps + offset, ps * 0.4, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
 
     // Größere, majestätischere Flügel
     ctx.fillStyle = color + '66';
-    ctx.fillRect((centerX - 8) * ps, (centerY) * ps + offset, ps * 3, ps * 6);
-    ctx.fillRect((centerX + 5) * ps, (centerY) * ps + offset, ps * 3, ps * 6);
+    ctx.fillRect((centerX - 8) * ps, centerY * ps + offset, ps * 3, ps * 6);
+    ctx.fillRect((centerX + 5) * ps, centerY * ps + offset, ps * 3, ps * 6);
     ctx.fillStyle = light + '88';
     ctx.fillRect((centerX - 7) * ps, (centerY + 1) * ps + offset, ps * 2, ps * 4);
     ctx.fillRect((centerX + 5.5) * ps, (centerY + 1) * ps + offset, ps * 2, ps * 4);
@@ -236,8 +276,18 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
 
     // Doppelte Schwanzspitze (gespalten)
     ctx.fillStyle = light;
-    ctx.fillRect((centerX + 3 + tailLength * 2) * ps, (centerY + 6 - tailLength * 2) * ps + offset, ps, ps);
-    ctx.fillRect((centerX + 3 + tailLength * 2 + 1) * ps, (centerY + 7 - tailLength * 2) * ps + offset, ps, ps);
+    ctx.fillRect(
+      (centerX + 3 + tailLength * 2) * ps,
+      (centerY + 6 - tailLength * 2) * ps + offset,
+      ps,
+      ps
+    );
+    ctx.fillRect(
+      (centerX + 3 + tailLength * 2 + 1) * ps,
+      (centerY + 7 - tailLength * 2) * ps + offset,
+      ps,
+      ps
+    );
   }
 
   if (level >= 25) {
@@ -263,7 +313,13 @@ export const drawCat = (ctx: CanvasRenderingContext2D, _pet: Pet, level: number,
     ctx.fillStyle = '#FFD700';
     for (let i = 0; i < tailLength; i++) {
       ctx.beginPath();
-      ctx.arc((centerX + 4 + i * 2) * ps, (centerY + 7.5 - i * 2) * ps + offset, ps * 0.3, 0, Math.PI * 2);
+      ctx.arc(
+        (centerX + 4 + i * 2) * ps,
+        (centerY + 7.5 - i * 2) * ps + offset,
+        ps * 0.3,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
     }
   }

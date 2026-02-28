@@ -14,7 +14,11 @@ import { BackButton, GradientText } from '../../components/ui';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { fetchLeaderboardData, fetchLeaderboardProfiles } from '../../services/leaderboardService';
-import type { LeaderboardCategory, LeaderboardEntry, LeaderboardStats } from '../../types/Leaderboard';
+import type {
+  LeaderboardCategory,
+  LeaderboardEntry,
+  LeaderboardStats,
+} from '../../types/Leaderboard';
 
 const CATEGORIES: {
   id: LeaderboardCategory;
@@ -22,11 +26,26 @@ const CATEGORIES: {
   icon: React.ReactNode;
   unit: string;
 }[] = [
-  { id: 'episodesThisMonth', label: 'Episoden', icon: <PlayCircle sx={{ fontSize: 18 }} />, unit: 'Ep.' },
+  {
+    id: 'episodesThisMonth',
+    label: 'Episoden',
+    icon: <PlayCircle sx={{ fontSize: 18 }} />,
+    unit: 'Ep.',
+  },
   { id: 'moviesThisMonth', label: 'Filme', icon: <Movie sx={{ fontSize: 18 }} />, unit: 'Filme' },
   { id: 'watchtimeThisMonth', label: 'Watchtime', icon: <Timer sx={{ fontSize: 18 }} />, unit: '' },
-  { id: 'streakThisMonth', label: 'Monats-Streak', icon: <LocalFireDepartment sx={{ fontSize: 18 }} />, unit: 'Tage' },
-  { id: 'streakAllTime', label: 'Längste Streak', icon: <EmojiEvents sx={{ fontSize: 18 }} />, unit: 'Tage' },
+  {
+    id: 'streakThisMonth',
+    label: 'Monats-Streak',
+    icon: <LocalFireDepartment sx={{ fontSize: 18 }} />,
+    unit: 'Tage',
+  },
+  {
+    id: 'streakAllTime',
+    label: 'Längste Streak',
+    icon: <EmojiEvents sx={{ fontSize: 18 }} />,
+    unit: 'Tage',
+  },
 ];
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
@@ -53,7 +72,9 @@ export const LeaderboardPage = () => {
 
   const [activeCategory, setActiveCategory] = useState<LeaderboardCategory>('episodesThisMonth');
   const [statsData, setStatsData] = useState<Record<string, LeaderboardStats>>({});
-  const [profiles, setProfiles] = useState<Record<string, { displayName: string; photoURL?: string; username?: string }>>({});
+  const [profiles, setProfiles] = useState<
+    Record<string, { displayName: string; photoURL?: string; username?: string }>
+  >({});
   const [loading, setLoading] = useState(true);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -202,7 +223,8 @@ export const LeaderboardPage = () => {
               width: 80,
               height: 80,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.15))',
+              background:
+                'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.15))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -247,7 +269,12 @@ export const LeaderboardPage = () => {
           }}
         >
           <BackButton />
-          <GradientText as="h1" from="#f59e0b" to="#ef4444" style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>
+          <GradientText
+            as="h1"
+            from="#f59e0b"
+            to="#ef4444"
+            style={{ margin: 0, fontSize: 22, fontWeight: 800 }}
+          >
             Rangliste
           </GradientText>
         </div>
@@ -348,11 +375,17 @@ export const LeaderboardPage = () => {
         >
           <BackButton />
           <div style={{ flex: 1 }}>
-            <GradientText as="h1" from="#f59e0b" to="#ef4444" style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>
+            <GradientText
+              as="h1"
+              from="#f59e0b"
+              to="#ef4444"
+              style={{ margin: 0, fontSize: 22, fontWeight: 800 }}
+            >
               Rangliste
             </GradientText>
             <p style={{ margin: 0, fontSize: 12, color: textSecondary, marginTop: '2px' }}>
-              {activeCat.label}{activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}
+              {activeCat.label}
+              {activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}
             </p>
           </div>
         </motion.div>
@@ -475,7 +508,13 @@ export const LeaderboardPage = () => {
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                       ) : (
-                        <span style={{ fontSize: podiumIndex === 0 ? 24 : 20, fontWeight: 700, color: textSecondary }}>
+                        <span
+                          style={{
+                            fontSize: podiumIndex === 0 ? 24 : 20,
+                            fontWeight: 700,
+                            color: textSecondary,
+                          }}
+                        >
                           {entry.displayName.charAt(0).toUpperCase()}
                         </span>
                       )}

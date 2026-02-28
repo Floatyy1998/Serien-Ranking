@@ -46,7 +46,7 @@ export const AddContentStep: React.FC<Props> = ({
 
   const isSearching = query.trim().length > 0;
   const allItems = isSearching ? searchResults : suggestions;
-  const displayItems = allItems.filter(item => item.type === contentType);
+  const displayItems = allItems.filter((item) => item.type === contentType);
 
   useEffect(() => {
     onSearch(query);
@@ -76,7 +76,11 @@ export const AddContentStep: React.FC<Props> = ({
             color: currentTheme.text.primary,
           }}
         >
-          {isSearching ? 'Suchergebnisse' : contentType === 'series' ? 'Serien für dich' : 'Filme für dich'}
+          {isSearching
+            ? 'Suchergebnisse'
+            : contentType === 'series'
+              ? 'Serien für dich'
+              : 'Filme für dich'}
         </h2>
         {addedCount > 0 && (
           <motion.p
@@ -89,7 +93,14 @@ export const AddContentStep: React.FC<Props> = ({
               color: currentTheme.primary,
             }}
           >
-            ✓ {addedCount} {contentType === 'series' ? (addedCount === 1 ? 'Serie' : 'Serien') : (addedCount === 1 ? 'Film' : 'Filme')}
+            ✓ {addedCount}{' '}
+            {contentType === 'series'
+              ? addedCount === 1
+                ? 'Serie'
+                : 'Serien'
+              : addedCount === 1
+                ? 'Film'
+                : 'Filme'}
           </motion.p>
         )}
       </div>
@@ -115,7 +126,7 @@ export const AddContentStep: React.FC<Props> = ({
         <input
           ref={inputRef}
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder={contentType === 'series' ? 'Serie suchen...' : 'Film suchen...'}
           style={{
             width: '100%',
@@ -128,12 +139,15 @@ export const AddContentStep: React.FC<Props> = ({
             outline: 'none',
             boxSizing: 'border-box',
           }}
-          onFocus={e => e.target.style.borderColor = currentTheme.primary}
-          onBlur={e => e.target.style.borderColor = currentTheme.border.default}
+          onFocus={(e) => (e.target.style.borderColor = currentTheme.primary)}
+          onBlur={(e) => (e.target.style.borderColor = currentTheme.border.default)}
         />
         {isSearching && (
           <button
-            onClick={() => { setQuery(''); onClearSearch(); }}
+            onClick={() => {
+              setQuery('');
+              onClearSearch();
+            }}
             style={{
               position: 'absolute',
               right: 10,
@@ -165,47 +179,55 @@ export const AddContentStep: React.FC<Props> = ({
         }}
       >
         {(loading || searchLoading) && (
-          <div style={{
-            textAlign: 'center',
-            color: currentTheme.text.muted,
-            fontSize: 14,
-            padding: '40px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 12,
-          }}>
-            <div style={{
-              width: 32,
-              height: 32,
-              border: `3px solid ${currentTheme.primary}40`,
-              borderTop: `3px solid ${currentTheme.primary}`,
-              borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
-            }}/>
+          <div
+            style={{
+              textAlign: 'center',
+              color: currentTheme.text.muted,
+              fontSize: 14,
+              padding: '40px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                border: `3px solid ${currentTheme.primary}40`,
+                borderTop: `3px solid ${currentTheme.primary}`,
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
             <p style={{ margin: 0 }}>Lädt...</p>
           </div>
         )}
 
         {!loading && !searchLoading && displayItems.length === 0 && isSearching && (
-          <div style={{
-            textAlign: 'center',
-            color: currentTheme.text.muted,
-            fontSize: 14,
-            padding: '40px 20px',
-          }}>
+          <div
+            style={{
+              textAlign: 'center',
+              color: currentTheme.text.muted,
+              fontSize: 14,
+              padding: '40px 20px',
+            }}
+          >
             <p style={{ margin: 0, fontSize: 16, marginBottom: 4 }}>🔍</p>
             <p style={{ margin: 0 }}>Keine Ergebnisse für &ldquo;{query}&rdquo;</p>
           </div>
         )}
 
         {!loading && !searchLoading && displayItems.length === 0 && !isSearching && (
-          <div style={{
-            textAlign: 'center',
-            color: currentTheme.text.muted,
-            fontSize: 14,
-            padding: '40px 20px',
-          }}>
+          <div
+            style={{
+              textAlign: 'center',
+              color: currentTheme.text.muted,
+              fontSize: 14,
+              padding: '40px 20px',
+            }}
+          >
             <p style={{ margin: 0, fontSize: 16, marginBottom: 4 }}>📺</p>
             <p style={{ margin: 0 }}>Keine Vorschläge verfügbar</p>
             <p style={{ margin: '8px 0 0', fontSize: 12 }}>Nutze die Suche oben</p>
@@ -213,12 +235,14 @@ export const AddContentStep: React.FC<Props> = ({
         )}
 
         {!loading && !searchLoading && displayItems.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-            gap: 12,
-          }}>
-            {displayItems.map(item => {
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+              gap: 12,
+            }}
+          >
+            {displayItems.map((item) => {
               const key = `${item.type}-${item.id}`;
               return (
                 <OnboardingItemCard
@@ -237,7 +261,16 @@ export const AddContentStep: React.FC<Props> = ({
       </div>
 
       {/* Actions */}
-      <div style={{ padding: '12px 0 32px', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', flexShrink: 0 }}>
+      <div
+        style={{
+          padding: '12px 0 32px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          alignItems: 'center',
+          flexShrink: 0,
+        }}
+      >
         <button
           onClick={onNext}
           style={{
@@ -245,9 +278,10 @@ export const AddContentStep: React.FC<Props> = ({
             padding: '14px 0',
             borderRadius: 14,
             border: 'none',
-            background: addedCount > 0
-              ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
-              : currentTheme.background.surface,
+            background:
+              addedCount > 0
+                ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
+                : currentTheme.background.surface,
             color: addedCount > 0 ? 'white' : currentTheme.text.muted,
             fontSize: 16,
             fontWeight: 700,

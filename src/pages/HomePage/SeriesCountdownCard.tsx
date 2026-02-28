@@ -112,7 +112,10 @@ export const SeriesCountdownCard: React.FC = () => {
         )}
       </div>
 
-      <ChevronRight style={{ color: currentTheme.text.secondary, fontSize: 20 }} aria-hidden="true" />
+      <ChevronRight
+        style={{ color: currentTheme.text.secondary, fontSize: 20 }}
+        aria-hidden="true"
+      />
     </motion.button>
   );
 };

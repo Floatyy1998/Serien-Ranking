@@ -141,20 +141,24 @@ export const StatsPage = () => {
 
     // Genres
     const genreCounts: Record<string, number> = {};
-    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
-      if (!item || item.nmr === undefined) return;
-      let genres: string[] = [];
-      if (item.genre?.genres && Array.isArray(item.genre.genres)) {
-        genres = item.genre.genres;
-      } else if (item.genres && Array.isArray(item.genres)) {
-        genres = item.genres.map((g: string | { id: number; name: string }) => (typeof g === 'string' ? g : g.name));
-      }
-      genres.forEach((genre: string) => {
-        if (genre && genre.toLowerCase() !== 'all' && genre.toLowerCase() !== 'alle') {
-          genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
+      (item: Series | MovieType) => {
+        if (!item || item.nmr === undefined) return;
+        let genres: string[] = [];
+        if (item.genre?.genres && Array.isArray(item.genre.genres)) {
+          genres = item.genre.genres;
+        } else if (item.genres && Array.isArray(item.genres)) {
+          genres = item.genres.map((g: string | { id: number; name: string }) =>
+            typeof g === 'string' ? g : g.name
+          );
         }
-      });
-    });
+        genres.forEach((genre: string) => {
+          if (genre && genre.toLowerCase() !== 'all' && genre.toLowerCase() !== 'alle') {
+            genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+          }
+        });
+      }
+    );
 
     const topGenres = Object.entries(genreCounts)
       .sort((a, b) => b[1] - a[1])
@@ -163,15 +167,17 @@ export const StatsPage = () => {
 
     // Providers
     const providerCounts: Record<string, number> = {};
-    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach((item: Series | MovieType) => {
-      if (!item || item.nmr === undefined) return;
-      if (item.provider?.provider && Array.isArray(item.provider.provider)) {
-        item.provider.provider.forEach((p: { id: number; logo: string; name: string }) => {
-          const name = p.name;
-          if (name) providerCounts[name] = (providerCounts[name] || 0) + 1;
-        });
+    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
+      (item: Series | MovieType) => {
+        if (!item || item.nmr === undefined) return;
+        if (item.provider?.provider && Array.isArray(item.provider.provider)) {
+          item.provider.provider.forEach((p: { id: number; logo: string; name: string }) => {
+            const name = p.name;
+            if (name) providerCounts[name] = (providerCounts[name] || 0) + 1;
+          });
+        }
       }
-    });
+    );
 
     const topProviders = Object.entries(providerCounts)
       .sort((a, b) => b[1] - a[1])
@@ -218,7 +224,12 @@ export const StatsPage = () => {
   // Format time - returns primary value and detailed breakdown
   const formatTime = (
     minutes: number
-  ): { value: string; unit: string; details: string; breakdown: { value: number; unit: string }[] } => {
+  ): {
+    value: string;
+    unit: string;
+    details: string;
+    breakdown: { value: number; unit: string }[];
+  } => {
     const totalHours = Math.floor(minutes / 60);
     const totalDays = Math.floor(totalHours / 24);
     const totalMonths = Math.floor(totalDays / 30);
@@ -273,11 +284,18 @@ export const StatsPage = () => {
 
     // Years - show detailed breakdown
     const detailParts: string[] = [];
-    if (remainingMonths > 0) detailParts.push(`${remainingMonths} ${remainingMonths === 1 ? 'Monat' : 'Monate'}`);
-    if (remainingDays > 0) detailParts.push(`${remainingDays} ${remainingDays === 1 ? 'Tag' : 'Tage'}`);
+    if (remainingMonths > 0)
+      detailParts.push(`${remainingMonths} ${remainingMonths === 1 ? 'Monat' : 'Monate'}`);
+    if (remainingDays > 0)
+      detailParts.push(`${remainingDays} ${remainingDays === 1 ? 'Tag' : 'Tage'}`);
     const details = detailParts.join(', ');
 
-    return { value: String(totalYears), unit: totalYears === 1 ? 'Jahr' : 'Jahre', details, breakdown };
+    return {
+      value: String(totalYears),
+      unit: totalYears === 1 ? 'Jahr' : 'Jahre',
+      details,
+      breakdown,
+    };
   };
 
   const formatTimeDetailed = (minutes: number): string => {
@@ -337,285 +355,495 @@ export const StatsPage = () => {
 
   return (
     <PageLayout>
-        {/* Header */}
-        <PageHeader
-          title="Statistiken"
-          gradientFrom={currentTheme.text.primary}
-          subtitle="Dein Viewing-Universum in Zahlen"
-          sticky={false}
-        />
+      {/* Header */}
+      <PageHeader
+        title="Statistiken"
+        gradientFrom={currentTheme.text.primary}
+        subtitle="Dein Viewing-Universum in Zahlen"
+        sticky={false}
+      />
 
-        {/* Hero Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+      {/* Hero Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '28px',
+          borderRadius: '28px',
+          background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.surface}cc)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${currentTheme.border.default}`,
+          boxShadow: `0 8px 32px ${currentTheme.primary}15`,
+        }}
+      >
+        {/* Main Time Stat */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+            style={{
+              width: '100px',
+              height: '100px',
+              margin: '0 auto 16px',
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+              border: `3px solid ${currentTheme.primary}40`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Timer style={{ fontSize: 48, color: currentTheme.primary }} />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <GradientText
+              as="span"
+              to="#8b5cf6"
+              style={{
+                fontSize: '52px',
+                fontWeight: 800,
+                letterSpacing: '-2px',
+              }}
+            >
+              {timeData.value}
+            </GradientText>
+            <span
+              style={{
+                fontSize: '20px',
+                fontWeight: 600,
+                color: currentTheme.text.secondary,
+                marginLeft: '8px',
+              }}
+            >
+              {timeData.unit}
+            </span>
+            {timeData.details && (
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: currentTheme.text.muted,
+                  marginLeft: '4px',
+                }}
+              >
+                , {timeData.details}
+              </span>
+            )}
+          </motion.div>
+          <p style={{ color: currentTheme.text.muted, fontSize: '14px', margin: '4px 0 0' }}>
+            Gesamte Watchtime
+          </p>
+        </div>
+
+        {/* Progress Ring */}
+        <div
           style={{
-            margin: '0 20px 24px',
-            padding: '28px',
-            borderRadius: '28px',
-            background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.surface}cc)`,
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${currentTheme.border.default}`,
-            boxShadow: `0 8px 32px ${currentTheme.primary}15`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '24px',
+            marginBottom: '24px',
           }}
         >
-          {/* Main Time Stat */}
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+          <div style={{ position: 'relative' }}>
+            <AnimatedRing
+              progress={stats.progress}
+              size={90}
+              strokeWidth={8}
+              color={currentTheme.primary}
+            />
+            <div
               style={{
-                width: '100px',
-                height: '100px',
-                margin: '0 auto 16px',
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
-                border: `3px solid ${currentTheme.primary}40`,
+                position: 'absolute',
+                inset: 0,
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Timer style={{ fontSize: 48, color: currentTheme.primary }} />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <GradientText as="span" to="#8b5cf6" style={{
-                  fontSize: '52px',
-                  fontWeight: 800,
-                  letterSpacing: '-2px',
-                }}
-              >
-                {timeData.value}
-              </GradientText>
-              <span
-                style={{
-                  fontSize: '20px',
-                  fontWeight: 600,
-                  color: currentTheme.text.secondary,
-                  marginLeft: '8px',
-                }}
-              >
-                {timeData.unit}
+              <span style={{ fontSize: '22px', fontWeight: 800 }}>
+                {Math.min(99, Math.round(stats.progress))}%
               </span>
-              {timeData.details && (
-                <span
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: currentTheme.text.muted,
-                    marginLeft: '4px',
-                  }}
-                >
-                  , {timeData.details}
-                </span>
-              )}
-            </motion.div>
-            <p style={{ color: currentTheme.text.muted, fontSize: '14px', margin: '4px 0 0' }}>
-              Gesamte Watchtime
-            </p>
+              <span style={{ fontSize: '10px', color: currentTheme.text.muted }}>Fortschritt</span>
+            </div>
           </div>
 
-          {/* Progress Ring */}
-          <div
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ marginBottom: '8px' }}>
+              <span style={{ fontSize: '24px', fontWeight: 700 }}>
+                {stats.watchedEpisodes.toLocaleString('de-DE')}
+              </span>
+              <span style={{ color: currentTheme.text.muted, fontSize: '14px' }}>
+                {' '}
+                / {stats.totalEpisodes.toLocaleString('de-DE')}
+              </span>
+            </div>
+            <p style={{ color: currentTheme.text.muted, fontSize: '13px', margin: 0 }}>
+              Episoden geschaut
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Stats Row */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '12px',
+          }}
+        >
+          {[
+            {
+              icon: <Tv style={{ fontSize: 20 }} />,
+              value: stats.totalSeries,
+              label: 'Serien',
+              color: currentTheme.primary,
+            },
+            {
+              icon: <Movie style={{ fontSize: 20 }} />,
+              value: stats.totalMovies,
+              label: 'Filme',
+              color: '#f59e0b',
+            },
+            {
+              icon: <EmojiEvents style={{ fontSize: 20 }} />,
+              value: stats.completedSeries,
+              label: 'Fertig',
+              color: currentTheme.status.success,
+            },
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 + i * 0.1 }}
+              style={{
+                textAlign: 'center',
+                padding: '12px 8px',
+                borderRadius: '14px',
+                background: `${stat.color}10`,
+                border: `1px solid ${stat.color}25`,
+              }}
+            >
+              <div style={{ color: stat.color, marginBottom: '6px' }}>{stat.icon}</div>
+              <div style={{ fontSize: '20px', fontWeight: 700 }}>{stat.value}</div>
+              <div style={{ fontSize: '11px', color: currentTheme.text.muted }}>{stat.label}</div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Actor Universe Banner */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => navigate('/actor-universe')}
+        style={{
+          margin: '0 20px 24px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%)',
+          border: '1px solid rgba(102, 126, 234, 0.3)',
+          cursor: 'pointer',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Animated stars */}
+        {[...Array(12)].map((_, i) => (
+          <motion.div
+            key={i}
+            animate={{
+              opacity: [0.2, 0.8, 0.2],
+              scale: [1, 1.3, 1],
+            }}
+            transition={{
+              duration: 2 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
             style={{
+              position: 'absolute',
+              width: 2 + Math.random() * 3,
+              height: 2 + Math.random() * 3,
+              borderRadius: '50%',
+              background: 'white',
+              top: `${5 + Math.random() * 90}%`,
+              left: `${5 + Math.random() * 90}%`,
+              boxShadow: '0 0 6px rgba(255, 255, 255, 0.6)',
+            }}
+          />
+        ))}
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          <motion.div
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '24px',
-              marginBottom: '24px',
+              boxShadow: '0 0 30px rgba(102, 126, 234, 0.6)',
             }}
           >
-            <div style={{ position: 'relative' }}>
-              <AnimatedRing
-                progress={stats.progress}
-                size={90}
-                strokeWidth={8}
-                color={currentTheme.primary}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <span style={{ fontSize: '22px', fontWeight: 800 }}>
-                  {Math.min(99, Math.round(stats.progress))}%
-                </span>
-                <span style={{ fontSize: '10px', color: currentTheme.text.muted }}>Fortschritt</span>
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ marginBottom: '8px' }}>
-                <span style={{ fontSize: '24px', fontWeight: 700 }}>
-                  {stats.watchedEpisodes.toLocaleString('de-DE')}
-                </span>
-                <span style={{ color: currentTheme.text.muted, fontSize: '14px' }}>
-                  {' '}
-                  / {stats.totalEpisodes.toLocaleString('de-DE')}
-                </span>
-              </div>
-              <p style={{ color: currentTheme.text.muted, fontSize: '13px', margin: 0 }}>
-                Episoden geschaut
-              </p>
-            </div>
+            <AutoAwesome style={{ color: 'white', fontSize: '28px' }} />
+          </motion.div>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'white' }}>
+              Actor Universe
+            </h2>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+              Entdecke Verbindungen zwischen Schauspielern
+            </p>
           </div>
-
-          {/* Quick Stats Row */}
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '12px',
+              padding: '8px 14px',
+              borderRadius: '20px',
+              background: 'rgba(102, 126, 234, 0.3)',
+              color: '#a5b4fc',
+              fontSize: '12px',
+              fontWeight: 600,
             }}
           >
-            {[
-              {
-                icon: <Tv style={{ fontSize: 20 }} />,
-                value: stats.totalSeries,
-                label: 'Serien',
-                color: currentTheme.primary,
-              },
-              {
-                icon: <Movie style={{ fontSize: 20 }} />,
-                value: stats.totalMovies,
-                label: 'Filme',
-                color: '#f59e0b',
-              },
-              {
-                icon: <EmojiEvents style={{ fontSize: 20 }} />,
-                value: stats.completedSeries,
-                label: 'Fertig',
-                color: currentTheme.status.success,
-              },
-            ].map((stat, i) => (
+            Erkunden
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Time Breakdown */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <h2
+          style={{
+            margin: '0 0 16px',
+            fontSize: '16px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <Timer style={{ fontSize: 20, color: currentTheme.primary }} />
+          Zeit-Aufteilung
+        </h2>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div
+            style={{
+              flex: 1,
+              padding: '16px',
+              borderRadius: '14px',
+              background: `${currentTheme.primary}10`,
+              border: `1px solid ${currentTheme.primary}25`,
+            }}
+          >
+            <Tv style={{ fontSize: 24, color: currentTheme.primary, marginBottom: '8px' }} />
+            <div style={{ fontSize: '18px', fontWeight: 700 }}>
+              {formatTimeDetailed(stats.seriesMinutes)}
+            </div>
+            <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Serien</div>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              padding: '16px',
+              borderRadius: '14px',
+              background: '#f59e0b10',
+              border: '1px solid #f59e0b25',
+            }}
+          >
+            <Movie style={{ fontSize: 24, color: '#f59e0b', marginBottom: '8px' }} />
+            <div style={{ fontSize: '18px', fontWeight: 700 }}>
+              {formatTimeDetailed(stats.movieMinutes)}
+            </div>
+            <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Filme</div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Ratings */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        style={{
+          margin: '0 20px 24px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <h2
+          style={{
+            margin: '0 0 16px',
+            fontSize: '16px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <Star style={{ fontSize: 20, color: '#fbbf24' }} />
+          Deine Bewertungen
+        </h2>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div
+            style={{
+              flex: 1,
+              padding: '16px',
+              borderRadius: '14px',
+              background: '#fbbf2410',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: '28px', fontWeight: 800, color: '#fbbf24' }}>
+              {stats.avgSeriesRating.toFixed(1)}
+            </div>
+            <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Ø Serien</div>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              padding: '16px',
+              borderRadius: '14px',
+              background: '#fbbf2410',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: '28px', fontWeight: 800, color: '#fbbf24' }}>
+              {stats.avgMovieRating.toFixed(1)}
+            </div>
+            <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Ø Filme</div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Top Genres */}
+      {stats.topGenres.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          style={{
+            margin: '0 20px 24px',
+            padding: '20px',
+            borderRadius: '20px',
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
+          }}
+        >
+          <h2
+            style={{
+              margin: '0 0 16px',
+              fontSize: '16px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <Category style={{ fontSize: 20, color: '#8b5cf6' }} />
+            Top Genres
+          </h2>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {stats.topGenres.map((genre, i) => (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 + i * 0.1 }}
-                style={{
-                  textAlign: 'center',
-                  padding: '12px 8px',
-                  borderRadius: '14px',
-                  background: `${stat.color}10`,
-                  border: `1px solid ${stat.color}25`,
-                }}
+                key={genre.name}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.9 + i * 0.1 }}
+                style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
               >
-                <div style={{ color: stat.color, marginBottom: '6px' }}>{stat.icon}</div>
-                <div style={{ fontSize: '20px', fontWeight: 700 }}>{stat.value}</div>
-                <div style={{ fontSize: '11px', color: currentTheme.text.muted }}>{stat.label}</div>
+                <span
+                  style={{
+                    width: '24px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: i === 0 ? '#fbbf24' : currentTheme.text.muted,
+                  }}
+                >
+                  #{i + 1}
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    <span style={{ fontSize: '14px', fontWeight: 600 }}>{genre.name}</span>
+                    <span style={{ fontSize: '13px', color: currentTheme.text.muted }}>
+                      {genre.count}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      height: '6px',
+                      background: `${currentTheme.text.muted}20`,
+                      borderRadius: '3px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(genre.count / maxGenreCount) * 100}%` }}
+                      transition={{ duration: 0.8, delay: 1 + i * 0.1 }}
+                      style={{
+                        height: '100%',
+                        background: `linear-gradient(90deg, #8b5cf6, ${currentTheme.primary})`,
+                        borderRadius: '3px',
+                      }}
+                    />
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
+      )}
 
-        {/* Actor Universe Banner */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/actor-universe')}
-          style={{
-            margin: '0 20px 24px',
-            padding: '20px',
-            borderRadius: '20px',
-            background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%)',
-            border: '1px solid rgba(102, 126, 234, 0.3)',
-            cursor: 'pointer',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Animated stars */}
-          {[...Array(12)].map((_, i) => (
-            <motion.div
-              key={i}
-              animate={{
-                opacity: [0.2, 0.8, 0.2],
-                scale: [1, 1.3, 1],
-              }}
-              transition={{
-                duration: 2 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-              }}
-              style={{
-                position: 'absolute',
-                width: 2 + Math.random() * 3,
-                height: 2 + Math.random() * 3,
-                borderRadius: '50%',
-                background: 'white',
-                top: `${5 + Math.random() * 90}%`,
-                left: `${5 + Math.random() * 90}%`,
-                boxShadow: '0 0 6px rgba(255, 255, 255, 0.6)',
-              }}
-            />
-          ))}
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              position: 'relative',
-              zIndex: 1,
-            }}
-          >
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-              style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 30px rgba(102, 126, 234, 0.6)',
-              }}
-            >
-              <AutoAwesome style={{ color: 'white', fontSize: '28px' }} />
-            </motion.div>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'white' }}>
-                Actor Universe
-              </h2>
-              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
-                Entdecke Verbindungen zwischen Schauspielern
-              </p>
-            </div>
-            <div
-              style={{
-                padding: '8px 14px',
-                borderRadius: '20px',
-                background: 'rgba(102, 126, 234, 0.3)',
-                color: '#a5b4fc',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
-            >
-              Erkunden
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Time Breakdown */}
+      {/* Top Providers */}
+      {stats.topProviders.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 1 }}
           style={{
             margin: '0 20px 24px',
             padding: '20px',
@@ -634,287 +862,81 @@ export const StatsPage = () => {
               gap: '8px',
             }}
           >
-            <Timer style={{ fontSize: 20, color: currentTheme.primary }} />
-            Zeit-Aufteilung
+            <Stream style={{ fontSize: 20, color: '#06b6d4' }} />
+            Streaming-Dienste
           </h2>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div
-              style={{
-                flex: 1,
-                padding: '16px',
-                borderRadius: '14px',
-                background: `${currentTheme.primary}10`,
-                border: `1px solid ${currentTheme.primary}25`,
-              }}
-            >
-              <Tv style={{ fontSize: 24, color: currentTheme.primary, marginBottom: '8px' }} />
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>
-                {formatTimeDetailed(stats.seriesMinutes)}
-              </div>
-              <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Serien</div>
-            </div>
-            <div
-              style={{
-                flex: 1,
-                padding: '16px',
-                borderRadius: '14px',
-                background: '#f59e0b10',
-                border: '1px solid #f59e0b25',
-              }}
-            >
-              <Movie style={{ fontSize: 24, color: '#f59e0b', marginBottom: '8px' }} />
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>
-                {formatTimeDetailed(stats.movieMinutes)}
-              </div>
-              <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Filme</div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Ratings */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          style={{
-            margin: '0 20px 24px',
-            padding: '20px',
-            borderRadius: '20px',
-            background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
-          }}
-        >
-          <h2
-            style={{
-              margin: '0 0 16px',
-              fontSize: '16px',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <Star style={{ fontSize: 20, color: '#fbbf24' }} />
-            Deine Bewertungen
-          </h2>
-
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div
-              style={{
-                flex: 1,
-                padding: '16px',
-                borderRadius: '14px',
-                background: '#fbbf2410',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: '28px', fontWeight: 800, color: '#fbbf24' }}>
-                {stats.avgSeriesRating.toFixed(1)}
-              </div>
-              <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Ø Serien</div>
-            </div>
-            <div
-              style={{
-                flex: 1,
-                padding: '16px',
-                borderRadius: '14px',
-                background: '#fbbf2410',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: '28px', fontWeight: 800, color: '#fbbf24' }}>
-                {stats.avgMovieRating.toFixed(1)}
-              </div>
-              <div style={{ fontSize: '12px', color: currentTheme.text.muted }}>Ø Filme</div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Top Genres */}
-        {stats.topGenres.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            style={{
-              margin: '0 20px 24px',
-              padding: '20px',
-              borderRadius: '20px',
-              background: currentTheme.background.surface,
-              border: `1px solid ${currentTheme.border.default}`,
-            }}
-          >
-            <h2
-              style={{
-                margin: '0 0 16px',
-                fontSize: '16px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <Category style={{ fontSize: 20, color: '#8b5cf6' }} />
-              Top Genres
-            </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {stats.topGenres.map((genre, i) => (
-                <motion.div
-                  key={genre.name}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.9 + i * 0.1 }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
-                >
-                  <span
-                    style={{
-                      width: '24px',
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      color: i === 0 ? '#fbbf24' : currentTheme.text.muted,
-                    }}
-                  >
-                    #{i + 1}
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        marginBottom: '4px',
-                      }}
-                    >
-                      <span style={{ fontSize: '14px', fontWeight: 600 }}>{genre.name}</span>
-                      <span style={{ fontSize: '13px', color: currentTheme.text.muted }}>
-                        {genre.count}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        height: '6px',
-                        background: `${currentTheme.text.muted}20`,
-                        borderRadius: '3px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(genre.count / maxGenreCount) * 100}%` }}
-                        transition={{ duration: 0.8, delay: 1 + i * 0.1 }}
-                        style={{
-                          height: '100%',
-                          background: `linear-gradient(90deg, #8b5cf6, ${currentTheme.primary})`,
-                          borderRadius: '3px',
-                        }}
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Top Providers */}
-        {stats.topProviders.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            style={{
-              margin: '0 20px 24px',
-              padding: '20px',
-              borderRadius: '20px',
-              background: currentTheme.background.surface,
-              border: `1px solid ${currentTheme.border.default}`,
-            }}
-          >
-            <h2
-              style={{
-                margin: '0 0 16px',
-                fontSize: '16px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <Stream style={{ fontSize: 20, color: '#06b6d4' }} />
-              Streaming-Dienste
-            </h2>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {stats.topProviders.map((provider, i) => (
-                <motion.div
-                  key={provider.name}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.1 + i * 0.1 }}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {stats.topProviders.map((provider, i) => (
+              <motion.div
+                key={provider.name}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.1 + i * 0.1 }}
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: '12px',
+                  background:
+                    i === 0 ? `${currentTheme.primary}20` : `${currentTheme.text.muted}10`,
+                  border: `1px solid ${i === 0 ? currentTheme.primary : currentTheme.text.muted}25`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ fontSize: '13px', fontWeight: 600 }}>{provider.name}</span>
+                <span
                   style={{
-                    padding: '10px 16px',
-                    borderRadius: '12px',
-                    background: i === 0 ? `${currentTheme.primary}20` : `${currentTheme.text.muted}10`,
-                    border: `1px solid ${i === 0 ? currentTheme.primary : currentTheme.text.muted}25`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
+                    fontSize: '11px',
+                    padding: '2px 6px',
+                    borderRadius: '6px',
+                    background: `${currentTheme.text.muted}20`,
+                    color: currentTheme.text.muted,
                   }}
                 >
-                  <span style={{ fontSize: '13px', fontWeight: 600 }}>{provider.name}</span>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      padding: '2px 6px',
-                      borderRadius: '6px',
-                      background: `${currentTheme.text.muted}20`,
-                      color: currentTheme.text.muted,
-                    }}
-                  >
-                    {provider.count}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* This Week Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-          style={{
-            margin: '0 20px 120px',
-            padding: '20px',
-            borderRadius: '20px',
-            background: `linear-gradient(135deg, ${currentTheme.status.success}15, ${currentTheme.primary}15)`,
-            border: `1px solid ${currentTheme.status.success}30`,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div
-              style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '16px',
-                background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <LocalFireDepartment style={{ fontSize: 28, color: '#fff' }} />
-            </div>
-            <div>
-              <div style={{ fontSize: '28px', fontWeight: 800 }}>{stats.lastWeekWatched}</div>
-              <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>
-                Episoden diese Woche
-              </div>
-            </div>
+                  {provider.count}
+                </span>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
+      )}
+
+      {/* This Week Activity */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2 }}
+        style={{
+          margin: '0 20px 120px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: `linear-gradient(135deg, ${currentTheme.status.success}15, ${currentTheme.primary}15)`,
+          border: `1px solid ${currentTheme.status.success}30`,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '16px',
+              background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <LocalFireDepartment style={{ fontSize: 28, color: '#fff' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: '28px', fontWeight: 800 }}>{stats.lastWeekWatched}</div>
+            <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>
+              Episoden diese Woche
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </PageLayout>
   );
 };

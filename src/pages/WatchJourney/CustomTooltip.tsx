@@ -1,6 +1,14 @@
 import { TooltipEntry } from './types';
 
-export const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
+export const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string;
+}) => {
   if (active && payload && payload.length) {
     return (
       <div

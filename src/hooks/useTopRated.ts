@@ -17,7 +17,10 @@ interface TopRatedItem {
 export const useTopRated = () => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const cacheRef = useRef<{ items: TopRatedItem[] | null; deps: string }>({ items: null, deps: '' });
+  const cacheRef = useRef<{ items: TopRatedItem[] | null; deps: string }>({
+    items: null,
+    deps: '',
+  });
 
   const topRated = useMemo(() => {
     const depsString = `${seriesList.length}-${movieList.length}`;
@@ -37,9 +40,9 @@ export const useTopRated = () => {
         ratedSeries.push({ item: series, rating });
       }
     }
-    
+
     ratedSeries.sort((a, b) => b.rating - a.rating);
-    
+
     for (let i = 0; i < Math.min(5, ratedSeries.length); i++) {
       const { item: series, rating } = ratedSeries[i];
       items.push({
@@ -50,7 +53,7 @@ export const useTopRated = () => {
         rating,
       });
     }
-    
+
     // Process movies
     const ratedMovies: Array<{ item: Movie; rating: number }> = [];
     for (let i = 0; i < movieList.length; i++) {
@@ -60,9 +63,9 @@ export const useTopRated = () => {
         ratedMovies.push({ item: movie, rating });
       }
     }
-    
+
     ratedMovies.sort((a, b) => b.rating - a.rating);
-    
+
     for (let i = 0; i < Math.min(5, ratedMovies.length); i++) {
       const { item: movie, rating } = ratedMovies[i];
       items.push({
@@ -73,12 +76,12 @@ export const useTopRated = () => {
         rating,
       });
     }
-    
+
     items.sort((a, b) => b.rating - a.rating);
     const result = items.slice(0, 10);
     cacheRef.current = { items: result, deps: depsString };
     return result;
   }, [seriesList, movieList]);
-  
+
   return topRated;
 };

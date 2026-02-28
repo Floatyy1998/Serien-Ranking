@@ -18,11 +18,11 @@ export const useWebWorkerStatsOptimized = (): Stats => {
   const { user } = useAuth()!;
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  
+
   const workerRef = useRef<Worker | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastUpdateRef = useRef<string>('');
-  
+
   const [stats, setStats] = useState<Stats>({
     totalSeries: 0,
     totalMovies: 0,
@@ -33,20 +33,19 @@ export const useWebWorkerStatsOptimized = (): Stats => {
     todayEpisodes: 0,
     progress: 0,
   });
-  
+
   // Create dependency string for comparison
   const depsString = useMemo(() => {
     return `${seriesList.length}-${movieList.length}-${user?.uid}`;
   }, [seriesList.length, movieList.length, user?.uid]);
-  
+
   useEffect(() => {
     // Initialize worker only once
     if (!workerRef.current) {
-      workerRef.current = new Worker(
-        new URL('../workers/stats.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-      
+      workerRef.current = new Worker(new URL('../workers/stats.worker.ts', import.meta.url), {
+        type: 'module',
+      });
+
       workerRef.current.addEventListener('message', (event) => {
         if (event.data.type === 'STATS_RESULT') {
           requestAnimationFrame(() => {
@@ -55,17 +54,17 @@ export const useWebWorkerStatsOptimized = (): Stats => {
         }
       });
     }
-    
+
     // Clear existing debounce timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    
+
     // Skip if no data or same as last update
     if (!seriesList.length || depsString === lastUpdateRef.current) {
       return;
     }
-    
+
     // Debounce worker updates by 500ms
     debounceTimerRef.current = setTimeout(() => {
       if (workerRef.current) {
@@ -80,7 +79,7 @@ export const useWebWorkerStatsOptimized = (): Stats => {
         });
       }
     }, 500);
-    
+
     // Cleanup function - only terminate worker on unmount
     return () => {
       if (debounceTimerRef.current) {
@@ -88,7 +87,7 @@ export const useWebWorkerStatsOptimized = (): Stats => {
       }
     };
   }, [depsString, seriesList, movieList, user?.uid]);
-  
+
   // Terminate worker only when component fully unmounts
   useEffect(() => {
     return () => {
@@ -98,6 +97,6 @@ export const useWebWorkerStatsOptimized = (): Stats => {
       }
     };
   }, []);
-  
+
   return stats;
 };

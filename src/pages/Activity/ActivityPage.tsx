@@ -52,10 +52,7 @@ export const ActivityPage = () => {
     removeFriend,
   } = useOptimizedFriends();
 
-  const {
-    notifications,
-    markAsRead,
-  } = useNotifications();
+  const { notifications, markAsRead } = useNotifications();
 
   const discussionNotifications = useMemo(() => {
     return notifications.filter(
@@ -117,7 +114,7 @@ export const ActivityPage = () => {
     } else if (activeTab === 'requests' && unreadRequestsCount > 0) {
       markRequestsAsRead();
     } else if (activeTab === 'discussions' && unreadDiscussionsCount > 0) {
-      discussionNotifications.filter(n => !n.read).forEach(n => markAsRead(n.id));
+      discussionNotifications.filter((n) => !n.read).forEach((n) => markAsRead(n.id));
     }
   }, [activeTab, unreadActivitiesCount, unreadRequestsCount, unreadDiscussionsCount]);
 
@@ -207,7 +204,11 @@ export const ActivityPage = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <BackButton />
-            <GradientText as="h1" from={currentTheme.text.primary} to={currentTheme.primary} style={{
+            <GradientText
+              as="h1"
+              from={currentTheme.text.primary}
+              to={currentTheme.primary}
+              style={{
                 fontSize: '26px',
                 fontWeight: 800,
                 margin: 0,
@@ -456,7 +457,9 @@ export const ActivityPage = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {groupedActivities.map(([userId, activities]) => {
                     const friendObj = friends.find((f) => f.uid === userId);
-                    const userProfile = friendObj ? friendProfiles[friendObj.uid] || friendObj : null;
+                    const userProfile = friendObj
+                      ? friendProfiles[friendObj.uid] || friendObj
+                      : null;
                     const isExpanded = expandedUsers.has(userId);
                     const latestActivity = activities[0];
 
@@ -590,8 +593,7 @@ export const ActivityPage = () => {
                                     activity.type === 'series_added_to_watchlist' ||
                                     activity.type === 'movie_added_to_watchlist';
 
-                                  const tmdbId =
-                                    activity.tmdbId || activity.itemId;
+                                  const tmdbId = activity.tmdbId || activity.itemId;
                                   const posterUrl = getPosterUrl(activity);
 
                                   return (
@@ -601,7 +603,9 @@ export const ActivityPage = () => {
                                       onClick={() => {
                                         if (tmdbId) {
                                           saveScrollPosition();
-                                          navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
+                                          navigate(
+                                            isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`
+                                          );
                                         }
                                       }}
                                       style={{
@@ -682,9 +686,7 @@ export const ActivityPage = () => {
                                               whiteSpace: 'nowrap',
                                             }}
                                           >
-                                            {activity.itemTitle ||
-                                              item?.title ||
-                                              'Unbekannt'}
+                                            {activity.itemTitle || item?.title || 'Unbekannt'}
                                           </span>
                                         </div>
 
@@ -833,7 +835,10 @@ export const ActivityPage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        onClick={() => { saveScrollPosition(); navigate(`/friend/${friend.uid}`); }}
+                        onClick={() => {
+                          saveScrollPosition();
+                          navigate(`/friend/${friend.uid}`);
+                        }}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -898,7 +903,10 @@ export const ActivityPage = () => {
                             e.stopPropagation();
                             setFriendToRemove({
                               uid: friend.uid,
-                              name: currentProfile.displayName || currentProfile.username || 'Unbekannt',
+                              name:
+                                currentProfile.displayName ||
+                                currentProfile.username ||
+                                'Unbekannt',
                             });
                           }}
                           style={{
@@ -1270,7 +1278,9 @@ export const ActivityPage = () => {
                               style={{ color: currentTheme.primary, fontSize: '20px' }}
                             />
                           ) : notification.type === 'spoiler_flag' ? (
-                            <Flag style={{ color: currentTheme.status.warning, fontSize: '20px' }} />
+                            <Flag
+                              style={{ color: currentTheme.status.warning, fontSize: '20px' }}
+                            />
                           ) : (
                             <Favorite style={{ color: '#ff6b6b', fontSize: '20px' }} />
                           )}
@@ -1366,8 +1376,8 @@ export const ActivityPage = () => {
               lineHeight: 1.5,
             }}
           >
-            Möchtest du <strong>{friendToRemove?.name}</strong> wirklich als Freund entfernen?
-            Ihr seht dann keine Aktivitäten mehr voneinander.
+            Möchtest du <strong>{friendToRemove?.name}</strong> wirklich als Freund entfernen? Ihr
+            seht dann keine Aktivitäten mehr voneinander.
           </p>
           <div style={{ display: 'flex', gap: '12px' }}>
             <motion.button

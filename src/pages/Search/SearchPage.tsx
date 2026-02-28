@@ -586,7 +586,12 @@ export const SearchPage: React.FC = () => {
                             color: 'white',
                           }}
                         >
-                          <Star style={{ fontSize: isDesktop ? '12px' : '10px', color: currentTheme.status.warning }} />
+                          <Star
+                            style={{
+                              fontSize: isDesktop ? '12px' : '10px',
+                              color: currentTheme.status.warning,
+                            }}
+                          />
                           {item.vote_average.toFixed(1)}
                         </div>
                       )}
@@ -655,7 +660,9 @@ export const SearchPage: React.FC = () => {
                             boxShadow: `0 4px 12px ${currentTheme.status.success}50`,
                           }}
                         >
-                          <Check style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }} />
+                          <Check
+                            style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }}
+                          />
                         </div>
                       )}
                     </div>

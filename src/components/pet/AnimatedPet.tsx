@@ -17,7 +17,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
   size = 70,
   showAccessories = true,
   borderWalk = false,
-  onClick
+  onClick,
 }) => {
   const [currentMood, setCurrentMood] = useState<Pet['mood']>('happy');
   const controls = useAnimationControls();
@@ -38,21 +38,22 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
         { x: window.innerWidth - 100, y: 0 }, // Rechts oben
         { x: window.innerWidth - 100, y: window.innerHeight - 200 }, // Rechts unten
         { x: 0, y: window.innerHeight - 200 }, // Links unten
-        { x: 0, y: 0 } // Links oben
+        { x: 0, y: 0 }, // Links oben
       ];
 
       for (const step of steps) {
         await controls.start({
           x: step.x,
           y: step.y,
-          transition: { duration: 5, ease: "linear" }
+          transition: { duration: 5, ease: 'linear' },
         });
       }
       setIsWalking(false);
     };
 
     const interval = setInterval(() => {
-      if (Math.random() > 0.7) { // 30% Chance zu laufen
+      if (Math.random() > 0.7) {
+        // 30% Chance zu laufen
         walkAroundBorder();
       }
     }, 30000); // Alle 30 Sekunden prüfen
@@ -68,13 +69,13 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
     if (pet.color === 'rainbow') {
       return {
         background: 'linear-gradient(45deg, #FF6B6B, #FFD93D, #95E77E, #4ECDC4, #B794F6)',
-        animation: 'rainbow 3s ease-in-out infinite'
+        animation: 'rainbow 3s ease-in-out infinite',
       };
     }
     if (pet.color === 'cosmic') {
       return {
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        boxShadow: '0 0 20px rgba(102, 126, 234, 0.5)'
+        boxShadow: '0 0 20px rgba(102, 126, 234, 0.5)',
       };
     }
     return {};
@@ -88,7 +89,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
         position: borderWalk ? 'fixed' : 'relative',
         zIndex: 1000,
         cursor: onClick ? 'pointer' : 'default',
-        ...getSpecialColor()
+        ...getSpecialColor(),
       }}
       onClick={onClick}
     >
@@ -97,16 +98,12 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
         transition={{
           duration: currentMood === 'playful' ? 1 : 3,
           repeat: Infinity,
-          ease: 'easeInOut'
+          ease: 'easeInOut',
         }}
         style={{ position: 'relative' }}
       >
         {/* Haupt-Pet */}
-        <EvolvingPixelPet
-          pet={pet}
-          size={size}
-          animated={pet.isAlive && !isWalking}
-        />
+        <EvolvingPixelPet pet={pet} size={size} animated={pet.isAlive && !isWalking} />
 
         {/* Stimmungs-Indikator */}
         {pet.isAlive && (
@@ -125,22 +122,23 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
         )}
 
         {/* Accessoires */}
-        {showAccessories && pet.accessories?.map((accessory) => {
-          if (!accessory.equipped) return null;
+        {showAccessories &&
+          pet.accessories?.map((accessory) => {
+            if (!accessory.equipped) return null;
 
-          const accessoryStyle = getAccessoryStyle(accessory, size);
-          return (
-            <div
-              key={accessory.id}
-              style={{
-                position: 'absolute',
-                ...accessoryStyle
-              }}
-            >
-              {accessory.icon}
-            </div>
-          );
-        })}
+            const accessoryStyle = getAccessoryStyle(accessory, size);
+            return (
+              <div
+                key={accessory.id}
+                style={{
+                  position: 'absolute',
+                  ...accessoryStyle,
+                }}
+              >
+                {accessory.icon}
+              </div>
+            );
+          })}
 
         {/* Walking Animation Indicator */}
         {isWalking && pet.isAlive && (
@@ -152,7 +150,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
               bottom: -10,
               left: '50%',
               transform: 'translateX(-50%)',
-              fontSize: size * 0.2
+              fontSize: size * 0.2,
             }}
           >
             👟👟
@@ -170,7 +168,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
               height: '100%',
               background: 'radial-gradient(circle, transparent, rgba(255,255,255,0.1))',
               pointerEvents: 'none',
-              animation: 'pulse 3s ease-in-out infinite'
+              animation: 'pulse 3s ease-in-out infinite',
             }}
           />
         )}
@@ -187,7 +185,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
               padding: '2px 6px',
               fontSize: '10px',
               fontWeight: 'bold',
-              color: 'white'
+              color: 'white',
             }}
           >
             {pet.favoriteGenre.substring(0, 3)}
@@ -208,14 +206,14 @@ function getAccessoryStyle(accessory: PetAccessory, size: number): React.CSSProp
         top: -15 * scale,
         left: '50%',
         transform: 'translateX(-50%)',
-        fontSize: size * 0.4
+        fontSize: size * 0.4,
       };
     case 'glasses':
       return {
         top: 10 * scale,
         left: '50%',
         transform: 'translateX(-50%)',
-        fontSize: size * 0.3
+        fontSize: size * 0.3,
       };
     case 'collar':
     case 'bow':
@@ -224,14 +222,14 @@ function getAccessoryStyle(accessory: PetAccessory, size: number): React.CSSProp
         bottom: 5 * scale,
         left: '50%',
         transform: 'translateX(-50%)',
-        fontSize: size * 0.25
+        fontSize: size * 0.25,
       };
     case 'scarf':
       return {
         bottom: 10 * scale,
         left: '50%',
         transform: 'translateX(-50%)',
-        fontSize: size * 0.3
+        fontSize: size * 0.3,
       };
     default:
       return {};

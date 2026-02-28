@@ -5,9 +5,7 @@ import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendActivity } from '../../types/Friend';
 import type { ActivityFilterType } from './types';
 
-export const useActivityGrouping = (
-  friendActivities: FriendActivity[]
-) => {
+export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
   const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
@@ -83,11 +81,11 @@ export const useActivityGrouping = (
           activity.type === 'series_rated' ||
           activity.type === 'rating_updated' ||
           activity.type === 'series_added_to_watchlist' ||
-          (activity.itemType === 'series' ||
-            (!activity.itemType &&
-              activity.type !== 'movie_added' &&
-              activity.type !== 'movie_rated' &&
-              activity.type !== 'rating_updated_movie'))
+          activity.itemType === 'series' ||
+          (!activity.itemType &&
+            activity.type !== 'movie_added' &&
+            activity.type !== 'movie_rated' &&
+            activity.type !== 'rating_updated_movie')
       );
     }
 

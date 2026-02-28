@@ -67,11 +67,7 @@ const isSeriesEnded = (series: Series): boolean => {
   // Prüfe verschiedene Status-Felder
   const status = series.status?.toLowerCase();
 
-  return (
-    status === 'ended' ||
-    status === 'canceled' ||
-    status === 'cancelled'
-  );
+  return status === 'ended' || status === 'canceled' || status === 'cancelled';
 };
 
 export const detectCompletedSeries = async (
@@ -100,8 +96,8 @@ export const detectCompletedSeries = async (
 
     // Prüfe ob Benachrichtigung für diese Serie bereits abgelehnt wurde
     const dismissedData = dismissedNotifications[series.id];
-    const wasDismissedRecently = dismissedData?.dismissed &&
-      (currentTime - dismissedData.timestamp) < CHECK_COOLDOWN;
+    const wasDismissedRecently =
+      dismissedData?.dismissed && currentTime - dismissedData.timestamp < CHECK_COOLDOWN;
 
     if (!stored) {
       // Erste Erfassung
@@ -117,12 +113,7 @@ export const detectCompletedSeries = async (
       const shouldCheckAgain = timeSinceLastCheck >= CHECK_COOLDOWN;
 
       // Prüfen ob Serie komplett geschaut ist und beendet
-      if (
-        allEpisodesWatched &&
-        seriesEnded &&
-        !stored.notified &&
-        !wasDismissedRecently
-      ) {
+      if (allEpisodesWatched && seriesEnded && !stored.notified && !wasDismissedRecently) {
         // Serie ist komplett geschaut und beendet
         completedSeries.push(series);
 
@@ -149,9 +140,7 @@ export const detectCompletedSeries = async (
 
   // Aufräumen: Entferne Daten für Serien die nicht mehr in der Watchlist sind
   const currentWatchlistIds = new Set(
-    seriesList
-      .filter(s => s && s.id && s.watchlist)
-      .map(s => s.id.toString())
+    seriesList.filter((s) => s && s.id && s.watchlist).map((s) => s.id.toString())
   );
   for (const key of Object.keys(updatedStoredData)) {
     if (!currentWatchlistIds.has(key)) {
@@ -165,10 +154,7 @@ export const detectCompletedSeries = async (
   return completedSeries;
 };
 
-export const markCompletedSeriesAsNotified = async (
-  seriesId: number,
-  userId: string
-) => {
+export const markCompletedSeriesAsNotified = async (seriesId: number, userId: string) => {
   const storedData = await getStoredCompletedData(userId);
   const seriesKey = seriesId.toString();
 

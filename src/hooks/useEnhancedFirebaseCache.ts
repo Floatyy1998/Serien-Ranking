@@ -160,9 +160,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
       listenerRef.current = () => ref.off('value', listener);
     } catch (error) {
       // console.error('❌ Realtime listener setup failed:', error);
-      setError(
-        error instanceof Error ? error.message : 'Realtime setup failed'
-      );
+      setError(error instanceof Error ? error.message : 'Realtime setup failed');
       setLoading(false);
     }
   }, [path, useRealtimeListener, saveToCache, loadFromCache]);
@@ -199,9 +197,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
         setIsStale(true);
         setError('Netzwerkfehler - zeige gecachte Daten');
       } else {
-        setError(
-          error instanceof Error ? error.message : 'Laden fehlgeschlagen'
-        );
+        setError(error instanceof Error ? error.message : 'Laden fehlgeschlagen');
       }
     }
     setLoading(false);
@@ -305,9 +301,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
           setIsStale(true);
           setError('Fehler beim Laden - zeige gecachte Daten');
         } else {
-          setError(
-            error instanceof Error ? error.message : 'Laden fehlgeschlagen'
-          );
+          setError(error instanceof Error ? error.message : 'Laden fehlgeschlagen');
         }
         setLoading(false);
       }
@@ -323,13 +317,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
         abortControllerRef.current.abort();
       }
     };
-  }, [
-    path,
-    useRealtimeListener,
-    loadFromCache,
-    setupRealtimeListener,
-    fetchFromFirebase,
-  ]);
+  }, [path, useRealtimeListener, loadFromCache, setupRealtimeListener, fetchFromFirebase]);
   return {
     data,
     loading,

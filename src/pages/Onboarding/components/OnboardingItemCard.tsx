@@ -13,15 +13,20 @@ interface Props {
   onSeasonSelect?: (item: OnboardingItem, season: number | 'all' | 'none') => void;
 }
 
-export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, onAdd, onRemove, onSeasonSelect }) => {
+export const OnboardingItemCard: React.FC<Props> = ({
+  item,
+  isAdded,
+  isAdding,
+  onAdd,
+  onRemove,
+  onSeasonSelect,
+}) => {
   const { currentTheme } = useTheme();
   const [showModal, setShowModal] = useState(false);
   const [seasonCount, setSeasonCount] = useState<number | null>(null);
   const [selectedSeason, setSelectedSeason] = useState<number | 'all' | 'none'>('none');
 
-  const posterUrl = item.poster_path
-    ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
-    : null;
+  const posterUrl = item.poster_path ? `https://image.tmdb.org/t/p/w185${item.poster_path}` : null;
 
   const year = (item.first_air_date || item.release_date || '').slice(0, 4);
   const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
@@ -41,7 +46,9 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
           setSeasonCount(data.number_of_seasons || 1);
           setShowModal(true);
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   };
 
@@ -62,8 +69,8 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
       fetch(
         `https://api.themoviedb.org/3/tv/${item.id}?api_key=${import.meta.env.VITE_API_TMDB}&language=de-DE`
       )
-        .then(r => r.json())
-        .then(data => {
+        .then((r) => r.json())
+        .then((data) => {
           setSeasonCount(data.number_of_seasons || 1);
           setShowModal(true);
         })
@@ -101,19 +108,27 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
               justifyContent: 'center',
             }}
           >
-            <div style={{
-              width: 32,
-              height: 32,
-              border: `3px solid ${currentTheme.primary}40`,
-              borderTop: `3px solid ${currentTheme.primary}`,
-              borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
-            }}/>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                border: `3px solid ${currentTheme.primary}40`,
+                borderTop: `3px solid ${currentTheme.primary}`,
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
           </motion.div>
         )}
 
         {/* Poster */}
-        <div style={{ position: 'relative', paddingTop: '150%', background: `${currentTheme.primary}10` }}>
+        <div
+          style={{
+            position: 'relative',
+            paddingTop: '150%',
+            background: `${currentTheme.primary}10`,
+          }}
+        >
           {posterUrl && (
             <img
               src={posterUrl}
@@ -165,7 +180,10 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
               fontSize: 10,
               fontWeight: 600,
               color: 'white',
-              background: item.type === 'series' ? `${currentTheme.primary}dd` : `${currentTheme.status.warning}dd`,
+              background:
+                item.type === 'series'
+                  ? `${currentTheme.primary}dd`
+                  : `${currentTheme.status.warning}dd`,
               padding: '3px 8px',
               borderRadius: 6,
             }}
@@ -191,11 +209,17 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
             {displayTitle}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-            {year && (
-              <span style={{ fontSize: 11, color: currentTheme.text.muted }}>{year}</span>
-            )}
+            {year && <span style={{ fontSize: 11, color: currentTheme.text.muted }}>{year}</span>}
             {rating && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 11, color: currentTheme.text.muted }}>
+              <span
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  fontSize: 11,
+                  color: currentTheme.text.muted,
+                }}
+              >
                 <Star style={{ fontSize: 11, color: '#fbbf24' }} />
                 {rating}
               </span>
@@ -219,7 +243,11 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
               cursor: 'pointer',
             }}
           >
-            {selectedSeason === 'none' ? 'Watchstand setzen' : selectedSeason === 'all' ? 'Alles gesehen' : `Bei S${selectedSeason}`}
+            {selectedSeason === 'none'
+              ? 'Watchstand setzen'
+              : selectedSeason === 'all'
+                ? 'Alles gesehen'
+                : `Bei S${selectedSeason}`}
           </button>
         )}
       </motion.div>
@@ -266,12 +294,28 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
               }}
             >
               {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: 16,
+                }}
+              >
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: currentTheme.text.primary }}>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: currentTheme.text.primary,
+                    }}
+                  >
                     {displayTitle}
                   </h3>
-                  <p style={{ margin: '4px 0 0', fontSize: 13, color: currentTheme.text.secondary }}>
+                  <p
+                    style={{ margin: '4px 0 0', fontSize: 13, color: currentTheme.text.secondary }}
+                  >
                     Wo bist du bei dieser Serie?
                   </p>
                 </div>
@@ -299,7 +343,7 @@ export const OnboardingItemCard: React.FC<Props> = ({ item, isAdded, isAdding, o
                   onClick={() => handleSeasonChoice('none')}
                   theme={currentTheme}
                 />
-                {Array.from({ length: seasonCount }, (_, i) => i + 1).map(s => (
+                {Array.from({ length: seasonCount }, (_, i) => i + 1).map((s) => (
                   <SeasonChip
                     key={s}
                     label={`Staffel ${s}`}
@@ -363,6 +407,7 @@ const SeasonChip: React.FC<{
       transition: 'all 0.15s ease',
     }}
   >
-    {selected && '✓ '}{label}
+    {selected && '✓ '}
+    {label}
   </button>
 );

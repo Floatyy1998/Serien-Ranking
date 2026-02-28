@@ -20,14 +20,24 @@ const morningGreetings: Greeting[] = [
   { text: 'Kaffee schon getrunken', lang: 'Deutsch' },
 
   // Deutsche Film/Serien-Zitate
-  { text: 'Guten Morgen, Sam', lang: 'Der Herr der Ringe', title: 'The Lord of the Rings', type: 'movie' },
+  {
+    text: 'Guten Morgen, Sam',
+    lang: 'Der Herr der Ringe',
+    title: 'The Lord of the Rings',
+    type: 'movie',
+  },
   { text: 'Ich bin ein Berliner', lang: 'JFK' },
   { text: 'Lauf, Forrest, lauf', lang: 'Forrest Gump', title: 'Forrest Gump', type: 'movie' },
   { text: 'Houston, wir haben ein Problem', lang: 'Apollo 13', title: 'Apollo 13', type: 'movie' },
   { text: 'Möge die Macht mit dir sein', lang: 'Star Wars', title: 'Star Wars', type: 'movie' },
   { text: 'Ich bin dein Vater', lang: 'Star Wars', title: 'Star Wars', type: 'movie' },
   { text: 'Das ist Sparta', lang: '300', title: '300', type: 'movie' },
-  { text: 'Yippie-Ya-Yeah, Schweinebacke', lang: 'Stirb Langsam', title: 'Die Hard', type: 'movie' },
+  {
+    text: 'Yippie-Ya-Yeah, Schweinebacke',
+    lang: 'Stirb Langsam',
+    title: 'Die Hard',
+    type: 'movie',
+  },
 
   // Klassische deutsche Filme
   { text: 'Ich bin dann mal weg', lang: 'Hape Kerkeling' },
@@ -39,10 +49,20 @@ const morningGreetings: Greeting[] = [
   // Weitere Grüße
   { text: 'Wach auf, Neo', lang: 'Matrix', title: 'The Matrix', type: 'movie' },
   { text: 'Guten Morgen, Vietnam', lang: 'Film', title: 'Good Morning, Vietnam', type: 'movie' },
-  { text: 'Carpe diem - Nutze den Tag', lang: 'Der Club der toten Dichter', title: 'Dead Poets Society', type: 'movie' },
+  {
+    text: 'Carpe diem - Nutze den Tag',
+    lang: 'Der Club der toten Dichter',
+    title: 'Dead Poets Society',
+    type: 'movie',
+  },
   { text: 'Nach dem Frühstück', lang: 'Der Hobbit', title: 'The Hobbit', type: 'movie' },
   { text: 'Winter is coming', lang: 'Game of Thrones', title: 'Game of Thrones', type: 'tv' },
-  { text: 'Und täglich grüßt das Murmeltier', lang: 'Und täglich grüßt das Murmeltier', title: 'Groundhog Day', type: 'movie' },
+  {
+    text: 'Und täglich grüßt das Murmeltier',
+    lang: 'Und täglich grüßt das Murmeltier',
+    title: 'Groundhog Day',
+    type: 'movie',
+  },
 ];
 
 const afternoonGreetings: Greeting[] = [
@@ -60,12 +80,42 @@ const afternoonGreetings: Greeting[] = [
   { text: 'Tach', lang: 'Berlinerisch' },
 
   // Deutsche Film/Serien-Zitate
-  { text: 'Bis zur Unendlichkeit und noch viel weiter', lang: 'Toy Story', title: 'Toy Story', type: 'movie' },
-  { text: 'Leben ist wie eine Schachtel Pralinen', lang: 'Forrest Gump', title: 'Forrest Gump', type: 'movie' },
-  { text: 'Ich mache ihm ein Angebot, das er nicht ablehnen kann', lang: 'Der Pate', title: 'The Godfather', type: 'movie' },
-  { text: 'Schau mir in die Augen, Kleines', lang: 'Casablanca', title: 'Casablanca', type: 'movie' },
-  { text: 'Ich sehe tote Menschen', lang: 'The Sixth Sense', title: 'The Sixth Sense', type: 'movie' },
-  { text: 'E.T. nach Hause telefonieren', lang: 'E.T.', title: 'E.T. the Extra-Terrestrial', type: 'movie' },
+  {
+    text: 'Bis zur Unendlichkeit und noch viel weiter',
+    lang: 'Toy Story',
+    title: 'Toy Story',
+    type: 'movie',
+  },
+  {
+    text: 'Leben ist wie eine Schachtel Pralinen',
+    lang: 'Forrest Gump',
+    title: 'Forrest Gump',
+    type: 'movie',
+  },
+  {
+    text: 'Ich mache ihm ein Angebot, das er nicht ablehnen kann',
+    lang: 'Der Pate',
+    title: 'The Godfather',
+    type: 'movie',
+  },
+  {
+    text: 'Schau mir in die Augen, Kleines',
+    lang: 'Casablanca',
+    title: 'Casablanca',
+    type: 'movie',
+  },
+  {
+    text: 'Ich sehe tote Menschen',
+    lang: 'The Sixth Sense',
+    title: 'The Sixth Sense',
+    type: 'movie',
+  },
+  {
+    text: 'E.T. nach Hause telefonieren',
+    lang: 'E.T.',
+    title: 'E.T. the Extra-Terrestrial',
+    type: 'movie',
+  },
 
   // Deutsche Produktionen
   { text: 'Das Leben ist kein Ponyhof', lang: 'Deutsch' },
@@ -75,9 +125,14 @@ const afternoonGreetings: Greeting[] = [
   { text: 'Kommst du heute nicht, kommst du morgen', lang: 'Deutsch' },
 
   // Weitere bekannte Zitate
-  { text: 'Ich bin zu alt für diesen Scheiß', lang: 'Lethal Weapon', title: 'Lethal Weapon', type: 'movie' },
+  {
+    text: 'Ich bin zu alt für diesen Scheiß',
+    lang: 'Lethal Weapon',
+    title: 'Lethal Weapon',
+    type: 'movie',
+  },
   { text: 'Bazinga', lang: 'The Big Bang Theory', title: 'The Big Bang Theory', type: 'tv' },
-  { text: 'How you doin\'', lang: 'Friends', title: 'Friends', type: 'tv' },
+  { text: "How you doin'", lang: 'Friends', title: 'Friends', type: 'tv' },
   { text: 'Cool, cool, cool', lang: 'Brooklyn Nine-Nine', title: 'Brooklyn Nine-Nine', type: 'tv' },
   { text: 'Das ist der Weg', lang: 'The Mandalorian', title: 'The Mandalorian', type: 'tv' },
 ];
@@ -98,10 +153,25 @@ const eveningGreetings: Greeting[] = [
 
   // Deutsche Film/Serien-Zitate für Abend
   { text: 'Ich bin der König der Welt', lang: 'Titanic', title: 'Titanic', type: 'movie' },
-  { text: 'Frankenstein Junior', lang: 'Frankenstein Junior', title: 'Young Frankenstein', type: 'movie' },
-  { text: 'Nach Hause telefonieren', lang: 'E.T.', title: 'E.T. the Extra-Terrestrial', type: 'movie' },
+  {
+    text: 'Frankenstein Junior',
+    lang: 'Frankenstein Junior',
+    title: 'Young Frankenstein',
+    type: 'movie',
+  },
+  {
+    text: 'Nach Hause telefonieren',
+    lang: 'E.T.',
+    title: 'E.T. the Extra-Terrestrial',
+    type: 'movie',
+  },
   { text: 'Ich komme wieder', lang: 'Terminator', title: 'The Terminator', type: 'movie' },
-  { text: 'Hasta la vista, Baby', lang: 'Terminator 2', title: 'Terminator 2: Judgment Day', type: 'movie' },
+  {
+    text: 'Hasta la vista, Baby',
+    lang: 'Terminator 2',
+    title: 'Terminator 2: Judgment Day',
+    type: 'movie',
+  },
 
   // Deutsche TV-Shows
   { text: 'Wetten, dass', lang: 'ZDF' },
@@ -121,7 +191,12 @@ const eveningGreetings: Greeting[] = [
   { text: 'Widerstand ist zwecklos', lang: 'Star Trek', title: 'Star Trek', type: 'tv' },
   { text: 'Beam mich hoch, Scotty', lang: 'Star Trek', title: 'Star Trek', type: 'tv' },
   { text: 'Der Winter naht', lang: 'Game of Thrones', title: 'Game of Thrones', type: 'tv' },
-  { text: 'Ein Lannister zahlt immer seine Schulden', lang: 'Game of Thrones', title: 'Game of Thrones', type: 'tv' },
+  {
+    text: 'Ein Lannister zahlt immer seine Schulden',
+    lang: 'Game of Thrones',
+    title: 'Game of Thrones',
+    type: 'tv',
+  },
   { text: 'Hodor', lang: 'Game of Thrones', title: 'Game of Thrones', type: 'tv' },
 ];
 
@@ -142,17 +217,37 @@ const nightGreetings: Greeting[] = [
   { text: 'Hey', lang: 'Deutsch' },
 
   // Deutsche Film/Serien-Zitate für Nacht
-  { text: 'Die Nacht ist dunkel und voller Schrecken', lang: 'Game of Thrones', title: 'Game of Thrones', type: 'tv' },
+  {
+    text: 'Die Nacht ist dunkel und voller Schrecken',
+    lang: 'Game of Thrones',
+    title: 'Game of Thrones',
+    type: 'tv',
+  },
   { text: 'Ich bin Batman', lang: 'Batman', title: 'Batman', type: 'movie' },
   { text: 'Warum so ernst', lang: 'The Dark Knight', title: 'The Dark Knight', type: 'movie' },
   { text: 'Nach Mitternacht kommen die Geister', lang: 'Deutsch' },
   { text: 'Die Geisterstunde', lang: 'Deutsch' },
 
   // Schlaflos-Zitate
-  { text: 'Schlaflos in Seattle', lang: 'Schlaflos in Seattle', title: 'Sleepless in Seattle', type: 'movie' },
+  {
+    text: 'Schlaflos in Seattle',
+    lang: 'Schlaflos in Seattle',
+    title: 'Sleepless in Seattle',
+    type: 'movie',
+  },
   { text: 'Fight Club Regel Nr. 1', lang: 'Fight Club', title: 'Fight Club', type: 'movie' },
-  { text: 'Die erste Regel des Fight Club', lang: 'Fight Club', title: 'Fight Club', type: 'movie' },
-  { text: 'Wir sprechen nicht über Fight Club', lang: 'Fight Club', title: 'Fight Club', type: 'movie' },
+  {
+    text: 'Die erste Regel des Fight Club',
+    lang: 'Fight Club',
+    title: 'Fight Club',
+    type: 'movie',
+  },
+  {
+    text: 'Wir sprechen nicht über Fight Club',
+    lang: 'Fight Club',
+    title: 'Fight Club',
+    type: 'movie',
+  },
 
   // Nacht-Stimmung
   { text: 'Nur noch diese eine Folge', lang: 'Netflix' },
@@ -163,7 +258,12 @@ const nightGreetings: Greeting[] = [
 
   // Horror/Thriller
   { text: 'Ich sehe was, was du nicht siehst', lang: 'Deutsch' },
-  { text: 'Süße Träume', lang: 'Nightmare on Elm Street', title: 'A Nightmare on Elm Street', type: 'movie' },
+  {
+    text: 'Süße Träume',
+    lang: 'Nightmare on Elm Street',
+    title: 'A Nightmare on Elm Street',
+    type: 'movie',
+  },
   { text: 'Redrum', lang: 'The Shining', title: 'The Shining', type: 'movie' },
   { text: 'Sie kommen', lang: 'Poltergeist', title: 'Poltergeist', type: 'movie' },
 

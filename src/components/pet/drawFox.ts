@@ -1,4 +1,15 @@
-export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number, color: string, _dark: string, light: string, offset: number, animated: boolean, frame: number, animationSpeed: number): void => {
+export const drawFox = (
+  ctx: CanvasRenderingContext2D,
+  level: number,
+  ps: number,
+  color: string,
+  _dark: string,
+  light: string,
+  offset: number,
+  animated: boolean,
+  frame: number,
+  animationSpeed: number
+): void => {
   const centerX = 16;
   const centerY = 16;
 
@@ -10,7 +21,7 @@ export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number
   // Spitze Schnauze
   ctx.fillStyle = color;
   ctx.fillRect((centerX - 5) * ps, (centerY - 1) * ps + offset, ps * 3, ps * 2);
-  ctx.fillRect((centerX - 6) * ps, (centerY) * ps + offset, ps * 2, ps);
+  ctx.fillRect((centerX - 6) * ps, centerY * ps + offset, ps * 2, ps);
 
   // Große spitze Ohren (charakteristisch für Füchse)
   ctx.fillStyle = color;
@@ -62,7 +73,7 @@ export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number
   ctx.fillRect((centerX + 3) * ps, (centerY + 6) * ps + offset, ps * 4, ps * 3);
   ctx.fillRect((centerX + 6) * ps, (centerY + 4) * ps + offset, ps * 3, ps * 4);
   ctx.fillRect((centerX + 8) * ps, (centerY + 2) * ps + offset, ps * 2, ps * 5);
-  ctx.fillRect((centerX + 9) * ps, (centerY) * ps + offset, ps * 2, ps * 4);
+  ctx.fillRect((centerX + 9) * ps, centerY * ps + offset, ps * 2, ps * 4);
 
   // Weiße Schwanzspitze (typisch für Füchse)
   ctx.fillStyle = '#FFF';
@@ -141,8 +152,18 @@ export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number
       const yOffset = i * 1.5;
 
       ctx.fillStyle = i % 2 === 0 ? color : light;
-      ctx.fillRect((centerX + 3 + xOffset) * ps, (centerY + 2 + yOffset) * ps + offset, ps * 4, ps * 1.5);
-      ctx.fillRect((centerX + 6 + xOffset) * ps, (centerY + 1 + yOffset) * ps + offset, ps * 2, ps * 1.5);
+      ctx.fillRect(
+        (centerX + 3 + xOffset) * ps,
+        (centerY + 2 + yOffset) * ps + offset,
+        ps * 4,
+        ps * 1.5
+      );
+      ctx.fillRect(
+        (centerX + 6 + xOffset) * ps,
+        (centerY + 1 + yOffset) * ps + offset,
+        ps * 2,
+        ps * 1.5
+      );
 
       // Spirituelle Flammen (blau/weiß)
       ctx.fillStyle = i % 2 === 0 ? '#87CEEB' : '#E0FFFF';
@@ -176,17 +197,37 @@ export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number
 
       // Abwechselnde Farben für bessere Sichtbarkeit
       ctx.fillStyle = i % 2 === 0 ? color : light;
-      ctx.fillRect((centerX + 3 + xOffset) * ps, (centerY + 3 + yOffset) * ps + offset, ps * 5, ps * 2);
-      ctx.fillRect((centerX + 7 + xOffset) * ps, (centerY + 2 + yOffset) * ps + offset, ps * 3, ps * 2);
+      ctx.fillRect(
+        (centerX + 3 + xOffset) * ps,
+        (centerY + 3 + yOffset) * ps + offset,
+        ps * 5,
+        ps * 2
+      );
+      ctx.fillRect(
+        (centerX + 7 + xOffset) * ps,
+        (centerY + 2 + yOffset) * ps + offset,
+        ps * 3,
+        ps * 2
+      );
 
       // Weiße Schwanzspitzen (typisch für Kitsune)
       ctx.fillStyle = '#FFF';
-      ctx.fillRect((centerX + 9 + xOffset) * ps, (centerY + 2 + yOffset) * ps + offset, ps * 1.5, ps * 2);
+      ctx.fillRect(
+        (centerX + 9 + xOffset) * ps,
+        (centerY + 2 + yOffset) * ps + offset,
+        ps * 1.5,
+        ps * 2
+      );
 
       // Blaue spirituelle Flamme nur an jedem 3. Schwanz
       if (i % 3 === 0) {
         ctx.fillStyle = '#87CEEB';
-        ctx.fillRect((centerX + 10 + xOffset) * ps, (centerY + 2.5 + yOffset) * ps + offset, ps * 0.8, ps);
+        ctx.fillRect(
+          (centerX + 10 + xOffset) * ps,
+          (centerY + 2.5 + yOffset) * ps + offset,
+          ps * 0.8,
+          ps
+        );
       }
     }
 
@@ -215,7 +256,7 @@ export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number
     ctx.lineTo((centerX - 5) * ps, (centerY - 0.5) * ps + offset);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo((centerX - 4) * ps, (centerY) * ps + offset);
+    ctx.moveTo((centerX - 4) * ps, centerY * ps + offset);
     ctx.lineTo((centerX - 5) * ps, (centerY + 0.5) * ps + offset);
     ctx.stroke();
     // Rechts
@@ -224,7 +265,7 @@ export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number
     ctx.lineTo((centerX + 5) * ps, (centerY - 0.5) * ps + offset);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo((centerX + 4) * ps, (centerY) * ps + offset);
+    ctx.moveTo((centerX + 4) * ps, centerY * ps + offset);
     ctx.lineTo((centerX + 5) * ps, (centerY + 0.5) * ps + offset);
     ctx.stroke();
   }
@@ -239,7 +280,12 @@ export const drawFox = (ctx: CanvasRenderingContext2D, level: number, ps: number
         const yOff = Math.abs(i - 4) * 0.8;
         const flameAlpha = 0.3 + Math.sin(flamePhase + i * 0.7) * 0.2;
         ctx.fillStyle = `rgba(65, 105, 225, ${flameAlpha})`;
-        ctx.fillRect((centerX + 10 + xOff) * ps, (centerY + 2 + yOff) * ps + offset, ps * 1.2, ps * 1.2);
+        ctx.fillRect(
+          (centerX + 10 + xOff) * ps,
+          (centerY + 2 + yOff) * ps + offset,
+          ps * 1.2,
+          ps * 1.2
+        );
       }
     }
 

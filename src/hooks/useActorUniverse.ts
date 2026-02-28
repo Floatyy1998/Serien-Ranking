@@ -88,7 +88,14 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   const { allSeriesList: seriesList } = useSeriesList();
 
   // Create a hash to detect if series list changed
-  const seriesListHash = useMemo(() => seriesList.map(s => s.id).sort().join(','), [seriesList]);
+  const seriesListHash = useMemo(
+    () =>
+      seriesList
+        .map((s) => s.id)
+        .sort()
+        .join(','),
+    [seriesList]
+  );
 
   // Initialize from cache if available and series list hasn't changed
   const [actorMap, setActorMap] = useState<Map<number, Actor>>(() => {
@@ -104,7 +111,9 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   });
 
   const [progress, setProgress] = useState(() => {
-    return globalCache.lastSeriesListHash === seriesListHash && globalCache.actorMap.size > 0 ? 100 : 0;
+    return globalCache.lastSeriesListHash === seriesListHash && globalCache.actorMap.size > 0
+      ? 100
+      : 0;
   });
 
   const [fetchedSeriesIds, setFetchedSeriesIds] = useState<Set<number>>(() => {
@@ -117,7 +126,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   // Set of user's series IDs for quick lookup
-  const userSeriesIds = useMemo(() => new Set(seriesList.map(s => s.id)), [seriesList]);
+  const userSeriesIds = useMemo(() => new Set(seriesList.map((s) => s.id)), [seriesList]);
 
   // Fetch cast data for all series
   useEffect(() => {
@@ -128,7 +137,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
         return;
       }
 
-      const seriesToFetch = seriesList.filter(s => !fetchedSeriesIds.has(s.id));
+      const seriesToFetch = seriesList.filter((s) => !fetchedSeriesIds.has(s.id));
       if (seriesToFetch.length === 0) {
         setLoading(false);
         return;
@@ -163,7 +172,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
                 const existing = newActorMap.get(member.id);
 
                 if (existing) {
-                  if (!existing.series.some(s => s.id === series.id)) {
+                  if (!existing.series.some((s) => s.id === series.id)) {
                     existing.seriesCount++;
                     existing.series.push({
                       id: series.id,
@@ -180,12 +189,14 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
                     knownFor: member.known_for_department || 'Acting',
                     popularity: member.popularity || 0,
                     seriesCount: 1,
-                    series: [{
-                      id: series.id,
-                      title: series.title || series.name || 'Unknown',
-                      character: member.character || 'Unknown',
-                      poster: series.poster?.poster || null,
-                    }],
+                    series: [
+                      {
+                        id: series.id,
+                        title: series.title || series.name || 'Unknown',
+                        character: member.character || 'Unknown',
+                        poster: series.poster?.poster || null,
+                      },
+                    ],
                     recommendations: [],
                   });
                 }
@@ -201,7 +212,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
         setProgress(Math.min(100, ((i + BATCH_SIZE) / seriesToFetch.length) * 100));
 
         if (i + BATCH_SIZE < seriesToFetch.length) {
-          await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+          await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
         }
       }
 
@@ -227,10 +238,10 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
 
       // Get top 20 actors by series count
       const topActorIds = Array.from(actorMap.values())
-        .filter(a => a.seriesCount >= 2)
+        .filter((a) => a.seriesCount >= 2)
         .sort((a, b) => b.seriesCount - a.seriesCount)
         .slice(0, 20)
-        .map(a => a.id);
+        .map((a) => a.id);
 
       if (topActorIds.length === 0) return;
 
@@ -262,7 +273,8 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
                   const notOwned = !userSeriesIds.has(credit.id);
                   const goodRating = credit.vote_average >= 6.5;
                   const hasVotes = credit.vote_count >= 50;
-                  const notVoice = !credit.character?.toLowerCase().includes('voice') &&
+                  const notVoice =
+                    !credit.character?.toLowerCase().includes('voice') &&
                     !credit.character?.toLowerCase().includes('(voice)');
                   return notOwned && goodRating && hasVotes && notVoice;
                 })
@@ -283,7 +295,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
           })
         );
 
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await new Promise((resolve) => setTimeout(resolve, 150));
       }
 
       setActorMap(updatedActorMap);
@@ -296,9 +308,10 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   // Helper to check if actor is primarily a voice actor
   const isVoiceActor = (actor: Actor): boolean => {
     if (actor.series.length === 0) return false;
-    const voiceRoles = actor.series.filter(s =>
-      s.character?.toLowerCase().includes('voice') ||
-      s.character?.toLowerCase().includes('(voice)')
+    const voiceRoles = actor.series.filter(
+      (s) =>
+        s.character?.toLowerCase().includes('voice') ||
+        s.character?.toLowerCase().includes('(voice)')
     ).length;
     // Consider voice actor if more than half their roles are voice roles
     return voiceRoles > actor.series.length / 2;
@@ -307,12 +320,12 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   // Calculate actors with positions, connections, and stats
   const universeData = useMemo(() => {
     let significantActors = Array.from(actorMap.values())
-      .filter(a => a.seriesCount >= 2)
+      .filter((a) => a.seriesCount >= 2)
       .sort((a, b) => b.seriesCount - a.seriesCount);
 
     // Filter out voice actors if setting is enabled
     if (hideVoiceActors) {
-      significantActors = significantActors.filter(a => !isVoiceActor(a));
+      significantActors = significantActors.filter((a) => !isVoiceActor(a));
     }
 
     const topActors = significantActors.slice(0, 10);
@@ -352,8 +365,8 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
     const connections: ActorConnection[] = [];
     const actorSeriesMap = new Map<number, Set<number>>();
 
-    actorsWithPositions.forEach(actor => {
-      actorSeriesMap.set(actor.id, new Set(actor.series.map(s => s.id)));
+    actorsWithPositions.forEach((actor) => {
+      actorSeriesMap.set(actor.id, new Set(actor.series.map((s) => s.id)));
     });
 
     let mostConnectedPair: { actor1: string; actor2: string; count: number } | null = null;
@@ -366,11 +379,11 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
         const series1 = actorSeriesMap.get(actor1.id)!;
         const series2 = actorSeriesMap.get(actor2.id)!;
 
-        const sharedSeriesIds = [...series1].filter(id => series2.has(id));
+        const sharedSeriesIds = [...series1].filter((id) => series2.has(id));
 
         if (sharedSeriesIds.length > 0) {
-          const sharedSeries = sharedSeriesIds.map(id => {
-            const s = actor1.series.find(s => s.id === id);
+          const sharedSeries = sharedSeriesIds.map((id) => {
+            const s = actor1.series.find((s) => s.id === id);
             return { id, title: s?.title || 'Unknown' };
           });
 
@@ -393,19 +406,27 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
     }
 
     // Aggregate recommendations from ALL actors (voice actor filter only affects actor lists, not recommendations)
-    const recommendationMap = new Map<number, {
-      series: { id: number; title: string; poster: string | null; voteAverage: number };
-      actors: { id: number; name: string; character: string }[];
-    }>();
+    const recommendationMap = new Map<
+      number,
+      {
+        series: { id: number; title: string; poster: string | null; voteAverage: number };
+        actors: { id: number; name: string; character: string }[];
+      }
+    >();
 
-    Array.from(actorMap.values()).forEach(actor => {
-      actor.recommendations?.forEach(rec => {
+    Array.from(actorMap.values()).forEach((actor) => {
+      actor.recommendations?.forEach((rec) => {
         const existing = recommendationMap.get(rec.id);
         if (existing) {
           existing.actors.push({ id: actor.id, name: actor.name, character: rec.character });
         } else {
           recommendationMap.set(rec.id, {
-            series: { id: rec.id, title: rec.title, poster: rec.poster, voteAverage: rec.voteAverage },
+            series: {
+              id: rec.id,
+              title: rec.title,
+              poster: rec.poster,
+              voteAverage: rec.voteAverage,
+            },
             actors: [{ id: actor.id, name: actor.name, character: rec.character }],
           });
         }
@@ -424,7 +445,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
 
     return {
       actors: actorsWithPositions,
-      connections: connections.filter(c => c.strength >= 1),
+      connections: connections.filter((c) => c.strength >= 1),
       topActors,
       recommendations,
       stats: {

@@ -43,9 +43,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           gap: '8px',
         }}
       >
-        <span style={{ display: 'flex', color: iconColor || currentTheme.primary }}>
-          {icon}
-        </span>
+        <span style={{ display: 'flex', color: iconColor || currentTheme.primary }}>{icon}</span>
         {title}
       </h2>
       {onSeeAll && (

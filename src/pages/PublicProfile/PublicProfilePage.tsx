@@ -5,7 +5,14 @@ import { motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { BackButton, GradientText, LoadingSpinner, PageLayout, QuickFilter, TabSwitcher } from '../../components/ui';
+import {
+  BackButton,
+  GradientText,
+  LoadingSpinner,
+  PageLayout,
+  QuickFilter,
+  TabSwitcher,
+} from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
 
 interface PublicUserData {
@@ -163,7 +170,11 @@ export const PublicProfilePage: React.FC = () => {
               genre: data.genre,
               genres: data.genres,
               provider: data.provider,
-              seasons: Array.isArray(data.seasons) ? data.seasons : data.seasons ? Object.values(data.seasons) as PublicSeason[] : [],
+              seasons: Array.isArray(data.seasons)
+                ? data.seasons
+                : data.seasons
+                  ? (Object.values(data.seasons) as PublicSeason[])
+                  : [],
             };
           });
 
@@ -455,7 +466,9 @@ export const PublicProfilePage: React.FC = () => {
       // Use public profile specific scroll position
       const scrollKey = `publicProfilePageScroll_${publicId}_${activeTab}`;
       const position = sessionStorage.getItem(scrollKey);
-      const scrollSource = sessionStorage.getItem(`publicProfilePageScrollSource_${publicId}_${activeTab}`);
+      const scrollSource = sessionStorage.getItem(
+        `publicProfilePageScrollSource_${publicId}_${activeTab}`
+      );
 
       if (position) {
         const scrollTop = parseInt(position, 10);
@@ -534,7 +547,10 @@ export const PublicProfilePage: React.FC = () => {
         // Save public profile specific scroll position
         const scrollKey = `publicProfilePageScroll_${publicId}_${activeTab}`;
         sessionStorage.setItem(scrollKey, position.toString());
-        sessionStorage.setItem(`publicProfilePageScrollSource_${publicId}_${activeTab}`, scrollSource);
+        sessionStorage.setItem(
+          `publicProfilePageScrollSource_${publicId}_${activeTab}`,
+          scrollSource
+        );
         // Set flag that we're navigating to a detail page
         sessionStorage.setItem('shouldRestorePublicProfileScroll', 'true');
       } catch (error) {
@@ -570,7 +586,6 @@ export const PublicProfilePage: React.FC = () => {
       return !isNaN(rating) && rating > 0;
     });
   }, [profileSeries, profileMovies]);
-
 
   // Premium loading state
   if (loading) {
@@ -658,8 +673,17 @@ export const PublicProfilePage: React.FC = () => {
         <h2 style={{ marginBottom: '12px', fontSize: '22px', fontWeight: 700 }}>
           Profil nicht gefunden
         </h2>
-        <p style={{ color: currentTheme.text.secondary, marginBottom: '32px', fontSize: '14px', lineHeight: 1.5 }}>
-          Dieses öffentliche Profil existiert nicht<br />oder ist nicht mehr öffentlich zugänglich.
+        <p
+          style={{
+            color: currentTheme.text.secondary,
+            marginBottom: '32px',
+            fontSize: '14px',
+            lineHeight: 1.5,
+          }}
+        >
+          Dieses öffentliche Profil existiert nicht
+          <br />
+          oder ist nicht mehr öffentlich zugänglich.
         </p>
         <motion.button
           whileTap={{ scale: 0.95 }}
@@ -685,340 +709,352 @@ export const PublicProfilePage: React.FC = () => {
   return (
     <PageLayout>
       <div ref={scrollRef}>
+        {/* Premium Glassmorphism Header */}
+        <motion.header
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            padding: '16px 20px',
+            paddingTop: 'calc(16px + env(safe-area-inset-top))',
+            background: `${currentTheme.background.default}90`,
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <BackButton />
 
-      {/* Premium Glassmorphism Header */}
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          padding: '16px 20px',
-          paddingTop: 'calc(16px + env(safe-area-inset-top))',
-          background: `${currentTheme.background.default}90`,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <BackButton />
+            <div style={{ flex: 1 }}>
+              <GradientText
+                as="h1"
+                to="#8b5cf6"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 800,
+                  margin: 0,
+                }}
+              >
+                {profileName}
+              </GradientText>
+              <div
+                style={{
+                  color: currentTheme.text.secondary,
+                  fontSize: '12px',
+                  margin: '4px 0 0 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Public style={{ fontSize: '13px', color: currentTheme.primary }} />
+                  Öffentlich
+                </span>
+                <span style={{ opacity: 0.4 }}>•</span>
+                <span>{itemsWithRating.length} bewertet</span>
+              </div>
+            </div>
 
-          <div style={{ flex: 1 }}>
-            <GradientText as="h1" to="#8b5cf6" style={{
-                fontSize: '22px',
-                fontWeight: 800,
-                margin: 0,
-              }}
-            >
-              {profileName}
-            </GradientText>
+            {/* Rating Badge */}
             <div
               style={{
-                color: currentTheme.text.secondary,
-                fontSize: '12px',
-                margin: '4px 0 0 0',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
+                padding: '8px 14px',
+                background: 'rgba(255, 215, 0, 0.15)',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 215, 0, 0.25)',
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Public style={{ fontSize: '13px', color: currentTheme.primary }} />
-                Öffentlich
+              <Star style={{ fontSize: 16, color: '#FFD700' }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#FFD700' }}>
+                Ø {averageRating.toFixed(1)}
               </span>
-              <span style={{ opacity: 0.4 }}>•</span>
-              <span>{itemsWithRating.length} bewertet</span>
             </div>
           </div>
+        </motion.header>
 
-          {/* Rating Badge */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 14px',
-              background: 'rgba(255, 215, 0, 0.15)',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 215, 0, 0.25)',
-            }}
-          >
-            <Star style={{ fontSize: 16, color: '#FFD700' }} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#FFD700' }}>
-              Ø {averageRating.toFixed(1)}
-            </span>
-          </div>
-        </div>
-      </motion.header>
+        {/* Quick Filter */}
+        <QuickFilter
+          onFilterChange={setFilters}
+          isMovieMode={activeTab === 'movies'}
+          isRatingsMode={true}
+          hasBottomNav={false}
+        />
 
-      {/* Quick Filter */}
-      <QuickFilter
-        onFilterChange={setFilters}
-        isMovieMode={activeTab === 'movies'}
-        isRatingsMode={true}
-        hasBottomNav={false}
-      />
+        {/* Premium Tab Switcher */}
+        <TabSwitcher
+          tabs={[
+            { id: 'series', label: 'Serien', icon: TvIcon, count: ratedSeries.length },
+            { id: 'movies', label: 'Filme', icon: MovieIcon, count: ratedMovies.length },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as 'series' | 'movies')}
+        />
 
-      {/* Premium Tab Switcher */}
-      <TabSwitcher
-        tabs={[
-          { id: 'series', label: 'Serien', icon: TvIcon, count: ratedSeries.length },
-          { id: 'movies', label: 'Filme', icon: MovieIcon, count: ratedMovies.length },
-        ]}
-        activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as 'series' | 'movies')}
-      />
-
-      {/* Items Grid */}
-      <div style={{ padding: '0 16px 100px 16px', position: 'relative', zIndex: 1 }}>
-        {currentItems.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={{
-              textAlign: 'center',
-              padding: '60px 30px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              borderRadius: '20px',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-            }}
-          >
-            <div
+        {/* Items Grid */}
+        <div style={{ padding: '0 16px 100px 16px', position: 'relative', zIndex: 1 }}>
+          {currentItems.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               style={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                background: `${currentTheme.primary}15`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px',
+                textAlign: 'center',
+                padding: '60px 30px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                borderRadius: '20px',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
               }}
             >
-              <Star style={{ fontSize: '36px', color: currentTheme.primary, opacity: 0.5 }} />
-            </div>
-            <h3 style={{ fontSize: '18px', marginBottom: '8px', color: currentTheme.text.primary, fontWeight: 700 }}>
-              Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden
-            </h3>
-            <p style={{ fontSize: '14px', color: currentTheme.text.secondary, margin: 0 }}>
-              Versuche andere Filter oder entferne sie.
-            </p>
-          </motion.div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                window.innerWidth >= 1200
-                  ? 'repeat(8, 1fr)'
-                  : window.innerWidth >= 768
-                    ? 'repeat(5, 1fr)'
-                    : 'repeat(auto-fill, minmax(120px, 1fr))',
-              gap: '16px',
-            }}
-          >
-            {currentItems.map((item) => {
-              const rating = parseFloat(calculatePublicRating(item));
-              const isMovie = activeTab === 'movies';
+              <div
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  background: `${currentTheme.primary}15`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}
+              >
+                <Star style={{ fontSize: '36px', color: currentTheme.primary, opacity: 0.5 }} />
+              </div>
+              <h3
+                style={{
+                  fontSize: '18px',
+                  marginBottom: '8px',
+                  color: currentTheme.text.primary,
+                  fontWeight: 700,
+                }}
+              >
+                Keine {activeTab === 'series' ? 'Serien' : 'Filme'} gefunden
+              </h3>
+              <p style={{ fontSize: '14px', color: currentTheme.text.secondary, margin: 0 }}>
+                Versuche andere Filter oder entferne sie.
+              </p>
+            </motion.div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  window.innerWidth >= 1200
+                    ? 'repeat(8, 1fr)'
+                    : window.innerWidth >= 768
+                      ? 'repeat(5, 1fr)'
+                      : 'repeat(auto-fill, minmax(120px, 1fr))',
+                gap: '16px',
+              }}
+            >
+              {currentItems.map((item) => {
+                const rating = parseFloat(calculatePublicRating(item));
+                const isMovie = activeTab === 'movies';
 
-              // Calculate progress for series
-              let progress = 0;
-              if (!isMovie && item.seasons) {
-                const today = new Date();
-                let totalAiredEpisodes = 0;
-                let watchedEpisodes = 0;
+                // Calculate progress for series
+                let progress = 0;
+                if (!isMovie && item.seasons) {
+                  const today = new Date();
+                  let totalAiredEpisodes = 0;
+                  let watchedEpisodes = 0;
 
-                item.seasons.forEach((season: PublicSeason) => {
-                  if (season.episodes) {
-                    season.episodes.forEach((ep: PublicEpisode) => {
-                      if (ep.air_date) {
-                        const airDate = new Date(ep.air_date);
-                        if (airDate <= today) {
-                          totalAiredEpisodes++;
-                          if (ep.watched) watchedEpisodes++;
+                  item.seasons.forEach((season: PublicSeason) => {
+                    if (season.episodes) {
+                      season.episodes.forEach((ep: PublicEpisode) => {
+                        if (ep.air_date) {
+                          const airDate = new Date(ep.air_date);
+                          if (airDate <= today) {
+                            totalAiredEpisodes++;
+                            if (ep.watched) watchedEpisodes++;
+                          }
                         }
-                      }
-                    });
-                  }
-                });
+                      });
+                    }
+                  });
 
-                progress = totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
-              }
+                  progress =
+                    totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
+                }
 
-              return (
-                <motion.div
-                  key={item.id}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
-                  style={{
-                    cursor: 'pointer',
-                    position: 'relative',
-                  }}
-                >
-                  <div style={{ position: 'relative' }}>
-                    <img
-                      src={getImageUrl(item.poster, 'w500')}
-                      alt={item.title}
-                      style={{
-                        width: '100%',
-                        aspectRatio: '2/3',
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        background: currentTheme.background.surface,
-                      }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder.jpg';
-                      }}
-                    />
-
-                    {/* Provider Badges */}
-                    {item.provider?.provider && item.provider.provider.length > 0 && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          left: '8px',
-                          display: 'flex',
-                          gap: '4px',
-                        }}
-                      >
-                        {Array.from(new Set(item.provider.provider.map((p: PublicProvider) => p.name)))
-                          .slice(0, 2)
-                          .map((name) => {
-                            const provider = item.provider?.provider.find(
-                              (p: PublicProvider) => p.name === name
-                            );
-                            return provider ? (
-                              <div
-                                key={provider.id}
-                                style={{
-                                  background: `${currentTheme.background.default}99`,
-                                  backdropFilter: 'blur(8px)',
-                                  border: `1px solid ${currentTheme.border.default}`,
-                                  borderRadius: '8px',
-                                  padding: '2px',
-                                  width: '28px',
-                                  height: '28px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <img
-                                  src={provider.logo}
-                                  alt={provider.name}
-                                  style={{
-                                    width: '24px',
-                                    height: '24px',
-                                    borderRadius: '4px',
-                                    objectFit: 'cover',
-                                  }}
-                                />
-                              </div>
-                            ) : null;
-                          })}
-                        {item.provider.provider.length > 2 && (
-                          <div
-                            style={{
-                              background: `${currentTheme.background.default}99`,
-                              backdropFilter: 'blur(8px)',
-                              border: '1px solid rgba(255, 255, 255, 0.1)',
-                              borderRadius: '8px',
-                              width: '28px',
-                              height: '28px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              color: currentTheme.text.primary,
-                            }}
-                          >
-                            +{item.provider.provider.length - 2}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Progress Bar for Series */}
-                    {!isMovie && progress > 0 && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: '6px',
-                          left: '6px',
-                          right: '6px',
-                          height: '4px',
-                          background: 'rgba(0, 0, 0, 0.4)',
-                          borderRadius: '2px',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${progress}%`,
-                            height: '100%',
-                            background: progress === 100 ? '#4cd137' : currentTheme.primary,
-                            transition: 'width 0.3s ease',
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Rating Badge */}
-                    {!isNaN(rating) && rating > 0 && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          background: `${currentTheme.background.default}CC`,
-                          borderRadius: '16px',
-                          padding: '4px 8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                        }}
-                      >
-                        <Star
-                          style={{
-                            fontSize: '14px',
-                            color: '#FFD700',
-                          }}
-                        />
-                        {rating.toFixed(1)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Title */}
-                  <div
+                return (
+                  <motion.div
+                    key={item.id}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
                     style={{
-                      marginTop: '8px',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      color: currentTheme.text.primary,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      lineHeight: '1.3',
-                      minHeight: '36px',
+                      cursor: 'pointer',
+                      position: 'relative',
                     }}
                   >
-                    {item.title}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src={getImageUrl(item.poster, 'w500')}
+                        alt={item.title}
+                        style={{
+                          width: '100%',
+                          aspectRatio: '2/3',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          background: currentTheme.background.surface,
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder.jpg';
+                        }}
+                      />
+
+                      {/* Provider Badges */}
+                      {item.provider?.provider && item.provider.provider.length > 0 && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            left: '8px',
+                            display: 'flex',
+                            gap: '4px',
+                          }}
+                        >
+                          {Array.from(
+                            new Set(item.provider.provider.map((p: PublicProvider) => p.name))
+                          )
+                            .slice(0, 2)
+                            .map((name) => {
+                              const provider = item.provider?.provider.find(
+                                (p: PublicProvider) => p.name === name
+                              );
+                              return provider ? (
+                                <div
+                                  key={provider.id}
+                                  style={{
+                                    background: `${currentTheme.background.default}99`,
+                                    backdropFilter: 'blur(8px)',
+                                    border: `1px solid ${currentTheme.border.default}`,
+                                    borderRadius: '8px',
+                                    padding: '2px',
+                                    width: '28px',
+                                    height: '28px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                >
+                                  <img
+                                    src={provider.logo}
+                                    alt={provider.name}
+                                    style={{
+                                      width: '24px',
+                                      height: '24px',
+                                      borderRadius: '4px',
+                                      objectFit: 'cover',
+                                    }}
+                                  />
+                                </div>
+                              ) : null;
+                            })}
+                          {item.provider.provider.length > 2 && (
+                            <div
+                              style={{
+                                background: `${currentTheme.background.default}99`,
+                                backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '8px',
+                                width: '28px',
+                                height: '28px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: currentTheme.text.primary,
+                              }}
+                            >
+                              +{item.provider.provider.length - 2}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Progress Bar for Series */}
+                      {!isMovie && progress > 0 && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '6px',
+                            left: '6px',
+                            right: '6px',
+                            height: '4px',
+                            background: 'rgba(0, 0, 0, 0.4)',
+                            borderRadius: '2px',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${progress}%`,
+                              height: '100%',
+                              background: progress === 100 ? '#4cd137' : currentTheme.primary,
+                              transition: 'width 0.3s ease',
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Rating Badge */}
+                      {!isNaN(rating) && rating > 0 && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            background: `${currentTheme.background.default}CC`,
+                            borderRadius: '16px',
+                            padding: '4px 8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <Star
+                            style={{
+                              fontSize: '14px',
+                              color: '#FFD700',
+                            }}
+                          />
+                          {rating.toFixed(1)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <div
+                      style={{
+                        marginTop: '8px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: currentTheme.text.primary,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        lineHeight: '1.3',
+                        minHeight: '36px',
+                      }}
+                    >
+                      {item.title}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </PageLayout>
   );

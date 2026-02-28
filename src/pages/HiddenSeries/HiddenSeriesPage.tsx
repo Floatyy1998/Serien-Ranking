@@ -32,7 +32,14 @@ export const HiddenSeriesPage: React.FC = () => {
   }, [hiddenSeriesList]);
 
   return (
-    <PageLayout style={{ height: '100vh', overflowY: 'auto', overflowX: 'hidden', color: currentTheme.text.primary }}>
+    <PageLayout
+      style={{
+        height: '100vh',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        color: currentTheme.text.primary,
+      }}
+    >
       <div style={{ position: 'relative', zIndex: 1 }}>
         <PageHeader
           title="Pausiert"
@@ -88,21 +95,26 @@ export const HiddenSeriesPage: React.FC = () => {
             >
               <Visibility style={{ fontSize: '48px', color: currentTheme.primary }} />
             </motion.div>
-            <h2 style={{
-              margin: '0 0 8px',
-              fontSize: '20px',
-              fontWeight: 700,
-            }}>
+            <h2
+              style={{
+                margin: '0 0 8px',
+                fontSize: '20px',
+                fontWeight: 700,
+              }}
+            >
               Alles aktiv
             </h2>
-            <p style={{
-              margin: 0,
-              color: currentTheme.text.muted,
-              fontSize: '15px',
-              maxWidth: '280px',
-              lineHeight: 1.5,
-            }}>
-              Du schaust gerade alle deine Serien. Serien, die du nicht weiterschaust, erscheinen hier.
+            <p
+              style={{
+                margin: 0,
+                color: currentTheme.text.muted,
+                fontSize: '15px',
+                maxWidth: '280px',
+                lineHeight: 1.5,
+              }}
+            >
+              Du schaust gerade alle deine Serien. Serien, die du nicht weiterschaust, erscheinen
+              hier.
             </p>
           </motion.div>
         )}
@@ -111,7 +123,8 @@ export const HiddenSeriesPage: React.FC = () => {
         <div style={{ padding: '0 20px 120px' }}>
           <AnimatePresence mode="popLayout">
             {seriesWithStats.map(({ series, watchedEpisodes, totalEpisodes }, index) => {
-              const progress = totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
+              const progress =
+                totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
 
               return (
                 <motion.div
@@ -164,7 +177,16 @@ export const HiddenSeriesPage: React.FC = () => {
                   </div>
 
                   {/* Content */}
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '6px' }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      gap: '6px',
+                    }}
+                  >
                     <h3
                       style={{
                         margin: 0,
@@ -179,15 +201,18 @@ export const HiddenSeriesPage: React.FC = () => {
                       {series.title}
                     </h3>
                     <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>
-                      {watchedEpisodes}/{totalEpisodes} gesehen · {totalEpisodes - watchedEpisodes} offen
+                      {watchedEpisodes}/{totalEpisodes} gesehen · {totalEpisodes - watchedEpisodes}{' '}
+                      offen
                     </span>
                     {/* Progress bar */}
-                    <div style={{
-                      height: '4px',
-                      borderRadius: '2px',
-                      background: `${currentTheme.text.muted}15`,
-                      overflow: 'hidden',
-                    }}>
+                    <div
+                      style={{
+                        height: '4px',
+                        borderRadius: '2px',
+                        background: `${currentTheme.text.muted}15`,
+                        overflow: 'hidden',
+                      }}
+                    >
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}

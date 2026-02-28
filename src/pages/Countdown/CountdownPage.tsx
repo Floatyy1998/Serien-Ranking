@@ -155,7 +155,16 @@ const HeroCard: React.FC<{
           }}
         >
           {item.daysUntil === 0 ? (
-            <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 800,
+                color: '#fff',
+                lineHeight: 1,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               Heute
             </span>
           ) : (
@@ -272,7 +281,16 @@ const CountdownItem: React.FC<{
         }}
       >
         {item.daysUntil === 0 ? (
-          <span style={{ fontSize: 13, fontWeight: 800, color: accentColor, lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 800,
+              color: accentColor,
+              lineHeight: 1,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
             Heute
           </span>
         ) : (
@@ -310,7 +328,16 @@ export const CountdownPage: React.FC = () => {
         gradientTo="#a855f7"
       />
 
-      <div style={{ padding: '0 20px', paddingBottom: 100, flex: 1, overflow: 'auto', position: 'relative', zIndex: 1 }}>
+      <div
+        style={{
+          padding: '0 20px',
+          paddingBottom: 100,
+          flex: 1,
+          overflow: 'auto',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
         {loading && <LoadingSpinner text="Countdowns werden geladen..." />}
 
         {!loading && countdowns.length === 0 && (
@@ -324,10 +351,7 @@ export const CountdownPage: React.FC = () => {
 
         {!loading && hero && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <HeroCard
-              item={hero}
-              onClick={() => navigate(`/series/${hero.seriesId}`)}
-            />
+            <HeroCard item={hero} onClick={() => navigate(`/series/${hero.seriesId}`)} />
 
             {rest.length > 0 && (
               <>

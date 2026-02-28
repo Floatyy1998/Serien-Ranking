@@ -108,7 +108,12 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
   };
 
   const videoCount = videos.length;
-  const buttonText = videoCount > 1 ? `${videoCount} Videos` : (mainVideo?.type === 'Trailer' ? 'Trailer' : mainVideo?.type);
+  const buttonText =
+    videoCount > 1
+      ? `${videoCount} Videos`
+      : mainVideo?.type === 'Trailer'
+        ? 'Trailer'
+        : mainVideo?.type;
 
   return (
     <>
@@ -150,7 +155,9 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
               }
         }
       >
-        <PlayCircle style={{ color: '#ff0000', fontSize: buttonStyle === 'mobile' ? '20px' : '24px' }} />
+        <PlayCircle
+          style={{ color: '#ff0000', fontSize: buttonStyle === 'mobile' ? '20px' : '24px' }}
+        />
         {buttonText}
       </motion.button>
 
@@ -277,9 +284,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         borderRadius: '20px',
                         border: 'none',
                         background:
-                          activeTab === 'trailers'
-                            ? currentTheme.primary
-                            : 'rgba(255,255,255,0.1)',
+                          activeTab === 'trailers' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
                         color: '#fff',
                         fontSize: '14px',
                         fontWeight: 500,
@@ -298,9 +303,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         borderRadius: '20px',
                         border: 'none',
                         background:
-                          activeTab === 'bts'
-                            ? currentTheme.primary
-                            : 'rgba(255,255,255,0.1)',
+                          activeTab === 'bts' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
                         color: '#fff',
                         fontSize: '14px',
                         fontWeight: 500,
@@ -333,9 +336,10 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                       borderRadius: '12px',
                       overflow: 'hidden',
                       background: 'rgba(255,255,255,0.05)',
-                      border: selectedVideo?.id === video.id
-                        ? `2px solid ${currentTheme.primary}`
-                        : '2px solid transparent',
+                      border:
+                        selectedVideo?.id === video.id
+                          ? `2px solid ${currentTheme.primary}`
+                          : '2px solid transparent',
                     }}
                   >
                     {/* Thumbnail */}

@@ -6,12 +6,12 @@ import { SharedItem } from '../../services/tasteMatchService';
 import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 
 // Shared Item Card - Premium Version
-export const SharedItemCard: React.FC<{ item: SharedItem; index: number; type: 'series' | 'movie'; bgColor: string }> = ({
-  item,
-  index,
-  type,
-  bgColor,
-}) => {
+export const SharedItemCard: React.FC<{
+  item: SharedItem;
+  index: number;
+  type: 'series' | 'movie';
+  bgColor: string;
+}> = ({ item, index, type, bgColor }) => {
   const navigate = useNavigate();
   const hasMatchingRatings = item.ratingDiff !== undefined && item.ratingDiff < 1;
 
@@ -32,7 +32,9 @@ export const SharedItemCard: React.FC<{ item: SharedItem; index: number; type: '
         background: bgColor,
         borderRadius: '16px',
         cursor: 'pointer',
-        border: hasMatchingRatings ? `1px solid ${ACCENT_COLORS.match}40` : '1px solid rgba(255,255,255,0.06)',
+        border: hasMatchingRatings
+          ? `1px solid ${ACCENT_COLORS.match}40`
+          : '1px solid rgba(255,255,255,0.06)',
         marginBottom: '10px',
         boxShadow: hasMatchingRatings
           ? `0 4px 20px ${ACCENT_COLORS.match}20`
@@ -104,27 +106,35 @@ export const SharedItemCard: React.FC<{ item: SharedItem; index: number; type: '
         </div>
         {item.userRating !== undefined && item.friendRating !== undefined && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '3px 8px',
-              background: `${USER_COLOR}20`,
-              borderRadius: '6px',
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 8px',
+                background: `${USER_COLOR}20`,
+                borderRadius: '6px',
+              }}
+            >
               <Star style={{ fontSize: 12, color: USER_COLOR }} />
-              <span style={{ fontSize: 13, color: USER_COLOR, fontWeight: 700 }}>{item.userRating.toFixed(1)}</span>
+              <span style={{ fontSize: 13, color: USER_COLOR, fontWeight: 700 }}>
+                {item.userRating.toFixed(1)}
+              </span>
             </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '3px 8px',
-              background: `${FRIEND_COLOR}20`,
-              borderRadius: '6px',
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 8px',
+                background: `${FRIEND_COLOR}20`,
+                borderRadius: '6px',
+              }}
+            >
               <Star style={{ fontSize: 12, color: FRIEND_COLOR }} />
-              <span style={{ fontSize: 13, color: FRIEND_COLOR, fontWeight: 700 }}>{item.friendRating.toFixed(1)}</span>
+              <span style={{ fontSize: 13, color: FRIEND_COLOR, fontWeight: 700 }}>
+                {item.friendRating.toFixed(1)}
+              </span>
             </div>
           </div>
         )}

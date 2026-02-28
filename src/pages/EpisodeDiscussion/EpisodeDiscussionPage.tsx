@@ -26,7 +26,12 @@ import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { Series } from '../../types/Series';
-import { getTVDBIdFromTMDB, getTVDBSeasons, TVDBEpisode, TVDBSeason } from '../../services/tvdbService';
+import {
+  getTVDBIdFromTMDB,
+  getTVDBSeasons,
+  TVDBEpisode,
+  TVDBSeason,
+} from '../../services/tvdbService';
 
 interface TMDBEpisodeDetails {
   id: number;
@@ -63,7 +68,11 @@ export const EpisodeDiscussionPage = () => {
 
   const [tmdbDetails, setTmdbDetails] = useState<TMDBEpisodeDetails | null>(null);
   const [seasonDetails, setSeasonDetails] = useState<TMDBSeasonDetails | null>(null);
-  const [seriesInfo, setSeriesInfo] = useState<{ name: string; poster_path: string | null; backdrop_path: string | null } | null>(null);
+  const [seriesInfo, setSeriesInfo] = useState<{
+    name: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+  } | null>(null);
   const [tvdbEpisode, setTvdbEpisode] = useState<TVDBEpisode | null>(null);
   const [tvdbSeasons, setTvdbSeasons] = useState<TVDBSeason[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,8 +101,8 @@ export const EpisodeDiscussionPage = () => {
 
               const targetSeasonNum = Number(seasonNumber);
               const targetEpisodeNum = Number(episodeNumber);
-              const season = seasons.find(s => s.seasonNumber === targetSeasonNum);
-              const episode = season?.episodes.find(e => e.number === targetEpisodeNum);
+              const season = seasons.find((s) => s.seasonNumber === targetSeasonNum);
+              const episode = season?.episodes.find((e) => e.number === targetEpisodeNum);
 
               if (episode) {
                 setTvdbEpisode(episode);
@@ -115,9 +124,7 @@ export const EpisodeDiscussionPage = () => {
               fetch(
                 `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=${apiKey}&language=de-DE`
               ),
-              fetch(
-                `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${apiKey}&language=de-DE`
-              ),
+              fetch(`https://api.themoviedb.org/3/tv/${seriesId}?api_key=${apiKey}&language=de-DE`),
             ]);
 
             if (episodeRes.ok) {
@@ -166,21 +173,27 @@ export const EpisodeDiscussionPage = () => {
 
   const currentEpNum = Number(episodeNumber);
   const currentSeasonNum = Number(seasonNumber);
-  const tvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum);
-  const totalEpisodes = tvdbSeason?.episodes?.length || localSeason?.episodes?.length || seasonDetails?.episodes?.length || 0;
+  const tvdbSeason = tvdbSeasons.find((s) => s.seasonNumber === currentSeasonNum);
+  const totalEpisodes =
+    tvdbSeason?.episodes?.length ||
+    localSeason?.episodes?.length ||
+    seasonDetails?.episodes?.length ||
+    0;
 
-  const prevTvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum - 1);
-  const nextTvdbSeason = tvdbSeasons.find(s => s.seasonNumber === currentSeasonNum + 1);
+  const prevTvdbSeason = tvdbSeasons.find((s) => s.seasonNumber === currentSeasonNum - 1);
+  const nextTvdbSeason = tvdbSeasons.find((s) => s.seasonNumber === currentSeasonNum + 1);
   const prevLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum - 2);
   const nextLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum);
 
   const hasPrevInSeason = currentEpNum > 1;
-  const prevSeasonEpisodeCount = prevTvdbSeason?.episodes?.length || prevLocalSeason?.episodes?.length || 0;
+  const prevSeasonEpisodeCount =
+    prevTvdbSeason?.episodes?.length || prevLocalSeason?.episodes?.length || 0;
   const hasPrevSeason = currentSeasonNum > 1 && prevSeasonEpisodeCount > 0;
   const hasPrevEpisode = hasPrevInSeason || hasPrevSeason;
 
   const hasNextInSeason = currentEpNum < totalEpisodes;
-  const nextSeasonExists = nextTvdbSeason?.episodes?.length || nextLocalSeason?.episodes?.length || 0;
+  const nextSeasonExists =
+    nextTvdbSeason?.episodes?.length || nextLocalSeason?.episodes?.length || 0;
   const hasNextSeason = nextSeasonExists > 0;
   const hasNextEpisode = hasNextInSeason || hasNextSeason;
 
@@ -188,7 +201,9 @@ export const EpisodeDiscussionPage = () => {
     if (hasPrevInSeason) {
       navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${currentEpNum - 1}`, { replace: true });
     } else if (hasPrevSeason) {
-      navigate(`/episode/${seriesId}/s/${currentSeasonNum - 1}/e/${prevSeasonEpisodeCount}`, { replace: true });
+      navigate(`/episode/${seriesId}/s/${currentSeasonNum - 1}/e/${prevSeasonEpisodeCount}`, {
+        replace: true,
+      });
     }
   };
 
@@ -205,7 +220,9 @@ export const EpisodeDiscussionPage = () => {
 
     try {
       const episodeIndex = Number(episodeNumber) - 1;
-      const seasonIndex = series.seasons.findIndex((s) => s.seasonNumber === Number(seasonNumber) - 1);
+      const seasonIndex = series.seasons.findIndex(
+        (s) => s.seasonNumber === Number(seasonNumber) - 1
+      );
 
       if (seasonIndex === -1) return;
 
@@ -214,7 +231,12 @@ export const EpisodeDiscussionPage = () => {
       const updatedEpisodes = localSeason.episodes!.map((ep, idx) => {
         if (idx === episodeIndex) {
           if (isCurrentlyWatched) {
-            const { watchCount, firstWatchedAt, lastWatchedAt, ...rest } = ep as Series['seasons'][number]['episodes'][number] & { watchCount?: number; firstWatchedAt?: string; lastWatchedAt?: string };
+            const { watchCount, firstWatchedAt, lastWatchedAt, ...rest } =
+              ep as Series['seasons'][number]['episodes'][number] & {
+                watchCount?: number;
+                firstWatchedAt?: string;
+                lastWatchedAt?: string;
+              };
             return { ...rest, watched: false };
           } else {
             return {
@@ -248,7 +270,7 @@ export const EpisodeDiscussionPage = () => {
           tvdbEpisode?.runtime || tmdbDetails?.runtime || series.episodeRuntime || 45,
           false,
           series.genre?.genres,
-          series.provider?.provider?.map(p => p.name)
+          series.provider?.provider?.map((p) => p.name)
         );
 
         // Pet XP vergeben
@@ -274,16 +296,18 @@ export const EpisodeDiscussionPage = () => {
         }}
       >
         {/* Decorative background */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
                        radial-gradient(ellipse at 70% 80%, #8b5cf615 0%, transparent 50%)`,
-          pointerEvents: 'none',
-        }} />
+            pointerEvents: 'none',
+          }}
+        />
 
         <LoadingSpinner size={50} text="Lade Episodendetails..." />
       </div>
@@ -305,15 +329,17 @@ export const EpisodeDiscussionPage = () => {
         }}
       >
         {/* Decorative background */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(ellipse at 50% 30%, ${currentTheme.primary}10 0%, transparent 50%)`,
-          pointerEvents: 'none',
-        }} />
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `radial-gradient(ellipse at 50% 30%, ${currentTheme.primary}10 0%, transparent 50%)`,
+            pointerEvents: 'none',
+          }}
+        />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -326,13 +352,17 @@ export const EpisodeDiscussionPage = () => {
             border: `1px solid ${currentTheme.border.default}`,
           }}
         >
-          <Movie style={{ fontSize: '72px', color: currentTheme.text.muted, marginBottom: '20px' }} />
-          <h2 style={{
-            color: currentTheme.text.primary,
-            marginBottom: '12px',
-            fontSize: '22px',
-            fontWeight: 800,
-          }}>
+          <Movie
+            style={{ fontSize: '72px', color: currentTheme.text.muted, marginBottom: '20px' }}
+          />
+          <h2
+            style={{
+              color: currentTheme.text.primary,
+              marginBottom: '12px',
+              fontSize: '22px',
+              fontWeight: 800,
+            }}
+          >
             Episode nicht gefunden
           </h2>
           <p style={{ color: currentTheme.text.muted, marginBottom: '28px', fontSize: '15px' }}>
@@ -360,46 +390,63 @@ export const EpisodeDiscussionPage = () => {
     );
   }
 
-  const episodeName = tvdbEpisode?.name || localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
+  const episodeName =
+    tvdbEpisode?.name || localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
   const episodeOverview = tvdbEpisode?.overview || tmdbDetails?.overview || '';
-  const episodeAirDate = tvdbEpisode?.aired || localEpisode?.air_date || localEpisode?.airDate || localEpisode?.firstAired || tmdbDetails?.air_date;
+  const episodeAirDate =
+    tvdbEpisode?.aired ||
+    localEpisode?.air_date ||
+    localEpisode?.airDate ||
+    localEpisode?.firstAired ||
+    tmdbDetails?.air_date;
   const episodeRuntime = tvdbEpisode?.runtime || tmdbDetails?.runtime;
   const episodeRating = tmdbDetails?.vote_average;
   const stillPath = tmdbDetails?.still_path;
   const guestStars = tmdbDetails?.guest_stars || [];
   const directors = tmdbDetails?.crew?.filter((c) => c.job === 'Director') || [];
-  const writers = tmdbDetails?.crew?.filter((c) => c.job === 'Writer' || c.job === 'Screenplay') || [];
+  const writers =
+    tmdbDetails?.crew?.filter((c) => c.job === 'Writer' || c.job === 'Screenplay') || [];
   const seriesTitle = series?.title || seriesInfo?.name || 'Serie';
 
   const prevTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum - 1);
-  const prevTmdbEpisodeInSeason = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum - 1);
+  const prevTmdbEpisodeInSeason = seasonDetails?.episodes?.find(
+    (e) => e.episode_number === currentEpNum - 1
+  );
   const lastEpisodeOfPrevSeason = prevTvdbSeason?.episodes?.[prevTvdbSeason.episodes.length - 1];
 
   const prevEpisode = hasPrevInSeason
-    ? (prevTvdbEpisodeInSeason || prevTmdbEpisodeInSeason)
+    ? prevTvdbEpisodeInSeason || prevTmdbEpisodeInSeason
     : lastEpisodeOfPrevSeason;
   const prevEpisodeLabel = hasPrevInSeason
-    ? (prevEpisode?.name || `Episode ${currentEpNum - 1}`)
-    : (lastEpisodeOfPrevSeason ? `S${currentSeasonNum - 1} E${prevSeasonEpisodeCount}` : '');
+    ? prevEpisode?.name || `Episode ${currentEpNum - 1}`
+    : lastEpisodeOfPrevSeason
+      ? `S${currentSeasonNum - 1} E${prevSeasonEpisodeCount}`
+      : '';
 
   const nextTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum + 1);
-  const nextTmdbEpisodeInSeason = seasonDetails?.episodes?.find((e) => e.episode_number === currentEpNum + 1);
+  const nextTmdbEpisodeInSeason = seasonDetails?.episodes?.find(
+    (e) => e.episode_number === currentEpNum + 1
+  );
   const firstEpisodeOfNextSeason = nextTvdbSeason?.episodes?.find((e) => e.number === 1);
 
   const nextEpisode = hasNextInSeason
-    ? (nextTvdbEpisodeInSeason || nextTmdbEpisodeInSeason)
+    ? nextTvdbEpisodeInSeason || nextTmdbEpisodeInSeason
     : firstEpisodeOfNextSeason;
   const nextEpisodeLabel = hasNextInSeason
-    ? (nextEpisode?.name || `Episode ${currentEpNum + 1}`)
-    : (firstEpisodeOfNextSeason ? `S${currentSeasonNum + 1} E1` : '');
+    ? nextEpisode?.name || `Episode ${currentEpNum + 1}`
+    : firstEpisodeOfNextSeason
+      ? `S${currentSeasonNum + 1} E1`
+      : '';
 
   return (
-    <div style={{
-      background: currentTheme.background.default,
-      minHeight: '100vh',
-      paddingBottom: '40px',
-      position: 'relative',
-    }}>
+    <div
+      style={{
+        background: currentTheme.background.default,
+        minHeight: '100vh',
+        paddingBottom: '40px',
+        position: 'relative',
+      }}
+    >
       {/* Hero Section */}
       <div
         style={{
@@ -633,14 +680,23 @@ export const EpisodeDiscussionPage = () => {
                 </span>
               </Tooltip>
             )}
-            {localEpisode?.watched && (localEpisode as typeof localEpisode & { firstWatchedAt?: string }).firstWatchedAt && (
-              <Tooltip title="Erstmals gesehen" arrow>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Visibility style={{ fontSize: '18px', color: currentTheme.status.success }} />
-                  {new Date((localEpisode as typeof localEpisode & { firstWatchedAt?: string }).firstWatchedAt!).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                </span>
-              </Tooltip>
-            )}
+            {localEpisode?.watched &&
+              (localEpisode as typeof localEpisode & { firstWatchedAt?: string })
+                .firstWatchedAt && (
+                <Tooltip title="Erstmals gesehen" arrow>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Visibility style={{ fontSize: '18px', color: currentTheme.status.success }} />
+                    {new Date(
+                      (localEpisode as typeof localEpisode & { firstWatchedAt?: string })
+                        .firstWatchedAt!
+                    ).toLocaleDateString('de-DE', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </Tooltip>
+              )}
             {episodeRuntime && (
               <Tooltip title="Episodenlänge" arrow>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -680,11 +736,15 @@ export const EpisodeDiscussionPage = () => {
                 ? `1px solid ${currentTheme.status.success}50`
                 : `1px solid ${currentTheme.border.default}`,
               borderRadius: '16px',
-              color: localEpisode?.watched ? currentTheme.status.success : currentTheme.text.primary,
+              color: localEpisode?.watched
+                ? currentTheme.status.success
+                : currentTheme.text.primary,
               cursor: 'pointer',
               fontSize: '14px',
               fontWeight: 700,
-              boxShadow: localEpisode?.watched ? `0 4px 15px ${currentTheme.status.success}20` : 'none',
+              boxShadow: localEpisode?.watched
+                ? `0 4px 15px ${currentTheme.status.success}20`
+                : 'none',
             }}
           >
             {localEpisode?.watched ? (
@@ -700,7 +760,6 @@ export const EpisodeDiscussionPage = () => {
             )}
           </motion.button>
         )}
-
 
         <motion.button
           whileTap={{ scale: 0.95 }}
@@ -752,19 +811,32 @@ export const EpisodeDiscussionPage = () => {
             textAlign: 'left',
           }}
         >
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
-            background: hasPrevEpisode ? currentTheme.background.surfaceHover : currentTheme.background.surface,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: hasPrevEpisode
+                ? currentTheme.background.surfaceHover
+                : currentTheme.background.surface,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <NavigateBefore style={{ fontSize: '24px', color: currentTheme.text.muted }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: 0, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <p
+              style={{
+                fontSize: '11px',
+                color: currentTheme.text.muted,
+                margin: 0,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               Vorherige
             </p>
             <p
@@ -806,7 +878,16 @@ export const EpisodeDiscussionPage = () => {
           }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: '11px', color: currentTheme.text.muted, margin: 0, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <p
+              style={{
+                fontSize: '11px',
+                color: currentTheme.text.muted,
+                margin: 0,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               Nächste
             </p>
             <p
@@ -823,18 +904,25 @@ export const EpisodeDiscussionPage = () => {
               {nextEpisodeLabel}
             </p>
           </div>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
-            background: hasNextEpisode
-              ? `linear-gradient(135deg, ${currentTheme.primary}30, #8b5cf630)`
-              : currentTheme.background.surface,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <NavigateNext style={{ fontSize: '24px', color: hasNextEpisode ? currentTheme.primary : currentTheme.text.muted }} />
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: hasNextEpisode
+                ? `linear-gradient(135deg, ${currentTheme.primary}30, #8b5cf630)`
+                : currentTheme.background.surface,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <NavigateNext
+              style={{
+                fontSize: '24px',
+                color: hasNextEpisode ? currentTheme.primary : currentTheme.text.muted,
+              }}
+            />
           </div>
         </motion.button>
       </div>
@@ -858,15 +946,17 @@ export const EpisodeDiscussionPage = () => {
               }}
             >
               {/* Decorative gradient */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: '150px',
-                height: '150px',
-                background: `radial-gradient(circle, ${currentTheme.primary}10 0%, transparent 70%)`,
-                pointerEvents: 'none',
-              }} />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '150px',
+                  height: '150px',
+                  background: `radial-gradient(circle, ${currentTheme.primary}10 0%, transparent 70%)`,
+                  pointerEvents: 'none',
+                }}
+              />
 
               <h3
                 style={{
@@ -879,15 +969,17 @@ export const EpisodeDiscussionPage = () => {
                   gap: '10px',
                 }}
               >
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '10px',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '10px',
+                    background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <Movie style={{ fontSize: '18px', color: currentTheme.primary }} />
                 </div>
                 Handlung
@@ -941,12 +1033,15 @@ export const EpisodeDiscussionPage = () => {
                   Regie
                 </h4>
                 {directors.slice(0, 2).map((d, i) => (
-                  <p key={i} style={{
-                    fontSize: '14px',
-                    color: currentTheme.text.primary,
-                    margin: i > 0 ? '6px 0 0 0' : 0,
-                    fontWeight: 600,
-                  }}>
+                  <p
+                    key={i}
+                    style={{
+                      fontSize: '14px',
+                      color: currentTheme.text.primary,
+                      margin: i > 0 ? '6px 0 0 0' : 0,
+                      fontWeight: 600,
+                    }}
+                  >
                     {d.name}
                   </p>
                 ))}
@@ -974,12 +1069,15 @@ export const EpisodeDiscussionPage = () => {
                   Drehbuch
                 </h4>
                 {writers.slice(0, 2).map((w, i) => (
-                  <p key={i} style={{
-                    fontSize: '14px',
-                    color: currentTheme.text.primary,
-                    margin: i > 0 ? '6px 0 0 0' : 0,
-                    fontWeight: 600,
-                  }}>
+                  <p
+                    key={i}
+                    style={{
+                      fontSize: '14px',
+                      color: currentTheme.text.primary,
+                      margin: i > 0 ? '6px 0 0 0' : 0,
+                      fontWeight: 600,
+                    }}
+                  >
                     {w.name}
                   </p>
                 ))}
@@ -1014,14 +1112,16 @@ export const EpisodeDiscussionPage = () => {
               }}
             >
               Gaststars
-              <span style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: currentTheme.primary,
-                background: `${currentTheme.primary}15`,
-                padding: '4px 10px',
-                borderRadius: '8px',
-              }}>
+              <span
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: currentTheme.primary,
+                  background: `${currentTheme.primary}15`,
+                  padding: '4px 10px',
+                  borderRadius: '8px',
+                }}
+              >
                 {guestStars.length}
               </span>
             </h3>

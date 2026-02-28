@@ -1,11 +1,4 @@
-import {
-  Alert,
-  Box,
-  Snackbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Alert, Box, Snackbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
 
 interface PetHungerToastProps {
@@ -28,9 +21,7 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
 
   const isCritical = level === 'critical';
   const bgColor = isCritical ? '#dc2626' : '#f97316';
-  const title = isCritical
-    ? `${petName} verhungert bald!`
-    : `${petName} hat Hunger!`;
+  const title = isCritical ? `${petName} verhungert bald!` : `${petName} hat Hunger!`;
   const icon = isCritical ? '⚠️' : '🍖';
 
   return (
@@ -78,15 +69,28 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
           <Box>
             <Typography
               variant="body1"
-              sx={{ fontWeight: 600, fontSize: isMobile ? '0.9rem' : '1rem', lineHeight: 1.2, color: '#fff' }}
+              sx={{
+                fontWeight: 600,
+                fontSize: isMobile ? '0.9rem' : '1rem',
+                lineHeight: 1.2,
+                color: '#fff',
+              }}
             >
               {title}
             </Typography>
             <Typography
               variant="body2"
-              sx={{ opacity: 0.9, fontSize: isMobile ? '0.75rem' : '0.85rem', lineHeight: 1.1, mt: 0.5, color: '#fff' }}
+              sx={{
+                opacity: 0.9,
+                fontSize: isMobile ? '0.75rem' : '0.85rem',
+                lineHeight: 1.1,
+                mt: 0.5,
+                color: '#fff',
+              }}
             >
-              {isCritical ? 'Füttere dein Pet bevor es zu spät ist!' : 'Dein Pet braucht bald etwas zu essen.'}
+              {isCritical
+                ? 'Füttere dein Pet bevor es zu spät ist!'
+                : 'Dein Pet braucht bald etwas zu essen.'}
             </Typography>
           </Box>
         </Box>

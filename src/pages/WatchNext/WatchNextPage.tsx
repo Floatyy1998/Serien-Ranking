@@ -25,7 +25,12 @@ import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { useWatchNextEpisodes, NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
-import { GradientText, HorizontalScrollContainer, PageLayout, ScrollToTopButton } from '../../components/ui';
+import {
+  GradientText,
+  HorizontalScrollContainer,
+  PageLayout,
+  ScrollToTopButton,
+} from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 
 export const WatchNextPage = () => {
@@ -149,7 +154,7 @@ export const WatchNextPage = () => {
 
   // Count active rewatches for the dropdown header
   const activeRewatchCount = useMemo(() => {
-    return seriesList.filter(s => s.watchlist && hasActiveRewatch(s)).length;
+    return seriesList.filter((s) => s.watchlist && hasActiveRewatch(s)).length;
   }, [seriesList]);
 
   // Toggle sort function
@@ -209,9 +214,8 @@ export const WatchNextPage = () => {
           await lastWatchedRef.set(new Date().toISOString());
 
           // Badge-System für Rewatch
-          const { updateEpisodeCounters } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
+          const { updateEpisodeCounters } =
+            await import('../../features/badges/minimalActivityLogger');
           await updateEpisodeCounters(user.uid, true, episode.airDate);
         } else {
           // Update firstWatchedAt if not set
@@ -248,9 +252,8 @@ export const WatchNextPage = () => {
           await watchCountRef.set(currentCount + 1);
 
           // Badge-System für normale Episode
-          const { updateEpisodeCounters } = await import(
-            '../../features/badges/minimalActivityLogger'
-          );
+          const { updateEpisodeCounters } =
+            await import('../../features/badges/minimalActivityLogger');
           await updateEpisodeCounters(user.uid, false, episode.airDate);
         }
 
@@ -269,7 +272,7 @@ export const WatchNextPage = () => {
           episode.runtime || series.episodeRuntime || 45,
           episode.isRewatch || false,
           series.genre?.genres,
-          series.provider?.provider?.map(p => p.name)
+          series.provider?.provider?.map((p) => p.name)
         );
       } catch (error) {
         console.error('Failed to mark episode as watched:', error);
@@ -288,7 +291,9 @@ export const WatchNextPage = () => {
   };
 
   return (
-    <PageLayout style={{ height: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+    <PageLayout
+      style={{ height: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+    >
       <div
         ref={containerRef}
         style={{
@@ -298,657 +303,703 @@ export const WatchNextPage = () => {
           overflow: 'hidden',
         }}
       >
+        {/* Premium Glassmorphism Header */}
+        <motion.header
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          style={{
+            padding: '16px 20px',
+            paddingTop: 'calc(16px + env(safe-area-inset-top))',
+            background: `${currentTheme.background.default}90`,
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+            flexShrink: 0,
+            position: 'relative',
+            zIndex: 100,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px',
+            }}
+          >
+            <div>
+              <GradientText
+                as="h1"
+                to={currentTheme.status.success}
+                style={{
+                  fontSize: '22px',
+                  fontWeight: 800,
+                  margin: 0,
+                }}
+              >
+                Als Nächstes
+              </GradientText>
+              <p
+                style={{
+                  color: currentTheme.text.secondary,
+                  fontSize: '13px',
+                  margin: '4px 0 0 0',
+                }}
+              >
+                {actualNextEpisodes.length} nächste Episoden
+              </p>
+            </div>
 
-      {/* Premium Glassmorphism Header */}
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        style={{
-          padding: '16px 20px',
-          paddingTop: 'calc(16px + env(safe-area-inset-top))',
-          background: `${currentTheme.background.default}90`,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-          flexShrink: 0,
-          position: 'relative',
-          zIndex: 100,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div>
-            <GradientText as="h1" to={currentTheme.status.success} style={{
-                fontSize: '22px',
-                fontWeight: 800,
-                margin: 0,
-              }}
-            >
-              Als Nächstes
-            </GradientText>
-            <p
-              style={{
-                color: currentTheme.text.secondary,
-                fontSize: '13px',
-                margin: '4px 0 0 0',
-              }}
-            >
-              {actualNextEpisodes.length} nächste Episoden
-            </p>
-          </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {customOrderActive && (
+                <Tooltip title="Reihenfolge bearbeiten" arrow>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setEditModeActive(!editModeActive)}
+                    style={{
+                      padding: '10px',
+                      background: editModeActive
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      color: editModeActive ? 'white' : currentTheme.text.primary,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: editModeActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                    }}
+                  >
+                    <Edit />
+                  </motion.button>
+                </Tooltip>
+              )}
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {customOrderActive && (
-              <Tooltip title="Reihenfolge bearbeiten" arrow>
+              <Tooltip title="Filter" arrow>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setEditModeActive(!editModeActive)}
+                  onClick={() => setShowFilter(!showFilter)}
                   style={{
                     padding: '10px',
-                    background: editModeActive
+                    background: showFilter
                       ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
                       : 'rgba(255, 255, 255, 0.05)',
                     border: 'none',
                     borderRadius: '12px',
-                    color: editModeActive ? 'white' : currentTheme.text.primary,
+                    color: showFilter ? 'white' : currentTheme.text.primary,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: editModeActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                    boxShadow: showFilter ? `0 4px 15px ${currentTheme.primary}40` : 'none',
                   }}
                 >
-                  <Edit />
+                  <FilterList />
                 </motion.button>
               </Tooltip>
-            )}
+            </div>
+          </div>
 
-            <Tooltip title="Filter" arrow>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowFilter(!showFilter)}
+          {/* Premium Filter Section */}
+          <AnimatePresence>
+            {showFilter && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
                 style={{
-                  padding: '10px',
-                  background: showFilter
-                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                    : 'rgba(255, 255, 255, 0.05)',
-                  border: 'none',
-                  borderRadius: '12px',
-                  color: showFilter ? 'white' : currentTheme.text.primary,
-                  cursor: 'pointer',
+                  marginTop: '8px',
+                  padding: '14px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  overflow: 'hidden',
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Serie suchen..."
+                  value={filterInput}
+                  onChange={(e) => setFilterInput(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '10px',
+                    color: currentTheme.text.primary,
+                    fontSize: '14px',
+                    marginBottom: '12px',
+                    outline: 'none',
+                  }}
+                />
+
+                <HorizontalScrollContainer gap={8} style={{}}>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setCustomOrderActive(!customOrderActive);
+                      if (customOrderActive) {
+                        setEditModeActive(false);
+                      }
+                    }}
+                    style={{
+                      padding: '8px 14px',
+                      background: customOrderActive
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color: customOrderActive ? 'white' : currentTheme.text.primary,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      boxShadow: customOrderActive
+                        ? `0 4px 12px ${currentTheme.primary}40`
+                        : 'none',
+                    }}
+                  >
+                    <DragHandle style={{ fontSize: '16px' }} />
+                    Benutzerdefiniert
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleSort('name')}
+                    style={{
+                      padding: '8px 14px',
+                      background:
+                        !customOrderActive && sortOption.startsWith('name')
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                          : 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color:
+                        !customOrderActive && sortOption.startsWith('name')
+                          ? 'white'
+                          : currentTheme.text.primary,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      boxShadow:
+                        !customOrderActive && sortOption.startsWith('name')
+                          ? `0 4px 12px ${currentTheme.primary}40`
+                          : 'none',
+                    }}
+                  >
+                    Name
+                    {!customOrderActive &&
+                      sortOption.startsWith('name') &&
+                      (sortOption.endsWith('asc') ? (
+                        <ArrowUpward style={{ fontSize: '14px' }} />
+                      ) : (
+                        <ArrowDownward style={{ fontSize: '14px' }} />
+                      ))}
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleSort('date')}
+                    style={{
+                      padding: '8px 14px',
+                      background:
+                        !customOrderActive && sortOption.startsWith('date')
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                          : 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color:
+                        !customOrderActive && sortOption.startsWith('date')
+                          ? 'white'
+                          : currentTheme.text.primary,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      boxShadow:
+                        !customOrderActive && sortOption.startsWith('date')
+                          ? `0 4px 12px ${currentTheme.primary}40`
+                          : 'none',
+                    }}
+                  >
+                    Datum
+                    {!customOrderActive &&
+                      sortOption.startsWith('date') &&
+                      (sortOption.endsWith('asc') ? (
+                        <ArrowUpward style={{ fontSize: '14px' }} />
+                      ) : (
+                        <ArrowDownward style={{ fontSize: '14px' }} />
+                      ))}
+                  </motion.button>
+                </HorizontalScrollContainer>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.header>
+
+        {/* Scrollable Content Container */}
+        <div
+          className="episodes-scroll-container hide-scrollbar"
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: '20px',
+            WebkitOverflowScrolling: 'touch',
+            position: 'relative',
+            // Disable touch scrolling when dragging
+            touchAction: draggedIndex !== null && editModeActive ? 'none' : 'auto',
+            // Force hide scrollbar for this specific container
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          {/* Rewatch Dropdown Toggle */}
+          {activeRewatchCount > 0 && (
+            <motion.div
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowRewatches(!showRewatches)}
+              style={{
+                padding: '12px 16px',
+                background: showRewatches
+                  ? `${currentTheme.status?.warning || '#f59e0b'}20`
+                  : `${currentTheme.status?.warning || '#f59e0b'}10`,
+                border: `1px solid ${currentTheme.status?.warning || '#f59e0b'}${showRewatches ? '50' : '30'}`,
+                borderRadius: '12px',
+                marginBottom: '12px',
+                cursor: 'pointer',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Repeat
+                    style={{ fontSize: '14px', color: currentTheme.status?.warning || '#f59e0b' }}
+                  />
+                  {activeRewatchCount} aktive {activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'}
+                </div>
+                {showRewatches ? (
+                  <ExpandLess style={{ fontSize: '18px', opacity: 0.5 }} />
+                ) : (
+                  <ExpandMore style={{ fontSize: '18px', opacity: 0.5 }} />
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {actualNextEpisodes.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{
+                textAlign: 'center',
+                padding: '60px 30px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                borderRadius: '20px',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                margin: '20px 0',
+              }}
+            >
+              <div
+                style={{
+                  width: 90,
+                  height: 90,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.status.success}15)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: showFilter ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                  margin: '0 auto 20px',
                 }}
               >
-                <FilterList />
-              </motion.button>
-            </Tooltip>
-          </div>
-        </div>
-
-        {/* Premium Filter Section */}
-        <AnimatePresence>
-          {showFilter && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{
-                marginTop: '8px',
-                padding: '14px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                borderRadius: '14px',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                overflow: 'hidden',
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Serie suchen..."
-                value={filterInput}
-                onChange={(e) => setFilterInput(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 14px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '10px',
-                  color: currentTheme.text.primary,
-                  fontSize: '14px',
-                  marginBottom: '12px',
-                  outline: 'none',
-                }}
-              />
-
-              <HorizontalScrollContainer gap={8} style={{}}>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setCustomOrderActive(!customOrderActive);
-                    if (customOrderActive) {
-                      setEditModeActive(false);
-                    }
-                  }}
-                  style={{
-                    padding: '8px 14px',
-                    background: customOrderActive
-                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                      : 'rgba(255, 255, 255, 0.05)',
-                    border: 'none',
-                    borderRadius: '10px',
-                    color: customOrderActive ? 'white' : currentTheme.text.primary,
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    boxShadow: customOrderActive ? `0 4px 12px ${currentTheme.primary}40` : 'none',
-                  }}
-                >
-                  <DragHandle style={{ fontSize: '16px' }} />
-                  Benutzerdefiniert
-                </motion.button>
-
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => toggleSort('name')}
-                  style={{
-                    padding: '8px 14px',
-                    background:
-                      !customOrderActive && sortOption.startsWith('name')
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                        : 'rgba(255, 255, 255, 0.05)',
-                    border: 'none',
-                    borderRadius: '10px',
-                    color:
-                      !customOrderActive && sortOption.startsWith('name')
-                        ? 'white'
-                        : currentTheme.text.primary,
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    boxShadow: !customOrderActive && sortOption.startsWith('name') ? `0 4px 12px ${currentTheme.primary}40` : 'none',
-                  }}
-                >
-                  Name
-                  {!customOrderActive &&
-                    sortOption.startsWith('name') &&
-                    (sortOption.endsWith('asc') ? (
-                      <ArrowUpward style={{ fontSize: '14px' }} />
-                    ) : (
-                      <ArrowDownward style={{ fontSize: '14px' }} />
-                    ))}
-                </motion.button>
-
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => toggleSort('date')}
-                  style={{
-                    padding: '8px 14px',
-                    background:
-                      !customOrderActive && sortOption.startsWith('date')
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                        : 'rgba(255, 255, 255, 0.05)',
-                    border: 'none',
-                    borderRadius: '10px',
-                    color:
-                      !customOrderActive && sortOption.startsWith('date')
-                        ? 'white'
-                        : currentTheme.text.primary,
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    boxShadow: !customOrderActive && sortOption.startsWith('date') ? `0 4px 12px ${currentTheme.primary}40` : 'none',
-                  }}
-                >
-                  Datum
-                  {!customOrderActive &&
-                    sortOption.startsWith('date') &&
-                    (sortOption.endsWith('asc') ? (
-                      <ArrowUpward style={{ fontSize: '14px' }} />
-                    ) : (
-                      <ArrowDownward style={{ fontSize: '14px' }} />
-                    ))}
-                </motion.button>
-              </HorizontalScrollContainer>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
-
-      {/* Scrollable Content Container */}
-      <div
-        className="episodes-scroll-container hide-scrollbar"
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          padding: '20px',
-          WebkitOverflowScrolling: 'touch',
-          position: 'relative',
-          // Disable touch scrolling when dragging
-          touchAction: draggedIndex !== null && editModeActive ? 'none' : 'auto',
-          // Force hide scrollbar for this specific container
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
-      >
-        {/* Rewatch Dropdown Toggle */}
-        {activeRewatchCount > 0 && (
-          <motion.div
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowRewatches(!showRewatches)}
-            style={{
-              padding: '12px 16px',
-              background: showRewatches
-                ? `${currentTheme.status?.warning || '#f59e0b'}20`
-                : `${currentTheme.status?.warning || '#f59e0b'}10`,
-              border: `1px solid ${currentTheme.status?.warning || '#f59e0b'}${showRewatches ? '50' : '30'}`,
-              borderRadius: '12px',
-              marginBottom: '12px',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Repeat style={{ fontSize: '14px', color: currentTheme.status?.warning || '#f59e0b' }} />
-                {activeRewatchCount} aktive {activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'}
+                <PlayCircle
+                  style={{ fontSize: '44px', color: currentTheme.primary, opacity: 0.7 }}
+                />
               </div>
-              {showRewatches
-                ? <ExpandLess style={{ fontSize: '18px', opacity: 0.5 }} />
-                : <ExpandMore style={{ fontSize: '18px', opacity: 0.5 }} />
-              }
-            </div>
-          </motion.div>
-        )}
+              <h2
+                style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: currentTheme.text.primary,
+                  margin: '0 0 8px 0',
+                }}
+              >
+                Keine neuen Episoden
+              </h2>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: currentTheme.text.muted,
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                Schaue eine Serie an um hier
+                <br />
+                die nächsten Episoden zu sehen!
+              </p>
+            </motion.div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <AnimatePresence mode="popLayout">
+                {actualNextEpisodes
+                  .filter(
+                    (episode) =>
+                      !hiddenEpisodes.has(
+                        `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`
+                      )
+                  )
+                  .map((episode, index) => {
+                    const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
+                    const isCompleting = completingEpisodes.has(episodeKey);
+                    const isSwiping = swipingEpisodes.has(episodeKey);
 
-        {actualNextEpisodes.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={{
-              textAlign: 'center',
-              padding: '60px 30px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              borderRadius: '20px',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-              margin: '20px 0',
-            }}
-          >
-            <div
-              style={{
-                width: 90,
-                height: 90,
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.status.success}15)`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-              }}
-            >
-              <PlayCircle style={{ fontSize: '44px', color: currentTheme.primary, opacity: 0.7 }} />
-            </div>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: currentTheme.text.primary,
-              margin: '0 0 8px 0',
-            }}>
-              Keine neuen Episoden
-            </h2>
-            <p style={{
-              fontSize: '14px',
-              color: currentTheme.text.muted,
-              margin: 0,
-              lineHeight: 1.5,
-            }}>
-              Schaue eine Serie an um hier<br />die nächsten Episoden zu sehen!
-            </p>
-          </motion.div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <AnimatePresence mode="popLayout">
-              {actualNextEpisodes
-                .filter(
-                  (episode) =>
-                    !hiddenEpisodes.has(
-                      `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`
-                    )
-                )
-                .map((episode, index) => {
-                  const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
-                  const isCompleting = completingEpisodes.has(episodeKey);
-                  const isSwiping = swipingEpisodes.has(episodeKey);
-
-                  return (
-                    <motion.div
-                      key={episodeKey}
-                      data-block-swipe
-                      data-index={index}
-                      className="episode-card"
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{
-                        opacity: isCompleting ? 0.5 : 1,
-                        y: 0,
-                        scale: isCompleting ? 0.95 : 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
-                        transition: { duration: 0.3 },
-                      }}
-                      style={{
-                        position: 'relative',
-                      }}
-                    >
-                      {/* Swipe Overlay for episodes - only when edit mode is NOT active */}
-                      {!editModeActive && (
-                        <motion.div
-                          drag="x"
-                          dragConstraints={{ left: 0, right: 0 }}
-                          dragElastic={1}
-                          dragSnapToOrigin={true}
-                          onDragStart={() => {
-                            setSwipingEpisodes((prev) => new Set(prev).add(episodeKey));
-                          }}
-                          onDrag={(_event, info: PanInfo) => {
-                            setDragOffsets((prev) => ({
-                              ...prev,
-                              [episodeKey]: info.offset.x,
-                            }));
-                          }}
-                          onDragEnd={(event, info: PanInfo) => {
-                            event.stopPropagation();
-                            setSwipingEpisodes((prev) => {
-                              const newSet = new Set(prev);
-                              newSet.delete(episodeKey);
-                              return newSet;
-                            });
-                            setDragOffsets((prev) => {
-                              const newOffsets = { ...prev };
-                              delete newOffsets[episodeKey];
-                              return newOffsets;
-                            });
-
-                            if (Math.abs(info.offset.x) > 100 && Math.abs(info.velocity.x) > 50) {
-                              const direction = info.offset.x > 0 ? 'right' : 'left';
-                              handleEpisodeComplete(episode, direction);
-                            }
-                          }}
-                          whileDrag={{ scale: 1.02 }}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: '60px', // Start after the poster
-                            right: '100px', // Leave space for the button on the right
-                            bottom: 0,
-                            zIndex: 1,
-                          }}
-                        />
-                      )}
-
-                      {/* Card content */}
-                      <div
-                        draggable={editModeActive}
-                        onDragStart={
-                          editModeActive ? (e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, index) : undefined
-                        }
-                        onDragOver={editModeActive ? (e) => handleDragOver(e, index) : undefined}
-                        onDrop={editModeActive ? (e: React.DragEvent<HTMLDivElement>) => handleDrop(e, index) : undefined}
-                        onTouchStart={
-                          editModeActive ? (e) => handleTouchStart(e, index) : undefined
-                        }
-                        onTouchMove={editModeActive ? handleTouchMove : undefined}
-                        onTouchEnd={editModeActive ? handleTouchEnd : undefined}
+                    return (
+                      <motion.div
+                        key={episodeKey}
+                        data-block-swipe
+                        data-index={index}
+                        className="episode-card"
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{
+                          opacity: isCompleting ? 0.5 : 1,
+                          y: 0,
+                          scale: isCompleting ? 0.95 : 1,
+                        }}
+                        exit={{
+                          opacity: 0,
+                          x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
+                          transition: { duration: 0.3 },
+                        }}
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          background: isCompleting
-                            ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
-                            : episode.isRewatch
-                              ? `${currentTheme.status.warning}0D`
-                              : `rgba(76, 209, 55, ${Math.min((Math.abs(dragOffsets[episodeKey] || 0) / 100) * 0.15, 0.15)})`,
-                          border: `1px solid ${
-                            isCompleting
-                              ? 'rgba(76, 209, 55, 0.5)'
-                              : currentTouchIndex === index &&
-                                  draggedIndex !== null &&
-                                  draggedIndex !== index
-                                ? currentTheme.primary
-                                : episode.isRewatch
-                                  ? `${currentTheme.status.warning}4D`
-                                  : `rgba(76, 209, 55, ${0.2 + Math.min((Math.abs(dragOffsets[episodeKey] || 0) / 100) * 0.3, 0.3)})`
-                          }`,
-                          borderRadius: '10px',
-                          padding:
-                            currentTouchIndex === index &&
-                            draggedIndex !== null &&
-                            draggedIndex !== index
-                              ? '7px'
-                              : '8px',
-                          cursor: editModeActive ? 'move' : 'pointer',
-                          opacity: draggedIndex === index ? 0.6 : 1,
-                          transform:
-                            draggedIndex === index
-                              ? 'scale(1.05)'
-                              : currentTouchIndex === index &&
-                                  draggedIndex !== null &&
-                                  draggedIndex !== index
-                                ? 'scale(1.02)'
-                                : 'scale(1)',
-                          boxShadow:
-                            draggedIndex === index
-                              ? `0 8px 24px ${currentTheme.primary}40`
-                              : currentTouchIndex === index &&
-                                  draggedIndex !== null &&
-                                  draggedIndex !== index
-                                ? `0 4px 12px ${currentTheme.primary}30`
-                                : 'none',
-                          transition: 'all 0.2s ease',
                           position: 'relative',
-                          overflow: 'hidden',
                         }}
                       >
-                        {/* Swipe Indicator Background */}
-                        <motion.div
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background:
-                              'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
-                            opacity: 0,
-                          }}
-                          animate={{
-                            opacity: isSwiping ? 1 : 0,
-                          }}
-                        />
-                        {/* Simple checkmark indicator */}
-                        {isCompleting && (
+                        {/* Swipe Overlay for episodes - only when edit mode is NOT active */}
+                        {!editModeActive && (
                           <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.2, type: 'spring', stiffness: 300 }}
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={1}
+                            dragSnapToOrigin={true}
+                            onDragStart={() => {
+                              setSwipingEpisodes((prev) => new Set(prev).add(episodeKey));
+                            }}
+                            onDrag={(_event, info: PanInfo) => {
+                              setDragOffsets((prev) => ({
+                                ...prev,
+                                [episodeKey]: info.offset.x,
+                              }));
+                            }}
+                            onDragEnd={(event, info: PanInfo) => {
+                              event.stopPropagation();
+                              setSwipingEpisodes((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.delete(episodeKey);
+                                return newSet;
+                              });
+                              setDragOffsets((prev) => {
+                                const newOffsets = { ...prev };
+                                delete newOffsets[episodeKey];
+                                return newOffsets;
+                              });
+
+                              if (Math.abs(info.offset.x) > 100 && Math.abs(info.velocity.x) > 50) {
+                                const direction = info.offset.x > 0 ? 'right' : 'left';
+                                handleEpisodeComplete(episode, direction);
+                              }
+                            }}
+                            whileDrag={{ scale: 1.02 }}
                             style={{
                               position: 'absolute',
-                              right: '12px',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              zIndex: 10,
+                              top: 0,
+                              left: '60px', // Start after the poster
+                              right: '100px', // Leave space for the button on the right
+                              bottom: 0,
+                              zIndex: 1,
                             }}
-                          >
-                            <Check
-                              style={{ fontSize: '28px', color: currentTheme.status.success }}
-                            />
-                          </motion.div>
+                          />
                         )}
-                        <img
-                          src={episode.poster}
-                          alt={episode.seriesTitle}
-                          onClick={() => {
-                            navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`);
-                          }}
-                          style={{
-                            width: '48px',
-                            height: '72px',
-                            objectFit: 'cover',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            zIndex: 2,
-                          }}
-                        />
+
+                        {/* Card content */}
                         <div
+                          draggable={editModeActive}
+                          onDragStart={
+                            editModeActive
+                              ? (e: React.DragEvent<HTMLDivElement>) => handleDragStart(e, index)
+                              : undefined
+                          }
+                          onDragOver={editModeActive ? (e) => handleDragOver(e, index) : undefined}
+                          onDrop={
+                            editModeActive
+                              ? (e: React.DragEvent<HTMLDivElement>) => handleDrop(e, index)
+                              : undefined
+                          }
+                          onTouchStart={
+                            editModeActive ? (e) => handleTouchStart(e, index) : undefined
+                          }
+                          onTouchMove={editModeActive ? handleTouchMove : undefined}
+                          onTouchEnd={editModeActive ? handleTouchEnd : undefined}
                           style={{
-                            flex: 1,
-                            pointerEvents: editModeActive ? 'auto' : 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            background: isCompleting
+                              ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
+                              : episode.isRewatch
+                                ? `${currentTheme.status.warning}0D`
+                                : `rgba(76, 209, 55, ${Math.min((Math.abs(dragOffsets[episodeKey] || 0) / 100) * 0.15, 0.15)})`,
+                            border: `1px solid ${
+                              isCompleting
+                                ? 'rgba(76, 209, 55, 0.5)'
+                                : currentTouchIndex === index &&
+                                    draggedIndex !== null &&
+                                    draggedIndex !== index
+                                  ? currentTheme.primary
+                                  : episode.isRewatch
+                                    ? `${currentTheme.status.warning}4D`
+                                    : `rgba(76, 209, 55, ${0.2 + Math.min((Math.abs(dragOffsets[episodeKey] || 0) / 100) * 0.3, 0.3)})`
+                            }`,
+                            borderRadius: '10px',
+                            padding:
+                              currentTouchIndex === index &&
+                              draggedIndex !== null &&
+                              draggedIndex !== index
+                                ? '7px'
+                                : '8px',
+                            cursor: editModeActive ? 'move' : 'pointer',
+                            opacity: draggedIndex === index ? 0.6 : 1,
+                            transform:
+                              draggedIndex === index
+                                ? 'scale(1.05)'
+                                : currentTouchIndex === index &&
+                                    draggedIndex !== null &&
+                                    draggedIndex !== index
+                                  ? 'scale(1.02)'
+                                  : 'scale(1)',
+                            boxShadow:
+                              draggedIndex === index
+                                ? `0 8px 24px ${currentTheme.primary}40`
+                                : currentTouchIndex === index &&
+                                    draggedIndex !== null &&
+                                    draggedIndex !== index
+                                  ? `0 4px 12px ${currentTheme.primary}30`
+                                  : 'none',
+                            transition: 'all 0.2s ease',
                             position: 'relative',
-                            zIndex: 2,
-                          }}
-                          onClick={() => {
-                            if (!editModeActive) {
-                              navigate(`/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`);
-                            }
+                            overflow: 'hidden',
                           }}
                         >
-                          <h2 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
-                            {episode.seriesTitle}
-                          </h2>
-                          <p
+                          {/* Swipe Indicator Background */}
+                          <motion.div
                             style={{
-                              fontSize: '13px',
-                              fontWeight: 500,
-                              margin: '0 0 2px 0',
-                              color: episode.isRewatch
-                                ? currentTheme.status.warning
-                                : currentTheme.status.success,
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background:
+                                'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
+                              opacity: 0,
+                            }}
+                            animate={{
+                              opacity: isSwiping ? 1 : 0,
+                            }}
+                          />
+                          {/* Simple checkmark indicator */}
+                          {isCompleting && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ duration: 0.2, type: 'spring', stiffness: 300 }}
+                              style={{
+                                position: 'absolute',
+                                right: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                zIndex: 10,
+                              }}
+                            >
+                              <Check
+                                style={{ fontSize: '28px', color: currentTheme.status.success }}
+                              />
+                            </motion.div>
+                          )}
+                          <img
+                            src={episode.poster}
+                            alt={episode.seriesTitle}
+                            onClick={() => {
+                              navigate(
+                                `/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`
+                              );
+                            }}
+                            style={{
+                              width: '48px',
+                              height: '72px',
+                              objectFit: 'cover',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              position: 'relative',
+                              zIndex: 2,
+                            }}
+                          />
+                          <div
+                            style={{
+                              flex: 1,
+                              pointerEvents: editModeActive ? 'auto' : 'none',
+                              position: 'relative',
+                              zIndex: 2,
+                            }}
+                            onClick={() => {
+                              if (!editModeActive) {
+                                navigate(
+                                  `/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`
+                                );
+                              }
                             }}
                           >
-                            S{(episode.seasonNumber ?? 0) + 1} E{episode.episodeNumber}
-                            {episode.isRewatch &&
-                              ` • ${episode.currentWatchCount}x → ${episode.targetWatchCount}x`}
-                          </p>
-                          <p
-                            style={{
-                              fontSize: '12px',
-                              margin: 0,
-                              color: currentTheme.text.muted,
-                            }}
-                          >
-                            {episode.episodeName}
-                          </p>
-                          {episode.airDate && (
+                            <h2 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
+                              {episode.seriesTitle}
+                            </h2>
                             <p
                               style={{
-                                fontSize: '11px',
-                                margin: '4px 0 0 0',
+                                fontSize: '13px',
+                                fontWeight: 500,
+                                margin: '0 0 2px 0',
+                                color: episode.isRewatch
+                                  ? currentTheme.status.warning
+                                  : currentTheme.status.success,
+                              }}
+                            >
+                              S{(episode.seasonNumber ?? 0) + 1} E{episode.episodeNumber}
+                              {episode.isRewatch &&
+                                ` • ${episode.currentWatchCount}x → ${episode.targetWatchCount}x`}
+                            </p>
+                            <p
+                              style={{
+                                fontSize: '12px',
+                                margin: 0,
                                 color: currentTheme.text.muted,
                               }}
                             >
-                              {getFormattedDate(episode.airDate)}
+                              {episode.episodeName}
                             </p>
+                            {episode.airDate && (
+                              <p
+                                style={{
+                                  fontSize: '11px',
+                                  margin: '4px 0 0 0',
+                                  color: currentTheme.text.muted,
+                                }}
+                              >
+                                {getFormattedDate(episode.airDate)}
+                              </p>
+                            )}
+                          </div>
+                          {editModeActive && (
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '12px 8px',
+                                color: currentTheme.text.muted,
+                                cursor: 'grab',
+                              }}
+                            >
+                              <DragHandle style={{ fontSize: '24px' }} />
+                            </div>
+                          )}
+
+                          {/* Button/Icon on the right side - show when edit mode is NOT active */}
+                          {!editModeActive && (
+                            <AnimatePresence mode="wait">
+                              {isCompleting ? (
+                                <motion.div
+                                  initial={{ scale: 0, rotate: -180 }}
+                                  animate={{ scale: 1, rotate: 0 }}
+                                  exit={{ scale: 0, rotate: 180 }}
+                                  style={{
+                                    padding: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    position: 'relative',
+                                    zIndex: 2,
+                                  }}
+                                >
+                                  <Check
+                                    style={{ fontSize: '24px', color: currentTheme.status.success }}
+                                  />
+                                </motion.div>
+                              ) : (
+                                <motion.div
+                                  animate={{ x: isSwiping ? 10 : 0 }}
+                                  style={{
+                                    padding: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    position: 'relative',
+                                    zIndex: 2,
+                                  }}
+                                >
+                                  <EpisodeDiscussionButton
+                                    seriesId={episode.seriesId}
+                                    seasonNumber={episode.seasonNumber + 1}
+                                    episodeNumber={episode.episodeNumber}
+                                  />
+                                  <PlayCircle
+                                    style={{
+                                      fontSize: '24px',
+                                      color: episode.isRewatch
+                                        ? currentTheme.status.warning
+                                        : currentTheme.status.success,
+                                    }}
+                                  />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           )}
                         </div>
-                        {editModeActive && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: '12px 8px',
-                              color: currentTheme.text.muted,
-                              cursor: 'grab',
-                            }}
-                          >
-                            <DragHandle style={{ fontSize: '24px' }} />
-                          </div>
-                        )}
+                      </motion.div>
+                    );
+                  })}
+              </AnimatePresence>
+            </div>
+          )}
 
-                        {/* Button/Icon on the right side - show when edit mode is NOT active */}
-                        {!editModeActive && (
-                          <AnimatePresence mode="wait">
-                            {isCompleting ? (
-                              <motion.div
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                exit={{ scale: 0, rotate: 180 }}
-                                style={{
-                                  padding: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  position: 'relative',
-                                  zIndex: 2,
-                                }}
-                              >
-                                <Check
-                                  style={{ fontSize: '24px', color: currentTheme.status.success }}
-                                />
-                              </motion.div>
-                            ) : (
-                              <motion.div
-                                animate={{ x: isSwiping ? 10 : 0 }}
-                                style={{
-                                  padding: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  gap: '8px',
-                                  position: 'relative',
-                                  zIndex: 2,
-                                }}
-                              >
-                                <EpisodeDiscussionButton
-                                  seriesId={episode.seriesId}
-                                  seasonNumber={episode.seasonNumber + 1}
-                                  episodeNumber={episode.episodeNumber}
-                                />
-                                <PlayCircle
-                                  style={{
-                                    fontSize: '24px',
-                                    color: episode.isRewatch
-                                      ? currentTheme.status.warning
-                                      : currentTheme.status.success,
-                                  }}
-                                />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-            </AnimatePresence>
-          </div>
-        )}
-
-        {/* Padding at bottom to prevent last item being hidden by navbar */}
-        <div
-          style={{
-            height: 'calc(120px + env(safe-area-inset-bottom))',
-            paddingBottom: 'calc(20px + env(safe-area-inset-bottom))',
-          }}
-        />
-      </div>
+          {/* Padding at bottom to prevent last item being hidden by navbar */}
+          <div
+            style={{
+              height: 'calc(120px + env(safe-area-inset-bottom))',
+              paddingBottom: 'calc(20px + env(safe-area-inset-bottom))',
+            }}
+          />
+        </div>
       </div>
       <ScrollToTopButton scrollContainerSelector=".episodes-scroll-container" />
     </PageLayout>

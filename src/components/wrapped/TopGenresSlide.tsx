@@ -13,32 +13,32 @@ interface TopGenresSlideProps {
 
 // Genre-Icons für visuelle Darstellung
 const GENRE_ICONS: Record<string, string> = {
-  'Action': '💥',
-  'Adventure': '🗺️',
-  'Animation': '🎨',
-  'Comedy': '😂',
-  'Crime': '🔍',
-  'Documentary': '📹',
-  'Drama': '🎭',
-  'Family': '👨‍👩‍👧‍👦',
-  'Fantasy': '🧙',
-  'History': '📜',
-  'Horror': '👻',
-  'Music': '🎵',
-  'Mystery': '🔮',
-  'Romance': '💕',
+  Action: '💥',
+  Adventure: '🗺️',
+  Animation: '🎨',
+  Comedy: '😂',
+  Crime: '🔍',
+  Documentary: '📹',
+  Drama: '🎭',
+  Family: '👨‍👩‍👧‍👦',
+  Fantasy: '🧙',
+  History: '📜',
+  Horror: '👻',
+  Music: '🎵',
+  Mystery: '🔮',
+  Romance: '💕',
   'Science Fiction': '🚀',
   'Sci-Fi & Fantasy': '🚀',
   'TV Movie': '📺',
-  'Thriller': '😱',
-  'War': '⚔️',
-  'Western': '🤠',
+  Thriller: '😱',
+  War: '⚔️',
+  Western: '🤠',
   'Action & Adventure': '💥',
-  'Kids': '🧒',
-  'News': '📰',
-  'Reality': '📷',
-  'Soap': '💔',
-  'Talk': '🎤',
+  Kids: '🧒',
+  News: '📰',
+  Reality: '📷',
+  Soap: '💔',
+  Talk: '🎤',
   'War & Politics': '⚔️',
 };
 
@@ -51,10 +51,7 @@ const GENRE_COLORS = [
   'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
 ];
 
-export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({
-  topGenres,
-  maxItems = 5,
-}) => {
+export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxItems = 5 }) => {
   const displayGenres = topGenres.slice(0, maxItems);
 
   if (displayGenres.length === 0) {
@@ -78,12 +75,8 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({
           >
             🎬
           </motion.div>
-          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>
-            Keine Genre-Daten
-          </h2>
-          <p style={{ opacity: 0.6, marginTop: '10px' }}>
-            Schau mehr Serien und Filme!
-          </p>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>Keine Genre-Daten</h2>
+          <p style={{ opacity: 0.6, marginTop: '10px' }}>Schau mehr Serien und Filme!</p>
         </div>
       </div>
     );
@@ -251,9 +244,7 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.3rem' }}>
-                  {GENRE_ICONS[genre.genre] || '🎬'}
-                </span>
+                <span style={{ fontSize: '1.3rem' }}>{GENRE_ICONS[genre.genre] || '🎬'}</span>
                 <span style={{ color: 'white', fontWeight: index === 0 ? 'bold' : 'normal' }}>
                   {genre.genre}
                 </span>

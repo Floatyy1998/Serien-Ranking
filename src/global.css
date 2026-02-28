@@ -45,20 +45,20 @@ div::-webkit-scrollbar {
 /* Additional rules for PWA and mobile browsers */
 .MobileApp,
 .Layout,
-[class*="Page"],
-[class*="Container"],
-[class*="Scroll"],
-[class*="List"] {
+[class*='Page'],
+[class*='Container'],
+[class*='Scroll'],
+[class*='List'] {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
 
 .MobileApp::-webkit-scrollbar,
 .Layout::-webkit-scrollbar,
-[class*="Page"]::-webkit-scrollbar,
-[class*="Container"]::-webkit-scrollbar,
-[class*="Scroll"]::-webkit-scrollbar,
-[class*="List"]::-webkit-scrollbar {
+[class*='Page']::-webkit-scrollbar,
+[class*='Container']::-webkit-scrollbar,
+[class*='Scroll']::-webkit-scrollbar,
+[class*='List']::-webkit-scrollbar {
   display: none !important;
 }
 
@@ -130,15 +130,15 @@ svg *:focus,
 svg *:focus-visible,
 .MuiSvgIcon-root:focus,
 .MuiSvgIcon-root:focus-visible,
-[class*="Icon"]:focus,
-[class*="Icon"]:focus-visible {
+[class*='Icon']:focus,
+[class*='Icon']:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
 
 /* Enhanced focus styles for interactive elements */
 button:focus-visible,
-[role="button"]:focus-visible,
+[role='button']:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
@@ -156,7 +156,7 @@ textarea:focus-visible {
 }
 
 /* Inline-styled inputs (e.g. search) that set their own outline: none — skip global outline */
-input[style*="outline"]:focus-visible {
+input[style*='outline']:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }

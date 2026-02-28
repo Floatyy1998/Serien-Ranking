@@ -1,21 +1,7 @@
-import {
-  AccessTime,
-  CalendarMonth,
-  Nightlight,
-  Speed,
-  WbSunny,
-} from '@mui/icons-material';
+import { AccessTime, CalendarMonth, Nightlight, Speed, WbSunny } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useTheme } from '../../contexts/ThemeContext';
 import { DAY_NAMES, WatchJourneyData } from '../../services/watchJourneyService';
 

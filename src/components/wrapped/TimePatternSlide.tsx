@@ -32,37 +32,52 @@ const TimeIcon: React.FC<{ timeOfDay: string }> = ({ timeOfDay }) => {
   if (timeOfDay === 'morning') {
     return (
       <svg width="100" height="100" viewBox="0 0 24 24" fill="none" style={iconStyle}>
-        <circle cx="12" cy="17" r="5" stroke="#ff9a56" strokeWidth="2"/>
-        <path d="M12 2v4M12 8v1M4.22 10.22l2.83 2.83M1 17h4M19 17h4M16.95 13.05l2.83-2.83" stroke="#ff9a56" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M3 21h18" stroke="#ff9a56" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="12" cy="17" r="5" stroke="#ff9a56" strokeWidth="2" />
+        <path
+          d="M12 2v4M12 8v1M4.22 10.22l2.83 2.83M1 17h4M19 17h4M16.95 13.05l2.83-2.83"
+          stroke="#ff9a56"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path d="M3 21h18" stroke="#ff9a56" strokeWidth="2" strokeLinecap="round" />
       </svg>
     );
   }
   if (timeOfDay === 'afternoon') {
     return (
       <svg width="100" height="100" viewBox="0 0 24 24" fill="none" style={iconStyle}>
-        <circle cx="12" cy="12" r="5" fill="#ffcd3c"/>
-        <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="#ffcd3c" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="12" cy="12" r="5" fill="#ffcd3c" />
+        <path
+          d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
+          stroke="#ffcd3c"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
       </svg>
     );
   }
   if (timeOfDay === 'evening') {
     return (
       <svg width="100" height="100" viewBox="0 0 24 24" fill="none" style={iconStyle}>
-        <circle cx="12" cy="17" r="5" fill="#ff6b6b"/>
-        <path d="M12 2v6" stroke="#ff6b6b" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M3 21h18" stroke="#ff6b6b" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M5 12h2M17 12h2" stroke="#ff6b6b" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="12" cy="17" r="5" fill="#ff6b6b" />
+        <path d="M12 2v6" stroke="#ff6b6b" strokeWidth="2" strokeLinecap="round" />
+        <path d="M3 21h18" stroke="#ff6b6b" strokeWidth="2" strokeLinecap="round" />
+        <path d="M5 12h2M17 12h2" stroke="#ff6b6b" strokeWidth="2" strokeLinecap="round" />
       </svg>
     );
   }
   // night
   return (
     <svg width="100" height="100" viewBox="0 0 24 24" fill="none" style={iconStyle}>
-      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="#5f27cd" stroke="#5f27cd" strokeWidth="2"/>
-      <circle cx="8" cy="8" r="1" fill="white"/>
-      <circle cx="15" cy="11" r="0.5" fill="white"/>
-      <circle cx="11" cy="14" r="0.5" fill="white"/>
+      <path
+        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+        fill="#5f27cd"
+        stroke="#5f27cd"
+        strokeWidth="2"
+      />
+      <circle cx="8" cy="8" r="1" fill="white" />
+      <circle cx="15" cy="11" r="0.5" fill="white" />
+      <circle cx="11" cy="14" r="0.5" fill="white" />
     </svg>
   );
 };
@@ -83,13 +98,14 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: timeOfDay === 'night'
-          ? 'linear-gradient(180deg, #0c0c1e 0%, #1a1a3e 50%, #2d2d5a 100%)'
-          : timeOfDay === 'morning'
-          ? 'linear-gradient(180deg, #2d1b4e 0%, #5c3d7a 50%, #ff9a56 100%)'
-          : timeOfDay === 'evening'
-          ? 'linear-gradient(180deg, #1a1a2e 0%, #4a2c4a 50%, #ff6b6b 100%)'
-          : 'linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #74b9ff 100%)',
+        background:
+          timeOfDay === 'night'
+            ? 'linear-gradient(180deg, #0c0c1e 0%, #1a1a3e 50%, #2d2d5a 100%)'
+            : timeOfDay === 'morning'
+              ? 'linear-gradient(180deg, #2d1b4e 0%, #5c3d7a 50%, #ff9a56 100%)'
+              : timeOfDay === 'evening'
+                ? 'linear-gradient(180deg, #1a1a2e 0%, #4a2c4a 50%, #ff6b6b 100%)'
+                : 'linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #74b9ff 100%)',
         position: 'relative',
         overflow: 'hidden',
         padding: '40px 20px',
@@ -103,7 +119,11 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
             <motion.div
               key={i}
               animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }}
+              transition={{
+                duration: 2 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
               style={{
                 position: 'absolute',
                 top: `${Math.random() * 60}%`,
@@ -210,9 +230,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
         <span style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}>
           {favoriteTimeOfDay.percentage}%
         </span>
-        <span style={{ color: 'white', opacity: 0.8, marginLeft: '8px' }}>
-          deiner Views
-        </span>
+        <span style={{ color: 'white', opacity: 0.8, marginLeft: '8px' }}>deiner Views</span>
       </motion.div>
 
       {/* Day of Week Card */}
@@ -235,10 +253,17 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
           style={{ marginBottom: '15px', display: 'flex', justifyContent: 'center' }}
         >
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <path d="M16 2v4M8 2v4M3 10h18"/>
-            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" strokeLinecap="round"/>
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth="2"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" strokeLinecap="round" />
           </svg>
         </motion.div>
         <p style={{ color: 'white', opacity: 0.7, marginBottom: '8px', fontSize: '0.9rem' }}>
@@ -255,7 +280,10 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
           {favoriteDayOfWeek.dayName}
         </h3>
         <p style={{ color: 'white', opacity: 0.8 }}>
-          <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{favoriteDayOfWeek.percentage}%</span> deiner Views
+          <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
+            {favoriteDayOfWeek.percentage}%
+          </span>{' '}
+          deiner Views
         </p>
       </motion.div>
     </div>

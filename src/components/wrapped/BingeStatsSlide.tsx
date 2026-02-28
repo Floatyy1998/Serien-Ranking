@@ -15,9 +15,16 @@ interface BingeStatsSlideProps {
 // Play Button Icon für Binge
 const PlayIcon: React.FC<{ size?: number }> = ({ size = 80 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="11" fill="rgba(155,89,182,0.3)" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-    <path d="M10 8l6 4-6 4V8z" fill="white"/>
-    <path d="M19 12l3 2-3 2v-4z" fill="rgba(255,255,255,0.5)"/>
+    <circle
+      cx="12"
+      cy="12"
+      r="11"
+      fill="rgba(155,89,182,0.3)"
+      stroke="rgba(255,255,255,0.5)"
+      strokeWidth="1"
+    />
+    <path d="M10 8l6 4-6 4V8z" fill="white" />
+    <path d="M19 12l3 2-3 2v-4z" fill="rgba(255,255,255,0.5)" />
   </svg>
 );
 
@@ -61,18 +68,23 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
               margin: '0 auto 20px',
             }}
           >
-            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
-              <path d="M17 18a5 5 0 00-10 0"/>
-              <circle cx="12" cy="9" r="4"/>
-              <path d="M12 3v1M21 12h-1M4 12H3M18.364 5.636l-.707.707M6.343 6.343l-.707-.707"/>
+            <svg
+              width="50"
+              height="50"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="rgba(255,255,255,0.6)"
+              strokeWidth="2"
+            >
+              <path d="M17 18a5 5 0 00-10 0" />
+              <circle cx="12" cy="9" r="4" />
+              <path d="M12 3v1M21 12h-1M4 12H3M18.364 5.636l-.707.707M6.343 6.343l-.707-.707" />
             </svg>
           </motion.div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', marginBottom: '15px' }}>
             Kein Binge-Watching
           </h2>
-          <p style={{ opacity: 0.8, fontSize: '1.1rem' }}>
-            Du hast dieses Jahr gemäßigt geschaut!
-          </p>
+          <p style={{ opacity: 0.8, fontSize: '1.1rem' }}>Du hast dieses Jahr gemäßigt geschaut!</p>
         </motion.div>
       </div>
     );
@@ -116,7 +128,7 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
             }}
           >
             <svg width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)">
-              <path d="M8 5v14l11-7z"/>
+              <path d="M8 5v14l11-7z" />
             </svg>
           </motion.div>
         ))}
@@ -200,13 +212,19 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
             maxWidth: '350px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '15px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              marginBottom: '15px',
+            }}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffd700">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
-            <p style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem' }}>
-              Längste Session
-            </p>
+            <p style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem' }}>Längste Session</p>
           </div>
           <h3
             style={{
@@ -223,21 +241,16 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
               <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>
                 {longestBinge.episodeCount}
               </p>
-              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>
-                Episoden
-              </p>
+              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>Episoden</p>
             </div>
             <div style={{ width: '1px', background: 'rgba(255,255,255,0.3)' }} />
             <div>
               <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>
                 {longestBinge.totalMinutes >= 60
                   ? `${Math.floor(longestBinge.totalMinutes / 60)}h ${longestBinge.totalMinutes % 60 > 0 ? `${longestBinge.totalMinutes % 60}m` : ''}`
-                  : `${longestBinge.totalMinutes}m`
-                }
+                  : `${longestBinge.totalMinutes}m`}
               </p>
-              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>
-                am Stück
-              </p>
+              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>am Stück</p>
             </div>
           </div>
         </motion.div>
@@ -257,7 +270,9 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
         }}
       >
         <p style={{ color: 'white', opacity: 0.8 }}>
-          Durchschnitt: <strong style={{ fontSize: '1.2rem' }}>{Math.round(averageBingeLength)} Episoden</strong> pro Session
+          Durchschnitt:{' '}
+          <strong style={{ fontSize: '1.2rem' }}>{Math.round(averageBingeLength)} Episoden</strong>{' '}
+          pro Session
         </p>
       </motion.div>
     </div>

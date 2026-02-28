@@ -1,10 +1,10 @@
-import { 
-  generateColorPalette, 
-  createAccessibleTextColors, 
-  darkenColor, 
-  lightenColor, 
+import {
+  generateColorPalette,
+  createAccessibleTextColors,
+  darkenColor,
+  lightenColor,
   withOpacity,
-  generateHoverColor 
+  generateHoverColor,
 } from './colorUtils';
 
 // Interface für Benutzer-Theme-Konfiguration
@@ -22,29 +22,29 @@ export interface UserThemeConfig {
 // Generiert ein vollständiges Theme basierend auf Benutzer-Eingaben
 export function generateDynamicTheme(config: UserThemeConfig) {
   const { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
-  
+
   // Automatische Palette-Generierung
   const primaryPalette = generateColorPalette(primaryColor);
   const backgroundTextColors = createAccessibleTextColors(backgroundColor);
-  
+
   // Automatische Surface-Farbe falls nicht angegeben
   const autoSurfaceColor = surfaceColor || lightenColor(backgroundColor, 0.1);
   const surfaceTextColors = createAccessibleTextColors(autoSurfaceColor);
-  
+
   // Accent-Farbe als Fallback auf aufgehellte Primärfarbe
   const finalAccentColor = accentColor || lightenColor(primaryColor, 0.2);
-  
+
   return {
     // Primäre Farben
     primary: primaryColor,
     primaryHover: primaryPalette.primaryHover,
     primaryDark: primaryPalette.primaryDark,
     primaryLight: primaryPalette.primaryLight,
-    
+
     // Accent-Farbe
     accent: finalAccentColor,
     accentHover: generateHoverColor(finalAccentColor),
-    
+
     // Hintergrundfarben
     background: {
       default: backgroundColor,
@@ -61,7 +61,7 @@ export function generateDynamicTheme(config: UserThemeConfig) {
         complex: autoSurfaceColor, // Einfach die Surface-Farbe ohne Gradients
       },
     },
-    
+
     // Automatische Textfarben basierend auf Kontrast
     text: {
       primary: primaryColor,
@@ -72,7 +72,7 @@ export function generateDynamicTheme(config: UserThemeConfig) {
       white: '#ffffff',
       black: '#000000',
     },
-    
+
     // Statusfarben - bleiben konsistent aber mit Theme-Anpassung
     status: {
       error: '#ff4444',
@@ -87,7 +87,7 @@ export function generateDynamicTheme(config: UserThemeConfig) {
         gradient: `linear-gradient(135deg, ${withOpacity(primaryColor, 0.1)} 0%, ${withOpacity(primaryColor, 0.05)} 100%)`,
       },
     },
-    
+
     // Border und Linien mit Theme-Farben
     border: {
       default: withOpacity(backgroundTextColors.muted, 0.3),
@@ -95,7 +95,7 @@ export function generateDynamicTheme(config: UserThemeConfig) {
       light: withOpacity(primaryColor, 0.08),
       lighter: withOpacity(primaryColor, 0.05),
     },
-    
+
     // Transparente Overlays mit Theme-Farben
     overlay: {
       light: withOpacity(primaryColor, 0.02),
@@ -152,7 +152,8 @@ export function validateThemeConfig(config: Partial<UserThemeConfig>): UserTheme
     surfaceColor: config.surfaceColor || defaultThemeConfig.surfaceColor,
     accentColor: config.accentColor || defaultThemeConfig.accentColor,
     backgroundImage: config.backgroundImage || defaultThemeConfig.backgroundImage,
-    backgroundImageOpacity: config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,
+    backgroundImageOpacity:
+      config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,
     backgroundImageBlur: config.backgroundImageBlur ?? defaultThemeConfig.backgroundImageBlur,
     backgroundIsVideo: config.backgroundIsVideo ?? defaultThemeConfig.backgroundIsVideo,
   };

@@ -4,7 +4,12 @@
  * Dieses Modul ist Jahr-agnostisch und kann jedes Jahr wiederverwendet werden.
  */
 
-import { ActivityEvent, EpisodeWatchEvent, MovieWatchEvent, BingeSession } from '../types/WatchActivity';
+import {
+  ActivityEvent,
+  EpisodeWatchEvent,
+  MovieWatchEvent,
+  BingeSession,
+} from '../types/WatchActivity';
 import {
   WrappedStats,
   TopSeriesEntry,
@@ -39,7 +44,9 @@ export function calculateWrappedStats(
   // Filtere Events für das gewünschte Jahr
   const yearEvents = events.filter((e) => new Date(e.timestamp).getFullYear() === year);
   const episodeEvents = yearEvents.filter((e) => e.type === 'episode_watch') as EpisodeWatchEvent[];
-  const movieEvents = yearEvents.filter((e) => e.type === 'movie_watch' || e.type === 'movie_rating') as MovieWatchEvent[];
+  const movieEvents = yearEvents.filter(
+    (e) => e.type === 'movie_watch' || e.type === 'movie_rating'
+  ) as MovieWatchEvent[];
 
   // Grundlegende Berechnungen
   const totalEpisodes = episodeEvents.length;
@@ -132,9 +139,13 @@ export function calculateWrappedStats(
     monthlyBreakdown,
     totalBingeSessions: yearBingeSessions.length,
     longestBingeSession: longestBinge,
-    averageBingeLength: yearBingeSessions.length > 0
-      ? Math.round(yearBingeSessions.reduce((sum, s) => sum + s.episodes.length, 0) / yearBingeSessions.length)
-      : 0,
+    averageBingeLength:
+      yearBingeSessions.length > 0
+        ? Math.round(
+            yearBingeSessions.reduce((sum, s) => sum + s.episodes.length, 0) /
+              yearBingeSessions.length
+          )
+        : 0,
     longestStreak: 0, // TODO: Aus Streak-Daten holen
     currentStreak: 0,
     deviceBreakdown,
@@ -199,7 +210,7 @@ function calculateTopGenres(
   for (const episode of episodes) {
     if (episode.genres && episode.genres.length > 0) {
       // Filtere ignorierte Genres heraus
-      const validGenres = episode.genres.filter(g => !ignoredGenres.has(g));
+      const validGenres = episode.genres.filter((g) => !ignoredGenres.has(g));
       if (validGenres.length === 0) continue;
 
       const minutesPerGenre = (episode.episodeRuntime || 45) / validGenres.length;
@@ -217,7 +228,7 @@ function calculateTopGenres(
   for (const movie of movies) {
     if (movie.genres && movie.genres.length > 0) {
       // Filtere ignorierte Genres heraus
-      const validGenres = movie.genres.filter(g => !ignoredGenres.has(g));
+      const validGenres = movie.genres.filter((g) => !ignoredGenres.has(g));
       if (validGenres.length === 0) continue;
 
       const minutesPerGenre = (movie.runtime || 120) / validGenres.length;
@@ -252,11 +263,14 @@ function calculateTopProviders(
   movies: MovieWatchEvent[],
   limit = 5
 ): TopProviderEntry[] {
-  const providerMap = new Map<string, {
-    episodeCount: number;
-    movieCount: number;
-    minutes: number;
-  }>();
+  const providerMap = new Map<
+    string,
+    {
+      episodeCount: number;
+      movieCount: number;
+      minutes: number;
+    }
+  >();
 
   let totalMinutes = 0;
 
@@ -264,7 +278,9 @@ function calculateTopProviders(
   // Unterstützt sowohl das neue providers-Array als auch das alte provider-Feld
   // Jeder Provider bekommt die volle Watchzeit (nicht aufgeteilt)
   for (const episode of episodes) {
-    const providers = [...new Set<string>(episode.providers || (episode.provider ? [episode.provider] : []))];
+    const providers = [
+      ...new Set<string>(episode.providers || (episode.provider ? [episode.provider] : [])),
+    ];
     const runtime = episode.episodeRuntime || 45;
 
     for (const providerName of providers) {
@@ -285,7 +301,9 @@ function calculateTopProviders(
 
   // Sammle Provider aus Movie-Events
   for (const movie of movies) {
-    const providers = [...new Set<string>(movie.providers || (movie.provider ? [movie.provider] : []))];
+    const providers = [
+      ...new Set<string>(movie.providers || (movie.provider ? [movie.provider] : [])),
+    ];
     const runtime = movie.runtime || 120;
 
     for (const providerName of providers) {
@@ -330,8 +348,12 @@ function calculateMonthlyBreakdown(events: ActivityEvent[]): MonthStats[] {
 
   for (let month = 1; month <= 12; month++) {
     const monthEvents = events.filter((e) => e.month === month);
-    const episodeEvents = monthEvents.filter((e) => e.type === 'episode_watch') as EpisodeWatchEvent[];
-    const movieEvents = monthEvents.filter((e) => e.type === 'movie_watch' || e.type === 'movie_rating') as MovieWatchEvent[];
+    const episodeEvents = monthEvents.filter(
+      (e) => e.type === 'episode_watch'
+    ) as EpisodeWatchEvent[];
+    const movieEvents = monthEvents.filter(
+      (e) => e.type === 'movie_watch' || e.type === 'movie_rating'
+    ) as MovieWatchEvent[];
 
     months.push({
       month,
@@ -411,15 +433,16 @@ function calculateFavoriteTimeOfDay(events: ActivityEvent[]): TimeOfDayStats {
     }
   }
 
-  const favorite = Object.entries(counts).reduce((max, [time, count]) =>
-    count > max[1] ? [time, count] : max
-  , ['evening', 0]);
+  const favorite = Object.entries(counts).reduce(
+    (max, [time, count]) => (count > max[1] ? [time, count] : max),
+    ['evening', 0]
+  );
 
   return {
     timeOfDay: favorite[0] as 'morning' | 'afternoon' | 'evening' | 'night',
     label: TIME_OF_DAY_LABELS[favorite[0]],
     count: favorite[1] as number,
-    percentage: total > 0 ? Math.round((favorite[1] as number / total) * 100) : 0,
+    percentage: total > 0 ? Math.round(((favorite[1] as number) / total) * 100) : 0,
   };
 }
 
@@ -450,9 +473,7 @@ function calculateFavoriteDayOfWeek(events: ActivityEvent[]): DayOfWeekStats {
 function findLongestBingeSession(sessions: BingeSession[]): BingeSessionStats | null {
   if (sessions.length === 0) return null;
 
-  const longest = sessions.reduce((max, s) =>
-    s.episodes.length > max.episodes.length ? s : max
-  );
+  const longest = sessions.reduce((max, s) => (s.episodes.length > max.episodes.length ? s : max));
 
   return {
     seriesId: longest.seriesId,
@@ -517,12 +538,14 @@ function calculateAchievements(ctx: AchievementContext): WrappedAchievement[] {
 
     switch (template.id) {
       case 'night_owl':
-        unlocked = ctx.favoriteTimeOfDay.timeOfDay === 'night' && ctx.favoriteTimeOfDay.percentage >= 30;
+        unlocked =
+          ctx.favoriteTimeOfDay.timeOfDay === 'night' && ctx.favoriteTimeOfDay.percentage >= 30;
         value = `${ctx.favoriteTimeOfDay.percentage}%`;
         break;
 
       case 'early_bird':
-        unlocked = ctx.favoriteTimeOfDay.timeOfDay === 'morning' && ctx.favoriteTimeOfDay.percentage >= 30;
+        unlocked =
+          ctx.favoriteTimeOfDay.timeOfDay === 'morning' && ctx.favoriteTimeOfDay.percentage >= 30;
         value = `${ctx.favoriteTimeOfDay.percentage}%`;
         break;
 
@@ -551,7 +574,8 @@ function calculateAchievements(ctx: AchievementContext): WrappedAchievement[] {
         break;
 
       case 'weekend_warrior':
-        const isWeekend = ctx.favoriteDayOfWeek.dayOfWeek === 0 || ctx.favoriteDayOfWeek.dayOfWeek === 6;
+        const isWeekend =
+          ctx.favoriteDayOfWeek.dayOfWeek === 0 || ctx.favoriteDayOfWeek.dayOfWeek === 6;
         unlocked = isWeekend && ctx.favoriteDayOfWeek.percentage >= 50;
         value = `${ctx.favoriteDayOfWeek.percentage}%`;
         break;

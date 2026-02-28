@@ -156,8 +156,8 @@ export const getTVDBEpisodes = async (tvdbId: number): Promise<TVDBEpisode[]> =>
 
     // Filter episodes with aired date and seasonNumber > 0
     const filteredEpisodes = allEpisodes
-      .filter(episode => episode.aired !== null && episode.seasonNumber > 0)
-      .map(episode => ({
+      .filter((episode) => episode.aired !== null && episode.seasonNumber > 0)
+      .map((episode) => ({
         id: episode.id,
         name: episode.name || `Episode ${episode.number}`,
         overview: episode.overview || '',
@@ -182,7 +182,7 @@ export const getTVDBSeasons = async (tvdbId: number): Promise<TVDBSeason[]> => {
 
     const seasons: Record<number, TVDBSeason> = {};
 
-    episodes.forEach(episode => {
+    episodes.forEach((episode) => {
       if (!seasons[episode.seasonNumber]) {
         seasons[episode.seasonNumber] = {
           seasonNumber: episode.seasonNumber,
@@ -193,7 +193,7 @@ export const getTVDBSeasons = async (tvdbId: number): Promise<TVDBSeason[]> => {
     });
 
     // Sort episodes within each season
-    Object.values(seasons).forEach(season => {
+    Object.values(seasons).forEach((season) => {
       season.episodes.sort((a, b) => a.number - b.number);
     });
 

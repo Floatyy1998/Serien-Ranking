@@ -20,7 +20,13 @@ import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { GradientText, PageHeader, PageLayout, ProgressBar, ScrollToTopButton } from '../../components/ui';
+import {
+  GradientText,
+  PageHeader,
+  PageLayout,
+  ProgressBar,
+  ScrollToTopButton,
+} from '../../components/ui';
 import { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
 import './CatchUpPage.css';
@@ -64,17 +70,20 @@ export const CatchUpPage: React.FC = () => {
   });
 
   // Handle tab click - toggle direction if same tab, otherwise switch tab
-  const handleSortClick = useCallback((value: SortOption) => {
-    if (sortBy === value) {
-      setSortDirection((prev) => (prev === 'desc' ? 'asc' : 'desc'));
-    } else {
-      setSortBy(value);
-      setSortDirection('desc');
-    }
-    // Scroll to top when sort changes
-    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-    sessionStorage.removeItem(SCROLL_STORAGE_KEY);
-  }, [sortBy]);
+  const handleSortClick = useCallback(
+    (value: SortOption) => {
+      if (sortBy === value) {
+        setSortDirection((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+      } else {
+        setSortBy(value);
+        setSortDirection('desc');
+      }
+      // Scroll to top when sort changes
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+    },
+    [sortBy]
+  );
 
   // Update URL params when sort changes
   useEffect(() => {
@@ -206,7 +215,9 @@ export const CatchUpPage: React.FC = () => {
           if (!a.lastWatchedDate && !b.lastWatchedDate) return 0;
           if (!a.lastWatchedDate) return 1;
           if (!b.lastWatchedDate) return -1;
-          return dir * (new Date(b.lastWatchedDate).getTime() - new Date(a.lastWatchedDate).getTime());
+          return (
+            dir * (new Date(b.lastWatchedDate).getTime() - new Date(a.lastWatchedDate).getTime())
+          );
         });
         break;
     }
@@ -218,9 +229,10 @@ export const CatchUpPage: React.FC = () => {
   const totals = useMemo(() => {
     const totalEpisodes = catchUpData.reduce((sum, item) => sum + item.remainingEpisodes, 0);
     const totalMinutes = catchUpData.reduce((sum, item) => sum + item.remainingMinutes, 0);
-    const avgProgress = catchUpData.length > 0
-      ? catchUpData.reduce((sum, item) => sum + item.progress, 0) / catchUpData.length
-      : 0;
+    const avgProgress =
+      catchUpData.length > 0
+        ? catchUpData.reduce((sum, item) => sum + item.progress, 0) / catchUpData.length
+        : 0;
     return { totalEpisodes, totalMinutes, avgProgress };
   }, [catchUpData]);
 
@@ -244,12 +256,36 @@ export const CatchUpPage: React.FC = () => {
     return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
   };
 
-
-  const sortOptions: { value: SortOption; labelDesc: string; labelAsc: string; icon: React.ReactNode }[] = [
-    { value: 'episodes', labelDesc: 'Meiste Episoden', labelAsc: 'Wenigste Episoden', icon: <MovieFilter style={{ fontSize: 18 }} /> },
-    { value: 'time', labelDesc: 'Längste Zeit', labelAsc: 'Kürzeste Zeit', icon: <Timer style={{ fontSize: 18 }} /> },
-    { value: 'progress', labelDesc: 'Fast fertig', labelAsc: 'Am Anfang', icon: <TrendingUp style={{ fontSize: 18 }} /> },
-    { value: 'recent', labelDesc: 'Zuletzt geschaut', labelAsc: 'Am längsten her', icon: <Bolt style={{ fontSize: 18 }} /> },
+  const sortOptions: {
+    value: SortOption;
+    labelDesc: string;
+    labelAsc: string;
+    icon: React.ReactNode;
+  }[] = [
+    {
+      value: 'episodes',
+      labelDesc: 'Meiste Episoden',
+      labelAsc: 'Wenigste Episoden',
+      icon: <MovieFilter style={{ fontSize: 18 }} />,
+    },
+    {
+      value: 'time',
+      labelDesc: 'Längste Zeit',
+      labelAsc: 'Kürzeste Zeit',
+      icon: <Timer style={{ fontSize: 18 }} />,
+    },
+    {
+      value: 'progress',
+      labelDesc: 'Fast fertig',
+      labelAsc: 'Am Anfang',
+      icon: <TrendingUp style={{ fontSize: 18 }} />,
+    },
+    {
+      value: 'recent',
+      labelDesc: 'Zuletzt geschaut',
+      labelAsc: 'Am längsten her',
+      icon: <Bolt style={{ fontSize: 18 }} />,
+    },
   ];
 
   const activeLabel = sortOptions.find((o) => o.value === sortBy);
@@ -305,7 +341,10 @@ export const CatchUpPage: React.FC = () => {
             justifyContent: 'center',
           }}
         >
-          <GradientText as="span" to="#8b5cf6" style={{
+          <GradientText
+            as="span"
+            to="#8b5cf6"
+            style={{
               fontSize: size * 0.24,
               fontWeight: 700,
             }}
@@ -318,8 +357,15 @@ export const CatchUpPage: React.FC = () => {
   };
 
   return (
-    <PageLayout ref={scrollContainerRef} style={{ height: '100vh', overflowY: 'auto', overflowX: 'hidden', color: currentTheme.text.primary }}>
-
+    <PageLayout
+      ref={scrollContainerRef}
+      style={{
+        height: '100vh',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        color: currentTheme.text.primary,
+      }}
+    >
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
@@ -521,11 +567,12 @@ export const CatchUpPage: React.FC = () => {
                       }}
                     >
                       {option.icon}
-                      {isActive && (
-                        sortDirection === 'desc'
-                          ? <ArrowDownward style={{ fontSize: 14 }} />
-                          : <ArrowUpward style={{ fontSize: 14 }} />
-                      )}
+                      {isActive &&
+                        (sortDirection === 'desc' ? (
+                          <ArrowDownward style={{ fontSize: 14 }} />
+                        ) : (
+                          <ArrowUpward style={{ fontSize: 14 }} />
+                        ))}
                     </button>
                   );
                 })}
@@ -601,11 +648,16 @@ export const CatchUpPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <GradientText as="h2" from={currentTheme.text.primary} to={currentTheme.primary} style={{
-                margin: '0 0 12px 0',
-                fontSize: '28px',
-                fontWeight: 800,
-              }}>
+              <GradientText
+                as="h2"
+                from={currentTheme.text.primary}
+                to={currentTheme.primary}
+                style={{
+                  margin: '0 0 12px 0',
+                  fontSize: '28px',
+                  fontWeight: 800,
+                }}
+              >
                 Alles aufgeholt!
               </GradientText>
             </motion.div>
@@ -657,208 +709,212 @@ export const CatchUpPage: React.FC = () => {
 
         {/* Series List */}
         <div style={{ padding: '0 20px 120px' }}>
-            {sortedData.map((item) => (
+          {sortedData.map((item) => (
+            <div
+              key={item.series.id}
+              className="catchup-list-item"
+              onClick={() => navigate(`/series/${item.series.id}`)}
+              style={{
+                display: 'flex',
+                gap: '16px',
+                padding: '16px',
+                background: currentTheme.background.surface,
+                borderRadius: '20px',
+                marginBottom: '14px',
+                cursor: 'pointer',
+                border: `1px solid ${currentTheme.border.default}`,
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Subtle gradient accent */}
               <div
-                key={item.series.id}
-                className="catchup-list-item"
-                onClick={() => navigate(`/series/${item.series.id}`)}
                 style={{
-                  display: 'flex',
-                  gap: '16px',
-                  padding: '16px',
-                  background: currentTheme.background.surface,
-                  borderRadius: '20px',
-                  marginBottom: '14px',
-                  cursor: 'pointer',
-                  border: `1px solid ${currentTheme.border.default}`,
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-                  position: 'relative',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '3px',
+                  background: `linear-gradient(90deg,
+                      ${currentTheme.primary}${Math.round(item.progress * 2.55)
+                        .toString(16)
+                        .padStart(2, '0')},
+                      #8b5cf6${Math.round(item.progress * 2.55)
+                        .toString(16)
+                        .padStart(2, '0')}
+                    )`,
+                  opacity: 0.6,
+                }}
+              />
+
+              {/* Poster */}
+              <div
+                style={{
+                  width: '72px',
+                  minWidth: '72px',
+                  aspectRatio: '2/3',
+                  borderRadius: '12px',
                   overflow: 'hidden',
+                  position: 'relative',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 }}
               >
-                {/* Subtle gradient accent */}
+                <img
+                  src={getImageUrl(item.series.poster?.poster, 'w500', '')}
+                  alt={item.series.title}
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.opacity = '0';
+                  }}
+                />
+                {/* Episode badge */}
                 <div
                   style={{
                     position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: `linear-gradient(90deg,
-                      ${currentTheme.primary}${Math.round(item.progress * 2.55).toString(16).padStart(2, '0')},
-                      #8b5cf6${Math.round(item.progress * 2.55).toString(16).padStart(2, '0')}
-                    )`,
-                    opacity: 0.6,
-                  }}
-                />
-
-                {/* Poster */}
-                <div
-                  style={{
-                    width: '72px',
-                    minWidth: '72px',
-                    aspectRatio: '2/3',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  }}
-                >
-                  <img
-                    src={getImageUrl(item.series.poster?.poster, 'w500', '')}
-                    alt={item.series.title}
-                    loading="lazy"
-                    decoding="async"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.opacity = '0';
-                    }}
-                  />
-                  {/* Episode badge */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: '-1px',
-                      left: '-1px',
-                      right: '-1px',
-                      padding: '6px 0 5px',
-                      background: 'linear-gradient(180deg, transparent, rgba(0,0,0,0.9))',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: '13px',
-                        fontWeight: 800,
-                        color: '#fff',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                      }}
-                    >
-                      {item.remainingEpisodes}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        color: 'rgba(255,255,255,0.8)',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                      }}
-                    >
-                      EP
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
+                    bottom: '-1px',
+                    left: '-1px',
+                    right: '-1px',
+                    padding: '6px 0 5px',
+                    background: 'linear-gradient(180deg, transparent, rgba(0,0,0,0.9))',
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '4px',
                   }}
                 >
-                  <h3
+                  <span
                     style={{
-                      margin: '0 0 6px 0',
-                      fontSize: '16px',
-                      fontWeight: 700,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      color: currentTheme.text.primary,
+                      fontSize: '13px',
+                      fontWeight: 800,
+                      color: '#fff',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.5)',
                     }}
                   >
-                    {item.series.title}
-                  </h3>
-
-                  <div
+                    {item.remainingEpisodes}
+                  </span>
+                  <span
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      marginBottom: '10px',
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      color: 'rgba(255,255,255,0.8)',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.5)',
                     }}
                   >
-                    <span
-                      style={{
-                        fontSize: '13px',
-                        color: currentTheme.text.secondary,
-                        fontWeight: 500,
-                      }}
-                    >
-                      S{item.currentSeason} E{item.currentEpisode}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        padding: '3px 8px',
-                        borderRadius: '6px',
-                        background: `${currentTheme.primary}15`,
-                        color: currentTheme.primary,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {formatTimeString(item.remainingMinutes)}
-                    </span>
-                  </div>
-
-                  {/* Inline progress */}
-                  <div
-                    style={{
-                      height: '6px',
-                      background: `${currentTheme.text.muted}15`,
-                      borderRadius: '3px',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div
-                      className="catchup-progress-bar"
-                      style={{
-                        height: '100%',
-                        width: `${item.progress}%`,
-                        background: `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
-                        borderRadius: '3px',
-                      }}
-                    />
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: '6px',
-                      fontSize: '11px',
-                      color: currentTheme.text.muted,
-                    }}
-                  >
-                    <span>
-                      {item.watchedEpisodes} von {item.totalEpisodes}
-                    </span>
-                  </div>
+                    EP
+                  </span>
                 </div>
+              </div>
 
-                {/* Progress Ring */}
+              {/* Content */}
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <h3
+                  style={{
+                    margin: '0 0 6px 0',
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    color: currentTheme.text.primary,
+                  }}
+                >
+                  {item.series.title}
+                </h3>
+
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    marginLeft: '4px',
+                    gap: '12px',
+                    marginBottom: '10px',
                   }}
                 >
-                  <GradientRing progress={item.progress} size={52} strokeWidth={4} />
+                  <span
+                    style={{
+                      fontSize: '13px',
+                      color: currentTheme.text.secondary,
+                      fontWeight: 500,
+                    }}
+                  >
+                    S{item.currentSeason} E{item.currentEpisode}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: `${currentTheme.primary}15`,
+                      color: currentTheme.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {formatTimeString(item.remainingMinutes)}
+                  </span>
+                </div>
+
+                {/* Inline progress */}
+                <div
+                  style={{
+                    height: '6px',
+                    background: `${currentTheme.text.muted}15`,
+                    borderRadius: '3px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    className="catchup-progress-bar"
+                    style={{
+                      height: '100%',
+                      width: `${item.progress}%`,
+                      background: `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
+                      borderRadius: '3px',
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: '6px',
+                    fontSize: '11px',
+                    color: currentTheme.text.muted,
+                  }}
+                >
+                  <span>
+                    {item.watchedEpisodes} von {item.totalEpisodes}
+                  </span>
                 </div>
               </div>
-            ))}
+
+              {/* Progress Ring */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginLeft: '4px',
+                }}
+              >
+                <GradientRing progress={item.progress} size={52} strokeWidth={4} />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

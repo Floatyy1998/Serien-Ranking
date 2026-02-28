@@ -1,12 +1,4 @@
-import {
-  Delete,
-  Edit,
-  Favorite,
-  FavoriteBorder,
-  Flag,
-  Person,
-  Warning,
-} from '@mui/icons-material';
+import { Delete, Edit, Favorite, FavoriteBorder, Flag, Person, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -99,12 +91,22 @@ export const ReplyItem: React.FC<{
               }),
         }}
       >
-        {!reply.userPhotoURL && <Person style={{ fontSize: '15px', color: 'white' }} aria-hidden="true" />}
+        {!reply.userPhotoURL && (
+          <Person style={{ fontSize: '15px', color: 'white' }} aria-hidden="true" />
+        )}
       </button>
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '6px',
+            flexWrap: 'wrap',
+          }}
+        >
           <button
             onClick={() => navigate(`/friend/${reply.userId}`)}
             style={{
@@ -164,7 +166,15 @@ export const ReplyItem: React.FC<{
                 marginBottom: '8px',
               }}
             />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '8px',
+              }}
+            >
               <label
                 style={{
                   display: 'flex',
@@ -249,14 +259,29 @@ export const ReplyItem: React.FC<{
         ) : (
           <>
             {text && (
-              <p style={{ fontSize: '14px', color: currentTheme.text.secondary, margin: '0 0 8px 0', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: currentTheme.text.secondary,
+                  margin: '0 0 8px 0',
+                  whiteSpace: 'pre-wrap',
+                  lineHeight: 1.5,
+                }}
+              >
                 {text}
               </p>
             )}
 
             {/* Images */}
             {images.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  marginBottom: '8px',
+                }}
+              >
                 {images.map((img, i) => (
                   <ImagePreview key={i} src={img} />
                 ))}
@@ -286,7 +311,11 @@ export const ReplyItem: React.FC<{
                   transition: 'all 0.2s',
                 }}
               >
-                {isLiked ? <Favorite style={{ fontSize: '16px' }} /> : <FavoriteBorder style={{ fontSize: '16px' }} />}
+                {isLiked ? (
+                  <Favorite style={{ fontSize: '16px' }} />
+                ) : (
+                  <FavoriteBorder style={{ fontSize: '16px' }} />
+                )}
                 {reply.likes.length > 0 && reply.likes.length}
               </button>
             </Tooltip>
@@ -317,7 +346,9 @@ export const ReplyItem: React.FC<{
             {/* Spoiler Confirm - inline */}
             {showSpoilerConfirm && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '11px', color: currentTheme.status.warning }}>Als Spoiler?</span>
+                <span style={{ fontSize: '11px', color: currentTheme.status.warning }}>
+                  Als Spoiler?
+                </span>
                 <button
                   onClick={handleFlagAsSpoiler}
                   style={{

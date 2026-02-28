@@ -55,13 +55,13 @@ interface WorkerProcessedEpisode {
 
 self.addEventListener('message', (event) => {
   const { type, data } = event.data;
-  
+
   switch (type) {
     case 'CALCULATE_STATS':
       const stats = calculateStats(data);
       self.postMessage({ type: 'STATS_RESULT', data: stats });
       break;
-      
+
     case 'PROCESS_EPISODES':
       const episodes = processEpisodes(data);
       self.postMessage({ type: 'EPISODES_RESULT', data: episodes });
@@ -69,35 +69,39 @@ self.addEventListener('message', (event) => {
   }
 });
 
-function calculateStats(data: { seriesList: WorkerSeries[]; movieList: WorkerMovie[]; userId: string }) {
+function calculateStats(data: {
+  seriesList: WorkerSeries[];
+  movieList: WorkerMovie[];
+  userId: string;
+}) {
   const { seriesList, movieList, userId } = data;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTime = today.getTime();
-  
+
   let totalSeries = 0;
   let watchlistCount = 0;
   let watchedEpisodes = 0;
   let totalAiredEpisodes = 0;
   let todayTotalEpisodes = 0;
-  
+
   // Process series in worker thread
   for (let i = 0; i < seriesList.length; i++) {
     const series = seriesList[i];
     // Allow nmr: 0 as valid
-    if (!series || (series.nmr === undefined || series.nmr === null)) continue;
-    
+    if (!series || series.nmr === undefined || series.nmr === null) continue;
+
     totalSeries++;
     if (series.watchlist === true) watchlistCount++;
-    
+
     const seasons = series.seasons;
     if (!seasons) continue;
-    
+
     for (let j = 0; j < seasons.length; j++) {
       const season = seasons[j];
       const episodes = season.episodes;
       if (!episodes) continue;
-      
+
       for (let k = 0; k < episodes.length; k++) {
         const episode = episodes[k];
         if (!episode) continue;
@@ -110,19 +114,19 @@ function calculateStats(data: { seriesList: WorkerSeries[]; movieList: WorkerMov
           (episode.watched as unknown) === 'true' ||
           (episode.watchCount && episode.watchCount > 0)
         );
-        
+
         if (episode.air_date) {
           const airDate = new Date(episode.air_date);
           if (!isNaN(airDate.getTime())) {
             airDate.setHours(0, 0, 0, 0);
             const airDateTime = airDate.getTime();
-            
+
             if (airDateTime <= todayTime) {
               totalAiredEpisodes++;
               if (isWatched) {
                 watchedEpisodes++;
               }
-              
+
               if (airDateTime === todayTime) {
                 todayTotalEpisodes++;
               }
@@ -138,18 +142,18 @@ function calculateStats(data: { seriesList: WorkerSeries[]; movieList: WorkerMov
       }
     }
   }
-  
+
   // Process movies
   let totalMovies = 0;
   let watchedMovies = 0;
-  
+
   for (let i = 0; i < movieList.length; i++) {
     const movie = movieList[i];
     // Allow nmr: 0 as valid
-    if (!movie || (movie.nmr === undefined || movie.nmr === null)) continue;
-    
+    if (!movie || movie.nmr === undefined || movie.nmr === null) continue;
+
     totalMovies++;
-    
+
     if (movie.rating && userId) {
       const userRating = movie.rating[userId];
       if (userRating && userRating > 0) {
@@ -157,11 +161,10 @@ function calculateStats(data: { seriesList: WorkerSeries[]; movieList: WorkerMov
       }
     }
   }
-  
-  const progress = totalAiredEpisodes > 0 
-    ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100)
-    : 0;
-  
+
+  const progress =
+    totalAiredEpisodes > 0 ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100) : 0;
+
   return {
     totalSeries,
     totalMovies,
@@ -188,30 +191,33 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTime = today.getTime();
-  
+
   const episodes: WorkerProcessedEpisode[] = [];
-  
+
   for (let i = 0; i < seriesList.length; i++) {
     const series = seriesList[i];
     const seasons = series.seasons;
     if (!seasons) continue;
-    
+
     for (let j = 0; j < seasons.length; j++) {
       const season = seasons[j];
       const seasonEpisodes = season.episodes;
       if (!seasonEpisodes) continue;
-      
+
       for (let k = 0; k < seasonEpisodes.length; k++) {
         const episode = seasonEpisodes[k];
         if (!episode || !episode.air_date || episode.watched) continue;
-        
+
         const episodeDate = new Date(episode.air_date);
         if (isNaN(episodeDate.getTime())) continue;
-        
+
         episodeDate.setHours(0, 0, 0, 0);
-        
+
         if (episodeDate.getTime() === todayTime) {
-          const actualSeasonIndex = series.seasons?.findIndex((s: WorkerSeason) => s.seasonNumber === season.seasonNumber) ?? 0;
+          const actualSeasonIndex =
+            series.seasons?.findIndex(
+              (s: WorkerSeason) => s.seasonNumber === season.seasonNumber
+            ) ?? 0;
           const seasonNum = (season.seasonNumber ?? 0) + 1;
           const epNum = k + 1;
           episodes.push({
@@ -227,14 +233,16 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             episodeName: episode.name,
             watched: episode.watched,
             seriesGenre: series.genre?.genres,
-            seriesProviders: series.provider?.provider?.map((p: { id: number; name: string; logo: string }) => p.name),
+            seriesProviders: series.provider?.provider?.map(
+              (p: { id: number; name: string; logo: string }) => p.name
+            ),
             runtime: episode.runtime || series.episodeRuntime || 45,
           });
         }
       }
     }
   }
-  
+
   return episodes;
 }
 

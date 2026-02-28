@@ -11,10 +11,7 @@ interface TopSeriesSlideProps {
   maxItems?: number;
 }
 
-export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({
-  topSeries,
-  maxItems = 5,
-}) => {
+export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxItems = 5 }) => {
   const displaySeries = topSeries.slice(0, maxItems);
 
   if (displaySeries.length === 0) {
@@ -42,9 +39,16 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({
               margin: '0 auto 20px',
             }}
           >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <rect x="2" y="3" width="20" height="14" rx="2"/>
-              <path d="M8 21h8M12 17v4" strokeLinecap="round"/>
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <path d="M8 21h8M12 17v4" strokeLinecap="round" />
             </svg>
           </div>
           <h2 style={{ fontSize: '1.5rem' }}>Keine Serien dieses Jahr</h2>
@@ -141,9 +145,16 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({
               boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
             }}
           >
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5">
-              <rect x="2" y="3" width="20" height="14" rx="2"/>
-              <path d="M8 21h8M12 17v4" strokeLinecap="round"/>
+            <svg
+              width="60"
+              height="60"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="rgba(255,255,255,0.5)"
+              strokeWidth="1.5"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <path d="M8 21h8M12 17v4" strokeLinecap="round" />
             </svg>
           </div>
         )}
@@ -178,21 +189,16 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({
             <p style={{ color: 'white', fontSize: '1.4rem', fontWeight: 'bold' }}>
               {topOne?.episodesWatched}
             </p>
-            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>
-              Episoden
-            </p>
+            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>Episoden</p>
           </div>
           <div style={{ width: '1px', background: 'rgba(255,255,255,0.3)' }} />
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: 'white', fontSize: '1.4rem', fontWeight: 'bold' }}>
               {topOne?.minutesWatched >= 60
                 ? `${Math.floor(topOne.minutesWatched / 60)}h`
-                : `${topOne?.minutesWatched}m`
-              }
+                : `${topOne?.minutesWatched}m`}
             </p>
-            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>
-              geschaut
-            </p>
+            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>geschaut</p>
           </div>
         </motion.div>
       </motion.div>
@@ -251,9 +257,16 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({
                     justifyContent: 'center',
                   }}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5">
-                    <rect x="2" y="3" width="20" height="14" rx="2"/>
-                    <path d="M8 21h8M12 17v4" strokeLinecap="round"/>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.3)"
+                    strokeWidth="1.5"
+                  >
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <path d="M8 21h8M12 17v4" strokeLinecap="round" />
                   </svg>
                 </div>
               )}
@@ -299,10 +312,10 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({
                 opacity: 0.5,
               }}
             >
-              {series.episodesWatched} Ep. · {series.minutesWatched >= 60
+              {series.episodesWatched} Ep. ·{' '}
+              {series.minutesWatched >= 60
                 ? `${Math.floor(series.minutesWatched / 60)}h`
-                : `${series.minutesWatched}m`
-              }
+                : `${series.minutesWatched}m`}
             </p>
           </motion.div>
         ))}

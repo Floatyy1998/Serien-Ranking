@@ -23,9 +23,12 @@ class PetService {
     // Neues Format: data hat petId-Keys als Kinder
     if (data.name && data.type && data.id) {
       const petId = data.id;
-      await firebase.database().ref(`pets/${userId}`).set({
-        [petId]: data
-      });
+      await firebase
+        .database()
+        .ref(`pets/${userId}`)
+        .set({
+          [petId]: data,
+        });
       await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
     }
 
@@ -60,7 +63,7 @@ class PetService {
       pets.push({
         ...petData,
         lastFed: new Date(petData.lastFed),
-        createdAt: new Date(petData.createdAt)
+        createdAt: new Date(petData.createdAt),
       });
     }
 
@@ -91,7 +94,7 @@ class PetService {
     return {
       ...petData,
       lastFed: new Date(petData.lastFed),
-      createdAt: new Date(petData.createdAt)
+      createdAt: new Date(petData.createdAt),
     };
   }
 
@@ -109,7 +112,7 @@ class PetService {
   async canCreateSecondPet(userId: string): Promise<boolean> {
     const pets = await this.getUserPets(userId);
     if (pets.length === 0 || pets.length >= PET_CONFIG.MAX_PETS) return false;
-    return pets.some(p => p.level >= PET_CONFIG.SECOND_PET_LEVEL_REQUIREMENT);
+    return pets.some((p) => p.level >= PET_CONFIG.SECOND_PET_LEVEL_REQUIREMENT);
   }
 
   // Erstelle ein neues Pet für den User
@@ -152,13 +155,13 @@ class PetService {
           name: 'Halsband',
           icon: '📿',
           equipped: true,
-          color: '#8B4513'
-        }
+          color: '#8B4513',
+        },
       ],
       unlockedColors: [],
       unlockedPatterns: [],
       totalSeriesWatched: 0,
-      achievementPoints: 0
+      achievementPoints: 0,
     };
 
     await this.migrateIfNeeded(userId);
@@ -181,7 +184,7 @@ class PetService {
     await firebase.database().ref(`pets/${userId}/${petId}`).update({
       hunger: pet.hunger,
       happiness: pet.happiness,
-      lastFed: pet.lastFed.toISOString()
+      lastFed: pet.lastFed.toISOString(),
     });
 
     return pet;
@@ -199,7 +202,7 @@ class PetService {
 
     await firebase.database().ref(`pets/${userId}/${petId}`).update({
       happiness: pet.happiness,
-      hunger: pet.hunger
+      hunger: pet.hunger,
     });
 
     return pet;
@@ -234,7 +237,7 @@ class PetService {
     const updateData: Record<string, number> = {
       episodesWatched: pet.episodesWatched,
       experience: pet.experience,
-      level: pet.level
+      level: pet.level,
     };
 
     if (hasLeveledUp) {
@@ -308,13 +311,13 @@ class PetService {
         deathCause: deathCause,
         hunger: pet.hunger,
         happiness: pet.happiness,
-        lastUpdated: now.toISOString()
+        lastUpdated: now.toISOString(),
       });
     } else {
       await firebase.database().ref(`pets/${userId}/${petId}`).update({
         hunger: pet.hunger,
         happiness: pet.happiness,
-        lastUpdated: now.toISOString()
+        lastUpdated: now.toISOString(),
       });
     }
 
@@ -357,7 +360,7 @@ class PetService {
       lastFed: pet.lastFed.toISOString(),
       reviveCount: pet.reviveCount,
       level: pet.level,
-      experience: pet.experience
+      experience: pet.experience,
     };
 
     await firebase.database().ref(`pets/${userId}/${petId}`).update(updates);
@@ -373,7 +376,11 @@ class PetService {
   }
 
   // Schaue Serie mit Genre-Boost (einzelnes Pet)
-  async watchedSeriesWithGenre(userId: string, petId: string, genres: string[]): Promise<Pet | null> {
+  async watchedSeriesWithGenre(
+    userId: string,
+    petId: string,
+    genres: string[]
+  ): Promise<Pet | null> {
     const pet = await this.getUserPet(userId, petId);
     if (!pet || !pet.isAlive) return pet;
 
@@ -384,27 +391,29 @@ class PetService {
       const genreAliases: Record<string, string[]> = {
         'action & adventure': ['action & abenteuer', 'action', 'abenteuer', 'adventure'],
         'action & abenteuer': ['action & adventure', 'action', 'abenteuer', 'adventure'],
-        'comedy': ['komödie'],
-        'komödie': ['comedy'],
-        'crime': ['krimi'],
-        'krimi': ['crime'],
+        comedy: ['komödie'],
+        komödie: ['comedy'],
+        crime: ['krimi'],
+        krimi: ['crime'],
         'sci-fi & fantasy': ['science fiction', 'fantasy', 'sci-fi'],
-        'documentary': ['dokumentarfilm', 'dokumentation', 'doku'],
-        'dokumentarfilm': ['documentary', 'dokumentation'],
-        'mystery': ['geheimnis'],
-        'family': ['familie'],
-        'familie': ['family'],
+        documentary: ['dokumentarfilm', 'dokumentation', 'doku'],
+        dokumentarfilm: ['documentary', 'dokumentation'],
+        mystery: ['geheimnis'],
+        family: ['familie'],
+        familie: ['family'],
       };
 
       const favLower = pet.favoriteGenre.toLowerCase();
       const favAliases = genreAliases[favLower] || [];
 
-      genreMatched = genres.some(g => {
+      genreMatched = genres.some((g) => {
         const gLower = g.toLowerCase();
-        return favLower === gLower ||
+        return (
+          favLower === gLower ||
           gLower.includes(favLower) ||
           favLower.includes(gLower) ||
-          favAliases.some(alias => gLower.includes(alias) || alias.includes(gLower));
+          favAliases.some((alias) => gLower.includes(alias) || alias.includes(gLower))
+        );
       });
     }
 
@@ -414,8 +423,9 @@ class PetService {
     }
 
     // Healthy pet XP bonus
-    const isHealthy = pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD
-      && pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD;
+    const isHealthy =
+      pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD &&
+      pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD;
     if (isHealthy) {
       xpGain = Math.floor(xpGain * PET_CONFIG.HEALTHY_XP_MULTIPLIER);
     }
@@ -448,7 +458,7 @@ class PetService {
       episodesWatched: pet.episodesWatched,
       experience: pet.experience,
       level: pet.level,
-      totalSeriesWatched: pet.totalSeriesWatched
+      totalSeriesWatched: pet.totalSeriesWatched,
     };
 
     if (hasLeveledUp || genreMatched) {
@@ -482,7 +492,7 @@ class PetService {
       pet.accessories = [];
     }
 
-    const existingAccessory = pet.accessories.find(a => a.id === accessoryId);
+    const existingAccessory = pet.accessories.find((a) => a.id === accessoryId);
 
     if (existingAccessory) {
       existingAccessory.equipped = !existingAccessory.equipped;
@@ -492,7 +502,7 @@ class PetService {
         const newAccessory: PetAccessory = {
           id: accessoryId,
           ...accessoryData,
-          equipped: true
+          equipped: true,
         };
         pet.accessories.push(newAccessory);
       }
@@ -513,9 +523,12 @@ class PetService {
         type: 'crown' as const,
         name: 'Krone',
         icon: '👑',
-        equipped: false
+        equipped: false,
       });
-      await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
+      await firebase
+        .database()
+        .ref(`pets/${pet.userId}/${pet.id}/accessories`)
+        .set(pet.accessories);
     }
 
     if (month === PET_CONFIG.SANTA_HAT_MONTH && !this.hasAccessory(pet, 'santaHat')) {
@@ -525,21 +538,30 @@ class PetService {
         type: 'hat' as const,
         name: 'Weihnachtsmütze',
         icon: '🎅',
-        equipped: false
+        equipped: false,
       });
-      await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
+      await firebase
+        .database()
+        .ref(`pets/${pet.userId}/${pet.id}/accessories`)
+        .set(pet.accessories);
     }
 
-    if ((PET_CONFIG.SUNGLASSES_MONTHS as readonly number[]).includes(month) && !this.hasAccessory(pet, 'sunglasses')) {
+    if (
+      (PET_CONFIG.SUNGLASSES_MONTHS as readonly number[]).includes(month) &&
+      !this.hasAccessory(pet, 'sunglasses')
+    ) {
       if (!pet.accessories) pet.accessories = [];
       pet.accessories.push({
         id: 'sunglasses',
         type: 'glasses' as const,
         name: 'Sonnenbrille',
         icon: '🕶️',
-        equipped: false
+        equipped: false,
       });
-      await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
+      await firebase
+        .database()
+        .ref(`pets/${pet.userId}/${pet.id}/accessories`)
+        .set(pet.accessories);
     }
   }
 
@@ -547,22 +569,34 @@ class PetService {
   private async checkAchievements(pet: Pet): Promise<void> {
     const updates: Record<string, string[] | undefined> = {};
 
-    if (pet.totalSeriesWatched! >= PET_CONFIG.SILVER_COLOR_SERIES_THRESHOLD && !pet.unlockedColors?.includes('silver')) {
+    if (
+      pet.totalSeriesWatched! >= PET_CONFIG.SILVER_COLOR_SERIES_THRESHOLD &&
+      !pet.unlockedColors?.includes('silver')
+    ) {
       pet.unlockedColors = [...(pet.unlockedColors || []), 'silver'];
       updates.unlockedColors = pet.unlockedColors;
     }
 
-    if (pet.totalSeriesWatched! >= PET_CONFIG.GOLD_COLOR_SERIES_THRESHOLD && !pet.unlockedColors?.includes('gold')) {
+    if (
+      pet.totalSeriesWatched! >= PET_CONFIG.GOLD_COLOR_SERIES_THRESHOLD &&
+      !pet.unlockedColors?.includes('gold')
+    ) {
       pet.unlockedColors = [...(pet.unlockedColors || []), 'gold'];
       updates.unlockedColors = pet.unlockedColors;
     }
 
-    if (pet.totalSeriesWatched! >= PET_CONFIG.RAINBOW_COLOR_SERIES_THRESHOLD && !pet.unlockedColors?.includes('rainbow')) {
+    if (
+      pet.totalSeriesWatched! >= PET_CONFIG.RAINBOW_COLOR_SERIES_THRESHOLD &&
+      !pet.unlockedColors?.includes('rainbow')
+    ) {
       pet.unlockedColors = [...(pet.unlockedColors || []), 'rainbow'];
       updates.unlockedColors = pet.unlockedColors;
     }
 
-    if (pet.episodesWatched >= PET_CONFIG.GALAXY_PATTERN_EPISODES_THRESHOLD && !pet.unlockedPatterns?.includes('galaxy')) {
+    if (
+      pet.episodesWatched >= PET_CONFIG.GALAXY_PATTERN_EPISODES_THRESHOLD &&
+      !pet.unlockedPatterns?.includes('galaxy')
+    ) {
       pet.unlockedPatterns = [...(pet.unlockedPatterns || []), 'galaxy'];
       updates.unlockedPatterns = pet.unlockedPatterns;
     }
@@ -573,7 +607,7 @@ class PetService {
   }
 
   private hasAccessory(pet: Pet, accessoryId: string): boolean {
-    return pet.accessories?.some(a => a.id === accessoryId) || false;
+    return pet.accessories?.some((a) => a.id === accessoryId) || false;
   }
 
   // Ändere Pet-Farbe
@@ -607,7 +641,17 @@ class PetService {
   }
 
   // Pet Widget Position Management
-  async getPetWidgetPosition(userId: string): Promise<{ edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'; offsetX: number; offsetY: number } | { xPercent: number; yPercent: number } | null> {
+  async getPetWidgetPosition(
+    userId: string
+  ): Promise<
+    | {
+        edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+        offsetX: number;
+        offsetY: number;
+      }
+    | { xPercent: number; yPercent: number }
+    | null
+  > {
     try {
       const snapshot = await firebase.database().ref(`petWidget/${userId}/position`).once('value');
       return snapshot.val();
@@ -618,7 +662,10 @@ class PetService {
   }
 
   // Streak Shield: Pet opfert XP um die Watch Streak zu retten
-  async activateStreakShield(userId: string, petId: string): Promise<{
+  async activateStreakShield(
+    userId: string,
+    petId: string
+  ): Promise<{
     success: boolean;
     error?: string;
     newLevel?: number;
@@ -630,9 +677,12 @@ class PetService {
       if (!pet.isAlive) return { success: false, error: 'Dein Pet lebt nicht' };
 
       // Check if pet can afford it (including level-down)
-      const totalXP = ((pet.level - 1) * PET_CONFIG.XP_PER_LEVEL) + pet.experience;
+      const totalXP = (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL + pet.experience;
       if (totalXP < PET_CONFIG.STREAK_SHIELD_XP_COST) {
-        return { success: false, error: `Nicht genug XP (${pet.experience} XP, Level ${pet.level})` };
+        return {
+          success: false,
+          error: `Nicht genug XP (${pet.experience} XP, Level ${pet.level})`,
+        };
       }
 
       // Deduct XP with level-down support
@@ -680,7 +730,14 @@ class PetService {
     }
   }
 
-  async savePetWidgetPosition(userId: string, position: { edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'; offsetX: number; offsetY: number }): Promise<void> {
+  async savePetWidgetPosition(
+    userId: string,
+    position: {
+      edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+      offsetX: number;
+      offsetY: number;
+    }
+  ): Promise<void> {
     try {
       await firebase.database().ref(`petWidget/${userId}/position`).set(position);
     } catch (error) {

@@ -90,7 +90,7 @@ function checkBulkMarkingAndGetTimestamp(): { isBulkMarking: boolean; distribute
 
   // Reset tracker wenn letzter Eintrag zu lange her
   if (bulkMarkTracker.timestamps.length > 0) {
-    const oldestInWindow = bulkMarkTracker.timestamps.filter(t => now - t < BULK_MARK_WINDOW_MS);
+    const oldestInWindow = bulkMarkTracker.timestamps.filter((t) => now - t < BULK_MARK_WINDOW_MS);
     bulkMarkTracker.timestamps = oldestInWindow;
   }
 
@@ -210,7 +210,10 @@ async function saveEvent(userId: string, event: ActivityEvent): Promise<boolean>
 // BINGE SESSION TRACKING
 // ============================================================================
 
-async function getActiveBingeSession(userId: string, seriesId: number): Promise<BingeSession | null> {
+async function getActiveBingeSession(
+  userId: string,
+  seriesId: number
+): Promise<BingeSession | null> {
   try {
     const year = new Date().getFullYear();
     const snapshot = await firebase
@@ -266,24 +269,18 @@ async function updateBingeSession(
         });
         activeSession.totalMinutes += episodeRuntime;
 
-        await firebase
-          .database()
-          .ref(`${bingeSessionsPath}/${activeSession.id}`)
-          .update({
-            episodes: activeSession.episodes,
-            totalMinutes: activeSession.totalMinutes,
-          });
+        await firebase.database().ref(`${bingeSessionsPath}/${activeSession.id}`).update({
+          episodes: activeSession.episodes,
+          totalMinutes: activeSession.totalMinutes,
+        });
 
         return activeSession.id;
       } else {
         // End session
-        await firebase
-          .database()
-          .ref(`${bingeSessionsPath}/${activeSession.id}`)
-          .update({
-            isActive: false,
-            endedAt: lastEpisode.watchedAt,
-          });
+        await firebase.database().ref(`${bingeSessionsPath}/${activeSession.id}`).update({
+          isActive: false,
+          endedAt: lastEpisode.watchedAt,
+        });
       }
     }
 
@@ -294,19 +291,18 @@ async function updateBingeSession(
       startedAt: now.toISOString(),
       seriesId,
       seriesTitle,
-      episodes: [{
-        seasonNumber,
-        episodeNumber,
-        watchedAt: now.toISOString(),
-      }],
+      episodes: [
+        {
+          seasonNumber,
+          episodeNumber,
+          watchedAt: now.toISOString(),
+        },
+      ],
       totalMinutes: episodeRuntime,
       isActive: true,
     };
 
-    await firebase
-      .database()
-      .ref(`${bingeSessionsPath}/${newSessionId}`)
-      .set(newSession);
+    await firebase.database().ref(`${bingeSessionsPath}/${newSessionId}`).set(newSession);
 
     return newSessionId;
   } catch (error) {
@@ -397,7 +393,12 @@ export async function logEpisodeWatch(
 
   if (!isBulkMarking) {
     bingeSessionId = await updateBingeSession(
-      userId, seriesId, seriesTitle, seasonNumber, episodeNumber, runtime
+      userId,
+      seriesId,
+      seriesTitle,
+      seasonNumber,
+      episodeNumber,
+      runtime
     );
 
     const activeSession = await getActiveBingeSession(userId, seriesId);
@@ -494,7 +495,11 @@ export async function logMovieWatch(
   }
 }
 
-async function findExistingMovieEvent(userId: string, movieId: number, year: number): Promise<string | null> {
+async function findExistingMovieEvent(
+  userId: string,
+  movieId: number,
+  year: number
+): Promise<string | null> {
   try {
     const snapshot = await firebase
       .database()
@@ -524,10 +529,7 @@ async function findExistingMovieEvent(userId: string, movieId: number, year: num
 
 export async function getWatchStreak(userId: string, year: number): Promise<WatchStreak | null> {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(getStreakPath(userId, year))
-      .once('value');
+    const snapshot = await firebase.database().ref(getStreakPath(userId, year)).once('value');
     return snapshot.val();
   } catch (error) {
     console.error('[Wrapped] Error getting streak:', error);
@@ -538,10 +540,7 @@ export async function getWatchStreak(userId: string, year: number): Promise<Watc
 export async function getYearlyActivity(userId: string, year: number): Promise<ActivityEvent[]> {
   const eventsPath = getEventsPath(userId, year);
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(eventsPath)
-      .once('value');
+    const snapshot = await firebase.database().ref(eventsPath).once('value');
 
     const data = snapshot.val();
 
@@ -561,7 +560,10 @@ export async function getEventsForYear(userId: string, year: number): Promise<Ac
   return getYearlyActivity(userId, year);
 }
 
-export async function getBingeSessionsForYear(userId: string, year: number): Promise<BingeSession[]> {
+export async function getBingeSessionsForYear(
+  userId: string,
+  year: number
+): Promise<BingeSession[]> {
   try {
     const snapshot = await firebase
       .database()

@@ -39,10 +39,7 @@ const addNotifiedIds = (ids: string[]) => {
   sessionStorage.setItem(NOTIFIED_KEY, JSON.stringify([...notified]));
 };
 
-export const detectNewSeasons = async (
-  seriesList: Series[],
-  userId: string
-): Promise<Series[]> => {
+export const detectNewSeasons = async (seriesList: Series[], userId: string): Promise<Series[]> => {
   const storedCounts = await getStoredSeasonCounts(userId);
   const notifiedIds = getNotifiedIds();
   const seriesWithNewSeasons: Series[] = [];

@@ -15,14 +15,20 @@ const getStatusColor = (pet: Pet): string => {
   if (!pet.isAlive) return '#6b7280';
   if (pet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER) return '#ef4444';
   if (pet.hunger >= PET_CONFIG.STATUS_WARNING_HUNGER) return '#f97316';
-  if (pet.hunger >= PET_CONFIG.STATUS_GOOD_HUNGER || pet.happiness <= PET_CONFIG.STATUS_GOOD_HAPPINESS) return '#eab308';
+  if (
+    pet.hunger >= PET_CONFIG.STATUS_GOOD_HUNGER ||
+    pet.happiness <= PET_CONFIG.STATUS_GOOD_HAPPINESS
+  )
+    return '#eab308';
   return '#22c55e';
 };
 
 const isPetHealthy = (pet: Pet): boolean => {
-  return pet.isAlive
-    && pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD
-    && pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD;
+  return (
+    pet.isAlive &&
+    pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD &&
+    pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD
+  );
 };
 
 export const PetWidget: React.FC = () => {
@@ -40,13 +46,13 @@ export const PetWidget: React.FC = () => {
     left: 0,
     right: window.innerWidth - 70,
     top: 0,
-    bottom: window.innerHeight - 70
+    bottom: window.innerHeight - 70,
   });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [edgePosition, setEdgePosition] = useState({
     edge: 'bottom-right' as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
     offsetX: 2,
-    offsetY: 2
+    offsetY: 2,
   });
   const [showHungerToast, setShowHungerToast] = useState(false);
   const [hungerToastLevel, setHungerToastLevel] = useState<'warning' | 'critical'>('warning');
@@ -63,7 +69,8 @@ export const PetWidget: React.FC = () => {
     const basePadding = 16; // 8px top + 8px bottom
     const iconContainerHeight = 32;
     const labelHeight = 14; // Approximate label height
-    const safeAreaBottom = window.innerHeight - (window.visualViewport?.height || window.innerHeight);
+    const safeAreaBottom =
+      window.innerHeight - (window.visualViewport?.height || window.innerHeight);
     return basePadding + iconContainerHeight + labelHeight + safeAreaBottom;
   };
 
@@ -105,7 +112,7 @@ export const PetWidget: React.FC = () => {
     return {
       edge,
       offsetX: 2,
-      offsetY: 2
+      offsetY: 2,
     };
   };
 
@@ -203,7 +210,9 @@ export const PetWidget: React.FC = () => {
       const cooldown = 30 * 60 * 1000; // 30 Minuten
       if (lastToast && Date.now() - Number(lastToast) < cooldown) return;
 
-      setHungerToastLevel(updatedPet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER ? 'critical' : 'warning');
+      setHungerToastLevel(
+        updatedPet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER ? 'critical' : 'warning'
+      );
       setShowHungerToast(true);
       localStorage.setItem('petHungerToastLast', String(Date.now()));
     };
@@ -246,7 +255,7 @@ export const PetWidget: React.FC = () => {
         left: 0,
         right: screenWidth - widgetSize,
         top: 0,
-        bottom: screenHeight - navbarHeight - widgetSize
+        bottom: screenHeight - navbarHeight - widgetSize,
       });
 
       // Recalculate position based on stored edge position
@@ -415,17 +424,23 @@ export const PetWidget: React.FC = () => {
               scale: 1,
               x: position.x,
               y: position.y,
-              ...(isCritical ? {
-                boxShadow: [
-                  `0 0 8px ${statusColor}60`,
-                  `0 0 16px ${statusColor}90`,
-                  `0 0 8px ${statusColor}60`,
-                ],
-              } : {}),
+              ...(isCritical
+                ? {
+                    boxShadow: [
+                      `0 0 8px ${statusColor}60`,
+                      `0 0 16px ${statusColor}90`,
+                      `0 0 8px ${statusColor}60`,
+                    ],
+                  }
+                : {}),
             }}
-            transition={isCritical ? {
-              boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
-            } : undefined}
+            transition={
+              isCritical
+                ? {
+                    boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+                  }
+                : undefined
+            }
             exit={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.05 }}
             whileDrag={{ scale: 1.1, zIndex: 1000 }}
@@ -439,7 +454,7 @@ export const PetWidget: React.FC = () => {
 
               const newPosition = {
                 x: position.x + info.offset.x,
-                y: position.y + info.offset.y
+                y: position.y + info.offset.y,
               };
               savePosition(newPosition);
             }}
@@ -461,11 +476,7 @@ export const PetWidget: React.FC = () => {
               }}
             >
               {/* Animiertes Pet */}
-              <EvolvingPixelPet
-                pet={pet}
-                size={70}
-                animated={pet.isAlive}
-              />
+              <EvolvingPixelPet pet={pet} size={70} animated={pet.isAlive} />
 
               {/* Mini Hunger-Bar unter dem Pet */}
               {pet.isAlive && (

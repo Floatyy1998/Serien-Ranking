@@ -43,7 +43,6 @@ const breathe = keyframes`
   }
 `;
 
-
 // Fade out animation
 const fadeOut = keyframes`
   from {
@@ -129,8 +128,15 @@ const SplashContainer = styled(Box, {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #0f0f0f 50%, #1a1a1a 75%, #0a0a0a 100%);
-  animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)} 
+  background: linear-gradient(
+    135deg,
+    #0a0a0a 0%,
+    #1a1a1a 25%,
+    #0f0f0f 50%,
+    #1a1a1a 75%,
+    #0a0a0a 100%
+  );
+  animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)}
     ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards;
   overflow: hidden;
 `;
@@ -142,7 +148,7 @@ const BackgroundMesh = styled(Box)`
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
+  background:
     radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
     radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
     radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
@@ -174,7 +180,7 @@ const LogoContainer = styled(Box)`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   @media (max-width: 768px) {
     width: 160px;
     height: 160px;
@@ -186,7 +192,12 @@ const LogoGlow = styled(Box)`
   position: absolute;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.1) 40%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(168, 85, 247, 0.3) 0%,
+    rgba(236, 72, 153, 0.1) 40%,
+    transparent 70%
+  );
   filter: blur(20px);
   animation: ${glowPulse} 3s ease-in-out infinite;
 `;
@@ -197,11 +208,12 @@ const LogoSVG = styled('svg')`
   height: 80%;
   position: relative;
   z-index: 1;
-  animation: ${logoEntrance} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-             ${breathe} 3s ease-in-out infinite;
+  animation:
+    ${logoEntrance} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    ${breathe} 3s ease-in-out infinite;
   animation-delay: 0s, 1.2s;
   filter: drop-shadow(0 10px 40px rgba(168, 85, 247, 0.4));
-  
+
   path {
     fill: url(#goldGradient);
   }
@@ -245,7 +257,7 @@ const Subtitle = styled('p')`
   font-weight: 300;
   animation: ${fadeIn} 1s ease-out 0.6s backwards;
   position: relative;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -273,7 +285,7 @@ const ProgressWrapper = styled(Box)`
   backdrop-filter: blur(10px);
   border: 1px solid rgba(168, 85, 247, 0.15);
   animation: ${fadeIn} 1s ease-out 0.8s backwards;
-  
+
   @media (max-width: 768px) {
     width: 280px;
   }
@@ -296,17 +308,12 @@ const ProgressBar = styled(Box, {
   left: 0;
   height: 100%;
   width: 100%;
-  background: linear-gradient(
-    90deg,
-    #a855f7 0%,
-    #ec4899 50%,
-    #a855f7 100%
-  );
+  background: linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #a855f7 100%);
   transform: scaleX(${(props) => props.progress});
   transform-origin: left;
   transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -314,12 +321,7 @@ const ProgressBar = styled(Box, {
     left: 0;
     bottom: 0;
     width: 50px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     animation: ${progressShine} 2s linear infinite;
   }
 `;
@@ -359,14 +361,15 @@ const CornerAccent = styled(Box, {
   position: absolute;
   width: 60px;
   height: 60px;
-  
-  &::before, &::after {
+
+  &::before,
+  &::after {
     content: '';
     position: absolute;
     background: linear-gradient(135deg, #a855f7, transparent);
     opacity: 0.3;
   }
-  
+
   ${(props) => {
     switch (props.cornerPos) {
       case 'top-left':
@@ -439,7 +442,7 @@ const CornerAccent = styled(Box, {
         `;
     }
   }}
-  
+
   animation: ${fadeIn} 1s ease-out 1s backwards;
 `;
 
@@ -526,22 +529,18 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
   return (
     <SplashContainer isHiding={isHiding}>
       <BackgroundMesh />
-      
+
       {/* Floating particles */}
       {[...Array(5)].map((_, i) => (
-        <Particle 
-          key={i}
-          delay={i * 3}
-          left={`${20 + (i * 15)}%`}
-        />
+        <Particle key={i} delay={i * 3} left={`${20 + i * 15}%`} />
       ))}
-      
+
       {/* Corner accents */}
       <CornerAccent cornerPos="top-left" />
       <CornerAccent cornerPos="top-right" />
       <CornerAccent cornerPos="bottom-left" />
       <CornerAccent cornerPos="bottom-right" />
-      
+
       {/* Logo with glow */}
       <LogoContainer>
         <LogoGlow />
@@ -561,7 +560,7 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
       {/* Title and subtitle */}
       <Title>TV-RANK</Title>
       <Subtitle>Serien & Filme im Blick</Subtitle>
-      
+
       {/* Progress section with glass effect */}
       <ProgressWrapper>
         <ProgressContainer>

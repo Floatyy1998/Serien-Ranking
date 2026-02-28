@@ -17,15 +17,10 @@ export const writeDiscussionFeedEntry = async (
   }
 };
 
-export const deleteDiscussionFeedEntries = async (
-  discussionId: string
-): Promise<void> => {
+export const deleteDiscussionFeedEntries = async (discussionId: string): Promise<void> => {
   try {
     const ref = firebase.database().ref(FEED_PATH);
-    const snapshot = await ref
-      .orderByChild('discussionId')
-      .equalTo(discussionId)
-      .once('value');
+    const snapshot = await ref.orderByChild('discussionId').equalTo(discussionId).once('value');
     if (snapshot.exists()) {
       const updates: Record<string, null> = {};
       snapshot.forEach((child) => {

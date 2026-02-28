@@ -69,7 +69,8 @@ export const HiddenSeriesCard: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          {hiddenSeriesList.length} {hiddenSeriesList.length === 1 ? 'Serie' : 'Serien'} ausgeblendet
+          {hiddenSeriesList.length} {hiddenSeriesList.length === 1 ? 'Serie' : 'Serien'}{' '}
+          ausgeblendet
         </p>
       </div>
 

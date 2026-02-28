@@ -19,9 +19,10 @@ export const useDiscussionCount = (
 ): number => {
   const [count, setCount] = useState(0);
 
-  const path = itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
-    ? `discussions/episode/${itemId}_s${seasonNumber}_e${episodeNumber}`
-    : `discussions/${itemType}/${itemId}`;
+  const path =
+    itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
+      ? `discussions/episode/${itemId}_s${seasonNumber}_e${episodeNumber}`
+      : `discussions/${itemType}/${itemId}`;
 
   useEffect(() => {
     if (!itemId) return;
@@ -70,7 +71,7 @@ export const useEpisodeDiscussionCounts = (
       const handleValue = (snapshot: firebase.database.DataSnapshot) => {
         const data = snapshot.val();
         const count = data ? Object.keys(data).length : 0;
-        setCounts(prev => ({ ...prev, [ep]: count }));
+        setCounts((prev) => ({ ...prev, [ep]: count }));
       };
 
       ref.on('value', handleValue);
@@ -78,7 +79,7 @@ export const useEpisodeDiscussionCounts = (
     }
 
     return () => {
-      unsubscribes.forEach(unsub => unsub());
+      unsubscribes.forEach((unsub) => unsub());
     };
   }, [seriesId, seasonNumber, episodeCount]);
 
@@ -118,7 +119,9 @@ export const useTotalSeriesDiscussionCount = (seriesId: number): number => {
       if (data) {
         Object.entries(data).forEach(([key, discussions]: [string, unknown]) => {
           if (key.startsWith(`${seriesId}_s`)) {
-            episodeCounts[key] = discussions ? Object.keys(discussions as Record<string, unknown>).length : 0;
+            episodeCounts[key] = discussions
+              ? Object.keys(discussions as Record<string, unknown>).length
+              : 0;
           }
         });
       }
