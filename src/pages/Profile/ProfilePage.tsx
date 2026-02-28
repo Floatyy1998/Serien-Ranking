@@ -3,39 +3,39 @@
  * Modern profile view with stats and navigation
  */
 
-import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import {
+  CalendarToday,
+  ChevronRight,
+  EmojiEvents,
+  Group,
+  History,
+  Leaderboard,
+  Logout,
+  Movie,
+  Palette,
+  Person,
+  Pets,
+  PlayCircle,
+  Search,
+  Settings,
+  Star,
+  TrendingUp,
+  ViewQuilt,
+} from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { motion } from 'framer-motion';
-import {
-  Person,
-  Settings,
-  Logout,
-  Star,
-  PlayCircle,
-  CalendarToday,
-  Movie,
-  TrendingUp,
-  EmojiEvents,
-  ChevronRight,
-  Palette,
-  Search,
-  Group,
-  Pets,
-  History,
-  Leaderboard,
-  ViewQuilt,
-} from '@mui/icons-material';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
-import { useTheme } from '../../contexts/ThemeContext';
-import { calculateOverallRating } from '../../lib/rating/rating';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useBadges } from '../../features/badges/BadgeProvider';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../App';
 import { GradientText } from '../../components/ui';
+import { useMovieList } from '../../contexts/MovieListProvider';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useBadges } from '../../features/badges/BadgeProvider';
+import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
+import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 
 interface UserProfileData {
@@ -184,7 +184,12 @@ export const ProfilePage = () => {
   const secondaryMenuItems = [
     { label: 'Rangliste', icon: Leaderboard, color: '#f59e0b', path: '/leaderboard' },
     { label: 'Statistiken', icon: TrendingUp, color: currentTheme.primary, path: '/stats' },
-    { label: 'Verlauf', icon: History, color: currentTheme.status.success, path: '/recently-watched' },
+    {
+      label: 'Verlauf',
+      icon: History,
+      color: currentTheme.status.success,
+      path: '/recently-watched',
+    },
     {
       label: 'Erfolge',
       icon: EmojiEvents,
@@ -197,8 +202,13 @@ export const ProfilePage = () => {
 
   const settingsItems = [
     { label: 'Design', icon: Palette, color: currentTheme.primary, path: '/theme' },
-    { label: 'Layout', icon: ViewQuilt, color: '#a855f7', path: '/home-layout' },
-    { label: 'Einstellungen', icon: Settings, color: currentTheme.text.secondary, path: '/settings' },
+    { label: 'Homepage Layout', icon: ViewQuilt, color: '#a855f7', path: '/home-layout' },
+    {
+      label: 'Einstellungen',
+      icon: Settings,
+      color: currentTheme.text.secondary,
+      path: '/settings',
+    },
   ];
 
   return (
@@ -308,16 +318,17 @@ export const ProfilePage = () => {
         </motion.div>
 
         {/* Name & Email */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <GradientText as="h1" from={currentTheme.text.primary} to={currentTheme.primary} style={{
-            fontSize: '26px',
-            fontWeight: 800,
-            margin: '0 0 6px 0',
-          }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          <GradientText
+            as="h1"
+            from={currentTheme.text.primary}
+            to={currentTheme.primary}
+            style={{
+              fontSize: '26px',
+              fontWeight: 800,
+              margin: '0 0 6px 0',
+            }}
+          >
             {userData?.displayName || user?.displayName || 'User'}
           </GradientText>
         </motion.div>
@@ -352,7 +363,10 @@ export const ProfilePage = () => {
       >
         {/* Time Hero */}
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <GradientText as="p" to={currentTheme.status.warning} style={{
+          <GradientText
+            as="p"
+            to={currentTheme.status.warning}
+            style={{
               fontSize: '32px',
               fontWeight: 800,
               marginBottom: '4px',
@@ -360,9 +374,7 @@ export const ProfilePage = () => {
           >
             {stats.timeString}
           </GradientText>
-          <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>
-            Gesamte Watchtime
-          </div>
+          <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>Gesamte Watchtime</div>
         </div>
 
         {/* Stats Grid */}
