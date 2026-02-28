@@ -26,6 +26,7 @@ import {
   Pets,
   History,
   Leaderboard,
+  ViewQuilt,
 } from '@mui/icons-material';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -196,6 +197,7 @@ export const ProfilePage = () => {
 
   const settingsItems = [
     { label: 'Design', icon: Palette, color: currentTheme.primary, path: '/theme' },
+    { label: 'Layout', icon: ViewQuilt, color: '#a855f7', path: '/home-layout' },
     { label: 'Einstellungen', icon: Settings, color: currentTheme.text.secondary, path: '/settings' },
   ];
 

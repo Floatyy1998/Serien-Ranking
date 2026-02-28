@@ -144,21 +144,89 @@ export const HomePage: React.FC = () => {
   }>({ open: false, seriesId: 0, title: '', episodePath: '' });
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Homepage section configuration
+  const DEFAULT_SECTION_ORDER = ['countdown', 'continue-watching', 'rewatches', 'today-episodes', 'trending', 'top-rated', 'for-you', 'stats'];
+  const DEFAULT_FOR_YOU_ORDER = ['watch-streak', 'taste-match', 'watch-journey', 'catch-up', 'hidden-series'];
+  const [sectionOrder, setSectionOrder] = useState<string[]>(DEFAULT_SECTION_ORDER);
+  const [hiddenSections, setHiddenSections] = useState<string[]>([]);
+  const [forYouOrder, setForYouOrder] = useState<string[]>(DEFAULT_FOR_YOU_ORDER);
+  const [hiddenForYou, setHiddenForYou] = useState<string[]>([]);
+
+  // Load homeConfig from Firebase
+  useEffect(() => {
+    if (!user) return;
+    const ref = firebase.database().ref(`users/${user.uid}/homeConfig`);
+    ref.once('value').then((snap) => {
+      const data = snap.val();
+      if (data?.sectionOrder) {
+        const validSections = new Set(DEFAULT_SECTION_ORDER);
+        const filtered = (data.sectionOrder as string[]).filter(id => validSections.has(id));
+        for (const id of DEFAULT_SECTION_ORDER) {
+          if (!filtered.includes(id)) filtered.push(id);
+        }
+        setSectionOrder(filtered);
+      }
+      if (data?.hiddenSections) {
+        const validSections = new Set(DEFAULT_SECTION_ORDER);
+        setHiddenSections((data.hiddenSections as string[]).filter(id => validSections.has(id)));
+      }
+      if (data?.forYouOrder) setForYouOrder(data.forYouOrder);
+      if (data?.hiddenForYou) setHiddenForYou(data.hiddenForYou);
+    });
+  }, [user]);
+
+  // Feature announcements
+  const ANNOUNCEMENTS = [
+    {
+      id: 'announcement_homepage-layout-2026-02',
+      title: 'Neues Feature: Homepage Layout',
+      message: 'Du kannst jetzt deine Homepage-Sektionen sortieren und ausblenden! Gehe zu Einstellungen → Homepage Layout um es auszuprobieren.',
+      timestamp: new Date('2026-02-28T12:00:00').getTime(),
+      navigateTo: '/home-layout',
+    },
+  ];
+
+  const [dismissedAnnouncements, setDismissedAnnouncements] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('dismissed_announcements') || '[]');
+    } catch { return []; }
+  });
+
+  const dismissAnnouncement = (id: string) => {
+    const updated = [...dismissedAnnouncements, id];
+    setDismissedAnnouncements(updated);
+    localStorage.setItem('dismissed_announcements', JSON.stringify(updated));
+  };
+
   // Unified notification list from all sources
   const unifiedNotifications = useMemo(() => {
     const items: {
       id: string;
-      kind: 'activity' | 'request' | 'discussion';
+      kind: 'activity' | 'request' | 'discussion' | 'announcement';
       title: string;
       message: string;
       timestamp: number;
       read: boolean;
       navigateTo?: string;
-      icon: 'tv' | 'movie' | 'star' | 'watchlist' | 'person' | 'chat' | 'heart' | 'flag';
+      icon: 'tv' | 'movie' | 'star' | 'watchlist' | 'person' | 'chat' | 'heart' | 'flag' | 'announcement';
       requestId?: string;
       notificationId?: string;
       fromUsername?: string;
     }[] = [];
+
+    // Feature announcements
+    for (const ann of ANNOUNCEMENTS) {
+      items.push({
+        id: ann.id,
+        kind: 'announcement',
+        title: ann.title,
+        message: ann.message,
+        timestamp: ann.timestamp,
+        read: dismissedAnnouncements.includes(ann.id),
+        navigateTo: ann.navigateTo,
+        icon: 'announcement',
+      });
+    }
 
     // Friend activities
     for (const act of friendActivities) {
@@ -228,7 +296,7 @@ export const HomePage: React.FC = () => {
     // Sort by timestamp descending, limit to 30
     items.sort((a, b) => b.timestamp - a.timestamp);
     return items.slice(0, 30);
-  }, [friendActivities, friendRequests, notifications, unreadActivitiesCount, unreadRequestsCount]);
+  }, [friendActivities, friendRequests, notifications, unreadActivitiesCount, unreadRequestsCount, dismissedAnnouncements]);
 
   const formatNotificationTime = (timestamp: number) => {
     const diff = Date.now() - timestamp;
@@ -257,6 +325,7 @@ export const HomePage: React.FC = () => {
       case 'chat': return <ChatBubbleOutline style={{ fontSize: '18px', color: currentTheme.primary }} />;
       case 'heart': return <Favorite style={{ fontSize: '18px', color: '#ff6b6b' }} />;
       case 'flag': return <Flag style={{ fontSize: '18px', color: currentTheme.status.warning }} />;
+      case 'announcement': return <NewReleases style={{ fontSize: '18px', color: '#a855f7' }} />;
       default: return <Notifications style={{ fontSize: '18px', color: currentTheme.text.muted }} />;
     }
   };
@@ -410,6 +479,178 @@ export const HomePage: React.FC = () => {
 
     return count;
   }, [seriesList]);
+
+  // Visible sections in configured order
+  const visibleSections = sectionOrder.filter(id => !hiddenSections.includes(id));
+
+  const renderSection = (sectionId: string) => {
+    switch (sectionId) {
+      case 'countdown':
+        return countdowns.length > 0 ? (() => {
+          const next = countdowns[0];
+          const countdownColor = '#a855f7';
+          const daysText = next.daysUntil === 0
+            ? 'Heute!'
+            : next.daysUntil === 1
+              ? 'Morgen'
+              : `in ${next.daysUntil} Tagen`;
+          return (
+            <motion.div
+              key="countdown"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate('/countdowns')}
+              style={{
+                margin: '0 20px 16px',
+                borderRadius: '14px',
+                padding: '12px 14px',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}
+            >
+              {next.posterUrl && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundImage: `url(${next.posterUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'blur(20px) brightness(0.3)',
+                    transform: 'scale(1.2)',
+                  }}
+                />
+              )}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: `linear-gradient(135deg, ${countdownColor}40 0%, rgba(0,0,0,0.7) 100%)`,
+                  border: `1px solid ${countdownColor}50`,
+                  borderRadius: '16px',
+                }}
+              />
+              {next.posterUrl && (
+                <img
+                  src={next.posterUrl}
+                  alt=""
+                  style={{
+                    position: 'relative',
+                    width: 44,
+                    height: 66,
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                  }}
+                />
+              )}
+              <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <CalendarMonth style={{ fontSize: '16px', color: countdownColor }} />
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: countdownColor, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Countdown
+                  </span>
+                  {countdowns.length > 1 && (
+                    <span style={{
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      color: countdownColor,
+                      background: `${countdownColor}25`,
+                      padding: '1px 6px',
+                      borderRadius: '6px',
+                    }}>
+                      +{countdowns.length - 1}
+                    </span>
+                  )}
+                </div>
+                <h2
+                  style={{
+                    margin: '0 0 1px 0',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#fff',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {next.title}
+                </h2>
+                <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+                  Staffel {next.seasonNumber} &middot; {daysText}
+                </p>
+              </div>
+              <div
+                style={{
+                  position: 'relative',
+                  width: 46,
+                  height: 46,
+                  borderRadius: '50%',
+                  background: `${countdownColor}30`,
+                  border: `2px solid ${countdownColor}80`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                {next.daysUntil === 0 ? (
+                  <span style={{ fontSize: '10px', fontWeight: 800, color: '#fff', lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Heute
+                  </span>
+                ) : (
+                  <>
+                    <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                      {next.daysUntil}
+                    </span>
+                    <span style={{ fontSize: '7px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>
+                      {next.daysUntil === 1 ? 'Tag' : 'Tage'}
+                    </span>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          );
+        })() : null;
+
+      case 'for-you': {
+        const forYouComponents: Record<string, React.ReactNode> = {
+          'watch-streak': <WatchStreakCard key="watch-streak" />,
+          'taste-match': <TasteMatchCard key="taste-match" />,
+          'watch-journey': <WatchJourneyCard key="watch-journey" />,
+          'catch-up': <CatchUpCard key="catch-up" />,
+          'hidden-series': <HiddenSeriesCard key="hidden-series" />,
+        };
+        const visibleForYou = forYouOrder.filter(id => !hiddenForYou.includes(id));
+        if (visibleForYou.length === 0) return null;
+        return (
+          <section key="for-you" style={{ marginBottom: '32px' }}>
+            <SectionHeader icon={<AutoAwesome />} iconColor={currentTheme.primary} title="Für dich" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {visibleForYou.map(id => forYouComponents[id])}
+            </div>
+          </section>
+        );
+      }
+
+      case 'stats':
+        return (
+          <div key="stats" style={{ padding: '0 20px', marginBottom: '20px' }}>
+            <StatsGrid />
+          </div>
+        );
+
+      // continue-watching, rewatches, today-episodes, trending, top-rated
+      // are rendered inline in the map due to their size
+      default:
+        return null;
+    }
+  };
 
   return (
     <div
@@ -570,9 +811,9 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
-            {unreadActivitiesCount + notificationUnreadCount > 0 ? (
+            {unreadActivitiesCount + notificationUnreadCount + ANNOUNCEMENTS.filter(a => !dismissedAnnouncements.includes(a.id)).length > 0 ? (
               <Badge
-                badgeContent={unreadActivitiesCount + notificationUnreadCount}
+                badgeContent={unreadActivitiesCount + notificationUnreadCount + ANNOUNCEMENTS.filter(a => !dismissedAnnouncements.includes(a.id)).length}
                 color="error"
                 sx={{
                   '& .MuiBadge-badge': {
@@ -786,146 +1027,6 @@ export const HomePage: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Countdown Hero Card */}
-      {countdowns.length > 0 && (() => {
-        const next = countdowns[0];
-        const countdownColor = '#a855f7';
-        const daysText = next.daysUntil === 0
-          ? 'Heute!'
-          : next.daysUntil === 1
-            ? 'Morgen'
-            : `in ${next.daysUntil} Tagen`;
-        return (
-          <motion.div
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate('/countdowns')}
-            style={{
-              margin: '0 20px 16px',
-              borderRadius: '14px',
-              padding: '12px 14px',
-              cursor: 'pointer',
-              position: 'relative',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-            }}
-          >
-            {/* Background poster with blur */}
-            {next.posterUrl && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  backgroundImage: `url(${next.posterUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  filter: 'blur(20px) brightness(0.3)',
-                  transform: 'scale(1.2)',
-                }}
-              />
-            )}
-            {/* Gradient overlay */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: `linear-gradient(135deg, ${countdownColor}40 0%, rgba(0,0,0,0.7) 100%)`,
-                border: `1px solid ${countdownColor}50`,
-                borderRadius: '16px',
-              }}
-            />
-
-            {/* Poster thumbnail */}
-            {next.posterUrl && (
-              <img
-                src={next.posterUrl}
-                alt=""
-                style={{
-                  position: 'relative',
-                  width: 44,
-                  height: 66,
-                  borderRadius: '8px',
-                  objectFit: 'cover',
-                  flexShrink: 0,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                }}
-              />
-            )}
-
-            {/* Text content */}
-            <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                <CalendarMonth style={{ fontSize: '16px', color: countdownColor }} />
-                <span style={{ fontSize: '11px', fontWeight: 600, color: countdownColor, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Countdown
-                </span>
-                {countdowns.length > 1 && (
-                  <span style={{
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    color: countdownColor,
-                    background: `${countdownColor}25`,
-                    padding: '1px 6px',
-                    borderRadius: '6px',
-                  }}>
-                    +{countdowns.length - 1}
-                  </span>
-                )}
-              </div>
-              <h2
-                style={{
-                  margin: '0 0 1px 0',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  color: '#fff',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {next.title}
-              </h2>
-              <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
-                Staffel {next.seasonNumber} &middot; {daysText}
-              </p>
-            </div>
-
-            {/* Days badge */}
-            <div
-              style={{
-                position: 'relative',
-                width: 46,
-                height: 46,
-                borderRadius: '50%',
-                background: `${countdownColor}30`,
-                border: `2px solid ${countdownColor}80`,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              {next.daysUntil === 0 ? (
-                <span style={{ fontSize: '10px', fontWeight: 800, color: '#fff', lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Heute
-                </span>
-              ) : (
-                <>
-                  <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
-                    {next.daysUntil}
-                  </span>
-                  <span style={{ fontSize: '7px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>
-                    {next.daysUntil === 1 ? 'Tag' : 'Tage'}
-                  </span>
-                </>
-              )}
-            </div>
-          </motion.div>
-        );
-      })()}
-
       {/* Quick Actions Grid */}
       <div
         style={{
@@ -937,30 +1038,10 @@ export const HomePage: React.FC = () => {
         }}
       >
         {[
-          {
-            icon: <Star />,
-            label: 'Ratings',
-            path: '/ratings',
-            color: currentTheme.status.warning,
-          },
-          {
-            icon: <CalendarToday />,
-            label: 'Kalender',
-            path: '/new-episodes',
-            color: currentTheme.status.success,
-          },
-          {
-            icon: <History />,
-            label: 'Verlauf',
-            path: '/recently-watched',
-            color: currentTheme.status.error,
-          },
-          {
-            icon: <Group />,
-            label: 'Freunde',
-            path: '/activity',
-            color: currentTheme.status.info.main,
-          },
+          { icon: <Star />, label: 'Ratings', path: '/ratings', color: currentTheme.status.warning },
+          { icon: <CalendarToday />, label: 'Kalender', path: '/new-episodes', color: currentTheme.status.success },
+          { icon: <History />, label: 'Verlauf', path: '/recently-watched', color: currentTheme.status.error },
+          { icon: <Group />, label: 'Freunde', path: '/activity', color: currentTheme.status.info.main },
         ].map((action, index) => (
           <motion.button
             key={index}
@@ -970,7 +1051,7 @@ export const HomePage: React.FC = () => {
               padding: isDesktop ? '10px 6px' : '10px 8px',
               background: 'rgba(255, 255, 255, 0.03)',
               border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: isDesktop ? '12px' : '12px',
+              borderRadius: '12px',
               color: action.color,
               cursor: 'pointer',
               display: 'flex',
@@ -979,14 +1060,8 @@ export const HomePage: React.FC = () => {
               gap: isDesktop ? '4px' : '6px',
             }}
           >
-            {cloneElement(action.icon, { style: { fontSize: isDesktop ? '18px' : '18px' } })}
-            <span
-              style={{
-                fontSize: isDesktop ? '11px' : '11px',
-                fontWeight: 600,
-                color: currentTheme.text.primary,
-              }}
-            >
+            {cloneElement(action.icon, { style: { fontSize: '18px' } })}
+            <span style={{ fontSize: '11px', fontWeight: 600, color: currentTheme.text.primary }}>
               {action.label}
             </span>
           </motion.button>
@@ -1008,8 +1083,7 @@ export const HomePage: React.FC = () => {
           onClick={() => navigate('/leaderboard')}
           style={{
             padding: isDesktop ? '12px' : '14px',
-            background:
-              'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
             border: '1px solid rgba(245, 158, 11, 0.2)',
             borderRadius: '12px',
             color: '#f59e0b',
@@ -1023,7 +1097,6 @@ export const HomePage: React.FC = () => {
           <EmojiEvents style={{ fontSize: '18px' }} />
           <span style={{ fontSize: '13px', fontWeight: 600 }}>Rangliste</span>
         </motion.button>
-
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/badges')}
@@ -1043,7 +1116,6 @@ export const HomePage: React.FC = () => {
           <AutoAwesome style={{ fontSize: '18px' }} />
           <span style={{ fontSize: '13px', fontWeight: 600 }}>Badges</span>
         </motion.button>
-
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/pets')}
@@ -1065,946 +1137,187 @@ export const HomePage: React.FC = () => {
         </motion.button>
       </div>
 
-      {/* Continue Watching Section - Like Today New */}
-      {continueWatching.length > 0 && (
-        <section style={{ marginBottom: '32px' }}>
-          <SectionHeader
-            icon={<PlayCircle />}
-            iconColor={currentTheme.status.success}
-            title="Weiterschauen"
-            onSeeAll={() => navigate('/watchlist')}
-          />
+      {/* === Configurable Sections (ordered by user config) === */}
+      {visibleSections.map((sectionId) => {
+        // Sections handled by renderSection
+        const rendered = renderSection(sectionId);
+        if (rendered !== null) return rendered;
 
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '0 20px',
-              position: 'relative',
-            }}
-          >
-            <AnimatePresence mode="popLayout">
-              {continueWatching
-                .filter(
-                  (item) =>
-                    !hiddenContinueEpisodes.has(
-                      `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`
-                    )
-                )
-                .slice(0, 6)
-                .map((item) => {
-                  const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
-                  const isCompleting = completingContinueEpisodes.has(episodeKey);
-                  const isSwiping = swipingContinueEpisodes.has(episodeKey);
-
-                  return (
-                    <motion.div
-                      key={episodeKey}
-                      data-block-swipe
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{
-                        opacity: isCompleting ? 0.5 : 1,
-                        y: 0,
-                        scale: isCompleting ? 0.95 : 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
-                        transition: { duration: 0.3 },
-                      }}
-                      style={{
-                        position: 'relative',
-                      }}
-                    >
-                      <motion.div
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.2}
-                        dragSnapToOrigin
-                        onDragStart={() => {
-                          setSwipingContinueEpisodes((prev) => new Set(prev).add(episodeKey));
-                        }}
-                        onDrag={(_event, info: PanInfo) => {
-                          setDragOffsetsContinue((prev) => ({
-                            ...prev,
-                            [episodeKey]: info.offset.x,
-                          }));
-                        }}
-                        onDragEnd={(event, info: PanInfo) => {
-                          event.stopPropagation();
-                          setSwipingContinueEpisodes((prev) => {
-                            const newSet = new Set(prev);
-                            newSet.delete(episodeKey);
-                            return newSet;
-                          });
-                          setDragOffsetsContinue((prev) => {
-                            const newOffsets = { ...prev };
-                            delete newOffsets[episodeKey];
-                            return newOffsets;
-                          });
-
-                          if (Math.abs(info.offset.x) > 100) {
-                            const direction = info.offset.x > 0 ? 'right' : 'left';
-                            handleContinueEpisodeComplete(item, direction);
-                          }
-                        }}
-                        whileDrag={{ scale: 1.02 }}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: '70px', // Start after the poster
-                          right: 0,
-                          bottom: 0,
-                          zIndex: 1,
-                        }}
-                      />
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          background: isCompleting
-                            ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
-                            : `rgba(76, 209, 55, ${Math.min(
-                                (Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100) * 0.15,
-                                0.15
-                              )})`,
-                          border: `1px solid ${
-                            isCompleting
-                              ? 'rgba(76, 209, 55, 0.5)'
-                              : `rgba(76, 209, 55, ${
-                                  0.2 +
-                                  Math.min(
-                                    (Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100) * 0.3,
-                                    0.3
-                                  )
-                                })`
-                          }`,
-                          transition: dragOffsetsContinue[episodeKey] ? 'none' : 'all 0.3s ease',
-                          borderRadius: '12px',
-                          padding: '12px',
-                          position: 'relative',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {/* Swipe Indicator Background */}
-                        <motion.div
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background:
-                              'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
-                            opacity: 0,
-                          }}
-                          animate={{
-                            opacity: isSwiping ? 1 : 0,
-                          }}
-                        />
-
-                        <img
-                          src={item.poster}
-                          alt={item.title}
-                          decoding="async"
-                          onClick={() => setPosterNav({
-                            open: true,
-                            seriesId: item.id,
-                            title: item.title,
-                            episodePath: `/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`,
-                          })}
-                          style={{
-                            width: '50px',
-                            height: '75px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            zIndex: 2,
-                          }}
-                        />
-                        <div
-                          style={{
-                            flex: 1,
-                            pointerEvents: 'none',
-                            position: 'relative',
-                            zIndex: 2,
-                          }}
-                        >
-                          <h3
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              margin: '0 0 2px 0',
-                            }}
-                          >
-                            {item.title}
-                          </h3>
-                          <p
-                            style={{
-                              fontSize: '12px',
-                              margin: 0,
-                              color: '#00d4aa',
-                            }}
-                          >
-                            S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
-                            {item.nextEpisode.name}
-                          </p>
-                          {(() => {
-                            const pace = calculateWatchingPace(item.seasons, item.episodeRuntime);
-                            const text = formatPaceLine(pace, true);
-                            if (!text) return null;
-                            return (
-                              <p
-                                style={{
-                                  fontSize: '11px',
-                                  margin: '2px 0 0 0',
-                                  opacity: 0.5,
-                                }}
-                              >
-                                {text}
-                              </p>
-                            );
-                          })()}
-                          <div
-                            style={{
-                              marginTop: '4px',
-                              height: '3px',
-                              background: currentTheme.border.default,
-                              borderRadius: '1.5px',
-                              overflow: 'hidden',
-                              position: 'relative',
-                            }}
-                          >
-                            <div
-                              style={{
-                                position: 'absolute',
-                                left: 0,
-                                top: 0,
-                                height: '100%',
-                                width: `${item.progress}%`,
-                                background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.status.success})`,
-                                transition: 'width 0.3s ease',
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        <AnimatePresence mode="wait">
-                          {isCompleting ? (
-                            <motion.div
-                              initial={{ scale: 0, rotate: -180 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              exit={{ scale: 0, rotate: 180 }}
-                            >
-                              <Check
-                                style={{
-                                  fontSize: '24px',
-                                  color: currentTheme.status.success,
-                                }}
-                              />
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              animate={{ x: isSwiping ? 10 : 0 }}
-                              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                            >
-                              <EpisodeDiscussionButton
-                                seriesId={item.id}
-                                seasonNumber={item.nextEpisode.seasonNumber}
-                                episodeNumber={item.nextEpisode.episodeNumber}
-                              />
-                              <PlayCircle
-                                style={{
-                                  fontSize: '20px',
-                                  color: currentTheme.status.success,
-                                }}
-                              />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-            </AnimatePresence>
-          </div>
-        </section>
-      )}
-
-      {/* Rewatches Section */}
-      {rewatchEpisodes.length > 0 && (
-        <section style={{ marginBottom: '32px' }}>
-          <SectionHeader
-            icon={<Repeat />}
-            iconColor={currentTheme.status.warning}
-            title="Rewatches"
-            onSeeAll={() => navigate('/watchlist?rewatches=open')}
-          />
-
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '0 20px',
-              position: 'relative',
-            }}
-          >
-            <AnimatePresence mode="popLayout">
-              {rewatchEpisodes
-                .filter(item => !hiddenRewatches.has(`rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`))
-                .slice(0, 4)
-                .map(item => {
-                  const key = `rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`;
-                  const isCompleting = completingRewatches.has(key);
-                  const isSwiping = swipingRewatches.has(key);
-                  const warningColor = currentTheme.status?.warning || '#f59e0b';
-
-                  return (
-                    <motion.div
-                      key={key}
-                      data-block-swipe
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{
-                        opacity: isCompleting ? 0.5 : 1,
-                        y: 0,
-                        scale: isCompleting ? 0.95 : 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        x: rewatchSwipeDirections[key] === 'left' ? -300 : 300,
-                        transition: { duration: 0.3 },
-                      }}
-                      style={{ position: 'relative' }}
-                    >
-                      <motion.div
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.2}
-                        dragSnapToOrigin
-                        onDragStart={() => {
-                          setSwipingRewatches(prev => new Set(prev).add(key));
-                        }}
-                        onDrag={(_event, info: PanInfo) => {
-                          setDragOffsetsRewatches(prev => ({ ...prev, [key]: info.offset.x }));
-                        }}
-                        onDragEnd={(event, info: PanInfo) => {
-                          event.stopPropagation();
-                          setSwipingRewatches(prev => {
-                            const s = new Set(prev);
-                            s.delete(key);
-                            return s;
-                          });
-                          setDragOffsetsRewatches(prev => {
-                            const o = { ...prev };
-                            delete o[key];
-                            return o;
-                          });
-                          if (Math.abs(info.offset.x) > 100) {
-                            handleRewatchComplete(item, info.offset.x > 0 ? 'right' : 'left');
-                          }
-                        }}
-                        whileDrag={{ scale: 1.02 }}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: '70px',
-                          right: 0,
-                          bottom: 0,
-                          zIndex: 1,
-                        }}
-                      />
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          background: isCompleting
-                            ? `linear-gradient(90deg, ${warningColor}33, ${warningColor}0D)`
-                            : `${warningColor}${Math.min(Math.round((Math.abs(dragOffsetsRewatches[key] || 0) / 100) * 25), 25).toString(16).padStart(2, '0')}`,
-                          border: `1px solid ${
-                            isCompleting
-                              ? `${warningColor}80`
-                              : `${warningColor}${Math.round(51 + Math.min((Math.abs(dragOffsetsRewatches[key] || 0) / 100) * 77, 77)).toString(16)}`
-                          }`,
-                          transition: dragOffsetsRewatches[key] ? 'none' : 'all 0.3s ease',
-                          borderRadius: '12px',
-                          padding: '12px',
-                          position: 'relative',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {/* Swipe Indicator */}
-                        <motion.div
-                          style={{
-                            position: 'absolute',
-                            top: 0, left: 0, right: 0, bottom: 0,
-                            background: `linear-gradient(90deg, transparent, ${warningColor}4D)`,
-                            opacity: 0,
-                          }}
-                          animate={{ opacity: isSwiping ? 1 : 0 }}
-                        />
-
-                        <img
-                          src={item.poster}
-                          alt={item.title}
-                          decoding="async"
-                          onClick={() => setPosterNav({
-                            open: true,
-                            seriesId: item.id,
-                            title: item.title,
-                            episodePath: `/episode/${item.id}/s/${item.seasonNumber}/e/${item.episodeNumber}`,
-                          })}
-                          style={{
-                            width: '50px',
-                            height: '75px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            zIndex: 2,
-                          }}
-                        />
-                        <div
-                          style={{
-                            flex: 1,
-                            pointerEvents: 'none',
-                            position: 'relative',
-                            zIndex: 2,
-                          }}
-                        >
-                          <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>
-                            {item.title}
-                          </h3>
-                          <p style={{ fontSize: '12px', margin: 0, color: warningColor }}>
-                            S{item.seasonNumber} E{item.episodeNumber} • {item.episodeName}
-                          </p>
-                          <p style={{ fontSize: '11px', margin: '2px 0 0 0', opacity: 0.5 }}>
-                            {item.currentWatchCount}x → {item.targetWatchCount}x
-                          </p>
-                          <div
-                            style={{
-                              marginTop: '4px',
-                              height: '3px',
-                              background: currentTheme.border.default,
-                              borderRadius: '1.5px',
-                              overflow: 'hidden',
-                              position: 'relative',
-                            }}
-                          >
-                            <div
-                              style={{
-                                position: 'absolute',
-                                left: 0, top: 0,
-                                height: '100%',
-                                width: `${item.progress}%`,
-                                background: `linear-gradient(90deg, ${warningColor}, #f59e0b)`,
-                                transition: 'width 0.3s ease',
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        <AnimatePresence mode="wait">
-                          {isCompleting ? (
-                            <motion.div
-                              initial={{ scale: 0, rotate: -180 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              exit={{ scale: 0, rotate: 180 }}
-                            >
-                              <Check style={{ fontSize: '24px', color: warningColor }} />
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              animate={{ x: isSwiping ? 10 : 0 }}
-                              style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                              <Repeat style={{ fontSize: '20px', color: warningColor }} />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-            </AnimatePresence>
-          </div>
-        </section>
-      )}
-
-      {/* Today's Episodes */}
-      {todayEpisodes.length > 0 && (
-        <section style={{ marginBottom: '32px' }}>
-          <SectionHeader
-            icon={<NewReleases />}
-            iconColor={currentTheme.status.warning}
-            title="Heute Neu"
-            onSeeAll={() => navigate('/new-episodes')}
-          />
-
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '0 20px',
-              position: 'relative',
-            }}
-          >
-            <AnimatePresence mode="popLayout">
-              {todayEpisodes
-                .filter(
-                  (ep) =>
-                    !hiddenEpisodes.has(`${ep.seriesId}-${ep.seasonNumber}-${ep.episodeNumber}`)
-                )
-                .slice(0, 5)
-                .map((episode) => {
-                  const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
-                  const isCompleting = completingEpisodes.has(episodeKey);
-                  const isSwiping = swipingEpisodes.has(episodeKey);
-
-                  return (
-                    <motion.div
-                      key={episodeKey}
-                      data-block-swipe
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{
-                        opacity: isCompleting ? 0.5 : 1,
-                        y: 0,
-                        scale: isCompleting ? 0.95 : 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        x: swipeDirections[episodeKey] === 'left' ? -300 : 300,
-                        transition: { duration: 0.3 },
-                      }}
-                      style={{
-                        position: 'relative',
-                      }}
-                    >
-                      <motion.div
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.2}
-                        dragSnapToOrigin
-                        onDragStart={() => {
-                          setSwipingEpisodes((prev) => new Set(prev).add(episodeKey));
-                        }}
-                        onDrag={(_event, info: PanInfo) => {
-                          setDragOffsetsEpisodes((prev) => ({
-                            ...prev,
-                            [episodeKey]: info.offset.x,
-                          }));
-                        }}
-                        onDragEnd={(event, info: PanInfo) => {
-                          event.stopPropagation();
-                          setSwipingEpisodes((prev) => {
-                            const newSet = new Set(prev);
-                            newSet.delete(episodeKey);
-                            return newSet;
-                          });
-                          setDragOffsetsEpisodes((prev) => {
-                            const newOffsets = { ...prev };
-                            delete newOffsets[episodeKey];
-                            return newOffsets;
-                          });
-
-                          if (Math.abs(info.offset.x) > 100 && !episode.watched) {
-                            const direction = info.offset.x > 0 ? 'right' : 'left';
-                            handleEpisodeComplete(episode, direction);
-                          }
-                        }}
-                        whileDrag={{ scale: 1.02 }}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: '70px', // Start after the poster
-                          right: 0,
-                          bottom: 0,
-                          zIndex: 1,
-                        }}
-                      />
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          background: isCompleting
-                            ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))'
-                            : episode.watched
-                              ? 'rgba(76, 209, 55, 0.1)'
-                              : `rgba(76, 209, 55, ${Math.min(
-                                  (Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100) * 0.15,
-                                  0.15
-                                )})`,
-                          border: `1px solid ${
-                            isCompleting
-                              ? 'rgba(76, 209, 55, 0.5)'
-                              : episode.watched
-                                ? 'rgba(76, 209, 55, 0.3)'
-                                : `rgba(76, 209, 55, ${
-                                    0.2 +
-                                    Math.min(
-                                      (Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100) * 0.3,
-                                      0.3
-                                    )
-                                  })`
-                          }`,
-                          transition: dragOffsetsEpisodes[episodeKey] ? 'none' : 'all 0.3s ease',
-                          borderRadius: '12px',
-                          padding: '12px',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {/* Swipe Indicator Background */}
-                        <motion.div
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background:
-                              'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
-                            opacity: 0,
-                          }}
-                          animate={{
-                            opacity: isSwiping ? 1 : 0,
-                          }}
-                        />
-
-                        <img
-                          src={episode.poster}
-                          alt={episode.seriesTitle}
-                          decoding="async"
-                          onClick={() => setPosterNav({
-                            open: true,
-                            seriesId: Number(episode.seriesId),
-                            title: episode.seriesTitle,
-                            episodePath: `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}`,
-                          })}
-                          style={{
-                            width: '50px',
-                            height: '75px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            zIndex: 2,
-                          }}
-                        />
-                        <div style={{ flex: 1, pointerEvents: 'none' }}>
-                          <h3
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              margin: '0 0 2px 0',
-                            }}
-                          >
-                            {episode.seriesTitle}
-                          </h3>
-                          <p
-                            style={{
-                              fontSize: '12px',
-                              margin: 0,
-                              color: episode.watched ? '#4cd137' : '#ffd700',
-                            }}
-                          >
-                            S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
-                          </p>
-                        </div>
-
-                        <AnimatePresence mode="wait">
-                          {isCompleting ? (
-                            <motion.div
-                              initial={{ scale: 0, rotate: -180 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              exit={{ scale: 0, rotate: 180 }}
-                            >
-                              <Check
-                                style={{
-                                  fontSize: '24px',
-                                  color: currentTheme.status.success,
-                                }}
-                              />
-                            </motion.div>
-                          ) : episode.watched ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <EpisodeDiscussionButton
-                                seriesId={Number(episode.seriesId)}
-                                seasonNumber={episode.seasonNumber}
-                                episodeNumber={episode.episodeNumber}
-                              />
-                              <CheckCircle
-                                style={{
-                                  fontSize: '20px',
-                                  color: currentTheme.status.success,
-                                }}
-                              />
+        // Large inline sections rendered here with key
+        switch (sectionId) {
+          case 'continue-watching':
+            return continueWatching.length > 0 ? (
+              <section key="continue-watching" style={{ marginBottom: '32px' }}>
+                <SectionHeader
+                  icon={<PlayCircle />}
+                  iconColor={currentTheme.status.success}
+                  title="Weiterschauen"
+                  onSeeAll={() => navigate('/watchlist')}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 20px', position: 'relative' }}>
+                  <AnimatePresence mode="popLayout">
+                    {continueWatching.filter(item => !hiddenContinueEpisodes.has(`${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`)).slice(0, 6).map((item) => {
+                      const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
+                      const isCompleting = completingContinueEpisodes.has(episodeKey);
+                      const isSwiping = swipingContinueEpisodes.has(episodeKey);
+                      return (
+                        <motion.div key={episodeKey} data-block-swipe layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: isCompleting ? 0.5 : 1, y: 0, scale: isCompleting ? 0.95 : 1 }} exit={{ opacity: 0, x: swipeDirections[episodeKey] === 'left' ? -300 : 300, transition: { duration: 0.3 } }} style={{ position: 'relative' }}>
+                          <motion.div drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} dragSnapToOrigin onDragStart={() => setSwipingContinueEpisodes(prev => new Set(prev).add(episodeKey))} onDrag={(_event, info: PanInfo) => setDragOffsetsContinue(prev => ({ ...prev, [episodeKey]: info.offset.x }))} onDragEnd={(event, info: PanInfo) => { event.stopPropagation(); setSwipingContinueEpisodes(prev => { const s = new Set(prev); s.delete(episodeKey); return s; }); setDragOffsetsContinue(prev => { const o = { ...prev }; delete o[episodeKey]; return o; }); if (Math.abs(info.offset.x) > 100) handleContinueEpisodeComplete(item, info.offset.x > 0 ? 'right' : 'left'); }} whileDrag={{ scale: 1.02 }} style={{ position: 'absolute', top: 0, left: '70px', right: 0, bottom: 0, zIndex: 1 }} />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: isCompleting ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))' : `rgba(76, 209, 55, ${Math.min((Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100) * 0.15, 0.15)})`, border: `1px solid ${isCompleting ? 'rgba(76, 209, 55, 0.5)' : `rgba(76, 209, 55, ${0.2 + Math.min((Math.abs(dragOffsetsContinue[episodeKey] || 0) / 100) * 0.3, 0.3)})`}`, transition: dragOffsetsContinue[episodeKey] ? 'none' : 'all 0.3s ease', borderRadius: '12px', padding: '12px', position: 'relative', overflow: 'hidden' }}>
+                            <motion.div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))', opacity: 0 }} animate={{ opacity: isSwiping ? 1 : 0 }} />
+                            <img src={item.poster} alt={item.title} decoding="async" onClick={() => setPosterNav({ open: true, seriesId: item.id, title: item.title, episodePath: `/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}` })} style={{ width: '50px', height: '75px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', position: 'relative', zIndex: 2 }} />
+                            <div style={{ flex: 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}>
+                              <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>{item.title}</h3>
+                              <p style={{ fontSize: '12px', margin: 0, color: '#00d4aa' }}>S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} • {item.nextEpisode.name}</p>
+                              {(() => { const pace = calculateWatchingPace(item.seasons, item.episodeRuntime); const text = formatPaceLine(pace, true); if (!text) return null; return <p style={{ fontSize: '11px', margin: '2px 0 0 0', opacity: 0.5 }}>{text}</p>; })()}
+                              <div style={{ marginTop: '4px', height: '3px', background: currentTheme.border.default, borderRadius: '1.5px', overflow: 'hidden', position: 'relative' }}>
+                                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${item.progress}%`, background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.status.success})`, transition: 'width 0.3s ease' }} />
+                              </div>
                             </div>
-                          ) : (
-                            <motion.div
-                              animate={{ x: isSwiping ? 10 : 0 }}
-                              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                            >
-                              <EpisodeDiscussionButton
-                                seriesId={Number(episode.seriesId)}
-                                seasonNumber={episode.seasonNumber}
-                                episodeNumber={episode.episodeNumber}
-                              />
-                              <PlayCircle
-                                style={{
-                                  fontSize: '20px',
-                                  color: currentTheme.status.warning,
-                                }}
-                              />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                            <AnimatePresence mode="wait">
+                              {isCompleting ? (
+                                <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 180 }}><Check style={{ fontSize: '24px', color: currentTheme.status.success }} /></motion.div>
+                              ) : (
+                                <motion.div animate={{ x: isSwiping ? 10 : 0 }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <EpisodeDiscussionButton seriesId={item.id} seasonNumber={item.nextEpisode.seasonNumber} episodeNumber={item.nextEpisode.episodeNumber} />
+                                  <PlayCircle style={{ fontSize: '20px', color: currentTheme.status.success }} />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              </section>
+            ) : null;
+
+          case 'rewatches':
+            return rewatchEpisodes.length > 0 ? (
+              <section key="rewatches" style={{ marginBottom: '32px' }}>
+                <SectionHeader icon={<Repeat />} iconColor={currentTheme.status.warning} title="Rewatches" onSeeAll={() => navigate('/watchlist?rewatches=open')} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 20px', position: 'relative' }}>
+                  <AnimatePresence mode="popLayout">
+                    {rewatchEpisodes.filter(item => !hiddenRewatches.has(`rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`)).slice(0, 4).map(item => {
+                      const key = `rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`;
+                      const isCompleting = completingRewatches.has(key);
+                      const isSwiping = swipingRewatches.has(key);
+                      const warningColor = currentTheme.status?.warning || '#f59e0b';
+                      return (
+                        <motion.div key={key} data-block-swipe layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: isCompleting ? 0.5 : 1, y: 0, scale: isCompleting ? 0.95 : 1 }} exit={{ opacity: 0, x: rewatchSwipeDirections[key] === 'left' ? -300 : 300, transition: { duration: 0.3 } }} style={{ position: 'relative' }}>
+                          <motion.div drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} dragSnapToOrigin onDragStart={() => setSwipingRewatches(prev => new Set(prev).add(key))} onDrag={(_event, info: PanInfo) => setDragOffsetsRewatches(prev => ({ ...prev, [key]: info.offset.x }))} onDragEnd={(event, info: PanInfo) => { event.stopPropagation(); setSwipingRewatches(prev => { const s = new Set(prev); s.delete(key); return s; }); setDragOffsetsRewatches(prev => { const o = { ...prev }; delete o[key]; return o; }); if (Math.abs(info.offset.x) > 100) handleRewatchComplete(item, info.offset.x > 0 ? 'right' : 'left'); }} whileDrag={{ scale: 1.02 }} style={{ position: 'absolute', top: 0, left: '70px', right: 0, bottom: 0, zIndex: 1 }} />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: isCompleting ? `linear-gradient(90deg, ${warningColor}33, ${warningColor}0D)` : `${warningColor}${Math.min(Math.round((Math.abs(dragOffsetsRewatches[key] || 0) / 100) * 25), 25).toString(16).padStart(2, '0')}`, border: `1px solid ${isCompleting ? `${warningColor}80` : `${warningColor}${Math.round(51 + Math.min((Math.abs(dragOffsetsRewatches[key] || 0) / 100) * 77, 77)).toString(16)}`}`, transition: dragOffsetsRewatches[key] ? 'none' : 'all 0.3s ease', borderRadius: '12px', padding: '12px', position: 'relative', overflow: 'hidden' }}>
+                            <motion.div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(90deg, transparent, ${warningColor}4D)`, opacity: 0 }} animate={{ opacity: isSwiping ? 1 : 0 }} />
+                            <img src={item.poster} alt={item.title} decoding="async" onClick={() => setPosterNav({ open: true, seriesId: item.id, title: item.title, episodePath: `/episode/${item.id}/s/${item.seasonNumber}/e/${item.episodeNumber}` })} style={{ width: '50px', height: '75px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', position: 'relative', zIndex: 2 }} />
+                            <div style={{ flex: 1, pointerEvents: 'none', position: 'relative', zIndex: 2 }}>
+                              <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>{item.title}</h3>
+                              <p style={{ fontSize: '12px', margin: 0, color: warningColor }}>S{item.seasonNumber} E{item.episodeNumber} • {item.episodeName}</p>
+                              <p style={{ fontSize: '11px', margin: '2px 0 0 0', opacity: 0.5 }}>{item.currentWatchCount}x → {item.targetWatchCount}x</p>
+                              <div style={{ marginTop: '4px', height: '3px', background: currentTheme.border.default, borderRadius: '1.5px', overflow: 'hidden', position: 'relative' }}>
+                                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${item.progress}%`, background: `linear-gradient(90deg, ${warningColor}, #f59e0b)`, transition: 'width 0.3s ease' }} />
+                              </div>
+                            </div>
+                            <AnimatePresence mode="wait">
+                              {isCompleting ? (
+                                <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 180 }}><Check style={{ fontSize: '24px', color: warningColor }} /></motion.div>
+                              ) : (
+                                <motion.div animate={{ x: isSwiping ? 10 : 0 }} style={{ display: 'flex', alignItems: 'center' }}><Repeat style={{ fontSize: '20px', color: warningColor }} /></motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              </section>
+            ) : null;
+
+          case 'today-episodes':
+            return todayEpisodes.length > 0 ? (
+              <section key="today-episodes" style={{ marginBottom: '32px' }}>
+                <SectionHeader icon={<NewReleases />} iconColor={currentTheme.status.warning} title="Heute Neu" onSeeAll={() => navigate('/new-episodes')} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 20px', position: 'relative' }}>
+                  <AnimatePresence mode="popLayout">
+                    {todayEpisodes.filter(ep => !hiddenEpisodes.has(`${ep.seriesId}-${ep.seasonNumber}-${ep.episodeNumber}`)).slice(0, 5).map((episode) => {
+                      const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
+                      const isCompleting = completingEpisodes.has(episodeKey);
+                      const isSwiping = swipingEpisodes.has(episodeKey);
+                      return (
+                        <motion.div key={episodeKey} data-block-swipe layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: isCompleting ? 0.5 : 1, y: 0, scale: isCompleting ? 0.95 : 1 }} exit={{ opacity: 0, x: swipeDirections[episodeKey] === 'left' ? -300 : 300, transition: { duration: 0.3 } }} style={{ position: 'relative' }}>
+                          <motion.div drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} dragSnapToOrigin onDragStart={() => setSwipingEpisodes(prev => new Set(prev).add(episodeKey))} onDrag={(_event, info: PanInfo) => setDragOffsetsEpisodes(prev => ({ ...prev, [episodeKey]: info.offset.x }))} onDragEnd={(event, info: PanInfo) => { event.stopPropagation(); setSwipingEpisodes(prev => { const s = new Set(prev); s.delete(episodeKey); return s; }); setDragOffsetsEpisodes(prev => { const o = { ...prev }; delete o[episodeKey]; return o; }); if (Math.abs(info.offset.x) > 100 && !episode.watched) handleEpisodeComplete(episode, info.offset.x > 0 ? 'right' : 'left'); }} whileDrag={{ scale: 1.02 }} style={{ position: 'absolute', top: 0, left: '70px', right: 0, bottom: 0, zIndex: 1 }} />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: isCompleting ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(255, 215, 0, 0.05))' : episode.watched ? 'rgba(76, 209, 55, 0.1)' : `rgba(76, 209, 55, ${Math.min((Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100) * 0.15, 0.15)})`, border: `1px solid ${isCompleting ? 'rgba(76, 209, 55, 0.5)' : episode.watched ? 'rgba(76, 209, 55, 0.3)' : `rgba(76, 209, 55, ${0.2 + Math.min((Math.abs(dragOffsetsEpisodes[episodeKey] || 0) / 100) * 0.3, 0.3)})`}`, transition: dragOffsetsEpisodes[episodeKey] ? 'none' : 'all 0.3s ease', borderRadius: '12px', padding: '12px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                            <motion.div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))', opacity: 0 }} animate={{ opacity: isSwiping ? 1 : 0 }} />
+                            <img src={episode.poster} alt={episode.seriesTitle} decoding="async" onClick={() => setPosterNav({ open: true, seriesId: Number(episode.seriesId), title: episode.seriesTitle, episodePath: `/episode/${episode.seriesId}/s/${episode.seasonNumber}/e/${episode.episodeNumber}` })} style={{ width: '50px', height: '75px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', position: 'relative', zIndex: 2 }} />
+                            <div style={{ flex: 1, pointerEvents: 'none' }}>
+                              <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0' }}>{episode.seriesTitle}</h3>
+                              <p style={{ fontSize: '12px', margin: 0, color: episode.watched ? '#4cd137' : '#ffd700' }}>S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}</p>
+                            </div>
+                            <AnimatePresence mode="wait">
+                              {isCompleting ? (
+                                <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 180 }}><Check style={{ fontSize: '24px', color: currentTheme.status.success }} /></motion.div>
+                              ) : episode.watched ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><EpisodeDiscussionButton seriesId={Number(episode.seriesId)} seasonNumber={episode.seasonNumber} episodeNumber={episode.episodeNumber} /><CheckCircle style={{ fontSize: '20px', color: currentTheme.status.success }} /></div>
+                              ) : (
+                                <motion.div animate={{ x: isSwiping ? 10 : 0 }} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><EpisodeDiscussionButton seriesId={Number(episode.seriesId)} seasonNumber={episode.seasonNumber} episodeNumber={episode.episodeNumber} /><PlayCircle style={{ fontSize: '20px', color: currentTheme.status.warning }} /></motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              </section>
+            ) : null;
+
+          case 'trending':
+            return trending.length > 0 ? (
+              <section key="trending" style={{ marginBottom: '32px' }}>
+                <SectionHeader icon={<LocalFireDepartment />} iconColor={currentTheme.status.error} title="Trending diese Woche" />
+                <HorizontalScrollContainer gap={12} style={{ padding: '0 20px' }}>
+                  {trending.map((item, index) => (
+                    <motion.div key={`trending-${item.type}-${item.id}`} whileTap={{ scale: 0.95 }} onClick={() => navigate(`/${item.type}/${item.id}`)} style={{ minWidth: window.innerWidth >= 768 ? '240px' : '140px', cursor: 'pointer' }}>
+                      <div style={{ position: 'relative', marginBottom: '6px' }}>
+                        <img src={item.poster} alt={item.title} decoding="async" style={{ width: '100%', aspectRatio: '2/3', objectFit: 'cover', borderRadius: '10px' }} />
+                        <div style={{ position: 'absolute', top: '4px', left: '4px', background: 'linear-gradient(135deg, #ff6b6b, #ff4757)', color: 'white', borderRadius: '6px', padding: '2px 6px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', zIndex: 1 }}><TrendingUp style={{ fontSize: '12px' }} />#{index + 1}</div>
+                        <div style={{ position: 'absolute', bottom: '4px', left: '4px', background: item.type === 'movie' ? 'rgba(255, 193, 7, 0.9)' : 'rgba(102, 126, 234, 0.9)', color: 'white', borderRadius: '6px', padding: '2px 6px', fontSize: '10px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', backdropFilter: 'blur(10px)' }}>
+                          {item.type === 'movie' ? <><MovieIcon style={{ fontSize: '10px' }} />Film</> : <><Tv style={{ fontSize: '10px' }} />Serie</>}
+                        </div>
                       </div>
+                      <h3 style={{ fontSize: '14px', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: currentTheme.text.muted, marginTop: '2px' }}><Star style={{ fontSize: '14px', color: '#ffd43b' }} /><span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span></div>
                     </motion.div>
-                  );
-                })}
-            </AnimatePresence>
-          </div>
-        </section>
-      )}
+                  ))}
+                </HorizontalScrollContainer>
+              </section>
+            ) : null;
 
-      {/* Trending Section */}
-      {trending.length > 0 && (
-        <section style={{ marginBottom: '32px' }}>
-          <SectionHeader
-            icon={<LocalFireDepartment />}
-            iconColor={currentTheme.status.error}
-            title="Trending diese Woche"
-          />
+          case 'top-rated':
+            return topRated.length > 0 ? (
+              <section key="top-rated" style={{ marginBottom: '32px' }}>
+                <SectionHeader icon={<Star />} iconColor={currentTheme.status.warning} title="Bestbewertet" onSeeAll={() => navigate('/ratings')} />
+                <HorizontalScrollContainer gap={12} style={{ padding: '0 20px' }}>
+                  {topRated.map((item, index) => (
+                    <motion.div key={index} whileTap={{ scale: 0.95 }} onClick={() => navigate(`/${item.type}/${item.id}`)} style={{ minWidth: window.innerWidth >= 768 ? '240px' : '140px', cursor: 'pointer' }}>
+                      <div style={{ position: 'relative', marginBottom: '6px' }}>
+                        <img src={item.poster} alt={item.title} decoding="async" style={{ width: '100%', aspectRatio: '2/3', objectFit: 'cover', borderRadius: '10px' }} />
+                        <div style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0, 0, 0, 0.8)', borderRadius: '8px', padding: '4px 6px', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px', backdropFilter: 'blur(10px)' }}>
+                          <Star style={{ fontSize: '13px', color: currentTheme.status.warning }} />{item.rating.toFixed(1)}
+                        </div>
+                      </div>
+                      <h3 style={{ fontSize: '14px', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</h3>
+                    </motion.div>
+                  ))}
+                </HorizontalScrollContainer>
+              </section>
+            ) : null;
 
-          <HorizontalScrollContainer
-            gap={12}
-            style={{
-              padding: '0 20px',
-            }}
-          >
-            {trending.map((item, index) => (
-              <motion.div
-                key={`trending-${item.type}-${item.id}`}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(`/${item.type}/${item.id}`)}
-                style={{
-                  minWidth: window.innerWidth >= 768 ? '240px' : '140px',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{ position: 'relative', marginBottom: '6px' }}>
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    decoding="async"
-                    style={{
-                      width: '100%',
-                      aspectRatio: '2/3',
-                      objectFit: 'cover',
-                      borderRadius: '10px',
-                    }}
-                  />
-
-                  {/* Trending Badge */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '4px',
-                      left: '4px',
-                      background: 'linear-gradient(135deg, #ff6b6b, #ff4757)',
-                      color: 'white',
-                      borderRadius: '6px',
-                      padding: '2px 6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      zIndex: 1,
-                    }}
-                  >
-                    <TrendingUp style={{ fontSize: '12px' }} />#{index + 1}
-                  </div>
-
-                  {/* Type Badge (Movie/Series) */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: '4px',
-                      left: '4px',
-                      background:
-                        item.type === 'movie'
-                          ? 'rgba(255, 193, 7, 0.9)'
-                          : 'rgba(102, 126, 234, 0.9)',
-                      color: 'white',
-                      borderRadius: '6px',
-                      padding: '2px 6px',
-                      fontSize: '10px',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      backdropFilter: 'blur(10px)',
-                    }}
-                  >
-                    {item.type === 'movie' ? (
-                      <>
-                        <MovieIcon style={{ fontSize: '10px' }} />
-                        Film
-                      </>
-                    ) : (
-                      <>
-                        <Tv style={{ fontSize: '10px' }} />
-                        Serie
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <h3
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {item.title}
-                </h3>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '14px',
-                    color: currentTheme.text.muted,
-                    marginTop: '2px',
-                  }}
-                >
-                  <Star style={{ fontSize: '14px', color: '#ffd43b' }} />
-                  <span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
-                </div>
-              </motion.div>
-            ))}
-          </HorizontalScrollContainer>
-        </section>
-      )}
-
-      {/* Top Rated */}
-      {topRated.length > 0 && (
-        <section style={{ marginBottom: '32px' }}>
-          <SectionHeader
-            icon={<Star />}
-            iconColor={currentTheme.status.warning}
-            title="Bestbewertet"
-            onSeeAll={() => navigate('/ratings')}
-          />
-
-          <HorizontalScrollContainer
-            gap={12}
-            style={{
-              padding: '0 20px',
-            }}
-          >
-            {topRated.map((item, index) => (
-              <motion.div
-                key={index}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(`/${item.type}/${item.id}`)}
-                style={{
-                  minWidth: window.innerWidth >= 768 ? '240px' : '140px',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{ position: 'relative', marginBottom: '6px' }}>
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    decoding="async"
-                    style={{
-                      width: '100%',
-                      aspectRatio: '2/3',
-                      objectFit: 'cover',
-                      borderRadius: '10px',
-                    }}
-                  />
-
-                  {/* Rating Badge */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '4px',
-                      right: '4px',
-                      background: 'rgba(0, 0, 0, 0.8)',
-                      borderRadius: '8px',
-                      padding: '4px 6px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      backdropFilter: 'blur(10px)',
-                    }}
-                  >
-                    <Star
-                      style={{
-                        fontSize: '13px',
-                        color: currentTheme.status.warning,
-                      }}
-                    />
-                    {item.rating.toFixed(1)}
-                  </div>
-                </div>
-
-                <h3
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {item.title}
-                </h3>
-              </motion.div>
-            ))}
-          </HorizontalScrollContainer>
-        </section>
-      )}
-
-      {/* Für dich Section - Feature Cards */}
-      <section style={{ marginBottom: '32px' }}>
-        <SectionHeader icon={<AutoAwesome />} iconColor={currentTheme.primary} title="Für dich" />
-
-        {/* Feature Cards Container */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <WatchStreakCard />
-          <TasteMatchCard />
-          <WatchJourneyCard />
-          <CatchUpCard />
-          <HiddenSeriesCard />
-        </div>
-      </section>
-
-      {/* Quick Stats Component */}
-      <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-        <StatsGrid />
-      </div>
+          default:
+            return null;
+        }
+      })}
 
       {/* Poster Navigation Sheet */}
       <BottomSheet
@@ -2161,6 +1474,9 @@ export const HomePage: React.FC = () => {
                       if (item.kind === 'discussion' && item.notificationId) {
                         markAsRead(item.notificationId);
                       }
+                      if (item.kind === 'announcement') {
+                        dismissAnnouncement(item.id);
+                      }
                       if (item.navigateTo) {
                         setShowNotifications(false);
                         navigate(item.navigateTo);
@@ -2207,7 +1523,9 @@ export const HomePage: React.FC = () => {
                               ? `linear-gradient(135deg, ${currentTheme.status.warning}20, ${currentTheme.status.warning}08)`
                               : item.icon === 'movie'
                                 ? `linear-gradient(135deg, ${currentTheme.status.error}20, ${currentTheme.status.error}08)`
-                                : `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.primary}08)`,
+                                : item.icon === 'announcement'
+                                  ? 'linear-gradient(135deg, #a855f720, #a855f708)'
+                                  : `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.primary}08)`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',

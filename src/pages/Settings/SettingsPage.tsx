@@ -15,6 +15,7 @@ import {
   PhotoCamera,
   Public,
   Refresh,
+  ViewQuilt,
 } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -588,6 +589,49 @@ export const SettingsPage = () => {
             <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Design & Themes</h2>
             <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: '2px 0 0 0' }}>
               Farben und Aussehen anpassen
+            </p>
+          </div>
+          <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
+        </motion.button>
+
+        {/* Homepage Layout */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/home-layout')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '18px',
+            background: `linear-gradient(135deg, #a855f715, #a855f708)`,
+            border: `1px solid #a855f730`,
+            borderRadius: '16px',
+            color: currentTheme.text.primary,
+            cursor: 'pointer',
+            marginBottom: '16px',
+          }}
+        >
+          <div
+            style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, #a855f7, #6366f1)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <ViewQuilt style={{ fontSize: '24px', color: 'white' }} />
+          </div>
+          <div style={{ flex: 1, textAlign: 'left' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Homepage Layout</h2>
+            <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: '2px 0 0 0' }}>
+              Sektionen sortieren & ausblenden
             </p>
           </div>
           <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
