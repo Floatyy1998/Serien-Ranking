@@ -13,6 +13,9 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const DEFAULT_SECTION_ORDER = [
+  'main-actions',
+  'quick-actions',
+  'secondary-actions',
   'countdown',
   'continue-watching',
   'rewatches',
@@ -31,7 +34,16 @@ const DEFAULT_FOR_YOU_ORDER = [
   'hidden-series',
 ];
 
+const DEFAULT_MAIN_ACTIONS_ORDER = ['watchlist', 'discover'];
+
+const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'calendar', 'history', 'friends'];
+
+const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
+
 const SECTION_LABELS: Record<string, string> = {
+  'main-actions': 'Hauptaktionen',
+  'quick-actions': 'Schnellzugriff',
+  'secondary-actions': 'Extras',
   countdown: 'Countdown',
   'continue-watching': 'Weiterschauen',
   rewatches: 'Rewatches',
@@ -50,6 +62,24 @@ const FOR_YOU_LABELS: Record<string, string> = {
   'hidden-series': 'Nicht weitergeschaut',
 };
 
+const MAIN_ACTIONS_LABELS: Record<string, string> = {
+  watchlist: 'Weiterschauen',
+  discover: 'Entdecken',
+};
+
+const QUICK_ACTIONS_LABELS: Record<string, string> = {
+  ratings: 'Ratings',
+  calendar: 'Kalender',
+  history: 'Verlauf',
+  friends: 'Freunde',
+};
+
+const SECONDARY_ACTIONS_LABELS: Record<string, string> = {
+  leaderboard: 'Rangliste',
+  badges: 'Badges',
+  pets: 'Pets',
+};
+
 export const HomeLayoutPage = () => {
   const { currentTheme } = useTheme();
   const authContext = useAuth();
@@ -59,23 +89,67 @@ export const HomeLayoutPage = () => {
   const [hiddenSections, setHiddenSections] = useState<string[]>([]);
   const [forYouOrder, setForYouOrder] = useState<string[]>(DEFAULT_FOR_YOU_ORDER);
   const [hiddenForYou, setHiddenForYou] = useState<string[]>([]);
+  const [mainActionsOrder, setMainActionsOrder] = useState<string[]>(DEFAULT_MAIN_ACTIONS_ORDER);
+  const [hiddenMainActions, setHiddenMainActions] = useState<string[]>([]);
+  const [quickActionsOrder, setQuickActionsOrder] = useState<string[]>(DEFAULT_QUICK_ACTIONS_ORDER);
+  const [hiddenQuickActions, setHiddenQuickActions] = useState<string[]>([]);
+  const [secondaryActionsOrder, setSecondaryActionsOrder] = useState<string[]>(
+    DEFAULT_SECONDARY_ACTIONS_ORDER
+  );
+  const [hiddenSecondaryActions, setHiddenSecondaryActions] = useState<string[]>([]);
   const [forYouExpanded, setForYouExpanded] = useState(false);
+  const [mainActionsExpanded, setMainActionsExpanded] = useState(false);
+  const [quickActionsExpanded, setQuickActionsExpanded] = useState(false);
+  const [secondaryActionsExpanded, setSecondaryActionsExpanded] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const saveConfig = useCallback(
-    (order: string[], hidden: string[], fyOrder: string[], fyHidden: string[]) => {
+    (config: {
+      sectionOrder: string[];
+      hiddenSections: string[];
+      forYouOrder: string[];
+      hiddenForYou: string[];
+      mainActionsOrder: string[];
+      hiddenMainActions: string[];
+      quickActionsOrder: string[];
+      hiddenQuickActions: string[];
+      secondaryActionsOrder: string[];
+      hiddenSecondaryActions: string[];
+    }) => {
       if (!user) return;
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
-        firebase.database().ref(`users/${user.uid}/homeConfig`).set({
-          sectionOrder: order,
-          hiddenSections: hidden,
-          forYouOrder: fyOrder,
-          hiddenForYou: fyHidden,
-        });
+        firebase.database().ref(`users/${user.uid}/homeConfig`).set(config);
       }, 500);
     },
     [user]
+  );
+
+  const currentConfig = useCallback(
+    () => ({
+      sectionOrder,
+      hiddenSections,
+      forYouOrder,
+      hiddenForYou,
+      mainActionsOrder,
+      hiddenMainActions,
+      quickActionsOrder,
+      hiddenQuickActions,
+      secondaryActionsOrder,
+      hiddenSecondaryActions,
+    }),
+    [
+      sectionOrder,
+      hiddenSections,
+      forYouOrder,
+      hiddenForYou,
+      mainActionsOrder,
+      hiddenMainActions,
+      quickActionsOrder,
+      hiddenQuickActions,
+      secondaryActionsOrder,
+      hiddenSecondaryActions,
+    ]
   );
 
   useEffect(() => {
@@ -87,9 +161,7 @@ export const HomeLayoutPage = () => {
       .then((snap) => {
         const data = snap.val();
         if (data?.sectionOrder) {
-          // Filter out unknown section IDs (e.g. removed features)
           const valid = data.sectionOrder.filter((id: string) => SECTION_LABELS[id]);
-          // Add any new defaults that aren't in the saved order
           for (const id of DEFAULT_SECTION_ORDER) {
             if (!valid.includes(id)) valid.push(id);
           }
@@ -101,12 +173,47 @@ export const HomeLayoutPage = () => {
           setForYouOrder(data.forYouOrder.filter((id: string) => FOR_YOU_LABELS[id]));
         if (data?.hiddenForYou)
           setHiddenForYou(data.hiddenForYou.filter((id: string) => FOR_YOU_LABELS[id]));
+        if (data?.mainActionsOrder) {
+          const valid = data.mainActionsOrder.filter((id: string) => MAIN_ACTIONS_LABELS[id]);
+          for (const id of DEFAULT_MAIN_ACTIONS_ORDER) {
+            if (!valid.includes(id)) valid.push(id);
+          }
+          setMainActionsOrder(valid);
+        }
+        if (data?.hiddenMainActions)
+          setHiddenMainActions(
+            data.hiddenMainActions.filter((id: string) => MAIN_ACTIONS_LABELS[id])
+          );
+        if (data?.quickActionsOrder) {
+          const valid = data.quickActionsOrder.filter((id: string) => QUICK_ACTIONS_LABELS[id]);
+          for (const id of DEFAULT_QUICK_ACTIONS_ORDER) {
+            if (!valid.includes(id)) valid.push(id);
+          }
+          setQuickActionsOrder(valid);
+        }
+        if (data?.hiddenQuickActions)
+          setHiddenQuickActions(
+            data.hiddenQuickActions.filter((id: string) => QUICK_ACTIONS_LABELS[id])
+          );
+        if (data?.secondaryActionsOrder) {
+          const valid = data.secondaryActionsOrder.filter(
+            (id: string) => SECONDARY_ACTIONS_LABELS[id]
+          );
+          for (const id of DEFAULT_SECONDARY_ACTIONS_ORDER) {
+            if (!valid.includes(id)) valid.push(id);
+          }
+          setSecondaryActionsOrder(valid);
+        }
+        if (data?.hiddenSecondaryActions)
+          setHiddenSecondaryActions(
+            data.hiddenSecondaryActions.filter((id: string) => SECONDARY_ACTIONS_LABELS[id])
+          );
       });
   }, [user]);
 
   const handleSectionReorder = (newOrder: string[]) => {
     setSectionOrder(newOrder);
-    saveConfig(newOrder, hiddenSections, forYouOrder, hiddenForYou);
+    saveConfig({ ...currentConfig(), sectionOrder: newOrder });
   };
 
   const handleSectionToggle = (id: string) => {
@@ -114,13 +221,13 @@ export const HomeLayoutPage = () => {
       ? hiddenSections.filter((s) => s !== id)
       : [...hiddenSections, id];
     setHiddenSections(newHidden);
-    saveConfig(sectionOrder, newHidden, forYouOrder, hiddenForYou);
+    saveConfig({ ...currentConfig(), hiddenSections: newHidden });
     if (navigator.vibrate) navigator.vibrate(50);
   };
 
   const handleForYouReorder = (newOrder: string[]) => {
     setForYouOrder(newOrder);
-    saveConfig(sectionOrder, hiddenSections, newOrder, hiddenForYou);
+    saveConfig({ ...currentConfig(), forYouOrder: newOrder });
   };
 
   const handleForYouToggle = (id: string) => {
@@ -128,7 +235,49 @@ export const HomeLayoutPage = () => {
       ? hiddenForYou.filter((s) => s !== id)
       : [...hiddenForYou, id];
     setHiddenForYou(newHidden);
-    saveConfig(sectionOrder, hiddenSections, forYouOrder, newHidden);
+    saveConfig({ ...currentConfig(), hiddenForYou: newHidden });
+    if (navigator.vibrate) navigator.vibrate(50);
+  };
+
+  const handleMainActionsReorder = (newOrder: string[]) => {
+    setMainActionsOrder(newOrder);
+    saveConfig({ ...currentConfig(), mainActionsOrder: newOrder });
+  };
+
+  const handleMainActionsToggle = (id: string) => {
+    const newHidden = hiddenMainActions.includes(id)
+      ? hiddenMainActions.filter((s) => s !== id)
+      : [...hiddenMainActions, id];
+    setHiddenMainActions(newHidden);
+    saveConfig({ ...currentConfig(), hiddenMainActions: newHidden });
+    if (navigator.vibrate) navigator.vibrate(50);
+  };
+
+  const handleQuickActionsReorder = (newOrder: string[]) => {
+    setQuickActionsOrder(newOrder);
+    saveConfig({ ...currentConfig(), quickActionsOrder: newOrder });
+  };
+
+  const handleQuickActionsToggle = (id: string) => {
+    const newHidden = hiddenQuickActions.includes(id)
+      ? hiddenQuickActions.filter((s) => s !== id)
+      : [...hiddenQuickActions, id];
+    setHiddenQuickActions(newHidden);
+    saveConfig({ ...currentConfig(), hiddenQuickActions: newHidden });
+    if (navigator.vibrate) navigator.vibrate(50);
+  };
+
+  const handleSecondaryActionsReorder = (newOrder: string[]) => {
+    setSecondaryActionsOrder(newOrder);
+    saveConfig({ ...currentConfig(), secondaryActionsOrder: newOrder });
+  };
+
+  const handleSecondaryActionsToggle = (id: string) => {
+    const newHidden = hiddenSecondaryActions.includes(id)
+      ? hiddenSecondaryActions.filter((s) => s !== id)
+      : [...hiddenSecondaryActions, id];
+    setHiddenSecondaryActions(newHidden);
+    saveConfig({ ...currentConfig(), hiddenSecondaryActions: newHidden });
     if (navigator.vibrate) navigator.vibrate(50);
   };
 
@@ -137,7 +286,24 @@ export const HomeLayoutPage = () => {
     setHiddenSections([]);
     setForYouOrder(DEFAULT_FOR_YOU_ORDER);
     setHiddenForYou([]);
-    saveConfig(DEFAULT_SECTION_ORDER, [], DEFAULT_FOR_YOU_ORDER, []);
+    setMainActionsOrder(DEFAULT_MAIN_ACTIONS_ORDER);
+    setHiddenMainActions([]);
+    setQuickActionsOrder(DEFAULT_QUICK_ACTIONS_ORDER);
+    setHiddenQuickActions([]);
+    setSecondaryActionsOrder(DEFAULT_SECONDARY_ACTIONS_ORDER);
+    setHiddenSecondaryActions([]);
+    saveConfig({
+      sectionOrder: DEFAULT_SECTION_ORDER,
+      hiddenSections: [],
+      forYouOrder: DEFAULT_FOR_YOU_ORDER,
+      hiddenForYou: [],
+      mainActionsOrder: DEFAULT_MAIN_ACTIONS_ORDER,
+      hiddenMainActions: [],
+      quickActionsOrder: DEFAULT_QUICK_ACTIONS_ORDER,
+      hiddenQuickActions: [],
+      secondaryActionsOrder: DEFAULT_SECONDARY_ACTIONS_ORDER,
+      hiddenSecondaryActions: [],
+    });
     if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
   };
 
@@ -291,8 +457,52 @@ export const HomeLayoutPage = () => {
             }}
           >
             {sectionOrder.map((sectionId) => {
-              const isForYou = sectionId === 'for-you';
               const isHidden = hiddenSections.includes(sectionId);
+
+              // Determine if this section has expandable sub-items
+              const expandableConfig = (() => {
+                if (sectionId === 'for-you')
+                  return {
+                    expanded: forYouExpanded,
+                    setExpanded: setForYouExpanded,
+                    order: forYouOrder,
+                    onReorder: handleForYouReorder,
+                    hiddenItems: hiddenForYou,
+                    onToggle: handleForYouToggle,
+                    labels: FOR_YOU_LABELS,
+                  };
+                if (sectionId === 'main-actions')
+                  return {
+                    expanded: mainActionsExpanded,
+                    setExpanded: setMainActionsExpanded,
+                    order: mainActionsOrder,
+                    onReorder: handleMainActionsReorder,
+                    hiddenItems: hiddenMainActions,
+                    onToggle: handleMainActionsToggle,
+                    labels: MAIN_ACTIONS_LABELS,
+                  };
+                if (sectionId === 'quick-actions')
+                  return {
+                    expanded: quickActionsExpanded,
+                    setExpanded: setQuickActionsExpanded,
+                    order: quickActionsOrder,
+                    onReorder: handleQuickActionsReorder,
+                    hiddenItems: hiddenQuickActions,
+                    onToggle: handleQuickActionsToggle,
+                    labels: QUICK_ACTIONS_LABELS,
+                  };
+                if (sectionId === 'secondary-actions')
+                  return {
+                    expanded: secondaryActionsExpanded,
+                    setExpanded: setSecondaryActionsExpanded,
+                    order: secondaryActionsOrder,
+                    onReorder: handleSecondaryActionsReorder,
+                    hiddenItems: hiddenSecondaryActions,
+                    onToggle: handleSecondaryActionsToggle,
+                    labels: SECONDARY_ACTIONS_LABELS,
+                  };
+                return null;
+              })();
 
               return (
                 <Reorder.Item
@@ -333,13 +543,13 @@ export const HomeLayoutPage = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
-                        cursor: isForYou ? 'pointer' : 'default',
+                        cursor: expandableConfig ? 'pointer' : 'default',
                       }}
                       onClick={
-                        isForYou
+                        expandableConfig
                           ? (e) => {
                               e.stopPropagation();
-                              setForYouExpanded(!forYouExpanded);
+                              expandableConfig.setExpanded(!expandableConfig.expanded);
                             }
                           : undefined
                       }
@@ -353,9 +563,9 @@ export const HomeLayoutPage = () => {
                       >
                         {SECTION_LABELS[sectionId] || sectionId}
                       </span>
-                      {isForYou && (
+                      {expandableConfig && (
                         <motion.div
-                          animate={{ rotate: forYouExpanded ? 180 : 0 }}
+                          animate={{ rotate: expandableConfig.expanded ? 180 : 0 }}
                           transition={{ duration: 0.2 }}
                           style={{ display: 'flex', alignItems: 'center' }}
                         >
@@ -373,10 +583,10 @@ export const HomeLayoutPage = () => {
                     />
                   </div>
 
-                  {/* Für dich sub-items */}
-                  {isForYou && (
+                  {/* Expandable sub-items */}
+                  {expandableConfig && (
                     <AnimatePresence>
-                      {forYouExpanded && !isHidden && (
+                      {expandableConfig.expanded && !isHidden && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -394,8 +604,8 @@ export const HomeLayoutPage = () => {
                           >
                             <Reorder.Group
                               axis="y"
-                              values={forYouOrder}
-                              onReorder={handleForYouReorder}
+                              values={expandableConfig.order}
+                              onReorder={expandableConfig.onReorder}
                               style={{
                                 listStyle: 'none',
                                 margin: 0,
@@ -405,8 +615,8 @@ export const HomeLayoutPage = () => {
                                 gap: '3px',
                               }}
                             >
-                              {forYouOrder.map((subId) => {
-                                const isSubHidden = hiddenForYou.includes(subId);
+                              {expandableConfig.order.map((subId) => {
+                                const isSubHidden = expandableConfig.hiddenItems.includes(subId);
                                 return (
                                   <Reorder.Item
                                     key={subId}
@@ -445,12 +655,12 @@ export const HomeLayoutPage = () => {
                                           : currentTheme.text.primary,
                                       }}
                                     >
-                                      {FOR_YOU_LABELS[subId] || subId}
+                                      {expandableConfig.labels[subId] || subId}
                                     </span>
                                     <Toggle
                                       checked={!isSubHidden}
-                                      onChange={() => handleForYouToggle(subId)}
-                                      label={`${FOR_YOU_LABELS[subId]} ${isSubHidden ? 'einblenden' : 'ausblenden'}`}
+                                      onChange={() => expandableConfig.onToggle(subId)}
+                                      label={`${expandableConfig.labels[subId]} ${isSubHidden ? 'einblenden' : 'ausblenden'}`}
                                     />
                                   </Reorder.Item>
                                 );

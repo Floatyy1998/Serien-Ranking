@@ -14,6 +14,7 @@ declare global {
       firebase: boolean;
       emailVerification: boolean;
       initialData: boolean;
+      homeConfig: boolean;
     };
     setAppReady: (key: keyof Window['appReadyStatus'], value: boolean) => void;
     splashScreenComplete: boolean;
@@ -28,6 +29,7 @@ if (typeof window !== 'undefined') {
     firebase: false,
     emailVerification: false,
     initialData: false,
+    homeConfig: false,
   };
 
   window.setAppReady = (key, value) => {
@@ -63,7 +65,8 @@ export const AppWithSplash: React.FC = () => {
         status.auth &&
         status.firebase &&
         status.emailVerification &&
-        status.initialData;
+        status.initialData &&
+        status.homeConfig;
 
       if (isReady && !allSystemsReady) {
         // console.log('[AppWithSplash] 🎉 ALLE SYSTEME BEREIT!', status);
@@ -100,29 +103,38 @@ export const AppWithSplash: React.FC = () => {
     return <App />;
   }
 
-  // Zeige SplashScreen nur für die Hauptapp (nicht für Auth-Seiten)
-  if (showSplash) {
-    return (
-      <>
+  return (
+    <>
+      {showSplash && (
         <SplashScreen
           onComplete={() => {
-            // console.log('[AppWithSplash] Splash complete, hiding...');
             window.splashScreenComplete = true;
             setShowSplash(false);
           }}
           waitForCondition={() => allSystemsReady}
           minDisplayTime={2000}
         />
-        {/* Rendere App im Hintergrund (unsichtbar) für Preloading */}
-        {isAppMounted && (
-          <div style={{ display: 'none', position: 'absolute', left: '-9999px' }}>
-            <App />
-          </div>
-        )}
-      </>
-    );
-  }
-
-  // Nach SplashScreen: App ist vollständig ready
-  return <App />;
+      )}
+      {/* Eine App-Instanz: versteckt während Splash, sichtbar danach */}
+      {isAppMounted && (
+        <div
+          style={
+            showSplash
+              ? {
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  visibility: 'hidden',
+                  pointerEvents: 'none',
+                }
+              : undefined
+          }
+        >
+          <App />
+        </div>
+      )}
+    </>
+  );
 };

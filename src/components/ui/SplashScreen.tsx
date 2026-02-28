@@ -478,13 +478,14 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
 
     const checkProgress = setInterval(() => {
       const status = window.appReadyStatus || {};
-      const totalSystems = 5;
+      const totalSystems = 6;
       const readySystems = [
         status.theme,
         status.auth,
         status.firebase,
         status.emailVerification,
         status.initialData,
+        status.homeConfig,
       ].filter(Boolean).length;
 
       const progress = readySystems / totalSystems;
