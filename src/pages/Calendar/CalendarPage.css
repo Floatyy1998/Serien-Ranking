@@ -87,6 +87,16 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* Desktop toolbar — hidden on mobile */
+.cal-toolbar-desktop {
+  display: none;
+}
+
+/* Mobile header — visible on mobile */
+.cal-mobile-header {
+  display: block;
+}
+
 /* Content */
 .cal-content {
   padding: 0 16px;
@@ -194,6 +204,22 @@
   transform: scale(0.98);
 }
 
+/* Poster wrapper — hidden on mobile, visible on desktop */
+.cal-ep-poster-wrap {
+  display: none;
+}
+
+/* Mobile poster thumbnail */
+.cal-ep-poster-mobile {
+  display: block;
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
 .cal-ep-poster {
   width: 80px;
   height: 54px;
@@ -201,6 +227,14 @@
   object-position: center top;
   border-radius: 8px;
   flex-shrink: 0;
+}
+
+/* Poster overlay elements — only used on desktop */
+.cal-ep-premiere-overlay,
+.cal-ep-status-overlay,
+.cal-ep-mark-overlay,
+.cal-ep-poster-info {
+  display: none;
 }
 
 .cal-ep-info {
@@ -238,8 +272,8 @@
 /* Watch status */
 .cal-ep-status {
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -253,8 +287,13 @@
 
 .cal-ep-mark {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  max-width: 34px;
+  max-height: 34px;
+  box-sizing: border-box;
   border-radius: 50%;
   border: 2px solid;
   background: none;
@@ -332,68 +371,275 @@
   font-size: 14px;
 }
 
-/* Desktop: 7-column grid */
+/* =========================================
+   Desktop: Poster-Card Layout
+   ========================================= */
 @media (min-width: 768px) {
+  /* Show desktop toolbar, hide mobile header */
+  .cal-toolbar-desktop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 20px 10px;
+    gap: 12px;
+  }
+
+  .cal-toolbar-left,
+  .cal-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .cal-toolbar-right {
+    justify-content: flex-end;
+  }
+
+  .cal-toolbar-center {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cal-mobile-header {
+    display: none;
+  }
+
   .cal-content {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
-    padding: 0 20px;
+    padding: 0 16px;
   }
 
   .cal-day {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     padding: 10px;
     border-top: none;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    min-height: 100px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 80px;
   }
 
   .cal-day.is-today {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     border-color: var(--theme-primary, #6366f1);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+  }
+
+  .cal-day.is-empty {
+    background: rgba(255, 255, 255, 0.01);
+    border-color: rgba(255, 255, 255, 0.04);
   }
 
   .cal-day-label {
     justify-content: center;
-    padding-bottom: 6px;
+    padding-bottom: 4px;
+    margin-bottom: 2px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
+  /* Hide mobile-only elements on desktop */
+  .cal-ep-info-mobile,
+  .cal-ep-status-mobile,
+  .cal-ep-mark-mobile,
+  .cal-ep-expand-mobile,
+  .cal-ep-poster-mobile {
+    display: none !important;
+  }
+
+  /* Episode card — poster-overlay style */
   .cal-ep {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 8px;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
     border-left: none;
-    border-top: 3px solid transparent;
+    border: none;
+    background: none;
+    border-radius: 10px;
+    overflow: hidden;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .cal-ep:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .cal-ep:active {
+    transform: translateY(-1px);
+  }
+
+  /* Poster wrapper — visible on desktop */
+  .cal-ep-poster-wrap {
+    display: block;
+    position: relative;
+    border-radius: 10px;
     overflow: hidden;
   }
 
   .cal-ep-poster {
     width: 100%;
-    height: 120px;
-    border-radius: 8px;
+    height: 150px;
+    border-radius: 0;
+    display: block;
+  }
+
+  /* Subtle gradient on poster bottom for text readability */
+  .cal-ep-poster-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* Text info overlay on poster */
+  .cal-ep-poster-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .cal-ep-poster-info .cal-ep-title {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .cal-ep-poster-info .cal-ep-episode {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .cal-ep-poster-info .cal-ep-name {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 11px;
+    display: none;
+  }
+
+  /* Premiere badge overlay — top left */
+  .cal-ep-premiere-overlay {
+    display: block;
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 3;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 5px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* Watch status overlay — top right */
+  .cal-ep-status-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+  }
+
+  .cal-ep-status-overlay svg {
+    font-size: 18px !important;
+  }
+
+  /* Mark button overlay — top right */
+  .cal-ep-mark-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    max-width: 34px;
+    max-height: 34px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: all 0.15s;
+  }
+
+  .cal-ep-mark-overlay:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+
+  /* Premiere badge inline — hide on desktop (using overlay instead) */
+  .cal-ep-premiere-badge {
+    display: none;
+  }
+
+  /* Show episode name on hover */
+  .cal-ep:hover .cal-ep-poster-info .cal-ep-name {
+    display: block;
+  }
+
+  /* Group card */
+  .cal-ep-group {
+    border-left: none;
+    border-top: none;
+    border: none;
+    background: none;
+    border-radius: 10px;
+    overflow: hidden;
   }
 
   .cal-ep-group .cal-ep-group-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 8px;
+    padding: 0;
+    gap: 0;
   }
 
-  .cal-ep-info {
-    min-width: 0;
-    width: 100%;
+  .cal-ep-group .cal-ep-group-header .cal-ep-poster-wrap {
+    border-radius: 10px 10px 0 0;
   }
 
-  .cal-ep-group {
-    border-left: none;
-    border-top: 3px solid transparent;
-    min-width: 0;
+  .cal-ep-group.is-open .cal-ep-group-header .cal-ep-poster-wrap {
+    border-radius: 10px 10px 0 0;
+  }
+
+  .cal-ep-group .cal-ep-group-list {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
   }
 }
