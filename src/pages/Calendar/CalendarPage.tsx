@@ -12,6 +12,15 @@ import './CalendarPage.css';
 
 const WEEKDAYS_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
+function contrastTextColor(hex: string): string {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
+}
+
 function formatDate(date: Date): string {
   return date.toLocaleDateString('de-DE', {
     day: 'numeric',
@@ -374,16 +383,23 @@ export const CalendarPage = () => {
                                 alt=""
                                 className="cal-ep-poster"
                               />
-                              {ep.premiereType && (
-                                <span
-                                  className="cal-ep-premiere-overlay"
-                                  style={{
-                                    background: `${currentTheme.status.warning}dd`,
-                                  }}
-                                >
-                                  {ep.premiereType === 'season-start' ? 'Staffelstart' : 'Rückkehr'}
-                                </span>
-                              )}
+                              {ep.premiereType &&
+                                (() => {
+                                  const bg =
+                                    ep.premiereType === 'season-start'
+                                      ? currentTheme.primary
+                                      : '#e67e22';
+                                  return (
+                                    <span
+                                      className="cal-ep-premiere-overlay"
+                                      style={{ background: bg, color: contrastTextColor(bg) }}
+                                    >
+                                      {ep.premiereType === 'season-start'
+                                        ? 'Staffelstart'
+                                        : 'Rückkehr'}
+                                    </span>
+                                  );
+                                })()}
                               {ep.watched ? (
                                 <div
                                   className="cal-ep-status-overlay"
@@ -537,18 +553,23 @@ export const CalendarPage = () => {
                                   className="cal-ep-poster"
                                 />
                               )}
-                              {groupPremiereType && (
-                                <span
-                                  className="cal-ep-premiere-overlay"
-                                  style={{
-                                    background: `${currentTheme.status.warning}dd`,
-                                  }}
-                                >
-                                  {groupPremiereType === 'season-start'
-                                    ? 'Staffelstart'
-                                    : 'Rückkehr'}
-                                </span>
-                              )}
+                              {groupPremiereType &&
+                                (() => {
+                                  const bg =
+                                    groupPremiereType === 'season-start'
+                                      ? currentTheme.primary
+                                      : '#e67e22';
+                                  return (
+                                    <span
+                                      className="cal-ep-premiere-overlay"
+                                      style={{ background: bg, color: contrastTextColor(bg) }}
+                                    >
+                                      {groupPremiereType === 'season-start'
+                                        ? 'Staffelstart'
+                                        : 'Rückkehr'}
+                                    </span>
+                                  );
+                                })()}
                               {allWatched && (
                                 <div
                                   className="cal-ep-status-overlay"
