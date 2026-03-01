@@ -438,6 +438,11 @@ export const SeriesDetailPage = memo(() => {
         startedAt: new Date().toISOString(),
       });
 
+      // Automatisch zur Watchlist hinzufügen
+      if (!series.watchlist) {
+        await firebase.database().ref(`${seriesPath}/watchlist`).set(true);
+      }
+
       setSnackbar({
         open: true,
         message: continueExisting
