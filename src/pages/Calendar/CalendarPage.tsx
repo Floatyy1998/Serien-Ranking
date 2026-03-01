@@ -170,64 +170,141 @@ export const CalendarPage = () => {
       <div className="calendar-page">
         <PageHeader title="TV-Kalender" />
 
-        {/* Week Navigation */}
-        {weekNav}
-
-        {/* Filter */}
-        <div className="cal-filter-row">
-          {['Alle Serien', 'Watchlist'].map((label) => {
-            const isActive =
-              (label === 'Watchlist' && watchlistOnly) ||
-              (label === 'Alle Serien' && !watchlistOnly);
-            return (
-              <button
-                key={label}
-                className="cal-filter-chip"
-                onClick={() => {
-                  const next = label === 'Watchlist';
-                  setWatchlistOnly(next);
-                  localStorage.setItem('calendarWatchlistOnly', String(next));
-                }}
-                style={
-                  isActive
-                    ? {
-                        background: `${currentTheme.primary}20`,
-                        color: currentTheme.primary,
-                        borderColor: `${currentTheme.primary}50`,
-                      }
-                    : {}
-                }
-              >
-                {label}
-              </button>
-            );
-          })}
+        {/* Desktop: compact toolbar */}
+        <div className="cal-toolbar-desktop">
+          <div className="cal-toolbar-left">
+            {['Alle Serien', 'Watchlist'].map((label) => {
+              const isActive =
+                (label === 'Watchlist' && watchlistOnly) ||
+                (label === 'Alle Serien' && !watchlistOnly);
+              return (
+                <button
+                  key={label}
+                  className="cal-filter-chip"
+                  onClick={() => {
+                    const next = label === 'Watchlist';
+                    setWatchlistOnly(next);
+                    localStorage.setItem('calendarWatchlistOnly', String(next));
+                  }}
+                  style={
+                    isActive
+                      ? {
+                          background: `${currentTheme.primary}20`,
+                          color: currentTheme.primary,
+                          borderColor: `${currentTheme.primary}50`,
+                        }
+                      : {}
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="cal-toolbar-center">
+            <button className="cal-arrow-btn" onClick={() => setWeekOffset((o) => o - 1)}>
+              <ChevronLeft style={{ fontSize: '18px' }} />
+            </button>
+            <button
+              className={`cal-week-chip ${weekOffset === 0 ? 'is-current' : ''}`}
+              onClick={() => setWeekOffset(0)}
+              style={
+                weekOffset === 0
+                  ? { borderColor: `${currentTheme.primary}60`, color: currentTheme.primary }
+                  : {}
+              }
+            >
+              KW {kwNumber} · {formatDate(monday)} – {formatDate(sunday)}
+            </button>
+            <button className="cal-arrow-btn" onClick={() => setWeekOffset((o) => o + 1)}>
+              <ChevronRight style={{ fontSize: '18px' }} />
+            </button>
+          </div>
+          <div className="cal-toolbar-right">
+            {totalEpisodes > 0 && (
+              <>
+                <div
+                  className="cal-stat-item"
+                  style={{
+                    background: `${currentTheme.primary}15`,
+                    color: currentTheme.primary,
+                  }}
+                >
+                  {totalEpisodes} gesamt
+                </div>
+                <div
+                  className="cal-stat-item"
+                  style={{
+                    background: `${currentTheme.status.success}15`,
+                    color: currentTheme.status.success,
+                  }}
+                >
+                  {watchedCount} gesehen
+                </div>
+                <div className="cal-stat-item">{totalEpisodes - watchedCount} offen</div>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Stats */}
-        {totalEpisodes > 0 && (
-          <div className="cal-stats">
-            <div
-              className="cal-stat-item"
-              style={{
-                background: `${currentTheme.primary}15`,
-                color: currentTheme.primary,
-              }}
-            >
-              {totalEpisodes} gesamt
-            </div>
-            <div
-              className="cal-stat-item"
-              style={{
-                background: `${currentTheme.status.success}15`,
-                color: currentTheme.status.success,
-              }}
-            >
-              {watchedCount} gesehen
-            </div>
-            <div className="cal-stat-item">{totalEpisodes - watchedCount} offen</div>
+        {/* Mobile: original layout */}
+        <div className="cal-mobile-header">
+          {weekNav}
+
+          <div className="cal-filter-row">
+            {['Alle Serien', 'Watchlist'].map((label) => {
+              const isActive =
+                (label === 'Watchlist' && watchlistOnly) ||
+                (label === 'Alle Serien' && !watchlistOnly);
+              return (
+                <button
+                  key={label}
+                  className="cal-filter-chip"
+                  onClick={() => {
+                    const next = label === 'Watchlist';
+                    setWatchlistOnly(next);
+                    localStorage.setItem('calendarWatchlistOnly', String(next));
+                  }}
+                  style={
+                    isActive
+                      ? {
+                          background: `${currentTheme.primary}20`,
+                          color: currentTheme.primary,
+                          borderColor: `${currentTheme.primary}50`,
+                        }
+                      : {}
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
-        )}
+
+          {totalEpisodes > 0 && (
+            <div className="cal-stats">
+              <div
+                className="cal-stat-item"
+                style={{
+                  background: `${currentTheme.primary}15`,
+                  color: currentTheme.primary,
+                }}
+              >
+                {totalEpisodes} gesamt
+              </div>
+              <div
+                className="cal-stat-item"
+                style={{
+                  background: `${currentTheme.status.success}15`,
+                  color: currentTheme.status.success,
+                }}
+              >
+                {watchedCount} gesehen
+              </div>
+              <div className="cal-stat-item">{totalEpisodes - watchedCount} offen</div>
+            </div>
+          )}
+        </div>
 
         {/* Days */}
         <div className="cal-content">
@@ -291,12 +368,82 @@ export const CalendarPage = () => {
                               )
                             }
                           >
+                            <div className="cal-ep-poster-wrap">
+                              <img
+                                src={backdrops[ep.seriesId] || ep.poster}
+                                alt=""
+                                className="cal-ep-poster"
+                              />
+                              {ep.premiereType && (
+                                <span
+                                  className="cal-ep-premiere-overlay"
+                                  style={{
+                                    background: `${currentTheme.status.warning}dd`,
+                                  }}
+                                >
+                                  {ep.premiereType === 'season-start' ? 'Staffelstart' : 'Rückkehr'}
+                                </span>
+                              )}
+                              {ep.watched ? (
+                                <div
+                                  className="cal-ep-status-overlay"
+                                  style={{
+                                    background: `${currentTheme.status.success}cc`,
+                                    color: '#fff',
+                                  }}
+                                >
+                                  <Check style={{ fontSize: '14px' }} />
+                                </div>
+                              ) : (
+                                <button
+                                  className="cal-ep-mark-overlay"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkWatched(
+                                      ep.seriesNmr,
+                                      ep.seasonIndex,
+                                      ep.episodeIndex
+                                    );
+                                  }}
+                                  style={{ borderColor: 'rgba(255,255,255,0.5)' }}
+                                />
+                              )}
+                              <div className="cal-ep-poster-info">
+                                <span className="cal-ep-title">{ep.seriesTitle}</span>
+                                <span
+                                  className="cal-ep-episode"
+                                  style={{
+                                    color: ep.premiereType
+                                      ? currentTheme.status.warning
+                                      : 'rgba(255,255,255,0.7)',
+                                  }}
+                                >
+                                  S{String(ep.seasonNumber).padStart(2, '0')}E
+                                  {String(ep.episodeNumber).padStart(2, '0')}
+                                  {ep.premiereType && (
+                                    <span
+                                      className="cal-ep-premiere-badge"
+                                      style={{
+                                        background: `${currentTheme.status.warning}20`,
+                                        color: currentTheme.status.warning,
+                                      }}
+                                    >
+                                      {ep.premiereType === 'season-start'
+                                        ? 'Staffelstart'
+                                        : 'Rückkehr'}
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="cal-ep-name">{ep.episodeName}</span>
+                              </div>
+                            </div>
+                            {/* Mobile: poster + info (hidden on desktop) */}
                             <img
-                              src={backdrops[ep.seriesId] || ep.poster}
+                              src={ep.poster}
                               alt=""
-                              className="cal-ep-poster"
+                              className="cal-ep-poster cal-ep-poster-mobile"
                             />
-                            <div className="cal-ep-info">
+                            <div className="cal-ep-info cal-ep-info-mobile">
                               <span
                                 className="cal-ep-title"
                                 style={{ color: currentTheme.text.primary }}
@@ -336,7 +483,7 @@ export const CalendarPage = () => {
                             </div>
                             {ep.watched ? (
                               <div
-                                className="cal-ep-status"
+                                className="cal-ep-status cal-ep-status-mobile"
                                 style={{
                                   background: `${currentTheme.status.success}18`,
                                   color: currentTheme.status.success,
@@ -346,7 +493,7 @@ export const CalendarPage = () => {
                               </div>
                             ) : (
                               <button
-                                className="cal-ep-mark"
+                                className="cal-ep-mark cal-ep-mark-mobile"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleMarkWatched(ep.seriesNmr, ep.seasonIndex, ep.episodeIndex);
@@ -382,14 +529,65 @@ export const CalendarPage = () => {
                             className="cal-ep cal-ep-group-header"
                             onClick={() => toggleGroup(groupKey)}
                           >
-                            {(backdrops[group.seriesId] || group.episodes[0]?.poster) && (
+                            <div className="cal-ep-poster-wrap">
+                              {(backdrops[group.seriesId] || group.episodes[0]?.poster) && (
+                                <img
+                                  src={backdrops[group.seriesId] || group.episodes[0]?.poster}
+                                  alt=""
+                                  className="cal-ep-poster"
+                                />
+                              )}
+                              {groupPremiereType && (
+                                <span
+                                  className="cal-ep-premiere-overlay"
+                                  style={{
+                                    background: `${currentTheme.status.warning}dd`,
+                                  }}
+                                >
+                                  {groupPremiereType === 'season-start'
+                                    ? 'Staffelstart'
+                                    : 'Rückkehr'}
+                                </span>
+                              )}
+                              {allWatched && (
+                                <div
+                                  className="cal-ep-status-overlay"
+                                  style={{
+                                    background: `${currentTheme.status.success}cc`,
+                                    color: '#fff',
+                                  }}
+                                >
+                                  <Check style={{ fontSize: '14px' }} />
+                                </div>
+                              )}
+                              <div className="cal-ep-poster-info">
+                                <span className="cal-ep-title">{group.seriesTitle}</span>
+                                <span
+                                  className="cal-ep-episode"
+                                  style={{
+                                    color: groupPremiereType
+                                      ? currentTheme.status.warning
+                                      : 'rgba(255,255,255,0.7)',
+                                  }}
+                                >
+                                  S{String(firstEp.seasonNumber).padStart(2, '0')} E
+                                  {String(firstEp.episodeNumber).padStart(2, '0')}–E
+                                  {String(lastEp.episodeNumber).padStart(2, '0')}
+                                </span>
+                                <span className="cal-ep-name">
+                                  {group.episodes.length} Folgen · {watchedInGroup} gesehen
+                                </span>
+                              </div>
+                            </div>
+                            {/* Mobile: poster + info */}
+                            {group.episodes[0]?.poster && (
                               <img
-                                src={backdrops[group.seriesId] || group.episodes[0]?.poster}
+                                src={group.episodes[0].poster}
                                 alt=""
-                                className="cal-ep-poster"
+                                className="cal-ep-poster cal-ep-poster-mobile"
                               />
                             )}
-                            <div className="cal-ep-info">
+                            <div className="cal-ep-info cal-ep-info-mobile">
                               <span
                                 className="cal-ep-title"
                                 style={{ color: currentTheme.text.primary }}
@@ -429,6 +627,7 @@ export const CalendarPage = () => {
                               </span>
                             </div>
                             <div
+                              className="cal-ep-expand-mobile"
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
