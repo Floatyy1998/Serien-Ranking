@@ -16,3 +16,4 @@ export { TabSwitcher } from './TabSwitcher';
 export { ProgressBar } from './ProgressBar';
 export { ScrollToTopButton } from './ScrollToTopButton';
 export { VisuallyHidden } from './VisuallyHidden';
+export { CatchUpDialog } from './CatchUpDialog';

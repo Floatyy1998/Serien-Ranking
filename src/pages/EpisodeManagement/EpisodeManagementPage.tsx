@@ -21,7 +21,8 @@ import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { Series } from '../../types/Series';
-import { PageHeader } from '../../components/ui';
+import { PageHeader, CatchUpDialog } from '../../components/ui';
+import { PlaylistAddCheck } from '@mui/icons-material';
 import './EpisodeManagementPage.css';
 
 function getEpisodeRuntime(
@@ -42,6 +43,7 @@ export const EpisodeManagementPage = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const [showWatchDialog, setShowWatchDialog] = useState(false);
+  const [showCatchUpDialog, setShowCatchUpDialog] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<{
     seasonIndex: number;
     episodeIndex: number;
@@ -255,6 +257,64 @@ export const EpisodeManagementPage = () => {
     }
   };
 
+  const handleCatchUp = async (targetSeasonIndex: number, targetEpisodeIndex: number) => {
+    if (!series || !user) return;
+
+    try {
+      const now = new Date().toISOString();
+      const updatedSeasons = series.seasons.map((season, sIdx) => {
+        const eps = Array.isArray(season.episodes)
+          ? season.episodes
+          : season.episodes
+            ? (Object.values(season.episodes) as typeof season.episodes)
+            : [];
+
+        if (sIdx < targetSeasonIndex) {
+          // Mark all episodes in earlier seasons as watched
+          return {
+            ...season,
+            episodes: eps.map((ep) =>
+              ep.watched
+                ? ep
+                : {
+                    ...ep,
+                    watched: true,
+                    watchCount: 1,
+                    firstWatchedAt: now,
+                    lastWatchedAt: now,
+                  }
+            ),
+          };
+        } else if (sIdx === targetSeasonIndex) {
+          // Mark episodes before target as watched
+          return {
+            ...season,
+            episodes: eps.map((ep, eIdx) =>
+              eIdx < targetEpisodeIndex && !ep.watched
+                ? {
+                    ...ep,
+                    watched: true,
+                    watchCount: 1,
+                    firstWatchedAt: now,
+                    lastWatchedAt: now,
+                  }
+                : ep
+            ),
+          };
+        }
+        return season;
+      });
+
+      const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
+      await seasonsRef.set(updatedSeasons);
+
+      // Jump to the target season
+      setSelectedSeason(targetSeasonIndex);
+    } catch (error) {
+      console.error('Failed to catch up episodes:', error);
+    }
+  };
+
   const handleSeasonToggle = async (
     seasonIndex: number,
     mode: 'watch' | 'unwatch' | 'rewatch' = 'watch'
@@ -414,9 +474,15 @@ export const EpisodeManagementPage = () => {
             </button>
           </div>
         ) : (
-          <button className="mark-all-button" onClick={() => handleSeasonToggle(selectedSeason)}>
-            Alle als gesehen markieren
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button className="mark-all-button" onClick={() => handleSeasonToggle(selectedSeason)}>
+              Alle als gesehen markieren
+            </button>
+            <button className="catch-up-button" onClick={() => setShowCatchUpDialog(true)}>
+              <PlaylistAddCheck style={{ fontSize: '16px' }} />
+              Ich bin bei...
+            </button>
+          </div>
         )}
       </div>
 
@@ -515,6 +581,14 @@ export const EpisodeManagementPage = () => {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Catch Up Dialog */}
+      <CatchUpDialog
+        open={showCatchUpDialog}
+        onClose={() => setShowCatchUpDialog(false)}
+        series={series}
+        onConfirm={handleCatchUp}
+      />
 
       {/* Watch Count Dialog */}
       {showWatchDialog && selectedEpisode && (

@@ -324,7 +324,14 @@ export const HomePage: React.FC = () => {
       message:
         'Du kannst jetzt deine Homepage-Sektionen sortieren und ausblenden! Gehe zu Profil → Homepage Layout um es auszuprobieren.',
       timestamp: new Date('2026-02-28T12:00:00').getTime(),
-      navigateTo: '/home-layout',
+      navigateTo: '/patch-notes',
+    },
+    {
+      id: 'announcement_updates-2026-03',
+      title: 'Neue Features: Kalender, Fortschritt & mehr',
+      message: 'Neuer Kalender, Progress-Bars, Provider-Filter & Schnellmarkierung.',
+      timestamp: new Date('2026-03-01T12:00:00').getTime(),
+      navigateTo: '/patch-notes',
     },
   ];
 
@@ -987,7 +994,7 @@ export const HomePage: React.FC = () => {
           calendar: {
             icon: <CalendarToday style={{ fontSize: '18px' }} />,
             label: 'Kalender',
-            path: '/new-episodes',
+            path: '/calendar',
             color: currentTheme.status.success,
           },
           history: {

@@ -79,11 +79,17 @@ const DiscussionFeedPage = lazy(() =>
 const CountdownPage = lazy(() =>
   import('./pages/Countdown').then((m) => ({ default: m.CountdownPage }))
 );
+const CalendarPage = lazy(() =>
+  import('./pages/Calendar').then((m) => ({ default: m.CalendarPage }))
+);
 const OnboardingPage = lazy(() =>
   import('./pages/Onboarding').then((m) => ({ default: m.OnboardingPage }))
 );
 const LeaderboardPage = lazy(() =>
   import('./pages/Leaderboard').then((m) => ({ default: m.LeaderboardPage }))
+);
+const PatchNotesPage = lazy(() =>
+  import('./pages/PatchNotes').then((m) => ({ default: m.PatchNotesPage }))
 );
 
 const PageLoader = () => (
@@ -396,6 +402,22 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <LeaderboardPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/patch-notes"
+            element={
+              <Layout hideNav>
+                <PatchNotesPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <Layout hideNav>
+                <CalendarPage />
               </Layout>
             }
           />
