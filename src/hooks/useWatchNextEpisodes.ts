@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import { Series } from '../types/Series';
-import { getNextRewatchEpisode, hasActiveRewatch } from '../lib/validation/rewatch.utils';
+import {
+  getNextRewatchEpisode,
+  getRewatchProgress,
+  hasActiveRewatch,
+} from '../lib/validation/rewatch.utils';
 import { getImageUrl } from '../utils/imageUrl';
 
 export interface NextEpisode {
@@ -17,6 +21,15 @@ export interface NextEpisode {
   isRewatch?: boolean;
   currentWatchCount?: number;
   targetWatchCount?: number;
+  // Progress-Daten
+  totalAiredEpisodes: number;
+  watchedEpisodes: number;
+  remainingEpisodes: number;
+  progress: number;
+  currentSeasonOf: string;
+  estimatedMinutesLeft: number;
+  // Provider
+  providerNames: string[];
 }
 
 export const useWatchNextEpisodes = (
@@ -25,7 +38,8 @@ export const useWatchNextEpisodes = (
   showRewatches: boolean,
   sortOption: string,
   customOrderActive: boolean,
-  watchlistOrder: number[]
+  watchlistOrder: number[],
+  providerFilter: string | null = null
 ): NextEpisode[] => {
   return useMemo(() => {
     const episodes: NextEpisode[] = [];
@@ -42,6 +56,11 @@ export const useWatchNextEpisodes = (
         ? series.seasons
         : Object.values(series.seasons);
       if (!seasonsArray.length) return false;
+      // Provider filter
+      if (providerFilter) {
+        const providers = series.provider?.provider?.map((p) => p.name) || [];
+        if (!providers.some((name) => name === providerFilter)) return false;
+      }
       return true;
     });
 
@@ -59,6 +78,30 @@ export const useWatchNextEpisodes = (
         ? series.seasons
         : (Object.values(series.seasons) as typeof series.seasons);
 
+      // Calculate progress data for this series
+      let totalAiredEpisodes = 0;
+      let watchedEpisodes = 0;
+      for (const season of seasonsArray) {
+        const epsList = Array.isArray(season.episodes)
+          ? season.episodes
+          : season.episodes
+            ? (Object.values(season.episodes) as typeof season.episodes)
+            : [];
+        for (const ep of epsList) {
+          if (ep.air_date) {
+            const epDate = new Date(ep.air_date);
+            if (epDate <= today) {
+              totalAiredEpisodes++;
+              if (ep.watched) watchedEpisodes++;
+            }
+          }
+        }
+      }
+      const remainingEpisodes = totalAiredEpisodes - watchedEpisodes;
+      const progress =
+        totalAiredEpisodes > 0 ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100) : 0;
+      const providerNames = series.provider?.provider?.map((p) => p.name) || [];
+
       // Collect rewatch episodes for series with active rewatches
       if (hasActiveRewatch(series)) {
         const rewatchEpisode = getNextRewatchEpisode(series);
@@ -68,6 +111,13 @@ export const useWatchNextEpisodes = (
           );
           if (seasonIndex !== -1) {
             const ep = seasonsArray[seasonIndex]?.episodes?.[rewatchEpisode.episodeIndex];
+            // Calculate rewatch-specific progress
+            const rewatchProg = getRewatchProgress(series);
+            const rewatchRemaining = rewatchProg.total - rewatchProg.current;
+            const rewatchPercent =
+              rewatchProg.total > 0
+                ? Math.round((rewatchProg.current / rewatchProg.total) * 100)
+                : 0;
             rewatches.push({
               seriesId: series.id,
               seriesTitle: series.title,
@@ -82,6 +132,13 @@ export const useWatchNextEpisodes = (
               isRewatch: true,
               currentWatchCount: rewatchEpisode.currentWatchCount,
               targetWatchCount: rewatchEpisode.targetWatchCount,
+              totalAiredEpisodes: rewatchProg.total,
+              watchedEpisodes: rewatchProg.current,
+              remainingEpisodes: rewatchRemaining,
+              progress: rewatchPercent,
+              currentSeasonOf: `S${rewatchEpisode.seasonNumber} von S${series.seasonCount}`,
+              estimatedMinutesLeft: rewatchRemaining * (series.episodeRuntime || 45),
+              providerNames,
             });
           }
         }
@@ -117,6 +174,14 @@ export const useWatchNextEpisodes = (
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
               airDate: episode.air_date,
               runtime: episode.runtime || series.episodeRuntime || 45,
+              totalAiredEpisodes,
+              watchedEpisodes,
+              remainingEpisodes,
+              progress,
+              currentSeasonOf: `S${season.seasonNumber + 1} von S${series.seasonCount}`,
+              estimatedMinutesLeft:
+                remainingEpisodes * (episode.runtime || series.episodeRuntime || 45),
+              providerNames,
             });
             foundUnwatched = true;
             break;
@@ -144,6 +209,10 @@ export const useWatchNextEpisodes = (
             );
           }
           return 0;
+        } else if (field === 'progress') {
+          return (a.progress - b.progress) * orderMultiplier;
+        } else if (field === 'remaining') {
+          return (a.remainingEpisodes - b.remainingEpisodes) * orderMultiplier;
         }
         return 0;
       });
@@ -160,5 +229,13 @@ export const useWatchNextEpisodes = (
 
     // Prepend rewatches when dropdown is open
     return showRewatches ? [...rewatches, ...sortedEpisodes] : sortedEpisodes;
-  }, [seriesList, filterInput, showRewatches, sortOption, customOrderActive, watchlistOrder]);
+  }, [
+    seriesList,
+    filterInput,
+    showRewatches,
+    sortOption,
+    customOrderActive,
+    watchlistOrder,
+    providerFilter,
+  ]);
 };

@@ -55,6 +55,26 @@ export const WatchNextPage = () => {
   const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
   const [hiddenEpisodes, setHiddenEpisodes] = useState<Set<string>>(new Set());
   const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
+  const [providerFilter, setProviderFilter] = useState<string | null>(
+    localStorage.getItem('watchNextProvider') || null
+  );
+
+  // Extract unique providers from watchlist series
+  const availableProviders = useMemo(() => {
+    const providerSet = new Map<string, string>();
+    seriesList
+      .filter((s) => s.watchlist)
+      .forEach((s) => {
+        s.provider?.provider?.forEach((p) => {
+          if (p.name && !providerSet.has(p.name)) {
+            providerSet.set(p.name, p.logo || '');
+          }
+        });
+      });
+    return Array.from(providerSet.entries())
+      .map(([name, logo]) => ({ name, logo }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [seriesList]);
 
   // Use extracted hooks
   const nextEpisodes = useWatchNextEpisodes(
@@ -64,7 +84,8 @@ export const WatchNextPage = () => {
     sortOption,
     customOrderActive,
     // watchlistOrder from drag/drop hook below - we need the value, so we access it after
-    [] // placeholder, will be overridden
+    [], // placeholder, will be overridden
+    providerFilter
   );
 
   const {
@@ -91,7 +112,8 @@ export const WatchNextPage = () => {
     showRewatches,
     sortOption,
     customOrderActive,
-    watchlistOrder
+    watchlistOrder,
+    providerFilter
   );
 
   // Scroll position restore
@@ -151,6 +173,14 @@ export const WatchNextPage = () => {
   useEffect(() => {
     localStorage.setItem('watchNextSortOption', sortOption);
   }, [sortOption]);
+
+  useEffect(() => {
+    if (providerFilter) {
+      localStorage.setItem('watchNextProvider', providerFilter);
+    } else {
+      localStorage.removeItem('watchNextProvider');
+    }
+  }, [providerFilter]);
 
   // Count active rewatches for the dropdown header
   const activeRewatchCount = useMemo(() => {
@@ -546,7 +576,170 @@ export const WatchNextPage = () => {
                         <ArrowDownward style={{ fontSize: '14px' }} />
                       ))}
                   </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleSort('progress')}
+                    style={{
+                      padding: '8px 14px',
+                      background:
+                        !customOrderActive && sortOption.startsWith('progress')
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                          : 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color:
+                        !customOrderActive && sortOption.startsWith('progress')
+                          ? 'white'
+                          : currentTheme.text.primary,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      boxShadow:
+                        !customOrderActive && sortOption.startsWith('progress')
+                          ? `0 4px 12px ${currentTheme.primary}40`
+                          : 'none',
+                    }}
+                  >
+                    Fortschritt
+                    {!customOrderActive &&
+                      sortOption.startsWith('progress') &&
+                      (sortOption.endsWith('asc') ? (
+                        <ArrowUpward style={{ fontSize: '14px' }} />
+                      ) : (
+                        <ArrowDownward style={{ fontSize: '14px' }} />
+                      ))}
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleSort('remaining')}
+                    style={{
+                      padding: '8px 14px',
+                      background:
+                        !customOrderActive && sortOption.startsWith('remaining')
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                          : 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color:
+                        !customOrderActive && sortOption.startsWith('remaining')
+                          ? 'white'
+                          : currentTheme.text.primary,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      boxShadow:
+                        !customOrderActive && sortOption.startsWith('remaining')
+                          ? `0 4px 12px ${currentTheme.primary}40`
+                          : 'none',
+                    }}
+                  >
+                    Übrig
+                    {!customOrderActive &&
+                      sortOption.startsWith('remaining') &&
+                      (sortOption.endsWith('asc') ? (
+                        <ArrowUpward style={{ fontSize: '14px' }} />
+                      ) : (
+                        <ArrowDownward style={{ fontSize: '14px' }} />
+                      ))}
+                  </motion.button>
                 </HorizontalScrollContainer>
+
+                {/* Provider Filter Chips */}
+                {availableProviders.length > 0 && (
+                  <div style={{ marginTop: '10px' }}>
+                    <p
+                      style={{
+                        fontSize: '11px',
+                        color: currentTheme.text.muted,
+                        margin: '0 0 6px 0',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      Provider
+                    </p>
+                    <HorizontalScrollContainer gap={6} style={{}}>
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setProviderFilter(null)}
+                        style={{
+                          padding: '6px 12px',
+                          background: !providerFilter
+                            ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                            : 'rgba(255, 255, 255, 0.05)',
+                          border: 'none',
+                          borderRadius: '8px',
+                          color: !providerFilter ? 'white' : currentTheme.text.primary,
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0,
+                        }}
+                      >
+                        Alle
+                      </motion.button>
+                      {availableProviders.map((provider) => (
+                        <motion.button
+                          key={provider.name}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() =>
+                            setProviderFilter(
+                              providerFilter === provider.name ? null : provider.name
+                            )
+                          }
+                          style={{
+                            padding: '6px 10px',
+                            background:
+                              providerFilter === provider.name
+                                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                                : 'rgba(255, 255, 255, 0.05)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            color:
+                              providerFilter === provider.name
+                                ? 'white'
+                                : currentTheme.text.primary,
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {provider.logo && (
+                            <img
+                              src={`https://image.tmdb.org/t/p/w45${provider.logo}`}
+                              alt=""
+                              style={{
+                                width: '16px',
+                                height: '16px',
+                                borderRadius: '3px',
+                              }}
+                            />
+                          )}
+                          {provider.name}
+                        </motion.button>
+                      ))}
+                    </HorizontalScrollContainer>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -917,6 +1110,72 @@ export const WatchNextPage = () => {
                               >
                                 {getFormattedDate(episode.airDate)}
                               </p>
+                            )}
+                            {/* Progress Bar */}
+                            {episode.totalAiredEpisodes > 0 && (
+                              <div style={{ marginTop: '6px' }}>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      flex: 1,
+                                      height: '3px',
+                                      background: 'rgba(255, 255, 255, 0.08)',
+                                      borderRadius: '2px',
+                                      overflow: 'hidden',
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        width: `${episode.progress}%`,
+                                        height: '100%',
+                                        background:
+                                          episode.progress >= 90
+                                            ? currentTheme.status.success
+                                            : currentTheme.primary,
+                                        borderRadius: '2px',
+                                        transition: 'width 0.3s ease',
+                                      }}
+                                    />
+                                  </div>
+                                  <span
+                                    style={{
+                                      fontSize: '10px',
+                                      color: currentTheme.text.muted,
+                                      fontWeight: 600,
+                                      minWidth: '28px',
+                                      textAlign: 'right',
+                                    }}
+                                  >
+                                    {episode.progress}%
+                                  </span>
+                                </div>
+                                <p
+                                  style={{
+                                    fontSize: '10px',
+                                    margin: '2px 0 0 0',
+                                    color: currentTheme.text.muted,
+                                    opacity: 0.7,
+                                  }}
+                                >
+                                  {episode.remainingEpisodes > 0
+                                    ? `${episode.currentSeasonOf} · ${episode.remainingEpisodes} übrig${
+                                        episode.estimatedMinutesLeft >= 60
+                                          ? ` · ~${Math.round(episode.estimatedMinutesLeft / 60)}h`
+                                          : episode.estimatedMinutesLeft > 0
+                                            ? ` · ~${episode.estimatedMinutesLeft}min`
+                                            : ''
+                                      }`
+                                    : episode.isRewatch
+                                      ? episode.currentSeasonOf
+                                      : 'Wartet auf neue Folgen'}
+                                </p>
+                              </div>
                             )}
                           </div>
                           {editModeActive && (
