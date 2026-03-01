@@ -43,6 +43,7 @@ export const useTodayEpisodes = () => {
 
     for (let i = 0; i < seriesList.length; i++) {
       const series = seriesList[i];
+      if (series.hidden) continue;
       const seasons = series.seasons;
       if (!seasons) continue;
 

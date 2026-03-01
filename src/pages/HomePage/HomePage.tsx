@@ -1453,7 +1453,7 @@ export const HomePage: React.FC = () => {
           <Chip
             icon={<NewReleases />}
             label={`${stats.todayEpisodes} Heute`}
-            onClick={() => navigate('/new-episodes')}
+            onClick={() => navigate('/calendar')}
             style={{
               background: `${currentTheme.status.warning}1A`,
               border: `1px solid ${currentTheme.status.warning}4D`,
@@ -1966,7 +1966,7 @@ export const HomePage: React.FC = () => {
                       icon={<NewReleases />}
                       iconColor={currentTheme.status.warning}
                       title="Heute Neu"
-                      onSeeAll={() => navigate('/new-episodes')}
+                      onSeeAll={() => navigate('/calendar')}
                     />
                     <div
                       style={{

@@ -115,7 +115,7 @@ export const BottomNavigation = () => {
     location.pathname.includes('/movie/') ||
     location.pathname.includes('/rating/') || // Only hide for /rating/:type/:id
     location.pathname.includes('/episodes') ||
-    location.pathname === '/new-episodes';
+    location.pathname === '/calendar';
 
   const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
     itemCount: navItems.length,
