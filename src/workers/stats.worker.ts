@@ -23,6 +23,7 @@ interface WorkerSeries {
   nmr?: number;
   title: string;
   watchlist?: boolean;
+  hidden?: boolean;
   episodeRuntime?: number;
   seasons?: WorkerSeason[];
   poster?: string | { poster?: string };
@@ -127,7 +128,7 @@ function calculateStats(data: {
                 watchedEpisodes++;
               }
 
-              if (airDateTime === todayTime) {
+              if (airDateTime === todayTime && !series.hidden) {
                 todayTotalEpisodes++;
               }
             }

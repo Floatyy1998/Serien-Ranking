@@ -33,10 +33,14 @@ export const CalendarPage = () => {
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
   const [weekOffset, setWeekOffset] = useState(0);
+  const [watchlistOnly, setWatchlistOnly] = useState<boolean>(() => {
+    return localStorage.getItem('calendarWatchlistOnly') === 'true';
+  });
 
   const { schedule, monday, sunday, totalEpisodes, watchedCount } = useWeeklyEpisodes(
     seriesList,
-    weekOffset
+    weekOffset,
+    watchlistOnly
   );
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -169,12 +173,46 @@ export const CalendarPage = () => {
         {/* Week Navigation */}
         {weekNav}
 
+        {/* Filter */}
+        <div className="cal-filter-row">
+          {['Alle Serien', 'Watchlist'].map((label) => {
+            const isActive =
+              (label === 'Watchlist' && watchlistOnly) ||
+              (label === 'Alle Serien' && !watchlistOnly);
+            return (
+              <button
+                key={label}
+                className="cal-filter-chip"
+                onClick={() => {
+                  const next = label === 'Watchlist';
+                  setWatchlistOnly(next);
+                  localStorage.setItem('calendarWatchlistOnly', String(next));
+                }}
+                style={
+                  isActive
+                    ? {
+                        background: `${currentTheme.primary}20`,
+                        color: currentTheme.primary,
+                        borderColor: `${currentTheme.primary}50`,
+                      }
+                    : {}
+                }
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Stats */}
         {totalEpisodes > 0 && (
           <div className="cal-stats">
             <div
               className="cal-stat-item"
-              style={{ background: `${currentTheme.primary}15`, color: currentTheme.primary }}
+              style={{
+                background: `${currentTheme.primary}15`,
+                color: currentTheme.primary,
+              }}
             >
               {totalEpisodes} gesamt
             </div>
@@ -239,11 +277,13 @@ export const CalendarPage = () => {
                         return (
                           <div
                             key={groupKey}
-                            className="cal-ep"
+                            className={`cal-ep${ep.premiereType ? ' cal-ep-premiere' : ''}`}
                             style={{
-                              borderLeftColor: ep.watched
-                                ? currentTheme.status.success
-                                : currentTheme.primary,
+                              borderLeftColor: ep.premiereType
+                                ? currentTheme.status.warning
+                                : ep.watched
+                                  ? currentTheme.status.success
+                                  : currentTheme.primary,
                             }}
                             onClick={() =>
                               navigate(
@@ -265,10 +305,27 @@ export const CalendarPage = () => {
                               </span>
                               <span
                                 className="cal-ep-episode"
-                                style={{ color: currentTheme.primary }}
+                                style={{
+                                  color: ep.premiereType
+                                    ? currentTheme.status.warning
+                                    : currentTheme.primary,
+                                }}
                               >
                                 S{String(ep.seasonNumber).padStart(2, '0')}E
                                 {String(ep.episodeNumber).padStart(2, '0')}
+                                {ep.premiereType && (
+                                  <span
+                                    className="cal-ep-premiere-badge"
+                                    style={{
+                                      background: `${currentTheme.status.warning}20`,
+                                      color: currentTheme.status.warning,
+                                    }}
+                                  >
+                                    {ep.premiereType === 'season-start'
+                                      ? 'Staffelstart'
+                                      : 'Rückkehr'}
+                                  </span>
+                                )}
                               </span>
                               <span
                                 className="cal-ep-name"
@@ -305,25 +362,33 @@ export const CalendarPage = () => {
                       const firstEp = group.episodes[0];
                       const lastEp = group.episodes[group.episodes.length - 1];
 
+                      const groupPremiereType = group.episodes.find(
+                        (ep) => ep.premiereType
+                      )?.premiereType;
+
                       return (
                         <div
                           key={groupKey}
-                          className={`cal-ep-group ${isExpanded ? 'is-open' : ''}`}
+                          className={`cal-ep-group${groupPremiereType ? ' cal-ep-premiere' : ''} ${isExpanded ? 'is-open' : ''}`}
                           style={{
-                            borderLeftColor: allWatched
-                              ? currentTheme.status.success
-                              : currentTheme.primary,
+                            borderLeftColor: groupPremiereType
+                              ? currentTheme.status.warning
+                              : allWatched
+                                ? currentTheme.status.success
+                                : currentTheme.primary,
                           }}
                         >
                           <div
                             className="cal-ep cal-ep-group-header"
                             onClick={() => toggleGroup(groupKey)}
                           >
-                            <img
-                              src={backdrops[group.seriesId] || ''}
-                              alt=""
-                              className="cal-ep-poster"
-                            />
+                            {(backdrops[group.seriesId] || group.episodes[0]?.poster) && (
+                              <img
+                                src={backdrops[group.seriesId] || group.episodes[0]?.poster}
+                                alt=""
+                                className="cal-ep-poster"
+                              />
+                            )}
                             <div className="cal-ep-info">
                               <span
                                 className="cal-ep-title"
@@ -333,11 +398,28 @@ export const CalendarPage = () => {
                               </span>
                               <span
                                 className="cal-ep-episode"
-                                style={{ color: currentTheme.primary }}
+                                style={{
+                                  color: groupPremiereType
+                                    ? currentTheme.status.warning
+                                    : currentTheme.primary,
+                                }}
                               >
                                 S{String(firstEp.seasonNumber).padStart(2, '0')} E
                                 {String(firstEp.episodeNumber).padStart(2, '0')}–E
                                 {String(lastEp.episodeNumber).padStart(2, '0')}
+                                {groupPremiereType && (
+                                  <span
+                                    className="cal-ep-premiere-badge"
+                                    style={{
+                                      background: `${currentTheme.status.warning}20`,
+                                      color: currentTheme.status.warning,
+                                    }}
+                                  >
+                                    {groupPremiereType === 'season-start'
+                                      ? 'Staffelstart'
+                                      : 'Rückkehr'}
+                                  </span>
+                                )}
                               </span>
                               <span
                                 className="cal-ep-name"

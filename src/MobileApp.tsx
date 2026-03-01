@@ -13,9 +13,6 @@ const WatchNextPage = lazy(() =>
 );
 const RatingsPage = lazy(() => import('./pages/Ratings').then((m) => ({ default: m.RatingsPage })));
 const ProfilePage = lazy(() => import('./pages/Profile').then((m) => ({ default: m.ProfilePage })));
-const NewEpisodesPage = lazy(() =>
-  import('./pages/NewEpisodes').then((m) => ({ default: m.NewEpisodesPage }))
-);
 const RecentlyWatchedPage = lazy(() =>
   import('./pages/RecentlyWatched').then((m) => ({ default: m.RecentlyWatchedPage }))
 );
@@ -228,14 +225,6 @@ export const MobileApp = () => {
           />
 
           {/* Additional Pages */}
-          <Route
-            path="/new-episodes"
-            element={
-              <Layout>
-                <NewEpisodesPage />
-              </Layout>
-            }
-          />
           <Route
             path="/recently-watched"
             element={

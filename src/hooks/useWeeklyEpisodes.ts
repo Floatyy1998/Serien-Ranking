@@ -16,6 +16,7 @@ export interface WeeklyEpisode {
   episodeIndex: number;
   runtime: number;
   providerNames: string[];
+  premiereType?: 'season-start' | 'mid-season-return';
 }
 
 export type WeeklySchedule = Map<string, WeeklyEpisode[]>;
@@ -57,7 +58,8 @@ export function getWeekNumber(date: Date): number {
 
 export const useWeeklyEpisodes = (
   seriesList: Series[],
-  weekOffset: number
+  weekOffset: number,
+  watchlistOnly: boolean = false
 ): {
   schedule: WeeklySchedule;
   monday: Date;
@@ -78,7 +80,7 @@ export const useWeeklyEpisodes = (
       schedule.set(toDateKey(day), []);
     }
 
-    const visibleSeries = seriesList.filter((s) => !s.hidden);
+    const visibleSeries = seriesList.filter((s) => !s.hidden && (!watchlistOnly || s.watchlist));
 
     for (const series of visibleSeries) {
       const seasonsArray = Array.isArray(series.seasons)
@@ -108,6 +110,26 @@ export const useWeeklyEpisodes = (
           if (airDate < monday || airDate > sunday) continue;
 
           const dateKey = toDateKey(airDate);
+
+          // Detect premiere type
+          let premiereType: WeeklyEpisode['premiereType'];
+          if (eIdx === 0) {
+            premiereType = 'season-start';
+          } else {
+            // Check gap to previous episode for mid-season return
+            const prevEp = episodes[eIdx - 1];
+            const prevAirStr = prevEp?.air_date || prevEp?.airDate || prevEp?.firstAired;
+            if (prevAirStr) {
+              const prevAirDate = new Date(prevAirStr);
+              if (!isNaN(prevAirDate.getTime())) {
+                const gapDays = (airDate.getTime() - prevAirDate.getTime()) / (1000 * 60 * 60 * 24);
+                if (gapDays > 14) {
+                  premiereType = 'mid-season-return';
+                }
+              }
+            }
+          }
+
           const entry: WeeklyEpisode = {
             seriesId: series.id,
             seriesNmr: series.nmr,
@@ -122,6 +144,7 @@ export const useWeeklyEpisodes = (
             episodeIndex: eIdx,
             runtime: ep.runtime || series.episodeRuntime || 45,
             providerNames: series.provider?.provider?.map((p) => p.name) || [],
+            premiereType,
           };
 
           const dayEpisodes = schedule.get(dateKey);
@@ -143,5 +166,5 @@ export const useWeeklyEpisodes = (
     }
 
     return { schedule, monday, sunday, totalEpisodes, watchedCount };
-  }, [seriesList, weekOffset]);
+  }, [seriesList, weekOffset, watchlistOnly]);
 };
