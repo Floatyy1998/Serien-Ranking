@@ -45,6 +45,7 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
 import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
+import { useSeasonalRecommendations } from '../../hooks/useSeasonalRecommendations';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
@@ -160,6 +161,7 @@ export const HomePage: React.FC = () => {
     'continue-watching',
     'rewatches',
     'today-episodes',
+    'seasonal',
     'trending',
     'top-rated',
     'for-you',
@@ -565,6 +567,7 @@ export const HomePage: React.FC = () => {
   // Use optimized hooks for heavy computations
   const stats = useWebWorkerStatsOptimized();
   const { trending } = useTMDBTrending(); // Use actual TMDB trending data
+  const seasonal = useSeasonalRecommendations();
   const topRated = useTopRated();
 
   // Handle rewatch episode swipe complete
@@ -2190,6 +2193,121 @@ export const HomePage: React.FC = () => {
                           })}
                       </AnimatePresence>
                     </div>
+                  </section>
+                ) : null;
+
+              case 'seasonal':
+                return seasonal.items.length > 0 ? (
+                  <section key="seasonal" style={{ marginBottom: '32px' }}>
+                    <SectionHeader
+                      icon={<AutoAwesome />}
+                      iconColor={seasonal.iconColor}
+                      title={seasonal.title}
+                    />
+                    <HorizontalScrollContainer gap={12} style={{ padding: '0 20px' }}>
+                      {seasonal.items.map((item) => (
+                        <motion.div
+                          key={`seasonal-${item.type}-${item.id}`}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => navigate(`/${item.type}/${item.id}`)}
+                          style={{
+                            minWidth: window.innerWidth >= 768 ? '240px' : '140px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <div style={{ position: 'relative', marginBottom: '6px' }}>
+                            <img
+                              src={item.poster}
+                              alt={item.title}
+                              decoding="async"
+                              style={{
+                                width: '100%',
+                                aspectRatio: '2/3',
+                                objectFit: 'cover',
+                                borderRadius: '10px',
+                              }}
+                            />
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '4px',
+                                left: '4px',
+                                background: seasonal.badgeGradient,
+                                color: 'white',
+                                borderRadius: '6px',
+                                padding: '2px 6px',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '2px',
+                                zIndex: 1,
+                              }}
+                            >
+                              <AutoAwesome style={{ fontSize: '10px' }} />
+                              {seasonal.title}
+                            </div>
+                            <div
+                              style={{
+                                position: 'absolute',
+                                bottom: '4px',
+                                left: '4px',
+                                background:
+                                  item.type === 'movie'
+                                    ? 'rgba(255, 193, 7, 0.9)'
+                                    : 'rgba(102, 126, 234, 0.9)',
+                                color: 'white',
+                                borderRadius: '6px',
+                                padding: '2px 6px',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '2px',
+                                backdropFilter: 'blur(10px)',
+                              }}
+                            >
+                              {item.type === 'movie' ? (
+                                <>
+                                  <MovieIcon style={{ fontSize: '10px' }} />
+                                  Film
+                                </>
+                              ) : (
+                                <>
+                                  <Tv style={{ fontSize: '10px' }} />
+                                  Serie
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <h3
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              margin: 0,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {item.title}
+                          </h3>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '14px',
+                              color: currentTheme.text.muted,
+                              marginTop: '2px',
+                            }}
+                          >
+                            <Star style={{ fontSize: '14px', color: '#ffd43b' }} />
+                            <span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </HorizontalScrollContainer>
                   </section>
                 ) : null;
 
