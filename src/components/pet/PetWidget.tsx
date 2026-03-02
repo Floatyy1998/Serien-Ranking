@@ -316,8 +316,8 @@ export const PetWidget: React.FC = () => {
           backdropFilter: 'blur(10px)',
           borderRadius: '16px',
           padding: '12px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          border: `1px solid ${currentTheme.border}44`,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
           zIndex: 1001,
           cursor: 'pointer',
           maxWidth: '160px',
@@ -337,7 +337,7 @@ export const PetWidget: React.FC = () => {
             border: 'none',
             color: currentTheme.text.secondary,
             cursor: 'pointer',
-            fontSize: '14px',
+            fontSize: '15px',
             width: '18px',
             height: '18px',
             borderRadius: '50%',
@@ -371,8 +371,9 @@ export const PetWidget: React.FC = () => {
             style={{
               color: currentTheme.text.primary,
               margin: '0 0 4px',
-              fontSize: '14px',
-              fontWeight: '600',
+              fontSize: '15px',
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
             }}
           >
             Hol dir ein Pet!
@@ -380,7 +381,7 @@ export const PetWidget: React.FC = () => {
           <p
             style={{
               color: currentTheme.text.secondary,
-              fontSize: '11px',
+              fontSize: '12px',
               margin: 0,
               opacity: 0.8,
             }}
@@ -559,7 +560,7 @@ export const PetWidget: React.FC = () => {
                       position: 'absolute',
                       top: '-5px',
                       right: '-5px',
-                      fontSize: '14px',
+                      fontSize: '15px',
                     }}
                   >
                     🍖
@@ -577,7 +578,7 @@ export const PetWidget: React.FC = () => {
                     bottom: '-20px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     color: currentTheme.text.secondary,
                     whiteSpace: 'nowrap',
                     background: currentTheme.background.card + 'dd',

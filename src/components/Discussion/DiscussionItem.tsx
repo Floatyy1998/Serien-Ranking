@@ -74,7 +74,7 @@ export const DiscussionItem: React.FC<{
         borderRadius: '16px',
         padding: '14px',
         border: `1px solid ${currentTheme.border.default}`,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
       }}
     >
       {/* Header */}
@@ -125,7 +125,7 @@ export const DiscussionItem: React.FC<{
             <button
               onClick={() => navigate(`/friend/${discussion.userId}`)}
               style={{
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 700,
                 color: currentTheme.text.primary,
                 cursor: 'pointer',
@@ -136,7 +136,7 @@ export const DiscussionItem: React.FC<{
             >
               {discussion.username}
             </button>
-            <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
+            <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>
               {formatRelativeTime(discussion.createdAt)}
               {discussion.updatedAt && ' (bearb.)'}
             </span>
@@ -153,11 +153,11 @@ export const DiscussionItem: React.FC<{
                   background: `${currentTheme.status.warning}25`,
                   color: currentTheme.status.warning,
                   borderRadius: '8px',
-                  fontSize: '10px',
+                  fontSize: '11px',
                   fontWeight: 700,
                 }}
               >
-                <Warning style={{ fontSize: '12px' }} />
+                <Warning style={{ fontSize: '13px' }} />
                 SPOILER
               </span>
             )}
@@ -168,7 +168,7 @@ export const DiscussionItem: React.FC<{
                   background: `${currentTheme.primary}25`,
                   color: currentTheme.primary,
                   borderRadius: '8px',
-                  fontSize: '10px',
+                  fontSize: '11px',
                   fontWeight: 700,
                 }}
               >
@@ -206,7 +206,7 @@ export const DiscussionItem: React.FC<{
           {showSpoilerConfirm && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span
-                style={{ fontSize: '12px', color: currentTheme.status.warning, fontWeight: 500 }}
+                style={{ fontSize: '13px', color: currentTheme.status.warning, fontWeight: 500 }}
               >
                 Spoiler?
               </span>
@@ -219,7 +219,7 @@ export const DiscussionItem: React.FC<{
                   background: currentTheme.status.warning,
                   color: '#fff',
                   cursor: 'pointer',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   fontWeight: 600,
                 }}
               >
@@ -234,7 +234,7 @@ export const DiscussionItem: React.FC<{
                   background: 'transparent',
                   color: currentTheme.text.secondary,
                   cursor: 'pointer',
-                  fontSize: '11px',
+                  fontSize: '12px',
                 }}
               >
                 Nein
@@ -287,7 +287,7 @@ export const DiscussionItem: React.FC<{
           {/* Delete Confirm - inline */}
           {showDeleteConfirm && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: currentTheme.status.error, fontWeight: 500 }}>
+              <span style={{ fontSize: '13px', color: currentTheme.status.error, fontWeight: 500 }}>
                 Löschen?
               </span>
               <button
@@ -299,7 +299,7 @@ export const DiscussionItem: React.FC<{
                   background: currentTheme.status.error,
                   color: '#fff',
                   cursor: 'pointer',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   fontWeight: 600,
                 }}
               >
@@ -314,7 +314,7 @@ export const DiscussionItem: React.FC<{
                   background: 'transparent',
                   color: currentTheme.text.secondary,
                   cursor: 'pointer',
-                  fontSize: '11px',
+                  fontSize: '12px',
                 }}
               >
                 Nein
@@ -382,7 +382,7 @@ export const DiscussionItem: React.FC<{
               border: `1px solid ${currentTheme.border.default}`,
               background: currentTheme.background.card,
               color: currentTheme.text.primary,
-              fontSize: '14px',
+              fontSize: '15px',
               resize: 'vertical',
               fontFamily: 'inherit',
               boxSizing: 'border-box',
@@ -408,7 +408,7 @@ export const DiscussionItem: React.FC<{
                 border: `1px solid ${editIsSpoiler ? currentTheme.status.warning + '60' : currentTheme.border.default}`,
                 background: editIsSpoiler ? `${currentTheme.status.warning}15` : 'transparent',
                 color: editIsSpoiler ? currentTheme.status.warning : currentTheme.text.secondary,
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: 500,
               }}
             >
@@ -436,7 +436,7 @@ export const DiscussionItem: React.FC<{
                   background: 'transparent',
                   color: currentTheme.text.secondary,
                   cursor: 'pointer',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: 600,
                 }}
               >
@@ -454,7 +454,7 @@ export const DiscussionItem: React.FC<{
                     : currentTheme.background.surface,
                   color: editTitle.trim() ? '#fff' : currentTheme.text.muted,
                   cursor: editTitle.trim() ? 'pointer' : 'default',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: 600,
                 }}
               >
@@ -479,7 +479,7 @@ export const DiscussionItem: React.FC<{
               borderRadius: '12px',
               color: currentTheme.status.warning,
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
@@ -549,9 +549,9 @@ export const DiscussionItem: React.FC<{
               borderRadius: '20px',
               cursor: 'pointer',
               color: isLiked ? '#e91e63' : currentTheme.text.muted,
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
-              transition: 'all 0.2s',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             {isLiked ? (

@@ -167,7 +167,15 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Uhrzeitverteilung
         </h3>
         <div style={{ width: '100%', height: 200 }}>
@@ -195,7 +203,8 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                           border: `1px solid ${primaryColor}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                          boxShadow:
+                            '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
                         <p
@@ -245,7 +254,15 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           overflowX: 'auto',
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 20px',
+          }}
+        >
           Wochentag x Uhrzeit
         </h3>
 
@@ -265,7 +282,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                 border: `1px solid ${primaryColor}50`,
                 borderRadius: 12,
                 padding: '12px 16px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                 zIndex: 10,
                 textAlign: 'center',
               }}
@@ -396,7 +413,15 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
 
       {/* Insights */}
       <div style={{ padding: '0 20px' }}>
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Insights
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>

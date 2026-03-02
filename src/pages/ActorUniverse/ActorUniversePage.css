@@ -1,0 +1,398 @@
+/* ActorUniversePage - Layout styles with au- prefix */
+
+/* ===== Page Shell ===== */
+.au-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.au-bg-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.au-bg-decoration--fixed {
+  position: fixed;
+  z-index: 0;
+}
+
+/* ===== Header ===== */
+.au-header {
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  backdrop-filter: blur(20px);
+  position: relative;
+  z-index: 10;
+}
+
+.au-header--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.au-header--loading {
+  position: relative;
+  z-index: 10;
+}
+
+.au-header-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.au-header-row--main {
+  margin-bottom: 16px;
+}
+
+.au-subtitle {
+  font-size: 13px;
+  margin: 4px 0 0 0;
+  letter-spacing: 0.3px;
+}
+
+/* ===== Tabs ===== */
+.au-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.au-tab-btn {
+  flex: 1;
+  padding: 12px 10px;
+  border-radius: 14px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.au-voice-toggle {
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Loading Screen ===== */
+.au-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  position: relative;
+  z-index: 5;
+}
+
+.au-loading-ring-container {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.au-loading-ring-outer {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border-width: 3px;
+  border-style: solid;
+}
+
+.au-loading-ring-inner {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.au-loading-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+}
+
+.au-loading-text {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.au-loading-progress-track {
+  width: 260px;
+  height: 8px;
+  border-radius: 10px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.au-loading-progress-fill {
+  height: 100%;
+  background-size: 200% 100%;
+  border-radius: 10px;
+}
+
+/* ===== Stats Banner ===== */
+.au-stats-banner {
+  margin: 16px 20px;
+  padding: 18px;
+  border-radius: 16px;
+  border-width: 1px;
+  border-style: solid;
+  position: relative;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.au-stats-decoration {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+}
+
+.au-stats-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.au-stats-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.au-stats-label {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.au-stats-names {
+  margin: 4px 0 0 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.au-stats-count {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ===== Modal ===== */
+.au-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.au-modal-sheet {
+  border-radius: 28px 28px 0 0;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow: auto;
+  position: relative;
+}
+
+.au-modal-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  border-radius: 28px 28px 0 0;
+  pointer-events: none;
+}
+
+.au-modal-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  margin: 0 auto 24px;
+}
+
+.au-modal-actor-header {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.au-modal-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border-width: 4px;
+  border-style: solid;
+  flex-shrink: 0;
+}
+
+.au-modal-series-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.au-modal-section-title {
+  margin: 0 0 14px 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.au-modal-section-title--connected {
+  margin-top: 28px;
+}
+
+.au-modal-series-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.au-modal-series-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.au-modal-series-poster {
+  width: 44px;
+  height: 66px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.au-modal-series-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.au-modal-series-character {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Modal Recommendations */
+.au-modal-rec-item {
+  min-width: 110px;
+  cursor: pointer;
+}
+
+.au-modal-rec-poster {
+  width: 110px;
+  height: 160px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.au-modal-rec-rating {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(10, 14, 26, 0.75);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.au-modal-rec-rating-text {
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+}
+
+.au-modal-rec-add-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.au-modal-rec-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Modal Connections */
+.au-modal-connections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.au-modal-connection-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.au-modal-connection-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border-width: 2px;
+  border-style: solid;
+}

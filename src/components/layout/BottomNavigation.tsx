@@ -173,7 +173,7 @@ export const BottomNavigation = () => {
                       variant={typeof item.badge === 'boolean' ? 'dot' : 'standard'}
                       sx={{
                         '& .MuiBadge-badge': {
-                          fontSize: '10px',
+                          fontSize: '11px',
                           height: '16px',
                           minWidth: '16px',
                           padding: '0 4px',
@@ -187,23 +187,23 @@ export const BottomNavigation = () => {
                   ) : (
                     <div className="nav-icon">{item.icon}</div>
                   )}
-
-                  {/* Active Indicator */}
-                  <AnimatePresence>
-                    {active && (
-                      <motion.div
-                        className="active-indicator"
-                        layoutId="activeTab"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                  </AnimatePresence>
                 </div>
 
                 <span className="nav-label">{item.label}</span>
+
+                {/* Active Indicator */}
+                <AnimatePresence>
+                  {active && (
+                    <motion.div
+                      className="active-indicator"
+                      layoutId="activeTab"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </AnimatePresence>
               </motion.button>
             );
           })}

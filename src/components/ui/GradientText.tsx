@@ -28,7 +28,7 @@ export const GradientText: React.FC<GradientTextProps> = ({
   }
 
   const fromColor = from || currentTheme?.primary || '#00fed7';
-  const toColor = to || currentTheme?.text.primary || '#ffffff';
+  const toColor = to || 'rgba(255, 255, 255, 0.9)';
 
   return (
     <Tag
@@ -36,6 +36,8 @@ export const GradientText: React.FC<GradientTextProps> = ({
         background: `linear-gradient(${angle}deg, ${fromColor}, ${toColor})`,
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
+        filter:
+          'drop-shadow(0 0 8px color-mix(in srgb, var(--theme-primary, #00fed7) 30%, transparent))',
         ...style,
       }}
     >

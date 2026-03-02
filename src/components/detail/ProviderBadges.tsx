@@ -200,8 +200,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
 
   const sizeStyles = {
     small: { width: 20, height: 20, fontSize: '9px' },
-    medium: { width: 28, height: 28, fontSize: '10px' },
-    large: { width: 36, height: 36, fontSize: '11px' },
+    medium: { width: 28, height: 28, fontSize: '11px' },
+    large: { width: 36, height: 36, fontSize: '12px' },
   };
 
   const style = sizeStyles[size];
@@ -255,7 +255,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
                 fontSize: style.fontSize,
                 fontWeight: 'bold',
                 color: 'white',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background:
+                  'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
               }}
             >
               {providerName.substring(0, 2).toUpperCase()}
@@ -335,7 +336,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
       {showNames && displayProviders.length === 1 && (
         <span
           style={{
-            fontSize: '11px',
+            fontSize: '12px',
             color: 'rgba(255, 255, 255, 0.6)',
             marginLeft: '4px',
           }}

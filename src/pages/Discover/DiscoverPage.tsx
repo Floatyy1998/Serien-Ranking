@@ -97,7 +97,12 @@ export const DiscoverPage = memo(() => {
       icon: NewReleases,
       color: currentTheme.status.success,
     },
-    { id: 'recommendations', label: 'Für dich', icon: Recommend, color: '#8b5cf6' },
+    {
+      id: 'recommendations',
+      label: 'Für dich',
+      icon: Recommend,
+      color: 'var(--theme-secondary-gradient, #8b5cf6)',
+    },
   ] as const;
 
   return (
@@ -280,11 +285,11 @@ export const DiscoverPage = memo(() => {
                       flexDirection: 'column',
                       alignItems: 'center',
                       gap: '4px',
-                      transition: 'all 0.2s ease',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
                     <Icon style={{ fontSize: '20px' }} />
-                    <span style={{ fontSize: '10px', fontWeight: 700 }}>{cat.label}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{cat.label}</span>
                   </motion.button>
                 );
               })}
@@ -329,7 +334,7 @@ export const DiscoverPage = memo(() => {
                         : `1px solid ${currentTheme.border.default}`,
                       borderRadius: '10px',
                       color: !selectedGenre ? currentTheme.primary : currentTheme.text.primary,
-                      fontSize: '12px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       cursor: 'pointer',
                       textAlign: 'center',
@@ -360,7 +365,7 @@ export const DiscoverPage = memo(() => {
                           selectedGenre === genre.id
                             ? currentTheme.primary
                             : currentTheme.text.primary,
-                        fontSize: '12px',
+                        fontSize: '13px',
                         fontWeight: 500,
                         cursor: 'pointer',
                         textAlign: 'center',
@@ -430,7 +435,7 @@ export const DiscoverPage = memo(() => {
                 >
                   Keine Empfehlungen verfügbar
                 </p>
-                <p style={{ fontSize: '13px', color: currentTheme.text.muted }}>
+                <p style={{ fontSize: '14px', color: currentTheme.text.muted }}>
                   {/* seriesList/movieList length check handled by fetch hook */}
                 </p>
               </motion.div>
@@ -438,7 +443,7 @@ export const DiscoverPage = memo(() => {
               <div>
                 <p
                   style={{
-                    fontSize: '13px',
+                    fontSize: '14px',
                     color: currentTheme.text.muted,
                     marginBottom: '20px',
                     textAlign: 'center',
@@ -628,7 +633,7 @@ export const DiscoverPage = memo(() => {
             >
               <Check style={{ fontSize: '18px' }} />
             </div>
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>{snackbar.message}</span>
+            <span style={{ fontSize: '15px', fontWeight: 600 }}>{snackbar.message}</span>
           </motion.div>
         )}
       </AnimatePresence>

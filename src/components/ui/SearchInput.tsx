@@ -41,20 +41,22 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           width: '100%',
           padding: '16px 16px 16px 48px',
           paddingRight: value ? '44px' : '16px',
-          background: currentTheme.background.default,
+          background: currentTheme.background.surface,
           border: `2px solid ${currentTheme.border.default}`,
-          borderRadius: '14px',
+          borderRadius: '16px',
           color: currentTheme.text.primary,
           fontSize: '16px',
           outline: 'none',
-          transition: 'all 0.2s ease',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           boxSizing: 'border-box',
         }}
         onFocus={(e) => {
           e.target.style.borderColor = currentTheme.primary;
+          e.target.style.boxShadow = `0 0 0 3px ${currentTheme.primary}20`;
         }}
         onBlur={(e) => {
           e.target.style.borderColor = currentTheme.border.default;
+          e.target.style.boxShadow = 'none';
         }}
       />
       {value && (

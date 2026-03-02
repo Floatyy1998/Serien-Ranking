@@ -38,7 +38,7 @@
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .refresh-button:active {
@@ -96,7 +96,7 @@
 
 .progress-text p {
   margin: 4px 0 0;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--color-text-secondary);
 }
 
@@ -135,11 +135,11 @@
   gap: 10px;
   padding: 12px 18px;
   border-radius: 14px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   min-height: 52px;
 }
@@ -162,13 +162,13 @@
 }
 
 .mobile-badges-tab-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
 }
 
 .mobile-badges-tab-count {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   opacity: 0.8;
 }
@@ -181,9 +181,14 @@
 /* Badge Grid */
 .badges-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  padding: 0 16px;
+  padding: 20px;
+}
+
+.badges-grid > * {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 320px;
 }
 
 .badge-card {
@@ -195,7 +200,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -219,7 +224,9 @@
     box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
   }
   50% {
-    box-shadow: 0 0 20px 5px rgba(102, 126, 234, 0.3);
+    box-shadow:
+      0 4px 16px -4px rgba(0, 0, 0, 0.4),
+      0 2px 6px -2px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -236,7 +243,7 @@
   font-size: 48px !important;
   color: var(--badge-color);
   opacity: 0.3;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .badge-card.earned .badge-icon-container svg {
@@ -274,14 +281,14 @@
 
 .badge-info h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .badge-description {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-muted);
   line-height: 1.4;
 }
@@ -292,7 +299,7 @@
 }
 
 .badge-rarity svg {
-  font-size: 14px !important;
+  font-size: 15px !important;
   color: rgba(255, 255, 255, 0.1);
 }
 
@@ -304,13 +311,13 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-success);
   margin-top: 4px;
 }
 
 .earned-date svg {
-  font-size: 14px !important;
+  font-size: 15px !important;
 }
 
 .badge-progress {
@@ -332,7 +339,7 @@
 }
 
 .progress-text {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--badge-color);
   font-weight: 600;
   text-align: center;
@@ -343,16 +350,16 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--color-warning);
 }
 
 .time-remaining svg {
-  font-size: 12px !important;
+  font-size: 13px !important;
 }
 
 .badge-requirement {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-muted);
   margin-top: 4px;
 }
@@ -368,7 +375,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--color-background-surface);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tier-dot.earned {
@@ -405,7 +412,7 @@
   padding: 8px 12px;
   background: var(--color-background-surface);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--color-text-primary);
 }
 
@@ -417,9 +424,9 @@
 /* Tablet and Desktop Adjustments */
 @media (min-width: 768px) {
   .badges-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
-    padding: 0 24px;
+    padding: 20px;
   }
 
   .badge-card {
@@ -440,7 +447,7 @@
   }
 
   .badge-description {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .badge-rarity svg {
@@ -451,9 +458,9 @@
 /* Large Desktop */
 @media (min-width: 1200px) {
   .badges-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 24px;
-    padding: 0 32px;
+    padding: 20px;
   }
 
   .badge-card {
@@ -474,6 +481,6 @@
   }
 
   .badge-description {
-    font-size: 14px;
+    font-size: 15px;
   }
 }

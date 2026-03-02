@@ -50,7 +50,7 @@ export const RecommendationsTab = ({
             width: '40px',
             height: '40px',
             borderRadius: '12px',
-            background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -63,6 +63,7 @@ export const RecommendationsTab = ({
             margin: 0,
             fontSize: '18px',
             fontWeight: 700,
+            fontFamily: 'var(--font-display)',
             color: currentTheme.text.primary,
           }}
         >
@@ -135,7 +136,7 @@ export const RecommendationsTab = ({
                   borderRadius: '10px',
                   background: rec.series.poster
                     ? `url(${TMDB_IMAGE_BASE}${rec.series.poster})`
-                    : `linear-gradient(135deg, ${currentTheme.primary}40, #8b5cf640)`,
+                    : `linear-gradient(135deg, ${currentTheme.primary}40, var(--theme-secondary-gradient, #8b5cf6)40)`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   flexShrink: 0,
@@ -171,14 +172,14 @@ export const RecommendationsTab = ({
                       alignItems: 'center',
                       gap: '3px',
                       background:
-                        'linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2))',
+                        'linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.15))',
                       padding: '3px 8px',
                       borderRadius: '8px',
                       flexShrink: 0,
                     }}
                   >
-                    <Star style={{ fontSize: '12px', color: '#ffc107' }} />
-                    <span style={{ fontSize: '12px', color: '#ffc107', fontWeight: 600 }}>
+                    <Star style={{ fontSize: '13px', color: '#ffc107' }} />
+                    <span style={{ fontSize: '13px', color: '#ffc107', fontWeight: 600 }}>
                       {rec.series.voteAverage.toFixed(1)}
                     </span>
                   </div>
@@ -187,7 +188,7 @@ export const RecommendationsTab = ({
                 <p
                   style={{
                     margin: '0 0 10px 0',
-                    fontSize: '13px',
+                    fontSize: '14px',
                     color: currentTheme.primary,
                     fontWeight: 600,
                   }}
@@ -200,7 +201,7 @@ export const RecommendationsTab = ({
                     <span
                       key={actor.id}
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
                         background: `linear-gradient(135deg, ${currentTheme.background.surfaceHover}, ${currentTheme.background.surface})`,
                         padding: '4px 10px',
                         borderRadius: '10px',
@@ -214,7 +215,7 @@ export const RecommendationsTab = ({
                   {rec.actors.length > 3 && (
                     <span
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
                         background: `${currentTheme.primary}20`,
                         padding: '4px 10px',
                         borderRadius: '10px',

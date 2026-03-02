@@ -1,0 +1,501 @@
+/* PetsPage - Layout classes with pet- prefix */
+
+/* ─── Page shell ─── */
+.pet-page {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 100px;
+}
+
+.pet-page-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 500px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Pet Selector (tab bar) ─── */
+.pet-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 20px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-selector-btn {
+  padding: 8px 18px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pet-selector-level {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.pet-selector-add-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 14px;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-selector-locked {
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ─── PetCard (display, stats, XP bonus) ─── */
+.pet-card-info {
+  text-align: center;
+  padding: 10px 20px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-card-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pet-card-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pet-card-display-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-card-display {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 32px;
+  padding: 40px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+  min-width: 260px;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-card-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, #ec489930, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.pet-card-mood-badges {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.pet-card-dead-badge {
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pet-card-mood-emoji {
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.pet-card-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 0 20px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-card-stat {
+  border-radius: 18px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.pet-card-stat-icon {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+.pet-card-stat-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.pet-card-stat-bar {
+  border-radius: 6px;
+  height: 6px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.pet-card-stat-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+}
+
+.pet-card-stat-text {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pet-card-xp-bonus-wrapper {
+  padding: 0 20px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-card-xp-bonus {
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pet-card-xp-bonus--active {
+  background: linear-gradient(135deg, #22c55e18, #22c55e08);
+  border: 1px solid #22c55e40;
+}
+
+.pet-card-xp-bonus--inactive {
+  background: linear-gradient(135deg, #eab30818, #eab30808);
+  border: 1px solid #eab30840;
+}
+
+.pet-card-xp-bonus-tag {
+  font-size: 15px;
+  font-weight: 800;
+  color: #22c55e;
+  background: #22c55e18;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.pet-card-xp-bonus-sleep-icon {
+  font-size: 18px;
+}
+
+.pet-card-xp-bonus-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pet-card-xp-bonus-title--active {
+  color: #22c55e;
+}
+
+.pet-card-xp-bonus-title--inactive {
+  color: #eab308;
+}
+
+.pet-card-xp-bonus-subtitle {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* ─── Actions ─── */
+.pet-actions {
+  padding: 0 20px 24px;
+  display: flex;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-action-btn {
+  flex: 1;
+  padding: 16px;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pet-action-btn--feed {
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  box-shadow: 0 8px 24px rgba(255, 107, 107, 0.35);
+}
+
+.pet-action-btn--play {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  box-shadow: 0 8px 24px rgba(78, 205, 196, 0.35);
+}
+
+.pet-action-btn--revive {
+  background: linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6), #7c3aed);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+}
+
+/* ─── Customization ─── */
+.pet-customization {
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-customization-section {
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.pet-customization-section--colors {
+  margin-bottom: 16px;
+}
+
+.pet-customization-title {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.pet-colors-grid {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pet-color-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.pet-accessories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.pet-accessory-btn {
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* ─── Release ─── */
+.pet-release-footer {
+  padding: 24px 20px 0;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-release-trigger {
+  padding: 8px 20px;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+/* ─── Release Confirm Modal ─── */
+.pet-release-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.pet-release-dialog {
+  border-radius: 24px;
+  padding: 28px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+}
+
+.pet-release-emoji {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.pet-release-title {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin-bottom: 8px;
+}
+
+.pet-release-desc {
+  font-size: 15px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.pet-release-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.pet-release-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pet-release-btn--keep {
+  border-width: 1px;
+  border-style: solid;
+  background: var(--pet-bg-default);
+}
+
+.pet-release-btn--confirm {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+}
+
+/* ─── Creation Modal ─── */
+.pet-create-page {
+  min-height: 100vh;
+  position: relative;
+}
+
+.pet-create-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pet-create-center {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-create-card {
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.16),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pet-create-input {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-size: 16px;
+  margin-bottom: 20px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.pet-create-type-label {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.pet-create-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pet-create-type-btn {
+  padding: 14px 8px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pet-create-submit {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ─── Loading ─── */
+.pet-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -108,7 +108,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(0,0,0,0.2)',
+                background: 'rgba(255, 255, 255, 0.04)',
                 borderRadius: 12,
               }}
             >
@@ -121,7 +121,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(0,0,0,0.2)',
+                background: 'rgba(255, 255, 255, 0.04)',
                 borderRadius: 12,
               }}
             >
@@ -134,7 +134,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(0,0,0,0.2)',
+                background: 'rgba(255, 255, 255, 0.04)',
                 borderRadius: 12,
               }}
             >
@@ -160,7 +160,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       alignItems: 'center',
                       gap: 12,
                       padding: '8px 12px',
-                      background: 'rgba(0,0,0,0.2)',
+                      background: 'rgba(255, 255, 255, 0.04)',
                       borderRadius: 8,
                     }}
                   >
@@ -236,7 +236,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(0,0,0,0.2)',
+                background: 'rgba(255, 255, 255, 0.04)',
                 borderRadius: 12,
               }}
             >
@@ -249,7 +249,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(0,0,0,0.2)',
+                background: 'rgba(255, 255, 255, 0.04)',
                 borderRadius: 12,
               }}
             >
@@ -275,7 +275,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       alignItems: 'center',
                       gap: 12,
                       padding: '8px 12px',
-                      background: 'rgba(0,0,0,0.2)',
+                      background: 'rgba(255, 255, 255, 0.04)',
                       borderRadius: 8,
                     }}
                   >
@@ -312,7 +312,15 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <Timer style={{ color: '#00cec9', fontSize: 28 }} />
           <div>
-            <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: 0 }}>
+            <h3
+              style={{
+                color: textPrimary,
+                fontSize: 16,
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                margin: 0,
+              }}
+            >
               Episodenlängen-Verteilung
             </h3>
             <p style={{ color: textSecondary, fontSize: 12, margin: 0 }}>
@@ -359,7 +367,15 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Deine Rekorde
         </h3>
 
@@ -398,12 +414,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             style={{
               padding: 16,
               borderRadius: 12,
-              background: '#667eea15',
-              border: '1px solid #667eea30',
+              background: '#7c6ef015',
+              border: '1px solid #7c6ef030',
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#667eea', fontSize: 28, fontWeight: 700 }}>
+            <div style={{ color: '#7c6ef0', fontSize: 28, fontWeight: 700 }}>
               {data.uniqueSeriesCount}
             </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Verschiedene Serien</div>

@@ -1,6 +1,102 @@
 /* RatingsPage - Performance-optimized styles */
 
-/* Responsive grid via media queries (no JS window.innerWidth) */
+/* ─── Page Container ──────────────────────────────────────────────────── */
+
+.ratings-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ratings-page--loading {
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Decorative Background ───────────────────────────────────────────── */
+
+.ratings-decorative-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Sticky Header ───────────────────────────────────────────────────── */
+
+.ratings-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.ratings-header-inner {
+  padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+}
+
+.ratings-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── Stats Row ───────────────────────────────────────────────────────── */
+
+.ratings-stats-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.ratings-stat-card {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ratings-stat-card--average {
+  background: #fbbf2415;
+  border-color: #fbbf2430;
+}
+
+.ratings-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ratings-stat-value--average {
+  color: #fbbf24;
+}
+
+.ratings-stat-star {
+  font-size: 18px;
+  color: #fbbf24;
+}
+
+.ratings-stat-label {
+  font-size: 14px;
+}
+
+/* ─── Content Area ────────────────────────────────────────────────────── */
+
+.ratings-content {
+  padding: 0 20px;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Responsive Grid (via media queries, no JS window.innerWidth) ──── */
+
 .ratings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
@@ -19,7 +115,8 @@
   }
 }
 
-/* Native browser virtualization: skip rendering off-screen items */
+/* ─── Grid Item (native browser virtualization) ───────────────────────── */
+
 .ratings-grid-item {
   content-visibility: auto;
   contain-intrinsic-block-size: auto 200px;
@@ -29,14 +126,18 @@
 
 .ratings-grid-item:active {
   transform: scale(0.95);
-  transition: transform 0.1s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ─── Poster ──────────────────────────────────────────────────────────── */
 
 .ratings-poster-wrap {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
 }
 
 .ratings-poster-img {
@@ -45,6 +146,8 @@
   object-fit: cover;
   display: block;
 }
+
+/* ─── Provider Badges ─────────────────────────────────────────────────── */
 
 .ratings-provider-badges {
   position: absolute;
@@ -72,11 +175,13 @@
   object-fit: cover;
 }
 
+/* ─── Rating Badge ────────────────────────────────────────────────────── */
+
 .ratings-rating-badge {
   position: absolute;
   top: 6px;
   right: 6px;
-  background: linear-gradient(135deg, #1a1a1aee, #2a2a2aee);
+  background: linear-gradient(135deg, rgba(10, 14, 26, 0.85), rgba(20, 24, 36, 0.85));
   backdrop-filter: blur(8px);
   border-radius: 10px;
   padding: 5px 9px;
@@ -84,6 +189,19 @@
   align-items: center;
   gap: 4px;
 }
+
+.ratings-star-icon {
+  font-size: 15px;
+  color: #fbbf24;
+}
+
+.ratings-rating-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ─── Watchlist Badge ─────────────────────────────────────────────────── */
 
 .ratings-watchlist-badge {
   position: absolute;
@@ -95,21 +213,30 @@
   align-items: center;
 }
 
+.ratings-watchlist-icon {
+  font-size: 16px;
+  color: #fff;
+}
+
+/* ─── Progress Bar ────────────────────────────────────────────────────── */
+
 .ratings-progress-track {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 4px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(10, 14, 26, 0.6);
 }
 
 .ratings-progress-fill {
   height: 100%;
 }
 
+/* ─── Item Title & Meta ───────────────────────────────────────────────── */
+
 .ratings-grid-item .ratings-item-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   margin: 6px 0 0 0;
   overflow: hidden;
@@ -121,11 +248,42 @@
 }
 
 .ratings-grid-item .ratings-item-meta {
-  font-size: 12px;
+  font-size: 13px;
   margin: 2px 0 0 0;
 }
+
+/* ─── Grid Spacer ─────────────────────────────────────────────────────── */
 
 .ratings-spacer {
   grid-column: 1 / -1;
   height: 100px;
+}
+
+/* ─── Empty State ─────────────────────────────────────────────────────── */
+
+.ratings-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.ratings-empty-icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ratings-empty-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.ratings-empty-text {
+  margin: 0;
+  font-size: 15px;
 }

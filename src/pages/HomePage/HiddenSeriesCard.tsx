@@ -32,13 +32,15 @@ export const HiddenSeriesCard: React.FC = () => {
         gap: '12px',
         width: 'calc(100% - 40px)',
         textAlign: 'left',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
       }}
     >
       <div
         style={{
           width: 40,
           height: 40,
-          borderRadius: '10px',
+          borderRadius: '12px',
           background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
           display: 'flex',
           alignItems: 'center',
@@ -54,7 +56,8 @@ export const HiddenSeriesCard: React.FC = () => {
           style={{
             margin: 0,
             fontSize: 15,
-            fontWeight: 600,
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
             color: currentTheme.text.primary,
             whiteSpace: 'nowrap',
           }}

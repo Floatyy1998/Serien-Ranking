@@ -32,7 +32,8 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
               width: '80px',
               height: '80px',
               borderRadius: '16px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background:
+                'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -129,7 +130,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
             style={{
               width: 'min(200px, 45vw)',
               borderRadius: '12px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(102, 126, 234, 0.3)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 40px rgba(102, 126, 234, 0.2)',
             }}
           />
         ) : (
@@ -137,12 +138,13 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
             style={{
               width: 'min(200px, 45vw)',
               aspectRatio: '2/3',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background:
+                'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
               borderRadius: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 48px rgba(0, 0, 0, 0.2)',
             }}
           >
             <svg
@@ -166,7 +168,8 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
           style={{
             color: 'white',
             fontSize: 'clamp(1.3rem, 5vw, 2rem)',
-            fontWeight: 'bold',
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
             marginTop: '20px',
             textAlign: 'center',
             maxWidth: '90%',
@@ -277,7 +280,12 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
                   left: '-8px',
                   width: '24px',
                   height: '24px',
-                  background: index === 0 ? '#C0C0C0' : index === 1 ? '#CD7F32' : '#667eea',
+                  background:
+                    index === 0
+                      ? '#C0C0C0'
+                      : index === 1
+                        ? '#CD7F32'
+                        : 'var(--theme-primary, #667eea)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',

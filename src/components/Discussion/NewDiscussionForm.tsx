@@ -78,13 +78,14 @@ export const NewDiscussionForm: React.FC<{
         padding: '24px',
         border: `2px solid ${currentTheme.primary}40`,
         marginBottom: '20px',
-        boxShadow: `0 8px 32px ${currentTheme.primary}20`,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
       }}
     >
       <h4
         style={{
           fontSize: '16px',
           fontWeight: 700,
+          fontFamily: 'var(--font-display)',
           color: currentTheme.text.primary,
           margin: '0 0 16px 0',
         }}
@@ -109,7 +110,7 @@ export const NewDiscussionForm: React.FC<{
           fontWeight: 600,
           outline: 'none',
           boxSizing: 'border-box',
-          transition: 'border-color 0.2s',
+          transition: 'border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       />
 
@@ -122,7 +123,7 @@ export const NewDiscussionForm: React.FC<{
           background: currentTheme.background.surface,
           padding: '14px 18px',
           boxSizing: 'border-box',
-          transition: 'border-color 0.2s',
+          transition: 'border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Image Previews inside input */}
@@ -220,7 +221,7 @@ export const NewDiscussionForm: React.FC<{
               background: 'transparent',
               color: uploadingImage ? currentTheme.primary : currentTheme.text.secondary,
               cursor: uploadingImage ? 'wait' : 'pointer',
-              fontSize: '13px',
+              fontSize: '14px',
               fontWeight: 500,
             }}
           >
@@ -239,10 +240,10 @@ export const NewDiscussionForm: React.FC<{
               borderRadius: '10px',
               border: `1px solid ${isSpoiler ? currentTheme.status.warning + '60' : currentTheme.border.default}`,
               background: isSpoiler ? `${currentTheme.status.warning}15` : 'transparent',
-              fontSize: '13px',
+              fontSize: '14px',
               fontWeight: 500,
               color: isSpoiler ? currentTheme.status.warning : currentTheme.text.secondary,
-              transition: 'all 0.2s',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             <input
@@ -266,7 +267,7 @@ export const NewDiscussionForm: React.FC<{
               background: 'transparent',
               color: currentTheme.text.secondary,
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
             }}
           >
@@ -297,11 +298,11 @@ export const NewDiscussionForm: React.FC<{
                 title.trim() && (content.trim() || previewImages.length > 0)
                   ? 'pointer'
                   : 'default',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 700,
               boxShadow:
                 title.trim() && (content.trim() || previewImages.length > 0)
-                  ? '0 4px 16px rgba(0,0,0,0.2)'
+                  ? '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)'
                   : 'none',
             }}
           >

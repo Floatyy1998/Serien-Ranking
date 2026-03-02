@@ -21,14 +21,30 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description
           opacity: 0.5,
           display: 'flex',
           justifyContent: 'center',
+          position: 'relative',
         }}
       >
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            width: '80px',
+            height: '80px',
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${iconColor || currentTheme.primary}15 0%, transparent 70%)`,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+          }}
+        />
         {icon}
       </div>
       <h2
         style={{
           fontSize: '18px',
-          fontWeight: 600,
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
           color: currentTheme.text.primary,
           marginBottom: '8px',
         }}
@@ -36,7 +52,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description
         {title}
       </h2>
       {description && (
-        <p style={{ color: currentTheme.text.secondary, fontSize: '14px', margin: 0 }}>
+        <p style={{ color: currentTheme.text.secondary, fontSize: '15px', margin: 0 }}>
           {description}
         </p>
       )}

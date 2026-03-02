@@ -1,0 +1,393 @@
+/* StatsPage - Layout styles with stats- prefix */
+
+/* Hero section */
+.stats-hero {
+  margin: 0 20px 24px;
+  padding: 28px;
+  border-radius: 28px;
+  backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #00fed7) 15%, transparent);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px color-mix(in srgb, var(--color-primary, #00fed7) 8%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -25%;
+  width: 150%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse,
+    color-mix(in srgb, var(--color-primary, #00fed7) 8%, transparent) 0%,
+    transparent 60%
+  );
+  animation: breathe 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.stats-hero-time {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.stats-hero-icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-hero-unit {
+  font-size: 20px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.stats-hero-details {
+  font-size: 15px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.stats-hero-subtitle {
+  font-size: 15px;
+  margin: 4px 0 0;
+}
+
+/* Progress ring area */
+.stats-progress-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.stats-ring-wrapper {
+  position: relative;
+}
+
+.stats-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-ring-percent {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.stats-ring-text {
+  font-size: 11px;
+}
+
+.stats-progress-info {
+  text-align: left;
+}
+
+.stats-progress-count {
+  margin-bottom: 8px;
+}
+
+.stats-progress-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stats-progress-total {
+  font-size: 15px;
+}
+
+.stats-progress-label {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Quick stats grid */
+.stats-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stats-quick-card {
+  text-align: center;
+  padding: 12px 8px;
+  border-radius: 14px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.stats-quick-card:active {
+  transform: scale(0.95);
+}
+
+.stats-quick-icon {
+  margin-bottom: 6px;
+}
+
+.stats-quick-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.stats-quick-label {
+  font-size: 12px;
+}
+
+/* Actor Universe banner */
+.stats-actor-banner {
+  margin: 0 20px 24px;
+  padding: 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-actor-star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+.stats-actor-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.stats-actor-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-actor-text {
+  flex: 1;
+}
+
+.stats-actor-title {
+  margin: 0;
+  font-size: 18px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: white;
+}
+
+.stats-actor-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stats-actor-badge {
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Section cards (shared) */
+.stats-section {
+  margin: 0 20px 24px;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.stats-section:last-child {
+  margin-bottom: 120px;
+}
+
+.stats-section-title {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Time breakdown */
+.stats-time-row {
+  display: flex;
+  gap: 12px;
+}
+
+.stats-time-card {
+  flex: 1;
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.stats-time-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.stats-time-label {
+  font-size: 13px;
+}
+
+/* Ratings */
+.stats-ratings-row {
+  display: flex;
+  gap: 12px;
+}
+
+.stats-rating-card {
+  flex: 1;
+  padding: 16px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.stats-rating-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.stats-rating-label {
+  font-size: 13px;
+}
+
+/* Genres */
+.stats-genre-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stats-genre-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-genre-rank {
+  width: 24px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.stats-genre-info {
+  flex: 1;
+}
+
+.stats-genre-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.stats-genre-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.stats-genre-count {
+  font-size: 14px;
+}
+
+.stats-genre-bar-track {
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stats-genre-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary, #00fed7) 30%, transparent);
+}
+
+.stats-genre-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  animation: progressShimmer 2.5s ease-in-out infinite;
+}
+
+/* Providers */
+.stats-provider-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stats-provider-chip {
+  padding: 10px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stats-provider-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stats-provider-count {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* This Week */
+.stats-week {
+  margin: 0 20px 120px;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.stats-week-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stats-week-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-week-value {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.stats-week-label {
+  font-size: 14px;
+}

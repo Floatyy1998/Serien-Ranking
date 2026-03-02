@@ -36,12 +36,12 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
     onClick={onClick}
     sx={{
       p: 2,
-      background: colors.background.card,
-      border: `1px solid ${colors.border.subtle}`,
-      borderRadius: 2,
+      background: 'rgba(255, 255, 255, 0.04)',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
+      borderRadius: 3,
       position: 'relative',
       overflow: 'hidden',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       cursor: onClick ? 'pointer' : 'default',
       '&:active': {
         transform: 'scale(0.98)',
@@ -49,7 +49,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
       '&:hover': onClick
         ? {
             transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
           }
         : {},
     }}
@@ -88,6 +88,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
       variant="h5"
       sx={{
         fontWeight: 700,
+        fontFamily: 'var(--font-display)',
         color: colors.text.secondary,
         fontSize: '1.3rem',
         mb: 0.5,
@@ -498,7 +499,8 @@ export const StatsGrid = () => {
           sx={{
             fontSize: '0.9rem',
             color: colors.text.secondary,
-            fontWeight: 600,
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
           }}
         >
           Deine Statistiken
@@ -522,10 +524,11 @@ export const StatsGrid = () => {
       <Paper
         sx={{
           p: 2,
-          background: colors.background.card,
-          border: `1px solid ${colors.border.subtle}`,
-          borderRadius: 2,
+          background: 'rgba(255, 255, 255, 0.04)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: 3,
           mb: 2,
+          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
@@ -551,10 +554,19 @@ export const StatsGrid = () => {
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography sx={{ fontSize: '1.2rem', fontWeight: 700 }}>
+          <Typography
+            sx={{ fontSize: '1.2rem', fontWeight: 700, fontFamily: 'var(--font-display)' }}
+          >
             {stats.watchedEpisodes.toLocaleString('de-DE')}
           </Typography>
-          <Typography sx={{ fontSize: '1.2rem', fontWeight: 700, color: colors.text.muted }}>
+          <Typography
+            sx={{
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
+              color: colors.text.muted,
+            }}
+          >
             {stats.totalEpisodes.toLocaleString('de-DE')}
           </Typography>
         </Box>
@@ -576,7 +588,7 @@ export const StatsGrid = () => {
               height: '100%',
               width: `${stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes) * 100 : 0}%`,
               background: `linear-gradient(90deg, ${currentTheme.primary || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
-              transition: 'width 0.3s ease',
+              transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           />
         </Box>

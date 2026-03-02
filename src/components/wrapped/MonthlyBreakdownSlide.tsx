@@ -106,19 +106,28 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background:
+            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
           borderRadius: '20px',
           padding: '20px 35px',
           marginBottom: '35px',
           zIndex: 1,
           textAlign: 'center',
-          boxShadow: '0 10px 40px rgba(102,126,234,0.3)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(102, 126, 234, 0.2)',
         }}
       >
         <p style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem', marginBottom: '8px' }}>
           Dein aktivster Monat
         </p>
-        <h3 style={{ color: 'white', fontSize: '2rem', fontWeight: 'bold', marginBottom: '5px' }}>
+        <h3
+          style={{
+            color: 'white',
+            fontSize: '2rem',
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
+            marginBottom: '5px',
+          }}
+        >
           {mostActiveMonth.monthName}
         </h3>
         <p style={{ color: 'white', opacity: 0.9 }}>
@@ -173,11 +182,11 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
                     width: '100%',
                     height: `${Math.max(height, 8)}%`,
                     background: isTopMonth
-                      ? 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)'
+                      ? 'linear-gradient(180deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
                       : 'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 100%)',
                     borderRadius: '4px 4px 0 0',
                     minHeight: '8px',
-                    boxShadow: isTopMonth ? '0 0 20px rgba(102,126,234,0.5)' : 'none',
+                    boxShadow: isTopMonth ? '0 0 20px rgba(102, 126, 234, 0.3)' : 'none',
                     position: 'relative',
                   }}
                 ></motion.div>

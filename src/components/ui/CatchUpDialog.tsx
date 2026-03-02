@@ -78,8 +78,8 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.7)',
-        backdropFilter: 'blur(8px)',
+        background: 'rgba(10, 14, 26, 0.75)',
+        backdropFilter: 'blur(12px)',
         zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
@@ -94,17 +94,19 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
         onClick={(e) => e.stopPropagation()}
         style={{
           background: currentTheme.background.card || currentTheme.background.default,
-          borderRadius: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
           padding: '24px',
           width: '100%',
           maxWidth: '360px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15)',
         }}
       >
         <h3
           style={{
             fontSize: '18px',
-            fontWeight: 700,
+            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
             margin: '0 0 20px 0',
             color: currentTheme.text.primary,
           }}
@@ -116,7 +118,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
         <div style={{ marginBottom: '14px' }}>
           <label
             style={{
-              fontSize: '12px',
+              fontSize: '13px',
               fontWeight: 600,
               color: currentTheme.text.muted,
               marginBottom: '6px',
@@ -135,12 +137,13 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
               width: '100%',
               padding: '10px 12px',
               background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '12px',
               color: currentTheme.text.primary,
-              fontSize: '14px',
+              fontSize: '15px',
               outline: 'none',
               cursor: 'pointer',
+              transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             {seasons.map((season, idx) => (
@@ -155,7 +158,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
         <div style={{ marginBottom: '18px' }}>
           <label
             style={{
-              fontSize: '12px',
+              fontSize: '13px',
               fontWeight: 600,
               color: currentTheme.text.muted,
               marginBottom: '6px',
@@ -171,12 +174,13 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
               width: '100%',
               padding: '10px 12px',
               background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '12px',
               color: currentTheme.text.primary,
-              fontSize: '14px',
+              fontSize: '15px',
               outline: 'none',
               cursor: 'pointer',
+              transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             {currentSeasonEpisodes.map((ep, idx) => (
@@ -193,14 +197,14 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
           style={{
             padding: '12px',
             background: `${currentTheme.primary}15`,
-            borderRadius: '10px',
+            borderRadius: '12px',
             marginBottom: '20px',
-            border: `1px solid ${currentTheme.primary}30`,
+            border: `1px solid ${currentTheme.primary}25`,
           }}
         >
           <p
             style={{
-              fontSize: '13px',
+              fontSize: '14px',
               color: currentTheme.text.secondary,
               margin: 0,
               lineHeight: 1.5,
@@ -217,13 +221,15 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
             style={{
               flex: 1,
               padding: '12px',
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '10px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '12px',
               color: currentTheme.text.primary,
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
               cursor: 'pointer',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             Abbrechen
@@ -244,9 +250,9 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
                   ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
                   : 'rgba(255, 255, 255, 0.05)',
               border: 'none',
-              borderRadius: '10px',
+              borderRadius: '12px',
               color: episodesToMark > 0 ? 'white' : currentTheme.text.muted,
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
               cursor: episodesToMark > 0 ? 'pointer' : 'default',
               opacity: episodesToMark > 0 ? 1 : 0.5,

@@ -52,7 +52,7 @@ export const Dialog = memo(
             right: 0,
             bottom: 0,
             background: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(4px)',
+            backdropFilter: 'blur(8px)',
             zIndex: 9998,
             animation: 'fadeIn 0.2s ease-out',
           }}
@@ -72,14 +72,14 @@ export const Dialog = memo(
             left: '50%',
             transform: 'translate(-50%, -50%)',
             background: currentTheme.background.paper,
-            border: `1px solid ${currentTheme.border.default}`,
-            borderRadius: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '20px',
             padding: '24px',
             minWidth: '280px',
             maxWidth: '90%',
             maxHeight: '80vh',
             overflow: 'auto',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+            boxShadow: '0 16px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 24px -8px rgba(0, 0, 0, 0.4)',
             zIndex: 9999,
             animation: 'slideUp 0.3s ease-out',
           }}
@@ -137,7 +137,7 @@ export const Dialog = memo(
             id="dialog-message"
             style={{
               margin: '0 0 20px 0',
-              fontSize: '14px',
+              fontSize: '15px',
               lineHeight: 1.5,
               color: currentTheme.text.primary,
             }}
@@ -175,7 +175,7 @@ export const Dialog = memo(
                           ? currentTheme.status.error
                           : currentTheme.primary,
                     color: action.variant === 'secondary' ? currentTheme.text.primary : 'white',
-                    fontSize: '14px',
+                    fontSize: '15px',
                     fontWeight: 500,
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',

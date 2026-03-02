@@ -246,7 +246,15 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
             gap: 12,
           }}
         >
-          <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: 0 }}>
+          <h3
+            style={{
+              color: textPrimary,
+              fontSize: 16,
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              margin: 0,
+            }}
+          >
             Serien-Timeline {data.year}
           </h3>
 
@@ -554,7 +562,15 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Top 10 Serien
         </h3>
 

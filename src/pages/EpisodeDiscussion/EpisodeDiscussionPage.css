@@ -1,0 +1,505 @@
+/* EpisodeDiscussionPage - Layout styles with ed- prefix */
+
+/* ---------- Page Container ---------- */
+.ed-page {
+  min-height: 100vh;
+  padding-bottom: 40px;
+  position: relative;
+}
+
+/* ---------- Loading State ---------- */
+.ed-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  gap: 20px;
+  position: relative;
+}
+
+.ed-loading-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+/* ---------- Not Found State ---------- */
+.ed-not-found {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+}
+
+.ed-not-found-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.ed-not-found-card {
+  text-align: center;
+  padding: 40px;
+  border-radius: 24px;
+}
+
+.ed-not-found-icon {
+  font-size: 72px !important;
+  margin-bottom: 20px;
+}
+
+.ed-not-found-title {
+  margin-bottom: 12px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.ed-not-found-text {
+  margin-bottom: 28px;
+  font-size: 15px;
+}
+
+.ed-not-found-btn {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* ---------- Hero Section ---------- */
+.ed-hero {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  overflow: hidden;
+}
+
+.ed-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.ed-hero-img--backdrop {
+  object-position: center;
+  opacity: 0.7;
+}
+
+.ed-hero-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.ed-hero-gradient {
+  position: absolute;
+  inset: 0;
+}
+
+/* Top Navigation Bar */
+.ed-hero-topbar {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ed-hero-series-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(20, 20, 40, 0.5));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ed-hero-series-btn-icon {
+  font-size: 16px !important;
+}
+
+/* Episode Info Overlay */
+.ed-hero-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 20px;
+}
+
+.ed-series-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ed-series-badge-icon {
+  font-size: 15px !important;
+  color: #fff;
+}
+
+.ed-series-badge-text {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Season/Episode badges row */
+.ed-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.ed-season-badge {
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ed-rating-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 193, 7, 0.15));
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.ed-rating-icon {
+  font-size: 15px !important;
+}
+
+.ed-watched-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ed-watched-badge-icon {
+  font-size: 15px !important;
+}
+
+/* Episode Title */
+.ed-episode-title {
+  font-size: 28px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+}
+
+/* Meta Info */
+.ed-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 15px;
+}
+
+.ed-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ed-meta-icon {
+  font-size: 18px !important;
+}
+
+/* ---------- Quick Actions ---------- */
+.ed-quick-actions {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+}
+
+.ed-watch-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ed-watch-btn-icon {
+  font-size: 22px !important;
+}
+
+.ed-episodes-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ed-episodes-btn-icon {
+  font-size: 20px !important;
+}
+
+/* ---------- Episode Navigation ---------- */
+.ed-nav {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.ed-nav-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  text-align: left;
+}
+
+.ed-nav-btn--next {
+  text-align: right;
+}
+
+.ed-nav-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ed-nav-icon {
+  font-size: 24px !important;
+}
+
+.ed-nav-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ed-nav-label {
+  font-size: 12px;
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ed-nav-episode {
+  font-size: 15px;
+  margin: 3px 0 0 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Content Area ---------- */
+.ed-content {
+  padding: 20px;
+}
+
+/* ---------- Overview Section ---------- */
+.ed-overview {
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ed-overview-decoration {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+}
+
+.ed-overview-header {
+  font-size: 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ed-overview-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ed-overview-icon {
+  font-size: 18px !important;
+}
+
+.ed-overview-text {
+  font-size: 15px;
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* ---------- Crew Section ---------- */
+.ed-crew {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.ed-crew-card {
+  padding: 18px;
+  border-radius: 16px;
+}
+
+.ed-crew-label {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ed-crew-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ed-crew-name + .ed-crew-name {
+  margin-top: 6px;
+}
+
+/* ---------- Guest Stars Section ---------- */
+.ed-guest-stars {
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.ed-guest-stars-header {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ed-guest-stars-count {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.ed-guest-stars-scroll {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -20px;
+  padding: 0 20px 8px 20px;
+}
+
+.ed-guest-star-card {
+  flex-shrink: 0;
+  width: 95px;
+  text-align: center;
+}
+
+.ed-guest-star-avatar {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  overflow: hidden;
+}
+
+.ed-guest-star-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ed-guest-star-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.ed-guest-star-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ed-guest-star-character {
+  font-size: 12px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}

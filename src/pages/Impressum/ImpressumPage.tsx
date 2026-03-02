@@ -138,7 +138,6 @@ export const ImpressumPage = () => {
       {/* Premium Glassmorphism Header */}
       <PageHeader
         title={data.title}
-        gradientTo="#8b5cf6"
         icon={<Gavel style={{ fontSize: 22, color: currentTheme.primary }} />}
       />
 
@@ -155,16 +154,19 @@ export const ImpressumPage = () => {
         <div
           style={{
             padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '16px',
             marginBottom: '20px',
+            boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <h2
             style={{
               fontSize: '20px',
-              fontWeight: 600,
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
               marginBottom: '16px',
               color: currentTheme.text.primary,
             }}
@@ -173,7 +175,7 @@ export const ImpressumPage = () => {
           </h2>
           <p
             style={{
-              fontSize: '14px',
+              fontSize: '15px',
               lineHeight: '1.6',
               color: currentTheme.text.secondary,
               whiteSpace: 'pre-line',
@@ -196,16 +198,19 @@ export const ImpressumPage = () => {
         <div
           style={{
             padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '16px',
             marginBottom: '20px',
+            boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <h2
             style={{
               fontSize: '20px',
-              fontWeight: 600,
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
               marginBottom: '16px',
               color: currentTheme.text.primary,
             }}
@@ -214,7 +219,7 @@ export const ImpressumPage = () => {
           </h2>
           <p
             style={{
-              fontSize: '14px',
+              fontSize: '15px',
               lineHeight: '1.6',
               color: currentTheme.text.secondary,
             }}
@@ -226,16 +231,19 @@ export const ImpressumPage = () => {
         <div
           style={{
             padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '16px',
             marginBottom: '20px',
+            boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <h2
             style={{
               fontSize: '20px',
-              fontWeight: 600,
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
               marginBottom: '16px',
               color: currentTheme.text.primary,
             }}
@@ -244,7 +252,7 @@ export const ImpressumPage = () => {
           </h2>
           <p
             style={{
-              fontSize: '14px',
+              fontSize: '15px',
               lineHeight: '1.6',
               color: currentTheme.text.secondary,
             }}
@@ -256,16 +264,19 @@ export const ImpressumPage = () => {
         <div
           style={{
             padding: '20px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '16px',
             marginBottom: '20px',
+            boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <h2
             style={{
               fontSize: '20px',
-              fontWeight: 600,
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
               marginBottom: '16px',
               color: currentTheme.text.primary,
             }}
@@ -274,7 +285,7 @@ export const ImpressumPage = () => {
           </h2>
           <p
             style={{
-              fontSize: '14px',
+              fontSize: '15px',
               lineHeight: '1.6',
               color: currentTheme.text.secondary,
             }}

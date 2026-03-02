@@ -205,6 +205,8 @@ export const WatchStreakCard: React.FC = () => {
             alignItems: 'center',
             gap: '12px',
             cursor: 'pointer',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
           }}
         >
           {/* Icon */}
@@ -212,7 +214,7 @@ export const WatchStreakCard: React.FC = () => {
             style={{
               width: 40,
               height: 40,
-              borderRadius: '10px',
+              borderRadius: '12px',
               background: `linear-gradient(135deg, ${flameColor}, ${flameColor}cc)`,
               display: 'flex',
               alignItems: 'center',
@@ -233,7 +235,8 @@ export const WatchStreakCard: React.FC = () => {
               style={{
                 margin: 0,
                 fontSize: 15,
-                fontWeight: 600,
+                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
                 color: currentTheme.text.primary,
                 whiteSpace: 'nowrap',
               }}
@@ -320,6 +323,7 @@ export const WatchStreakCard: React.FC = () => {
                   style={{
                     fontSize: 24,
                     fontWeight: 800,
+                    fontFamily: 'var(--font-display)',
                     color: flameColor,
                     lineHeight: 1,
                   }}
@@ -424,7 +428,8 @@ export const WatchStreakCard: React.FC = () => {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.5)',
+              background: 'rgba(10, 14, 26, 0.75)',
+              backdropFilter: 'blur(8px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -440,11 +445,12 @@ export const WatchStreakCard: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
               style={{
                 background: currentTheme.background.card,
-                borderRadius: 16,
+                borderRadius: 20,
                 padding: '20px',
                 maxWidth: 320,
                 width: '100%',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
               {/* Header */}
@@ -461,7 +467,7 @@ export const WatchStreakCard: React.FC = () => {
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: 10,
+                      borderRadius: 12,
                       background: `linear-gradient(135deg, ${shieldColor}, ${shieldColor}cc)`,
                       display: 'flex',
                       alignItems: 'center',
@@ -470,7 +476,14 @@ export const WatchStreakCard: React.FC = () => {
                   >
                     <Shield style={{ fontSize: 18, color: 'white' }} />
                   </div>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: currentTheme.text.primary }}>
+                  <span
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-display)',
+                      color: currentTheme.text.primary,
+                    }}
+                  >
                     Streak Shield
                   </span>
                 </div>
@@ -511,7 +524,7 @@ export const WatchStreakCard: React.FC = () => {
               <div
                 style={{
                   background: `${shieldColor}10`,
-                  borderRadius: 10,
+                  borderRadius: 12,
                   padding: '10px 12px',
                   marginBottom: 16,
                   fontSize: 13,
@@ -553,7 +566,7 @@ export const WatchStreakCard: React.FC = () => {
                   style={{
                     flex: 1,
                     padding: '10px',
-                    borderRadius: 10,
+                    borderRadius: 12,
                     border: `1px solid ${currentTheme.text.muted}30`,
                     background: 'transparent',
                     color: currentTheme.text.secondary,
@@ -570,7 +583,7 @@ export const WatchStreakCard: React.FC = () => {
                   style={{
                     flex: 1,
                     padding: '10px',
-                    borderRadius: 10,
+                    borderRadius: 12,
                     border: 'none',
                     background: `linear-gradient(135deg, ${shieldColor}, ${shieldColor}cc)`,
                     color: 'white',

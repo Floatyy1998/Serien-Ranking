@@ -157,7 +157,15 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 20px',
+          }}
+        >
           Aktivität pro Jahr
         </h3>
 
@@ -234,7 +242,15 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             marginBottom: 20,
           }}
         >
-          <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: 0 }}>
+          <h3
+            style={{
+              color: textPrimary,
+              fontSize: 16,
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              margin: 0,
+            }}
+          >
             Watch-Zeit Trend
           </h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -289,7 +305,8 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                           border: `1px solid ${ACCENT_COLORS.time}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                          boxShadow:
+                            '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
                         <p
@@ -338,7 +355,15 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             border: `1px solid ${currentTheme.border.default}`,
           }}
         >
-          <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
+          <h3
+            style={{
+              color: textPrimary,
+              fontSize: 16,
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              margin: '0 0 20px',
+            }}
+          >
             Genre-Entwicklung
           </h3>
 
@@ -413,7 +438,15 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
 
       {/* Year-by-Year Cards */}
       <div style={{ padding: '0 20px' }}>
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Jahr für Jahr
         </h3>
 

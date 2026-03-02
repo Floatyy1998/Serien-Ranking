@@ -27,6 +27,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
           margin: '0 0 20px 0',
           fontSize: '18px',
           fontWeight: 700,
+          fontFamily: 'var(--font-display)',
           color: currentTheme.text.primary,
         }}
       >
@@ -52,7 +53,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                 gap: '14px',
                 padding: '14px',
                 background: isTop3
-                  ? `linear-gradient(135deg, ${currentTheme.primary}15, #8b5cf615)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}15, var(--theme-secondary-gradient, #8b5cf6)15)`
                   : currentTheme.background.card,
                 borderRadius: '16px',
                 cursor: 'pointer',
@@ -96,7 +97,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                   borderRadius: '50%',
                   background: actor.profilePath
                     ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                    : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                    : `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   flexShrink: 0,
@@ -121,7 +122,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                 <p
                   style={{
                     margin: '4px 0 0 0',
-                    fontSize: '14px',
+                    fontSize: '15px',
                     color: currentTheme.primary,
                     fontWeight: 600,
                   }}
@@ -155,7 +156,8 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
           margin: '36px 0 18px 0',
           fontSize: '16px',
           color: currentTheme.text.secondary,
-          fontWeight: 600,
+          fontWeight: 700,
+          fontFamily: 'var(--font-display)',
         }}
       >
         Weitere Schauspieler in mehreren deiner Serien
@@ -183,7 +185,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                 margin: '0 auto 10px',
                 background: actor.profilePath
                   ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                  : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                  : `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 border: `2px solid ${currentTheme.border.default}`,
@@ -193,7 +195,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
             <p
               style={{
                 margin: 0,
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: 600,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -206,7 +208,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
             <p
               style={{
                 margin: '3px 0 0 0',
-                fontSize: '11px',
+                fontSize: '12px',
                 color: currentTheme.primary,
                 fontWeight: 500,
               }}

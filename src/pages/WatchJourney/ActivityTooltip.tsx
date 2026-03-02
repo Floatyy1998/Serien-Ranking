@@ -14,10 +14,11 @@ export const ActivityTooltip = ({
       <div
         style={{
           background: 'rgba(15, 15, 35, 0.95)',
-          border: '1px solid rgba(102, 126, 234, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
           borderRadius: 12,
           padding: '12px 16px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(8px)',
         }}
       >
         <p style={{ color: 'white', fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{label}</p>

@@ -86,8 +86,9 @@ export const GalaxyMapTab = ({
                 width: '44px',
                 height: '44px',
                 borderRadius: '12px',
-                background: `linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 40, 0.9))`,
-                border: `1px solid rgba(255, 255, 255, 0.15)`,
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(8px)',
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
@@ -95,7 +96,7 @@ export const GalaxyMapTab = ({
                 cursor: 'pointer',
                 fontSize: btn.isText ? '11px' : 'inherit',
                 fontWeight: btn.isText ? 600 : 'normal',
-                boxShadow: `0 4px 12px rgba(0, 0, 0, 0.4)`,
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1)',
               }}
             >
               {btn.isText ? btn.icon : btn.icon}
@@ -164,7 +165,11 @@ export const GalaxyMapTab = ({
             <defs>
               <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor={currentTheme.primary} stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.5" />
+                <stop
+                  offset="100%"
+                  stopColor="var(--theme-secondary-gradient, #8b5cf6)"
+                  stopOpacity="0.5"
+                />
               </linearGradient>
             </defs>
             {connections.slice(0, 200).map((conn, idx) => {
@@ -261,10 +266,10 @@ export const GalaxyMapTab = ({
                       left: '50%',
                       transform: 'translateX(-50%)',
                       marginTop: '8px',
-                      background:
-                        'linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 40, 0.95))',
+                      background: 'rgba(10, 14, 26, 0.75)',
+                      backdropFilter: 'blur(8px)',
                       padding: '8px 14px',
-                      borderRadius: '10px',
+                      borderRadius: '12px',
                       whiteSpace: 'nowrap',
                       fontSize: `${12 / transform.scale}px`,
                       fontWeight: 600,
@@ -298,12 +303,13 @@ export const GalaxyMapTab = ({
           position: 'absolute',
           bottom: '16px',
           left: '16px',
-          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 40, 0.9))',
+          background: 'rgba(255, 255, 255, 0.04)',
           borderRadius: '14px',
           padding: '14px 16px',
-          fontSize: '12px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+          fontSize: '13px',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
@@ -323,7 +329,7 @@ export const GalaxyMapTab = ({
             style={{
               width: '18px',
               height: '3px',
-              background: `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
+              background: `linear-gradient(90deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
               borderRadius: '2px',
             }}
           />

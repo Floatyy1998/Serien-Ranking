@@ -1,25 +1,9 @@
 /**
- * ActivityPage - Premium Social Activity Feed
- * Beautiful activity feed with friend management
+ * ActivityPage - Social Activity Feed
+ * Composition component using extracted tab subcomponents
  */
 
-import {
-  Cancel,
-  ChatBubbleOutline,
-  CheckCircle,
-  ExpandMore,
-  Favorite,
-  Flag,
-  Group,
-  MailOutline,
-  Movie as MovieIcon,
-  Person,
-  PersonAdd,
-  PersonRemove,
-  Star,
-  Timeline,
-  Tv as TvIcon,
-} from '@mui/icons-material';
+import { ChatBubbleOutline, Group, MailOutline, PersonAdd, Timeline } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -27,12 +11,17 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../../contexts/ThemeContext';
-import { BackButton, GradientText, BottomSheet, ScrollToTopButton } from '../../components/ui';
+import { BackButton, GradientText, ScrollToTopButton } from '../../components/ui';
 import { AddFriendDialog } from './AddFriendDialog';
+import { RemoveFriendSheet } from './RemoveFriendSheet';
+import { ActivityFeedTab } from './tabs/ActivityFeedTab';
+import { DiscussionsTab } from './tabs/DiscussionsTab';
+import { FriendsTab } from './tabs/FriendsTab';
+import { RequestsTab } from './tabs/RequestsTab';
 import { useActivityFriendProfiles } from './useActivityFriendProfiles';
-import { useActivityGrouping } from './useActivityGrouping';
-import type { ActivityFilterType } from './types';
 import './ActivityPage.css';
+
+type TabId = 'activity' | 'friends' | 'requests' | 'discussions';
 
 export const ActivityPage = () => {
   const navigate = useNavigate();
@@ -54,18 +43,17 @@ export const ActivityPage = () => {
 
   const { notifications, markAsRead } = useNotifications();
 
-  const discussionNotifications = useMemo(() => {
-    return notifications.filter(
-      (n) =>
-        n.type === 'discussion_reply' || n.type === 'discussion_like' || n.type === 'spoiler_flag'
-    );
-  }, [notifications]);
-
-  const [activeTab, setActiveTab] = useState<'activity' | 'friends' | 'requests' | 'discussions'>(
-    'activity'
+  const discussionNotifications = useMemo(
+    () =>
+      notifications.filter(
+        (n) =>
+          n.type === 'discussion_reply' || n.type === 'discussion_like' || n.type === 'spoiler_flag'
+      ),
+    [notifications]
   );
+
+  const [activeTab, setActiveTab] = useState<TabId>('activity');
   const [showAddFriend, setShowAddFriend] = useState(false);
-  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [friendToRemove, setFriendToRemove] = useState<{ uid: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
 
@@ -96,18 +84,11 @@ export const ActivityPage = () => {
   }, []);
 
   const { friendProfiles, requestProfiles } = useActivityFriendProfiles(friends, friendRequests);
-  const {
-    groupedActivities,
-    getItemDetails,
-    formatTimeAgo,
-    filterType,
-    setFilterType,
-    getPosterUrl,
-  } = useActivityGrouping(friendActivities);
 
-  // Calculate badge counts once to avoid recalculation in render
+  // Badge counts
   const unreadDiscussionsCount = discussionNotifications.filter((n) => !n.read).length;
 
+  // Mark as read on tab switch
   useEffect(() => {
     if (activeTab === 'activity' && unreadActivitiesCount > 0) {
       markActivitiesAsRead();
@@ -118,17 +99,20 @@ export const ActivityPage = () => {
     }
   }, [activeTab, unreadActivitiesCount, unreadRequestsCount, unreadDiscussionsCount]);
 
-  const toggleUserExpanded = (userId: string) => {
-    setExpandedUsers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
+  const handleRemoveFriend = useCallback(
+    async (uid: string) => {
+      setRemoving(true);
+      try {
+        await removeFriend(uid);
+      } catch (error) {
+        console.error('Failed to remove friend:', error);
+      } finally {
+        setRemoving(false);
+        setFriendToRemove(null);
       }
-      return newSet;
-    });
-  };
+    },
+    [removeFriend]
+  );
 
   const tabs = [
     {
@@ -142,14 +126,12 @@ export const ActivityPage = () => {
       id: 'requests' as const,
       icon: <MailOutline style={{ fontSize: '20px' }} />,
       label: 'Anfragen',
-      // Only show badge if there are unread requests
       badgeCount: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
     },
     {
       id: 'discussions' as const,
       icon: <ChatBubbleOutline style={{ fontSize: '20px' }} />,
       label: 'Chat',
-      // Only show badge if there are unread discussions
       badgeCount: unreadDiscussionsCount > 0 ? unreadDiscussionsCount : undefined,
     },
   ];
@@ -173,7 +155,7 @@ export const ActivityPage = () => {
           height: '400px',
           background: `
             radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.primary}35, transparent),
-            radial-gradient(ellipse 60% 40% at 80% 10%, #8b5cf620, transparent)
+            radial-gradient(ellipse 60% 40% at 80% 10%, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)), transparent)
           `,
           pointerEvents: 'none',
           zIndex: 0,
@@ -196,11 +178,7 @@ export const ActivityPage = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <BackButton />
@@ -211,6 +189,7 @@ export const ActivityPage = () => {
               style={{
                 fontSize: '26px',
                 fontWeight: 800,
+                fontFamily: 'var(--font-display)',
                 margin: 0,
               }}
             >
@@ -226,14 +205,14 @@ export const ActivityPage = () => {
                 width: '44px',
                 height: '44px',
                 borderRadius: '14px',
-                background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
                 border: 'none',
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                boxShadow: `0 4px 15px ${currentTheme.primary}40`,
+                boxShadow: currentTheme.shadow.card,
               }}
             >
               <PersonAdd style={{ fontSize: '22px' }} />
@@ -270,7 +249,7 @@ export const ActivityPage = () => {
               padding: '12px 8px',
               background:
                 activeTab === tab.id
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
                   : currentTheme.background.surface,
               border: activeTab === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '14px',
@@ -307,7 +286,7 @@ export const ActivityPage = () => {
                     background: activeTab === tab.id ? 'white' : currentTheme.status.error,
                     color: activeTab === tab.id ? currentTheme.primary : 'white',
                     borderRadius: '8px',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
@@ -318,7 +297,7 @@ export const ActivityPage = () => {
                 </span>
               )}
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 600 }}>{tab.label}</span>
+            <span style={{ fontSize: '12px', fontWeight: 600 }}>{tab.label}</span>
           </motion.button>
         ))}
       </motion.div>
@@ -332,7 +311,7 @@ export const ActivityPage = () => {
         style={{
           margin: '0 20px 16px',
           padding: '14px 18px',
-          background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+          background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)))`,
           border: `1px solid ${currentTheme.primary}30`,
           borderRadius: '16px',
           cursor: 'pointer',
@@ -348,7 +327,7 @@ export const ActivityPage = () => {
             width: '42px',
             height: '42px',
             borderRadius: '12px',
-            background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -361,1075 +340,60 @@ export const ActivityPage = () => {
           <div style={{ fontSize: '15px', fontWeight: 700, color: currentTheme.text.primary }}>
             Diskussions-Feed
           </div>
-          <div style={{ fontSize: '12px', color: currentTheme.text.muted, marginTop: '2px' }}>
+          <div style={{ fontSize: '13px', color: currentTheme.text.muted, marginTop: '2px' }}>
             Alle Diskussionen an einem Ort
           </div>
         </div>
         <div style={{ color: currentTheme.text.muted, fontSize: '20px' }}>›</div>
       </motion.div>
 
-      {/* Content */}
+      {/* Tab Content */}
       <div style={{ padding: '0 20px', position: 'relative', zIndex: 1 }}>
         <AnimatePresence mode="wait">
           {activeTab === 'activity' && (
-            <motion.div
-              key="activity"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              {/* Filter Pills */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-                {[
-                  { key: 'all', label: 'Alle' },
-                  { key: 'series', label: 'Serien' },
-                  { key: 'movies', label: 'Filme' },
-                ].map((filter) => (
-                  <button
-                    key={filter.key}
-                    className="activity-filter-btn"
-                    onClick={() => setFilterType(filter.key as ActivityFilterType)}
-                    style={{
-                      padding: '10px 18px',
-                      background:
-                        filterType === filter.key
-                          ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
-                          : currentTheme.background.surface,
-                      border:
-                        filterType === filter.key
-                          ? 'none'
-                          : `1px solid ${currentTheme.border.default}`,
-                      borderRadius: '20px',
-                      color: filterType === filter.key ? 'white' : currentTheme.text.primary,
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow:
-                        filterType === filter.key ? `0 4px 12px ${currentTheme.primary}40` : 'none',
-                    }}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Activities List */}
-              {groupedActivities.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={{
-                    textAlign: 'center',
-                    padding: '60px 20px',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      margin: '0 auto 20px',
-                      borderRadius: '50%',
-                      background: `${currentTheme.text.muted}10`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Timeline style={{ fontSize: '40px', color: currentTheme.text.muted }} />
-                  </div>
-                  <h2
-                    style={{
-                      margin: '0 0 8px',
-                      fontSize: '18px',
-                      fontWeight: 700,
-                      color: currentTheme.text.primary,
-                    }}
-                  >
-                    Noch keine Aktivitäten
-                  </h2>
-                  <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: '14px' }}>
-                    {filterType !== 'all'
-                      ? `Keine ${filterType === 'movies' ? 'Film' : 'Serien'}-Aktivitäten`
-                      : 'Deine Freunde haben noch nichts geteilt'}
-                  </p>
-                </motion.div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {groupedActivities.map(([userId, activities]) => {
-                    const friendObj = friends.find((f) => f.uid === userId);
-                    const userProfile = friendObj
-                      ? friendProfiles[friendObj.uid] || friendObj
-                      : null;
-                    const isExpanded = expandedUsers.has(userId);
-                    const latestActivity = activities[0];
-
-                    return (
-                      <div
-                        key={userId}
-                        className="activity-group-item"
-                        style={{
-                          background: currentTheme.background.surface,
-                          borderRadius: '16px',
-                          border: `1px solid ${currentTheme.border.default}`,
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {/* Accordion Header */}
-                        <button
-                          className="activity-accordion-btn"
-                          onClick={() => toggleUserExpanded(userId)}
-                          style={{
-                            width: '100%',
-                            padding: '16px',
-                            background: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: '48px',
-                              height: '48px',
-                              borderRadius: '50%',
-                              ...(userProfile?.photoURL
-                                ? {
-                                    backgroundImage: `url("${userProfile.photoURL}")`,
-                                    backgroundPosition: 'center',
-                                    backgroundSize: 'cover',
-                                  }
-                                : {
-                                    background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-                                  }),
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                            }}
-                          >
-                            {!userProfile?.photoURL && (
-                              <Person style={{ fontSize: '24px', color: 'white' }} />
-                            )}
-                          </div>
-
-                          <div style={{ flex: 1, textAlign: 'left' }}>
-                            <div
-                              style={{
-                                fontSize: '16px',
-                                fontWeight: 600,
-                                color: currentTheme.text.primary,
-                                marginBottom: '4px',
-                              }}
-                            >
-                              {userProfile?.displayName || latestActivity.userName || 'Unbekannt'}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: '13px',
-                                color: currentTheme.text.secondary,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                              }}
-                            >
-                              <span>
-                                {activities.length}{' '}
-                                {activities.length === 1 ? 'Aktivität' : 'Aktivitäten'}
-                              </span>
-                              <span>·</span>
-                              <span>{formatTimeAgo(latestActivity.timestamp)}</span>
-                            </div>
-                          </div>
-
-                          <motion.div
-                            animate={{ rotate: isExpanded ? 180 : 0 }}
-                            transition={{ duration: 0.2 }}
-                            style={{ color: currentTheme.text.secondary }}
-                          >
-                            <ExpandMore />
-                          </motion.div>
-                        </button>
-
-                        {/* Accordion Content */}
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              style={{
-                                borderTop: `1px solid ${currentTheme.border.default}`,
-                                overflow: 'hidden',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  padding: '12px',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  gap: '8px',
-                                }}
-                              >
-                                {activities.map((activity) => {
-                                  const item = getItemDetails(activity);
-                                  const isMovie =
-                                    activity.type === 'movie_added' ||
-                                    activity.type === 'movie_rated' ||
-                                    activity.type === 'rating_updated_movie' ||
-                                    activity.itemType === 'movie';
-                                  const rating = activity.rating;
-                                  const hasRating = rating && rating > 0;
-                                  const isAdded =
-                                    activity.type === 'movie_added' ||
-                                    activity.type === 'series_added';
-                                  const isRated =
-                                    activity.type === 'movie_rated' ||
-                                    activity.type === 'series_rated' ||
-                                    activity.type === 'rating_updated_movie' ||
-                                    activity.type === 'rating_updated';
-                                  const isWatchlisted =
-                                    activity.type === 'series_added_to_watchlist' ||
-                                    activity.type === 'movie_added_to_watchlist';
-
-                                  const tmdbId = activity.tmdbId || activity.itemId;
-                                  const posterUrl = getPosterUrl(activity);
-
-                                  return (
-                                    <div
-                                      key={activity.id}
-                                      className="activity-entry"
-                                      onClick={() => {
-                                        if (tmdbId) {
-                                          saveScrollPosition();
-                                          navigate(
-                                            isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`
-                                          );
-                                        }
-                                      }}
-                                      style={{
-                                        display: 'flex',
-                                        gap: '12px',
-                                        padding: '12px',
-                                        background: currentTheme.background.default,
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                      }}
-                                    >
-                                      {posterUrl && posterUrl !== '/placeholder.jpg' && (
-                                        <div
-                                          style={{
-                                            width: '55px',
-                                            height: '82px',
-                                            borderRadius: '8px',
-                                            overflow: 'hidden',
-                                            flexShrink: 0,
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                                          }}
-                                        >
-                                          <img
-                                            src={posterUrl}
-                                            alt={item?.title || activity.itemTitle}
-                                            loading="lazy"
-                                            decoding="async"
-                                            style={{
-                                              width: '100%',
-                                              height: '100%',
-                                              objectFit: 'cover',
-                                            }}
-                                            onError={(e) => {
-                                              (e.target as HTMLImageElement).style.display = 'none';
-                                            }}
-                                          />
-                                        </div>
-                                      )}
-
-                                      <div
-                                        style={{
-                                          flex: 1,
-                                          minWidth: 0,
-                                          display: 'flex',
-                                          flexDirection: 'column',
-                                          gap: '6px',
-                                        }}
-                                      >
-                                        <div
-                                          style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '6px',
-                                          }}
-                                        >
-                                          {isMovie ? (
-                                            <MovieIcon
-                                              style={{
-                                                fontSize: '16px',
-                                                color: currentTheme.status.error,
-                                              }}
-                                            />
-                                          ) : (
-                                            <TvIcon
-                                              style={{
-                                                fontSize: '16px',
-                                                color: currentTheme.primary,
-                                              }}
-                                            />
-                                          )}
-                                          <span
-                                            style={{
-                                              fontSize: '14px',
-                                              fontWeight: 600,
-                                              color: currentTheme.text.primary,
-                                              overflow: 'hidden',
-                                              textOverflow: 'ellipsis',
-                                              whiteSpace: 'nowrap',
-                                            }}
-                                          >
-                                            {activity.itemTitle || item?.title || 'Unbekannt'}
-                                          </span>
-                                        </div>
-
-                                        <div
-                                          style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                          }}
-                                        >
-                                          <span
-                                            style={{
-                                              fontSize: '12px',
-                                              color: currentTheme.text.secondary,
-                                            }}
-                                          >
-                                            {isAdded
-                                              ? 'Hinzugefügt'
-                                              : isWatchlisted
-                                                ? 'Auf Watchlist'
-                                                : isRated || hasRating
-                                                  ? 'Bewertet'
-                                                  : 'Aktivität'}
-                                          </span>
-                                          {hasRating && (
-                                            <div
-                                              style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '3px',
-                                                padding: '2px 8px',
-                                                background: `${currentTheme.status.warning}20`,
-                                                borderRadius: '10px',
-                                              }}
-                                            >
-                                              <Star
-                                                style={{
-                                                  fontSize: '12px',
-                                                  color: currentTheme.status.warning,
-                                                }}
-                                              />
-                                              <span
-                                                style={{
-                                                  fontSize: '11px',
-                                                  fontWeight: 700,
-                                                  color: currentTheme.status.warning,
-                                                }}
-                                              >
-                                                {rating}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-
-                                        <span
-                                          style={{
-                                            fontSize: '11px',
-                                            color: currentTheme.text.muted,
-                                          }}
-                                        >
-                                          {formatTimeAgo(activity.timestamp)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </motion.div>
+            <ActivityFeedTab
+              friendActivities={friendActivities}
+              friends={friends}
+              friendProfiles={friendProfiles}
+              saveScrollPosition={saveScrollPosition}
+            />
           )}
 
           {activeTab === 'friends' && (
-            <motion.div
-              key="friends"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              {friends.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={{ textAlign: 'center', padding: '60px 20px' }}
-                >
-                  <div
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      margin: '0 auto 20px',
-                      borderRadius: '50%',
-                      background: `${currentTheme.text.muted}10`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Person style={{ fontSize: '40px', color: currentTheme.text.muted }} />
-                  </div>
-                  <h2
-                    style={{
-                      margin: '0 0 8px',
-                      fontSize: '18px',
-                      fontWeight: 700,
-                      color: currentTheme.text.primary,
-                    }}
-                  >
-                    Noch keine Freunde
-                  </h2>
-                  <p
-                    style={{ margin: '0 0 20px', color: currentTheme.text.muted, fontSize: '14px' }}
-                  >
-                    Füge Freunde hinzu um ihre Aktivitäten zu sehen
-                  </p>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowAddFriend(true)}
-                    style={{
-                      padding: '12px 24px',
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-                      border: 'none',
-                      borderRadius: '12px',
-                      color: 'white',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      boxShadow: `0 4px 15px ${currentTheme.primary}40`,
-                    }}
-                  >
-                    Freund hinzufügen
-                  </motion.button>
-                </motion.div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {friends.map((friend, index) => {
-                    const currentProfile = friendProfiles[friend.uid] || friend;
-                    return (
-                      <motion.div
-                        key={friend.uid}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => {
-                          saveScrollPosition();
-                          navigate(`/friend/${friend.uid}`);
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '14px',
-                          padding: '14px',
-                          background: currentTheme.background.surface,
-                          border: `1px solid ${currentTheme.border.default}`,
-                          borderRadius: '14px',
-                          color: currentTheme.text.primary,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            ...(currentProfile.photoURL
-                              ? {
-                                  backgroundImage: `url("${currentProfile.photoURL}")`,
-                                  backgroundPosition: 'center',
-                                  backgroundSize: 'cover',
-                                }
-                              : {
-                                  background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-                                }),
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {!currentProfile.photoURL && (
-                            <Person style={{ fontSize: '24px', color: 'white' }} />
-                          )}
-                        </div>
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <h3
-                            style={{
-                              fontSize: '15px',
-                              fontWeight: 600,
-                              margin: '0 0 4px 0',
-                            }}
-                          >
-                            {currentProfile.displayName || currentProfile.username}
-                          </h3>
-                          <p
-                            style={{
-                              fontSize: '13px',
-                              color: currentTheme.text.muted,
-                              margin: 0,
-                            }}
-                          >
-                            @{currentProfile.username}
-                          </p>
-                        </div>
-
-                        <motion.button
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFriendToRemove({
-                              uid: friend.uid,
-                              name:
-                                currentProfile.displayName ||
-                                currentProfile.username ||
-                                'Unbekannt',
-                            });
-                          }}
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '10px',
-                            background: `${currentTheme.status.error}10`,
-                            border: 'none',
-                            color: currentTheme.text.muted,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                          }}
-                        >
-                          <PersonRemove style={{ fontSize: '18px' }} />
-                        </motion.button>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </motion.div>
+            <FriendsTab
+              friends={friends}
+              friendProfiles={friendProfiles}
+              saveScrollPosition={saveScrollPosition}
+              onAddFriend={() => setShowAddFriend(true)}
+              onRemoveFriend={setFriendToRemove}
+            />
           )}
 
           {activeTab === 'requests' && (
-            <motion.div
-              key="requests"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              {friendRequests.length > 0 && (
-                <div style={{ marginBottom: '24px' }}>
-                  <h2
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      color: currentTheme.text.muted,
-                      marginBottom: '12px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}
-                  >
-                    Eingehende Anfragen
-                  </h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {friendRequests.map((request, index) => {
-                      const requestProfile = requestProfiles[request.fromUserId] || {};
-                      return (
-                        <motion.div
-                          key={request.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '14px',
-                            background: `linear-gradient(135deg, ${currentTheme.primary}10, ${currentTheme.primary}05)`,
-                            border: `1px solid ${currentTheme.primary}30`,
-                            borderRadius: '14px',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: '44px',
-                              height: '44px',
-                              borderRadius: '50%',
-                              ...(requestProfile.photoURL
-                                ? {
-                                    backgroundImage: `url("${requestProfile.photoURL}")`,
-                                    backgroundPosition: 'center',
-                                    backgroundSize: 'cover',
-                                  }
-                                : {
-                                    background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
-                                  }),
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            {!requestProfile.photoURL && (
-                              <Person style={{ fontSize: '22px', color: 'white' }} />
-                            )}
-                          </div>
-
-                          <div style={{ flex: 1 }}>
-                            <h3
-                              style={{
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                margin: 0,
-                                color: currentTheme.text.primary,
-                              }}
-                            >
-                              {requestProfile.displayName || request.fromUsername}
-                            </h3>
-                            <p
-                              style={{
-                                fontSize: '12px',
-                                color: currentTheme.text.muted,
-                                margin: 0,
-                              }}
-                            >
-                              {formatTimeAgo(request.timestamp || request.sentAt || Date.now())}
-                            </p>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => acceptFriendRequest(request.id)}
-                              style={{
-                                padding: '10px',
-                                background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
-                                border: 'none',
-                                borderRadius: '10px',
-                                color: 'white',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              <CheckCircle style={{ fontSize: '20px' }} />
-                            </motion.button>
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => declineFriendRequest(request.id)}
-                              style={{
-                                padding: '10px',
-                                background: `linear-gradient(135deg, ${currentTheme.status.error}, #ef4444)`,
-                                border: 'none',
-                                borderRadius: '10px',
-                                color: 'white',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              <Cancel style={{ fontSize: '20px' }} />
-                            </motion.button>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {sentRequests.length > 0 && (
-                <div>
-                  <h2
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      color: currentTheme.text.muted,
-                      marginBottom: '12px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}
-                  >
-                    Gesendete Anfragen
-                  </h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {sentRequests.map((request) => (
-                      <div
-                        key={request.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '14px',
-                          background: currentTheme.background.surface,
-                          border: `1px solid ${currentTheme.border.default}`,
-                          borderRadius: '14px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '44px',
-                            height: '44px',
-                            borderRadius: '50%',
-                            background: `${currentTheme.text.muted}20`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Person style={{ fontSize: '22px', color: currentTheme.text.muted }} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <h3
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              margin: 0,
-                              color: currentTheme.text.primary,
-                            }}
-                          >
-                            {request.toUsername}
-                          </h3>
-                          <p
-                            style={{
-                              fontSize: '12px',
-                              color: currentTheme.text.muted,
-                              margin: 0,
-                            }}
-                          >
-                            Ausstehend
-                          </p>
-                        </div>
-                        <motion.button
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => cancelFriendRequest(request.id)}
-                          style={{
-                            padding: '10px',
-                            background: currentTheme.background.default,
-                            border: `1px solid ${currentTheme.border.default}`,
-                            borderRadius: '10px',
-                            color: currentTheme.text.secondary,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Cancel style={{ fontSize: '20px' }} />
-                        </motion.button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {friendRequests.length === 0 && sentRequests.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={{ textAlign: 'center', padding: '60px 20px' }}
-                >
-                  <div
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      margin: '0 auto 20px',
-                      borderRadius: '50%',
-                      background: `${currentTheme.text.muted}10`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <PersonAdd style={{ fontSize: '40px', color: currentTheme.text.muted }} />
-                  </div>
-                  <h2
-                    style={{
-                      margin: '0 0 8px',
-                      fontSize: '18px',
-                      fontWeight: 700,
-                      color: currentTheme.text.primary,
-                    }}
-                  >
-                    Keine offenen Anfragen
-                  </h2>
-                </motion.div>
-              )}
-            </motion.div>
+            <RequestsTab
+              friendRequests={friendRequests}
+              sentRequests={sentRequests}
+              requestProfiles={requestProfiles}
+              acceptFriendRequest={acceptFriendRequest}
+              declineFriendRequest={declineFriendRequest}
+              cancelFriendRequest={cancelFriendRequest}
+            />
           )}
 
           {activeTab === 'discussions' && (
-            <motion.div
-              key="discussions"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              {discussionNotifications.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={{ textAlign: 'center', padding: '60px 20px' }}
-                >
-                  <div
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      margin: '0 auto 20px',
-                      borderRadius: '50%',
-                      background: `${currentTheme.text.muted}10`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <ChatBubbleOutline
-                      style={{ fontSize: '40px', color: currentTheme.text.muted }}
-                    />
-                  </div>
-                  <h2
-                    style={{
-                      margin: '0 0 8px',
-                      fontSize: '18px',
-                      fontWeight: 700,
-                      color: currentTheme.text.primary,
-                    }}
-                  >
-                    Keine Benachrichtigungen
-                  </h2>
-                </motion.div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {discussionNotifications.map((notification, index) => (
-                    <motion.div
-                      key={notification.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        markAsRead(notification.id);
-                        if (notification.data?.discussionPath) {
-                          const path = notification.data.discussionPath as string;
-                          // Path format: "discussions/{itemType}/{itemId}" or "discussions/episode/{itemId}_s{season}_e{episode}"
-                          if (path.includes('episode/')) {
-                            const match = path.match(/episode\/(\d+)_s(\d+)_e(\d+)/);
-                            if (match) {
-                              navigate(`/episode/${match[1]}/s/${match[2]}/e/${match[3]}`);
-                              return;
-                            }
-                          }
-                          // Extract itemType and itemId from path for series/movie
-                          const pathMatch = path.match(/discussions\/(series|movie)\/(\d+)/);
-                          if (pathMatch) {
-                            navigate(`/${pathMatch[1]}/${pathMatch[2]}`);
-                            return;
-                          }
-                          // Fallback to notification data if available
-                          if (notification.data.itemType && notification.data.itemId) {
-                            navigate(`/${notification.data.itemType}/${notification.data.itemId}`);
-                          }
-                        }
-                      }}
-                      style={{
-                        padding: '16px',
-                        background: notification.read
-                          ? currentTheme.background.surface
-                          : `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}08)`,
-                        border: `1px solid ${notification.read ? currentTheme.border.default : currentTheme.primary}40`,
-                        borderRadius: '14px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                        <div
-                          style={{
-                            width: '42px',
-                            height: '42px',
-                            borderRadius: '12px',
-                            background:
-                              notification.type === 'discussion_reply'
-                                ? `${currentTheme.primary}20`
-                                : notification.type === 'spoiler_flag'
-                                  ? `${currentTheme.status.warning}20`
-                                  : '#ff6b6b20',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {notification.type === 'discussion_reply' ? (
-                            <ChatBubbleOutline
-                              style={{ color: currentTheme.primary, fontSize: '20px' }}
-                            />
-                          ) : notification.type === 'spoiler_flag' ? (
-                            <Flag
-                              style={{ color: currentTheme.status.warning, fontSize: '20px' }}
-                            />
-                          ) : (
-                            <Favorite style={{ color: '#ff6b6b', fontSize: '20px' }} />
-                          )}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <h3
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              margin: '0 0 4px 0',
-                              color: currentTheme.text.primary,
-                            }}
-                          >
-                            {notification.title}
-                          </h3>
-                          <p
-                            style={{
-                              fontSize: '13px',
-                              margin: 0,
-                              color: currentTheme.text.secondary,
-                            }}
-                          >
-                            {notification.message}
-                          </p>
-                          <p
-                            style={{
-                              fontSize: '11px',
-                              margin: '8px 0 0 0',
-                              color: currentTheme.text.muted,
-                            }}
-                          >
-                            {formatTimeAgo(notification.timestamp)}
-                          </p>
-                        </div>
-                        {!notification.read && (
-                          <div
-                            style={{
-                              width: '10px',
-                              height: '10px',
-                              borderRadius: '50%',
-                              background: currentTheme.primary,
-                            }}
-                          />
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
+            <DiscussionsTab notifications={discussionNotifications} markAsRead={markAsRead} />
           )}
         </AnimatePresence>
       </div>
 
+      {/* Dialogs */}
       <AddFriendDialog isOpen={showAddFriend} onClose={() => setShowAddFriend(false)} />
-
-      {/* Remove Friend Confirmation */}
-      <BottomSheet
-        isOpen={!!friendToRemove}
+      <RemoveFriendSheet
+        friend={friendToRemove}
+        onConfirm={handleRemoveFriend}
         onClose={() => setFriendToRemove(null)}
-        ariaLabel="Freund entfernen"
-      >
-        <div style={{ padding: '0 20px 32px', textAlign: 'center' }}>
-          <div
-            style={{
-              width: '64px',
-              height: '64px',
-              margin: '0 auto 16px',
-              borderRadius: '50%',
-              background: `${currentTheme.status.error}15`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <PersonRemove style={{ fontSize: '32px', color: currentTheme.status.error }} />
-          </div>
-          <h2
-            style={{
-              fontSize: '20px',
-              fontWeight: 700,
-              color: currentTheme.text.primary,
-              margin: '0 0 8px',
-            }}
-          >
-            Freund entfernen
-          </h2>
-          <p
-            style={{
-              fontSize: '14px',
-              color: currentTheme.text.secondary,
-              margin: '0 0 24px',
-              lineHeight: 1.5,
-            }}
-          >
-            Möchtest du <strong>{friendToRemove?.name}</strong> wirklich als Freund entfernen? Ihr
-            seht dann keine Aktivitäten mehr voneinander.
-          </p>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setFriendToRemove(null)}
-              style={{
-                flex: 1,
-                padding: '14px',
-                background: currentTheme.background.surface,
-                border: `1px solid ${currentTheme.border.default}`,
-                borderRadius: '12px',
-                color: currentTheme.text.primary,
-                fontSize: '15px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Abbrechen
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={async () => {
-                if (!friendToRemove || removing) return;
-                setRemoving(true);
-                try {
-                  await removeFriend(friendToRemove.uid);
-                } catch (error) {
-                  console.error('Failed to remove friend:', error);
-                } finally {
-                  setRemoving(false);
-                  setFriendToRemove(null);
-                }
-              }}
-              disabled={removing}
-              style={{
-                flex: 1,
-                padding: '14px',
-                background: `linear-gradient(135deg, ${currentTheme.status.error}, #ef4444)`,
-                border: 'none',
-                borderRadius: '12px',
-                color: 'white',
-                fontSize: '15px',
-                fontWeight: 600,
-                cursor: removing ? 'not-allowed' : 'pointer',
-                opacity: removing ? 0.7 : 1,
-              }}
-            >
-              {removing ? 'Entfernt...' : 'Entfernen'}
-            </motion.button>
-          </div>
-        </div>
-      </BottomSheet>
+        isRemoving={removing}
+      />
       <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </div>
   );

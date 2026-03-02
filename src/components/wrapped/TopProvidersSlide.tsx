@@ -93,7 +93,7 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
 
   const topProvider = displayProviders[0];
   const hasLogo = PROVIDER_LOGOS[topProvider.name];
-  const providerColor = PROVIDER_COLORS[topProvider.name] || '#667eea';
+  const providerColor = PROVIDER_COLORS[topProvider.name] || 'var(--theme-primary, #667eea)';
 
   return (
     <div
@@ -205,7 +205,8 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
           style={{
             color: 'white',
             fontSize: 'clamp(1.8rem, 6vw, 2.5rem)',
-            fontWeight: 'bold',
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
             textAlign: 'center',
             textShadow: '0 4px 20px rgba(0,0,0,0.5)',
           }}
@@ -266,7 +267,7 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
         >
           {displayProviders.slice(1).map((provider, index) => {
             const logo = PROVIDER_LOGOS[provider.name];
-            const color = PROVIDER_COLORS[provider.name] || '#667eea';
+            const color = PROVIDER_COLORS[provider.name] || 'var(--theme-primary, #667eea)';
 
             return (
               <motion.div

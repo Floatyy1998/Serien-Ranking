@@ -27,9 +27,9 @@ export const IconButton: React.FC<IconButtonProps> = ({
 
   const variantStyles: Record<string, React.CSSProperties> = {
     glass: {
-      background: 'rgba(255, 255, 255, 0.1)',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      backdropFilter: 'blur(10px)',
+      background: 'rgba(255, 255, 255, 0.06)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      backdropFilter: 'blur(12px)',
       color: 'white',
     },
     surface: {
@@ -64,7 +64,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         padding: 0,
         flexShrink: 0,
         ...variantStyles[variant],

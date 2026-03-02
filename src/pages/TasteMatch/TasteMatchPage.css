@@ -1,0 +1,577 @@
+/* TasteMatchPage - Layout, grid and animation styles */
+/* Dynamic theme colors remain as inline styles via currentTheme */
+
+/* ==================== Loading State ==================== */
+.tm-loading-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tm-loading-bg-orb {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.tm-loading-bg-orb--user {
+  top: 20%;
+  left: 10%;
+}
+
+.tm-loading-bg-orb--friend {
+  bottom: 20%;
+  right: 10%;
+}
+
+.tm-loading-orbiter {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.tm-loading-orbiter__ring {
+  position: absolute;
+  inset: 0;
+}
+
+.tm-loading-orbiter__heart--top {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tm-loading-orbiter__heart--bottom {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tm-loading-orbiter__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.tm-loading-text {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.tm-loading-text__subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ==================== Main Layout ==================== */
+.tm-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tm-bg-gradients {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.tm-bg-gradients__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.tm-bg-gradients__orb--user {
+  top: -10%;
+  left: -20%;
+  width: 60%;
+  height: 50%;
+}
+
+.tm-bg-gradients__orb--friend {
+  top: 10%;
+  right: -20%;
+  width: 60%;
+  height: 50%;
+}
+
+.tm-bg-gradients__orb--primary {
+  bottom: 0%;
+  left: 30%;
+  width: 50%;
+  height: 40%;
+}
+
+.tm-content {
+  padding-bottom: 100px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ==================== Header ==================== */
+.tm-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tm-header__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tm-header__share-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ==================== Score Section ==================== */
+.tm-score-section {
+  padding: 20px 20px 32px;
+  text-align: center;
+  position: relative;
+}
+
+.tm-score-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.tm-score-glow--primary {
+  width: 220px;
+  height: 220px;
+  filter: blur(70px);
+}
+
+.tm-score-glow--secondary {
+  width: 280px;
+  height: 280px;
+  filter: blur(90px);
+}
+
+/* ==================== Avatars ==================== */
+.tm-avatars {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.tm-avatars__line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 3px;
+  border-radius: 2px;
+  opacity: 0.5;
+}
+
+.tm-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.tm-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tm-heart-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==================== Names ==================== */
+.tm-names {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.tm-name-pill {
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.tm-names__separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 20px;
+}
+
+/* ==================== Score Display ==================== */
+.tm-score-display {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 8px;
+}
+
+.tm-score-percent {
+  font-size: 32px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 2px;
+}
+
+.tm-score-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ==================== Stat Rings Grid ==================== */
+.tm-stat-rings {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 0 12px 28px;
+}
+
+/* ==================== Tabs ==================== */
+.tm-tabs-wrapper {
+  padding: 0 16px 20px;
+  overflow: visible;
+}
+
+.tm-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: visible;
+}
+
+.tm-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 12px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tm-tab-btn--active {
+  flex: none;
+  min-width: auto;
+  padding: 10px 16px;
+  color: white;
+}
+
+.tm-tab-btn--inactive {
+  flex: 1;
+  min-width: 48px;
+  padding: 10px 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+}
+
+/* ==================== Tab Content ==================== */
+.tm-tab-content {
+  padding: 0 16px;
+}
+
+/* ==================== Section Headers (Series/Movies) ==================== */
+.tm-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+}
+
+.tm-section-header__text {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tm-section-header__badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+/* ==================== Empty State ==================== */
+.tm-empty-state {
+  text-align: center;
+  padding: 60px 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tm-empty-state__icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.tm-empty-state__title {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.tm-empty-state__subtitle {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+/* ==================== Overview: Providers Card ==================== */
+.tm-providers-card {
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tm-providers-card__glow {
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.tm-providers-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  margin-bottom: 14px;
+  font-weight: 700;
+  position: relative;
+}
+
+.tm-providers-card__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: relative;
+}
+
+.tm-provider-chip {
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+/* ==================== Overview: Quick Stats Grid ==================== */
+.tm-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.tm-quick-stat {
+  border-radius: 18px;
+  padding: 20px 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.tm-quick-stat__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  filter: blur(10px);
+}
+
+.tm-quick-stat__content {
+  position: relative;
+  z-index: 1;
+}
+
+.tm-quick-stat__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.tm-quick-stat__value {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.tm-quick-stat__label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+/* ==================== Genres: Legend ==================== */
+.tm-genre-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tm-genre-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tm-genre-legend__swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-genre-legend__swatch-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+}
+
+.tm-genre-legend__name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tm-genre-legend__divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ==================== Genres: Section Header ==================== */
+.tm-genre-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.tm-genre-section-header__text {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tm-genre-section-header__count {
+  margin-left: auto;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}

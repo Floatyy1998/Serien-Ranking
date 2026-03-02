@@ -1,0 +1,202 @@
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import { useEffect, useState } from 'react';
+
+// Default orders
+export const DEFAULT_SECTION_ORDER = [
+  'main-actions',
+  'quick-actions',
+  'secondary-actions',
+  'countdown',
+  'continue-watching',
+  'rewatches',
+  'today-episodes',
+  'seasonal',
+  'trending',
+  'top-rated',
+  'for-you',
+  'stats',
+];
+export const DEFAULT_FOR_YOU_ORDER = [
+  'watch-streak',
+  'taste-match',
+  'watch-journey',
+  'catch-up',
+  'hidden-series',
+];
+export const DEFAULT_MAIN_ACTIONS_ORDER = ['watchlist', 'discover'];
+export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'calendar', 'history', 'friends'];
+export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
+
+export interface HomeConfig {
+  sectionOrder: string[];
+  hiddenSections: string[];
+  forYouOrder: string[];
+  hiddenForYou: string[];
+  mainActionsOrder: string[];
+  hiddenMainActions: string[];
+  quickActionsOrder: string[];
+  hiddenQuickActions: string[];
+  secondaryActionsOrder: string[];
+  hiddenSecondaryActions: string[];
+}
+
+function readCachedConfig(): Partial<HomeConfig> | null {
+  try {
+    return JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
+  } catch {
+    return null;
+  }
+}
+
+export function useHomeConfig(uid: string | undefined) {
+  const cachedConfig = readCachedConfig();
+
+  const [sectionOrder, setSectionOrder] = useState<string[]>(
+    cachedConfig?.sectionOrder || DEFAULT_SECTION_ORDER
+  );
+  const [hiddenSections, setHiddenSections] = useState<string[]>(
+    cachedConfig?.hiddenSections || []
+  );
+  const [forYouOrder, setForYouOrder] = useState<string[]>(
+    cachedConfig?.forYouOrder || DEFAULT_FOR_YOU_ORDER
+  );
+  const [hiddenForYou, setHiddenForYou] = useState<string[]>(cachedConfig?.hiddenForYou || []);
+  const [mainActionsOrder, setMainActionsOrder] = useState<string[]>(
+    cachedConfig?.mainActionsOrder || DEFAULT_MAIN_ACTIONS_ORDER
+  );
+  const [hiddenMainActions, setHiddenMainActions] = useState<string[]>(
+    cachedConfig?.hiddenMainActions || []
+  );
+  const [quickActionsOrder, setQuickActionsOrder] = useState<string[]>(
+    cachedConfig?.quickActionsOrder || DEFAULT_QUICK_ACTIONS_ORDER
+  );
+  const [hiddenQuickActions, setHiddenQuickActions] = useState<string[]>(
+    cachedConfig?.hiddenQuickActions || []
+  );
+  const [secondaryActionsOrder, setSecondaryActionsOrder] = useState<string[]>(
+    cachedConfig?.secondaryActionsOrder || DEFAULT_SECONDARY_ACTIONS_ORDER
+  );
+  const [hiddenSecondaryActions, setHiddenSecondaryActions] = useState<string[]>(
+    cachedConfig?.hiddenSecondaryActions || []
+  );
+
+  const applyConfigData = (data: Record<string, unknown>) => {
+    const applyList = (
+      key: string,
+      defaults: string[],
+      validLabels: Set<string>,
+      setter: (v: string[]) => void,
+      addMissing: boolean
+    ) => {
+      if (data?.[key]) {
+        const valid = (data[key] as string[]).filter((id) => validLabels.has(id));
+        if (addMissing) {
+          for (const id of defaults) {
+            if (!valid.includes(id)) valid.push(id);
+          }
+        }
+        setter(valid);
+      }
+    };
+    const sectionSet = new Set(DEFAULT_SECTION_ORDER);
+    applyList('sectionOrder', DEFAULT_SECTION_ORDER, sectionSet, setSectionOrder, true);
+    applyList('hiddenSections', DEFAULT_SECTION_ORDER, sectionSet, setHiddenSections, false);
+    applyList(
+      'forYouOrder',
+      DEFAULT_FOR_YOU_ORDER,
+      new Set(DEFAULT_FOR_YOU_ORDER),
+      setForYouOrder,
+      false
+    );
+    applyList(
+      'hiddenForYou',
+      DEFAULT_FOR_YOU_ORDER,
+      new Set(DEFAULT_FOR_YOU_ORDER),
+      setHiddenForYou,
+      false
+    );
+    applyList(
+      'mainActionsOrder',
+      DEFAULT_MAIN_ACTIONS_ORDER,
+      new Set(DEFAULT_MAIN_ACTIONS_ORDER),
+      setMainActionsOrder,
+      true
+    );
+    applyList(
+      'hiddenMainActions',
+      DEFAULT_MAIN_ACTIONS_ORDER,
+      new Set(DEFAULT_MAIN_ACTIONS_ORDER),
+      setHiddenMainActions,
+      false
+    );
+    applyList(
+      'quickActionsOrder',
+      DEFAULT_QUICK_ACTIONS_ORDER,
+      new Set(DEFAULT_QUICK_ACTIONS_ORDER),
+      setQuickActionsOrder,
+      true
+    );
+    applyList(
+      'hiddenQuickActions',
+      DEFAULT_QUICK_ACTIONS_ORDER,
+      new Set(DEFAULT_QUICK_ACTIONS_ORDER),
+      setHiddenQuickActions,
+      false
+    );
+    applyList(
+      'secondaryActionsOrder',
+      DEFAULT_SECONDARY_ACTIONS_ORDER,
+      new Set(DEFAULT_SECONDARY_ACTIONS_ORDER),
+      setSecondaryActionsOrder,
+      true
+    );
+    applyList(
+      'hiddenSecondaryActions',
+      DEFAULT_SECONDARY_ACTIONS_ORDER,
+      new Set(DEFAULT_SECONDARY_ACTIONS_ORDER),
+      setHiddenSecondaryActions,
+      false
+    );
+
+    // Cache to localStorage for instant loading next time
+    try {
+      localStorage.setItem('homeConfig_cache', JSON.stringify(data));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Load homeConfig from Firebase (background sync)
+  useEffect(() => {
+    if (!uid) {
+      window.setAppReady?.('homeConfig', true);
+      return;
+    }
+    firebase
+      .database()
+      .ref(`users/${uid}/homeConfig`)
+      .once('value')
+      .then((snap) => {
+        const data = snap.val();
+        if (data) applyConfigData(data);
+        window.setAppReady?.('homeConfig', true);
+      });
+  }, [uid]);
+
+  const visibleSections = sectionOrder.filter((id) => !hiddenSections.includes(id));
+
+  return {
+    sectionOrder,
+    hiddenSections,
+    forYouOrder,
+    hiddenForYou,
+    mainActionsOrder,
+    hiddenMainActions,
+    quickActionsOrder,
+    hiddenQuickActions,
+    secondaryActionsOrder,
+    hiddenSecondaryActions,
+    visibleSections,
+  };
+}

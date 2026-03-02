@@ -1,0 +1,208 @@
+/* HomeLayoutPage - Layout styles with hl- prefix */
+
+.hl-content {
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.hl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.hl-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hl-toolbar-icon {
+  font-size: 22px;
+}
+
+.hl-toolbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.hl-reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+.hl-reset-icon {
+  font-size: 16px;
+}
+
+.hl-description {
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.hl-section-list {
+  border-radius: 20px;
+  padding: 12px;
+  margin-bottom: 100px;
+}
+
+.hl-reorder-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* DraggableSectionItem */
+
+.hl-section-item {
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: grab;
+  transition: opacity 0.2s;
+}
+
+.hl-section-item--hidden {
+  opacity: 0.45;
+}
+
+.hl-section-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.hl-drag-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.hl-label-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hl-label-area--expandable {
+  cursor: pointer;
+}
+
+.hl-section-label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hl-expand-icon-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.hl-expand-icon {
+  font-size: 20px;
+}
+
+/* Sub-items (expandable) */
+
+.hl-sub-items-wrapper {
+  overflow: hidden;
+}
+
+.hl-sub-items-inner {
+  padding: 0 8px 10px 8px;
+  margin: 0 10px;
+  padding-top: 10px;
+}
+
+.hl-sub-reorder-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hl-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: grab;
+  transition: opacity 0.2s;
+}
+
+.hl-sub-item--hidden {
+  opacity: 0.45;
+}
+
+.hl-sub-drag-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.hl-sub-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* SectionToggle */
+
+.hl-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.hl-toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.hl-toggle-track {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+}
+
+.hl-toggle-thumb {
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.hl-toggle-thumb--on {
+  left: 23px;
+}
+
+.hl-toggle-thumb--off {
+  left: 3px;
+}

@@ -77,12 +77,13 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           width: '120px',
           height: '120px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background:
+            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '32px',
-          boxShadow: '0 20px 60px rgba(102, 126, 234, 0.4)',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2), 0 16px 48px rgba(102, 126, 234, 0.2)',
           position: 'relative',
         }}
       >
@@ -113,7 +114,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           border: '1px solid rgba(255, 255, 255, 0.2)',
         }}
       >
-        <span style={{ color: 'white', fontWeight: 600, fontSize: '14px' }}>Wrapped {year}</span>
+        <span style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>Wrapped {year}</span>
       </motion.div>
 
       {/* Title */}
@@ -124,6 +125,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         style={{
           fontSize: '28px',
           fontWeight: 700,
+          fontFamily: 'var(--font-display)',
           color: 'white',
           marginBottom: '16px',
           letterSpacing: '-0.5px',
@@ -179,8 +181,12 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
               border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
           >
-            <div style={{ color: '#667eea', fontSize: '24px', display: 'flex' }}>{item.icon}</div>
-            <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }}>
+            <div
+              style={{ color: 'var(--theme-primary, #667eea)', fontSize: '24px', display: 'flex' }}
+            >
+              {item.icon}
+            </div>
+            <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '13px' }}>
               {item.label}
             </span>
           </motion.div>
@@ -196,7 +202,8 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         whileTap={{ scale: 0.98 }}
         onClick={onBack}
         style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background:
+            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
           border: 'none',
           borderRadius: '12px',
           padding: '14px 32px',
@@ -207,7 +214,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(102, 126, 234, 0.2)',
         }}
       >
         <ArrowBack style={{ fontSize: 20 }} />

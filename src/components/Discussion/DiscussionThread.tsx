@@ -116,7 +116,8 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           <h3
             style={{
               fontSize: '20px',
-              fontWeight: 800,
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
               color: currentTheme.text.primary,
               margin: '0 0 12px 0',
             }}
@@ -126,7 +127,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
           <p
             style={{
-              fontSize: '14px',
+              fontSize: '15px',
               color: currentTheme.text.secondary,
               margin: '0 0 8px 0',
               maxWidth: '300px',
@@ -137,7 +138,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           </p>
           <p
             style={{
-              fontSize: '13px',
+              fontSize: '14px',
               color: currentTheme.text.muted,
               margin: '0 0 24px 0',
               maxWidth: '300px',
@@ -157,7 +158,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
                 background: currentTheme.background.surface,
                 color: currentTheme.text.primary,
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
@@ -172,7 +173,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           {discussions.length > 0 && (
             <p
               style={{
-                fontSize: '12px',
+                fontSize: '13px',
                 color: currentTheme.text.muted,
                 marginTop: '20px',
               }}
@@ -208,7 +209,8 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
         <h3
           style={{
             fontSize: '20px',
-            fontWeight: 800,
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
             color: currentTheme.text.primary,
             margin: 0,
             display: 'flex',
@@ -220,7 +222,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           {discussions.length > 0 && (
             <span
               style={{
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
                 color: currentTheme.text.muted,
                 background: currentTheme.background.surface,
@@ -244,9 +246,9 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
               color: '#fff',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 700,
-              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
             }}
           >
             + Neue Diskussion
@@ -264,7 +266,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
             background: `${currentTheme.status.error}15`,
             borderRadius: '12px',
             color: currentTheme.status.error,
-            fontSize: '14px',
+            fontSize: '15px',
             marginBottom: '16px',
             border: `1px solid ${currentTheme.status.error}30`,
           }}
@@ -300,7 +302,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           <ChatBubbleOutline style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.4 }} />
           <p style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Noch keine Diskussionen</p>
           {user && (
-            <p style={{ margin: '8px 0 0 0', fontSize: '14px', opacity: 0.8 }}>
+            <p style={{ margin: '8px 0 0 0', fontSize: '15px', opacity: 0.8 }}>
               Sei der Erste und starte eine Diskussion!
             </p>
           )}

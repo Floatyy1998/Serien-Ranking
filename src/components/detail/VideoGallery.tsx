@@ -133,7 +133,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                 border: `1px solid rgba(255, 0, 0, 0.3)`,
                 borderRadius: '12px',
                 color: currentTheme.text.primary,
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: 500,
                 cursor: 'pointer',
                 width: '100%',
@@ -148,7 +148,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                 border: `1px solid rgba(255, 0, 0, 0.3)`,
                 borderRadius: '12px',
                 color: currentTheme.text.primary,
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 500,
                 cursor: 'pointer',
                 marginTop: '12px',
@@ -229,7 +229,8 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                   style={{
                     margin: 0,
                     fontSize: '24px',
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-display)',
                     color: '#fff',
                     display: 'flex',
                     alignItems: 'center',
@@ -286,10 +287,10 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         background:
                           activeTab === 'trailers' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
                         color: '#fff',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         fontWeight: 500,
                         cursor: 'pointer',
-                        transition: 'all 0.2s',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       }}
                     >
                       Trailer ({trailers.length})
@@ -305,10 +306,10 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         background:
                           activeTab === 'bts' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
                         color: '#fff',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         fontWeight: 500,
                         cursor: 'pointer',
-                        transition: 'all 0.2s',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       }}
                     >
                       Behind the Scenes ({behindTheScenes.length})
@@ -391,7 +392,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                           padding: '4px 8px',
                           borderRadius: '4px',
                           background: 'rgba(0,0,0,0.7)',
-                          fontSize: '11px',
+                          fontSize: '12px',
                           fontWeight: 500,
                           color: '#fff',
                         }}
@@ -408,7 +409,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                             padding: '4px 8px',
                             borderRadius: '4px',
                             background: currentTheme.primary,
-                            fontSize: '11px',
+                            fontSize: '12px',
                             fontWeight: 500,
                             color: '#fff',
                           }}
@@ -422,7 +423,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                       <p
                         style={{
                           margin: 0,
-                          fontSize: '13px',
+                          fontSize: '14px',
                           fontWeight: 500,
                           color: '#fff',
                           overflow: 'hidden',

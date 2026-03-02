@@ -2,6 +2,15 @@
 export { colors } from './colors';
 export { commonStyles, styleHelpers } from './styles';
 export { theme } from '../theme';
+export {
+  typography,
+  radius,
+  shadows,
+  glass,
+  transitions,
+  zIndex,
+  softDarkDefaults,
+} from './designTokens';
 
 // Re-export wichtiger Types
 export type { Colors } from './colors';

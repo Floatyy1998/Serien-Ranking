@@ -58,7 +58,7 @@ export const LoginPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: '#000',
+        background: 'var(--theme-bg-default, #0a0e1a)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -101,6 +101,7 @@ export const LoginPage = () => {
               style={{
                 fontSize: '3rem',
                 fontWeight: 900,
+                fontFamily: 'var(--font-display)',
                 marginBottom: '16px',
                 letterSpacing: '-0.02em',
               }}
@@ -121,11 +122,12 @@ export const LoginPage = () => {
           <Paper
             elevation={0}
             sx={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: 3,
+              background: 'rgba(255, 255, 255, 0.04)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '16px',
               p: 4,
+              boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
             }}
           >
             {error && (
@@ -247,14 +249,15 @@ export const LoginPage = () => {
                   color: '#000',
                   fontWeight: 700,
                   fontSize: '1.1rem',
-                  borderRadius: 2,
+                  borderRadius: '14px',
                   textTransform: 'none',
-                  boxShadow: '0 8px 32px rgba(0, 254, 215, 0.3)',
-                  transition: 'all 0.3s ease',
+                  boxShadow:
+                    '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
                     background: 'linear-gradient(135deg, #00fed7 0%, #00c9b7 100%)',
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 12px 40px rgba(0, 254, 215, 0.4)',
+                    boxShadow: '0 8px 24px rgba(0, 254, 215, 0.35)',
                   },
                   '&:disabled': {
                     background: 'rgba(255, 255, 255, 0.1)',
@@ -276,7 +279,7 @@ export const LoginPage = () => {
                   color: '#00fed7',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.textDecoration = 'underline';

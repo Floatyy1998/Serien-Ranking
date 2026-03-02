@@ -178,3 +178,168 @@ export function createAccessibleTextColors(backgroundColor: string) {
     muted: isLight ? '#666666' : '#999999',
   };
 }
+
+// --- Smarte Theme-Normalisierung ---
+
+/**
+ * Normalisiert Farben für optimale Darstellung – wird beim Rendern angewendet,
+ * der gespeicherte Config bleibt unverändert.
+ *
+ * Constraints:
+ * 1. Background: max Luminance L=22% (Glow-Effekte brauchen dunklen BG)
+ * 2. Primary: min Sättigung 40% (für sichtbare Glow-Effekte)
+ * 3. Primary: min Kontrast 3.5:1 gegen Background (Lesbarkeit)
+ * 4. Surface: min 3% heller als Background (Tiefenwirkung)
+ */
+export function normalizeThemeColors(config: {
+  primaryColor: string;
+  backgroundColor: string;
+  surfaceColor?: string;
+  accentColor?: string;
+}): typeof config {
+  let { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
+
+  // 1. Background darf maximal L=22% haben (cinematic dark look)
+  try {
+    const bgHsl = hexToHsl(backgroundColor);
+    if (bgHsl.l > 22) {
+      backgroundColor = hslToHex(bgHsl.h, bgHsl.s, 22);
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // 2. Primary braucht min 40% Sättigung für sichtbare Glow-Effekte
+  try {
+    const pHsl = hexToHsl(primaryColor);
+    if (pHsl.s < 40) {
+      primaryColor = hslToHex(pHsl.h, Math.max(pHsl.s, 40), pHsl.l);
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // 3. Primary muss min 3.5:1 Kontrast gegen Background haben
+  try {
+    let contrast = getContrastRatio(primaryColor, backgroundColor);
+    if (contrast < 3.5) {
+      const pHsl = hexToHsl(primaryColor);
+      let newL = pHsl.l;
+      while (contrast < 3.5 && newL < 90) {
+        newL = Math.min(90, newL + 5);
+        const adjusted = hslToHex(pHsl.h, pHsl.s, newL);
+        const newContrast = getContrastRatio(adjusted, backgroundColor);
+        if (newContrast >= 3.5) {
+          primaryColor = adjusted;
+          break;
+        }
+        contrast = newContrast;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // 4. Surface muss mindestens 3% heller sein als Background
+  if (surfaceColor) {
+    try {
+      const bgHsl = hexToHsl(backgroundColor);
+      const surfHsl = hexToHsl(surfaceColor);
+      if (surfHsl.l - bgHsl.l < 3) {
+        surfaceColor = hslToHex(surfHsl.h, surfHsl.s, bgHsl.l + 4);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return { ...config, primaryColor, backgroundColor, surfaceColor, accentColor };
+}
+
+// --- HSL Utilities ---
+
+/**
+ * Konvertiert Hex-Farbe zu HSL
+ * Gibt h: 0-360, s: 0-100, l: 0-100 zurück
+ */
+export function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16) / 255;
+  const g = parseInt(clean.substring(2, 4), 16) / 255;
+  const b = parseInt(clean.substring(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+  if (delta !== 0) {
+    s = delta / (1 - Math.abs(2 * l - 1));
+    if (max === r) h = ((g - b) / delta + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / delta + 2) / 6;
+    else h = ((r - g) / delta + 4) / 6;
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+/**
+ * Konvertiert HSL zurück zu Hex
+ * Erwartet h: 0-360, s: 0-100, l: 0-100
+ */
+export function hslToHex(h: number, s: number, l: number): string {
+  const sN = s / 100;
+  const lN = l / 100;
+  const c = (1 - Math.abs(2 * lN - 1)) * sN;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lN - c / 2;
+  let r = 0,
+    g = 0,
+    b = 0;
+  if (h < 60) {
+    r = c;
+    g = x;
+    b = 0;
+  } else if (h < 120) {
+    r = x;
+    g = c;
+    b = 0;
+  } else if (h < 180) {
+    r = 0;
+    g = c;
+    b = x;
+  } else if (h < 240) {
+    r = 0;
+    g = x;
+    b = c;
+  } else if (h < 300) {
+    r = x;
+    g = 0;
+    b = c;
+  } else {
+    r = c;
+    g = 0;
+    b = x;
+  }
+  const toHex = (v: number) =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * Generiert eine Komplementärfarbe via Hue-Rotation um 150°.
+ * Cyan → Magenta/Pink, Grün → Violett, Blau → Orange-Rot, Orange → Cyan.
+ * Immer hohe Sättigung (min 65%) und gute Helligkeit (55-65%) für vivid Gradients.
+ */
+export function generateComplementaryColor(hex: string): string {
+  try {
+    const { h, s, l } = hexToHsl(hex);
+    const newH = (h + 150) % 360;
+    const newS = Math.min(80, Math.max(65, s));
+    const newL = Math.min(65, Math.max(55, l));
+    return hslToHex(newH, newS, newL);
+  } catch {
+    return '#8b5cf6'; // Fallback auf bewährtes Purple
+  }
+}

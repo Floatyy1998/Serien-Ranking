@@ -94,7 +94,13 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
   const topSerie = stats.topSeries[0];
 
   // Confetti shapes - using colored divs instead of emojis
-  const confettiColors = ['#667eea', '#f5af19', '#e94560', '#fff', '#764ba2'];
+  const confettiColors = [
+    'var(--theme-primary, #667eea)',
+    '#f5af19',
+    '#e94560',
+    '#fff',
+    'var(--theme-secondary-gradient, #764ba2)',
+  ];
 
   return (
     <div
@@ -159,7 +165,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
           to="#e94560"
           style={{
             fontSize: 'clamp(2rem, 8vw, 3.5rem)',
-            fontWeight: 'bold',
+            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
             marginBottom: '5px',
           }}
         >
@@ -201,7 +208,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
               borderRadius: '12px',
               padding: '12px 10px',
               textAlign: 'center',
-              border: '1px solid rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
@@ -259,7 +266,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
                   width: '60px',
                   height: '90px',
                   borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background:
+                    'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

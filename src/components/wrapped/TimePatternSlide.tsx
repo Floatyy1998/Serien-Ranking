@@ -87,7 +87,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
   favoriteDayOfWeek,
 }) => {
   const timeOfDay = favoriteTimeOfDay.timeOfDay;
-  const accentColor = TIME_COLORS[timeOfDay] || '#667eea';
+  const accentColor = TIME_COLORS[timeOfDay] || 'var(--theme-primary, #667eea)';
 
   return (
     <div
@@ -191,7 +191,8 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
         style={{
           color: 'white',
           fontSize: 'clamp(2rem, 8vw, 3.5rem)',
-          fontWeight: 'bold',
+          fontWeight: 700,
+          fontFamily: 'var(--font-display)',
           marginBottom: '10px',
           textShadow: `0 0 40px ${accentColor}`,
           zIndex: 1,
@@ -245,7 +246,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
           padding: '25px 40px',
           textAlign: 'center',
           zIndex: 1,
-          border: '1px solid rgba(255,255,255,0.2)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
         }}
       >
         <motion.div

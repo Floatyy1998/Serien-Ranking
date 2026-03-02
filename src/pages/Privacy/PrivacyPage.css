@@ -1,0 +1,165 @@
+/* PrivacyPage - Layout styles with priv- prefix */
+
+.priv-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.priv-error {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.priv-error-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.priv-error-text {
+  font-size: 15px;
+}
+
+.priv-page {
+  min-height: 100vh;
+  position: relative;
+}
+
+.priv-bg-decoration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.priv-bg-orb {
+  position: absolute;
+  top: -10%;
+  right: -20%;
+  width: 60%;
+  height: 50%;
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.priv-content {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.priv-last-updated {
+  font-size: 13px;
+  margin-bottom: 20px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.priv-card {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+.priv-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin-bottom: 12px;
+}
+
+.priv-card-text {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.priv-card-text--spaced {
+  margin-bottom: 12px;
+}
+
+.priv-card-text--spaced-lg {
+  margin-bottom: 16px;
+}
+
+.priv-subtitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.priv-service-block {
+  margin-bottom: 16px;
+}
+
+.priv-service-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.priv-service-purpose {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.priv-service-label {
+  font-size: 15px;
+}
+
+.priv-service-list {
+  font-size: 15px;
+  margin-left: 20px;
+}
+
+.priv-api-list {
+  font-size: 15px;
+  margin-left: 20px;
+  margin-bottom: 12px;
+}
+
+.priv-note {
+  font-size: 15px;
+  font-style: italic;
+}
+
+.priv-rights-list {
+  font-size: 15px;
+  margin-left: 20px;
+}
+
+.priv-link {
+  text-decoration: none;
+}
+
+.priv-contact-email {
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+.priv-privacy-footer {
+  font-size: 15px;
+  line-height: 1.6;
+  margin-top: 16px;
+}

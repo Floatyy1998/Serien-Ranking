@@ -129,7 +129,7 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
               style={{
                 position: 'relative',
                 cursor: 'pointer',
-                transition: 'transform 0.2s ease',
+                transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
@@ -156,7 +156,7 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '12px',
+                  fontSize: '13px',
                   fontWeight: 700,
                   color: 'white',
                   border: hasRating
@@ -170,7 +170,7 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
                 }}
                 // tooltip handled by parent Tooltip wrapper
               >
-                {!friend.photoURL && <Person style={{ fontSize: '14px', color: 'white' }} />}
+                {!friend.photoURL && <Person style={{ fontSize: '15px', color: 'white' }} />}
               </div>
 
               {/* Rating Badge - Bottom Center */}
@@ -230,12 +230,12 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
               height: '28px',
               borderRadius: '50%',
               background:
-                'linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%)',
+                'linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%)',
               border: '2px solid rgba(255, 255, 255, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '10px',
+              fontSize: '11px',
               fontWeight: 800,
               color: 'white',
               boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
