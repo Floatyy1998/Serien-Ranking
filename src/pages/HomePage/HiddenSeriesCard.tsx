@@ -13,7 +13,7 @@ export const HiddenSeriesCard: React.FC = () => {
     return null;
   }
 
-  const accentColor = '#ff9800';
+  const accentColor = currentTheme.primary;
 
   return (
     <motion.button

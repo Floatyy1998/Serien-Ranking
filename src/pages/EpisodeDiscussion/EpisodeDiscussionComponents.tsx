@@ -179,7 +179,6 @@ export const HeroSection = memo(
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="ed-series-badge"
-          onClick={() => navigate(`/series/${seriesId}`)}
         >
           <Tv className="ed-series-badge-icon" />
           <span className="ed-series-badge-text">{seriesTitle}</span>

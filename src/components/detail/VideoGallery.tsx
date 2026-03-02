@@ -17,7 +17,7 @@ interface Video {
 interface VideoGalleryProps {
   tmdbId: number;
   mediaType: 'tv' | 'movie';
-  buttonStyle?: 'desktop' | 'mobile';
+  buttonStyle?: 'desktop' | 'mobile' | 'compact' | 'icon';
 }
 
 export const VideoGallery: React.FC<VideoGalleryProps> = ({
@@ -122,43 +122,82 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
         style={
-          buttonStyle === 'mobile'
+          buttonStyle === 'icon'
             ? {
+                flex: 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                background: `linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)`,
-                border: `1px solid rgba(255, 0, 0, 0.3)`,
-                borderRadius: '12px',
+                padding: '10px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: `1px solid ${currentTheme.primary}40`,
+                borderRadius: '10px',
                 color: currentTheme.text.primary,
-                fontSize: '14px',
-                fontWeight: 500,
                 cursor: 'pointer',
-                width: '100%',
+                fontSize: '13px',
               }
-            : {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                background: `linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)`,
-                border: `1px solid rgba(255, 0, 0, 0.3)`,
-                borderRadius: '12px',
-                color: currentTheme.text.primary,
-                fontSize: '15px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                marginTop: '12px',
-              }
+            : buttonStyle === 'compact'
+              ? {
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                  padding: '4px 10px',
+                  background:
+                    'linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)',
+                  border: '1px solid rgba(255, 0, 0, 0.3)',
+                  borderRadius: '16px',
+                  color: currentTheme.text.primary,
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap' as const,
+                }
+              : buttonStyle === 'mobile'
+                ? {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    background: `linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)`,
+                    border: `1px solid rgba(255, 0, 0, 0.3)`,
+                    borderRadius: '12px',
+                    color: currentTheme.text.primary,
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    width: '100%',
+                  }
+                : {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 20px',
+                    background: `linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.15) 100%)`,
+                    border: `1px solid rgba(255, 0, 0, 0.3)`,
+                    borderRadius: '12px',
+                    color: currentTheme.text.primary,
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    marginTop: '12px',
+                  }
         }
       >
-        <PlayCircle
-          style={{ color: '#ff0000', fontSize: buttonStyle === 'mobile' ? '20px' : '24px' }}
-        />
-        {buttonText}
+        {buttonStyle === 'icon' ? (
+          <Theaters style={{ fontSize: '20px', color: currentTheme.primary }} />
+        ) : (
+          <PlayCircle
+            style={{
+              color: '#ff0000',
+              fontSize:
+                buttonStyle === 'compact' ? '16px' : buttonStyle === 'mobile' ? '20px' : '24px',
+            }}
+          />
+        )}
+        {buttonStyle !== 'icon' && buttonText}
       </motion.button>
 
       {/* Modal */}

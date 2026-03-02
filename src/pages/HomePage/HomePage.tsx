@@ -796,10 +796,10 @@ export const HomePage: React.FC = () => {
             }}
             style={{
               padding: '14px 16px',
-              background: 'rgba(0, 212, 170, 0.15)',
-              border: '1px solid rgba(0, 212, 170, 0.3)',
+              background: `${currentTheme.primary}26`,
+              border: `1px solid ${currentTheme.primary}4D`,
               borderRadius: '12px',
-              color: '#00d4aa',
+              color: currentTheme.primary,
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -819,10 +819,10 @@ export const HomePage: React.FC = () => {
             }}
             style={{
               padding: '14px 16px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: currentTheme.background.surface,
+              border: `1px solid ${currentTheme.border.default}`,
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',

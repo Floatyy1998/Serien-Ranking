@@ -94,7 +94,6 @@ export const MovieDetailPage = memo(() => {
         getBackdropUrl={getBackdropUrl}
         formatRuntime={formatRuntime}
         onAddMovie={handleAddMovie}
-        onDeleteClick={() => setShowDeleteConfirm(true)}
       />
 
       {/* Action Buttons */}
@@ -107,6 +106,7 @@ export const MovieDetailPage = memo(() => {
         movieId={movie.id}
         onNavigateRate={() => navigate(`/rating/movie/${movie.id}`)}
         onAddMovie={handleAddMovie}
+        onDeleteClick={() => setShowDeleteConfirm(true)}
       />
 
       {/* Tab Navigation */}
