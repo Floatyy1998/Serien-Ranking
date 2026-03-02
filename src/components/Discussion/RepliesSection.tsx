@@ -107,10 +107,10 @@ export const RepliesSection: React.FC<{
           padding: '8px 14px',
           cursor: isSpoilerHidden ? 'not-allowed' : 'pointer',
           color: isSpoilerHidden ? currentTheme.status.warning : currentTheme.primary,
-          fontSize: '13px',
+          fontSize: '14px',
           fontWeight: 600,
           borderRadius: '20px',
-          transition: 'all 0.2s',
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           opacity: isSpoilerHidden ? 0.7 : 1,
         }}
         title={isSpoilerHidden ? 'Zeige zuerst den Spoiler an, um Antworten zu sehen' : undefined}
@@ -146,7 +146,7 @@ export const RepliesSection: React.FC<{
                   style={{
                     padding: '16px',
                     color: currentTheme.text.muted,
-                    fontSize: '14px',
+                    fontSize: '15px',
                     textAlign: 'center',
                   }}
                 >
@@ -187,7 +187,7 @@ export const RepliesSection: React.FC<{
                       borderRadius: '14px',
                       border: `2px solid ${currentTheme.border.default}`,
                       background: currentTheme.background.card,
-                      transition: 'border-color 0.2s',
+                      transition: 'border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
                     {/* Images inside input field */}
@@ -224,7 +224,7 @@ export const RepliesSection: React.FC<{
                                 justifyContent: 'center',
                               }}
                             >
-                              <Close style={{ fontSize: '14px' }} />
+                              <Close style={{ fontSize: '15px' }} />
                             </button>
                           </div>
                         ))}
@@ -244,7 +244,7 @@ export const RepliesSection: React.FC<{
                         border: 'none',
                         background: 'transparent',
                         color: currentTheme.text.primary,
-                        fontSize: '14px',
+                        fontSize: '15px',
                         outline: 'none',
                         resize: 'none',
                         fontFamily: 'inherit',
@@ -274,7 +274,7 @@ export const RepliesSection: React.FC<{
                       >
                         <AddPhotoAlternate style={{ fontSize: '18px' }} />
                         {uploadingImage && (
-                          <span style={{ fontSize: '11px', marginLeft: '3px' }}>...</span>
+                          <span style={{ fontSize: '12px', marginLeft: '3px' }}>...</span>
                         )}
                       </button>
                       {/* Spoiler Toggle */}
@@ -330,9 +330,9 @@ export const RepliesSection: React.FC<{
                       justifyContent: 'center',
                       boxShadow:
                         newReply.trim() || replyImages.length > 0
-                          ? '0 4px 12px rgba(0,0,0,0.2)'
+                          ? '0 2px 8px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08)'
                           : 'none',
-                      transition: 'all 0.2s',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
                     <Send style={{ fontSize: '18px' }} />

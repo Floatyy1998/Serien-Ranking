@@ -163,7 +163,8 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
             position: 'fixed',
             bottom: hasBottomNav ? '120px' : '30px', // Adjust based on navbar presence
             right: '20px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background:
+              'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)',
             border: 'none',
             borderRadius: '50%',
             width: '56px',
@@ -172,7 +173,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
+            boxShadow: '0 4px 20px rgba(139, 92, 246, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2)',
             cursor: 'pointer',
             zIndex: 1000,
           }}
@@ -191,7 +192,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: 'bold',
               }}
             >
@@ -228,11 +229,12 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           >
             <GradientText
               as="h2"
-              from="#667eea"
-              to="#764ba2"
+              from="var(--theme-secondary-gradient, #8b5cf6)"
+              to="var(--theme-tertiary-gradient, #6d28d9)"
               style={{
                 fontSize: '20px',
-                fontWeight: 700,
+                fontWeight: 800,
+                fontFamily: 'var(--font-display)',
                 margin: 0,
               }}
             >
@@ -245,10 +247,10 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                 style={{
                   background: 'rgba(255, 71, 87, 0.1)',
                   border: '1px solid rgba(255, 71, 87, 0.3)',
-                  borderRadius: '20px',
+                  borderRadius: '14px',
                   padding: '6px 12px',
                   color: '#ff4757',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
@@ -262,7 +264,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           <div style={{ marginBottom: '24px' }}>
             <label
               style={{
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
                 color: 'rgba(255, 255, 255, 0.7)',
                 display: 'block',
@@ -282,7 +284,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           <div style={{ marginBottom: '24px' }}>
             <label
               style={{
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
                 color: 'rgba(255, 255, 255, 0.7)',
                 display: 'block',
@@ -309,18 +311,19 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                     style={{
                       padding: '12px',
                       background: isActive
-                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                        : 'rgba(255, 255, 255, 0.05)',
-                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                      borderRadius: '12px',
+                        ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
+                        : 'rgba(255, 255, 255, 0.04)',
+                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
+                      borderRadius: '14px',
                       color: 'white',
-                      fontSize: '13px',
+                      fontSize: '14px',
                       fontWeight: isActive ? 600 : 500,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      transition: 'all 0.2s ease',
+                      backdropFilter: isActive ? 'none' : 'blur(8px)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
                     <Icon style={{ fontSize: '16px' }} />
@@ -336,7 +339,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
             <div style={{ marginBottom: '24px' }}>
               <label
                 style={{
-                  fontSize: '14px',
+                  fontSize: '15px',
                   fontWeight: 600,
                   color: 'rgba(255, 255, 255, 0.7)',
                   display: 'block',
@@ -352,10 +355,10 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                   width: '100%',
                   padding: '12px 16px',
                   background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '14px',
                   color: 'white',
-                  fontSize: '14px',
+                  fontSize: '15px',
                 }}
               >
                 <option
@@ -411,7 +414,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           <div style={{ marginBottom: '24px' }}>
             <label
               style={{
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
                 color: 'rgba(255, 255, 255, 0.7)',
                 display: 'block',
@@ -439,15 +442,16 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                     style={{
                       padding: '10px',
                       background: isActive
-                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                        : 'rgba(255, 255, 255, 0.05)',
-                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                      borderRadius: '8px',
+                        ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
+                        : 'rgba(255, 255, 255, 0.04)',
+                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
+                      borderRadius: '14px',
                       color: 'white',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       fontWeight: isActive ? 600 : 500,
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease',
+                      backdropFilter: isActive ? 'none' : 'blur(8px)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
                     {genre.label}
@@ -461,7 +465,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           <div>
             <label
               style={{
-                fontSize: '14px',
+                fontSize: '15px',
                 fontWeight: 600,
                 color: 'rgba(255, 255, 255, 0.7)',
                 display: 'block',
@@ -487,15 +491,16 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                       style={{
                         padding: '12px',
                         background: isActive
-                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                          : 'rgba(255, 255, 255, 0.05)',
-                        border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
-                        borderRadius: '8px',
+                          ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
+                          : 'rgba(255, 255, 255, 0.04)',
+                        border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
+                        borderRadius: '14px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease',
+                        backdropFilter: isActive ? 'none' : 'blur(8px)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'relative',
                         overflow: 'hidden',
                       }}
@@ -514,7 +519,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                       ) : (
                         <span
                           style={{
-                            fontSize: '12px',
+                            fontSize: '13px',
                             fontWeight: 600,
                             color: 'white',
                             textAlign: 'center',

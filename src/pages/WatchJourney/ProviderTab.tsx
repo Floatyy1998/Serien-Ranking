@@ -156,7 +156,15 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           border: '1px solid rgba(255,255,255,0.08)',
         }}
       >
-        <h3 style={{ color: 'white', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: 'white',
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Stunden pro Streaming-Dienst
         </h3>
         <div style={{ width: '100%', height: barData.length * 50 + 20 }}>
@@ -191,11 +199,12 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                     return (
                       <div
                         style={{
-                          background: 'rgba(15, 15, 35, 0.95)',
+                          background: 'rgba(10, 14, 26, 0.95)',
                           border: `1px solid ${data.color}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                          boxShadow:
+                            '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
                         <p style={{ color: data.color, fontWeight: 700, margin: 0, fontSize: 15 }}>
@@ -244,7 +253,15 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           border: '1px solid rgba(255,255,255,0.08)',
         }}
       >
-        <h3 style={{ color: 'white', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: 'white',
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Streaming-Verlauf
         </h3>
         <div style={{ width: '100%', height: 280 }}>

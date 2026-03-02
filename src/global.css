@@ -3,10 +3,58 @@
   --theme-primary: #00fed7;
   --theme-primary-hover: #33ffdf;
   --theme-accent: #ff6b6b;
-  --theme-background: #000000;
-  --theme-surface: #2d2d30;
+  --theme-background: #0a0e1a;
+  --theme-surface: #141926;
+  --theme-surface-elevated: #1a2030;
   --theme-text-primary: #00fed7;
   --theme-text-secondary: #ffffff;
+  --theme-secondary-gradient: #8b5cf6;
+
+  /* Design Tokens */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3);
+
+  /* Typografie */
+  --font-body: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Glow-Tokens */
+  --glow-primary:
+    0 0 20px color-mix(in srgb, var(--theme-primary) 40%, transparent),
+    0 0 40px color-mix(in srgb, var(--theme-primary) 20%, transparent);
+  --glow-primary-intense:
+    0 0 20px color-mix(in srgb, var(--theme-primary) 60%, transparent),
+    0 0 60px color-mix(in srgb, var(--theme-primary) 30%, transparent),
+    0 0 100px color-mix(in srgb, var(--theme-primary) 15%, transparent);
+  --glow-accent: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+
+  /* Glass-Stufen */
+  --glass-subtle: rgba(255, 255, 255, 0.03);
+  --glass-light: rgba(255, 255, 255, 0.05);
+  --glass-medium: rgba(255, 255, 255, 0.08);
+  --glass-heavy: rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-border-light: rgba(255, 255, 255, 0.1);
+  --glass-border-medium: rgba(255, 255, 255, 0.15);
+
+  /* Gradient-Tokens */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--theme-primary),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
+  --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
+  --gradient-cool: linear-gradient(135deg, var(--theme-primary), #3b82f6);
+
+  /* Text-Glow */
+  --text-glow: 0 0 20px color-mix(in srgb, var(--theme-primary) 50%, transparent);
+  --text-glow-subtle: 0 0 10px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
 /* Hide all scrollbars globally - with !important for highest priority */
@@ -204,5 +252,201 @@ input[style*='outline']:focus-visible {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes orbFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 15px) scale(0.95);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes progressShimmer {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* ============================
+   Premium Utility Classes
+   ============================ */
+
+/* Noise/grain overlay */
+.noise-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+}
+
+/* Skeleton shimmer loading */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--glass-subtle) 25%,
+    var(--glass-light) 50%,
+    var(--glass-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Animated gradient text */
+.gradient-text-animated {
+  background: linear-gradient(
+    270deg,
+    var(--theme-primary),
+    var(--theme-secondary-gradient, #8b5cf6),
+    var(--theme-primary)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* Glow card on hover */
+.glow-card {
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.glow-card:hover {
+  box-shadow: var(--glow-primary);
+  border-color: color-mix(in srgb, var(--theme-primary) 25%, transparent);
+  transform: translateY(-2px);
+}
+
+.glow-card:active {
+  transform: scale(0.98);
+}
+
+/* Progress bar shimmer */
+.progress-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: progressShimmer 2s ease-in-out infinite;
+}
+
+/* Section entry animation with staggered delays */
+.section-entry {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.section-entry:nth-child(1) {
+  animation-delay: 0s;
+}
+.section-entry:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.section-entry:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.section-entry:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.section-entry:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+/* Global touch feedback */
+button:active:not(:disabled),
+[role='button']:active:not(:disabled),
+[role='tab']:active {
+  transform: scale(0.97);
+}
+
+/* Accessibility: reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

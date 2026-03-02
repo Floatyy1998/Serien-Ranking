@@ -146,7 +146,15 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Genre-Verteilung
         </h3>
         <div style={{ width: '100%', height: 280 }}>
@@ -183,7 +191,8 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                           border: `1px solid ${item.color}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                          boxShadow:
+                            '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
                         <p style={{ color: item.color, fontWeight: 700, margin: 0, fontSize: 15 }}>
@@ -234,7 +243,15 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Genre-Entwicklung
         </h3>
         <div style={{ width: '100%', height: 280 }}>
@@ -286,7 +303,15 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
 
       {/* Genre Stats Grid */}
       <div style={{ padding: '0 20px' }}>
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Alle Genres
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>

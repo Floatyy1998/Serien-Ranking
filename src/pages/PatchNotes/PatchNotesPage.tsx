@@ -89,7 +89,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <PlaylistAddCheck />,
-          color: '#8b5cf6',
+          color: 'var(--theme-secondary-gradient, #8b5cf6)',
           title: '"Ich bin bei…" Markierung',
           description:
             'Wähle Staffel und Episode – alles davor wird automatisch als gesehen markiert. Perfekt für Serien die du woanders geschaut hast.',

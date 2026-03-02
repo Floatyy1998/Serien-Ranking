@@ -59,6 +59,8 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
           maxWidth: isMobile ? '90vw' : '400px',
           backgroundColor: bgColor,
           color: '#fff',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
           '& .MuiAlert-message': { width: '100%', color: '#fff' },
           '& .MuiAlert-action': { alignItems: 'center', pt: 0 },
           '& .MuiAlert-icon': { color: '#fff' },
@@ -70,7 +72,8 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
             <Typography
               variant="body1"
               sx={{
-                fontWeight: 600,
+                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
                 fontSize: isMobile ? '0.9rem' : '1rem',
                 lineHeight: 1.2,
                 color: '#fff',

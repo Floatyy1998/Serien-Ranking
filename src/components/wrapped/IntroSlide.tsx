@@ -47,7 +47,7 @@ export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username }) => {
               width: `${100 + i * 30}px`,
               height: `${100 + i * 30}px`,
               borderRadius: '50%',
-              background: `radial-gradient(circle, rgba(102, 126, 234, 0.4) 0%, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%)`,
             }}
           />
         ))}
@@ -98,11 +98,12 @@ export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username }) => {
         >
           <GradientText
             as="h1"
-            from="#667eea"
+            from="var(--theme-primary, #667eea)"
             to="#f093fb"
             style={{
               fontSize: 'clamp(6rem, 25vw, 14rem)',
-              fontWeight: 'bold',
+              fontWeight: 800,
+              fontFamily: 'var(--font-display)',
               lineHeight: 1,
               margin: '20px 0',
             }}

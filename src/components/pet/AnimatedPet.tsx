@@ -74,8 +74,9 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
     }
     if (pet.color === 'cosmic') {
       return {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        boxShadow: '0 0 20px rgba(102, 126, 234, 0.5)',
+        background:
+          'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+        boxShadow: '0 0 20px rgba(102, 126, 234, 0.3), 0 0 40px rgba(102, 126, 234, 0.1)',
       };
     }
     return {};
@@ -183,7 +184,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
               background: 'linear-gradient(45deg, #FFD700, #FFA500)',
               borderRadius: '50%',
               padding: '2px 6px',
-              fontSize: '10px',
+              fontSize: '11px',
               fontWeight: 'bold',
               color: 'white',
             }}

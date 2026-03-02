@@ -21,7 +21,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const fromColor = color || currentTheme.primary;
-  const endColor = toColor || '#8b5cf6';
+  const endColor = toColor || 'var(--theme-secondary-gradient, #8b5cf6)';
   const clampedValue = Math.min(100, Math.max(0, value));
 
   return (
@@ -42,8 +42,23 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           height: '100%',
           background: `linear-gradient(90deg, ${fromColor}, ${endColor})`,
           borderRadius: height / 2,
+          boxShadow: `0 0 12px ${fromColor}50, 0 0 4px ${fromColor}30`,
+          position: 'relative',
+          overflow: 'hidden',
         }}
-      />
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: '-50%',
+            width: '50%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+            animation: 'progressShimmer 2s ease-in-out infinite',
+          }}
+        />
+      </motion.div>
     </div>
   );
 };

@@ -36,14 +36,24 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       <h2
         style={{
           fontSize: '20px',
-          fontWeight: 700,
+          fontFamily: 'var(--font-display)',
+          fontWeight: 800,
+          letterSpacing: '-0.01em',
           margin: 0,
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
         }}
       >
-        <span style={{ display: 'flex', color: iconColor || currentTheme.primary }}>{icon}</span>
+        <span
+          style={{
+            display: 'flex',
+            color: iconColor || currentTheme.primary,
+            filter: `drop-shadow(0 0 6px ${iconColor || currentTheme.primary}60)`,
+          }}
+        >
+          {icon}
+        </span>
         {title}
       </h2>
       {onSeeAll && (
@@ -54,7 +64,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
               background: 'none',
               border: 'none',
               color: currentTheme.text.secondary,
-              fontSize: '14px',
+              fontSize: '15px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',

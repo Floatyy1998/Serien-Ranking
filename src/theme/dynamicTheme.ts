@@ -5,6 +5,8 @@ import {
   lightenColor,
   withOpacity,
   generateHoverColor,
+  generateComplementaryColor,
+  normalizeThemeColors,
 } from './colorUtils';
 
 // Interface für Benutzer-Theme-Konfiguration
@@ -21,7 +23,10 @@ export interface UserThemeConfig {
 
 // Generiert ein vollständiges Theme basierend auf Benutzer-Eingaben
 export function generateDynamicTheme(config: UserThemeConfig) {
-  const { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
+  // Smarte Normalisierung: korrigiert schlechte Farbkombinationen für die Darstellung.
+  // Die originalen gespeicherten Werte in localStorage/Firebase bleiben unverändert.
+  const normalized = normalizeThemeColors(config);
+  const { primaryColor, backgroundColor, surfaceColor, accentColor } = normalized;
 
   // Automatische Palette-Generierung
   const primaryPalette = generateColorPalette(primaryColor);
@@ -34,6 +39,9 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   // Accent-Farbe als Fallback auf aufgehellte Primärfarbe
   const finalAccentColor = accentColor || lightenColor(primaryColor, 0.2);
 
+  // Komplementärfarbe für Gradients (immer berechnet, nie gespeichert)
+  const secondaryColor = generateComplementaryColor(primaryColor);
+
   return {
     // Primäre Farben
     primary: primaryColor,
@@ -45,6 +53,9 @@ export function generateDynamicTheme(config: UserThemeConfig) {
     accent: finalAccentColor,
     accentHover: generateHoverColor(finalAccentColor),
 
+    // Komplementärfarbe für Gradients (theme-responsiv)
+    secondary: secondaryColor,
+
     // Hintergrundfarben
     background: {
       default: backgroundColor,
@@ -54,11 +65,12 @@ export function generateDynamicTheme(config: UserThemeConfig) {
       input: darkenColor(backgroundColor, 0.1),
       loading: darkenColor(backgroundColor, 0.02),
       surface: autoSurfaceColor,
+      surfaceElevated: lightenColor(autoSurfaceColor, 0.05),
       surfaceHover: generateHoverColor(autoSurfaceColor),
       gradient: {
         dark: backgroundColor,
         light: lightenColor(backgroundColor, 0.05),
-        complex: autoSurfaceColor, // Einfach die Surface-Farbe ohne Gradients
+        complex: autoSurfaceColor,
       },
     },
 
@@ -105,10 +117,10 @@ export function generateDynamicTheme(config: UserThemeConfig) {
       black: withOpacity('#000000', 0.2),
     },
 
-    // Schatten mit Theme-Anpassung
+    // Schatten (weich, mehrstufig)
     shadow: {
-      card: `0 25px 50px -12px ${withOpacity(primaryColor, 0.15)}`,
-      dialog: `0 25px 50px -12px ${withOpacity(primaryColor, 0.15)}`,
+      card: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+      dialog: '0 16px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 24px -8px rgba(0, 0, 0, 0.4)',
     },
 
     // Button-Farben einfach gehalten
@@ -129,11 +141,11 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   };
 }
 
-// Standard-Theme als Fallback
+// Standard-Theme als Fallback (Soft Dark)
 export const defaultThemeConfig: UserThemeConfig = {
   primaryColor: '#00fed7',
-  backgroundColor: '#000000',
-  surfaceColor: '#2d2d30',
+  backgroundColor: '#0a0e1a',
+  surfaceColor: '#141926',
   accentColor: '#00e6c3',
   backgroundImage: undefined,
   backgroundImageOpacity: 0.5,
@@ -176,6 +188,11 @@ export function createMuiTheme(dynamicTheme: ReturnType<typeof generateDynamicTh
         secondary: dynamicTheme.text.secondary,
       },
     },
-    // ... weitere MUI-Theme-Konfiguration
+    typography: {
+      fontFamily: "'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+    shape: {
+      borderRadius: 12,
+    },
   };
 }

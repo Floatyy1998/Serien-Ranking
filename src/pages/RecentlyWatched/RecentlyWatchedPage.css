@@ -1,0 +1,297 @@
+/* RecentlyWatchedPage - Layout & structural styles */
+
+/* ── Fixed header ─────────────────────────────────────────────────────────── */
+
+.rw-fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Search bar ───────────────────────────────────────────────────────────── */
+
+.rw-search-bar {
+  margin-bottom: 16px;
+  position: relative;
+  padding: 0 20px;
+}
+
+.rw-search-input {
+  width: 100%;
+  padding: 12px 12px 12px 44px;
+  border-radius: 14px;
+  font-size: 15px;
+  outline: none;
+  /* icon placeholder via absolute positioned Search icon in the parent */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 14px center;
+  background-size: 20px 20px;
+}
+
+.rw-search-clear {
+  position: absolute;
+  right: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ── Time range chips ─────────────────────────────────────────────────────── */
+
+.rw-time-range-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 20px 4px;
+}
+
+.rw-time-range-chips::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Scrollable content container ─────────────────────────────────────────── */
+
+.rw-scroll-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+}
+
+.rw-content-area {
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+
+.rw-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.rw-empty-icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rw-empty-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+/* ── Date group header ────────────────────────────────────────────────────── */
+
+.rw-date-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+}
+
+.rw-date-title {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.rw-date-count {
+  margin-left: auto;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* ── Episode card (single) ────────────────────────────────────────────────── */
+
+.rw-episode-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.rw-episode-poster {
+  width: 52px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.rw-episode-series-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rw-episode-info {
+  font-size: 14px;
+  margin: 0 0 6px 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rw-episode-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rw-badge-watch-count {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.rw-badge-date-source {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fbbf2415;
+  color: #fbbf24;
+}
+
+.rw-episode-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.rw-rewatch-btn {
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rw-rewatch-btn-small {
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Series accordion (multi-episode) ─────────────────────────────────────── */
+
+.rw-accordion {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.rw-accordion-header {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.rw-accordion-poster {
+  width: 56px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.rw-accordion-series-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.rw-accordion-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rw-accordion-count {
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.rw-accordion-date {
+  font-size: 13px;
+  margin: 0;
+}
+
+.rw-accordion-episode {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.rw-accordion-episode-name {
+  font-size: 14px;
+  margin: 0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.rw-accordion-watch-count {
+  font-size: 12px;
+  margin: 2px 0 0 0;
+}
+
+/* ── Bottom spacer ────────────────────────────────────────────────────────── */
+
+.rw-bottom-spacer {
+  height: 100px;
+}

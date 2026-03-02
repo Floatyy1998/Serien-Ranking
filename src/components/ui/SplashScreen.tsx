@@ -58,11 +58,11 @@ const fadeOut = keyframes`
 // Glow pulse animation
 const glowPulse = keyframes`
   0%, 100% {
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3),
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3),
                 0 0 40px rgba(236, 72, 153, 0.1);
   }
   50% {
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.5),
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5),
                 0 0 60px rgba(236, 72, 153, 0.2);
   }
 `;
@@ -130,11 +130,11 @@ const SplashContainer = styled(Box, {
   align-items: center;
   background: linear-gradient(
     135deg,
-    #0a0a0a 0%,
-    #1a1a1a 25%,
-    #0f0f0f 50%,
-    #1a1a1a 75%,
-    #0a0a0a 100%
+    #0a0e1a 0%,
+    #141926 25%,
+    #0d1117 50%,
+    #141926 75%,
+    #0a0e1a 100%
   );
   animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)}
     ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards;
@@ -149,10 +149,10 @@ const BackgroundMesh = styled(Box)`
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
   pointer-events: none;
 `;
 
@@ -163,12 +163,12 @@ const Particle = styled(Box, {
   position: absolute;
   width: 2px;
   height: 2px;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(236, 72, 153, 0.8));
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(236, 72, 153, 0.8));
   left: ${(props) => props.left};
   border-radius: 50%;
   animation: ${particleFloat} 15s linear infinite;
   animation-delay: ${(props) => props.delay}s;
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
 `;
 
 // Modern logo container with glow
@@ -194,11 +194,11 @@ const LogoGlow = styled(Box)`
   height: 100%;
   background: radial-gradient(
     circle,
-    rgba(168, 85, 247, 0.3) 0%,
+    rgba(139, 92, 246, 0.3) 0%,
     rgba(236, 72, 153, 0.1) 40%,
     transparent 70%
   );
-  filter: blur(20px);
+  filter: blur(24px);
   animation: ${glowPulse} 3s ease-in-out infinite;
 `;
 
@@ -212,7 +212,7 @@ const LogoSVG = styled('svg')`
     ${logoEntrance} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
     ${breathe} 3s ease-in-out infinite;
   animation-delay: 0s, 1.2s;
-  filter: drop-shadow(0 10px 40px rgba(168, 85, 247, 0.4));
+  filter: drop-shadow(0 10px 40px rgba(139, 92, 246, 0.4));
 
   path {
     fill: url(#goldGradient);
@@ -222,21 +222,21 @@ const LogoSVG = styled('svg')`
 // Modern title with static gradient - no animation to prevent flickering
 const Title = styled('h1')`
   font-size: 4rem;
-  font-weight: 200;
+  font-weight: 800;
   margin: 0 0 15px 0;
   background: linear-gradient(
     135deg,
-    #a855f7 0%,
+    #8b5cf6 0%,
     #ec4899 25%,
     #f97316 50%,
     #ec4899 75%,
-    #a855f7 100%
+    #8b5cf6 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-transform: uppercase;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-display), 'Inter', 'Helvetica Neue', sans-serif;
   animation: ${textReveal} 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
   animation-delay: 0.3s;
   opacity: 0;
@@ -253,7 +253,7 @@ const Subtitle = styled('p')`
   text-transform: uppercase;
   letter-spacing: 8px;
   margin: 0 0 80px 0;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-display), 'Inter', sans-serif;
   font-weight: 300;
   animation: ${fadeIn} 1s ease-out 0.6s backwards;
   position: relative;
@@ -266,7 +266,7 @@ const Subtitle = styled('p')`
     transform: translateX(-50%);
     width: 60px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #a855f7, transparent);
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.8), transparent);
   }
 
   @media (max-width: 768px) {
@@ -283,7 +283,7 @@ const ProgressWrapper = styled(Box)`
   background: rgba(255, 255, 255, 0.02);
   border-radius: 20px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.15);
   animation: ${fadeIn} 1s ease-out 0.8s backwards;
 
   @media (max-width: 768px) {
@@ -308,11 +308,11 @@ const ProgressBar = styled(Box, {
   left: 0;
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #a855f7 100%);
+  background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 50%, #8b5cf6 100%);
   transform: scaleX(${(props) => props.progress});
   transform-origin: left;
   transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
 
   &::after {
     content: '';
@@ -332,7 +332,7 @@ const LoadingStatus = styled(Box)`
   justify-content: space-between;
   align-items: center;
   margin-top: 15px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-display), 'Inter', sans-serif;
 `;
 
 const LoadingText = styled('p')`
@@ -345,7 +345,7 @@ const LoadingText = styled('p')`
 
 const LoadingPercentage = styled('p')`
   font-size: 0.85rem;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -366,7 +366,7 @@ const CornerAccent = styled(Box, {
   &::after {
     content: '';
     position: absolute;
-    background: linear-gradient(135deg, #a855f7, transparent);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), transparent);
     opacity: 0.3;
   }
 
@@ -548,7 +548,7 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
         <LogoSVG viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.9" />
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.9" />
               <stop offset="50%" stopColor="#ec4899" stopOpacity="1" />
               <stop offset="100%" stopColor="#f97316" stopOpacity="0.9" />
             </linearGradient>

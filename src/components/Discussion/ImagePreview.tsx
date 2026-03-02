@@ -90,7 +90,7 @@ export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({
                 maxWidth: '100%',
                 maxHeight: '100%',
                 objectFit: 'contain',
-                borderRadius: '8px',
+                borderRadius: '12px',
               }}
             />
             <button

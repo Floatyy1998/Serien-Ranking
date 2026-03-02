@@ -63,10 +63,10 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
               flex: 1,
               padding: '14px',
               background: isActive
-                ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
                 : currentTheme.background.card,
               border: isActive ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '14px',
+              borderRadius: '16px',
               color: isActive ? 'white' : currentTheme.text.primary,
               fontSize: '15px',
               fontWeight: 700,
@@ -75,7 +75,12 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+              boxShadow: isActive
+                ? `0 4px 20px ${currentTheme.primary}50, 0 0 40px ${currentTheme.primary}20, 0 0 0 1px ${currentTheme.primary}40`
+                : 'none',
+              backdropFilter: isActive ? 'none' : 'blur(8px)',
+              WebkitBackdropFilter: isActive ? 'none' : 'blur(8px)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             {Icon && <Icon style={{ fontSize: '20px' }} />}

@@ -110,7 +110,7 @@ export const ReplyItem: React.FC<{
           <button
             onClick={() => navigate(`/friend/${reply.userId}`)}
             style={{
-              fontSize: '13px',
+              fontSize: '14px',
               fontWeight: 700,
               color: currentTheme.text.primary,
               cursor: 'pointer',
@@ -121,7 +121,7 @@ export const ReplyItem: React.FC<{
           >
             {reply.username}
           </button>
-          <span style={{ fontSize: '10px', color: currentTheme.text.muted }}>
+          <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
             {formatRelativeTime(reply.createdAt)}
             {reply.updatedAt && ' (bearb.)'}
           </span>
@@ -135,11 +135,11 @@ export const ReplyItem: React.FC<{
                 background: `${currentTheme.status.warning}25`,
                 color: currentTheme.status.warning,
                 borderRadius: '8px',
-                fontSize: '10px',
+                fontSize: '11px',
                 fontWeight: 700,
               }}
             >
-              <Warning style={{ fontSize: '12px' }} />
+              <Warning style={{ fontSize: '13px' }} />
               SPOILER
             </span>
           )}
@@ -159,7 +159,7 @@ export const ReplyItem: React.FC<{
                 border: `1px solid ${currentTheme.border.default}`,
                 background: currentTheme.background.card,
                 color: currentTheme.text.primary,
-                fontSize: '13px',
+                fontSize: '14px',
                 resize: 'vertical',
                 fontFamily: 'inherit',
                 boxSizing: 'border-box',
@@ -186,7 +186,7 @@ export const ReplyItem: React.FC<{
                   border: `1px solid ${editIsSpoiler ? currentTheme.status.warning + '60' : currentTheme.border.default}`,
                   background: editIsSpoiler ? `${currentTheme.status.warning}15` : 'transparent',
                   color: editIsSpoiler ? currentTheme.status.warning : currentTheme.text.secondary,
-                  fontSize: '12px',
+                  fontSize: '13px',
                 }}
               >
                 <input
@@ -195,7 +195,7 @@ export const ReplyItem: React.FC<{
                   onChange={(e) => setEditIsSpoiler(e.target.checked)}
                   style={{ display: 'none' }}
                 />
-                <Warning style={{ fontSize: '14px' }} />
+                <Warning style={{ fontSize: '15px' }} />
                 Spoiler
               </label>
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -212,7 +212,7 @@ export const ReplyItem: React.FC<{
                     background: 'transparent',
                     color: currentTheme.text.secondary,
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '13px',
                   }}
                 >
                   Abbrechen
@@ -227,7 +227,7 @@ export const ReplyItem: React.FC<{
                     background: currentTheme.primary,
                     color: '#fff',
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '13px',
                   }}
                 >
                   {saving ? '...' : 'Speichern'}
@@ -245,7 +245,7 @@ export const ReplyItem: React.FC<{
               borderRadius: '8px',
               color: currentTheme.status.warning,
               cursor: 'pointer',
-              fontSize: '12px',
+              fontSize: '13px',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
@@ -261,7 +261,7 @@ export const ReplyItem: React.FC<{
             {text && (
               <p
                 style={{
-                  fontSize: '14px',
+                  fontSize: '15px',
                   color: currentTheme.text.secondary,
                   margin: '0 0 8px 0',
                   whiteSpace: 'pre-wrap',
@@ -306,9 +306,9 @@ export const ReplyItem: React.FC<{
                   borderRadius: '16px',
                   cursor: 'pointer',
                   color: isLiked ? '#e91e63' : currentTheme.text.muted,
-                  fontSize: '12px',
+                  fontSize: '13px',
                   fontWeight: 600,
-                  transition: 'all 0.2s',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
                 {isLiked ? (
@@ -335,7 +335,7 @@ export const ReplyItem: React.FC<{
                     borderRadius: '16px',
                     cursor: 'pointer',
                     color: currentTheme.status.warning,
-                    transition: 'all 0.2s',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   <Flag style={{ fontSize: '16px' }} />
@@ -346,7 +346,7 @@ export const ReplyItem: React.FC<{
             {/* Spoiler Confirm - inline */}
             {showSpoilerConfirm && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '11px', color: currentTheme.status.warning }}>
+                <span style={{ fontSize: '12px', color: currentTheme.status.warning }}>
                   Als Spoiler?
                 </span>
                 <button
@@ -358,7 +358,7 @@ export const ReplyItem: React.FC<{
                     background: currentTheme.status.warning,
                     color: '#fff',
                     cursor: 'pointer',
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 600,
                   }}
                 >
@@ -373,7 +373,7 @@ export const ReplyItem: React.FC<{
                     background: 'transparent',
                     color: currentTheme.text.secondary,
                     cursor: 'pointer',
-                    fontSize: '11px',
+                    fontSize: '12px',
                   }}
                 >
                   Nein
@@ -396,7 +396,7 @@ export const ReplyItem: React.FC<{
                     borderRadius: '16px',
                     cursor: 'pointer',
                     color: currentTheme.text.muted,
-                    transition: 'all 0.2s',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   <Edit style={{ fontSize: '16px' }} />
@@ -419,7 +419,7 @@ export const ReplyItem: React.FC<{
                     borderRadius: '16px',
                     cursor: 'pointer',
                     color: currentTheme.text.muted,
-                    transition: 'all 0.2s',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   <Delete style={{ fontSize: '16px' }} />
@@ -430,7 +430,7 @@ export const ReplyItem: React.FC<{
             {/* Delete Confirm - inline */}
             {showDeleteConfirm && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '11px', color: currentTheme.status.error }}>Löschen?</span>
+                <span style={{ fontSize: '12px', color: currentTheme.status.error }}>Löschen?</span>
                 <button
                   onClick={handleDelete}
                   style={{
@@ -440,7 +440,7 @@ export const ReplyItem: React.FC<{
                     background: currentTheme.status.error,
                     color: '#fff',
                     cursor: 'pointer',
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 600,
                   }}
                 >
@@ -455,7 +455,7 @@ export const ReplyItem: React.FC<{
                     background: 'transparent',
                     color: currentTheme.text.secondary,
                     cursor: 'pointer',
-                    fontSize: '11px',
+                    fontSize: '12px',
                   }}
                 >
                   Nein

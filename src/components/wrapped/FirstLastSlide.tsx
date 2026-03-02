@@ -85,7 +85,8 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           top: '20%',
           bottom: '20%',
           width: '2px',
-          background: 'linear-gradient(180deg, #00d9ff 0%, #764ba2 100%)',
+          background:
+            'linear-gradient(180deg, #00d9ff 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
           transformOrigin: 'top',
           opacity: 0.3,
         }}
@@ -182,13 +183,14 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           width: '50px',
           height: '50px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background:
+            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '30px',
           zIndex: 1,
-          boxShadow: '0 4px 20px rgba(102,126,234,0.4)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(102, 126, 234, 0.2)',
         }}
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="white">

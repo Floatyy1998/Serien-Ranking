@@ -50,7 +50,7 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
         icon={<ArrowBack style={{ fontSize: '20px' }} />}
         onClick={handleBack}
         size={40}
-        borderRadius="12px"
+        borderRadius="14px"
         variant="glass"
         ariaLabel={label || 'Zurück'}
         tooltip="Zurück"

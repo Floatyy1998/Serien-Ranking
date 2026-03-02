@@ -185,7 +185,8 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
           style={{
             color: 'white',
             fontSize: 'clamp(1.8rem, 6vw, 3rem)',
-            fontWeight: 'bold',
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
             textAlign: 'center',
             textShadow: '0 4px 20px rgba(0,0,0,0.5)',
           }}

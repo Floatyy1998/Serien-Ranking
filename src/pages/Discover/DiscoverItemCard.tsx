@@ -107,7 +107,7 @@ export const ItemCard = memo(
                 background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 40, 0.9))',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '10px',
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
@@ -117,7 +117,7 @@ export const ItemCard = memo(
             >
               <Star
                 style={{
-                  fontSize: '13px',
+                  fontSize: '14px',
                   color: '#ffc107',
                 }}
               />
@@ -183,7 +183,7 @@ export const ItemCard = memo(
 
         <p
           style={{
-            fontSize: '12px',
+            fontSize: '13px',
             color: currentTheme.text.muted,
             margin: '4px 0 0 0',
             fontWeight: 500,

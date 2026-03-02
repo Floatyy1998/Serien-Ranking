@@ -174,7 +174,8 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
           style={{
             color: 'white',
             fontSize: 'clamp(4rem, 15vw, 7rem)',
-            fontWeight: 'bold',
+            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
             lineHeight: 1,
             textShadow: '0 0 60px rgba(155,89,182,0.5)',
           }}
@@ -206,7 +207,7 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
             padding: '25px 30px',
             textAlign: 'center',
             zIndex: 1,
-            border: '1px solid rgba(255,255,255,0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             marginBottom: '20px',
             width: '100%',
             maxWidth: '350px',

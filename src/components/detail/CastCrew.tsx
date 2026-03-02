@@ -435,7 +435,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
             borderRadius: '20px',
             padding: '8px 16px',
             color: 'white',
-            fontSize: '13px',
+            fontSize: '14px',
             marginBottom: '20px',
             cursor: 'pointer',
           }}
@@ -497,7 +497,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                 {voiceActorDetails.name.native && (
                   <p
                     style={{
-                      fontSize: '13px',
+                      fontSize: '14px',
                       color: 'rgba(255, 255, 255, 0.6)',
                       margin: '0 0 4px 0',
                     }}
@@ -507,7 +507,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                 )}
                 <p
                   style={{
-                    fontSize: '13px',
+                    fontSize: '14px',
                     color: 'rgba(255, 255, 255, 0.6)',
                     margin: '0 0 4px 0',
                   }}
@@ -517,7 +517,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                 {voiceActorDetails.dateOfBirth && (
                   <p
                     style={{
-                      fontSize: '12px',
+                      fontSize: '13px',
                       color: 'rgba(255, 255, 255, 0.5)',
                       margin: 0,
                     }}
@@ -604,11 +604,11 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                             display: 'flex',
                             alignItems: 'center',
                             gap: '2px',
-                            fontSize: '10px',
+                            fontSize: '11px',
                             fontWeight: 600,
                           }}
                         >
-                          <Star style={{ fontSize: '10px', color: currentTheme.status.warning }} />
+                          <Star style={{ fontSize: '11px', color: currentTheme.status.warning }} />
                           {(edge.node.meanScore / 10).toFixed(1)}
                         </div>
                       )}
@@ -623,7 +623,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                             background: 'rgba(0, 0, 0, 0.8)',
                             borderRadius: '8px',
                             padding: '2px 6px',
-                            fontSize: '10px',
+                            fontSize: '11px',
                             fontWeight: 500,
                           }}
                         >
@@ -634,7 +634,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
 
                     <p
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: 500,
                         margin: '0 0 2px 0',
                         color: 'rgba(255, 255, 255, 0.9)',
@@ -651,7 +651,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                     {edge.characters?.[0] && (
                       <p
                         style={{
-                          fontSize: '10px',
+                          fontSize: '11px',
                           margin: 0,
                           color: 'rgba(255, 255, 255, 0.5)',
                         }}
@@ -684,7 +684,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
             borderRadius: '20px',
             padding: '8px 16px',
             color: 'white',
-            fontSize: '13px',
+            fontSize: '14px',
             marginBottom: '20px',
             cursor: 'pointer',
           }}
@@ -740,7 +740,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
             {personDetails.known_for_department && (
               <p
                 style={{
-                  fontSize: '13px',
+                  fontSize: '14px',
                   color: 'rgba(255, 255, 255, 0.6)',
                   margin: '0 0 4px 0',
                 }}
@@ -751,7 +751,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
             {personDetails.birthday && (
               <p
                 style={{
-                  fontSize: '12px',
+                  fontSize: '13px',
                   color: 'rgba(255, 255, 255, 0.5)',
                   margin: 0,
                 }}
@@ -836,11 +836,11 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '2px',
-                        fontSize: '10px',
+                        fontSize: '11px',
                         fontWeight: 600,
                       }}
                     >
-                      <Star style={{ fontSize: '10px', color: currentTheme.status.warning }} />
+                      <Star style={{ fontSize: '11px', color: currentTheme.status.warning }} />
                       {credit.vote_average.toFixed(1)}
                     </div>
                   )}
@@ -855,7 +855,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                         background: 'rgba(0, 0, 0, 0.8)',
                         borderRadius: '8px',
                         padding: '2px 6px',
-                        fontSize: '10px',
+                        fontSize: '11px',
                         fontWeight: 500,
                       }}
                     >
@@ -866,7 +866,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
 
                 <p
                   style={{
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 500,
                     margin: '0 0 2px 0',
                     color: 'rgba(255, 255, 255, 0.9)',
@@ -884,7 +884,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                 {credit.character && (
                   <p
                     style={{
-                      fontSize: '10px',
+                      fontSize: '11px',
                       margin: 0,
                       color: 'rgba(255, 255, 255, 0.5)',
                     }}
@@ -920,12 +920,12 @@ export const CastCrew: React.FC<CastCrewProps> = ({
               padding: '10px',
               background:
                 activeTab === 'characters'
-                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  ? 'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
                   : 'rgba(255, 255, 255, 0.05)',
               border: 'none',
               borderRadius: '12px',
               color: 'white',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: activeTab === 'characters' ? 600 : 500,
               cursor: 'pointer',
             }}
@@ -941,12 +941,12 @@ export const CastCrew: React.FC<CastCrewProps> = ({
             padding: '10px',
             background:
               activeTab === 'cast'
-                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                ? 'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
             border: 'none',
             borderRadius: '12px',
             color: 'white',
-            fontSize: '14px',
+            fontSize: '15px',
             fontWeight: activeTab === 'cast' ? 600 : 500,
             cursor: 'pointer',
           }}
@@ -961,12 +961,12 @@ export const CastCrew: React.FC<CastCrewProps> = ({
             padding: '10px',
             background:
               activeTab === 'crew'
-                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                ? 'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
                 : 'rgba(255, 255, 255, 0.05)',
             border: 'none',
             borderRadius: '12px',
             color: 'white',
-            fontSize: '14px',
+            fontSize: '15px',
             fontWeight: activeTab === 'crew' ? 600 : 500,
             cursor: 'pointer',
           }}
@@ -1038,7 +1038,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                 <div style={{ flex: 1 }}>
                   <p
                     style={{
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 500,
                       margin: 0,
                       color: 'white',
@@ -1048,7 +1048,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                   </p>
                   <p
                     style={{
-                      fontSize: '11px',
+                      fontSize: '12px',
                       margin: '2px 0 0 0',
                       color: '#00d4aa',
                     }}
@@ -1069,7 +1069,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                     <div style={{ textAlign: 'right' }}>
                       <p
                         style={{
-                          fontSize: '12px',
+                          fontSize: '13px',
                           margin: 0,
                           color: 'rgba(255, 255, 255, 0.7)',
                           display: 'flex',
@@ -1082,7 +1082,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                         {char.voice_actors[0].person.id && (
                           <OpenInNew
                             style={{
-                              fontSize: '10px',
+                              fontSize: '11px',
                               opacity: 0.5,
                             }}
                           />
@@ -1090,7 +1090,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                       </p>
                       <p
                         style={{
-                          fontSize: '10px',
+                          fontSize: '11px',
                           margin: '2px 0 0 0',
                           color: 'rgba(255, 255, 255, 0.4)',
                         }}
@@ -1176,7 +1176,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                 <div style={{ flex: 1 }}>
                   <p
                     style={{
-                      fontSize: '14px',
+                      fontSize: '15px',
                       fontWeight: 500,
                       margin: 0,
                       color: 'white',
@@ -1186,7 +1186,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                   </p>
                   <p
                     style={{
-                      fontSize: '12px',
+                      fontSize: '13px',
                       margin: 0,
                       color: 'rgba(255, 255, 255, 0.5)',
                     }}

@@ -27,11 +27,11 @@ export const commonStyles = {
     backgroundColor: 'var(--theme-primary)',
     color: colors.background.default,
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '12px',
     padding: '12px 24px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': {
       backgroundColor: 'var(--theme-primary-hover)',
     },
@@ -41,11 +41,11 @@ export const commonStyles = {
     backgroundColor: 'transparent',
     color: 'var(--theme-primary)',
     border: `1px solid ${colors.border.primary}`,
-    borderRadius: '8px',
+    borderRadius: '12px',
     padding: '12px 24px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': {
       backgroundColor: colors.overlay.medium,
     },
@@ -55,11 +55,11 @@ export const commonStyles = {
     backgroundColor: colors.status.error,
     color: colors.text.secondary,
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '12px',
     padding: '12px 24px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': {
       backgroundColor: colors.status.errorHover,
     },
@@ -68,16 +68,35 @@ export const commonStyles = {
   // Card Styles
   card: {
     backgroundColor: colors.background.card,
-    borderRadius: '12px',
+    borderRadius: '16px',
     border: `1px solid ${colors.border.light}`,
     padding: '20px',
+    boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
   } as React.CSSProperties,
 
   surfaceCard: {
     backgroundColor: colors.background.surface,
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: `1px solid ${colors.border.default}`,
     padding: '16px',
+    boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2)',
+  } as React.CSSProperties,
+
+  glassCard: {
+    background: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    backdropFilter: 'blur(12px)',
+    padding: '20px',
+    boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+  } as React.CSSProperties,
+
+  elevatedCard: {
+    backgroundColor: colors.background.surfaceElevated,
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    padding: '20px',
+    boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3)',
   } as React.CSSProperties,
 
   // Text Styles
@@ -93,9 +112,16 @@ export const commonStyles = {
     color: colors.text.muted,
   } as React.CSSProperties,
 
+  displayText: {
+    fontFamily: 'var(--font-display)',
+    fontWeight: 800,
+    letterSpacing: '-0.02em',
+  } as React.CSSProperties,
+
   // Dialog und Modal Styles
   dialogOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backdropFilter: 'blur(8px)',
     position: 'fixed' as const,
     top: 0,
     left: 0,
@@ -109,9 +135,9 @@ export const commonStyles = {
 
   dialogContent: {
     backgroundColor: colors.background.dialog,
-    borderRadius: '12px',
-    border: `1px solid ${colors.border.lighter}`,
-    boxShadow: '0 25px 50px -12px rgba(0, 254, 215, 0.15)',
+    borderRadius: '20px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 16px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 24px -8px rgba(0, 0, 0, 0.4)',
     maxWidth: '600px',
     width: '90%',
     maxHeight: '90vh',
@@ -122,10 +148,11 @@ export const commonStyles = {
   input: {
     backgroundColor: colors.background.input,
     border: `1px solid ${colors.border.default}`,
-    borderRadius: '8px',
+    borderRadius: '12px',
     padding: '12px 16px',
     color: colors.text.secondary,
     fontSize: '1rem',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:focus': {
       outline: 'none',
       borderColor: colors.border.primary,
@@ -140,7 +167,7 @@ export const commonStyles = {
     backgroundColor: colors.status.error,
     color: colors.text.secondary,
     padding: '12px 20px',
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: `1px solid ${colors.status.errorHover}`,
   } as React.CSSProperties,
 
@@ -148,7 +175,7 @@ export const commonStyles = {
     backgroundColor: colors.status.warning,
     color: colors.background.default,
     padding: '12px 20px',
-    borderRadius: '8px',
+    borderRadius: '12px',
     fontWeight: '500',
   } as React.CSSProperties,
 
@@ -193,7 +220,7 @@ export const commonStyles = {
 export const styleHelpers = {
   withHover: (baseStyle: React.CSSProperties, hoverStyle: React.CSSProperties) => ({
     ...baseStyle,
-    transition: 'all 0.2s ease',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:hover': hoverStyle,
   }),
 
@@ -209,7 +236,12 @@ export const styleHelpers = {
     border: `${width}px solid ${color}`,
   }),
 
-  withShadow: (opacity: number = 0.15) => ({
-    boxShadow: `0 25px 50px -12px rgba(0, 254, 215, ${opacity})`,
-  }),
+  withShadow: (level: 'sm' | 'md' | 'lg' = 'md') => {
+    const shadowMap = {
+      sm: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2)',
+      md: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+      lg: '0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3)',
+    };
+    return { boxShadow: shadowMap[level] };
+  },
 };

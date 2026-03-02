@@ -39,7 +39,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <p
             style={{
-              fontSize: '12px',
+              fontSize: '13px',
               color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
               margin: '0 0 4px',
             }}
@@ -49,7 +49,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
           <h3 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 4px' }}>{episode.name}</h3>
           <p
             style={{
-              fontSize: '13px',
+              fontSize: '14px',
               color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
               margin: 0,
             }}

@@ -81,6 +81,8 @@ export const TasteMatchCard: React.FC = () => {
           gap: '12px',
           width: 'calc(100% - 40px)',
           textAlign: 'left',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
         }}
       >
         {/* Icon */}
@@ -88,8 +90,8 @@ export const TasteMatchCard: React.FC = () => {
           style={{
             width: 40,
             height: 40,
-            borderRadius: '10px',
-            background: `linear-gradient(135deg, ${currentTheme.primary}, #764ba2)`,
+            borderRadius: '12px',
+            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #764ba2))`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -105,7 +107,8 @@ export const TasteMatchCard: React.FC = () => {
             style={{
               margin: 0,
               fontSize: 15,
-              fontWeight: 600,
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
               color: currentTheme.text.primary,
               whiteSpace: 'nowrap',
             }}
@@ -199,8 +202,8 @@ export const TasteMatchCard: React.FC = () => {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0, 0, 0, 0.7)',
-              backdropFilter: 'blur(4px)',
+              background: 'rgba(10, 14, 26, 0.75)',
+              backdropFilter: 'blur(8px)',
               zIndex: 1000,
               display: 'flex',
               alignItems: 'flex-end',
@@ -238,6 +241,7 @@ export const TasteMatchCard: React.FC = () => {
                     margin: 0,
                     fontSize: 20,
                     fontWeight: 700,
+                    fontFamily: 'var(--font-display)',
                     color: currentTheme.text.primary,
                   }}
                 >
@@ -280,7 +284,7 @@ export const TasteMatchCard: React.FC = () => {
                         width: 44,
                         height: 44,
                         borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${currentTheme.primary}, #764ba2)`,
+                        background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #764ba2))`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

@@ -1,0 +1,432 @@
+/* SettingsPage - Layout styles with settings- prefix */
+
+.settings-page {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 100px;
+}
+
+.settings-page-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 400px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.settings-content {
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Card (shared by ProfileSection, PublicProfileSection, LegalSection) */
+.settings-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.settings-card--compact {
+  padding: 20px;
+}
+
+/* Section title */
+.settings-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin: 0 0 16px 0;
+}
+
+.settings-section-title--tight {
+  margin-bottom: 14px;
+}
+
+/* Avatar */
+.settings-avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.settings-avatar-container {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.settings-avatar-image {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border-width: 3px;
+  border-style: solid;
+}
+
+.settings-avatar-placeholder {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-avatar-upload-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border-width: 2px;
+  border-style: solid;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.settings-avatar-hint {
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Editable fields */
+.settings-field {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.settings-field--last {
+  margin-bottom: 0;
+}
+
+.settings-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-field-content {
+  flex: 1;
+}
+
+.settings-field-label {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.settings-field-value {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.settings-field-edit-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.settings-field-input {
+  flex: 1;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.settings-field-save-btn {
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.settings-field-edit-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+/* Navigation button (theme, layout) */
+.settings-nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 16px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.settings-nav-btn-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-nav-btn-text {
+  flex: 1;
+  text-align: left;
+}
+
+.settings-nav-btn-title {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.settings-nav-btn-subtitle {
+  font-size: 14px;
+  margin: 2px 0 0 0;
+}
+
+/* Toggle switch (public profile) */
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-radius: 12px;
+  border-width: 1px;
+  border-style: solid;
+  margin-bottom: 16px;
+}
+
+.settings-toggle-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.settings-toggle-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.settings-toggle-subtitle {
+  margin: 0;
+  font-size: 12px;
+}
+
+.settings-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.settings-toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-toggle-track {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: 0.3s;
+  border-radius: 28px;
+}
+
+.settings-toggle-thumb {
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+/* Public link area */
+.settings-public-link-container {
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.settings-public-link-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-public-link-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  margin-bottom: 12px;
+}
+
+.settings-public-link-url {
+  font-size: 12px;
+  font-family: monospace;
+  word-break: break-all;
+  flex: 1;
+}
+
+.settings-public-link-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Action buttons (copy, regenerate) */
+.settings-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-action-btn--primary {
+  color: white;
+}
+
+.settings-action-btn--secondary {
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Info box */
+.settings-info-box {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.settings-info-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Legal section */
+.settings-legal-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.settings-legal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 12px;
+  font-size: 15px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-datasources {
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.settings-datasources-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.settings-datasources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.settings-datasource-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings-datasource-link {
+  text-decoration: none;
+}
+
+/* Logout button */
+.settings-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Snackbar */
+.settings-snackbar {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 40px);
+}
+
+.settings-snackbar-text {
+  font-size: 15px;
+  font-weight: 600;
+}

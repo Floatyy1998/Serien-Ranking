@@ -234,7 +234,8 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({ topMovies, maxIt
             style={{
               color: 'white',
               fontSize: 'clamp(1.3rem, 5vw, 1.8rem)',
-              fontWeight: 'bold',
+              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
               marginBottom: '8px',
               textShadow: '0 2px 10px rgba(0,0,0,0.5)',
             }}

@@ -28,7 +28,7 @@ interface ActivityTabProps {
 
 // Accent Farben für Abwechslung
 export const ACCENT_COLORS = {
-  episodes: '#667eea', // Lila für Episoden
+  episodes: '#7c6ef0', // Lila für Episoden (theme-softened)
   movies: '#f093fb', // Pink für Filme
   time: '#00cec9', // Cyan für Zeit
   fire: '#fdcb6e', // Gold für Highlights
@@ -193,7 +193,15 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
           border: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 20px',
+          }}
+        >
           Monatliche Aktivität
         </h3>
 
@@ -253,7 +261,15 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
 
       {/* Insights */}
       <div style={{ padding: '0 20px' }}>
-        <h3 style={{ color: textPrimary, fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3
+          style={{
+            color: textPrimary,
+            fontSize: 16,
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            margin: '0 0 16px',
+          }}
+        >
           Fun Facts
         </h3>
 

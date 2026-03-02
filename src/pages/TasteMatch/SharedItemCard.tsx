@@ -38,7 +38,7 @@ export const SharedItemCard: React.FC<{
         marginBottom: '10px',
         boxShadow: hasMatchingRatings
           ? `0 4px 20px ${ACCENT_COLORS.match}20`
-          : '0 4px 15px rgba(0,0,0,0.1)',
+          : '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
         position: 'relative',
         overflow: 'hidden',
         width: '100%',

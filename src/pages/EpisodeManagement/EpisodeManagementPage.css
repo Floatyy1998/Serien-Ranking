@@ -45,7 +45,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.9));
+  background: var(--color-background-default-alpha-90, rgba(10, 14, 26, 0.75));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
@@ -64,14 +64,18 @@
   font-weight: 800;
   margin: 0;
   line-height: 1.2;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .header-content p {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-text-secondary);
   margin: 4px 0 0 0;
 }
@@ -106,9 +110,9 @@
 .season-tabs {
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 14px 12px;
   gap: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -126,7 +130,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -162,7 +166,7 @@
   color: var(--color-text-primary);
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -177,7 +181,11 @@
 }
 
 .season-tab.active {
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
   border-color: transparent;
   transform: scale(1.05);
   color: white;
@@ -190,7 +198,7 @@
 }
 
 .season-count {
-  font-size: 11px;
+  font-size: 12px;
   opacity: 0.85;
   font-weight: 500;
 }
@@ -215,6 +223,7 @@
 
 .progress-header h2 {
   font-size: 18px;
+  font-family: var(--font-display);
   font-weight: 700;
   margin: 0;
   color: var(--color-text-primary);
@@ -223,7 +232,11 @@
 .progress-text {
   font-size: 16px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -239,7 +252,11 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), #8b5cf6);
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
   border-radius: 4px;
   transition: width 0.5s ease;
   box-shadow: 0 0 10px var(--color-primary-alpha-50, rgba(102, 126, 234, 0.5));
@@ -252,10 +269,10 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -275,7 +292,7 @@
   border: 1px dashed rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   color: var(--color-text-muted, rgba(255, 255, 255, 0.5));
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -320,7 +337,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -345,13 +362,17 @@
 .episode-number {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 15px;
   flex-shrink: 0;
   color: white;
   box-shadow: 0 4px 12px var(--color-primary-alpha-40, rgba(102, 126, 234, 0.4));
@@ -382,13 +403,13 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-text-muted);
   font-weight: 500;
 }
 
 .meta-item svg {
-  font-size: 14px !important;
+  font-size: 15px !important;
 }
 
 .watched-date {
@@ -431,7 +452,7 @@
   right: -6px;
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   padding: 2px 6px;
   border-radius: 10px;
@@ -444,7 +465,7 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .status-unwatched:hover {
@@ -458,9 +479,9 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex;
@@ -480,10 +501,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -507,9 +528,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -524,7 +545,9 @@
   padding: 28px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -555,10 +578,15 @@
 
 .dialog-header h3 {
   font-size: 20px;
+  font-family: var(--font-display);
   font-weight: 700;
   margin: 0 0 10px 0;
   color: var(--color-text-primary);
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -586,7 +614,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -633,4 +661,51 @@
 
 .dialog-button.cancel:active {
   transform: scale(0.98);
+}
+
+/* ============================================
+   em- prefixed layout classes (restructured)
+   ============================================ */
+
+/* Bulk action button rows */
+.em-bulk-buttons-row {
+  display: flex;
+  gap: 8px;
+}
+
+.em-bulk-buttons-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.em-bulk-button-muted {
+  opacity: 0.6;
+}
+
+/* Watch dialog layout */
+.em-watch-dialog-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Season tabs layout */
+.em-season-tabs-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 14px 12px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  z-index: 1;
+}
+
+/* Animated episode list wrapper */
+.em-episode-list-animated {
+  padding: 16px;
+  padding-bottom: 120px;
 }

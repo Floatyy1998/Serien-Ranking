@@ -1,0 +1,308 @@
+/* ProfileSettingsPage - Layout styles with ps- prefix */
+
+.ps-page {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Decorative background */
+.ps-bg-decorative {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ps-bg-blob-left {
+  position: absolute;
+  top: -10%;
+  left: -20%;
+  width: 60%;
+  height: 50%;
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.ps-bg-blob-right {
+  position: absolute;
+  top: 20%;
+  right: -15%;
+  width: 50%;
+  height: 40%;
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+/* Messages area */
+.ps-messages {
+  padding: 0 20px;
+  position: relative;
+  z-index: 100;
+}
+
+.ps-alert {
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: -8px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.ps-alert-error {
+  background: rgba(255, 71, 87, 0.15);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  color: #ff4757;
+}
+
+/* Content area */
+.ps-content {
+  padding: 24px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Avatar section */
+.ps-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.ps-avatar-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.ps-avatar-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  filter: blur(15px);
+  opacity: 0.6;
+}
+
+.ps-avatar-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+.ps-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ps-avatar-upload-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.ps-avatar-file-input {
+  display: none;
+}
+
+.ps-uploading-text {
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* Card styles */
+.ps-card {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Form field */
+.ps-field {
+  margin-bottom: 20px;
+}
+
+.ps-field:last-child {
+  margin-bottom: 0;
+}
+
+.ps-field-header {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.ps-edit-btn {
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.ps-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Privacy toggle */
+.ps-privacy-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.ps-privacy-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ps-privacy-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ps-privacy-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.ps-privacy-subtitle {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Toggle switch */
+.ps-toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.ps-toggle-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Share link button */
+.ps-share-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Navigation options */
+.ps-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ps-option-btn {
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ps-option-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ps-option-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ps-option-label {
+  font-weight: 500;
+}
+
+/* Save button */
+.ps-save-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

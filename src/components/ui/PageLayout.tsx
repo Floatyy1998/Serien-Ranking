@@ -11,7 +11,7 @@ export const PageLayout = forwardRef<HTMLDivElement, PageLayoutProps>(
   ({ children, gradientColors, style }, ref) => {
     const { currentTheme } = useTheme();
     const color1 = gradientColors?.[0] || currentTheme.primary;
-    const color2 = gradientColors?.[1] || '#8b5cf6';
+    const color2 = gradientColors?.[1] || currentTheme.secondary;
 
     return (
       <div
@@ -24,17 +24,51 @@ export const PageLayout = forwardRef<HTMLDivElement, PageLayoutProps>(
           ...style,
         }}
       >
+        {/* Animated ambient orbs */}
         <div
           style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `radial-gradient(ellipse at 20% 10%, ${color1}12 0%, transparent 50%),
-                       radial-gradient(ellipse at 80% 90%, ${color2}12 0%, transparent 50%)`,
+            top: '-10%',
+            left: '-15%',
+            width: '55%',
+            height: '45%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${color1}22 0%, transparent 70%)`,
+            filter: 'blur(60px)',
             pointerEvents: 'none',
             zIndex: 0,
+            animation: 'orbFloat 20s ease-in-out infinite',
+          }}
+        />
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            right: '-12%',
+            width: '45%',
+            height: '40%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${color2}18 0%, transparent 70%)`,
+            filter: 'blur(60px)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            animation: 'orbFloat 25s ease-in-out infinite reverse',
+          }}
+        />
+        <div
+          style={{
+            position: 'fixed',
+            top: '30%',
+            left: '30%',
+            width: '40%',
+            height: '40%',
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${currentTheme.secondary}0d 0%, transparent 70%)`,
+            filter: 'blur(80px)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            animation: 'orbFloat 30s ease-in-out infinite',
+            animationDelay: '-10s',
           }}
         />
         {children}

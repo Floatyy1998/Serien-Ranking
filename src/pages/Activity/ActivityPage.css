@@ -14,25 +14,25 @@
 .activity-group-item {
   content-visibility: auto;
   contain-intrinsic-block-size: auto 80px;
-  animation: fadeInUp 0.3s ease-out both;
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .activity-entry {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  animation: fadeInUp 0.25s ease-out both;
+  animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .activity-entry:active {
   transform: scale(0.98);
-  transition: transform 0.1s ease;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .activity-filter-btn {
   border: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  animation: fadeInUp 0.2s ease-out both;
+  animation: fadeInUp 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .activity-filter-btn:active {

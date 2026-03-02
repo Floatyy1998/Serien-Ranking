@@ -88,14 +88,15 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             onDragEnd={handleDragEnd}
             style={{
               background: `linear-gradient(145deg, ${currentTheme.background.surface} 0%, ${currentTheme.background.default} 100%)`,
-              borderRadius: '24px 24px 0 0',
+              borderRadius: '28px 28px 0 0',
               width: '100%',
               maxWidth,
               maxHeight,
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              boxShadow: '0 -20px 60px rgba(0,0,0,0.4)',
+              boxShadow:
+                '0 -16px 48px -12px rgba(0, 0, 0, 0.5), 0 -4px 16px -4px rgba(0, 0, 0, 0.3)',
               marginBottom: bottomOffset,
             }}
             onClick={(e) => e.stopPropagation()}
@@ -114,9 +115,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               >
                 <div
                   style={{
-                    width: '48px',
+                    width: '56px',
                     height: '5px',
-                    background: currentTheme.border.default,
+                    background: `rgba(255, 255, 255, 0.2)`,
                     borderRadius: '3px',
                     pointerEvents: 'none',
                   }}

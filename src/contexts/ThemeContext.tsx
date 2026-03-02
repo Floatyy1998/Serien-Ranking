@@ -74,11 +74,19 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       root.style.setProperty('--color-primary-hover', theme.primaryHover);
       root.style.setProperty('--color-primary-dark', theme.primaryDark);
 
+      // Theme-Variablen (für CSS-Nutzung)
+      root.style.setProperty('--theme-primary', theme.primary);
+      root.style.setProperty('--theme-primary-hover', theme.primaryHover);
+      root.style.setProperty('--theme-background', theme.background.default);
+      root.style.setProperty('--theme-surface', theme.background.surface);
+      root.style.setProperty('--theme-surface-elevated', theme.background.surfaceElevated);
+      root.style.setProperty('--theme-secondary-gradient', theme.secondary);
+
       // Hintergrundfarben
       root.style.setProperty('--color-background-default', theme.background.default);
       root.style.setProperty('--color-background-surface', theme.background.surface);
       root.style.setProperty('--color-background-dialog', theme.background.dialog);
-      root.style.setProperty('--color-background-elevated', theme.background.surface);
+      root.style.setProperty('--color-background-elevated', theme.background.surfaceElevated);
 
       // Textfarben
       root.style.setProperty('--color-text-primary', theme.text.primary);
@@ -250,11 +258,18 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     root.style.setProperty('--color-primary-hover', theme.primaryHover);
     root.style.setProperty('--color-primary-dark', theme.primaryDark);
 
+    // Theme-Variablen (für CSS-Nutzung)
+    root.style.setProperty('--theme-primary', theme.primary);
+    root.style.setProperty('--theme-primary-hover', theme.primaryHover);
+    root.style.setProperty('--theme-background', theme.background.default);
+    root.style.setProperty('--theme-surface', theme.background.surface);
+    root.style.setProperty('--theme-surface-elevated', theme.background.surfaceElevated);
+
     // Hintergrundfarben
     root.style.setProperty('--color-background-default', theme.background.default);
     root.style.setProperty('--color-background-surface', theme.background.surface);
     root.style.setProperty('--color-background-dialog', theme.background.dialog);
-    root.style.setProperty('--color-background-elevated', theme.background.surface);
+    root.style.setProperty('--color-background-elevated', theme.background.surfaceElevated);
 
     // Textfarben
     root.style.setProperty('--color-text-primary', theme.text.primary);
@@ -269,6 +284,13 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     root.style.setProperty('--color-error', theme.status.error);
     root.style.setProperty('--color-warning', theme.status.warning);
     root.style.setProperty('--color-success', theme.status.success);
+
+    // Dynamische Glow-Variablen (theme-responsiv)
+    root.style.setProperty('--theme-secondary-gradient', theme.secondary);
+    root.style.setProperty(
+      '--glow-accent',
+      `0 0 20px ${theme.accent}66, 0 0 40px ${theme.accent}33`
+    );
 
     // Hintergrundbild - skip on mobile devices
     if (configToUse.backgroundImage && !isMobileDevice) {

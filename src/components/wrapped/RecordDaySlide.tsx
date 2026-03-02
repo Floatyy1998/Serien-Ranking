@@ -70,7 +70,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
               width: '8px',
               height: '8px',
               borderRadius: i % 2 === 0 ? '50%' : '2px',
-              background: ['#ffd700', '#e94560', '#fff', '#667eea'][i % 4],
+              background: ['#ffd700', '#e94560', '#fff', 'var(--theme-primary, #667eea)'][i % 4],
               opacity: 0.4,
             }}
           />
@@ -114,7 +114,8 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           style={{
             color: 'white',
             fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
-            fontWeight: 'bold',
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
             marginBottom: '5px',
           }}
         >

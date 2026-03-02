@@ -1,0 +1,107 @@
+/* ProfileItemCard - shared poster card used on FriendProfile and PublicProfile pages */
+
+.pic-card {
+  cursor: pointer;
+  position: relative;
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 220px;
+}
+
+.pic-card:active {
+  transform: scale(0.95);
+  transition: transform 0.15s ease;
+}
+
+.pic-poster-wrap {
+  position: relative;
+}
+
+.pic-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.4),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Provider badges */
+.pic-providers {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  gap: 3px;
+}
+
+.pic-provider-badge {
+  background: linear-gradient(135deg, rgba(10, 14, 26, 0.75), rgba(20, 20, 40, 0.8));
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 3px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pic-provider-logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+/* Rating badge */
+.pic-rating-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pic-rating-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Progress bar */
+.pic-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+.pic-progress-fill {
+  height: 100%;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Title */
+.pic-title {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}

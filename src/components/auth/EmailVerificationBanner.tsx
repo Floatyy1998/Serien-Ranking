@@ -113,7 +113,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
             color: colors.text.secondary,
             padding: '12px 20px',
             ...commonStyles.flexBetween,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -180,16 +180,23 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               style={{
                 backgroundColor: colors.background.dialog,
                 padding: '40px',
-                borderRadius: '12px',
+                borderRadius: '16px',
                 border: `2px solid var(--theme-primary)`,
-                boxShadow: colors.shadow.hover,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
                 textAlign: 'center',
                 maxWidth: '400px',
                 margin: '0 20px',
               }}
             >
               <Email style={{ fontSize: '48px', marginBottom: '20px' }} />
-              <h2 style={{ color: 'var(--theme-primary)', marginBottom: '16px' }}>
+              <h2
+                style={{
+                  color: 'var(--theme-primary)',
+                  marginBottom: '16px',
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 700,
+                }}
+              >
                 Email-Verifizierung erforderlich
               </h2>
               <p style={{ color: colors.text.muted, marginBottom: '24px', lineHeight: '1.5' }}>

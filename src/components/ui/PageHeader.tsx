@@ -32,6 +32,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   return (
     <header
       style={{
+        position: 'relative',
         padding: '20px',
         paddingTop: 'calc(20px + env(safe-area-inset-top))',
         ...(sticky
@@ -40,8 +41,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               top: 0,
               zIndex: 100,
               background: `${currentTheme.background.default}ee`,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderBottom: 'none',
             }
           : {}),
         ...style,
@@ -64,7 +66,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             to={gradientTo}
             style={{
               fontSize: '26px',
+              fontFamily: 'var(--font-display)',
               fontWeight: 800,
+              letterSpacing: '-0.02em',
               margin: 0,
               display: 'flex',
               alignItems: 'center',
@@ -78,7 +82,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <p
               style={{
                 margin: '4px 0 0',
-                fontSize: '14px',
+                fontSize: '15px',
                 color: currentTheme.text.secondary,
               }}
             >

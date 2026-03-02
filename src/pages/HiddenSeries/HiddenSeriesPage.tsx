@@ -54,9 +54,9 @@ export const HiddenSeriesPage: React.FC = () => {
                 style={{
                   padding: '6px 12px',
                   borderRadius: '20px',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
                   border: `1px solid ${currentTheme.primary}40`,
-                  fontSize: '13px',
+                  fontSize: '14px',
                   fontWeight: 600,
                   color: currentTheme.primary,
                 }}
@@ -86,7 +86,7 @@ export const HiddenSeriesPage: React.FC = () => {
                 width: '100px',
                 height: '100px',
                 borderRadius: '50px',
-                background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -100,6 +100,7 @@ export const HiddenSeriesPage: React.FC = () => {
                 margin: '0 0 8px',
                 fontSize: '20px',
                 fontWeight: 700,
+                fontFamily: 'var(--font-display)',
               }}
             >
               Alles aktiv
@@ -144,7 +145,9 @@ export const HiddenSeriesPage: React.FC = () => {
                     marginBottom: '12px',
                     cursor: 'pointer',
                     border: `1px solid ${currentTheme.border.default}`,
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                    boxShadow:
+                      '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
                     overflow: 'hidden',
                   }}
@@ -200,7 +203,7 @@ export const HiddenSeriesPage: React.FC = () => {
                     >
                       {series.title}
                     </h3>
-                    <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>
+                    <span style={{ fontSize: '13px', color: currentTheme.text.muted }}>
                       {watchedEpisodes}/{totalEpisodes} gesehen · {totalEpisodes - watchedEpisodes}{' '}
                       offen
                     </span>
@@ -220,7 +223,7 @@ export const HiddenSeriesPage: React.FC = () => {
                         style={{
                           height: '100%',
                           borderRadius: '2px',
-                          background: `linear-gradient(90deg, ${currentTheme.primary}, #8b5cf6)`,
+                          background: `linear-gradient(90deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
                         }}
                       />
                     </div>
@@ -241,7 +244,7 @@ export const HiddenSeriesPage: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       fontWeight: 700,
                       whiteSpace: 'nowrap',
                       flexShrink: 0,

@@ -203,6 +203,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
               style={{
                 fontSize: '24px',
                 fontWeight: 700,
+                fontFamily: 'var(--font-display)',
                 margin: 0,
               }}
             >
@@ -211,7 +212,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
             <p
               style={{
                 color: currentTheme.text.secondary,
-                fontSize: '14px',
+                fontSize: '15px',
                 margin: '2px 0 0 0',
               }}
             >
@@ -276,7 +277,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
             <h2
               aria-live="polite"
               style={{
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: 600,
                 color: currentTheme.text.secondary,
                 marginBottom: '12px',
@@ -317,7 +318,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                         : 'pointer',
                     opacity: result.isAlreadyFriend || result.hasPendingRequest ? 0.6 : 1,
                     textAlign: 'left',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   {/* Avatar */}
@@ -358,7 +359,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                     </div>
                     <div
                       style={{
-                        fontSize: '13px',
+                        fontSize: '14px',
                         color: currentTheme.text.secondary,
                         marginBottom: '4px',
                       }}
@@ -368,7 +369,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                     {(result.seriesCount !== undefined || result.moviesCount !== undefined) && (
                       <div
                         style={{
-                          fontSize: '12px',
+                          fontSize: '13px',
                           color: currentTheme.text.secondary,
                           opacity: 0.8,
                         }}
@@ -391,7 +392,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                           padding: '6px 12px',
                           background: currentTheme.primary + '22',
                           borderRadius: '8px',
-                          fontSize: '12px',
+                          fontSize: '13px',
                           fontWeight: 600,
                           color: currentTheme.primary,
                         }}
@@ -427,7 +428,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 borderRadius: '12px',
                 color: 'white',
                 fontWeight: 600,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                 zIndex: 1001,
               }}
             >

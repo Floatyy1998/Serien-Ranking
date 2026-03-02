@@ -92,14 +92,14 @@ const FeedCard: React.FC<{
                     backgroundPosition: 'center',
                   }
                 : {
-                    background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
                   }),
             }}
           />
-          <span style={{ fontSize: '13px', fontWeight: 700, color: currentTheme.text.primary }}>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: currentTheme.text.primary }}>
             {entry.username}
           </span>
-          <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>{actionText}</span>
+          <span style={{ fontSize: '13px', color: currentTheme.text.muted }}>{actionText}</span>
         </div>
 
         {/* Item info */}
@@ -112,7 +112,7 @@ const FeedCard: React.FC<{
           />
           <span
             style={{
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
               color: currentTheme.text.primary,
               overflow: 'hidden',
@@ -128,7 +128,7 @@ const FeedCard: React.FC<{
         {entry.episodeTitle && (
           <span
             style={{
-              fontSize: '12px',
+              fontSize: '13px',
               color: currentTheme.text.muted,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -142,14 +142,14 @@ const FeedCard: React.FC<{
         {/* Discussion title or reply preview */}
         <div
           style={{
-            fontSize: '13px',
+            fontSize: '14px',
             color: currentTheme.text.secondary,
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
           }}
         >
-          {isReply && <Reply style={{ fontSize: '14px', color: currentTheme.text.muted }} />}
+          {isReply && <Reply style={{ fontSize: '15px', color: currentTheme.text.muted }} />}
           <span
             style={{
               overflow: 'hidden',
@@ -162,7 +162,7 @@ const FeedCard: React.FC<{
         </div>
 
         {/* Timestamp */}
-        <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
+        <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>
           {formatRelativeTime(entry.createdAt)}
         </span>
       </div>
@@ -214,8 +214,9 @@ export const DiscussionFeedPage = () => {
                   : currentTheme.background.card,
               border: filter === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '14px',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               color: filter === tab.id ? 'white' : currentTheme.text.primary,
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: filter === tab.id ? `0 4px 15px ${currentTheme.primary}40` : 'none',
@@ -235,9 +236,9 @@ export const DiscussionFeedPage = () => {
             style={{
               padding: '16px',
               background: `${currentTheme.status.error}15`,
-              borderRadius: '12px',
+              borderRadius: '14px',
               color: currentTheme.status.error,
-              fontSize: '14px',
+              fontSize: '15px',
               border: `1px solid ${currentTheme.status.error}30`,
             }}
           >

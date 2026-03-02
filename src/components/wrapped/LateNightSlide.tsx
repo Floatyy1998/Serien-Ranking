@@ -161,9 +161,10 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
           style={{
             color: 'white',
             fontSize: 'clamp(3rem, 12vw, 5rem)',
-            fontWeight: 'bold',
+            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
             lineHeight: 1,
-            textShadow: '0 0 40px rgba(102,126,234,0.5)',
+            textShadow: '0 0 40px rgba(102, 126, 234, 0.3)',
             margin: 0,
           }}
         >

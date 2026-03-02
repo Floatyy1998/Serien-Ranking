@@ -103,7 +103,8 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
           style={{
             color: 'white',
             fontSize: 'clamp(5rem, 20vw, 10rem)',
-            fontWeight: 'bold',
+            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
             lineHeight: 1,
             textShadow: '0 0 60px rgba(255,255,255,0.3)',
           }}

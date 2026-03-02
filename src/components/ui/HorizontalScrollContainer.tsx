@@ -100,7 +100,7 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
               transform: 'translateY(-50%)',
               zIndex: 10,
               background:
-                'linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+                'linear-gradient(90deg, rgba(10,14,26,0.95) 0%, rgba(10,14,26,0.7) 50%, transparent 100%)',
               border: 'none',
               color: 'white',
               cursor: 'pointer',
@@ -108,9 +108,9 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: '0 8px 8px 0',
-              backdropFilter: 'blur(4px)',
-              transition: 'opacity 0.2s',
+              borderRadius: '0 14px 14px 0',
+              backdropFilter: 'blur(8px)',
+              transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
@@ -150,7 +150,7 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
               transform: 'translateY(-50%)',
               zIndex: 10,
               background:
-                'linear-gradient(270deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)',
+                'linear-gradient(270deg, rgba(10,14,26,0.95) 0%, rgba(10,14,26,0.7) 50%, transparent 100%)',
               border: 'none',
               color: 'white',
               cursor: 'pointer',
@@ -158,9 +158,9 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: '8px 0 0 8px',
-              backdropFilter: 'blur(4px)',
-              transition: 'opacity 0.2s',
+              borderRadius: '14px 0 0 14px',
+              backdropFilter: 'blur(8px)',
+              transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}

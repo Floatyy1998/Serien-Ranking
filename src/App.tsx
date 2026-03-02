@@ -210,9 +210,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     root.style.setProperty('--theme-accent', cloudTheme.accentColor || '#ff6b6b');
                     root.style.setProperty(
                       '--theme-background',
-                      cloudTheme.backgroundColor || '#000000'
+                      cloudTheme.backgroundColor || '#0a0e1a'
                     );
-                    root.style.setProperty('--theme-surface', cloudTheme.surfaceColor || '#2d2d30');
+                    root.style.setProperty('--theme-surface', cloudTheme.surfaceColor || '#141926');
                     root.style.setProperty(
                       '--theme-text-primary',
                       cloudTheme.primaryColor || '#00fed7'
@@ -220,7 +220,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
                     // Update theme-color Meta-Tag für PWA Status Bar
-                    updateThemeColorMeta(cloudTheme.backgroundColor || '#000000');
+                    updateThemeColorMeta(cloudTheme.backgroundColor || '#0a0e1a');
 
                     // WICHTIG: Cloud-Theme temporär im localStorage speichern,
                     // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
@@ -389,27 +389,27 @@ const loadSavedTheme = async (userId?: string) => {
     const primaryHover = adjustBrightness(theme.primaryColor || '#00fed7', 10);
     root.style.setProperty('--theme-primary-hover', primaryHover);
     root.style.setProperty('--theme-accent', theme.accentColor || '#ff6b6b');
-    root.style.setProperty('--theme-background', theme.backgroundColor || '#000000');
-    root.style.setProperty('--theme-surface', theme.surfaceColor || '#2d2d30');
+    root.style.setProperty('--theme-background', theme.backgroundColor || '#0a0e1a');
+    root.style.setProperty('--theme-surface', theme.surfaceColor || '#141926');
     root.style.setProperty('--theme-text-primary', theme.primaryColor || '#00fed7');
     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
     // Mobile-first app - no background images needed
 
     // Update theme-color Meta-Tag für PWA Status Bar
-    updateThemeColorMeta(theme.backgroundColor || '#000000');
+    updateThemeColorMeta(theme.backgroundColor || '#0a0e1a');
   } else {
     // Stelle sicher, dass Default-Werte gesetzt sind
     root.style.setProperty('--theme-primary', '#00fed7');
     root.style.setProperty('--theme-primary-hover', adjustBrightness('#00fed7', 10));
     root.style.setProperty('--theme-accent', '#ff6b6b');
-    root.style.setProperty('--theme-background', '#000000');
-    root.style.setProperty('--theme-surface', '#2d2d30');
+    root.style.setProperty('--theme-background', '#0a0e1a');
+    root.style.setProperty('--theme-surface', '#141926');
     root.style.setProperty('--theme-text-primary', '#00fed7');
     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
     // Update theme-color Meta-Tag für PWA Status Bar
-    updateThemeColorMeta('#000000');
+    updateThemeColorMeta('#0a0e1a');
   }
 };
 
