@@ -189,6 +189,16 @@
 }
 
 /* ========== Action Buttons ========== */
+.action-btn {
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
 .md-actions {
   padding: 20px;
   display: flex;

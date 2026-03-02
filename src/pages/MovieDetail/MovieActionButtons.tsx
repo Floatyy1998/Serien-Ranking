@@ -1,4 +1,5 @@
-import { Star } from '@mui/icons-material';
+import { Delete, Star } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -12,6 +13,7 @@ interface MovieActionButtonsProps {
   movieId: number;
   onNavigateRate: () => void;
   onAddMovie: () => void;
+  onDeleteClick: () => void;
 }
 
 export const MovieActionButtons = memo(
@@ -23,6 +25,7 @@ export const MovieActionButtons = memo(
     loading,
     onNavigateRate,
     onAddMovie,
+    onDeleteClick,
   }: MovieActionButtonsProps) => {
     const { currentTheme } = useTheme();
 
@@ -71,6 +74,23 @@ export const MovieActionButtons = memo(
           />
           Bewerten
         </motion.button>
+
+        <Tooltip title="Film löschen" arrow>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onDeleteClick}
+            className="action-btn"
+            style={{
+              padding: isMobile ? '10px' : '12px',
+              background: 'rgba(220, 53, 69, 0.1)',
+              border: '1px solid rgba(220, 53, 69, 0.3)',
+              borderRadius: isMobile ? '10px' : '12px',
+              fontSize: isMobile ? '13px' : '16px',
+            }}
+          >
+            <Delete style={{ fontSize: isMobile ? '18px' : '20px', color: '#ff6b6b' }} />
+          </motion.button>
+        </Tooltip>
       </div>
     );
   }

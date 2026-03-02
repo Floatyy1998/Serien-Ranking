@@ -222,8 +222,16 @@ export const SeriesDetailPage = memo(() => {
           isMobile={isMobile}
         />
 
-        {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
-          <div style={{ marginBottom: isMobile ? '8px' : '12px' }}>
+        {/* Provider + VideoGallery in einer Zeile */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: isMobile ? '4px' : '8px',
+          }}
+        >
+          {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
             <ProviderBadges
               providers={
                 series.provider?.provider && series.provider.provider.length > 0
@@ -237,14 +245,9 @@ export const SeriesDetailPage = memo(() => {
               tmdbId={series.tmdb_id || series.id}
               mediaType="tv"
             />
-          </div>
-        )}
-
-        <VideoGallery
-          tmdbId={series.tmdb_id || series.id}
-          mediaType="tv"
-          buttonStyle={isMobile ? 'mobile' : 'desktop'}
-        />
+          )}
+          <VideoGallery tmdbId={series.tmdb_id || series.id} mediaType="tv" buttonStyle="compact" />
+        </div>
       </div>
 
       {/* Action Buttons */}

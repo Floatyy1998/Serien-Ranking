@@ -8,6 +8,7 @@ interface RatingsCardProps {
   imdbRating: { rating: number; votes: string } | null;
   seriesId: string;
   isMobile: boolean;
+  noMargin?: boolean;
 }
 
 interface RatingBadge {
@@ -24,7 +25,7 @@ interface RatingBadge {
 }
 
 export const RatingsCard = memo<RatingsCardProps>(
-  ({ series, localSeries, tmdbRating, imdbRating, seriesId, isMobile }) => {
+  ({ series, localSeries, tmdbRating, imdbRating, seriesId, isMobile, noMargin }) => {
     const tmdbValue = (
       tmdbRating?.vote_average ||
       series?.vote_average ||
@@ -70,7 +71,7 @@ export const RatingsCard = memo<RatingsCardProps>(
         className="ratings-card"
         style={{
           gap: isMobile ? '8px' : '12px',
-          marginBottom: isMobile ? '12px' : '12px',
+          marginBottom: noMargin ? 0 : isMobile ? '12px' : '12px',
         }}
       >
         {badges.map((badge) => (

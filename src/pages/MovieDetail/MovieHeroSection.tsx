@@ -1,5 +1,3 @@
-import { Delete } from '@mui/icons-material';
-import { Tooltip } from '@mui/material';
 import { memo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
@@ -21,7 +19,6 @@ interface MovieHeroSectionProps {
   getBackdropUrl: (backdropPath: string | undefined) => string;
   formatRuntime: (minutes: number) => string;
   onAddMovie: () => void;
-  onDeleteClick: () => void;
 }
 
 export const MovieHeroSection = memo(
@@ -39,7 +36,6 @@ export const MovieHeroSection = memo(
     getBackdropUrl,
     formatRuntime,
     onAddMovie,
-    onDeleteClick,
   }: MovieHeroSectionProps) => {
     const { currentTheme } = useTheme();
 
@@ -75,35 +71,20 @@ export const MovieHeroSection = memo(
           >
             <BackButton style={{ backdropFilter: 'blur(10px)' }} />
 
-            {isReadOnlyTmdbMovie ? (
-              <Tooltip title="Zur Sammlung hinzufugen" arrow>
-                <button
-                  onClick={onAddMovie}
-                  disabled={isAdding}
-                  className="md-hero__action-btn md-hero__action-btn--add"
-                  style={{
-                    background: isAdding
-                      ? `${currentTheme.status.success}88`
-                      : `${currentTheme.status.success}CC`,
-                    color: currentTheme.text.primary,
-                  }}
-                >
-                  {isAdding ? '...' : '+'}
-                </button>
-              </Tooltip>
-            ) : (
-              <Tooltip title="Film loschen" arrow>
-                <button
-                  onClick={onDeleteClick}
-                  className="md-hero__action-btn md-hero__action-btn--delete"
-                  style={{
-                    background: `${currentTheme.status.error}CC`,
-                    color: currentTheme.text.primary,
-                  }}
-                >
-                  <Delete />
-                </button>
-              </Tooltip>
+            {isReadOnlyTmdbMovie && (
+              <button
+                onClick={onAddMovie}
+                disabled={isAdding}
+                className="md-hero__action-btn md-hero__action-btn--add"
+                style={{
+                  background: isAdding
+                    ? `${currentTheme.status.success}88`
+                    : `${currentTheme.status.success}CC`,
+                  color: currentTheme.text.primary,
+                }}
+              >
+                {isAdding ? '...' : '+'}
+              </button>
             )}
           </div>
 
