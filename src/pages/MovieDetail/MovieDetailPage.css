@@ -51,7 +51,8 @@
 
 .md-hero__action-btn {
   backdrop-filter: blur(10px);
-  border: none;
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 24px;
   cursor: pointer;
   padding: 8px;
@@ -61,6 +62,18 @@
   justify-content: center;
   width: 40px;
   height: 40px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.md-hero__action-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.md-hero__action-btn:active {
+  transform: scale(0.95);
 }
 
 .md-hero__action-btn--delete {
@@ -225,6 +238,18 @@
   gap: 8px;
   position: relative;
   border: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.md-rate-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.md-rate-btn:active {
+  transform: scale(0.97);
 }
 
 .md-rate-btn--mobile {
@@ -361,10 +386,15 @@
 
 .md-genre-tag {
   padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
   font-size: 13px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: background 0.2s ease;
+}
+
+.md-genre-tag:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .md-info-grid {
@@ -376,9 +406,19 @@
 
 .md-info-card {
   background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 14px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.md-info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .md-info-card__label {

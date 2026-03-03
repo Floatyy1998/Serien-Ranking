@@ -141,11 +141,11 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   };
 }
 
-// Standard-Theme als Fallback (Soft Dark)
+// Standard-Theme als Fallback (Cinematic Dark)
 export const defaultThemeConfig: UserThemeConfig = {
   primaryColor: '#00fed7',
-  backgroundColor: '#0a0e1a',
-  surfaceColor: '#141926',
+  backgroundColor: '#06090f',
+  surfaceColor: '#0e1420',
   accentColor: '#00e6c3',
   backgroundImage: undefined,
   backgroundImageOpacity: 0.5,

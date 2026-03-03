@@ -52,12 +52,13 @@ export const radius = {
   full: '9999px',
 } as const;
 
-// --- SCHATTEN (Weich, mehrstufig) ---
+// --- SCHATTEN (Cinematisch, mehrschichtig) ---
 export const shadows = {
-  sm: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2)',
-  md: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-  lg: '0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3)',
-  xl: '0 16px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 24px -8px rgba(0, 0, 0, 0.4)',
+  sm: '0 2px 8px -2px rgba(0, 0, 0, 0.35), 0 1px 3px -1px rgba(0, 0, 0, 0.25)',
+  md: '0 4px 16px -4px rgba(0, 0, 0, 0.45), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+  lg: '0 8px 32px -8px rgba(0, 0, 0, 0.55), 0 4px 12px -4px rgba(0, 0, 0, 0.35)',
+  xl: '0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 8px 24px -8px rgba(0, 0, 0, 0.45)',
+  cinematic: '0 24px 80px -20px rgba(0, 0, 0, 0.8), 0 12px 30px -10px rgba(0, 0, 0, 0.5)',
   glow: (color: string, intensity: number = 0.3) => {
     const hex = Math.round(intensity * 255)
       .toString(16)
@@ -65,38 +66,47 @@ export const shadows = {
     const hexHalf = Math.round(intensity * 0.5 * 255)
       .toString(16)
       .padStart(2, '0');
-    return `0 4px 20px -4px ${color}${hex}, 0 0 40px -8px ${color}${hexHalf}`;
+    const hexQuarter = Math.round(intensity * 0.25 * 255)
+      .toString(16)
+      .padStart(2, '0');
+    return `0 4px 20px -4px ${color}${hex}, 0 0 40px -8px ${color}${hexHalf}, 0 0 80px -12px ${color}${hexQuarter}`;
   },
   inner: 'inset 0 1px 2px rgba(0, 0, 0, 0.2)',
+  innerLight: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
 } as const;
 
-// --- GLASSMORPHISM ---
+// --- GLASSMORPHISM (tiefere Kontraste, cinematischer) ---
 export const glass = {
   light: {
-    background: 'rgba(255, 255, 255, 0.04)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    backdropFilter: 'blur(12px)',
+    background:
+      'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    backdropFilter: 'blur(16px) saturate(1.3)',
   },
   medium: {
-    background: 'rgba(255, 255, 255, 0.06)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(20px)',
+    background:
+      'linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)',
+    border: '1px solid rgba(255, 255, 255, 0.09)',
+    backdropFilter: 'blur(24px) saturate(1.4)',
   },
   heavy: {
-    background: 'rgba(255, 255, 255, 0.08)',
+    background:
+      'linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.04) 100%)',
     border: '1px solid rgba(255, 255, 255, 0.12)',
-    backdropFilter: 'blur(40px)',
+    backdropFilter: 'blur(40px) saturate(1.5)',
   },
 } as const;
 
-// --- TRANSITIONS ---
+// --- TRANSITIONS (cinematische Curves) ---
 export const transitions = {
-  fast: '0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-  normal: '0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  slow: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  fast: '0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+  normal: '0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+  slow: '0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+  cinematic: '0.6s cubic-bezier(0.16, 1, 0.3, 1)',
   spring: { type: 'spring' as const, stiffness: 300, damping: 25 },
   springGentle: { type: 'spring' as const, stiffness: 200, damping: 20 },
   springBouncy: { type: 'spring' as const, stiffness: 400, damping: 15 },
+  springCinematic: { type: 'spring' as const, stiffness: 150, damping: 18 },
 } as const;
 
 // --- Z-INDEX ---
@@ -112,18 +122,87 @@ export const zIndex = {
   splash: 10000,
 } as const;
 
-// --- GLOW SCHATTEN (Theme-responsive) ---
+// --- GLOW SCHATTEN (Theme-responsive, cinematisch) ---
 export const glowShadows = {
-  sm: (color: string) => `0 0 8px ${color}30, 0 0 4px ${color}20`,
-  md: (color: string) => `0 0 20px ${color}40, 0 0 40px ${color}20`,
-  lg: (color: string) => `0 0 30px ${color}50, 0 0 60px ${color}25, 0 0 100px ${color}15`,
-  text: (color: string) => `0 0 12px ${color}40`,
+  sm: (color: string) => `0 0 10px ${color}30, 0 0 4px ${color}20`,
+  md: (color: string) => `0 0 20px ${color}40, 0 0 40px ${color}20, 0 4px 16px -4px ${color}15`,
+  lg: (color: string) =>
+    `0 0 30px ${color}50, 0 0 60px ${color}25, 0 0 100px ${color}15, 0 8px 32px -8px ${color}20`,
+  text: (color: string) => `0 0 16px ${color}50, 0 0 40px ${color}15`,
+  card: (color: string) =>
+    `0 4px 20px -4px ${color}30, 0 0 40px -8px ${color}15, inset 0 1px 0 rgba(255, 255, 255, 0.04)`,
 } as const;
 
-// --- DEFAULT FARBEN (Soft Dark) ---
+// --- TEXT STYLES (Vordefinierte Kombinationen) ---
+export const textStyles = {
+  displayLarge: {
+    fontSize: typography.fontSize['5xl'],
+    fontWeight: typography.fontWeight.extrabold,
+    fontFamily: typography.fontFamily.display,
+    letterSpacing: typography.letterSpacing.tight,
+    lineHeight: typography.lineHeight.tight,
+  },
+  displayMedium: {
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold,
+    fontFamily: typography.fontFamily.display,
+    letterSpacing: typography.letterSpacing.tight,
+    lineHeight: typography.lineHeight.tight,
+  },
+  headingLarge: {
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: typography.fontWeight.bold,
+    fontFamily: typography.fontFamily.display,
+    letterSpacing: typography.letterSpacing.tight,
+    lineHeight: typography.lineHeight.tight,
+  },
+  headingMedium: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.semibold,
+    fontFamily: typography.fontFamily.display,
+    lineHeight: typography.lineHeight.tight,
+  },
+  bodyLarge: {
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.normal,
+    fontFamily: typography.fontFamily.body,
+    lineHeight: typography.lineHeight.normal,
+  },
+  bodySmall: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.normal,
+    fontFamily: typography.fontFamily.body,
+    lineHeight: typography.lineHeight.normal,
+  },
+  caption: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.medium,
+    fontFamily: typography.fontFamily.body,
+    letterSpacing: typography.letterSpacing.wide,
+    lineHeight: typography.lineHeight.normal,
+  },
+  label: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    fontFamily: typography.fontFamily.body,
+    letterSpacing: typography.letterSpacing.wider,
+    textTransform: 'uppercase' as const,
+    lineHeight: typography.lineHeight.normal,
+  },
+  overline: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.semibold,
+    fontFamily: typography.fontFamily.body,
+    letterSpacing: typography.letterSpacing.wider,
+    textTransform: 'uppercase' as const,
+    lineHeight: typography.lineHeight.normal,
+  },
+} as const;
+
+// --- DEFAULT FARBEN (Cinematic Dark) ---
 export const softDarkDefaults = {
-  background: '#0a0e1a',
-  surface: '#141926',
-  surfaceElevated: '#1a2030',
-  surfaceHover: '#1e2538',
+  background: '#06090f',
+  surface: '#0e1420',
+  surfaceElevated: '#151d2e',
+  surfaceHover: '#1a2538',
 } as const;

@@ -61,6 +61,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .cu-hero-value {
@@ -68,6 +69,7 @@
   font-weight: 800;
   font-family: var(--font-display);
   letter-spacing: -1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .cu-hero-label {
@@ -111,6 +113,10 @@
   animation: fadeInUp 0.2s ease-out both;
 }
 
+.cu-sort-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .cu-sort-btn:active {
   transform: scale(0.95);
 }
@@ -141,18 +147,29 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.06);
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.08);
   content-visibility: auto;
   contain-intrinsic-block-size: auto 130px;
   -webkit-tap-highlight-color: transparent;
   animation: fadeInUp 0.3s ease-out both;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cu-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .cu-card:active {
   transform: scale(0.98);
-  transition: transform 0.1s ease;
 }
 
 .cu-card-accent {
@@ -160,8 +177,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  opacity: 0.6;
+  height: 4px;
+  opacity: 0.8;
 }
 
 .cu-card-poster {
@@ -254,6 +271,33 @@
   border-radius: 3px;
   transform-origin: left;
   animation: growWidth 0.5s ease-out 0.15s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.cu-card-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  animation: progressShimmer 2s ease-in-out infinite;
+}
+
+@keyframes progressShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .cu-card-progress-label {

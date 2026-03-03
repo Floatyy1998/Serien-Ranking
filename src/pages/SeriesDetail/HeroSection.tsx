@@ -47,7 +47,7 @@ export const HeroSection = memo<HeroSectionProps>(
     const maxGenres = isMobile ? 3 : 4;
 
     return (
-      <div className="hero-section" style={{ height: isMobile ? '280px' : '420px' }}>
+      <div className="hero-section" style={{ height: isMobile ? '360px' : '480px' }}>
         {tmdbBackdrop && (
           <img
             className="hero-section__backdrop"

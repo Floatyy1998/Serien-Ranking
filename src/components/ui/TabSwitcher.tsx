@@ -42,9 +42,16 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
       style={{
         display: 'flex',
         margin: '0 20px 20px 20px',
-        gap: '10px',
+        gap: '6px',
         position: 'relative',
         zIndex: 5,
+        background:
+          'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)',
+        borderRadius: '18px',
+        padding: '4px',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         ...style,
       }}
     >
@@ -61,29 +68,45 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
             onClick={() => onTabChange(tab.id)}
             style={{
               flex: 1,
-              padding: '14px',
-              background: isActive
-                ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
-                : currentTheme.background.card,
-              border: isActive ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '16px',
-              color: isActive ? 'white' : currentTheme.text.primary,
-              fontSize: '15px',
-              fontWeight: 700,
+              padding: '11px 16px',
+              background: 'transparent',
+              border: 'none',
+              borderRadius: '14px',
+              color: isActive ? 'white' : currentTheme.text.muted,
+              fontSize: '13.5px',
+              fontWeight: isActive ? 700 : 600,
+              letterSpacing: isActive ? '-0.01em' : '0',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              boxShadow: isActive
-                ? `0 4px 20px ${currentTheme.primary}50, 0 0 40px ${currentTheme.primary}20, 0 0 0 1px ${currentTheme.primary}40`
-                : 'none',
-              backdropFilter: isActive ? 'none' : 'blur(8px)',
-              WebkitBackdropFilter: isActive ? 'none' : 'blur(8px)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              gap: '6px',
+              position: 'relative',
+              zIndex: 2,
+              transition: 'color 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
-            {Icon && <Icon style={{ fontSize: '20px' }} />}
+            {/* Morphing background indicator */}
+            {isActive && (
+              <motion.div
+                layoutId="tabIndicator"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '14px',
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, var(--theme-secondary-gradient, #8b5cf6)))`,
+                  boxShadow: `0 4px 24px ${currentTheme.primary}35, 0 0 40px ${currentTheme.primary}12, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                  zIndex: -1,
+                }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 320,
+                  damping: 28,
+                }}
+              />
+            )}
+
+            {Icon && <Icon style={{ fontSize: '18px' }} />}
             {tab.label}
             {tab.count !== undefined && ` (${tab.count})`}
           </motion.button>

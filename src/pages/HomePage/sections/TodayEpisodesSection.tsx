@@ -110,7 +110,13 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                   }
                   content={
                     <>
-                      <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 2px 0' }}>
+                      <h3
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 600,
+                          margin: '0 0 2px 0',
+                        }}
+                      >
                         {episode.seriesTitle}
                       </h3>
                       <p
@@ -118,6 +124,10 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                           fontSize: '13px',
                           margin: 0,
                           color: episode.watched ? accentColor : '#ffd700',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
                         }}
                       >
                         S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}

@@ -130,11 +130,11 @@ const SplashContainer = styled(Box, {
   align-items: center;
   background: linear-gradient(
     135deg,
-    #0a0e1a 0%,
-    #141926 25%,
-    #0d1117 50%,
-    #141926 75%,
-    #0a0e1a 100%
+    #06090f 0%,
+    #0e1420 25%,
+    #080c14 50%,
+    #0e1420 75%,
+    #06090f 100%
   );
   animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)}
     ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards;

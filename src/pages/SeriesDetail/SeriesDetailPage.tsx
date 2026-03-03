@@ -2,7 +2,7 @@
  * SeriesDetailPage - Composition component using extracted subcomponents + hooks
  */
 
-import { Check, Info, List, People, Repeat, VisibilityOff } from '@mui/icons-material';
+import { Check, GridView, Info, List, People, Repeat, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -536,6 +536,7 @@ function SeasonsSection({
   handleStartRewatch,
   navigate,
 }: SeasonsSectionProps) {
+  const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
   const selectedSeason = series.seasons[selectedSeasonIndex];
   const watchedEpisodes = selectedSeason?.episodes?.filter((ep) => ep.watched).length || 0;
   const totalEpisodes = selectedSeason?.episodes?.length || 0;
@@ -670,6 +671,7 @@ function SeasonsSection({
           padding: '16px',
         }}
       >
+        {/* Season header with view toggle */}
         <div
           style={{
             display: 'flex',
@@ -686,101 +688,206 @@ function SeasonsSection({
               {watchedEpisodes}/{totalEpisodes} Episoden
             </div>
           </div>
-          <div
-            style={{
-              padding: '4px 10px',
-              borderRadius: '12px',
-              fontSize: '13px',
-              fontWeight: 600,
-              background:
-                seasonProgress === 100
-                  ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                  : 'rgba(255,255,255,0.1)',
-            }}
-          >
-            {seasonProgress}%
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* View toggle */}
+            <button
+              onClick={() => setEpisodeView(episodeView === 'list' ? 'grid' : 'list')}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '8px',
+                padding: '4px',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title={episodeView === 'list' ? 'Grid-Ansicht' : 'Listen-Ansicht'}
+            >
+              {episodeView === 'list' ? (
+                <GridView style={{ fontSize: '16px' }} />
+              ) : (
+                <List style={{ fontSize: '16px' }} />
+              )}
+            </button>
+            <div
+              style={{
+                padding: '4px 10px',
+                borderRadius: '9999px',
+                fontSize: '13px',
+                fontWeight: 600,
+                background:
+                  seasonProgress === 100
+                    ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                    : 'rgba(255,255,255,0.1)',
+              }}
+            >
+              {seasonProgress}%
+            </div>
           </div>
         </div>
 
-        {/* Episode Grid */}
-        <div className="episode-grid">
-          {selectedSeason.episodes?.map((episode, episodeIndex) => {
-            const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
-            const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
-            return (
-              <motion.div
-                key={episode.id}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (episode.watched) {
-                    setShowRewatchDialog({
-                      show: true,
-                      type: 'episode',
-                      item: episode,
-                      seasonNumber: selectedSeason.seasonNumber + 1,
-                      episodeNumber: episodeIndex + 1,
-                    });
-                  } else {
-                    navigate(
-                      `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
-                    );
-                  }
-                }}
-                className="episode-cell"
-                style={{
-                  background: episode.watched
-                    ? isRewatched
-                      ? `${warningColor}30`
-                      : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                    : 'rgba(255,255,255,0.1)',
-                  border: episode.watched
-                    ? isRewatched
-                      ? `2px solid ${warningColor}`
-                      : 'none'
-                    : '1px solid rgba(255,255,255,0.2)',
-                }}
-              >
-                {episodeIndex + 1}
-                {isRewatched && (
-                  <span
+        {/* Episode List View (default) */}
+        {episodeView === 'list' && (
+          <div className="episode-list">
+            {selectedSeason.episodes?.map((episode, episodeIndex) => {
+              const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
+              const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
+              return (
+                <div
+                  key={episode.id}
+                  onClick={() => {
+                    if (episode.watched) {
+                      setShowRewatchDialog({
+                        show: true,
+                        type: 'episode',
+                        item: episode,
+                        seasonNumber: selectedSeason.seasonNumber + 1,
+                        episodeNumber: episodeIndex + 1,
+                      });
+                    } else {
+                      navigate(
+                        `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
+                      );
+                    }
+                  }}
+                  className={`episode-list-item ${episode.watched ? 'episode-list-item--watched' : 'episode-list-item--unwatched'}`}
+                >
+                  {/* Number circle */}
+                  <div
+                    className="episode-list-number"
                     style={{
-                      position: 'absolute',
-                      top: '-5px',
-                      right: '-6px',
-                      background: warningColor,
-                      borderRadius: '6px',
-                      padding: '0 3px',
-                      height: '12px',
-                      fontSize: '8px',
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#000',
-                      lineHeight: 1,
+                      background: episode.watched
+                        ? isRewatched
+                          ? `${warningColor}30`
+                          : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                        : 'rgba(255,255,255,0.1)',
+                      border: isRewatched ? `2px solid ${warningColor}` : 'none',
+                      color: episode.watched ? '#fff' : 'rgba(255,255,255,0.7)',
                     }}
                   >
-                    ×{episode.watchCount}
-                  </span>
-                )}
-                {discussionCount > 0 && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: '-2px',
-                      left: '-2px',
-                      background: currentTheme.primary,
-                      borderRadius: '50%',
-                      width: '6px',
-                      height: '6px',
-                    }}
-                  />
-                )}
-              </motion.div>
-            );
-          })}
-        </div>
+                    {episode.watched ? <Check style={{ fontSize: '16px' }} /> : episodeIndex + 1}
+                  </div>
+
+                  {/* Episode info */}
+                  <div className="episode-list-info">
+                    <div className="episode-list-title">Episode {episodeIndex + 1}</div>
+                    {episode.name && <div className="episode-list-subtitle">{episode.name}</div>}
+                  </div>
+
+                  {/* Rewatch badge */}
+                  {isRewatched && (
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: warningColor,
+                      }}
+                    >
+                      ×{episode.watchCount}
+                    </span>
+                  )}
+
+                  {/* Discussion dot */}
+                  {discussionCount > 0 && (
+                    <span
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: currentTheme.primary,
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Episode Grid View (compact) */}
+        {episodeView === 'grid' && (
+          <div className="episode-grid">
+            {selectedSeason.episodes?.map((episode, episodeIndex) => {
+              const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
+              const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
+              return (
+                <motion.div
+                  key={episode.id}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    if (episode.watched) {
+                      setShowRewatchDialog({
+                        show: true,
+                        type: 'episode',
+                        item: episode,
+                        seasonNumber: selectedSeason.seasonNumber + 1,
+                        episodeNumber: episodeIndex + 1,
+                      });
+                    } else {
+                      navigate(
+                        `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
+                      );
+                    }
+                  }}
+                  className="episode-cell"
+                  style={{
+                    background: episode.watched
+                      ? isRewatched
+                        ? `${warningColor}30`
+                        : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                      : 'rgba(255,255,255,0.1)',
+                    border: episode.watched
+                      ? isRewatched
+                        ? `2px solid ${warningColor}`
+                        : 'none'
+                      : '1px solid rgba(255,255,255,0.2)',
+                  }}
+                >
+                  {episodeIndex + 1}
+                  {isRewatched && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '-5px',
+                        right: '-6px',
+                        background: warningColor,
+                        borderRadius: '6px',
+                        padding: '0 3px',
+                        height: '12px',
+                        fontSize: '8px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#000',
+                        lineHeight: 1,
+                      }}
+                    >
+                      ×{episode.watchCount}
+                    </span>
+                  )}
+                  {discussionCount > 0 && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        bottom: '-2px',
+                        left: '-2px',
+                        background: currentTheme.primary,
+                        borderRadius: '50%',
+                        width: '6px',
+                        height: '6px',
+                      }}
+                    />
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

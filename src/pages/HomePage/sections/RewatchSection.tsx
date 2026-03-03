@@ -113,10 +113,26 @@ export const RewatchSection = React.memo(function RewatchSection({
                   }
                   content={
                     <>
-                      <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 2px 0' }}>
+                      <h3
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 600,
+                          margin: '0 0 2px 0',
+                        }}
+                      >
                         {item.title}
                       </h3>
-                      <p style={{ fontSize: '13px', margin: 0, color: accentColor }}>
+                      <p
+                        style={{
+                          fontSize: '13px',
+                          margin: 0,
+                          color: accentColor,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
                         S{item.seasonNumber} E{item.episodeNumber} • {item.episodeName}
                       </p>
                       <p
@@ -131,9 +147,9 @@ export const RewatchSection = React.memo(function RewatchSection({
                       <div
                         style={{
                           marginTop: '4px',
-                          height: '3px',
+                          height: '4px',
                           background: currentTheme.border.default,
-                          borderRadius: '1.5px',
+                          borderRadius: '2px',
                           overflow: 'hidden',
                           position: 'relative',
                         }}

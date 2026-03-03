@@ -1,6 +1,7 @@
-import { Add, Star } from '@mui/icons-material';
+import { Add, ArrowForward, Star } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
-import { memo, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useCallback, useMemo, useState } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 
 /** Item returned from TMDB discover/search/recommendations endpoints, enriched with local fields */
@@ -50,16 +51,35 @@ export const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
 // Premium memoized item card
 export const ItemCard = memo(
   ({ item, onItemClick, onAddToList, addingItem, currentTheme, isDesktop }: ItemCardProps) => {
+    const [showInfo, setShowInfo] = useState(false);
+
     const imageUrl = useMemo(() => {
       if (!item.poster_path) return '/placeholder.jpg';
       return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
     }, [item.poster_path]);
 
+    const handlePosterClick = useCallback(() => {
+      if (showInfo) {
+        // Already showing info → navigate to detail
+        onItemClick(item);
+      } else {
+        setShowInfo(true);
+      }
+    }, [showInfo, item, onItemClick]);
+
+    const handleNavigate = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onItemClick(item);
+      },
+      [item, onItemClick]
+    );
+
     return (
       <div className="discover-item-card" style={{ position: 'relative' }}>
         <div
           className="discover-poster-wrap"
-          onClick={() => onItemClick(item)}
+          onClick={handlePosterClick}
           style={{
             width: '100%',
             aspectRatio: '2/3',
@@ -113,6 +133,7 @@ export const ItemCard = memo(
                 alignItems: 'center',
                 gap: '4px',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
+                zIndex: 2,
               }}
             >
               <Star
@@ -125,11 +146,117 @@ export const ItemCard = memo(
             </div>
           )}
 
-          {!item.inList && (
+          {/* Glassmorphic Info Overlay */}
+          <AnimatePresence>
+            {showInfo && (
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '65%',
+                  background: 'rgba(10, 14, 26, 0.75)',
+                  backdropFilter: 'blur(20px) saturate(1.4)',
+                  WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
+                  borderRadius: '16px 16px 0 0',
+                  padding: '14px 12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  zIndex: 3,
+                  borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+                }}
+              >
+                {/* Close handle */}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowInfo(false);
+                  }}
+                  style={{
+                    width: '32px',
+                    height: '4px',
+                    borderRadius: '2px',
+                    background: 'rgba(255, 255, 255, 0.3)',
+                    margin: '0 auto 10px',
+                    cursor: 'pointer',
+                  }}
+                />
+
+                {/* Title */}
+                <h3
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    margin: '0 0 6px',
+                    color: 'white',
+                    lineHeight: 1.2,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {item.title || item.name}
+                </h3>
+
+                {/* Overview */}
+                <p
+                  style={{
+                    fontSize: '12px',
+                    lineHeight: 1.5,
+                    color: 'rgba(255, 255, 255, 0.75)',
+                    margin: 0,
+                    flex: 1,
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 4,
+                    WebkitBoxOrient: 'vertical',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {item.overview || 'Keine Beschreibung verfügbar.'}
+                </p>
+
+                {/* CTA Button */}
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleNavigate}
+                  style={{
+                    marginTop: '10px',
+                    padding: '8px 0',
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: 'white',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  Details
+                  <ArrowForward style={{ fontSize: '14px' }} />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!item.inList && !showInfo && (
             <Tooltip title="Zur Liste hinzufügen" arrow>
               <button
                 className="discover-add-btn"
-                onClick={(e) => onAddToList(item, e)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToList(item, e);
+                }}
                 disabled={addingItem === `${item.type}-${item.id}`}
                 style={{
                   position: 'absolute',
@@ -150,6 +277,7 @@ export const ItemCard = memo(
                   transition: 'all 0.2s ease',
                   padding: 0,
                   boxShadow: `0 4px 12px ${currentTheme.primary}50`,
+                  zIndex: 2,
                 }}
               >
                 <Add
