@@ -89,10 +89,10 @@
 
 /* --- Nav Label --- */
 .nav-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
   font-family: var(--font-body);
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
 }
 
 .nav-item.active .nav-label {
