@@ -161,7 +161,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           onClick={() => setIsOpen(true)}
           style={{
             position: 'fixed',
-            bottom: hasBottomNav ? '120px' : '30px', // Adjust based on navbar presence
+            bottom: hasBottomNav ? '95px' : '30px',
             right: '20px',
             background:
               'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)',
@@ -203,16 +203,12 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
       </Tooltip>
 
       {/* Filter Panel */}
-      <BottomSheet
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        bottomOffset={hasBottomNav ? '83px' : '0px'}
-      >
+      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} bottomOffset="0px">
         <div
           style={{
             width: '90%',
             alignSelf: 'center',
-            paddingBottom: '24px',
+            paddingBottom: hasBottomNav ? '90px' : '24px',
             overflowY: 'auto',
             flex: 1,
             minHeight: 0,
