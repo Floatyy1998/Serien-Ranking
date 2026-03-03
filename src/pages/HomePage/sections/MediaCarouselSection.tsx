@@ -41,6 +41,8 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
 }: MediaCarouselSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const isMobile = window.innerWidth < 768;
+  const cardWidth = isMobile ? '125px' : '215px';
 
   if (items.length === 0) return null;
 
@@ -80,7 +82,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                 style={{
                   cursor: 'pointer',
                   flexShrink: 0,
-                  minWidth: '215px',
+                  minWidth: cardWidth,
                 }}
               >
                 {/* Poster with integrated number overlay */}
@@ -97,7 +99,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     alt={item.title}
                     decoding="async"
                     style={{
-                      width: '215px',
+                      width: cardWidth,
                       aspectRatio: '2/3',
                       objectFit: 'cover',
                       display: 'block',
@@ -124,7 +126,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                       position: 'absolute',
                       bottom: '-4px',
                       left: '6px',
-                      fontSize: '72px',
+                      fontSize: isMobile ? '48px' : '72px',
                       fontWeight: 900,
                       fontFamily: 'var(--font-display)',
                       lineHeight: 1,
@@ -188,7 +190,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    width: '215px',
+                    width: cardWidth,
                   }}
                 >
                   {item.title}
@@ -217,7 +219,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
               key={`${variant}-${item.type}-${item.id}`}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(`/${item.type}/${item.id}`)}
-              style={{ flexShrink: 0, cursor: 'pointer', width: '215px' }}
+              style={{ flexShrink: 0, cursor: 'pointer', width: cardWidth }}
             >
               <div style={{ position: 'relative', marginBottom: '6px' }}>
                 <img
@@ -225,7 +227,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                   alt={item.title}
                   decoding="async"
                   style={{
-                    width: '215px',
+                    width: cardWidth,
                     aspectRatio: '2/3',
                     objectFit: 'cover',
                     borderRadius: '10px',
@@ -243,15 +245,19 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                       color: 'white',
                       borderRadius: '6px',
                       padding: '2px 6px',
-                      fontSize: '11px',
+                      fontSize: isMobile ? '9px' : '11px',
                       fontWeight: 600,
                       display: 'flex',
                       alignItems: 'center',
                       gap: '2px',
                       zIndex: 1,
+                      maxWidth: 'calc(100% - 8px)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    <AutoAwesome style={{ fontSize: '11px' }} />
+                    <AutoAwesome style={{ fontSize: isMobile ? '9px' : '11px', flexShrink: 0 }} />
                     {title}
                   </div>
                 )}
