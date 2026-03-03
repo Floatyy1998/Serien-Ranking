@@ -50,8 +50,7 @@
 
 /* Padding for pages with floating dock navigation */
 .mobile-content.with-nav {
-  padding-bottom: 110px; /* floating dock + extra space */
-  padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  padding-bottom: 90px; /* floating dock + extra space */
 }
 
 /* No padding for pages without bottom navigation */
