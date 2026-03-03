@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useMovieList } from '../contexts/MovieListProvider';
 
 interface SeasonConfig {
   title: string;
@@ -106,21 +108,25 @@ function getSeasonConfig(): SeasonConfig {
   }
 }
 
-const CACHE_KEY = 'seasonal_recommendations_cache';
+const CACHE_KEY = 'seasonal_recommendations_v5';
 
 export const useSeasonalRecommendations = () => {
-  const [items, setItems] = useState<TrendingItem[]>([]);
+  const { allSeriesList } = useSeriesList();
+  const { movieList } = useMovieList();
+  const [rawSeries, setRawSeries] = useState<TrendingItem[]>([]);
+  const [rawMovies, setRawMovies] = useState<TrendingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const config = getSeasonConfig();
 
   useEffect(() => {
-    // Check session cache
+    // Check session cache (stores raw data)
     const cached = sessionStorage.getItem(CACHE_KEY);
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        if (parsed.title === config.title && parsed.items?.length > 0) {
-          setItems(parsed.items);
+        if (parsed.title === config.title && parsed.series?.length > 0) {
+          setRawSeries(parsed.series);
+          setRawMovies(parsed.movies);
           setLoading(false);
           return;
         }
@@ -132,77 +138,71 @@ export const useSeasonalRecommendations = () => {
     const fetchSeasonal = async () => {
       try {
         const apiKey = import.meta.env.VITE_API_TMDB;
-        const baseParams = `api_key=${apiKey}&language=de-DE&region=DE&sort_by=popularity.desc&vote_count.gte=100`;
+        const baseUrl = `api_key=${apiKey}&language=de-DE&region=DE&sort_by=popularity.desc`;
         const genreParam = config.genres ? `&with_genres=${config.genres}` : '';
         const keywordParam = config.keywords ? `&with_keywords=${config.keywords}` : '';
 
         const [tvResponse, movieResponse] = await Promise.all([
           fetch(
-            `https://api.themoviedb.org/3/discover/tv?${baseParams}${genreParam}${keywordParam}`
+            `https://api.themoviedb.org/3/discover/tv?${baseUrl}&vote_count.gte=100${genreParam}${keywordParam}`
           ),
           fetch(
-            `https://api.themoviedb.org/3/discover/movie?${baseParams}${genreParam}${keywordParam}`
+            `https://api.themoviedb.org/3/discover/movie?${baseUrl}&vote_count.gte=100${genreParam}${keywordParam}`
           ),
         ]);
 
         const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
 
-        const combined: TrendingItem[] = [
-          ...(tvData.results || [])
-            .slice(0, 10)
-            .map(
-              (item: {
-                id: number;
-                name?: string;
-                original_name?: string;
-                poster_path: string | null;
-                vote_average: number;
-                vote_count: number;
-                first_air_date?: string;
-              }) => ({
-                type: 'series' as const,
-                id: item.id,
-                title: item.name || item.original_name || '',
-                poster: item.poster_path
-                  ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
-                  : '/placeholder.jpg',
-                rating: item.vote_average,
-                voteCount: item.vote_count,
-                releaseDate: item.first_air_date,
-              })
-            ),
-          ...(movieData.results || [])
-            .slice(0, 10)
-            .map(
-              (item: {
-                id: number;
-                title?: string;
-                original_title?: string;
-                poster_path: string | null;
-                vote_average: number;
-                vote_count: number;
-                release_date?: string;
-              }) => ({
-                type: 'movie' as const,
-                id: item.id,
-                title: item.title || item.original_title || '',
-                poster: item.poster_path
-                  ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
-                  : '/placeholder.jpg',
-                rating: item.vote_average,
-                voteCount: item.vote_count,
-                releaseDate: item.release_date,
-              })
-            ),
-        ];
+        const series: TrendingItem[] = (tvData.results || []).map(
+          (item: {
+            id: number;
+            name?: string;
+            original_name?: string;
+            poster_path: string | null;
+            vote_average: number;
+            vote_count: number;
+            first_air_date?: string;
+          }) => ({
+            type: 'series' as const,
+            id: item.id,
+            title: item.name || item.original_name || '',
+            poster: item.poster_path
+              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
+              : '/placeholder.jpg',
+            rating: item.vote_average,
+            voteCount: item.vote_count,
+            releaseDate: item.first_air_date,
+          })
+        );
 
-        combined.sort((a, b) => b.voteCount - a.voteCount);
-        const top20 = combined.slice(0, 20);
+        const movies: TrendingItem[] = (movieData.results || []).map(
+          (item: {
+            id: number;
+            title?: string;
+            original_title?: string;
+            poster_path: string | null;
+            vote_average: number;
+            vote_count: number;
+            release_date?: string;
+          }) => ({
+            type: 'movie' as const,
+            id: item.id,
+            title: item.title || item.original_title || '',
+            poster: item.poster_path
+              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
+              : '/placeholder.jpg',
+            rating: item.vote_average,
+            voteCount: item.vote_count,
+            releaseDate: item.release_date,
+          })
+        );
 
-        setItems(top20);
-        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ title: config.title, items: top20 }));
+        setRawSeries(series);
+        setRawMovies(movies);
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ title: config.title, series, movies }));
       } catch {
-        setItems([]);
+        setRawSeries([]);
+        setRawMovies([]);
       } finally {
         setLoading(false);
       }
@@ -210,6 +210,27 @@ export const useSeasonalRecommendations = () => {
 
     fetchSeasonal();
   }, [config.title, config.genres, config.keywords]);
+
+  const items = useMemo(() => {
+    const seriesIds = new Set(allSeriesList.map((s) => s.id));
+    const movieIds = new Set(movieList.map((m) => m.id));
+
+    const filteredSeries = rawSeries.filter((i) => !seriesIds.has(i.id));
+    const filteredMovies = rawMovies.filter((i) => !movieIds.has(i.id));
+
+    const targetEach = 10;
+    const sCount = Math.min(filteredSeries.length, targetEach);
+    const mCount = Math.min(filteredMovies.length, targetEach);
+    const seriesFinal = sCount + Math.min(filteredSeries.length - sCount, targetEach - mCount);
+    const movieFinal = mCount + Math.min(filteredMovies.length - mCount, targetEach - sCount);
+
+    const combined = [
+      ...filteredSeries.slice(0, seriesFinal),
+      ...filteredMovies.slice(0, movieFinal),
+    ];
+    combined.sort((a, b) => b.voteCount - a.voteCount);
+    return combined.slice(0, 20);
+  }, [rawSeries, rawMovies, allSeriesList, movieList]);
 
   return {
     items,

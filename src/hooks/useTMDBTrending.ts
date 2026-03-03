@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useMovieList } from '../contexts/MovieListProvider';
 
 interface TMDBTrendingItem {
   id: number;
@@ -24,7 +26,10 @@ interface TrendingItem {
 }
 
 export const useTMDBTrending = () => {
-  const [trending, setTrending] = useState<TrendingItem[]>([]);
+  const { allSeriesList } = useSeriesList();
+  const { movieList } = useMovieList();
+  const [rawSeries, setRawSeries] = useState<TrendingItem[]>([]);
+  const [rawMovies, setRawMovies] = useState<TrendingItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +37,6 @@ export const useTMDBTrending = () => {
       try {
         const apiKey = import.meta.env.VITE_API_TMDB;
 
-        // Fetch both TV and movie trending for the week
         const [tvResponse, movieResponse] = await Promise.all([
           fetch(
             `https://api.themoviedb.org/3/trending/tv/week?api_key=${apiKey}&language=de-DE&region=DE`
@@ -44,9 +48,8 @@ export const useTMDBTrending = () => {
 
         const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
 
-        // Combine and sort by popularity
-        const combinedItems: TrendingItem[] = [
-          ...tvData.results.slice(0, 10).map((item: TMDBTrendingItem) => ({
+        setRawSeries(
+          (tvData.results || []).map((item: TMDBTrendingItem) => ({
             type: 'series' as const,
             id: item.id,
             title: item.name || item.original_name,
@@ -56,8 +59,11 @@ export const useTMDBTrending = () => {
             rating: item.vote_average,
             voteCount: item.vote_count,
             releaseDate: item.first_air_date,
-          })),
-          ...movieData.results.slice(0, 10).map((item: TMDBTrendingItem) => ({
+          }))
+        );
+
+        setRawMovies(
+          (movieData.results || []).map((item: TMDBTrendingItem) => ({
             type: 'movie' as const,
             id: item.id,
             title: item.title || item.original_title,
@@ -67,15 +73,11 @@ export const useTMDBTrending = () => {
             rating: item.vote_average,
             voteCount: item.vote_count,
             releaseDate: item.release_date,
-          })),
-        ];
-
-        // Sort by vote count (popularity) and take top 20
-        combinedItems.sort((a, b) => b.voteCount - a.voteCount);
-        setTrending(combinedItems.slice(0, 20));
-      } catch (error) {
-        // console.error('Error fetching trending:', error);
-        setTrending([]);
+          }))
+        );
+      } catch {
+        setRawSeries([]);
+        setRawMovies([]);
       } finally {
         setLoading(false);
       }
@@ -83,6 +85,27 @@ export const useTMDBTrending = () => {
 
     fetchTrending();
   }, []);
+
+  const trending = useMemo(() => {
+    const seriesIds = new Set(allSeriesList.map((s) => s.id));
+    const movieIds = new Set(movieList.map((m) => m.id));
+
+    const filteredSeries = rawSeries.filter((i) => !seriesIds.has(i.id));
+    const filteredMovies = rawMovies.filter((i) => !movieIds.has(i.id));
+
+    const targetEach = 10;
+    const sCount = Math.min(filteredSeries.length, targetEach);
+    const mCount = Math.min(filteredMovies.length, targetEach);
+    const seriesFinal = sCount + Math.min(filteredSeries.length - sCount, targetEach - mCount);
+    const movieFinal = mCount + Math.min(filteredMovies.length - mCount, targetEach - sCount);
+
+    const combined = [
+      ...filteredSeries.slice(0, seriesFinal),
+      ...filteredMovies.slice(0, movieFinal),
+    ];
+    combined.sort((a, b) => b.voteCount - a.voteCount);
+    return combined.slice(0, 20);
+  }, [rawSeries, rawMovies, allSeriesList, movieList]);
 
   return { trending, loading };
 };

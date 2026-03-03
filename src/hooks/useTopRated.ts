@@ -1,10 +1,10 @@
 import { useMemo, useRef } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../contexts/MovieListProvider';
+import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { calculateOverallRating } from '../lib/rating/rating';
-import { getImageUrl } from '../utils/imageUrl';
-import type { Series } from '../types/Series';
 import type { Movie } from '../types/Movie';
+import type { Series } from '../types/Series';
+import { getImageUrl } from '../utils/imageUrl';
 
 interface TopRatedItem {
   type: 'series' | 'movie';
@@ -43,7 +43,7 @@ export const useTopRated = () => {
 
     ratedSeries.sort((a, b) => b.rating - a.rating);
 
-    for (let i = 0; i < Math.min(5, ratedSeries.length); i++) {
+    for (let i = 0; i < Math.min(10, ratedSeries.length); i++) {
       const { item: series, rating } = ratedSeries[i];
       items.push({
         type: 'series',
@@ -66,7 +66,7 @@ export const useTopRated = () => {
 
     ratedMovies.sort((a, b) => b.rating - a.rating);
 
-    for (let i = 0; i < Math.min(5, ratedMovies.length); i++) {
+    for (let i = 0; i < Math.min(10, ratedMovies.length); i++) {
       const { item: movie, rating } = ratedMovies[i];
       items.push({
         type: 'movie',
@@ -78,7 +78,7 @@ export const useTopRated = () => {
     }
 
     items.sort((a, b) => b.rating - a.rating);
-    const result = items.slice(0, 10);
+    const result = items.slice(0, 20);
     cacheRef.current = { items: result, deps: depsString };
     return result;
   }, [seriesList, movieList]);
