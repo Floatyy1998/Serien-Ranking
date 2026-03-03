@@ -66,9 +66,9 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
     }
   };
 
-  // 83px navbar + 24px spacing = 107px with nav, 24px without
-  const baseBottom = hasNav ? 107 : 24;
-  const bottom = `calc(${baseBottom + bottomOffset}px + env(safe-area-inset-bottom))`;
+  // navbar (~60px) + bottom offset (12px) + spacing (16px) = 88px with nav
+  const baseBottom = hasNav ? 88 : 24;
+  const bottom = `${baseBottom + bottomOffset}px`;
 
   return (
     <AnimatePresence>
