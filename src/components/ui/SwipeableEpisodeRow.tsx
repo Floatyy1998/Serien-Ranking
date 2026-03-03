@@ -95,7 +95,10 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
 
     const background = isCompleting
       ? `linear-gradient(90deg, ${accentColor}33, ${accentColor}0D)`
-      : (staticBackground ?? `${accentColor}${bgOpacityHex}`);
+      : (staticBackground ??
+        (dragOffset
+          ? `${accentColor}${bgOpacityHex}`
+          : 'var(--theme-surface, rgba(255,255,255,0.05))'));
 
     const border = `1px solid ${
       isCompleting ? `${accentColor}80` : (staticBorder ?? `${accentColor}${borderOpacityHex}`)

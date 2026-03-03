@@ -240,19 +240,6 @@ export function normalizeThemeColors(config: {
     /* ignore */
   }
 
-  // 4. Surface muss mindestens 3% heller sein als Background
-  if (surfaceColor) {
-    try {
-      const bgHsl = hexToHsl(backgroundColor);
-      const surfHsl = hexToHsl(surfaceColor);
-      if (surfHsl.l - bgHsl.l < 3) {
-        surfaceColor = hslToHex(surfHsl.h, surfHsl.s, bgHsl.l + 4);
-      }
-    } catch {
-      /* ignore */
-    }
-  }
-
   return { ...config, primaryColor, backgroundColor, surfaceColor, accentColor };
 }
 

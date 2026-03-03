@@ -127,7 +127,9 @@ export const EpisodeCard = React.memo(
               ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
               : episode.isRewatch
                 ? `${theme.status.warning}0D`
-                : `rgba(76, 209, 55, ${Math.min((Math.abs(dragOffset) / 100) * 0.15, 0.15)})`,
+                : dragOffset
+                  ? `rgba(76, 209, 55, ${Math.min((Math.abs(dragOffset) / 100) * 0.15, 0.15)})`
+                  : 'var(--theme-surface, rgba(255,255,255,0.05))',
             border: `1px solid ${
               isCompleting
                 ? 'rgba(76, 209, 55, 0.5)'
