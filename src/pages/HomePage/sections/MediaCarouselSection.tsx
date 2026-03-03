@@ -92,6 +92,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     marginBottom: '6px',
                     borderRadius: '12px',
                     overflow: 'hidden',
+                    isolation: 'isolate',
                   }}
                 >
                   <img
@@ -124,7 +125,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                   <span
                     style={{
                       position: 'absolute',
-                      bottom: '-4px',
+                      bottom: '0',
                       left: '6px',
                       fontSize: isMobile ? '48px' : '72px',
                       fontWeight: 900,
@@ -219,19 +220,31 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
               key={`${variant}-${item.type}-${item.id}`}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(`/${item.type}/${item.id}`)}
-              style={{ flexShrink: 0, cursor: 'pointer', width: cardWidth }}
+              style={{
+                flexShrink: 0,
+                flexGrow: 0,
+                cursor: 'pointer',
+                width: cardWidth,
+                maxWidth: cardWidth,
+              }}
             >
-              <div style={{ position: 'relative', marginBottom: '6px' }}>
+              <div
+                style={{
+                  position: 'relative',
+                  marginBottom: '6px',
+                  isolation: 'isolate',
+                }}
+              >
                 <img
                   src={item.poster}
                   alt={item.title}
                   decoding="async"
                   style={{
-                    width: cardWidth,
+                    width: '100%',
                     aspectRatio: '2/3',
                     objectFit: 'cover',
-                    borderRadius: '10px',
                     display: 'block',
+                    borderRadius: '10px',
                   }}
                 />
 
