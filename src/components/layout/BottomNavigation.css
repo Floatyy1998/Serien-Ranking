@@ -2,7 +2,6 @@
 .mobile-bottom-navigation {
   position: fixed;
   bottom: 12px;
-  bottom: calc(12px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
