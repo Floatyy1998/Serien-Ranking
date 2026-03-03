@@ -3,15 +3,18 @@
   position: fixed;
   bottom: 12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
-  left: 16px;
-  right: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
   z-index: 1000;
-  background: rgba(10, 14, 26, 0.92);
-  backdrop-filter: blur(40px) saturate(1.6);
-  -webkit-backdrop-filter: blur(40px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--theme-surface, #0e1420) 55%, transparent);
+  backdrop-filter: blur(50px) saturate(1.8);
+  -webkit-backdrop-filter: blur(50px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 22px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.06);
 }
 
 .nav-container {
@@ -114,13 +117,10 @@
   animation: pulse 2s infinite;
 }
 
-/* Tablet adjustments */
+/* Tablet/Desktop - still 90% but cap at a reasonable max */
 @media (min-width: 768px) {
   .mobile-bottom-navigation {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: 420px;
-    max-width: calc(100% - 32px);
+    width: 90%;
+    max-width: 1200px;
   }
 }
