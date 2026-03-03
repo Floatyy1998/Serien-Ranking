@@ -13,6 +13,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { staggerContainerFast, staggerItemFast } from '../../lib/motion';
 import { ItemCard } from './DiscoverItemCard';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
@@ -116,14 +117,14 @@ export const DiscoverPage = memo(() => {
           left: 0,
           right: 0,
           zIndex: 100,
-          background: `${currentTheme.background.default}f0`,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          background: `${currentTheme.background.default}e8`,
+          backdropFilter: 'blur(28px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
         }}
       >
         <div
           style={{
-            background: `linear-gradient(180deg, ${currentTheme.primary}20 0%, transparent 100%)`,
+            background: `linear-gradient(180deg, ${currentTheme.primary}15 0%, transparent 100%)`,
           }}
         >
           {/* Premium Header */}
@@ -225,13 +226,16 @@ export const DiscoverPage = memo(() => {
                   style={{
                     width: '100%',
                     padding: '14px 16px',
-                    background: currentTheme.background.surface,
-                    border: `1px solid ${currentTheme.border.default}`,
+                    background:
+                      'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
+                    border: `1px solid rgba(255, 255, 255, 0.06)`,
                     borderRadius: '14px',
                     color: currentTheme.text.primary,
                     fontSize: '15px',
                     outline: 'none',
-                    transition: 'border-color 0.2s ease',
+                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
                   }}
                 />
               </motion.div>
@@ -273,11 +277,11 @@ export const DiscoverPage = memo(() => {
                     style={{
                       padding: '10px 4px',
                       background: isActive
-                        ? `linear-gradient(135deg, ${cat.color}30, ${cat.color}10)`
-                        : currentTheme.background.surface,
+                        ? `linear-gradient(135deg, ${cat.color}25, ${cat.color}0a)`
+                        : 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
                       border: isActive
-                        ? `1px solid ${cat.color}50`
-                        : `1px solid ${currentTheme.border.default}`,
+                        ? `1px solid ${cat.color}40`
+                        : `1px solid rgba(255, 255, 255, 0.05)`,
                       borderRadius: '12px',
                       color: isActive ? cat.color : currentTheme.text.secondary,
                       cursor: 'pointer',
@@ -285,7 +289,8 @@ export const DiscoverPage = memo(() => {
                       flexDirection: 'column',
                       alignItems: 'center',
                       gap: '4px',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                      boxShadow: isActive ? `0 4px 16px -4px ${cat.color}20` : 'none',
                     }}
                   >
                     <Icon style={{ fontSize: '20px' }} />
@@ -452,7 +457,10 @@ export const DiscoverPage = memo(() => {
                 >
                   Basierend auf deiner Liste
                 </p>
-                <div
+                <motion.div
+                  variants={staggerContainerFast}
+                  initial="hidden"
+                  animate="visible"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: isDesktop
@@ -464,17 +472,18 @@ export const DiscoverPage = memo(() => {
                   }}
                 >
                   {recommendations.map((item) => (
-                    <ItemCard
-                      key={`rec-${item.type}-${item.id}`}
-                      item={item}
-                      onItemClick={handleItemClick}
-                      onAddToList={addToList}
-                      addingItem={addingItem}
-                      currentTheme={currentTheme}
-                      isDesktop={isDesktop}
-                    />
+                    <motion.div key={`rec-${item.type}-${item.id}`} variants={staggerItemFast}>
+                      <ItemCard
+                        item={item}
+                        onItemClick={handleItemClick}
+                        onAddToList={addToList}
+                        addingItem={addingItem}
+                        currentTheme={currentTheme}
+                        isDesktop={isDesktop}
+                      />
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
             )
           ) : showSearch ? (
@@ -530,7 +539,10 @@ export const DiscoverPage = memo(() => {
                   </p>
                 </motion.div>
               ) : (
-                <div
+                <motion.div
+                  variants={staggerContainerFast}
+                  initial="hidden"
+                  animate="visible"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: isDesktop
@@ -542,21 +554,26 @@ export const DiscoverPage = memo(() => {
                   }}
                 >
                   {searchResults.map((item) => (
-                    <ItemCard
-                      key={`search-${item.type}-${item.id}`}
-                      item={item}
-                      onItemClick={handleItemClick}
-                      onAddToList={addToList}
-                      addingItem={addingItem}
-                      currentTheme={currentTheme}
-                      isDesktop={isDesktop}
-                    />
+                    <motion.div key={`search-${item.type}-${item.id}`} variants={staggerItemFast}>
+                      <ItemCard
+                        item={item}
+                        onItemClick={handleItemClick}
+                        onAddToList={addToList}
+                        addingItem={addingItem}
+                        currentTheme={currentTheme}
+                        isDesktop={isDesktop}
+                      />
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </div>
           ) : (
-            <div
+            <motion.div
+              variants={staggerContainerFast}
+              initial="hidden"
+              animate="visible"
+              key={`grid-${activeCategory}`}
               style={{
                 display: 'grid',
                 gridTemplateColumns: isDesktop
@@ -568,17 +585,18 @@ export const DiscoverPage = memo(() => {
               }}
             >
               {results.map((item) => (
-                <ItemCard
-                  key={`${item.type}-${item.id}`}
-                  item={item}
-                  onItemClick={handleItemClick}
-                  onAddToList={addToList}
-                  addingItem={addingItem}
-                  currentTheme={currentTheme}
-                  isDesktop={isDesktop}
-                />
+                <motion.div key={`${item.type}-${item.id}`} variants={staggerItemFast}>
+                  <ItemCard
+                    item={item}
+                    onItemClick={handleItemClick}
+                    onAddToList={addToList}
+                    addingItem={addingItem}
+                    currentTheme={currentTheme}
+                    isDesktop={isDesktop}
+                  />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {/* Premium Loading indicator */}
@@ -612,7 +630,7 @@ export const DiscoverPage = memo(() => {
               color: 'white',
               padding: '14px 24px',
               borderRadius: '16px',
-              boxShadow: `0 8px 24px ${currentTheme.status.success}50`,
+              boxShadow: `0 12px 40px -8px ${currentTheme.status.success}50, 0 4px 12px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)`,
               zIndex: 1000,
               display: 'flex',
               alignItems: 'center',

@@ -22,6 +22,11 @@
   display: flex;
   align-items: center;
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease;
+}
+
+.cal-arrow-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .cal-arrow-btn:active {
@@ -31,7 +36,7 @@
 .cal-week-chip {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 12px;
   color: inherit;
   padding: 6px 14px;
   font-size: 14px;
@@ -57,13 +62,17 @@
   font-size: 13px;
   font-weight: 600;
   padding: 5px 14px;
-  border-radius: 8px;
+  border-radius: 9999px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+}
+
+.cal-filter-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .cal-filter-chip:active {
@@ -122,6 +131,18 @@
 
 .cal-day.is-today {
   border-top-color: rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.cal-day.is-today::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-primary, #00fed7), transparent);
+  opacity: 0.5;
 }
 
 /* Day label row */
@@ -193,11 +214,20 @@
   gap: 12px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-left: 3px solid transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.cal-ep:hover {
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .cal-ep:active {
@@ -216,8 +246,9 @@
   height: 54px;
   object-fit: cover;
   object-position: center top;
-  border-radius: 8px;
+  border-radius: 10px;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .cal-ep-poster {

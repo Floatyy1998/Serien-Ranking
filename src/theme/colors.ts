@@ -5,24 +5,24 @@ export const colors = {
   primaryHover: 'var(--theme-primary-hover, #00e6c3)',
   primaryDark: 'var(--theme-primary-hover, #00d4b4)',
 
-  // Hintergrundfarben (Soft Dark)
+  // Hintergrundfarben (Cinematic Dark)
   background: {
-    default: 'var(--theme-background, #0a0e1a)',
-    paper: 'var(--theme-background, #0a0e1a)',
-    dialog: 'var(--theme-background, #0e1220)',
-    card: 'var(--theme-background, #0a0e1a)',
-    cardHover: 'rgba(255, 255, 255, 0.05)',
-    cardFocused: 'rgba(255, 255, 255, 0.08)',
+    default: 'var(--theme-background, #06090f)',
+    paper: 'var(--theme-background, #06090f)',
+    dialog: 'var(--theme-background, #0a0f1a)',
+    card: 'var(--theme-background, #06090f)',
+    cardHover: 'rgba(255, 255, 255, 0.04)',
+    cardFocused: 'rgba(255, 255, 255, 0.07)',
     cardGradient:
-      'linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
-    input: 'var(--theme-background, #080c16)',
-    loading: 'var(--theme-background, #0a0e1a)',
-    surface: 'var(--theme-surface, #141926)',
-    surfaceElevated: 'var(--theme-surface-elevated, #1a2030)',
-    surfaceHover: 'var(--theme-surface, #1e2538)',
+      'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%)',
+    input: 'var(--theme-background, #050810)',
+    loading: 'var(--theme-background, #06090f)',
+    surface: 'var(--theme-surface, #0e1420)',
+    surfaceElevated: 'var(--theme-surface-elevated, #151d2e)',
+    surfaceHover: 'var(--theme-surface, #1a2538)',
     gradient: {
-      dark: 'linear-gradient(135deg, #0a0e1a 0%, #0e1220 100%)',
-      light: 'linear-gradient(135deg, #0e1220 0%, #141926 100%)',
+      dark: 'linear-gradient(135deg, #06090f 0%, #0a0f1a 100%)',
+      light: 'linear-gradient(135deg, #0a0f1a 0%, #0e1420 100%)',
     },
   },
 
@@ -51,11 +51,11 @@ export const colors = {
 
   // Border und Linien
   border: {
-    default: '#404040',
+    default: '#2a2a3a',
     primary: 'var(--theme-primary, #00fed7)',
     light: 'color-mix(in srgb, var(--theme-primary, #00fed7) 8%, transparent)',
     lighter: 'color-mix(in srgb, var(--theme-primary, #00fed7) 5%, transparent)',
-    subtle: 'rgba(255, 255, 255, 0.1)',
+    subtle: 'rgba(255, 255, 255, 0.08)',
   },
 
   // Transparente Overlays
@@ -67,16 +67,16 @@ export const colors = {
     black: 'rgba(0, 0, 0, 0.2)',
   },
 
-  // Schatten (weich, mehrstufig)
+  // Schatten (cinematisch, tiefere Kontraste)
   shadow: {
-    card: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-    dialog: '0 16px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 24px -8px rgba(0, 0, 0, 0.4)',
-    hover: '0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3)',
+    card: '0 4px 20px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -2px rgba(0, 0, 0, 0.35)',
+    dialog: '0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 8px 24px -8px rgba(0, 0, 0, 0.5)',
+    hover: '0 8px 40px -8px rgba(0, 0, 0, 0.6), 0 4px 16px -4px rgba(0, 0, 0, 0.4)',
     focus: '0 0 0 3px color-mix(in srgb, var(--theme-primary, #00fed7) 20%, transparent)',
-    button: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2)',
-    buttonHover: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-    error: '0 4px 16px -4px rgba(255, 68, 68, 0.3)',
-    light: '0 4px 16px -4px rgba(255, 255, 255, 0.08)',
+    button: '0 2px 8px -2px rgba(0, 0, 0, 0.35), 0 1px 3px -1px rgba(0, 0, 0, 0.25)',
+    buttonHover: '0 4px 20px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -2px rgba(0, 0, 0, 0.35)',
+    error: '0 4px 20px -4px rgba(255, 68, 68, 0.35)',
+    light: '0 4px 16px -4px rgba(255, 255, 255, 0.06)',
   },
 
   // Button-Farben (simplified for solid colors)

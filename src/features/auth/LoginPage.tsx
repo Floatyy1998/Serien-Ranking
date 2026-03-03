@@ -58,7 +58,7 @@ export const LoginPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'var(--theme-bg-default, #0a0e1a)',
+        background: 'var(--theme-bg-default, #06090f)',
         position: 'relative',
         overflow: 'hidden',
       }}

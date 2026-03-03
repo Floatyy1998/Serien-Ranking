@@ -108,6 +108,14 @@
   font-size: 32px;
   font-weight: 800;
   margin-bottom: 4px;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary, #00fed7),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .profile-stats-time-label {
@@ -124,6 +132,12 @@
   padding: 14px 12px;
   border-radius: 14px;
   text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s ease;
+}
+
+.profile-stat-item:hover {
+  transform: scale(1.03);
 }
 
 .profile-stat-icon {
@@ -170,6 +184,17 @@
   padding: 16px;
   border-radius: 16px;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.profile-featured-item:hover {
+  transform: translateX(4px);
+}
+
+.profile-featured-item:active {
+  transform: scale(0.98);
 }
 
 .profile-featured-item-left {
@@ -213,6 +238,21 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.profile-menu-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.profile-menu-item:active {
+  transform: scale(0.98);
+}
+
+.profile-menu-item + .profile-menu-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .profile-menu-item-left {
@@ -277,4 +317,15 @@
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.profile-logout-btn:hover {
+  box-shadow: 0 0 20px rgba(255, 68, 68, 0.2);
+}
+
+.profile-logout-btn:active {
+  transform: scale(0.98);
 }

@@ -3,7 +3,6 @@ import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../components/Discussion';
-import { getFormattedDate } from '../../lib/date/date.utils';
 import { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 
 interface EpisodeCardProps {
@@ -122,7 +121,8 @@ export const EpisodeCard = React.memo(
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            minHeight: '75px',
+            gap: '12px',
             background: isCompleting
               ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
               : episode.isRewatch
@@ -137,8 +137,10 @@ export const EpisodeCard = React.memo(
                     ? `${theme.status.warning}4D`
                     : `rgba(76, 209, 55, ${0.2 + Math.min((Math.abs(dragOffset) / 100) * 0.3, 0.3)})`
             }`,
-            borderRadius: '10px',
-            padding: isDragTarget ? '7px' : '8px',
+            borderRadius: '14px',
+            padding: isDragTarget ? '11px' : '12px',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             cursor: isEditMode ? 'move' : 'pointer',
             opacity: isDragged ? 0.6 : 1,
             transform: isDragged ? 'scale(1.05)' : isDragTarget ? 'scale(1.02)' : 'scale(1)',
@@ -146,7 +148,7 @@ export const EpisodeCard = React.memo(
               ? `0 8px 24px ${theme.primary}40`
               : isDragTarget
                 ? `0 4px 12px ${theme.primary}30`
-                : 'none',
+                : '0 2px 12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)',
             transition: 'all 0.2s ease',
             position: 'relative',
             overflow: 'hidden',
@@ -194,13 +196,15 @@ export const EpisodeCard = React.memo(
               )
             }
             style={{
-              width: '48px',
-              height: '72px',
+              width: '50px',
+              height: '75px',
               objectFit: 'cover',
-              borderRadius: '6px',
+              borderRadius: '10px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
               cursor: 'pointer',
               position: 'relative',
               zIndex: 2,
+              flexShrink: 0,
             }}
           />
 
@@ -208,6 +212,7 @@ export const EpisodeCard = React.memo(
           <div
             style={{
               flex: 1,
+              minWidth: 0,
               pointerEvents: isEditMode ? 'auto' : 'none',
               position: 'relative',
               zIndex: 2,
@@ -220,86 +225,76 @@ export const EpisodeCard = React.memo(
               }
             }}
           >
-            <h2 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 2px 0' }}>
+            <h2
+              style={{
+                fontSize: '15px',
+                fontWeight: 600,
+                margin: '0 0 2px 0',
+              }}
+            >
               {episode.seriesTitle}
             </h2>
             <p
               style={{
                 fontSize: '14px',
                 fontWeight: 500,
-                margin: '0 0 2px 0',
+                margin: 0,
                 color: episode.isRewatch ? theme.status.warning : theme.status.success,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
               }}
             >
               S{(episode.seasonNumber ?? 0) + 1} E{episode.episodeNumber}
-              {episode.isRewatch &&
-                ` \u2022 ${episode.currentWatchCount}x \u2192 ${episode.targetWatchCount}x`}
+              {episode.isRewatch
+                ? ` \u2022 ${episode.currentWatchCount}x \u2192 ${episode.targetWatchCount}x`
+                : episode.episodeName
+                  ? ` \u2022 ${episode.episodeName}`
+                  : ''}
             </p>
-            <p style={{ fontSize: '13px', margin: 0, color: theme.text.muted }}>
-              {episode.episodeName}
+            <p
+              style={{
+                fontSize: '12px',
+                margin: '2px 0 0 0',
+                color: theme.text.muted,
+              }}
+            >
+              {episode.remainingEpisodes > 0
+                ? `${episode.currentSeasonOf} \u00b7 ${episode.remainingEpisodes} \u00fcbrig${
+                    episode.estimatedMinutesLeft >= 60
+                      ? ` \u00b7 ~${Math.round(episode.estimatedMinutesLeft / 60)}h`
+                      : episode.estimatedMinutesLeft > 0
+                        ? ` \u00b7 ~${episode.estimatedMinutesLeft}min`
+                        : ''
+                  }`
+                : episode.isRewatch
+                  ? episode.currentSeasonOf
+                  : 'Wartet auf neue Folgen'}
             </p>
-            {episode.airDate && (
-              <p style={{ fontSize: '12px', margin: '4px 0 0 0', color: theme.text.muted }}>
-                {getFormattedDate(episode.airDate)}
-              </p>
-            )}
-
             {/* Progress bar */}
-            {episode.totalAiredEpisodes > 0 && (
-              <div style={{ marginTop: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div
-                    style={{
-                      flex: 1,
-                      height: '3px',
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      borderRadius: '2px',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${episode.progress}%`,
-                        height: '100%',
-                        background: episode.progress >= 90 ? theme.status.success : theme.primary,
-                        borderRadius: '2px',
-                        transition: 'width 0.3s ease',
-                      }}
-                    />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      color: theme.text.muted,
-                      fontWeight: 600,
-                      minWidth: '28px',
-                      textAlign: 'right',
-                    }}
-                  >
-                    {episode.progress}%
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: '12px',
-                    margin: '2px 0 0 0',
-                    color: theme.text.muted,
-                  }}
-                >
-                  {episode.remainingEpisodes > 0
-                    ? `${episode.currentSeasonOf} \u00b7 ${episode.remainingEpisodes} \u00fcbrig${
-                        episode.estimatedMinutesLeft >= 60
-                          ? ` \u00b7 ~${Math.round(episode.estimatedMinutesLeft / 60)}h`
-                          : episode.estimatedMinutesLeft > 0
-                            ? ` \u00b7 ~${episode.estimatedMinutesLeft}min`
-                            : ''
-                      }`
-                    : episode.isRewatch
-                      ? episode.currentSeasonOf
-                      : 'Wartet auf neue Folgen'}
-                </p>
-              </div>
-            )}
+            <div
+              style={{
+                marginTop: '6px',
+                height: '4px',
+                background: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: '2px',
+                overflow: 'hidden',
+                position: 'relative',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  height: '100%',
+                  width: `${episode.progress}%`,
+                  background: `linear-gradient(90deg, ${theme.primary}, ${theme.status.success})`,
+                  transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              />
+            </div>
           </div>
 
           {/* Drag handle in edit mode */}

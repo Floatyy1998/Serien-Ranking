@@ -28,7 +28,7 @@ export default defineConfig({
         name: 'Serien Tracker',
         short_name: 'Serien',
         theme_color: '#8b5cf6',
-        background_color: '#0a0e1a',
+        background_color: '#06090f',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

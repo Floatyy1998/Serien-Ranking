@@ -123,15 +123,22 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                           fontSize: '15px',
                           fontWeight: 600,
                           margin: '0 0 2px 0',
-                          overflow: 'hidden',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
                         }}
                       >
                         {item.title}
                       </h3>
-                      <p style={{ fontSize: '13px', margin: 0, color: accentColor }}>
+                      <p
+                        style={{
+                          fontSize: '14px',
+                          margin: 0,
+                          color: accentColor,
+                          fontWeight: 500,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
                         S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
                         {item.nextEpisode.name}
                       </p>
@@ -148,10 +155,10 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                       )}
                       <div
                         style={{
-                          marginTop: '4px',
-                          height: '3px',
+                          marginTop: '6px',
+                          height: '4px',
                           background: currentTheme.border.default,
-                          borderRadius: '1.5px',
+                          borderRadius: '2px',
                           overflow: 'hidden',
                           position: 'relative',
                         }}

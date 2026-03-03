@@ -3,7 +3,6 @@ import {
   ExpandLess,
   ExpandMore,
   Movie,
-  Schedule,
   Star,
   Stream,
   Timer,
@@ -11,8 +10,10 @@ import {
   Tv,
 } from '@mui/icons-material';
 import { Box, Collapse, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
@@ -36,34 +37,47 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
     onClick={onClick}
     sx={{
       p: 2,
-      background: 'rgba(255, 255, 255, 0.04)',
-      border: '1px solid rgba(255, 255, 255, 0.08)',
+      background:
+        'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%)',
+      border: '1px solid rgba(255, 255, 255, 0.06)',
       borderRadius: 3,
       position: 'relative',
       overflow: 'hidden',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       cursor: onClick ? 'pointer' : 'default',
       '&:active': {
-        transform: 'scale(0.98)',
+        transform: 'scale(0.97)',
       },
       '&:hover': onClick
         ? {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+            transform: 'translateY(-3px)',
+            boxShadow: `0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 0 20px -5px ${color}18`,
+            borderColor: `${color}25`,
           }
         : {},
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: '10%',
+        right: '10%',
+        height: '1px',
+        background: `linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent)`,
+        pointerEvents: 'none',
+      },
     }}
   >
+    {/* Ambient color glow */}
     <Box
       sx={{
         position: 'absolute',
-        top: -20,
-        right: -20,
-        width: 80,
-        height: 80,
+        top: -25,
+        right: -25,
+        width: 90,
+        height: 90,
         borderRadius: '50%',
-        background: `${color}15`,
-        filter: 'blur(20px)',
+        background: `radial-gradient(circle, ${color}18 0%, transparent 70%)`,
+        filter: 'blur(25px)',
       }}
     />
 
@@ -72,12 +86,13 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
         sx={{
           width: 36,
           height: 36,
-          borderRadius: 1.5,
-          background: `${color}20`,
+          borderRadius: 2,
+          background: `linear-gradient(135deg, ${color}1a 0%, ${color}0a 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: color,
+          border: `1px solid ${color}15`,
         }}
       >
         {icon}
@@ -92,6 +107,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
         color: colors.text.secondary,
         fontSize: '1.3rem',
         mb: 0.5,
+        letterSpacing: '-0.02em',
       }}
     >
       {value}
@@ -103,7 +119,8 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
         color: colors.text.muted,
         fontSize: '0.7rem',
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.8,
+        opacity: 0.7,
       }}
     >
       {label}
@@ -117,6 +134,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
           color: color,
           fontSize: '0.65rem',
           mt: 0.5,
+          opacity: 0.8,
         }}
       >
         {subValue}
@@ -484,6 +502,16 @@ export const StatsGrid = () => {
     navigate('/watchlist');
   };
 
+  const progressPct =
+    stats.totalEpisodes > 0 ? Math.round((stats.watchedEpisodes / stats.totalEpisodes) * 100) : 0;
+
+  // Circular ring SVG params
+  const ringSize = 80;
+  const ringStroke = 5;
+  const ringRadius = (ringSize - ringStroke) / 2;
+  const ringCircumference = ringRadius * 2 * Math.PI;
+  const ringOffset = ringCircumference - (progressPct / 100) * ringCircumference;
+
   return (
     <Box>
       {/* Header with expand button */}
@@ -520,190 +548,244 @@ export const StatsGrid = () => {
         </Tooltip>
       </Box>
 
-      {/* Progress Bar - Full Width */}
-      <Paper
-        sx={{
-          p: 2,
-          background: 'rgba(255, 255, 255, 0.04)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: 3,
-          mb: 2,
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+      {/* Bento Grid: Progress Ring (2 rows left) + Stat Tiles (right) */}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: 'auto auto',
+          gap: '12px',
+          marginBottom: expanded ? '12px' : 0,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-          <Box
+        {/* Progress Ring - spans 2 rows on left */}
+        <motion.div variants={staggerItem} style={{ gridRow: '1 / 3' }}>
+          <Paper
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: 1.5,
-              background: `${colors.primary}20`,
+              p: 2,
+              height: '100%',
+              background:
+                'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: 3,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              color: colors.primary,
+              gap: 1,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '10%',
+                right: '10%',
+                height: '1px',
+                background:
+                  'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent)',
+                pointerEvents: 'none',
+              },
             }}
           >
-            <Schedule sx={{ fontSize: 20 }} />
-          </Box>
-          <Typography
-            sx={{ fontSize: '0.7rem', textTransform: 'uppercase', color: colors.text.muted }}
-          >
-            Dein Episoden-Fortschritt
-          </Typography>
-        </Box>
+            {/* Circular Progress Ring */}
+            <Box sx={{ position: 'relative', width: ringSize, height: ringSize }}>
+              <svg width={ringSize} height={ringSize}>
+                <defs>
+                  <linearGradient id="stats-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={currentTheme.primary || colors.primary} />
+                    <stop
+                      offset="100%"
+                      stopColor={currentTheme.status?.success || colors.status.success}
+                    />
+                  </linearGradient>
+                </defs>
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={ringRadius}
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.06)"
+                  strokeWidth={ringStroke}
+                />
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={ringRadius}
+                  fill="none"
+                  stroke="url(#stats-ring-grad)"
+                  strokeWidth={ringStroke}
+                  strokeLinecap="round"
+                  strokeDasharray={ringCircumference}
+                  strokeDashoffset={ringOffset}
+                  style={{
+                    transform: 'rotate(-90deg)',
+                    transformOrigin: 'center',
+                    transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                  }}
+                />
+              </svg>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '1.1rem',
+                    fontWeight: 800,
+                    fontFamily: 'var(--font-display)',
+                    background: `linear-gradient(135deg, ${currentTheme.primary || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  {progressPct}%
+                </Typography>
+              </Box>
+            </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography
-            sx={{ fontSize: '1.2rem', fontWeight: 700, fontFamily: 'var(--font-display)' }}
-          >
-            {stats.watchedEpisodes.toLocaleString('de-DE')}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: '1.2rem',
-              fontWeight: 700,
-              fontFamily: 'var(--font-display)',
-              color: colors.text.muted,
-            }}
-          >
-            {stats.totalEpisodes.toLocaleString('de-DE')}
-          </Typography>
-        </Box>
+            <Typography
+              sx={{
+                fontSize: '0.65rem',
+                color: colors.text.muted,
+                textAlign: 'center',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              {stats.watchedEpisodes.toLocaleString('de-DE')} /{' '}
+              {stats.totalEpisodes.toLocaleString('de-DE')}
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: '0.6rem',
+                color: colors.text.muted,
+                textAlign: 'center',
+                opacity: 0.7,
+              }}
+            >
+              Episoden
+            </Typography>
+          </Paper>
+        </motion.div>
 
-        <Box
-          sx={{
-            position: 'relative',
-            height: 8,
-            background: colors.border.subtle,
-            borderRadius: 1,
-            overflow: 'hidden',
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              height: '100%',
-              width: `${stats.totalEpisodes > 0 ? (stats.watchedEpisodes / stats.totalEpisodes) * 100 : 0}%`,
-              background: `linear-gradient(90deg, ${currentTheme.primary || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
-              transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          />
-        </Box>
-
-        <Typography sx={{ fontSize: '0.65rem', color: colors.text.muted, mt: 1 }}>
-          {stats.totalEpisodes > 0
-            ? `${Math.round((stats.watchedEpisodes / stats.totalEpisodes) * 100)}% geschafft • Noch ${(stats.totalEpisodes - stats.watchedEpisodes).toLocaleString('de-DE')} Episoden vor dir`
-            : 'Keine Episoden'}
-        </Typography>
-      </Paper>
-
-      {/* Primary 2 Stats (Always visible) */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 1.5,
-          mb: expanded ? 1.5 : 0,
-        }}
-      >
-        <StatCard
-          icon={<Tv sx={{ fontSize: 20 }} />}
-          label="Serien"
-          value={stats.totalSeries}
-          color={colors.primary}
-          subValue={
-            stats.completedSeries > 0
-              ? `${stats.completedSeries} von ${stats.totalSeries} komplett`
-              : 'In deiner Sammlung'
-          }
-          onClick={handleSeriesClick}
-        />
-
-        <StatCard
-          icon={<Movie sx={{ fontSize: 20 }} />}
-          label="Filme"
-          value={stats.totalMovies}
-          color={colors.text.accent}
-          subValue={`${stats.watchedMovies} von ${stats.totalMovies} geschaut`}
-          onClick={handleMoviesClick}
-        />
-      </Box>
-
-      {/* Extended Stats (Collapsible) - Better organized */}
-      <Collapse in={expanded}>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 1.5,
-          }}
-        >
-          {/* Watchzeit Details */}
-          <StatCard
-            icon={<Timer sx={{ fontSize: 20 }} />}
-            label="Gesamte Watchzeit"
-            value={stats.timeString}
-            color={colors.status.warning}
-          />
-
-          <StatCard
-            icon={<TrendingUp sx={{ fontSize: 20 }} />}
-            label="Diese Woche"
-            value={`${stats.lastWeekWatched} Episoden`}
-            color={colors.status.success}
-            subValue="neu geschaut"
-            onClick={handleWeeklyEpisodesClick}
-          />
-
+        {/* Serien tile - top right */}
+        <motion.div variants={staggerItem}>
           <StatCard
             icon={<Tv sx={{ fontSize: 20 }} />}
-            label="Zeit mit Serien"
-            value={stats.seriesTimeString}
+            label="Serien"
+            value={stats.totalSeries}
             color={colors.primary}
+            subValue={stats.completedSeries > 0 ? `${stats.completedSeries} komplett` : undefined}
+            onClick={handleSeriesClick}
           />
+        </motion.div>
 
+        {/* Filme tile - bottom right */}
+        <motion.div variants={staggerItem}>
           <StatCard
             icon={<Movie sx={{ fontSize: 20 }} />}
-            label="Zeit mit Filmen"
-            value={stats.movieTimeString}
+            label="Filme"
+            value={stats.totalMovies}
             color={colors.text.accent}
+            subValue={`${stats.watchedMovies} geschaut`}
+            onClick={handleMoviesClick}
           />
+        </motion.div>
+      </motion.div>
 
-          {/* Bewertungen */}
-          <StatCard
-            icon={<Star sx={{ fontSize: 20 }} />}
-            label="Ø Serien-Bewertung"
-            value={`⭐ ${stats.avgSeriesRating}`}
-            color={colors.status.warning}
-            onClick={handleSeriesRatingClick}
-          />
+      {/* Extended Stats (Collapsible) */}
+      <Collapse in={expanded}>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate={expanded ? 'visible' : 'hidden'}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}
+        >
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<Timer sx={{ fontSize: 20 }} />}
+              label="Gesamte Watchzeit"
+              value={stats.timeString}
+              color={colors.status.warning}
+            />
+          </motion.div>
 
-          <StatCard
-            icon={<Star sx={{ fontSize: 20 }} />}
-            label="Ø Film-Bewertung"
-            value={`⭐ ${stats.avgMovieRating}`}
-            color={colors.status.warning}
-            onClick={handleMovieRatingClick}
-          />
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<TrendingUp sx={{ fontSize: 20 }} />}
+              label="Diese Woche"
+              value={`${stats.lastWeekWatched} Ep.`}
+              color={colors.status.success}
+              subValue="neu geschaut"
+              onClick={handleWeeklyEpisodesClick}
+            />
+          </motion.div>
 
-          {/* Präferenzen */}
-          <StatCard
-            icon={<Category sx={{ fontSize: 20 }} />}
-            label="Lieblingsgenre"
-            value={stats.topGenre}
-            color={colors.primary}
-          />
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<Tv sx={{ fontSize: 20 }} />}
+              label="Zeit mit Serien"
+              value={stats.seriesTimeString}
+              color={colors.primary}
+            />
+          </motion.div>
 
-          <StatCard
-            icon={<Stream sx={{ fontSize: 20 }} />}
-            label="Hauptprovider"
-            value={stats.topProvider}
-            color={colors.text.accent}
-          />
-        </Box>
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<Movie sx={{ fontSize: 20 }} />}
+              label="Zeit mit Filmen"
+              value={stats.movieTimeString}
+              color={colors.text.accent}
+            />
+          </motion.div>
+
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<Star sx={{ fontSize: 20 }} />}
+              label="Ø Serien-Rating"
+              value={stats.avgSeriesRating}
+              color={colors.status.warning}
+              onClick={handleSeriesRatingClick}
+            />
+          </motion.div>
+
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<Star sx={{ fontSize: 20 }} />}
+              label="Ø Film-Rating"
+              value={stats.avgMovieRating}
+              color={colors.status.warning}
+              onClick={handleMovieRatingClick}
+            />
+          </motion.div>
+
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<Category sx={{ fontSize: 20 }} />}
+              label="Lieblingsgenre"
+              value={stats.topGenre}
+              color={colors.primary}
+            />
+          </motion.div>
+
+          <motion.div variants={staggerItem}>
+            <StatCard
+              icon={<Stream sx={{ fontSize: 20 }} />}
+              label="Hauptprovider"
+              value={stats.topProvider}
+              color={colors.text.accent}
+            />
+          </motion.div>
+        </motion.div>
       </Collapse>
     </Box>
   );

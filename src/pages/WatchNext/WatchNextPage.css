@@ -24,12 +24,24 @@
 
 .watch-next-header__btn {
   padding: 10px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.watch-next-header__btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.watch-next-header__btn:active {
+  transform: scale(0.95);
 }
 
 /* Filter Section */
@@ -57,8 +69,8 @@
 /* Provider chips */
 .provider-chip {
   padding: 6px 12px;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -67,6 +79,13 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.provider-chip:hover {
+  transform: scale(1.03);
 }
 
 /* Episode list */
@@ -98,6 +117,16 @@
   border-radius: 14px;
   margin-bottom: 12px;
   cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.watch-next-rewatch-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
 .watch-next-rewatch-toggle__content {

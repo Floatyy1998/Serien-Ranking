@@ -1,10 +1,11 @@
 import { BarChart, Person, PlayCircle, Star } from '@mui/icons-material';
 import { Badge } from '@mui/material';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PetWidget } from '../pet';
 import './BottomNavigation.css';
 
@@ -19,6 +20,7 @@ interface NavItem {
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  useTheme();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
   const { unreadCount: notificationUnreadCount } = useNotifications();
 
@@ -90,18 +92,15 @@ export const BottomNavigation = () => {
 
   const isActive = (path: string) => {
     if (path === '/') {
-      return location.pathname === '/' || location.pathname === '/';
+      return location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };
 
   const handleNavigation = (path: string) => {
-    // Add haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate(10);
     }
-
-    // If already on the page, scroll to top
     if (isActive(path)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -113,7 +112,7 @@ export const BottomNavigation = () => {
   const shouldHide =
     location.pathname.includes('/series/') ||
     location.pathname.includes('/movie/') ||
-    location.pathname.includes('/rating/') || // Only hide for /rating/:type/:id
+    location.pathname.includes('/rating/') ||
     location.pathname.includes('/episodes') ||
     location.pathname === '/calendar';
 
@@ -140,7 +139,6 @@ export const BottomNavigation = () => {
 
   return (
     <>
-      {/* Pet Widget */}
       <PetWidget />
 
       <nav className="mobile-bottom-navigation" aria-label="Hauptnavigation">
@@ -187,30 +185,15 @@ export const BottomNavigation = () => {
                   ) : (
                     <div className="nav-icon">{item.icon}</div>
                   )}
+                  {/* Active dot */}
+                  {active && <div className="nav-active-dot" />}
                 </div>
 
                 <span className="nav-label">{item.label}</span>
-
-                {/* Active Indicator */}
-                <AnimatePresence>
-                  {active && (
-                    <motion.div
-                      className="active-indicator"
-                      layoutId="activeTab"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </AnimatePresence>
               </motion.button>
             );
           })}
         </div>
-
-        {/* Safe area for iPhone */}
-        <div className="safe-area-bottom" />
       </nav>
     </>
   );

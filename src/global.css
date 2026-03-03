@@ -3,9 +3,9 @@
   --theme-primary: #00fed7;
   --theme-primary-hover: #33ffdf;
   --theme-accent: #ff6b6b;
-  --theme-background: #0a0e1a;
-  --theme-surface: #141926;
-  --theme-surface-elevated: #1a2030;
+  --theme-background: #06090f;
+  --theme-surface: #0e1420;
+  --theme-surface-elevated: #151d2e;
   --theme-text-primary: #00fed7;
   --theme-text-secondary: #ffffff;
   --theme-secondary-gradient: #8b5cf6;
@@ -19,6 +19,7 @@
   --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3);
+  --shadow-cinematic: 0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 8px 20px -5px rgba(0, 0, 0, 0.4);
 
   /* Typografie */
   --font-body: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -33,15 +34,19 @@
     0 0 60px color-mix(in srgb, var(--theme-primary) 30%, transparent),
     0 0 100px color-mix(in srgb, var(--theme-primary) 15%, transparent);
   --glow-accent: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+  --glow-cinematic:
+    0 0 30px color-mix(in srgb, var(--theme-primary) 25%, transparent),
+    0 0 80px color-mix(in srgb, var(--theme-primary) 10%, transparent),
+    0 0 120px color-mix(in srgb, var(--theme-secondary-gradient) 8%, transparent);
 
-  /* Glass-Stufen */
-  --glass-subtle: rgba(255, 255, 255, 0.03);
-  --glass-light: rgba(255, 255, 255, 0.05);
-  --glass-medium: rgba(255, 255, 255, 0.08);
-  --glass-heavy: rgba(255, 255, 255, 0.12);
-  --glass-border-subtle: rgba(255, 255, 255, 0.06);
-  --glass-border-light: rgba(255, 255, 255, 0.1);
-  --glass-border-medium: rgba(255, 255, 255, 0.15);
+  /* Glass-Stufen - tiefere Kontraste */
+  --glass-subtle: rgba(255, 255, 255, 0.02);
+  --glass-light: rgba(255, 255, 255, 0.04);
+  --glass-medium: rgba(255, 255, 255, 0.07);
+  --glass-heavy: rgba(255, 255, 255, 0.11);
+  --glass-border-subtle: rgba(255, 255, 255, 0.05);
+  --glass-border-light: rgba(255, 255, 255, 0.08);
+  --glass-border-medium: rgba(255, 255, 255, 0.13);
 
   /* Gradient-Tokens */
   --gradient-primary: linear-gradient(
@@ -51,6 +56,12 @@
   );
   --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
   --gradient-cool: linear-gradient(135deg, var(--theme-primary), #3b82f6);
+  --gradient-cinematic: linear-gradient(
+    135deg,
+    var(--theme-primary),
+    color-mix(in srgb, var(--theme-primary) 60%, var(--theme-secondary-gradient)),
+    var(--theme-secondary-gradient, #8b5cf6)
+  );
 
   /* Text-Glow */
   --text-glow: 0 0 20px color-mix(in srgb, var(--theme-primary) 50%, transparent);
@@ -290,12 +301,50 @@ input[style*='outline']:focus-visible {
 @keyframes pulseGlow {
   0%,
   100% {
-    opacity: 0.6;
+    opacity: 0.4;
     transform: scale(1);
   }
   50% {
-    opacity: 1;
-    transform: scale(1.02);
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes auraBreath {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1) rotate(0deg);
+    filter: blur(40px);
+  }
+  33% {
+    opacity: 0.5;
+    transform: scale(1.08) rotate(2deg);
+    filter: blur(50px);
+  }
+  66% {
+    opacity: 0.35;
+    transform: scale(0.95) rotate(-1deg);
+    filter: blur(45px);
+  }
+}
+
+@keyframes floatSubtle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes chromaShift {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(30deg);
   }
 }
 
@@ -337,16 +386,16 @@ input[style*='outline']:focus-visible {
    Premium Utility Classes
    ============================ */
 
-/* Noise/grain overlay */
+/* Noise/grain overlay - subtiler, cinematischer Film-Grain */
 .noise-overlay::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
   background-repeat: repeat;
   pointer-events: none;
   z-index: 9998;
-  opacity: 0.4;
+  opacity: 0.35;
   mix-blend-mode: overlay;
 }
 
@@ -377,22 +426,25 @@ input[style*='outline']:focus-visible {
   animation: gradientShift 4s ease infinite;
 }
 
-/* Glow card on hover */
+/* Glow card on hover - cinematischer */
 .glow-card {
   transition:
-    box-shadow 0.3s ease,
-    transform 0.3s ease,
-    border-color 0.3s ease;
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glow-card:hover {
-  box-shadow: var(--glow-primary);
-  border-color: color-mix(in srgb, var(--theme-primary) 25%, transparent);
-  transform: translateY(-2px);
+  box-shadow:
+    var(--glow-primary),
+    0 8px 32px -8px rgba(0, 0, 0, 0.5);
+  border-color: color-mix(in srgb, var(--theme-primary) 30%, transparent);
+  transform: translateY(-3px);
 }
 
 .glow-card:active {
-  transform: scale(0.98);
+  transform: scale(0.97) translateY(0);
 }
 
 /* Progress bar shimmer */
@@ -437,7 +489,225 @@ input[style*='outline']:focus-visible {
 button:active:not(:disabled),
 [role='button']:active:not(:disabled),
 [role='tab']:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
+}
+
+/* Cinematic card lift - höherer Kontrast */
+.card-cinematic {
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-cinematic:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow:
+    0 20px 60px -15px rgba(0, 0, 0, 0.6),
+    0 0 40px -10px color-mix(in srgb, var(--theme-primary) 15%, transparent);
+}
+
+/* Frosted surface - Premium Glassmorphism */
+.frosted-surface {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Inner light - subtiler Lichtschein am oberen Rand */
+.inner-light::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  pointer-events: none;
+}
+
+/* ============================
+   Animated Gradient Border
+   ============================ */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animated-border {
+  position: relative;
+  border: none !important;
+}
+
+.animated-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    var(--border-angle, 0deg),
+    var(--theme-primary),
+    var(--theme-secondary-gradient, #8b5cf6),
+    var(--theme-primary)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: borderRotate 4s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes borderRotate {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+/* Gradient shimmer for text */
+.gradient-shimmer {
+  background-size: 300% 100%;
+  animation: gradientShimmer 3s linear infinite;
+}
+
+@keyframes gradientShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Mesh gradient background shift - organischer, cinematischer */
+@keyframes meshShift {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translate(20px, -15px) scale(1.04) rotate(0.5deg);
+  }
+  50% {
+    transform: translate(-8px, 12px) scale(0.97) rotate(-0.3deg);
+  }
+  75% {
+    transform: translate(12px, -8px) scale(1.02) rotate(0.2deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+}
+
+/* CSS Containment for performance */
+.contain-layout {
+  contain: layout paint;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* ============================
+   Container Queries
+   ============================ */
+.card-container {
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* ============================
+   Scroll-Driven Animations
+   (Progressive Enhancement)
+   ============================ */
+@supports (animation-timeline: scroll()) {
+  .parallax-header {
+    animation: parallaxFade linear;
+    animation-timeline: scroll();
+    animation-range: 0px 300px;
+  }
+
+  @keyframes parallaxFade {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(-40px);
+      opacity: 0.2;
+    }
+  }
+
+  .fade-on-scroll {
+    animation: fadeOnScroll linear;
+    animation-timeline: scroll();
+    animation-range: 0px 200px;
+  }
+
+  @keyframes fadeOnScroll {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  .shrink-on-scroll {
+    animation: shrinkOnScroll linear;
+    animation-timeline: scroll();
+    animation-range: 0px 150px;
+  }
+
+  @keyframes shrinkOnScroll {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-8px);
+    }
+  }
+}
+
+/* ============================
+   View Transitions API
+   (Progressive Enhancement)
+   ============================ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: 150ms ease-out both vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 200ms ease-in both vt-fade-in;
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Shared element transition for posters */
+.poster-shared-transition {
+  view-transition-name: poster-hero;
 }
 
 /* Accessibility: reduced motion */

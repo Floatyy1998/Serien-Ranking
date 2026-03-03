@@ -1,10 +1,10 @@
 /* SeriesDetailPage Layout */
 
-/* Hero Section */
+/* Hero Section - Taller with overlapping info card */
 .hero-section {
   position: relative;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hero-section__backdrop {
@@ -12,7 +12,8 @@
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  opacity: 0.5;
+  opacity: 0.45;
+  will-change: transform;
 }
 
 .hero-section__gradient {
@@ -20,13 +21,13 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70%;
+  height: 80%;
   background:
     linear-gradient(
       to top,
-      var(--color-background-default, #0a0e1a) 0%,
-      var(--color-background-default, #0a0e1a) 10%,
-      transparent 60%
+      var(--color-background-default, #06090f) 0%,
+      var(--color-background-default, #06090f) 12%,
+      transparent 65%
     ),
     linear-gradient(
       to top,
@@ -57,7 +58,8 @@
   position: absolute;
   z-index: 10;
   backdrop-filter: blur(10px);
-  border: none;
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   font-size: 24px;
   padding: 8px;
@@ -67,14 +69,31 @@
   justify-content: center;
   width: 40px;
   height: 40px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
+.hero-section__add-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hero-section__add-btn:active {
+  transform: scale(0.95);
+}
+
+/* Info card overlapping the hero from below */
 .hero-section__info {
   position: absolute;
-  bottom: 20px;
+  bottom: 0;
   left: 0;
   right: 0;
   max-width: 100%;
+  background: var(--color-background-default, #06090f);
+  border-radius: 24px 24px 0 0;
+  padding-top: 20px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .hero-section__title {
@@ -105,15 +124,18 @@
 }
 
 .hero-section__genre-tag {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 13px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 12px;
   font-weight: 500;
   color: white;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s ease;
+}
+
+.hero-section__genre-tag:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .hero-section__progress-track {
@@ -230,10 +252,10 @@
   gap: 8px;
 }
 
-/* Season Tabs */
+/* Season Tabs - Horizontal pill chips */
 .season-tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   padding-bottom: 8px;
   margin-bottom: 12px;
@@ -247,21 +269,23 @@
 
 .season-tabs__tab {
   flex-shrink: 0;
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 2px solid;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1.5px solid;
   color: white;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 2px;
-  min-width: 52px;
+  gap: 6px;
+  min-width: auto;
   background: transparent;
+  font-size: 14px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .season-tabs__number {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -270,7 +294,7 @@
   opacity: 0.7;
 }
 
-/* Episode Grid */
+/* Episode Grid - compact grid mode */
 .episode-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
@@ -280,7 +304,7 @@
 .episode-cell {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,6 +313,86 @@
   color: white;
   cursor: pointer;
   position: relative;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.episode-cell:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Episode List - readable list mode */
+.episode-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.episode-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.episode-list-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.episode-list-item:active {
+  transform: scale(0.98);
+}
+
+.episode-list-item--watched {
+  background: rgba(0, 212, 170, 0.06);
+  border-color: rgba(0, 212, 170, 0.15);
+}
+
+.episode-list-item--watched:hover {
+  background: rgba(0, 212, 170, 0.1);
+  box-shadow: 0 0 12px rgba(0, 212, 170, 0.1);
+}
+
+.episode-list-item--unwatched {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.episode-list-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.episode-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.episode-list-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.episode-list-subtitle {
+  font-size: 12px;
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Info/Cast Tab Switcher */
@@ -311,8 +415,8 @@
 /* Responsive */
 @media (max-width: 767px) {
   .hero-section__genre-tag {
-    border-radius: 8px;
-    padding: 3px 8px;
+    border-radius: 9999px;
+    padding: 3px 10px;
     font-size: 11px;
   }
 }

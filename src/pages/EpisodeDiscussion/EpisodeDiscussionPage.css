@@ -265,6 +265,17 @@
   cursor: pointer;
   font-size: 15px;
   font-weight: 700;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ed-watch-btn:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.ed-watch-btn:active {
+  transform: scale(0.97);
 }
 
 .ed-watch-btn-icon {
@@ -281,6 +292,19 @@
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ed-episodes-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ed-episodes-btn:active {
+  transform: scale(0.97);
 }
 
 .ed-episodes-btn-icon {
@@ -302,6 +326,18 @@
   padding: 14px;
   border-radius: 16px;
   text-align: left;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s ease;
+}
+
+.ed-nav-btn:hover {
+  transform: translateX(2px);
+}
+
+.ed-nav-btn--next:hover {
+  transform: translateX(-2px);
 }
 
 .ed-nav-btn--next {
@@ -355,6 +391,9 @@
   border-radius: 20px;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .ed-overview-decoration {
@@ -406,6 +445,17 @@
 .ed-crew-card {
   padding: 18px;
   border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ed-crew-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .ed-crew-label {
@@ -430,6 +480,7 @@
   margin-bottom: 24px;
   padding: 20px;
   border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .ed-guest-stars-header {
@@ -469,6 +520,13 @@
   border-radius: 50%;
   margin: 0 auto 12px;
   overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.ed-guest-star-card:hover .ed-guest-star-avatar {
+  transform: scale(1.05);
 }
 
 .ed-guest-star-img {

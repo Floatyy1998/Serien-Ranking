@@ -9,6 +9,7 @@
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
+import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useCatchUpData } from './useCatchUpData';
 import { HeroStats } from './HeroStats';
 import { SortToolbar } from './SortToolbar';
@@ -75,11 +76,18 @@ export const CatchUpPage: React.FC = () => {
         {!hasData && <EmptyState />}
 
         {/* Series List */}
-        <div className="cu-series-list">
+        <motion.div
+          className="cu-series-list"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {sortedData.map((item) => (
-            <SeriesCard key={item.series.id} item={item} />
+            <motion.div key={item.series.id} variants={staggerItem}>
+              <SeriesCard item={item} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       <ScrollToTopButton scrollContainerRef={scrollContainerRef} />
@@ -94,13 +102,15 @@ const HeaderBadge: React.FC<{ count: number }> = ({ count }) => {
 
   return (
     <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
+      initial={{ scale: 0, filter: 'blur(8px)' }}
+      animate={{ scale: 1, filter: 'blur(0px)' }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       className="cu-header-badge"
       style={{
-        background: `linear-gradient(135deg, ${currentTheme.primary}20, #8b5cf620)`,
-        border: `1px solid ${currentTheme.primary}40`,
+        background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.primary}08)`,
+        border: `1px solid ${currentTheme.primary}30`,
         color: currentTheme.primary,
+        boxShadow: `0 0 20px ${currentTheme.primary}10`,
       }}
     >
       {count} Serien

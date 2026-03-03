@@ -1,124 +1,103 @@
+/* === Floating Dock Navigation === */
 .mobile-bottom-navigation {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  left: 16px;
+  right: 16px;
   z-index: 1000;
-  background: linear-gradient(180deg, rgba(10, 14, 26, 0.75) 0%, rgba(10, 14, 26, 0.92) 100%);
-  backdrop-filter: blur(32px) saturate(1.5);
-  -webkit-backdrop-filter: blur(32px) saturate(1.5);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 -4px 30px rgba(0, 0, 0, 0.5),
-    0 -1px 0 rgba(255, 255, 255, 0.05);
+  background: rgba(10, 14, 26, 0.92);
+  backdrop-filter: blur(40px) saturate(1.6);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .nav-container {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 8px 0;
+  padding: 8px 4px;
   position: relative;
 }
 
+/* --- Nav Item (all equal) --- */
 .nav-item {
   flex: 1;
   background: none;
   border: none;
-  color: var(--color-text-muted);
-  padding: 8px 0;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 4px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
   position: relative;
+  z-index: 1;
+  transition: color 0.2s ease;
 }
 
 .nav-item.active {
   color: var(--color-primary);
 }
 
+/* No special center treatment - same as others */
+.nav-item.nav-center {
+  /* intentionally empty - same as other items */
+}
+
+.nav-item.nav-center .nav-label {
+  /* show label just like other items */
+}
+
+/* --- Nav Icon --- */
 .nav-icon-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 32px;
+  height: 28px;
 }
 
 .nav-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-icon svg {
   font-size: 24px !important;
 }
 
-.nav-item.active .nav-icon {
-  transform: translateY(-2px);
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary, #00fed7) 50%, transparent));
-}
-
-.nav-item.active::before {
-  content: '';
+/* --- Active Dot Indicator --- */
+.nav-active-dot {
   position: absolute;
-  top: -10px;
+  bottom: -2px;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-primary, #00fed7) 15%, transparent) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: -1;
-}
-
-.nav-item:not(.active):active .nav-icon {
-  transform: scale(0.9);
-}
-
-/* Active indicator: pill shape with glow trail */
-.active-indicator {
-  position: absolute;
-  bottom: 2px;
-  width: 24px;
-  height: 3px;
   background: var(--color-primary, #00fed7);
-  border-radius: 9999px;
-  box-shadow:
-    0 0 8px color-mix(in srgb, var(--color-primary, #00fed7) 60%, transparent),
-    0 0 20px color-mix(in srgb, var(--color-primary, #00fed7) 30%, transparent);
+  pointer-events: none;
 }
 
+/* --- Nav Label --- */
 .nav-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   font-family: var(--font-body);
-  letter-spacing: 0.3px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.2px;
 }
 
 .nav-item.active .nav-label {
   font-weight: 700;
 }
 
-.safe-area-bottom {
-  height: env(safe-area-inset-bottom);
-  background: rgba(10, 14, 26, 0.85);
-}
-
-/* Animations */
+/* Badge animation */
 @keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
@@ -131,23 +110,17 @@
   }
 }
 
-/* Badge animation */
 .MuiBadge-badge {
   animation: pulse 2s infinite;
 }
 
 /* Tablet adjustments */
 @media (min-width: 768px) {
-  .nav-container {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .nav-icon svg {
-    font-size: 28px !important;
-  }
-
-  .nav-label {
-    font-size: 13px;
+  .mobile-bottom-navigation {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 420px;
+    max-width: calc(100% - 32px);
   }
 }

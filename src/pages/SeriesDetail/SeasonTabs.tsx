@@ -46,7 +46,7 @@ export const SeasonTabs = memo<SeasonTabsProps>(
                     : 'rgba(255, 255, 255, 0.05)',
               }}
             >
-              <span className="season-tabs__number">{season.seasonNumber + 1}</span>
+              <span className="season-tabs__number">S{season.seasonNumber + 1}</span>
               <span className="season-tabs__progress">
                 {progress === 100 ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>

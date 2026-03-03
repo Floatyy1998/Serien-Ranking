@@ -20,3 +20,15 @@ export { ProgressBar } from './ProgressBar';
 export { ScrollToTopButton } from './ScrollToTopButton';
 export { VisuallyHidden } from './VisuallyHidden';
 export { CatchUpDialog } from './CatchUpDialog';
+
+// --- Design Modernization Components ---
+export { AnimatedPage } from './AnimatedPage';
+export { AnimatedText } from './AnimatedText';
+export { AnimatedSkeleton } from './AnimatedSkeleton';
+export { AnimatedFeedback } from './AnimatedFeedback';
+export { TiltCard } from './TiltCard';
+export { SpotlightCard } from './SpotlightCard';
+export { AuroraBackground } from './AuroraBackground';
+export { ParticleExplosion } from './ParticleExplosion';
+export { GradientDivider } from './GradientDivider';
+export { PillBadge } from './PillBadge';
