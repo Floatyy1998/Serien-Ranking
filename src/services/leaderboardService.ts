@@ -73,7 +73,7 @@ export async function updateLeaderboardStats(
       current.episodesThisMonth = 0;
       current.moviesThisMonth = 0;
       current.watchtimeThisMonth = 0;
-      current.streakThisMonth = current.streakCurrent || 0;
+      current.streakThisMonth = 0;
       current.monthKey = currentMonth;
     }
 
@@ -99,9 +99,11 @@ export async function updateLeaderboardStats(
       }
       current.lastStreakDate = today;
 
-      // streakThisMonth: Längste Streak in diesem Monat
-      if (current.streakCurrent > (current.streakThisMonth || 0)) {
-        current.streakThisMonth = current.streakCurrent;
+      // streakThisMonth: Längste Streak in diesem Monat (nur Tage im aktuellen Monat)
+      const dayOfMonth = new Date().getDate();
+      const streakInMonth = Math.min(current.streakCurrent, dayOfMonth);
+      if (streakInMonth > (current.streakThisMonth || 0)) {
+        current.streakThisMonth = streakInMonth;
       }
 
       // streakAllTime: Längste Streak aller Zeiten
@@ -149,7 +151,7 @@ export async function fetchLeaderboardData(
               episodesThisMonth: 0,
               moviesThisMonth: 0,
               watchtimeThisMonth: 0,
-              streakThisMonth: stats.streakCurrent || 0, // Carry over
+              streakThisMonth: 0,
               monthKey: currentMonth,
             },
           };
