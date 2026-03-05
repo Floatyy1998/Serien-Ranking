@@ -62,7 +62,7 @@ export const PetCard = memo(function PetCard({
     {
       label: 'XP',
       value: experiencePercentage,
-      color: 'var(--theme-secondary-gradient, #8b5cf6)',
+      color: '#8b5cf6',
       icon: '⭐',
       text: `${pet.experience}/${experienceNeeded}`,
     },
