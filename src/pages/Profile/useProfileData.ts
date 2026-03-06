@@ -30,6 +30,7 @@ import { useBadges } from '../../features/badges/BadgeProvider';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export interface UserProfileData {
   username?: string;
@@ -73,7 +74,6 @@ function computeStats(
 ): ProfileStats {
   const totalSeries = seriesList.length;
   const totalMovies = movieList.length;
-  const today = new Date();
 
   let watchedEpisodes = 0;
   let totalMinutesWatched = 0;
@@ -94,22 +94,12 @@ function computeStats(
               (episode.watchCount && episode.watchCount > 0)
             );
 
-            if (isWatched) {
+            if (isWatched && (hasEpisodeAired(episode) || !episode.air_date)) {
               const epRuntime = episode.runtime || seriesRuntime;
-              if (episode.air_date) {
-                const airDate = new Date(episode.air_date);
-                if (airDate <= today) {
-                  watchedEpisodes++;
-                  const watchCount =
-                    episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
-                  totalMinutesWatched += epRuntime * watchCount;
-                }
-              } else {
-                watchedEpisodes++;
-                const watchCount =
-                  episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
-                totalMinutesWatched += epRuntime * watchCount;
-              }
+              watchedEpisodes++;
+              const watchCount =
+                episode.watchCount && episode.watchCount > 1 ? episode.watchCount : 1;
+              totalMinutesWatched += epRuntime * watchCount;
             }
           });
         }

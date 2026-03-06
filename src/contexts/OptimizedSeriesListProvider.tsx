@@ -183,7 +183,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const allSeries: Series[] = seriesData
     ? Object.values(seriesData).map((s) => ({
         ...s,
-        seasons: Array.isArray(s.seasons) ? s.seasons : s.seasons ? Object.values(s.seasons) : [],
+        seasons: (Array.isArray(s.seasons)
+          ? s.seasons
+          : s.seasons
+            ? Object.values(s.seasons)
+            : []
+        ).filter((season): season is Series['seasons'][number] => !!season),
       }))
     : [];
   const seriesList = allSeries.filter((s) => !s.hidden);

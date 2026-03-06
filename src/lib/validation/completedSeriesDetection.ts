@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
 import { hasActiveRewatch } from './rewatch.utils';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export interface CompletedSeriesData {
   seriesId: number;
@@ -37,7 +38,6 @@ export const storeCompletedData = async (
 };
 
 const areAllEpisodesWatched = (series: Series): boolean => {
-  const today = new Date();
   let hasAiredEpisodes = false;
   let allWatched = true;
 
@@ -45,14 +45,10 @@ const areAllEpisodesWatched = (series: Series): boolean => {
     for (const season of series.seasons) {
       if (season.episodes) {
         for (const episode of season.episodes) {
-          // Nur ausgestrahlte Episoden zählen
-          if (episode.air_date) {
-            const airDate = new Date(episode.air_date);
-            if (airDate <= today) {
-              hasAiredEpisodes = true;
-              if (!episode.watched) {
-                allWatched = false;
-              }
+          if (hasEpisodeAired(episode)) {
+            hasAiredEpisodes = true;
+            if (!episode.watched) {
+              allWatched = false;
             }
           }
         }

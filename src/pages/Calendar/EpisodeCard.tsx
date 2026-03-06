@@ -11,6 +11,20 @@ function formatEpisodeCode(seasonNumber: number, episodeNumber: number): string 
   return `S${String(seasonNumber).padStart(2, '0')}E${String(episodeNumber).padStart(2, '0')}`;
 }
 
+function formatAirTime(airstamp?: string): string | null {
+  if (!airstamp) return null;
+  try {
+    const date = new Date(airstamp);
+    return date.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Berlin',
+    });
+  } catch {
+    return null;
+  }
+}
+
 function premiereLabel(type: WeeklyEpisode['premiereType']): string {
   return type === 'season-start' ? 'Staffelstart' : 'Rückkehr';
 }
@@ -145,6 +159,7 @@ export const SingleEpisodeCard = memo(
     const handleClick = () =>
       navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
     const handleMark = () => onMarkWatched(ep.seriesNmr, ep.seasonIndex, ep.episodeIndex);
+    const airTime = formatAirTime(ep.airstamp);
 
     return (
       <div
@@ -167,6 +182,12 @@ export const SingleEpisodeCard = memo(
             }}
           >
             {formatEpisodeCode(ep.seasonNumber, ep.episodeNumber)}
+            {airTime && (
+              <span className="cal-ep-airtime" style={{ opacity: 0.7 }}>
+                {' · '}
+                {airTime}
+              </span>
+            )}
             {ep.premiereType && (
               <span
                 className="cal-ep-premiere-badge"
@@ -195,6 +216,12 @@ export const SingleEpisodeCard = memo(
             }}
           >
             {formatEpisodeCode(ep.seasonNumber, ep.episodeNumber)}
+            {airTime && (
+              <span style={{ color: currentTheme.text.muted }}>
+                {' · '}
+                {airTime}
+              </span>
+            )}
             {ep.premiereType && (
               <span
                 className="cal-ep-premiere-badge"
@@ -348,6 +375,13 @@ export const EpisodeGroupCard = memo(
                 </span>
                 <span className="cal-ep-sub-name" style={{ color: currentTheme.text.secondary }}>
                   {ep.episodeName}
+                  {formatAirTime(ep.airstamp) && (
+                    <span
+                      style={{ color: currentTheme.text.muted, marginLeft: 6, fontSize: '0.85em' }}
+                    >
+                      {formatAirTime(ep.airstamp)}
+                    </span>
+                  )}
                 </span>
                 <WatchIndicator
                   watched={ep.watched}

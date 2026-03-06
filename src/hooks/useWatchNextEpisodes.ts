@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Series } from '../types/Series';
+import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
 import {
   getNextRewatchEpisode,
   getRewatchProgress,
@@ -160,9 +161,7 @@ export const useWatchNextEpisodes = (
           for (const [episodeIndex, episode] of episodesList.entries()) {
             if (episode.watched) continue;
 
-            if (!episode.air_date) continue;
-            const airDate = new Date(episode.air_date);
-            if (airDate > today) continue;
+            if (!hasEpisodeAired(episode)) continue;
             episodes.push({
               seriesId: series.id,
               seriesTitle: series.title,
@@ -172,7 +171,7 @@ export const useWatchNextEpisodes = (
               seasonNumber: season.seasonNumber,
               episodeNumber: episodeIndex + 1,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
-              airDate: episode.air_date,
+              airDate: getEpisodeAirDateStr(episode) || episode.air_date,
               runtime: episode.runtime || series.episodeRuntime || 45,
               totalAiredEpisodes,
               watchedEpisodes,

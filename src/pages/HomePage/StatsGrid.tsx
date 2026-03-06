@@ -22,6 +22,7 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import { colors } from '../../theme';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -173,7 +174,6 @@ export const StatsGrid = () => {
       };
     }
     // Series stats - only count aired episodes
-    const today = new Date();
     // Allow nmr: 0 as valid
     const totalSeries = seriesList.filter((s) => s && s.nmr !== undefined && s.nmr !== null).length;
 
@@ -196,17 +196,7 @@ export const StatsGrid = () => {
             (ep.watchCount && ep.watchCount > 0)
           );
 
-          // Also count episodes without air_date (they should be considered aired)
-          if (ep.air_date) {
-            const airDate = new Date(ep.air_date);
-            if (airDate <= today) {
-              totalAiredEpisodes++;
-              if (isWatched) {
-                watchedEpisodes++;
-              }
-            }
-          } else {
-            // No air_date means it's probably an old episode that's already aired
+          if (hasEpisodeAired(ep) || !ep.air_date) {
             totalAiredEpisodes++;
             if (isWatched) {
               watchedEpisodes++;
@@ -250,18 +240,10 @@ export const StatsGrid = () => {
             (ep.watchCount && ep.watchCount > 0)
           );
 
-          if (isWatched) {
+          if (isWatched && (hasEpisodeAired(ep) || !ep.air_date)) {
             const epRuntime = ep.runtime || seriesRuntime;
-            if (ep.air_date) {
-              const airDate = new Date(ep.air_date);
-              if (airDate <= today) {
-                const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-                seriesMinutesWatched += epRuntime * count;
-              }
-            } else {
-              const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-              seriesMinutesWatched += epRuntime * count;
-            }
+            const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
+            seriesMinutesWatched += epRuntime * count;
           }
         });
       });
@@ -464,13 +446,10 @@ export const StatsGrid = () => {
 
         s.seasons.forEach((season) => {
           season.episodes?.forEach((ep) => {
-            if (ep.air_date) {
-              const airDate = new Date(ep.air_date);
-              if (airDate <= today) {
-                totalAired++;
-                if (ep.watched === true) {
-                  watchedAired++;
-                }
+            if (hasEpisodeAired(ep) || !ep.air_date) {
+              totalAired++;
+              if (ep.watched === true) {
+                watchedAired++;
               }
             }
           });

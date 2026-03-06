@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';
+import { getEpisodeAirDateStr, getEpisodeAirDate } from '../utils/episodeDate';
 
 export interface WeeklyEpisode {
   seriesId: number;
@@ -11,6 +12,7 @@ export interface WeeklyEpisode {
   episodeNumber: number;
   episodeName: string;
   airDate: string;
+  airstamp?: string;
   watched: boolean;
   seasonIndex: number;
   episodeIndex: number;
@@ -99,17 +101,18 @@ export const useWeeklyEpisodes = (
 
         for (let eIdx = 0; eIdx < episodes.length; eIdx++) {
           const ep = episodes[eIdx];
-          const airDateStr = ep.air_date || ep.airDate || ep.firstAired;
+          const airDateStr = getEpisodeAirDateStr(ep);
           if (!airDateStr) continue;
 
-          const airDate = new Date(airDateStr);
-          if (isNaN(airDate.getTime())) continue;
+          const airDate = getEpisodeAirDate(ep);
+          if (!airDate) continue;
 
           // Check if episode falls within this week
-          airDate.setHours(0, 0, 0, 0);
-          if (airDate < monday || airDate > sunday) continue;
+          const airDateDay = new Date(airDate);
+          airDateDay.setHours(0, 0, 0, 0);
+          if (airDateDay < monday || airDateDay > sunday) continue;
 
-          const dateKey = toDateKey(airDate);
+          const dateKey = toDateKey(airDateDay);
 
           // Detect premiere type
           let premiereType: WeeklyEpisode['premiereType'];
@@ -118,14 +121,12 @@ export const useWeeklyEpisodes = (
           } else {
             // Check gap to previous episode for mid-season return
             const prevEp = episodes[eIdx - 1];
-            const prevAirStr = prevEp?.air_date || prevEp?.airDate || prevEp?.firstAired;
-            if (prevAirStr) {
-              const prevAirDate = new Date(prevAirStr);
-              if (!isNaN(prevAirDate.getTime())) {
-                const gapDays = (airDate.getTime() - prevAirDate.getTime()) / (1000 * 60 * 60 * 24);
-                if (gapDays > 14) {
-                  premiereType = 'mid-season-return';
-                }
+            const prevAirDate = getEpisodeAirDate(prevEp);
+            if (prevAirDate) {
+              const gapDays =
+                (airDateDay.getTime() - prevAirDate.getTime()) / (1000 * 60 * 60 * 24);
+              if (gapDays > 14) {
+                premiereType = 'mid-season-return';
               }
             }
           }
@@ -139,6 +140,7 @@ export const useWeeklyEpisodes = (
             episodeNumber: eIdx + 1,
             episodeName: ep.name || `Episode ${eIdx + 1}`,
             airDate: airDateStr,
+            airstamp: ep.airstamp || undefined,
             watched: !!ep.watched,
             seasonIndex: sIdx,
             episodeIndex: eIdx,
@@ -160,9 +162,16 @@ export const useWeeklyEpisodes = (
       }
     }
 
-    // Sort episodes within each day by series title
+    // Sort episodes within each day by air time, then series title
     for (const [, episodes] of schedule) {
-      episodes.sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle));
+      episodes.sort((a, b) => {
+        const aTime = a.airstamp || '';
+        const bTime = b.airstamp || '';
+        if (aTime && bTime) return aTime.localeCompare(bTime);
+        if (aTime) return -1;
+        if (bTime) return 1;
+        return a.seriesTitle.localeCompare(b.seriesTitle);
+      });
     }
 
     return { schedule, monday, sunday, totalEpisodes, watchedCount };

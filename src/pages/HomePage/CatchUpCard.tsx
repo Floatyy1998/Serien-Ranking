@@ -3,6 +3,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 import { motion } from 'framer-motion';
 import { Schedule, ChevronRight } from '@mui/icons-material';
 import { useMemo } from 'react';
@@ -31,10 +32,8 @@ export const CatchUpCard: React.FC = () => {
       series.seasons.forEach((season) => {
         if (!season.episodes) return;
         season.episodes.forEach((episode) => {
-          const airDate = episode.air_date || episode.airDate || episode.firstAired;
-          if (!airDate) return; // Skip episodes without air date
-          const hasAired = new Date(airDate) <= new Date();
-          if (hasAired && !episode.watched) {
+          if (!hasEpisodeAired(episode)) return;
+          if (!episode.watched) {
             hasUnwatched = true;
             seriesRemainingEpisodes++;
             seriesRemainingMinutes += episode.runtime || seriesRuntime;

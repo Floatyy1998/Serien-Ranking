@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { getImageUrl } from '../utils/imageUrl';
+import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
 import type { Series } from '../types/Series';
 
 export const useContinueWatching = () => {
@@ -39,7 +40,7 @@ export const useContinueWatching = () => {
     for (const series of seriesList) {
       if (series.seasons) {
         for (const season of series.seasons) {
-          if (season.episodes) {
+          if (season?.episodes) {
             watchedCount += season.episodes.filter((ep) => ep.watched).length;
           }
         }
@@ -53,7 +54,6 @@ export const useContinueWatching = () => {
     }
 
     const items: ContinueWatchingItem[] = [];
-    const today = new Date();
 
     for (let i = 0; i < seriesList.length; i++) {
       const series = seriesList[i];
@@ -85,55 +85,49 @@ export const useContinueWatching = () => {
 
           for (let k = 0; k < episodes.length; k++) {
             const episode = episodes[k];
-            if (!episode.watched && episode.air_date) {
-              const airDate = new Date(episode.air_date);
-              if (airDate <= today) {
-                let totalAiredEpisodes = 0;
-                let watchedEpisodes = 0;
+            if (!episode.watched && hasEpisodeAired(episode)) {
+              let totalAiredEpisodes = 0;
+              let watchedEpisodes = 0;
 
-                for (let s = 0; s < seasons.length; s++) {
-                  const sEpisodes = seasons[s].episodes;
-                  if (!sEpisodes) continue;
+              for (let s = 0; s < seasons.length; s++) {
+                const sEpisodes = seasons[s].episodes;
+                if (!sEpisodes) continue;
 
-                  for (let e = 0; e < sEpisodes.length; e++) {
-                    const ep = sEpisodes[e];
-                    if (ep.air_date) {
-                      const epAirDate = new Date(ep.air_date);
-                      if (epAirDate <= today) {
-                        totalAiredEpisodes++;
-                        if (ep.watched) watchedEpisodes++;
-                      }
-                    }
+                for (let e = 0; e < sEpisodes.length; e++) {
+                  const ep = sEpisodes[e];
+                  if (hasEpisodeAired(ep)) {
+                    totalAiredEpisodes++;
+                    if (ep.watched) watchedEpisodes++;
                   }
                 }
-
-                const percentage =
-                  totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
-
-                items.push({
-                  type: 'series',
-                  id: series.id,
-                  nmr: series.nmr,
-                  title: series.title,
-                  poster: getImageUrl(series.poster),
-                  progress: percentage,
-                  nextEpisode: {
-                    seasonNumber: (season.seasonNumber ?? 0) + 1,
-                    episodeNumber: k + 1,
-                    name: episode.name,
-                    seasonIndex: j,
-                    episodeIndex: k,
-                  },
-                  airDate: episode.air_date,
-                  lastWatchedAt: lastWatchedAt || '1900-01-01',
-                  genre: series.genre,
-                  seasons: series.seasons,
-                  provider: series.provider,
-                  episodeRuntime: episode.runtime || series.episodeRuntime,
-                });
-                foundNext = true;
-                break;
               }
+
+              const percentage =
+                totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
+
+              items.push({
+                type: 'series',
+                id: series.id,
+                nmr: series.nmr,
+                title: series.title,
+                poster: getImageUrl(series.poster),
+                progress: percentage,
+                nextEpisode: {
+                  seasonNumber: (season.seasonNumber ?? 0) + 1,
+                  episodeNumber: k + 1,
+                  name: episode.name,
+                  seasonIndex: j,
+                  episodeIndex: k,
+                },
+                airDate: getEpisodeAirDateStr(episode) || episode.air_date,
+                lastWatchedAt: lastWatchedAt || '1900-01-01',
+                genre: series.genre,
+                seasons: series.seasons,
+                provider: series.provider,
+                episodeRuntime: episode.runtime || series.episodeRuntime,
+              });
+              foundNext = true;
+              break;
             }
           }
         }

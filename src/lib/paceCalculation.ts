@@ -1,4 +1,5 @@
 import type { Series } from '../types/Series';
+import { hasEpisodeAired } from '../utils/episodeDate';
 
 export interface WatchingPace {
   episodesPerWeek: number;
@@ -34,10 +35,7 @@ export function calculateWatchingPace(
   for (const season of seasons) {
     if (!season.episodes) continue;
     for (const episode of season.episodes) {
-      const airDate = episode.air_date ? new Date(episode.air_date) : null;
-      const isAired = airDate && airDate <= now;
-
-      if (isAired) {
+      if (hasEpisodeAired(episode)) {
         airedCount++;
         if (episode.watched) {
           watchedCount++;
