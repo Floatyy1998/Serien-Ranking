@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 /* ------------------------------------------------------------------ */
 /*  Shared types                                                       */
@@ -16,6 +17,7 @@ export interface PublicProvider {
 
 export interface PublicEpisode {
   air_date?: string;
+  airstamp?: string;
   id: number;
   name?: string;
   watched?: boolean;
@@ -185,19 +187,15 @@ function applyFilters(
     } else {
       filtered = filtered.filter((s) => {
         if (!s.seasons) return false;
-        const today = new Date();
         let totalAiredEpisodes = 0;
         let watchedEpisodes = 0;
 
         s.seasons.forEach((season: PublicSeason) => {
           if (season.episodes) {
             season.episodes.forEach((ep: PublicEpisode) => {
-              if (ep.air_date) {
-                const airDate = new Date(ep.air_date);
-                if (airDate <= today) {
-                  totalAiredEpisodes++;
-                  if (ep.watched) watchedEpisodes++;
-                }
+              if (hasEpisodeAired(ep) || !ep.air_date) {
+                totalAiredEpisodes++;
+                if (ep.watched) watchedEpisodes++;
               }
             });
           }
@@ -216,16 +214,12 @@ function applyFilters(
       filtered = filtered.filter((s) => {
         if (!s.seasons) return true;
         let watchedEpisodes = 0;
-        const today = new Date();
 
         s.seasons.forEach((season: PublicSeason) => {
           if (season.episodes) {
             season.episodes.forEach((ep: PublicEpisode) => {
-              if (ep.air_date) {
-                const airDate = new Date(ep.air_date);
-                if (airDate <= today && ep.watched) {
-                  watchedEpisodes++;
-                }
+              if ((hasEpisodeAired(ep) || !ep.air_date) && ep.watched) {
+                watchedEpisodes++;
               }
             });
           }
@@ -274,19 +268,15 @@ function applyFilters(
 
 export function calculateProgress(item: PublicItem): number {
   if (!item.seasons) return 0;
-  const today = new Date();
   let totalAiredEpisodes = 0;
   let watchedEpisodes = 0;
 
   item.seasons.forEach((season: PublicSeason) => {
     if (season.episodes) {
       season.episodes.forEach((ep: PublicEpisode) => {
-        if (ep.air_date) {
-          const airDate = new Date(ep.air_date);
-          if (airDate <= today) {
-            totalAiredEpisodes++;
-            if (ep.watched) watchedEpisodes++;
-          }
+        if (hasEpisodeAired(ep) || !ep.air_date) {
+          totalAiredEpisodes++;
+          if (ep.watched) watchedEpisodes++;
         }
       });
     }

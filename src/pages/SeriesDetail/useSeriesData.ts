@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { getTVDBIdFromTMDB, getTVDBSeasons } from '../../services/tvdbService';
+
 import { Series } from '../../types/Series';
 import type { TMDBSeason, TMDBEpisode, TMDBGenre, TMDBWatchProvider, SeriesSeason } from './types';
 
@@ -95,62 +95,38 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
         .then((res) => res.json())
         .then(async (data) => {
           if (data.id) {
-            // Get TVDB ID and fetch episodes from TVDB (TVDB already filters out Season 0)
-            let seasonsWithEpisodes: SeriesSeason[] = [];
-            try {
-              const tvdbId = await getTVDBIdFromTMDB(Number(id));
-              if (tvdbId) {
-                const tvdbSeasons = await getTVDBSeasons(tvdbId);
-                seasonsWithEpisodes = tvdbSeasons.map((season) => ({
-                  seasonNumber: season.seasonNumber - 1, // Convert to 0-based to match local data format
-                  episodes: season.episodes.map((ep) => ({
-                    id: ep.id,
-                    name: ep.name || '',
-                    episode_number: ep.number,
-                    air_date: ep.aired || '',
-                    watched: false,
-                    watchCount: 0,
-                  })),
-                }));
-              }
-            } catch (error) {
-              console.error('Error fetching TVDB data:', error);
-            }
+            // Episoden von TMDB holen (deutsche Titel)
+            const regularSeasons = (data.seasons || []).filter(
+              (s: TMDBSeason) => s.season_number > 0
+            );
+            const seasonsWithEpisodes: SeriesSeason[] = await Promise.all(
+              regularSeasons.map(async (season: TMDBSeason) => {
+                try {
+                  const seasonResponse = await fetch(
+                    `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
+                  );
+                  const seasonData = await seasonResponse.json();
 
-            // Fallback to TMDB if TVDB fails
-            if (seasonsWithEpisodes.length === 0) {
-              const regularSeasons = (data.seasons || []).filter(
-                (s: TMDBSeason) => s.season_number > 0
-              );
-              seasonsWithEpisodes = await Promise.all(
-                regularSeasons.map(async (season: TMDBSeason) => {
-                  try {
-                    const seasonResponse = await fetch(
-                      `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
-                    );
-                    const seasonData = await seasonResponse.json();
-
-                    return {
-                      seasonNumber: season.season_number - 1,
-                      episodes:
-                        seasonData.episodes?.map((ep: TMDBEpisode) => ({
-                          id: ep.id,
-                          name: ep.name,
-                          episode_number: ep.episode_number,
-                          air_date: ep.air_date || '',
-                          watched: false,
-                          watchCount: 0,
-                        })) || [],
-                    };
-                  } catch (error) {
-                    return {
-                      seasonNumber: season.season_number - 1,
-                      episodes: [],
-                    };
-                  }
-                })
-              );
-            }
+                  return {
+                    seasonNumber: season.season_number - 1,
+                    episodes:
+                      seasonData.episodes?.map((ep: TMDBEpisode) => ({
+                        id: ep.id,
+                        name: ep.name,
+                        episode_number: ep.episode_number,
+                        air_date: ep.air_date || '',
+                        watched: false,
+                        watchCount: 0,
+                      })) || [],
+                  };
+                } catch (error) {
+                  return {
+                    seasonNumber: season.season_number - 1,
+                    episodes: [],
+                  };
+                }
+              })
+            );
 
             // Transform TMDB data to match our Series type
             const series: Series = {

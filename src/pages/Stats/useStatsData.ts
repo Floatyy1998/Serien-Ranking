@@ -10,6 +10,7 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export interface StatsData {
   totalSeries: number;
@@ -145,7 +146,6 @@ export const useStatsData = (): StatsData => {
   return useMemo(() => {
     if (!user?.uid) return EMPTY_STATS;
 
-    const today = new Date();
     const totalSeries = seriesList.filter((s) => s && s.nmr !== undefined && s.nmr !== null).length;
 
     let watchedEpisodes = 0;
@@ -169,10 +169,7 @@ export const useStatsData = (): StatsData => {
             (ep.watchCount && ep.watchCount > 0)
           );
 
-          const airDate = ep.air_date ? new Date(ep.air_date) : null;
-          const hasAired = !airDate || airDate <= today;
-
-          if (hasAired) {
+          if (hasEpisodeAired(ep) || !ep.air_date) {
             totalAiredEpisodes++;
             seriesTotal++;
             if (isWatched) {

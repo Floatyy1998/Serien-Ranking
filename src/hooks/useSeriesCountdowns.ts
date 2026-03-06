@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { getEpisodeAirDate, getEpisodeAirDateStr } from '../utils/episodeDate';
 
 export interface SeriesCountdown {
   seriesId: number;
@@ -26,15 +27,17 @@ export function useSeriesCountdowns() {
       let best: SeriesCountdown | null = null;
 
       for (const season of series.seasons) {
-        const seasonNum = season.seasonNumber || season.season_number || 0;
+        if (!season) continue;
+        const seasonNum = season.seasonNumber ?? season.season_number ?? 0;
         if (seasonNum < 0 || !season.episodes?.length) continue;
 
         // Use first episode's air_date as season start date
         const firstEp = season.episodes[0];
-        const dateStr = firstEp?.air_date || firstEp?.airDate || firstEp?.firstAired;
+        const dateStr = getEpisodeAirDateStr(firstEp);
         if (!dateStr) continue;
 
-        const airDate = new Date(dateStr);
+        const airDate = getEpisodeAirDate(firstEp);
+        if (!airDate) continue;
         airDate.setHours(0, 0, 0, 0);
         const daysUntil = Math.round((airDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 

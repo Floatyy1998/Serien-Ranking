@@ -8,12 +8,6 @@ import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { Series } from '../../types/Series';
-import {
-  getTVDBIdFromTMDB,
-  getTVDBSeasons,
-  TVDBEpisode,
-  TVDBSeason,
-} from '../../services/tvdbService';
 
 export interface TMDBEpisodeDetails {
   id: number;
@@ -31,6 +25,7 @@ export interface TMDBEpisodeDetails {
 }
 
 export interface TMDBSeasonDetails {
+  season_number: number;
   episodes: {
     id: number;
     name: string;
@@ -81,8 +76,7 @@ export const useEpisodeDiscussion = () => {
     poster_path: string | null;
     backdrop_path: string | null;
   } | null>(null);
-  const [tvdbEpisode, setTvdbEpisode] = useState<TVDBEpisode | null>(null);
-  const [tvdbSeasons, setTvdbSeasons] = useState<TVDBSeason[]>([]);
+  const [tmdbAllSeasons, setTmdbAllSeasons] = useState<TMDBSeasonDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
   const series = seriesList.find((s: Series) => s.id === Number(seriesId));
@@ -100,27 +94,6 @@ export const useEpisodeDiscussion = () => {
 
       try {
         setLoading(true);
-
-        const fetchTVDBData = async () => {
-          try {
-            const tvdbId = await getTVDBIdFromTMDB(Number(seriesId));
-            if (tvdbId) {
-              const seasons = await getTVDBSeasons(tvdbId);
-              setTvdbSeasons(seasons);
-
-              const targetSeasonNum = Number(seasonNumber);
-              const targetEpisodeNum = Number(episodeNumber);
-              const season = seasons.find((s) => s.seasonNumber === targetSeasonNum);
-              const episode = season?.episodes.find((e) => e.number === targetEpisodeNum);
-
-              if (episode) {
-                setTvdbEpisode(episode);
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching TVDB data:', error);
-          }
-        };
 
         const fetchTMDBData = async () => {
           if (!apiKey) return;
@@ -153,13 +126,26 @@ export const useEpisodeDiscussion = () => {
                 poster_path: data.poster_path,
                 backdrop_path: data.backdrop_path,
               });
+
+              // Alle Seasons für Navigation holen
+              const totalSeasons = data.number_of_seasons || 0;
+              const seasonPromises = [];
+              for (let s = 1; s <= totalSeasons; s++) {
+                seasonPromises.push(
+                  fetch(
+                    `https://api.themoviedb.org/3/tv/${seriesId}/season/${s}?api_key=${apiKey}&language=de-DE`
+                  ).then((r) => (r.ok ? r.json() : null))
+                );
+              }
+              const allSeasons = (await Promise.all(seasonPromises)).filter(Boolean);
+              setTmdbAllSeasons(allSeasons);
             }
           } catch (error) {
             console.error('Error fetching TMDB data:', error);
           }
         };
 
-        await Promise.all([fetchTVDBData(), fetchTMDBData()]);
+        await fetchTMDBData();
       } catch (error) {
         console.error('Error fetching episode details:', error);
       } finally {
@@ -184,28 +170,32 @@ export const useEpisodeDiscussion = () => {
   // ---------- Episode Navigation ----------
   const currentEpNum = Number(episodeNumber);
   const currentSeasonNum = Number(seasonNumber);
-  const tvdbSeason = tvdbSeasons.find((s) => s.seasonNumber === currentSeasonNum);
-  const totalEpisodes =
-    tvdbSeason?.episodes?.length ||
-    localSeason?.episodes?.length ||
-    seasonDetails?.episodes?.length ||
-    0;
 
-  const prevTvdbSeason = tvdbSeasons.find((s) => s.seasonNumber === currentSeasonNum - 1);
-  const nextTvdbSeason = tvdbSeasons.find((s) => s.seasonNumber === currentSeasonNum + 1);
+  // TMDB season finden (season_number ist 1-basiert in TMDB)
+  const tmdbCurrentSeason = tmdbAllSeasons.find((s) => s.season_number === currentSeasonNum);
+  const tmdbPrevSeason = tmdbAllSeasons.find((s) => s.season_number === currentSeasonNum - 1);
+  const tmdbNextSeason = tmdbAllSeasons.find((s) => s.season_number === currentSeasonNum + 1);
+
+  // Lokale Seasons (0-basiert)
   const prevLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum - 2);
   const nextLocalSeason = series?.seasons?.find((s) => s.seasonNumber === currentSeasonNum);
 
+  const totalEpisodes =
+    localSeason?.episodes?.length ||
+    tmdbCurrentSeason?.episodes?.length ||
+    seasonDetails?.episodes?.length ||
+    0;
+
   const hasPrevInSeason = currentEpNum > 1;
   const prevSeasonEpisodeCount =
-    prevTvdbSeason?.episodes?.length || prevLocalSeason?.episodes?.length || 0;
+    prevLocalSeason?.episodes?.length || tmdbPrevSeason?.episodes?.length || 0;
   const hasPrevSeason = currentSeasonNum > 1 && prevSeasonEpisodeCount > 0;
   const hasPrevEpisode = hasPrevInSeason || hasPrevSeason;
 
   const hasNextInSeason = currentEpNum < totalEpisodes;
-  const nextSeasonExists =
-    nextTvdbSeason?.episodes?.length || nextLocalSeason?.episodes?.length || 0;
-  const hasNextSeason = nextSeasonExists > 0;
+  const nextSeasonEpisodeCount =
+    nextLocalSeason?.episodes?.length || tmdbNextSeason?.episodes?.length || 0;
+  const hasNextSeason = nextSeasonEpisodeCount > 0;
   const hasNextEpisode = hasNextInSeason || hasNextSeason;
 
   const goToPrevEpisode = () => {
@@ -231,33 +221,29 @@ export const useEpisodeDiscussion = () => {
   };
 
   // Prev/next episode labels
-  const prevTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum - 1);
   const prevTmdbEpisodeInSeason = seasonDetails?.episodes?.find(
     (e) => e.episode_number === currentEpNum - 1
   );
-  const lastEpisodeOfPrevSeason = prevTvdbSeason?.episodes?.[prevTvdbSeason.episodes.length - 1];
+  const prevLocalEpisodeInSeason = localSeason?.episodes?.[currentEpNum - 2];
 
-  const prevEpisode = hasPrevInSeason
-    ? prevTvdbEpisodeInSeason || prevTmdbEpisodeInSeason
-    : lastEpisodeOfPrevSeason;
   const prevEpisodeLabel = hasPrevInSeason
-    ? prevEpisode?.name || `Episode ${currentEpNum - 1}`
-    : lastEpisodeOfPrevSeason
+    ? prevLocalEpisodeInSeason?.name ||
+      prevTmdbEpisodeInSeason?.name ||
+      `Episode ${currentEpNum - 1}`
+    : hasPrevSeason
       ? `S${currentSeasonNum - 1} E${prevSeasonEpisodeCount}`
       : '';
 
-  const nextTvdbEpisodeInSeason = tvdbSeason?.episodes?.find((e) => e.number === currentEpNum + 1);
   const nextTmdbEpisodeInSeason = seasonDetails?.episodes?.find(
     (e) => e.episode_number === currentEpNum + 1
   );
-  const firstEpisodeOfNextSeason = nextTvdbSeason?.episodes?.find((e) => e.number === 1);
+  const nextLocalEpisodeInSeason = localSeason?.episodes?.[currentEpNum];
 
-  const nextEpisode = hasNextInSeason
-    ? nextTvdbEpisodeInSeason || nextTmdbEpisodeInSeason
-    : firstEpisodeOfNextSeason;
   const nextEpisodeLabel = hasNextInSeason
-    ? nextEpisode?.name || `Episode ${currentEpNum + 1}`
-    : firstEpisodeOfNextSeason
+    ? nextLocalEpisodeInSeason?.name ||
+      nextTmdbEpisodeInSeason?.name ||
+      `Episode ${currentEpNum + 1}`
+    : hasNextSeason
       ? `S${currentSeasonNum + 1} E1`
       : '';
 
@@ -314,7 +300,10 @@ export const useEpisodeDiscussion = () => {
           series.title || series.name || 'Unbekannte Serie',
           Number(seasonNumber),
           Number(episodeNumber),
-          tvdbEpisode?.runtime || tmdbDetails?.runtime || series.episodeRuntime || 45,
+          (localEpisode as typeof localEpisode & { runtime?: number })?.runtime ||
+            tmdbDetails?.runtime ||
+            series.episodeRuntime ||
+            45,
           false,
           series.genre?.genres,
           series.provider?.provider?.map((p) => p.name)
@@ -329,16 +318,16 @@ export const useEpisodeDiscussion = () => {
   };
 
   // ---------- Derived Episode Details ----------
-  const episodeName =
-    tvdbEpisode?.name || localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
-  const episodeOverview = tvdbEpisode?.overview || tmdbDetails?.overview || '';
+  const episodeName = localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
+  const episodeOverview = tmdbDetails?.overview || '';
   const episodeAirDate =
-    tvdbEpisode?.aired ||
+    localEpisode?.airstamp?.split('T')[0] ||
     localEpisode?.air_date ||
     localEpisode?.airDate ||
     localEpisode?.firstAired ||
     tmdbDetails?.air_date;
-  const episodeRuntime = tvdbEpisode?.runtime || tmdbDetails?.runtime;
+  const episodeRuntime =
+    (localEpisode as typeof localEpisode & { runtime?: number })?.runtime || tmdbDetails?.runtime;
   const episodeRating = tmdbDetails?.vote_average;
   const stillPath = tmdbDetails?.still_path;
   const guestStars = tmdbDetails?.guest_stars || [];
@@ -361,7 +350,7 @@ export const useEpisodeDiscussion = () => {
     : null;
 
   // ---------- Status Flags ----------
-  const isNotFound = !series && !tvdbEpisode && !tmdbDetails && !seriesInfo;
+  const isNotFound = !series && !tmdbDetails && !seriesInfo;
   const hasUser = !!user;
   const hasSeries = !!series;
   const isWatched = !!localEpisode?.watched;

@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
 import { hasActiveRewatch } from './rewatch.utils';
+import { getEpisodeAirDate } from '../../utils/episodeDate';
 
 export interface InactiveSeriesData {
   seriesId: number;
@@ -102,11 +103,9 @@ const hasUpcomingEpisodes = (series: Series): boolean => {
           ? (Object.values(season.episodes) as typeof season.episodes)
           : [];
       for (const episode of episodes) {
-        if (episode.air_date) {
-          const airDate = new Date(episode.air_date);
-          if (airDate > today) {
-            return true;
-          }
+        const airDate = getEpisodeAirDate(episode);
+        if (airDate && airDate > today) {
+          return true;
         }
       }
     }
@@ -117,23 +116,9 @@ const hasUpcomingEpisodes = (series: Series): boolean => {
     for (const season of series.seasons) {
       if (season.episodes) {
         for (const episode of season.episodes) {
-          if (episode.air_date) {
-            const airDate = new Date(episode.air_date);
-            if (airDate > today && !episode.watched) {
-              return true;
-            }
-          }
-          if (episode.airDate) {
-            const airDate = new Date(episode.airDate);
-            if (airDate > today && !episode.watched) {
-              return true;
-            }
-          }
-          if (episode.firstAired) {
-            const airDate = new Date(episode.firstAired);
-            if (airDate > today && !episode.watched) {
-              return true;
-            }
+          const airDate = getEpisodeAirDate(episode);
+          if (airDate && airDate > today && !episode.watched) {
+            return true;
           }
         }
       }

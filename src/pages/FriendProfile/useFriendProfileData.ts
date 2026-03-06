@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -17,6 +18,7 @@ export interface FriendProvider {
 
 export interface FriendEpisode {
   air_date?: string;
+  airstamp?: string;
   id: number;
   name?: string;
   watched?: boolean;
@@ -65,7 +67,6 @@ export const calculateFriendRating = (item: FriendItem): string => {
 
 export const calculateProgress = (item: FriendItem): number => {
   if (!item.seasons) return 0;
-  const today = new Date();
   let totalAiredEpisodes = 0;
   let watchedEpisodes = 0;
 
@@ -75,12 +76,9 @@ export const calculateProgress = (item: FriendItem): number => {
         ? season.episodes
         : (Object.values(season.episodes || {}) as FriendEpisode[]);
       episodes.forEach((ep: FriendEpisode) => {
-        if (ep.air_date) {
-          const airDate = new Date(ep.air_date);
-          if (airDate <= today) {
-            totalAiredEpisodes++;
-            if (ep.watched) watchedEpisodes++;
-          }
+        if (hasEpisodeAired(ep) || !ep.air_date) {
+          totalAiredEpisodes++;
+          if (ep.watched) watchedEpisodes++;
         }
       });
     }
@@ -130,16 +128,12 @@ const filterByQuickFilter = (
         if (!item.seasons) return false;
         let watched = 0;
         let totalAired = 0;
-        const today = new Date();
         item.seasons.forEach((season) => {
           if (season.episodes) {
             season.episodes.forEach((ep) => {
-              if (ep.air_date) {
-                const airDate = new Date(ep.air_date);
-                if (airDate <= today) {
-                  totalAired++;
-                  if (ep.watched) watched++;
-                }
+              if (hasEpisodeAired(ep) || !ep.air_date) {
+                totalAired++;
+                if (ep.watched) watched++;
               }
             });
           }
@@ -157,14 +151,10 @@ const filterByQuickFilter = (
       return items.filter((item) => {
         if (!item.seasons) return true;
         let watched = 0;
-        const today = new Date();
         item.seasons.forEach((season) => {
           if (season.episodes) {
             season.episodes.forEach((ep) => {
-              if (ep.air_date) {
-                const airDate = new Date(ep.air_date);
-                if (airDate <= today && ep.watched) watched++;
-              }
+              if ((hasEpisodeAired(ep) || !ep.air_date) && ep.watched) watched++;
             });
           }
         });

@@ -9,7 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 const DATA_SOURCES = [
   { label: 'Streaming-Anbieter', link: 'https://www.justwatch.com', name: 'JustWatch' },
-  { label: 'Episoden-Informationen', link: 'https://thetvdb.com', name: 'TheTVDB' },
+  { label: 'Episoden-Informationen', link: 'https://www.tvmaze.com', name: 'TVmaze' },
   { label: 'Film- & Seriendaten', link: 'https://www.themoviedb.org', name: 'TMDB' },
   { label: 'Bewertungen', link: 'https://www.imdb.com', name: 'IMDb' },
 ] as const;
